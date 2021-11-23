@@ -160,44 +160,46 @@ const Incomes = React.memo(function Incomes({ personId }: { personId: UUID }) {
   return (
     <>
       <H3>{i18n.personProfile.income.title}</H3>
-      <AddButtonRow
-        text={i18n.personProfile.income.add}
-        onClick={() => {
-          toggleIncomeRow('new')
-          setEditing('new')
-        }}
-        disabled={!!editing}
-        data-qa="add-income-button"
-      />
-      <Gap size="m" />
       {renderResult(
         combine(incomes, incomeTypeOptions),
         ([incomes, incomeTypeOptions]) => (
-          <IncomeList
-            incomes={incomes}
-            incomeTypeOptions={incomeTypeOptions}
-            isRowOpen={isIncomeRowOpen}
-            toggleRow={toggleIncomeRow}
-            editing={editing}
-            setEditing={setEditing}
-            deleting={deleting}
-            setDeleting={setDeleting}
-            createIncome={(income: IncomeBody) =>
-              createIncome(personId, income)
-                .then(toggleCreated)
-                .then(handleErrors)
-            }
-            updateIncome={(incomeId: UUID, income: Income) =>
-              updateIncome(incomeId, income).then(handleErrors)
-            }
-            deleteIncome={(incomeId: UUID) =>
-              deleteIncome(incomeId).then(handleErrors)
-            }
-            onSuccessfulUpdate={() => {
-              setEditing(undefined)
-              reloadIncomes()
-            }}
-          />
+          <>
+            <AddButtonRow
+              text={i18n.personProfile.income.add}
+              onClick={() => {
+                toggleIncomeRow('new')
+                setEditing('new')
+              }}
+              disabled={!!editing}
+              data-qa="add-income-button"
+            />
+            <Gap size="m" />
+            <IncomeList
+              incomes={incomes}
+              incomeTypeOptions={incomeTypeOptions}
+              isRowOpen={isIncomeRowOpen}
+              toggleRow={toggleIncomeRow}
+              editing={editing}
+              setEditing={setEditing}
+              deleting={deleting}
+              setDeleting={setDeleting}
+              createIncome={(income: IncomeBody) =>
+                createIncome(personId, income)
+                  .then(toggleCreated)
+                  .then(handleErrors)
+              }
+              updateIncome={(incomeId: UUID, income: Income) =>
+                updateIncome(incomeId, income).then(handleErrors)
+              }
+              deleteIncome={(incomeId: UUID) =>
+                deleteIncome(incomeId).then(handleErrors)
+              }
+              onSuccessfulUpdate={() => {
+                setEditing(undefined)
+                reloadIncomes()
+              }}
+            />
+          </>
         )
       )}
     </>
