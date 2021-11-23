@@ -18,6 +18,7 @@ import {
   MobileDeviceIdentity,
   validatePairing
 } from '../shared/service-client'
+import { saveSession } from '../shared/session'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -48,6 +49,7 @@ async function mobileLogin(
       cb
     )
   )
+  await saveSession(req)
   // Unconditionally refresh long-term cookie on each login to refresh expiry
   // time and make it a "rolling" cookie
   res.cookie(mobileLongTermCookieName, device.longTermToken, {

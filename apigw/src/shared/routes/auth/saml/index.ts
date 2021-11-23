@@ -13,7 +13,7 @@ import { getEmployees } from '../../../dev-api'
 import { toMiddleware, toRequestHandler } from '../../../express'
 import { logAuditEvent, logDebug, logError } from '../../../logging'
 import { fromCallback } from '../../../promise-utils'
-import { logoutExpress, saveLogoutToken } from '../../../session'
+import { logoutExpress, saveLogoutToken, saveSession } from '../../../session'
 import { parseDescriptionFromSamlError } from './error-utils'
 import { SamlEndpointConfig, SamlUser } from './types'
 
@@ -92,6 +92,7 @@ function createLoginHandler({
             await fromCallback<void>((cb) => session.regenerate(cb))
           }
           await fromCallback<void>((cb) => req.logIn(user, cb))
+          await saveSession(req)
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in`,
             req,
