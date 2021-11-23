@@ -13,7 +13,12 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faTimes, faTrash } from 'lib-icons'
+import {
+  faDownLeftAndUpRightToCenter,
+  faTimes,
+  faTrash,
+  faUpRightAndDownLeftFromCenter
+} from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
@@ -181,6 +186,13 @@ export default React.memo(function MessageEditor({
     saveDraftRaw,
     initDraftRaw
   })
+
+  const [expandedView, setExpandedView] = useState(false)
+
+  const toggleExpandedView = useCallback(
+    () => setExpandedView((prev) => !prev),
+    []
+  )
 
   useEffect(
     function syncDraftContentOnMessageChanges() {
@@ -418,15 +430,39 @@ export default React.memo(function MessageEditor({
       </BottomBarMobile>
     </ContainerMobile>
   ) : (
-    <Container data-qa="message-editor" data-status={draftState}>
+    <Container
+      data-qa="message-editor"
+      data-status={draftState}
+      expanded={expandedView}
+    >
       <TopBar>
         <Title>{title}</Title>
-        <IconButton
-          icon={faTimes}
-          onClick={onCloseHandler}
-          white
-          data-qa="close-message-editor-btn"
-        />
+        <HeaderButtonContainer>
+          {expandedView ? (
+            <IconButton
+              icon={faDownLeftAndUpRightToCenter}
+              onClick={toggleExpandedView}
+              white
+              size={'s'}
+              data-qa="collapse-view-btn"
+            />
+          ) : (
+            <IconButton
+              icon={faUpRightAndDownLeftFromCenter}
+              onClick={toggleExpandedView}
+              white
+              size={'s'}
+              data-qa="expand-view-btn"
+            />
+          )}
+          <IconButton
+            icon={faTimes}
+            onClick={onCloseHandler}
+            white
+            size={'m'}
+            data-qa="close-message-editor-btn"
+          />
+        </HeaderButtonContainer>
       </TopBar>
       <ScrollableFormArea>
         <Bold>{i18n.sender}</Bold>
@@ -523,8 +559,8 @@ export default React.memo(function MessageEditor({
   )
 })
 
-const Container = styled.div`
-  width: 680px;
+const Container = styled.div<{ expanded: boolean }>`
+  width: ${({ expanded }) => (expanded ? '100%' : '680px')};
   max-height: 900px;
   height: 105%;
   position: absolute;
@@ -567,6 +603,13 @@ const TopBarMobile = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.m};
+`
+
+const HeaderButtonContainer = styled.div`
+  width: 70px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 `
 
 const MessageAreaMobile = styled.textarea`
