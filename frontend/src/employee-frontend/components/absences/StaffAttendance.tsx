@@ -206,8 +206,11 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
     const handle = setTimeout(() => {
       void save()
     }, 2000)
+
     return () => {
-      clearTimeout(handle)
+      if (mountedRef.current) {
+        clearTimeout(handle)
+      }
     }
   }, [save])
 
@@ -220,7 +223,7 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
           onChange={(e) => {
             setValue(e.target.value)
           }}
-          onBlur={() => save()}
+          onBlur={save}
           data-qa="staff-attendance-input"
         />
       </div>
