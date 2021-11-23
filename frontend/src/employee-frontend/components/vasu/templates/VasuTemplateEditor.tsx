@@ -304,17 +304,12 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
-  function renderFollowup(
-    question: Followup,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
+  function renderFollowup(question: Followup) {
     return (
       <FixedSpaceColumn spacing="s">
+        <H2>{question.title}</H2>
         <QuestionInfo info={question.info}>
-          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
-            questionIndex + 1
-          }. ${question.name}`}</H3>
+          <H3 noMargin>{question.name}</H3>
         </QuestionInfo>
         <TextArea value="" />
       </FixedSpaceColumn>
@@ -335,7 +330,7 @@ export default React.memo(function VasuTemplateEditor() {
     } else if (isMultiSelectQuestion(question)) {
       return renderMultiSelectQuestion(question, sectionIndex, questionIndex)
     } else if (isFollowup(question)) {
-      return renderFollowup(question, sectionIndex, questionIndex)
+      return renderFollowup(question)
     } else {
       return null
     }

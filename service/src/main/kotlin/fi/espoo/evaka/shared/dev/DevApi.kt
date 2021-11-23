@@ -104,6 +104,9 @@ import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.vasu.VasuLanguage
+import fi.espoo.evaka.vasu.getDefaultTemplateContent
+import fi.espoo.evaka.vasu.insertVasuTemplate
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -828,6 +831,18 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
                 file.contentType ?: "image/jpeg"
             )
         }.key
+    }
+
+    @PostMapping("/vasu-template")
+    fun createVasuTemplate(db: Database.Connection) {
+        db.transaction { tx ->
+            tx.insertVasuTemplate(
+                name = "testipohja",
+                valid = FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
+                language = VasuLanguage.FI,
+                content = getDefaultTemplateContent(VasuLanguage.FI)
+            )
+        }
     }
 
     @PostMapping("/service-need")

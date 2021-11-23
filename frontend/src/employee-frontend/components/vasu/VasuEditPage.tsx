@@ -10,7 +10,6 @@ import styled from 'styled-components'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
 import Spinner from 'lib-components/atoms/state/Spinner'
-import { Container } from 'lib-components/layout/Container'
 import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Dimmed } from 'lib-components/typography'
@@ -26,6 +25,7 @@ import { useVasu, VasuStatus } from './use-vasu'
 import { BasicsSection } from './sections/BasicsSection'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
+import { VasuContainer } from './components/VasuContainer'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -91,26 +91,23 @@ export default React.memo(function VasuEditPage({
   const dynamicSectionsOffset = 2
 
   return (
-    <Container>
+    <VasuContainer gapSize={'s'}>
       <Gap size={'L'} />
       {vasu && (
         <>
           <VasuHeader document={vasu} />
-          <Gap size={'L'} />
           <BasicsSection
             sectionIndex={0}
             content={vasu.basics}
             templateRange={vasu.templateRange}
             translations={translations}
           />
-          <Gap size={'L'} />
           <EditableAuthorsSection
             sectionIndex={1}
             content={authorsContent}
             setContent={setAuthorsContent}
             translations={translations}
           />
-          <Gap size={'L'} />
           <DynamicSections
             sectionIndex={dynamicSectionsOffset}
             sections={content.sections}
@@ -124,19 +121,13 @@ export default React.memo(function VasuEditPage({
             setContent={setVasuDiscussionContent}
             translations={translations}
           />
-          <Gap size={'L'} />
           {vasu.documentState !== 'DRAFT' && (
-            <>
-              <EditableEvaluationDiscussionSection
-                sectionIndex={
-                  content.sections.length + dynamicSectionsOffset + 1
-                }
-                content={evaluationDiscussionContent}
-                setContent={setEvaluationDiscussionContent}
-                translations={translations}
-              />
-              <Gap size={'L'} />
-            </>
+            <EditableEvaluationDiscussionSection
+              sectionIndex={content.sections.length + dynamicSectionsOffset + 1}
+              content={evaluationDiscussionContent}
+              setContent={setEvaluationDiscussionContent}
+              translations={translations}
+            />
           )}
           <VasuEvents
             document={vasu}
@@ -145,7 +136,6 @@ export default React.memo(function VasuEditPage({
               evaluationDiscussionContent.discussionDate
             }
           />
-          <Gap size={'L'} />
         </>
       )}
       <StickyFooter>
@@ -172,6 +162,6 @@ export default React.memo(function VasuEditPage({
           )}
         </FooterContainer>
       </StickyFooter>
-    </Container>
+    </VasuContainer>
   )
 })

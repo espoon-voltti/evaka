@@ -120,6 +120,10 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                     value = ""
                 ),
                 VasuQuestion.Followup(
+                    title = when (lang) {
+                        VasuLanguage.FI -> "Täydennykset ja jatkuva arviointi toimintakauden aikana"
+                        VasuLanguage.SV -> ""
+                    },
                     name = when (lang) {
                         VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutumisen arviointia ja tarkennuksia toimintakauden aikana lapsen tarpeiden mukaan sekä mahdollinen huoltajien kanssa tehty yhteistyö"
                         VasuLanguage.SV -> ""
@@ -127,7 +131,8 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                     info = when (lang) {
                         VasuLanguage.FI -> "Laadittu-tilassa olevaa varhaiskasvatussuunnitelmaa päivitetään pääasiassa lisäämällä uutta tekstiä Täydennykset ja jatkuva arviointi -osioon. Sinne voidaan mm. lisätä huomioita koskien lapsen kehitystä, arjen tapahtumia sekä huoltajien kanssa käytyjä keskusteluja."
                         VasuLanguage.SV -> ""
-                    }
+                    },
+                    value = ""
                 )
             )
         ),

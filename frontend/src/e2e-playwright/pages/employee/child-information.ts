@@ -203,6 +203,15 @@ export class PedagogicalDocumentsSection {
   }
 }
 
+export class VasuAndLeopsSection {
+  constructor(private section: RawElement) {}
+
+  readonly #addNew = this.section.find('[data-qa="add-new-vasu-button"]')
+  async addNew() {
+    return this.#addNew.click()
+  }
+}
+
 const collapsibles = {
   dailyServiceTimes: {
     selector: '[data-qa="child-daily-service-times-collapsible"]',
@@ -211,6 +220,10 @@ const collapsibles = {
   pedagogicalDocuments: {
     selector: '[data-qa="pedagogical-documents-collapsible"]',
     section: PedagogicalDocumentsSection
+  },
+  vasuAndLeops: {
+    selector: '[data-qa="vasu-and-leops-collapsible"]',
+    section: VasuAndLeopsSection
   }
 }
 
