@@ -527,6 +527,10 @@ const AbsencesPage = styled.div`
         border-width: 0 0 1px;
         background-color: transparent;
 
+        :disabled {
+          color: ${colors.greyscale.medium};
+        }
+
         @media print {
           border: none;
         }

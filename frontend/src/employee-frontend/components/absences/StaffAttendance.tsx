@@ -16,7 +16,7 @@ import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-exclu
 import { GroupStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { DisabledCell } from './AbsenceCell'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
 import { faTimes } from 'lib-icons'
@@ -24,6 +24,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '../../components/common/Tooltip'
 import colors from 'lib-customizations/common'
+import { useApiState } from 'lib-common/utils/useRestApi'
 
 type Props = {
   groupId: string
@@ -46,24 +47,12 @@ export default memo(function StaffAttendance({
     []
   )
 
-  const [attendance, setAttendance] = useState<
-    Result<GroupStaffAttendanceForDates>
-  >(Loading.of())
-
-  const refreshAttendances = useCallback(() => {
+  const [attendance, refreshAttendances] = useApiState(() => {
     const year = selectedDate.getYear()
     const month = selectedDate.getMonth()
 
-    void getStaffAttendances(groupId, { year, month }).then((r) => {
-      if (isMountedRef.current) {
-        setAttendance(r)
-      }
-    })
+    return getStaffAttendances(groupId, { year, month })
   }, [groupId, selectedDate])
-
-  useEffect(() => {
-    refreshAttendances()
-  }, [refreshAttendances])
 
   const updateAttendance = (date: LocalDate, count: number) =>
     postStaffAttendance({
@@ -77,19 +66,19 @@ export default memo(function StaffAttendance({
   const lastOfMonth = firstOfMonth.lastDayOfMonth()
   const daysOfMonth = LocalDate.range(firstOfMonth, lastOfMonth)
 
-  return attendance.isSuccess ? (
+  return (
     <StaffAttendanceRow
       emptyCols={emptyCols}
-      attendanceGroup={attendance.value}
+      groupAttendances={attendance}
       updateAttendance={updateAttendance}
       daysOfMonth={daysOfMonth}
       operationDays={operationDays}
     />
-  ) : null
+  )
 })
 
 interface StaffAttendanceRowProps {
-  attendanceGroup: GroupStaffAttendanceForDates
+  groupAttendances: Result<GroupStaffAttendanceForDates>
   emptyCols: number[]
   updateAttendance: (date: LocalDate, count: number) => Promise<void>
   daysOfMonth: LocalDate[]
@@ -98,17 +87,21 @@ interface StaffAttendanceRowProps {
 
 const StaffAttendanceRow = memo(function StaffAttendanceRow({
   emptyCols,
-  attendanceGroup,
+  groupAttendances,
   updateAttendance,
   daysOfMonth,
   operationDays
 }: StaffAttendanceRowProps) {
   const { i18n } = useTranslation()
-  const attendanceMap = attendanceGroup.attendances
 
   const isActive = (date: LocalDate): boolean =>
-    date.isEqualOrAfter(attendanceGroup.startDate) &&
-    (!attendanceGroup.endDate || date.isEqualOrBefore(attendanceGroup.endDate))
+    groupAttendances
+      .map(
+        ({ startDate, endDate }) =>
+          date.isEqualOrAfter(startDate) &&
+          (!endDate || date.isEqualOrBefore(endDate))
+      )
+      .getOrElse(true)
 
   const isOperational = (date: LocalDate) =>
     operationDays.some((operationDay) => operationDay.isEqual(date))
@@ -117,7 +110,9 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
     <Tr className={'staff-attendance-row'}>
       <Td colSpan={2}>{i18n.absences.table.staffRow}</Td>
       {daysOfMonth.map((date) => {
-        const attendance = attendanceMap.get(date.toString())
+        const attendance = groupAttendances.map(({ attendances }) =>
+          attendances.get(date.toString())
+        )
         return (
           <Td key={date.toString()}>
             {!isOperational(date) ? (
@@ -165,7 +160,7 @@ const InactiveCell = ({ date }: { date: LocalDate }) => {
 }
 
 interface StaffAttendanceCellProps {
-  attendance: GroupStaffAttendance | undefined
+  attendance: Result<GroupStaffAttendance | undefined>
   updateAttendance: (count: number) => Promise<void>
 }
 
@@ -181,12 +176,18 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
     []
   )
 
-  const initialValue = formatDecimal(attendance?.count) ?? ''
+  const initialValue = attendance
+    .map((a) => formatDecimal(a?.count) ?? '')
+    .getOrElse('')
+
   const [value, setValue] = useState(initialValue)
 
   useLayoutEffect(() => {
     setValue(initialValue)
   }, [initialValue])
+
+  const disableInput =
+    attendance.isLoading || (attendance.isSuccess && attendance.isReloading)
 
   const save = useCallback(() => {
     if (value !== initialValue) {
@@ -224,6 +225,7 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
             setValue(e.target.value)
           }}
           onBlur={save}
+          disabled={disableInput}
           data-qa="staff-attendance-input"
         />
       </div>
