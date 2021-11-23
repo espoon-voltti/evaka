@@ -11,13 +11,10 @@ import { UUID } from 'lib-common/types'
  *
  * @return An URL that completes the pairing in the browser
  */
-export async function pairMobileDevice(
-  employeeId: UUID,
-  unitId: UUID
-): Promise<string> {
+export async function pairMobileDevice(unitId: UUID): Promise<string> {
   const longTermToken = uuidv4()
   await postMobileDevice({
-    id: employeeId,
+    id: uuidv4(),
     unitId,
     name: 'testMobileDevice',
     deleted: false,

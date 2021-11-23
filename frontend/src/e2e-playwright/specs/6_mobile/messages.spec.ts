@@ -114,10 +114,7 @@ beforeEach(async () => {
   messagesPage = new MobileMessagesPage(page)
   threadView = new ThreadViewPage(page)
 
-  const mobileSignupUrl = await pairMobileDevice(
-    employee.data.id!, // eslint-disable-line
-    unit.id
-  )
+  const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 })
 afterEach(async () => {

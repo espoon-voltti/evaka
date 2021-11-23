@@ -56,13 +56,6 @@ fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
         .bind("id", id)
         .bind("name", name)
         .updateExactlyOne(notFoundMsg = "Device $id not found")
-
-    // language=sql
-    val employeeUpdate = "UPDATE employee SET first_name = :name WHERE id = :id"
-    createUpdate(employeeUpdate)
-        .bind("id", id)
-        .bind("name", name)
-        .execute()
 }
 
 fun Database.Transaction.softDeleteDevice(id: MobileDeviceId) {

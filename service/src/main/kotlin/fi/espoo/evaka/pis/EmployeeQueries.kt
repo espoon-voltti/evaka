@@ -75,8 +75,7 @@ private fun Database.Read.searchEmployees(id: EmployeeId? = null) = createQuery(
     """
 SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
 FROM employee e
-LEFT JOIN mobile_device md on e.id = md.id 
-WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
+WHERE (:id::uuid IS NULL OR e.id = :id)
     """.trimIndent()
 ).bind("id", id)
     .mapTo<Employee>()

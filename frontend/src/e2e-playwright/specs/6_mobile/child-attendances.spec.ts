@@ -72,10 +72,7 @@ const createPlacementAndReload = async (
   )
   await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
 
-  const mobileSignupUrl = await pairMobileDevice(
-    employee.data.id!, // eslint-disable-line
-    fixtures.daycareFixture.id
-  )
+  const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
   await page.goto(mobileSignupUrl)
 
   return daycarePlacementFixture

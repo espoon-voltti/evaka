@@ -107,10 +107,7 @@ beforeEach(async () => {
   pinLoginPage = new PinLoginPage(page)
   topNav = new TopNav(page)
 
-  const mobileSignupUrl = await pairMobileDevice(
-    employee.data.id!, // eslint-disable-line
-    unit.id
-  )
+  const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 })
 afterEach(async () => {
