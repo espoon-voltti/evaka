@@ -17,6 +17,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoField
 
 fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from(this)
 
@@ -125,17 +126,17 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
         /**
          * Returns the current `HelsinkiDateTime` based on the given clock, or the system default clock
          */
-        fun now(clock: Clock? = Clock.systemUTC()): HelsinkiDateTime = HelsinkiDateTime(Instant.now(clock))
+        fun now(clock: Clock? = Clock.systemUTC()): HelsinkiDateTime = from(Instant.now(clock))
 
         /**
          * Converts an `Instant` to `HelsinkiDateTime` by reinterpreting its timestamp in Europe/Helsinki timezone
          */
-        fun from(value: Instant): HelsinkiDateTime = HelsinkiDateTime(value)
+        fun from(value: Instant): HelsinkiDateTime = HelsinkiDateTime(value.truncateNanos())
 
         /**
          * Converts a `ZonedDateTime` to `HelsinkiDateTime` by reinterpreting its timestamp in Europe/Helsinki timezone
          */
-        fun from(value: ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(value.toInstant())
+        fun from(value: ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(value.toInstant().truncateNanos())
     }
 
     class FromJson : StdConverter<ZonedDateTime, HelsinkiDateTime>() {
@@ -146,3 +147,6 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
         override fun convert(value: HelsinkiDateTime): ZonedDateTime = value.toZonedDateTime()
     }
 }
+
+// Truncate nanoseconds to avoid surprises when serializing to/from PostgreSQL, which only supports microsecond precision
+private fun Instant.truncateNanos() = with(ChronoField.MICRO_OF_SECOND, nano / 1000L)
