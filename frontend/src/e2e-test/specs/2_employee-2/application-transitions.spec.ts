@@ -244,7 +244,7 @@ test('Placement proposal flow', async (t) => {
 
   await employeeLogin(t, seppoManager)
   await unitPage.navigateHere(fixtures.daycareFixture.id)
-  await unitPage.openTabPlacementProposals()
+  await unitPage.openTabApplicationProcess()
 
   await t
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
@@ -269,7 +269,7 @@ test('Placement proposal flow', async (t) => {
 
   await employeeLogin(t, seppoManager)
   await unitPage.navigateHere(fixtures.daycareFixture.id)
-  await unitPage.openTabPlacementProposals()
+  await unitPage.openTabApplicationProcess()
   await t
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
     .notOk()
@@ -279,7 +279,7 @@ test('Placement proposal flow', async (t) => {
   await execSimpleApplicationAction(applicationId, 'confirm-decision-mailed')
 
   await unitPage.navigateHere(fixtures.daycareFixture.id)
-  await unitPage.openTabWaitingConfirmation()
+  await unitPage.openTabApplicationProcess()
   await t.expect(unitPage.waitingGuardianConfirmationRow.count).eql(1)
 })
 

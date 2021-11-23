@@ -76,16 +76,8 @@ export default class UnitPage {
     await t.click(Selector('[data-qa="groups-tab"]'))
   }
 
-  async openTabWaitingConfirmation() {
-    await t.click(Selector('[data-qa="waiting-confirmation-tab"]'))
-  }
-
-  async openTabPlacementProposals() {
-    await t.click(Selector('[data-qa="placement-proposals-tab"]'))
-  }
-
-  async openTabApplications() {
-    await t.click(Selector('[data-qa="applications-tab"]'))
+  async openTabApplicationProcess() {
+    await t.click(Selector('[data-qa="application-process-tab"]'))
   }
 
   async setFilterStartDate(date: LocalDate) {
