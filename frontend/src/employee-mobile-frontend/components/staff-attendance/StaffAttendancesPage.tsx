@@ -9,7 +9,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Tabs from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
 import { faPlus } from 'lib-icons'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
@@ -37,11 +37,9 @@ export default React.memo(function StaffAttendancesPage() {
     groupId: string
   }>()
   const { i18n } = useTranslation()
-
-  const { unitInfoResponse, showPresent, setShowPresent } =
-    useContext(UnitContext)
-
+  const { unitInfoResponse } = useContext(UnitContext)
   const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
+  const [showPresent, setShowPresent] = useState(false)
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {

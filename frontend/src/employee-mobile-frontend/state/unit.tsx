@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, useEffect, useMemo } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
@@ -15,15 +15,11 @@ import { client } from '../api/client'
 
 interface UnitState {
   unitInfoResponse: Result<UnitInfo>
-  showPresent: boolean
-  setShowPresent: (value: boolean) => void
   reloadUnitInfo: () => void
 }
 
 const defaultState: UnitState = {
   unitInfoResponse: Loading.of(),
-  showPresent: false,
-  setShowPresent: () => undefined,
   reloadUnitInfo: () => undefined
 }
 
@@ -41,10 +37,6 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     [unitId]
   )
 
-  const [showPresent, setShowPresent] = useState<boolean>(
-    defaultState.showPresent
-  )
-
   useEffect(
     () => idleTracker(client, reloadUnitInfo, { thresholdInMinutes: 5 }),
     [reloadUnitInfo]
@@ -53,11 +45,9 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   const value = useMemo(
     () => ({
       unitInfoResponse,
-      showPresent,
-      setShowPresent,
       reloadUnitInfo
     }),
-    [unitInfoResponse, showPresent, reloadUnitInfo]
+    [unitInfoResponse, reloadUnitInfo]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
