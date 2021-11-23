@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
@@ -174,8 +181,12 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
     []
   )
 
-  const initialValue: string = formatDecimal(attendance?.count) ?? ''
+  const initialValue = formatDecimal(attendance?.count) ?? ''
   const [value, setValue] = useState(initialValue)
+
+  useLayoutEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
 
   const save = useCallback(() => {
     if (value !== initialValue) {
