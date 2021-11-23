@@ -4,35 +4,36 @@
 
 package fi.espoo.evaka.msg.service
 
-import fi.espoo.evaka.msg.async.AsyncJobRunner
-import fi.espoo.evaka.msg.controllers.PdfSendMessage
 import fi.espoo.evaka.msg.service.attachments.DocumentService
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService
-import fi.espoo.evaka.msg.utils.getCurrentDateInFinland
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
+import fi.espoo.evaka.shared.message.SuomiFiMessage
 import org.apache.commons.text.StringEscapeUtils.unescapeJava
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
 @Service
 class AsyncJobs(
     private val docService: DocumentService,
     private val sfiClient: ISfiClientService,
-    asyncJobRunner: AsyncJobRunner
+    asyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 ) {
     init {
-        asyncJobRunner.sendMessage = { payload ->
-            sendMessagePDF(payload.msg)
+        asyncJobRunner.registerHandler { _, payload: SuomiFiAsyncJob.SendMessage ->
+            sendMessagePDF(payload.message)
             TimeUnit.SECONDS.sleep(1)
         }
     }
 
-    fun sendMessagePDF(details: PdfSendMessage) {
+    fun sendMessagePDF(details: SuomiFiMessage) {
         val pdfBytes = docService.getDocument(details.documentBucket, details.documentKey)
         val messageDetails = toPdfMessageDetails(pdfBytes, details)
         sfiClient.sendMessage(ISfiClientService.MessageMetadata(messageDetails))
     }
 
-    private fun toRecipient(details: PdfSendMessage) =
+    private fun toRecipient(details: SuomiFiMessage) =
         ISfiClientService.Recipient(
             ssn = details.ssn,
             name = details.lastName + " " + details.firstName,
@@ -46,13 +47,13 @@ class AsyncJobs(
             )
         )
 
-    private fun toPdfMessageDetails(pdfBytes: ByteArray, details: PdfSendMessage) =
+    private fun toPdfMessageDetails(pdfBytes: ByteArray, details: SuomiFiMessage) =
         ISfiClientService.MessageDetails(
             messageId = details.messageId,
             uniqueCaseIdentifier = details.documentId,
             header = details.messageHeader,
             content = unescapeJava(details.messageContent),
-            sendDate = getCurrentDateInFinland(),
+            sendDate = LocalDate.now(),
             senderName = "",
             pdfDetails = toPdfDetails(pdfBytes, details.documentDisplayName),
             recipient = toRecipient(details),

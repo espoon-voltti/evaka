@@ -5,7 +5,7 @@
 package fi.espoo.evaka.msg.service.sfi
 
 import fi.espoo.evaka.msg.service.sfi.SfiErrorResponseHandler.SFiMessageDeliveryException
-import fi.espoo.evaka.msg.sficlient.soap.LahetaViestiResponse
+import fi.espoo.evaka.sficlient.soap.LahetaViestiResponse
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}

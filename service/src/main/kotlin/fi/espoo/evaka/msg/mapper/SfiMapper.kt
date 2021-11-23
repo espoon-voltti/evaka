@@ -6,12 +6,12 @@ package fi.espoo.evaka.msg.mapper
 
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService.MessageMetadata
-import fi.espoo.evaka.msg.sficlient.soap.ArrayOfKohdeWS2A
-import fi.espoo.evaka.msg.sficlient.soap.ArrayOfTiedosto
-import fi.espoo.evaka.msg.sficlient.soap.Asiakas
-import fi.espoo.evaka.msg.sficlient.soap.KohdeWS2A
-import fi.espoo.evaka.msg.sficlient.soap.Osoite
-import fi.espoo.evaka.msg.sficlient.soap.Tiedosto
+import fi.espoo.evaka.sficlient.soap.ArrayOfKohdeWS2A
+import fi.espoo.evaka.sficlient.soap.ArrayOfTiedosto
+import fi.espoo.evaka.sficlient.soap.Asiakas
+import fi.espoo.evaka.sficlient.soap.KohdeWS2A
+import fi.espoo.evaka.sficlient.soap.Osoite
+import fi.espoo.evaka.sficlient.soap.Tiedosto
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.ZoneId

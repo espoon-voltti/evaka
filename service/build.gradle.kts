@@ -129,6 +129,7 @@ dependencies {
     implementation("com.auth0:java-jwt")
     implementation("javax.annotation:javax.annotation-api")
     implementation("org.apache.commons:commons-pool2")
+    implementation("org.apache.commons:commons-text")
     implementation("org.glassfish.jaxb:jaxb-runtime")
     implementation("org.bouncycastle:bcprov-jdk15on")
     implementation("org.bouncycastle:bcpkix-jdk15on")

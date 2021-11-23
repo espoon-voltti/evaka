@@ -6,8 +6,8 @@ package fi.espoo.evaka.msg.service.sfi
 
 import fi.espoo.evaka.msg.mapper.ISfiMapper
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService.MessageMetadata
-import fi.espoo.evaka.msg.sficlient.soap.LahetaViestiResponse
-import fi.espoo.evaka.msg.sficlient.soap.ObjectFactory
+import fi.espoo.evaka.sficlient.soap.LahetaViestiResponse
+import fi.espoo.evaka.sficlient.soap.ObjectFactory
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile

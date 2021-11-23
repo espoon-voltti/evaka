@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJob
+import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
 import java.util.UUID
@@ -54,6 +55,12 @@ sealed interface VardaAsyncJob : AsyncJobPayload {
     data class DeleteVardaChild(
         val vardaChildId: Long
     ) : VardaAsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+}
+
+sealed interface SuomiFiAsyncJob : AsyncJobPayload {
+    data class SendMessage(val message: SuomiFiMessage) : SuomiFiAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 }

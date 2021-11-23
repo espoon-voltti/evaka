@@ -5,7 +5,7 @@
 package fi.espoo.evaka.msg.mapper
 
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService
-import fi.espoo.evaka.msg.sficlient.soap.ArrayOfKohdeWS2A
+import fi.espoo.evaka.sficlient.soap.ArrayOfKohdeWS2A
 
 interface ISfiMapper {
     fun mapToSoapTargets(metadata: ISfiClientService.MessageMetadata): ArrayOfKohdeWS2A

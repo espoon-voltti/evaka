@@ -6,10 +6,9 @@ package fi.espoo.evaka.msg.service.sfi
 
 import fi.espoo.evaka.msg.properties.SfiMessageProperties
 import fi.espoo.evaka.msg.properties.SfiPrintingProperties
-import fi.espoo.evaka.msg.sficlient.soap.KyselyWS2A
-import fi.espoo.evaka.msg.sficlient.soap.KyselyWS2A.Laskutus
-import fi.espoo.evaka.msg.sficlient.soap.Viranomainen
-import fi.espoo.evaka.msg.sficlient.soap.Yhteyshenkilo
+import fi.espoo.evaka.sficlient.soap.KyselyWS2A
+import fi.espoo.evaka.sficlient.soap.Viranomainen
+import fi.espoo.evaka.sficlient.soap.Yhteyshenkilo
 import org.springframework.stereotype.Service
 
 @Service
@@ -35,7 +34,7 @@ class SfiAccountDetailsService(
         laskutus = createBillingDetails()
     }
 
-    private fun createBillingDetails() = Laskutus().apply {
+    private fun createBillingDetails() = KyselyWS2A.Laskutus().apply {
         tunniste = printingProperties.billingId
         salasana = when {
             printingProperties.billingPassword.isNullOrEmpty() -> null
