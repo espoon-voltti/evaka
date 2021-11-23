@@ -248,6 +248,7 @@ const sv: Translations = {
       message: 'Meddelande',
       deleteDraft: 'Ta bort utkast',
       send: 'Skicka',
+      discard: 'Kassera',
       search: 'Sök',
       noResults: 'Inga resultat',
       messageSendError: 'Misslyckades med att skicka meddelande'

@@ -247,6 +247,7 @@ export default {
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
+      discard: 'Hylkää',
       search: 'Haku',
       noResults: 'Ei tuloksia',
       messageSendError: 'Viestin lähetys epäonnistui'

@@ -248,6 +248,7 @@ const en: Translations = {
       message: 'Message',
       deleteDraft: 'Delete draft',
       send: 'Send',
+      discard: 'Discard',
       search: 'Search',
       noResults: 'No results',
       messageSendError: 'Failed to send the message'

@@ -18,6 +18,7 @@ import { faTimes } from 'lib-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
+import Button from 'lib-components/atoms/buttons/Button'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',
@@ -118,6 +119,10 @@ export default React.memo(function MessageEditor({
           </ErrorMessage>
         )}
         <BottomRow>
+          <Button
+            text={i18n.messages.messageEditor.discard}
+            onClick={onClose}
+          />
           <span />
           <AsyncButton
             primary
