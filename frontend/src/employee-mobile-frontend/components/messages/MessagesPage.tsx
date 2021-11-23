@@ -20,6 +20,7 @@ import colors from 'lib-customizations/common'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
+import { combine } from 'lib-common/api'
 
 export default function MessagesPage() {
   const history = useHistory()
@@ -54,65 +55,67 @@ export default function MessagesPage() {
   useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
 
   useEffect(() => {
-    console.log('group changed')
     loadMessagesWhenGroupChanges(selectedGroup)
   }, [selectedGroup, loadMessagesWhenGroupChanges])
 
   const { i18n } = useTranslation()
 
-  return renderResult(unitInfoResponse, (unit) => (
-    <>
-      {!(selectedThread && selectedAccount) ? (
-        <ContentArea opaque fullHeight paddingHorizontal={'zero'}>
-          <TopBarWithGroupSelector
-            title={unit.name}
-            selectedGroup={selectedGroup}
-            onChangeGroup={changeGroup}
-          />
-          <ContentArea opaque paddingHorizontal={'zero'}>
-            <HeaderContainer>
-              <H1>{i18n.messages.title}</H1>
-            </HeaderContainer>
-            {receivedMessages.isSuccess && receivedMessages.value.length > 0 ? (
-              receivedMessages.value.map((thread) => (
-                <MessagePreview
-                  thread={thread}
-                  hasUnreadMessages={thread.messages.some(
-                    (item) =>
-                      !item.readAt && item.sender.id !== selectedAccount?.id
-                  )}
-                  onClick={() => {
-                    selectThread(thread)
-                  }}
-                  key={thread.id}
+  return renderResult(
+    combine(unitInfoResponse, receivedMessages),
+    ([unit, messages]) => (
+      <>
+        {!(selectedThread && selectedAccount) ? (
+          <ContentArea opaque fullHeight paddingHorizontal={'zero'}>
+            <TopBarWithGroupSelector
+              title={unit.name}
+              selectedGroup={selectedGroup}
+              onChangeGroup={changeGroup}
+            />
+            <ContentArea opaque paddingHorizontal={'zero'}>
+              <HeaderContainer>
+                <H1>{i18n.messages.title}</H1>
+              </HeaderContainer>
+              {messages.length > 0 ? (
+                messages.map((thread) => (
+                  <MessagePreview
+                    thread={thread}
+                    hasUnreadMessages={thread.messages.some(
+                      (item) =>
+                        !item.readAt && item.sender.id !== selectedAccount?.id
+                    )}
+                    onClick={() => {
+                      selectThread(thread)
+                    }}
+                    key={thread.id}
+                  />
+                ))
+              ) : (
+                <EmptyMessageFolder
+                  loading={receivedMessages.isLoading}
+                  iconColor={colors.greyscale.medium}
+                  text={i18n.messages.emptyInbox}
                 />
-              ))
-            ) : (
-              <EmptyMessageFolder
-                loading={receivedMessages.isLoading}
-                iconColor={colors.greyscale.medium}
-                text={i18n.messages.emptyInbox}
-              />
-            )}
+              )}
+            </ContentArea>
+            <BottomNavBar selected="messages" />
           </ContentArea>
-          <BottomNavBar selected="messages" />
-        </ContentArea>
-      ) : (
-        <ContentArea
-          opaque
-          fullHeight
-          paddingHorizontal={'zero'}
-          paddingVertical={'zero'}
-        >
-          <ThreadView
-            accountId={selectedAccount.id}
-            thread={selectedThread}
-            onBack={() => selectThread(undefined)}
-          />
-        </ContentArea>
-      )}
-    </>
-  ))
+        ) : (
+          <ContentArea
+            opaque
+            fullHeight
+            paddingHorizontal={'zero'}
+            paddingVertical={'zero'}
+          >
+            <ThreadView
+              accountId={selectedAccount.id}
+              thread={selectedThread}
+              onBack={() => selectThread(undefined)}
+            />
+          </ContentArea>
+        )}
+      </>
+    )
+  )
 }
 
 export const HeaderContainer = styled.div`
