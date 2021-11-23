@@ -15,6 +15,7 @@ import fi.espoo.evaka.MessageEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.RedisEnv
 import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.VtjXroadEnv
@@ -73,4 +74,10 @@ class EnvConfig {
 
     @Bean
     fun ophEnv(env: Environment): OphEnv? = OphEnv.fromEnvironment(env)
+
+    @Bean
+    fun sfiEnv(evakaEnv: EvakaEnv, env: Environment): SfiEnv? = when (evakaEnv.sfiEnabled) {
+        true -> SfiEnv.fromEnvironment(env)
+        false -> null
+    }
 }
