@@ -2,17 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getChildRecipients, updateChildRecipient } from '../../api/person'
-import { ChildContext } from '../../state'
 import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2, P } from 'lib-components/typography'
 import React, { useContext, useState } from 'react'
+import { getChildRecipients, updateChildRecipient } from '../../api/person'
+import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { UIContext } from '../../state/ui'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { formatPersonName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 interface Props {
@@ -20,27 +21,13 @@ interface Props {
   startOpen: boolean
 }
 
-export default React.memo(function ChildDetails({ id, startOpen }: Props) {
+export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
 
   const { setErrorMessage } = useContext(UIContext)
   const { permittedActions } = useContext(ChildContext)
   const [recipients, loadData] = useApiState(() => getChildRecipients(id), [id])
   const [open, setOpen] = useState(startOpen)
-
-  const getRoleString = (headOfChild: boolean, guardian: boolean) => {
-    if (headOfChild && guardian) {
-      return `${
-        i18n.childInformation.messaging.guardian
-      } (${i18n.childInformation.messaging.headOfChild.toLowerCase()})`
-    } else if (headOfChild && !guardian) {
-      return `${i18n.childInformation.messaging.headOfChild}`
-    } else if (!headOfChild && guardian) {
-      return `${i18n.childInformation.messaging.guardian}`
-    } else {
-      return null
-    }
-  }
 
   const onChange = async (personId: UUID, checked: boolean) => {
     const res = await updateChildRecipient(id, personId, !checked)
@@ -71,7 +58,6 @@ export default React.memo(function ChildDetails({ id, startOpen }: Props) {
             <Thead>
               <Tr>
                 <Th>{i18n.childInformation.messaging.name}</Th>
-                <Th>{i18n.childInformation.messaging.role}</Th>
                 <Th>{i18n.childInformation.messaging.notBlocklisted}</Th>
               </Tr>
             </Thead>
@@ -81,13 +67,10 @@ export default React.memo(function ChildDetails({ id, startOpen }: Props) {
                   key={recipient.personId}
                   data-qa={`recipient-${recipient.personId}`}
                 >
-                  <Td>{`${recipient.lastName} ${recipient.firstName}`}</Td>
-                  <Td>
-                    {getRoleString(recipient.headOfChild, recipient.guardian)}
-                  </Td>
+                  <Td>{formatPersonName(recipient, i18n)}</Td>
                   <Td>
                     <Checkbox
-                      label={`${recipient.firstName} ${recipient.lastName}`}
+                      label={formatPersonName(recipient, i18n)}
                       hiddenLabel
                       checked={!recipient.blocklisted}
                       data-qa={'blocklist-checkbox'}

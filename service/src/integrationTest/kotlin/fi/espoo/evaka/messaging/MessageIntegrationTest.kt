@@ -11,6 +11,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -21,6 +23,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -35,9 +38,11 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -46,6 +51,7 @@ import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
+import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import org.jdbi.v3.core.kotlin.mapTo
@@ -56,6 +62,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MessageIntegrationTest : FullApplicationTest() {
@@ -64,6 +71,7 @@ class MessageIntegrationTest : FullApplicationTest() {
     private val person2Id: UUID = testAdult_2.id
     private val person3Id: UUID = testAdult_3.id
     private val person4Id: UUID = testAdult_4.id
+    private val fridgeHeadId: UUID = person4Id
     private val employee1Id: UUID = UUID.randomUUID()
     private val employee2Id: UUID = UUID.randomUUID()
     private val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
@@ -111,6 +119,7 @@ class MessageIntegrationTest : FullApplicationTest() {
                     areaId = testAreaId,
                     id = testDaycare.id,
                     name = testDaycare.name,
+                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
             tx.insertTestDaycare(
@@ -118,6 +127,7 @@ class MessageIntegrationTest : FullApplicationTest() {
                     areaId = testAreaId,
                     id = testDaycare2.id,
                     name = testDaycare2.name,
+                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
             tx.insertTestDaycareGroup(
@@ -138,6 +148,7 @@ class MessageIntegrationTest : FullApplicationTest() {
                 insertChild(tx, it)
                 tx.insertGuardian(person1Id, it.id)
                 tx.insertGuardian(person2Id, it.id)
+                tx.insertTestParentship(fridgeHeadId, it.id) // parentship alone does not allow messaging if not a guardian
             }
 
             // person 2 and 3 are guardian of child 3
@@ -152,14 +163,52 @@ class MessageIntegrationTest : FullApplicationTest() {
                 tx.insertGuardian(person4Id, it.id)
             }
 
+            testChild_5.let {
+                insertChild(tx, it)
+                tx.insertTestParentship(fridgeHeadId, it.id) // no guardian, no messages
+            }
+
             tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
             tx.upsertEmployeeMessageAccount(employee1Id)
             tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, EmployeeId(employee1Id), listOf(groupId))
 
             tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Foo", lastName = "Supervisor"))
             tx.upsertEmployeeMessageAccount(employee2Id)
             tx.insertDaycareAclRow(testDaycare2.id, employee2Id, UserRole.UNIT_SUPERVISOR)
         }
+    }
+
+    @Test
+    fun `only guardians are returned in valid recipients`() {
+        val receivers = getReceivers(testDaycare.id, employee1)
+        assertEquals(1, receivers.size)
+
+        val group1Receivers = receivers[0]
+        assertEquals(groupId, group1Receivers.groupId)
+
+        // fridge head of child 1 is not in the receivers
+        val children = listOf(
+            testChild_1.id to setOf(testAdult_1, testAdult_2),
+            testChild_3.id to setOf(testAdult_2, testAdult_3),
+            testChild_4.id to setOf(testAdult_4)
+        )
+        assertEquals(children.map { it.first }.toSet(), group1Receivers.receivers.map { it.childId }.toSet())
+        children.forEach { (childId, guardianAccountIds) ->
+            val child = group1Receivers.receivers.find { it.childId == childId }!!
+            assertNotNull(child)
+            assertEquals(
+                getAccounts(guardianAccountIds.map { it.id }),
+                child.receiverPersons.map { it.accountId }.toSet()
+            )
+        }
+    }
+
+    private fun getAccounts(personAccountIds: List<UUID>): Set<MessageAccountId> = db.read {
+        it.createQuery("SELECT acc.id FROM message_account acc WHERE acc.person_id = ANY(:personIds)")
+            .bind("personIds", personAccountIds.toTypedArray())
+            .mapTo<MessageAccountId>()
+            .toSet()
     }
 
     @Test
@@ -185,7 +234,7 @@ class MessageIntegrationTest : FullApplicationTest() {
 
         // then sender does not see it in received messages
         assertEquals(
-            listOf<MessageThread>(),
+            listOf(),
             getMessageThreads(employee1Account, employee1)
         )
 
@@ -674,6 +723,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         )
         .asUser(user)
         .response()
+        .also { assertEquals(200, it.second.statusCode) }
 
     private fun replyAsCitizen(
         user: AuthenticatedUser.Citizen,
@@ -740,6 +790,13 @@ class MessageIntegrationTest : FullApplicationTest() {
     )
         .asUser(user)
         .responseObject<Paged<SentMessage>>(objectMapper).third.get().data
+
+    private fun getReceivers(unitId: DaycareId, user: AuthenticatedUser): List<MessageReceiversResponse> = http.get(
+        "/messages/receivers",
+        listOf("unitId" to unitId)
+    )
+        .asUser(user)
+        .responseObject<List<MessageReceiversResponse>>(objectMapper).third.get()
 }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> = this.messages.map { Pair(it.sender.id, it.content) }

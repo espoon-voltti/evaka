@@ -358,7 +358,7 @@ WITH all_placement_ids AS (
         FROM message_account
         WHERE id = :accountId
     )
-    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
     AND NOT (
         SELECT EXISTS (
             SELECT 1
@@ -379,8 +379,8 @@ WITH all_placement_ids AS (
         FROM message_account
         WHERE id = :accountId
     )
-    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
-    AND Daterange(fg.start_date, fg.end_date, '[]') @> current_date
+    AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND daterange(fg.start_date, fg.end_date, '[]') @> current_date
     AND fg.conflict = false
     AND NOT (
         SELECT EXISTS (
@@ -576,24 +576,13 @@ fun Database.Read.getReceiversForNewMessage(
             )
             AND 'MESSAGING' = ANY(d.enabled_pilot_features)
         ), receivers AS (
-            SELECT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
+            SELECT DISTINCT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
             FROM children c
             JOIN guardian g ON g.child_id = c.child_id
             WHERE NOT EXISTS (
                 SELECT 1 FROM messaging_blocklist bl
                 WHERE bl.child_id = c.child_id
                 AND bl.blocked_recipient = g.guardian_id
-            )
-
-            UNION DISTINCT
-
-            SELECT c.child_id, c.group_id, c.group_name, fc.head_of_child AS receiver_id
-            FROM children c
-            JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
-            WHERE NOT EXISTS (
-                SELECT 1 FROM messaging_blocklist bl
-                WHERE bl.child_id = c.child_id
-                AND bl.blocked_recipient = fc.head_of_child
             )
         )
         SELECT
@@ -651,24 +640,13 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: UUID, accountIds: Set
             FROM child_acl_view
             WHERE employee_id = :employeeId
         ), receivers AS (
-            SELECT g.guardian_id AS receiver_id
+            SELECT DISTINCT g.guardian_id AS receiver_id
             FROM children c
             JOIN guardian g ON g.child_id = c.child_id
             WHERE NOT EXISTS (
                 SELECT 1 FROM messaging_blocklist bl
                 WHERE bl.child_id = c.child_id
                 AND bl.blocked_recipient = g.guardian_id
-            )
-
-            UNION DISTINCT
-
-            SELECT fc.head_of_child AS receiver_id
-            FROM children c
-            JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
-            WHERE NOT EXISTS (
-                SELECT 1 FROM messaging_blocklist bl
-                WHERE bl.child_id = c.child_id
-                AND bl.blocked_recipient = fc.head_of_child
             )
         )
         SELECT COUNT(*)
@@ -678,7 +656,6 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: UUID, accountIds: Set
 
     val numAccounts = createQuery(sql)
         .bind("employeeId", employeeId)
-        .bind("date", LocalDate.now())
         .bind("accountIds", accountIds.toTypedArray())
         .mapTo<Int>()
         .one()

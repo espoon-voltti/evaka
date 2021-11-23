@@ -11,7 +11,7 @@ import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
-  insertParentshipFixtures,
+  insertGuardianFixtures,
   resetDatabase,
   setAclForDaycares,
   upsertMessageAccounts
@@ -29,12 +29,12 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import { DaycarePlacement, PersonDetail } from 'e2e-test-common/dev-api/types'
 import { Page } from 'playwright'
-import MobileMessageEditorPage from '../../pages/mobile/message-editor'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
-import { enduserLogin } from '../../utils/user'
+import MobileMessageEditorPage from '../../pages/mobile/message-editor'
 import MobileMessagesPage from '../../pages/mobile/messages'
 import ThreadViewPage from '../../pages/mobile/thread-view'
 import { waitUntilEqual } from '../../utils'
+import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
@@ -99,12 +99,10 @@ beforeEach(async () => {
     }
   ])
   await upsertMessageAccounts()
-  await insertParentshipFixtures([
+  await insertGuardianFixtures([
     {
       childId: child.id,
-      headOfChildId: fixtures.enduserGuardianFixture.id,
-      startDate: '2021-01-01',
-      endDate: '2028-01-01'
+      guardianId: fixtures.enduserGuardianFixture.id
     }
   ])
 
