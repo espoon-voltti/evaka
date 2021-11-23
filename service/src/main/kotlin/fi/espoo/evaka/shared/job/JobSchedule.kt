@@ -29,12 +29,12 @@ data class ScheduledJobSettings(
         fun default(job: ScheduledJob) = when (job) {
             ScheduledJob.VardaUpdate -> ScheduledJobSettings(
                 enabled = false,
-                schedule = JobSchedule.daily(LocalTime.of(23, 30)),
+                schedule = JobSchedule.cron("0 0 23 * * 1,3,5"), // mon, wed, fri @ 23 pm
                 retryCount = 1
             )
             ScheduledJob.VardaReset -> ScheduledJobSettings(
                 enabled = true,
-                schedule = JobSchedule.daily(LocalTime.of(20, 0)),
+                schedule = JobSchedule.cron("0 0 20 * * 1,3,5"), // mon, wed, fri @ 20 pm
                 retryCount = 1
             )
             ScheduledJob.EndOfDayAttendanceUpkeep -> ScheduledJobSettings(
