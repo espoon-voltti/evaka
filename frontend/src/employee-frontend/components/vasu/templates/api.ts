@@ -6,7 +6,7 @@ import { Result, Success, Failure } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { client } from '../../../api/client'
-import { VasuContent } from '../vasu-content'
+import { mapVasuContent, VasuContent } from '../vasu-content'
 import { UUID } from 'lib-common/types'
 
 export interface VasuTemplateSummary {
@@ -90,6 +90,7 @@ export async function getVasuTemplate(id: UUID): Promise<Result<VasuTemplate>> {
     .then((res) =>
       Success.of({
         ...res.data,
+        content: mapVasuContent(res.data.content),
         valid: FiniteDateRange.parseJson(res.data.valid)
       })
     )

@@ -17,6 +17,7 @@ import FollowupQuestionElem from '../components/FollowupQuestion'
 import {
   CheckboxQuestion,
   Followup,
+  FollowupEntry,
   isCheckboxQuestion,
   isFollowup,
   isMultiSelectQuestion,
@@ -175,12 +176,12 @@ export function DynamicSections({
                       translations={translations}
                       onChange={
                         setContent
-                          ? (value: string) =>
+                          ? (value: FollowupEntry) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 = clone.sections[sectionIndex]
                                   .questions[questionIndex] as Followup
-                                question1.value = value
+                                question1.value.push(value)
                                 return clone
                               })
                           : undefined

@@ -2,20 +2,88 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState, useContext, useCallback } from 'react'
 import styled, { css } from 'styled-components'
+import { useTranslation } from 'employee-frontend/state/i18n'
+import { UserContext } from '../../../state/user'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { H2, Label } from 'lib-components/typography'
-import { Followup } from '../vasu-content'
-import { ValueOrNoRecord } from './ValueOrNoRecord'
+import { Dimmed, H2, Label } from 'lib-components/typography'
+import { Followup, FollowupEntry } from '../vasu-content'
 import { QuestionProps } from './question-props'
 import QuestionInfo from '../QuestionInfo'
 import { VasuTranslations } from 'lib-customizations/employee'
 import { defaultMargins } from 'lib-components/white-space'
+import Button from 'lib-components/atoms/buttons/Button'
+import LocalDate from 'lib-common/local-date'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { blueColors } from 'lib-customizations/common'
 
+const FollowupEntryElement = React.memo(function FollowupEntryElement({
+  entry
+}: {
+  entry: FollowupEntry
+}) {
+  return (
+    <Entry>
+      <EntryText>{entry.text}</EntryText>
+      <Dimmed>
+        {entry.date.format()} {entry.authorName}
+      </Dimmed>
+    </Entry>
+  )
+})
+
+const Entry = styled.div`
+  margin: ${defaultMargins.m} 0px;
+`
+
+const EntryText = styled.p`
+  white-space: pre-line;
+  margin: 0px 0px ${defaultMargins.xxs} 0px;
+`
+
+const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
+  entry,
+  onChange
+}: {
+  entry?: FollowupEntry
+  onChange: (entry: FollowupEntry) => void
+}) {
+  const { user } = useContext(UserContext)
+  const { i18n } = useTranslation()
+  const [textValue, setTextValue] = useState(entry ? entry.text : '')
+
+  const onSubmit = useCallback(() => {
+    onChange({
+      date: LocalDate.today(),
+      authorName: user?.name || 'unknown',
+      text: textValue
+    })
+    setTextValue('')
+  }, [onChange, user, textValue, setTextValue])
+
+  return (
+    <FollowupEntryInputRow fullWidth>
+      <TextArea value={textValue} onChange={setTextValue} />
+      <Button
+        primary
+        type="submit"
+        disabled={textValue === ''}
+        text={i18n.common.addNew}
+        onClick={onSubmit}
+      />
+    </FollowupEntryInputRow>
+  )
+})
+
+const FollowupEntryInputRow = styled(FixedSpaceRow)`
+  & > div {
+    flex: 1;
+  }
+`
+
 interface FollowupQuestionProps extends QuestionProps<Followup> {
-  onChange?: (value: string) => void
+  onChange?: (value: FollowupEntry) => void
   translations: VasuTranslations
 }
 
@@ -24,12 +92,12 @@ export default React.memo(function FollowupQuestion({
   question: { title, name, value, info },
   translations
 }: FollowupQuestionProps) {
-  const getEditorOrStaticText = () => {
-    if (!onChange) {
-      return <ValueOrNoRecord text={value} translations={translations} />
-    }
-    return <TextArea value={value} onChange={onChange} />
-  }
+  const addNewEntry = useCallback(
+    (entry: FollowupEntry) => {
+      onChange && onChange(entry)
+    },
+    [onChange]
+  )
 
   return (
     <FollowupQuestionContainer editable={!!onChange}>
@@ -37,7 +105,14 @@ export default React.memo(function FollowupQuestion({
       <QuestionInfo info={info}>
         <Label>{name}</Label>
       </QuestionInfo>
-      {getEditorOrStaticText()}
+      {value.length > 0 ? (
+        value.map((entry, ix) => (
+          <FollowupEntryElement key={ix} entry={entry} />
+        ))
+      ) : (
+        <Dimmed>{translations.noRecord}</Dimmed>
+      )}
+      {onChange && <FollowupEntryEditor onChange={addNewEntry} />}
     </FollowupQuestionContainer>
   )
 })

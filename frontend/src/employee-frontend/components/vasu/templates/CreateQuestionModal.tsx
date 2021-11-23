@@ -92,7 +92,7 @@ export default React.memo(function CreateQuestionModal({
           name: name,
           info: info,
           title: '',
-          value: ''
+          value: []
         }
     }
   }

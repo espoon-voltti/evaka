@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+
 export interface VasuContent {
   sections: VasuSection[]
 }
@@ -56,7 +59,13 @@ export interface QuestionOption {
 
 export interface Followup extends VasuQuestionCommon {
   title: string
-  value: string
+  value: FollowupEntry[]
+}
+
+export interface FollowupEntry {
+  date: LocalDate
+  authorName: string
+  text: string
 }
 
 export type VasuQuestion =
@@ -93,3 +102,26 @@ export function isMultiSelectQuestion(
 export function isFollowup(question: VasuQuestion): question is Followup {
   return question.type === 'FOLLOWUP'
 }
+
+export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
+  sections: content.sections.map(
+    (section: JsonOf<VasuSection>) =>
+      ({
+        ...section,
+        questions: section.questions.map((question: JsonOf<VasuQuestion>) =>
+          question.type === 'FOLLOWUP'
+            ? {
+                ...question,
+                value: (question.value as JsonOf<FollowupEntry[]>).map(
+                  (entry: JsonOf<FollowupEntry>) =>
+                    ({
+                      ...entry,
+                      date: LocalDate.parseIso(entry.date)
+                    } as FollowupEntry)
+                )
+              }
+            : question
+        )
+      } as VasuSection)
+  )
+})
