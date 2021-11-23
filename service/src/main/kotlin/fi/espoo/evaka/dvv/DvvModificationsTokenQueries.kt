@@ -33,7 +33,13 @@ LIMIT 1
 }
 
 fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
-    return createQuery("""SELECT * FROM dvv_modification_token WHERE token = :token""")
+    return createQuery(
+        """
+SELECT token, next_token, ssns_sent, modifications_received
+FROM dvv_modification_token
+WHERE token = :token
+        """.trimIndent()
+    )
         .bind("token", token)
         .mapTo<DvvModificationToken>()
         .one()

@@ -191,13 +191,59 @@ fun Database.Read.getOverlappingServiceNeeds(
 }
 
 fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
-    return createQuery("SELECT * FROM service_need_option ORDER BY display_order")
+    return createQuery(
+        """
+SELECT
+    id,
+    name_fi,
+    name_sv,
+    name_en,
+    valid_placement_type,
+    default_option,
+    fee_coefficient,
+    voucher_value_coefficient,
+    occupancy_coefficient,
+    daycare_hours_per_week,
+    part_day,
+    part_week,
+    fee_description_fi,
+    fee_description_sv,
+    voucher_value_description_fi,
+    voucher_value_description_sv,
+    updated
+FROM service_need_option
+ORDER BY display_order
+        """.trimIndent()
+    )
         .mapTo<ServiceNeedOption>()
         .list()
 }
 
 fun Database.Read.findServiceNeedOptionById(id: ServiceNeedOptionId): ServiceNeedOption? {
-    return createQuery("SELECT * FROM service_need_option WHERE id = :id")
+    return createQuery(
+        """
+SELECT
+    id,
+    name_fi,
+    name_sv,
+    name_en,
+    valid_placement_type,
+    default_option,
+    fee_coefficient,
+    voucher_value_coefficient,
+    occupancy_coefficient,
+    daycare_hours_per_week,
+    part_day,
+    part_week,
+    fee_description_fi,
+    fee_description_sv,
+    voucher_value_description_fi,
+    voucher_value_description_sv,
+    updated
+FROM service_need_option
+WHERE id = :id
+        """.trimIndent()
+    )
         .bind("id", id)
         .mapTo<ServiceNeedOption>()
         .firstOrNull()

@@ -287,7 +287,14 @@ fun Database.Read.fetchApplicationSummaries(
             count(*) OVER () AS total
         FROM application a
         JOIN (
-            SELECT *,
+            SELECT
+                id,
+                application_id,
+                created,
+                revision,
+                document,
+                updated,
+                latest,
             (
                 SELECT COALESCE(array_agg(e::UUID) FILTER (WHERE e IS NOT NULL), '{}'::UUID[])
                 FROM jsonb_array_elements_text(af.document -> 'apply' -> 'preferredUnits') e

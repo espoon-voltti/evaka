@@ -26,7 +26,17 @@ data class PreschoolTerm(
 }
 
 fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
-    return createQuery("SELECT * FROM preschool_term order by extended_term")
+    return createQuery(
+        """
+        SELECT
+            finnish_preschool,
+            swedish_preschool,
+            extended_term,
+            application_period
+        FROM preschool_term
+        ORDER BY extended_term
+        """.trimIndent()
+    )
         .mapTo<PreschoolTerm>()
         .list()
 }

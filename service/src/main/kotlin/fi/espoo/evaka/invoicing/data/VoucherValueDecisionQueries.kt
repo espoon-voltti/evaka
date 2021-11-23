@@ -151,7 +151,49 @@ INSERT INTO voucher_value_decision (
 }
 
 fun Database.Read.getValueDecisionsByIds(ids: List<VoucherValueDecisionId>): List<VoucherValueDecision> {
-    return createQuery("SELECT * FROM voucher_value_decision WHERE id = ANY(:ids)")
+    return createQuery(
+        """
+SELECT
+    id,
+    valid_from,
+    valid_to,
+    head_of_family_id,
+    status,
+    decision_number,
+    decision_type,
+    partner_id,
+    head_of_family_income,
+    partner_income,
+    family_size,
+    fee_thresholds,
+    child_id,
+    child_date_of_birth,
+    placement_type,
+    placement_unit_id,
+    service_need_fee_coefficient,
+    service_need_voucher_value_coefficient,
+    service_need_fee_description_fi,
+    service_need_fee_description_sv,
+    service_need_voucher_value_description_fi,
+    service_need_voucher_value_description_sv,
+    base_co_payment,
+    sibling_discount,
+    co_payment,
+    fee_alterations,
+    final_co_payment,
+    base_value,
+    age_coefficient,
+    capacity_factor,
+    voucher_value,
+    document_key,
+    approved_at,
+    approved_by,
+    sent_at,
+    created
+FROM voucher_value_decision
+WHERE id = ANY(:ids)
+        """.trimIndent()
+    )
         .bind("ids", ids.toTypedArray())
         .mapTo<VoucherValueDecision>()
         .toList()
@@ -165,7 +207,44 @@ fun Database.Read.findValueDecisionsForChild(
     // language=sql
     val sql =
         """
-SELECT * FROM voucher_value_decision
+SELECT
+    id,
+    valid_from,
+    valid_to,
+    head_of_family_id,
+    status,
+    decision_number,
+    decision_type,
+    partner_id,
+    head_of_family_income,
+    partner_income,
+    family_size,
+    fee_thresholds,
+    child_id,
+    child_date_of_birth,
+    placement_type,
+    placement_unit_id,
+    service_need_fee_coefficient,
+    service_need_voucher_value_coefficient,
+    service_need_fee_description_fi,
+    service_need_fee_description_sv,
+    service_need_voucher_value_description_fi,
+    service_need_voucher_value_description_sv,
+    base_co_payment,
+    sibling_discount,
+    co_payment,
+    fee_alterations,
+    final_co_payment,
+    base_value,
+    age_coefficient,
+    capacity_factor,
+    voucher_value,
+    document_key,
+    approved_at,
+    approved_by,
+    sent_at,
+    created
+FROM voucher_value_decision
 WHERE child_id = :childId
 AND (:period::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && :period)
 AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision_status[]))

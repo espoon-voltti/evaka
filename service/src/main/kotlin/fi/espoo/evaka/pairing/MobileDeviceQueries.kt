@@ -13,9 +13,16 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Read.getDevice(id: MobileDeviceId): MobileDevice {
-    // language=sql
-    val sql = "SELECT * FROM mobile_device WHERE id = :id AND deleted = false"
-    return createQuery(sql)
+    return createQuery(
+        """
+SELECT 
+    id,
+    name,
+    unit_id
+FROM mobile_device
+WHERE id = :id AND deleted = false
+        """.trimIndent()
+    )
         .bind("id", id)
         .mapTo<MobileDevice>()
         .firstOrNull() ?: throw NotFound("Device $id not found")
@@ -27,9 +34,16 @@ fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQu
     ?: throw NotFound("Device not found with token $token")
 
 fun Database.Read.listDevices(unitId: DaycareId): List<MobileDevice> {
-    // language=sql
-    val sql = "SELECT * FROM mobile_device WHERE unit_id = :unitId AND deleted = false"
-    return createQuery(sql)
+    return createQuery(
+        """
+SELECT 
+    id,
+    name,
+    unit_id
+FROM mobile_device
+WHERE unit_id = :unitId AND deleted = false
+        """.trimIndent()
+    )
         .bind("unitId", unitId)
         .mapTo<MobileDevice>()
         .list()

@@ -67,16 +67,47 @@ fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
 }
 
 fun Database.Read.getFeeAlteration(id: UUID): FeeAlteration? {
-    return createQuery("SELECT * FROM fee_alteration WHERE id = :id")
+    return createQuery(
+        """
+SELECT
+    id,
+    person_id,
+    type,
+    amount,
+    is_absolute,
+    valid_from,
+    valid_to,
+    notes,
+    updated_at,
+    updated_by
+FROM fee_alteration
+WHERE id = :id
+        """.trimIndent()
+    )
         .bind("id", id)
         .map(toFeeAlteration)
         .firstOrNull()
 }
 
 fun Database.Read.getFeeAlterationsForPerson(personId: UUID): List<FeeAlteration> {
-    val sql = "SELECT * FROM fee_alteration WHERE person_id = :personId ORDER BY valid_from DESC, valid_to DESC"
-
-    return createQuery(sql)
+    return createQuery(
+        """
+SELECT
+    id,
+    person_id,
+    type,
+    amount,
+    is_absolute,
+    valid_from,
+    valid_to,
+    notes,
+    updated_at,
+    updated_by
+FROM fee_alteration
+WHERE person_id = :personId
+ORDER BY valid_from DESC, valid_to DESC
+        """.trimIndent()
+    )
         .bind("personId", personId)
         .map(toFeeAlteration)
         .toList()
@@ -85,15 +116,25 @@ fun Database.Read.getFeeAlterationsForPerson(personId: UUID): List<FeeAlteration
 fun Database.Read.getFeeAlterationsFrom(personIds: List<UUID>, from: LocalDate): List<FeeAlteration> {
     if (personIds.isEmpty()) return emptyList()
 
-    val sql =
+    return createQuery(
         """
-            SELECT * FROM fee_alteration
-            WHERE
-                person_id = ANY(:personIds)
-                AND (valid_to IS NULL OR valid_to >= :from)
-            """
-
-    return createQuery(sql)
+SELECT
+    id,
+    person_id,
+    type,
+    amount,
+    is_absolute,
+    valid_from,
+    valid_to,
+    notes,
+    updated_at,
+    updated_by
+FROM fee_alteration
+WHERE
+    person_id = ANY(:personIds)
+    AND (valid_to IS NULL OR valid_to >= :from)
+        """.trimIndent()
+    )
         .bind("personIds", personIds.toTypedArray())
         .bind("from", from)
         .map(toFeeAlteration)

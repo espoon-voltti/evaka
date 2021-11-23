@@ -230,17 +230,23 @@ private fun generateNewValueDecisions(
 }
 
 private fun Database.Read.getServiceVoucherUnits(): List<DaycareId> {
-    // language=sql
     return createQuery("SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality")
         .mapTo<DaycareId>()
         .toList()
 }
 
 private fun Database.Read.getVoucherValues(from: LocalDate): List<VoucherValue> {
-    // language=sql
-    val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
-
-    return createQuery(sql)
+    return createQuery(
+        """
+SELECT
+    id,
+    validity,
+    base_value,
+    age_under_three_coefficient
+FROM voucher_value
+WHERE validity && daterange(:from, null, '[]')
+        """.trimIndent()
+    )
         .bind("from", from)
         .mapTo<VoucherValue>()
         .toList()
