@@ -144,7 +144,7 @@ describe('Value decisions', () => {
       decision2DateTo.subDays(1)
     )
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
-    await valueDecisionsPage.startDateWithinrange()
+    await valueDecisionsPage.startDateWithinRange()
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
   })
 
@@ -170,7 +170,6 @@ describe('Value decisions', () => {
 
     await valueDecisionsPage.toggleAllValueDecisions(true)
     await valueDecisionsPage.sendValueDecisions()
-    await runPendingAsyncJobs()
     await valueDecisionsPage.assertSentDecisionsCount(2)
   })
 

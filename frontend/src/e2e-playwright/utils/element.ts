@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
+import { Locator, Page } from 'playwright'
 import {
   BoundingBox,
   toCssString,
@@ -106,9 +106,11 @@ export const WithTextInput = <T extends Constructor<RawElement>>(
   }
 
 export class Checkbox extends WithChecked(RawElement, descendantInput) {}
+
 export class Radio extends WithChecked(RawElement, descendantInput) {}
 
 export class RawTextInput extends WithTextInput(RawElement) {}
+
 export class RawRadio extends WithChecked(RawElement) {}
 
 export class SelectionChip extends WithChecked(RawElement, descendantInput) {}
@@ -139,12 +141,42 @@ export class Collapsible extends RawElement {
   }
 }
 
-export class AsyncButton extends RawElement {
+export class AsyncButton {
+  readonly #root: Locator
+
+  constructor(root: Locator) {
+    this.#root = root
+  }
+
+  async click() {
+    await this.#root.click()
+  }
+
   async status() {
-    return this.getAttribute('data-status')
+    return this.#root.getAttribute('data-status')
   }
 
   async waitUntilSuccessful() {
     await waitUntilEqual(() => this.status(), 'success')
+  }
+}
+
+export class CheckboxLocator {
+  readonly #root: Locator
+
+  constructor(root: Locator) {
+    this.#root = root
+  }
+
+  async click() {
+    await this.#root.click()
+  }
+
+  async isChecked() {
+    return this.#root.locator('input').isChecked()
+  }
+
+  async waitUntilChecked(checked = true) {
+    await waitUntilEqual(() => this.isChecked(), checked)
   }
 }
