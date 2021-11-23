@@ -37,10 +37,12 @@ export function makeHelpers(useFailureMessage: () => string) {
           result.isReloading &&
           (!children || children.length === 1))
       ) {
-        return loading?.() ?? <SpinnerSegment />
+        if (loading) return loading()
+        return <SpinnerSegment />
       }
       if (result.isFailure) {
-        return failure?.() ?? <ErrorSegment title={failureMessage} />
+        if (failure) return failure()
+        return <ErrorSegment title={failureMessage} />
       }
       if (!children) {
         return null
