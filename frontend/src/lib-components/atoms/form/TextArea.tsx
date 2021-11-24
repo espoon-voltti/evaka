@@ -31,6 +31,7 @@ interface TextAreaInputProps extends BaseProps {
   hideErrorsBeforeTouched?: boolean
   required?: boolean
   inputRef?: RefObject<HTMLTextAreaElement>
+  wrapperClassName?: string
 }
 
 export default React.memo(function TextArea({
@@ -52,7 +53,8 @@ export default React.memo(function TextArea({
   'aria-describedby': ariaId,
   hideErrorsBeforeTouched,
   required,
-  inputRef
+  inputRef,
+  wrapperClassName = undefined
 }: TextAreaInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -71,7 +73,7 @@ export default React.memo(function TextArea({
   )
 
   return (
-    <div>
+    <div className={wrapperClassName}>
       <InputRow>
         <StyledTextArea
           value={value}
