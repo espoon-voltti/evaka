@@ -96,7 +96,11 @@ const StyledButton = styled.button<ButtonProps>`
 
   &:hover .icon-wrapper {
     color: ${({ theme: { colors }, ...props }) =>
-      props.gray ? colors.greyscale.dark : colors.main.primaryHover};
+      props.gray
+        ? colors.greyscale.dark
+        : props.white
+        ? colors.greyscale.white
+        : colors.main.primaryHover};
   }
 
   &:active .icon-wrapper {

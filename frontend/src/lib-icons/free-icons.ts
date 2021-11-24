@@ -90,7 +90,9 @@ import {
   faTruck,
   faPhone,
   faCalendarTimes,
-  faRedo
+  faRedo,
+  faUpRightAndDownLeftFromCenter,
+  faDownLeftAndUpRightToCenter
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faCommentAlt as farCommentAlt,
@@ -208,7 +210,9 @@ const icons: IconSet = {
   faComments,
   faTruck,
   faPhone,
-  faCalendarTimes
+  faCalendarTimes,
+  faUpRightAndDownLeftFromCenter,
+  faDownLeftAndUpRightToCenter
 }
 
 export default icons

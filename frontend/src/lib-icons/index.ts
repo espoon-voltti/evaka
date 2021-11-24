@@ -114,6 +114,8 @@ export interface IconSet {
   faTruck: IconDefinition
   faPhone: IconDefinition
   faCalendarTimes: IconDefinition
+  faUpRightAndDownLeftFromCenter: IconDefinition
+  faDownLeftAndUpRightToCenter: IconDefinition
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -227,3 +229,6 @@ export const farUsers = iconSet.farUsers
 export const faTruck = iconSet.faTruck
 export const faPhone = iconSet.faPhone
 export const faCalendarTimes = iconSet.faCalendarTimes
+export const faUpRightAndDownLeftFromCenter =
+  iconSet.faUpRightAndDownLeftFromCenter
+export const faDownLeftAndUpRightToCenter = iconSet.faDownLeftAndUpRightToCenter
