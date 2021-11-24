@@ -52,7 +52,6 @@ export interface AssistanceNeedsAndActionsReportRow {
   noActionCount: number
   noBasisCount: number
   otherActionCount: number
-  otherBasisCount: number
   unitId: UUID
   unitName: string
   unitProviderType: ProviderType

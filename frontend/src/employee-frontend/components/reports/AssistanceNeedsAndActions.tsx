@@ -181,16 +181,6 @@ function AssistanceNeedsAndActions() {
                   label: basis.nameFi,
                   key: `BASIS-${basis.value}`
                 })),
-                ...(featureFlags.assistanceBasisOtherEnabled
-                  ? [
-                      {
-                        label:
-                          i18n.childInformation.assistanceNeed.fields.basisTypes
-                            .OTHER,
-                        key: 'otherBasisCount'
-                      }
-                    ]
-                  : []),
                 {
                   label: i18n.reports.assistanceNeedsAndActions.basisMissing,
                   key: 'noBasisCount'
@@ -234,14 +224,6 @@ function AssistanceNeedsAndActions() {
                   {report.value.bases.map((basis) => (
                     <Th key={basis.value}>{basis.nameFi}</Th>
                   ))}
-                  {featureFlags.assistanceBasisOtherEnabled && (
-                    <Th>
-                      {
-                        i18n.childInformation.assistanceNeed.fields.basisTypes
-                          .OTHER
-                      }
-                    </Th>
-                  )}
                   <Th>{i18n.reports.assistanceNeedsAndActions.basisMissing}</Th>
                   {report.value.actions.map((action) => (
                     <Th key={action.value}>{action.nameFi}</Th>
@@ -292,9 +274,6 @@ function AssistanceNeedsAndActions() {
                         {row.basisCounts[basis.value] ?? 0}
                       </Td>
                     ))}
-                    {featureFlags.assistanceBasisOtherEnabled && (
-                      <Td>{row.otherBasisCount}</Td>
-                    )}
                     <Td>{row.noBasisCount}</Td>
                     {report.value.actions.map((action) => (
                       <Td key={action.value}>
@@ -327,13 +306,8 @@ function AssistanceNeedsAndActions() {
                     </Td>
                   ))}
                   <Td>
-                    {reducePropertySum(filteredRows, (r) => r.otherBasisCount)}
+                    {reducePropertySum(filteredRows, (r) => r.noBasisCount)}
                   </Td>
-                  {featureFlags.assistanceBasisOtherEnabled && (
-                    <Td>
-                      {reducePropertySum(filteredRows, (r) => r.noBasisCount)}
-                    </Td>
-                  )}
                   {report.value.actions.map((action) => (
                     <Td key={action.value}>
                       {reducePropertySum(

@@ -13,13 +13,10 @@ import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { isActiveDateRange } from '../../../utils/date'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { formatDecimal } from 'lib-common/utils/number'
-
-import { formatParagraphs } from '../../../utils/html-utils'
 import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
 import { scrollToRef } from '../../../utils'
 import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
-import { featureFlags } from 'lib-customizations/employee'
 
 export interface Props {
   assistanceNeed: AssistanceNeed
@@ -29,7 +26,7 @@ export interface Props {
   refSectionTop: MutableRefObject<HTMLElement | null>
 }
 
-function AssistanceNeedRow({
+export default React.memo(function AssistanceNeedRow({
   assistanceNeed,
   onReload,
   assistanceNeeds,
@@ -129,10 +126,6 @@ function AssistanceNeedRow({
                 )
               },
               {
-                label: i18n.childInformation.assistanceNeed.fields.description,
-                value: formatParagraphs(assistanceNeed.description)
-              },
-              {
                 label: i18n.childInformation.assistanceNeed.fields.bases,
                 value: (
                   <ul>
@@ -142,16 +135,6 @@ function AssistanceNeedRow({
                           <li key={basis.value}>{basis.nameFi}</li>
                         )
                     )}
-                    {featureFlags.assistanceBasisOtherEnabled &&
-                      assistanceNeed.otherBasis !== '' && (
-                        <li>
-                          {
-                            i18n.childInformation.assistanceNeed.fields
-                              .basisTypes.OTHER
-                          }
-                          : {assistanceNeed.otherBasis}
-                        </li>
-                      )}
                   </ul>
                 )
               }
@@ -161,6 +144,4 @@ function AssistanceNeedRow({
       </ToolbarAccordion>
     </div>
   )
-}
-
-export default AssistanceNeedRow
+})

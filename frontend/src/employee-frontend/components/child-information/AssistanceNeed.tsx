@@ -35,7 +35,7 @@ export interface Props {
   id: UUID
 }
 
-function AssistanceNeed({ id }: Props) {
+export default React.memo(function AssistanceNeed({ id }: Props) {
   const { i18n } = useTranslation()
   const [assistanceNeeds, loadData] = useApiState(
     () => getAssistanceNeeds(id),
@@ -110,6 +110,4 @@ function AssistanceNeed({ id }: Props) {
       </div>
     )
   )
-}
-
-export default AssistanceNeed
+})

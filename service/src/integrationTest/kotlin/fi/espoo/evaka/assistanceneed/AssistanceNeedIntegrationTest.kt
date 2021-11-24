@@ -53,9 +53,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
                 startDate = testDate(10),
                 endDate = testDate(20),
                 capacityFactor = 1.5,
-                description = "",
                 bases = emptySet(),
-                otherBasis = ""
             ),
             assistanceNeed
         )
@@ -71,7 +69,6 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
                 endDate = testDate(20),
                 capacityFactor = 1.5,
                 bases = allBases,
-                otherBasis = "foo"
             )
         )
 
@@ -82,9 +79,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
                 startDate = testDate(10),
                 endDate = testDate(20),
                 capacityFactor = 1.5,
-                description = "",
                 bases = allBases,
-                otherBasis = "foo"
             ),
             assistanceNeed
         )

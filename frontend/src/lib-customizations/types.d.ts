@@ -99,7 +99,6 @@ interface MapConfig {
  */
 interface BaseFeatureFlags {
   assistanceActionOtherEnabled: boolean
-  assistanceBasisOtherEnabled: boolean
   daycareApplication: {
     dailyTimesEnabled: boolean
   }

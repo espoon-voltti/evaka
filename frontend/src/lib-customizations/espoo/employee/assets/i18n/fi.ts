@@ -605,14 +605,7 @@ export const fi = {
         capacityFactor: 'Lapsen tuen kerroin',
         capacityFactorInfo:
           'Kapasiteetti määräytyy yleensä lapsen iän ja palvelun tarpeen mukaan. Mikäli lapsella on sellainen tuen tarve, joka lisää kapasiteettia, lisätään tuen tarpeen kerroin tähän. Tuen tarpeen ja kertoimen lisää varhaiserityiskasvatuksen koordinaattori.',
-        description: 'Kuvaus',
-        descriptionPlaceholder:
-          'Voit kirjoittaa tähän lisätietoa tuen tarpeesta.',
-        bases: 'Perusteet',
-        basisTypes: {
-          OTHER: 'Muu peruste'
-        },
-        otherBasisPlaceholder: 'Kirjoita muu peruste.'
+        bases: 'Perusteet'
       },
       create: 'Luo uusi tuen tarpeen ajanjakso',
       removeConfirmation: 'Haluatko poistaa tuen tarpeen?',

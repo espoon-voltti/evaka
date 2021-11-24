@@ -21,18 +21,14 @@ fun Database.Transaction.insertAssistanceNeed(user: AuthenticatedUser, childId: 
             start_date, 
             end_date, 
             updated_by, 
-            capacity_factor, 
-            description, 
-            other_basis                   
+            capacity_factor 
         )
         VALUES (
             :childId, 
             :startDate, 
             :endDate, 
             :updatedBy, 
-            :capacityFactor, 
-            :description,
-            :otherBasis
+            :capacityFactor 
         )
         RETURNING id
         """.trimIndent()
@@ -43,8 +39,6 @@ fun Database.Transaction.insertAssistanceNeed(user: AuthenticatedUser, childId: 
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.id)
         .bind("capacityFactor", data.capacityFactor)
-        .bind("description", data.description)
-        .bind("otherBasis", data.otherBasis)
         .mapTo<AssistanceNeedId>()
         .first()
 
@@ -70,12 +64,12 @@ fun Database.Read.getAssistanceNeedById(id: AssistanceNeedId): AssistanceNeed {
     //language=sql
     val sql =
         """
-        SELECT an.id, child_id, start_date, end_date, capacity_factor, description, array_remove(array_agg(value), null) AS bases, other_basis
+        SELECT an.id, child_id, start_date, end_date, capacity_factor, array_remove(array_agg(value), null) AS bases
         FROM assistance_need an
         LEFT JOIN assistance_basis_option_ref abor ON abor.need_id = an.id
         LEFT JOIN assistance_basis_option abo ON abo.id = abor.option_id
         WHERE an.id = :id
-        GROUP BY an.id, child_id, start_date, end_date, capacity_factor, description, other_basis
+        GROUP BY an.id, child_id, start_date, end_date, capacity_factor
         """.trimIndent()
     return createQuery(sql).bind("id", id).mapTo(AssistanceNeed::class.java).first()
 }
@@ -84,12 +78,12 @@ fun Database.Read.getAssistanceNeedsByChild(childId: UUID): List<AssistanceNeed>
     //language=sql
     val sql =
         """
-        SELECT an.id, child_id, start_date, end_date, capacity_factor, description, array_remove(array_agg(value), null) AS bases, other_basis
+        SELECT an.id, child_id, start_date, end_date, capacity_factor, array_remove(array_agg(value), null) AS bases
         FROM assistance_need an
         LEFT JOIN assistance_basis_option_ref abor ON abor.need_id = an.id
         LEFT JOIN assistance_basis_option abo ON abo.id = abor.option_id
         WHERE child_id = :childId
-        GROUP BY an.id, child_id, start_date, end_date, capacity_factor, description, other_basis
+        GROUP BY an.id, child_id, start_date, end_date, capacity_factor
         ORDER BY start_date DESC
         """.trimIndent()
     return createQuery(sql)
@@ -121,9 +115,7 @@ fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: Assis
             start_date = :startDate,
             end_date = :endDate,
             updated_by = :updatedBy,
-            capacity_factor = :capacityFactor,
-            description = :description,
-            other_basis = :otherBasis
+            capacity_factor = :capacityFactor
         WHERE id = :id
         RETURNING id
         """.trimIndent()
@@ -134,8 +126,6 @@ fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: Assis
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.id)
         .bind("capacityFactor", data.capacityFactor)
-        .bind("description", data.description)
-        .bind("otherBasis", data.otherBasis)
         .mapTo<AssistanceNeedId>()
         .firstOrNull() ?: throw NotFound("Assistance need $id not found")
 

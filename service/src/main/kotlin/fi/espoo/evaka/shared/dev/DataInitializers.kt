@@ -679,8 +679,8 @@ fun Database.Transaction.insertTestAssistanceNeed(assistanceNeed: DevAssistanceN
     val id = insertTestDataRow(
         assistanceNeed,
         """
-INSERT INTO assistance_need (id, updated_by, child_id, start_date, end_date, capacity_factor, description, other_basis)
-VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :capacityFactor, :description, :otherBasis)
+INSERT INTO assistance_need (id, updated_by, child_id, start_date, end_date, capacity_factor)
+VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :capacityFactor)
 RETURNING id
 """
     ).let(::AssistanceNeedId)

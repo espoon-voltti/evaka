@@ -11,10 +11,13 @@ import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import TextArea from 'lib-components/atoms/form/TextArea'
 import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
+import {
+  AssistanceNeedRequest,
+  createAssistanceNeed,
+  updateAssistanceNeed
+} from '../../../api/child/assistance-needs'
 import { formatDecimal } from 'lib-common/utils/number'
-import { textAreaRows } from '../../utils'
 
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
@@ -27,13 +30,7 @@ import FormActions from '../../../components/common/FormActions'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DivFitContent } from '../../common/styled/containers'
-import {
-  AssistanceNeedRequest,
-  createAssistanceNeed,
-  updateAssistanceNeed
-} from '../../../api/child/assistance-needs'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { featureFlags } from 'lib-customizations/employee'
 import { UUID } from 'lib-common/types'
 
 const CheckboxRow = styled.div`
@@ -63,10 +60,7 @@ interface FormState {
   startDate: LocalDate
   endDate: LocalDate
   capacityFactor: string
-  description: string
   bases: Set<string>
-  otherSelected: boolean
-  otherBasis: string
 }
 
 const coefficientRegex = /^\d(([.,])(\d){1,2})?$/
@@ -137,7 +131,7 @@ function checkHardConflict(form: FormState, props: Props): boolean {
   )
 }
 
-function AssistanceNeedForm(props: Props) {
+export default React.memo(function AssistanceNeedForm(props: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
 
@@ -147,15 +141,11 @@ function AssistanceNeedForm(props: Props) {
           startDate: LocalDate.today(),
           endDate: LocalDate.today(),
           capacityFactor: '1',
-          description: '',
-          bases: new Set(),
-          otherSelected: false,
-          otherBasis: ''
+          bases: new Set()
         }
       : {
           ...props.assistanceNeed,
-          capacityFactor: formatDecimal(props.assistanceNeed.capacityFactor),
-          otherSelected: props.assistanceNeed.otherBasis !== ''
+          capacityFactor: formatDecimal(props.assistanceNeed.capacityFactor)
         }
   const [form, setForm] = useState<FormState>(initialFormState)
 
@@ -195,8 +185,7 @@ function AssistanceNeedForm(props: Props) {
     const data: AssistanceNeedRequest = {
       ...form,
       capacityFactor: Number(form.capacityFactor.replace(',', '.')),
-      bases: [...form.bases],
-      otherBasis: form.otherSelected ? form.otherBasis : ''
+      bases: [...form.bases]
     }
 
     const apiCall = isCreate(props)
@@ -306,21 +295,6 @@ function AssistanceNeedForm(props: Props) {
             )
           },
           {
-            label: i18n.childInformation.assistanceNeed.fields.description,
-            value: (
-              <TextArea
-                value={form.description}
-                onChange={(value) => updateFormState({ description: value })}
-                rows={textAreaRows(form.description)}
-                placeholder={
-                  i18n.childInformation.assistanceNeed.fields
-                    .descriptionPlaceholder
-                }
-              />
-            ),
-            valueWidth: '100%'
-          },
-          {
             label: i18n.childInformation.assistanceNeed.fields.bases,
             value: (
               <div>
@@ -360,37 +334,6 @@ function AssistanceNeedForm(props: Props) {
                     </CheckboxRow>
                   )
                 )}
-                {featureFlags.assistanceBasisOtherEnabled ? (
-                  <CheckboxRow>
-                    <Checkbox
-                      label={
-                        i18n.childInformation.assistanceNeed.fields.basisTypes
-                          .OTHER
-                      }
-                      checked={form.otherSelected}
-                      onChange={(value) =>
-                        updateFormState({
-                          otherSelected: value,
-                          otherBasis: ''
-                        })
-                      }
-                    />
-                  </CheckboxRow>
-                ) : null}
-                {form.otherSelected && (
-                  <div style={{ width: '100%' }}>
-                    <InputField
-                      value={form.otherBasis}
-                      onChange={(value) =>
-                        updateFormState({ otherBasis: value })
-                      }
-                      placeholder={
-                        i18n.childInformation.assistanceNeed.fields
-                          .otherBasisPlaceholder
-                      }
-                    />
-                  </div>
-                )}
               </div>
             ),
             valueWidth: '100%'
@@ -417,6 +360,4 @@ function AssistanceNeedForm(props: Props) {
       />
     </form>
   )
-}
-
-export default AssistanceNeedForm
+})
