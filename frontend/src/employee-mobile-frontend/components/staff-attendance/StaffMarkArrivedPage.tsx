@@ -168,27 +168,25 @@ export default React.memo(function StaffMarkArrivedPage() {
                         : undefined
                     }
                   />
-                  {renderResult(
-                    combine(groupOptions, unitInfoResponse),
-                    ([groupOptions, { groups }]) =>
-                      groupOptions.length > 1 ? (
-                        <>
-                          <Gap />
-                          <Label>{i18n.common.group}</Label>
-                          <Select
-                            selectedItem={attendanceGroup}
-                            items={groupOptions}
-                            getItemLabel={(item) =>
-                              groups.find((group) => group.id === item)?.name ??
-                              ''
-                            }
-                            placeholder={i18n.attendances.chooseGroup}
-                            onChange={(group) =>
-                              setAttendanceGroup(group ?? undefined)
-                            }
-                          />
-                        </>
-                      ) : null
+                  {renderResult(groupOptions, (groupOptions) =>
+                    groupOptions.length > 1 ? (
+                      <>
+                        <Gap />
+                        <Label>{i18n.common.group}</Label>
+                        <Select
+                          selectedItem={attendanceGroup}
+                          items={groupOptions}
+                          getItemLabel={(item) =>
+                            unitInfo.groups.find((group) => group.id === item)
+                              ?.name ?? ''
+                          }
+                          placeholder={i18n.attendances.chooseGroup}
+                          onChange={(group) =>
+                            setAttendanceGroup(group ?? undefined)
+                          }
+                        />
+                      </>
+                    ) : null
                   )}
                   <Gap />
                 </TimeWrapper>

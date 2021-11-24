@@ -381,5 +381,11 @@ export const fi = {
       modalMessage:
         'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
     }
+  },
+  units: {
+    title: 'Yksiköt',
+    children: 'Lapsia',
+    staff: 'Henkilökuntaa',
+    occupancy: 'Yksikön käyttöaste nyt'
   }
 }

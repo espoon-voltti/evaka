@@ -46,11 +46,15 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
   const userNames = useMemo(
     () =>
       combine(user, unitInfoResponse)
-        .map(([user, unit]) =>
-          user?.employeeId
-            ? unit.staff.find(({ id }) => id === user.employeeId)
-            : undefined
-        )
+        .map(([user, unitInfo]) => {
+          const employeeId = user?.employeeId
+
+          if (!employeeId) {
+            return undefined
+          }
+
+          return unitInfo.staff.find(({ id }) => id === employeeId)
+        })
         .map(getUserName)
         .getOrElse(getUserName(undefined)),
     [unitInfoResponse, user]

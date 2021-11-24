@@ -78,11 +78,10 @@ export default React.memo(function StaffPage() {
   const today = useMemo(() => LocalDate.today(), [])
 
   return renderResult(
-    combine(unitInfoResponse, unitOrGroupStaffAttendance, occupancy),
-    ([unitInfo, foobar, occupancy]) => (
+    combine(unitOrGroupStaffAttendance, occupancy),
+    ([staffAttendance, occupancy]) => (
       <>
         <TopBarWithGroupSelector
-          title={unitInfo.name}
           selectedGroup={selectedGroup}
           onChangeGroup={changeGroup}
         />
@@ -92,9 +91,9 @@ export default React.memo(function StaffPage() {
             key={selectedGroup?.id}
             groupId={selectedGroup?.id}
             date={today}
-            count={foobar.count}
-            countOther={foobar.countOther}
-            updated={foobar.updated}
+            count={staffAttendance.count}
+            countOther={staffAttendance.countOther}
+            updated={staffAttendance.updated}
             realizedOccupancy={occupancy}
             onConfirm={updateAttendance}
           />

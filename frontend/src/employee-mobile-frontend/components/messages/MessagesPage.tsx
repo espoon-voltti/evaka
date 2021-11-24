@@ -20,7 +20,6 @@ import colors from 'lib-customizations/common'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
-import { combine } from 'lib-common/api'
 
 export default function MessagesPage() {
   const history = useHistory()
@@ -74,57 +73,46 @@ export default function MessagesPage() {
       <ThreadView thread={selectedThread} onBack={onBack} />
     </ContentArea>
   ) : (
-    renderResult(
-      combine(unitInfoResponse, receivedMessages),
-      ([unit, messages]) => (
-        <ContentArea
-          opaque
-          fullHeight
-          paddingVertical={'zero'}
-          paddingHorizontal={'zero'}
-        >
-          <TopBarWithGroupSelector
-            title={unit.name}
-            selectedGroup={selectedGroup}
-            onChangeGroup={changeGroup}
-            groups={unit.groups.filter((g) =>
-              groupAccounts
-                .flatMap((ga) => ga.daycareGroup?.id || [])
-                .includes(g.id)
-            )}
-          />
-          <HeaderContainer>
-            <H1 noMargin={true}>{i18n.messages.title}</H1>
-          </HeaderContainer>
-          {messages.length > 0 ? (
-            messages.map((thread) => (
-              <MessagePreview
-                thread={thread}
-                hasUnreadMessages={thread.messages.some(
-                  (item) =>
-                    !item.readAt &&
-                    item.sender.id !== personalAccount?.id &&
-                    !groupAccounts.some(
-                      (ga) => ga.account.id === item.sender.id
-                    )
-                )}
-                onClick={() => {
-                  selectThread(thread)
-                }}
-                key={thread.id}
-              />
-            ))
-          ) : (
-            <EmptyMessageFolder
-              loading={receivedMessages.isLoading}
-              iconColor={colors.greyscale.medium}
-              text={i18n.messages.emptyInbox}
+    renderResult(receivedMessages, (messages) => (
+      <ContentArea
+        opaque
+        fullHeight
+        paddingVertical={'zero'}
+        paddingHorizontal={'zero'}
+      >
+        <TopBarWithGroupSelector
+          selectedGroup={selectedGroup}
+          onChangeGroup={changeGroup}
+        />
+        <HeaderContainer>
+          <H1 noMargin={true}>{i18n.messages.title}</H1>
+        </HeaderContainer>
+        {messages.length > 0 ? (
+          messages.map((thread) => (
+            <MessagePreview
+              thread={thread}
+              hasUnreadMessages={thread.messages.some(
+                (item) =>
+                  !item.readAt &&
+                  item.sender.id !== personalAccount?.id &&
+                  !groupAccounts.some((ga) => ga.account.id === item.sender.id)
+              )}
+              onClick={() => {
+                selectThread(thread)
+              }}
+              key={thread.id}
             />
-          )}
-          <BottomNavBar selected="messages" />
-        </ContentArea>
-      )
-    )
+          ))
+        ) : (
+          <EmptyMessageFolder
+            loading={receivedMessages.isLoading}
+            iconColor={colors.greyscale.medium}
+            text={i18n.messages.emptyInbox}
+          />
+        )}
+        <BottomNavBar selected="messages" />
+      </ContentArea>
+    ))
   )
 }
 

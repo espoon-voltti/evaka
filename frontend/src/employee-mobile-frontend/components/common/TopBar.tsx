@@ -6,7 +6,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faTimes } from 'lib-icons'
+import { faArrowLeft, faTimes } from 'lib-icons'
 import React, { PropsWithChildren } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
@@ -42,11 +42,25 @@ const Title = styled.div`
 
 interface Props {
   title: string
+  onBack?: () => void
 }
 
-function TopBarWrapper({ children, title }: PropsWithChildren<Props>) {
+function TopBarWrapper({ children, title, onBack }: PropsWithChildren<Props>) {
+  const { i18n } = useTranslation()
+
   return (
     <StickyTopBar>
+      {onBack ? (
+        <TopBarIconContainer>
+          <IconButton
+            icon={faArrowLeft}
+            white
+            onClick={onBack}
+            altText={i18n.common.back}
+            data-qa="go-back"
+          />
+        </TopBarIconContainer>
+      ) : null}
       <Title>
         <Label data-qa="top-bar-title">{title}</Label>
       </Title>
@@ -55,9 +69,9 @@ function TopBarWrapper({ children, title }: PropsWithChildren<Props>) {
   )
 }
 
-export const TopBar = React.memo(function TopBar({ title }: Props) {
+export const TopBar = React.memo(function TopBar(props: Props) {
   return (
-    <TopBarWrapper title={title}>
+    <TopBarWrapper {...props}>
       <LoggedInUser />
     </TopBarWrapper>
   )

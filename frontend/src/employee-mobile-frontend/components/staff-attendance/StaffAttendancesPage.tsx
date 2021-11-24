@@ -120,7 +120,6 @@ export default React.memo(function StaffAttendancesPage() {
   return renderResult(unitInfoResponse, (unit) => (
     <>
       <TopBarWithGroupSelector
-        title={unit.name}
         selectedGroup={
           groupId === 'all'
             ? undefined

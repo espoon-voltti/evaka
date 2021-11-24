@@ -24,12 +24,20 @@ export default React.memo(function MobileLander() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
 
-  return renderResult(user, (u) =>
-    u?.unitIds ? (
-      <Redirect
-        to={`/units/${u.unitIds[0]}/groups/all/child-attendance/list/coming`}
-      />
-    ) : (
+  return renderResult(user, (u) => {
+    if (u !== null) {
+      if (u.unitIds.length === 1) {
+        return (
+          <Redirect
+            to={`/units/${u.unitIds[0]}/groups/all/child-attendance/list/coming`}
+          />
+        )
+      }
+
+      return <Redirect to="/units" />
+    }
+
+    return (
       <FullHeightContainer spaced>
         <Top>
           <Img src={EvakaLogo} />
@@ -46,5 +54,5 @@ export default React.memo(function MobileLander() {
         </Bottom>
       </FullHeightContainer>
     )
-  )
+  })
 })

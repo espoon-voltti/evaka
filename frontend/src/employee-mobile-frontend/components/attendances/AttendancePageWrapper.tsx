@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { combine } from 'lib-common/api'
 import {
   AttendanceResponse,
   Child,
@@ -33,14 +32,13 @@ import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
 
 export default React.memo(function AttendancePageWrapper() {
-  const { i18n } = useTranslation()
   const { unitId, groupId, attendanceStatus } = useParams<{
     unitId: string
     groupId: string
     attendanceStatus: ChildAttendanceUIState
   }>()
   const history = useHistory()
-
+  const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
 
   const selectedGroup = useMemo(
@@ -96,33 +94,29 @@ export default React.memo(function AttendancePageWrapper() {
     [i18n, attendanceResponse]
   )
 
-  return renderResult(
-    combine(unitInfoResponse, attendanceResponse),
-    ([unitInfo, attendance]) => (
-      <>
-        <ChildSearch
-          unitId={unitId}
-          show={showSearch}
-          toggleShow={toggleSearch}
-          attendanceResponse={attendance}
-        />
-        <TopBarWithGroupSelector
-          title={unitInfo.name}
-          selectedGroup={selectedGroup}
-          onChangeGroup={changeGroup}
-          toggleSearch={toggleSearch}
-          countInfo={countInfo}
-        />
-        <AttendanceList
-          unitId={unitId}
-          groupId={groupId}
-          attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
-          attendanceResponse={attendance}
-        />
-        <BottomNavbar selected="child" />
-      </>
-    )
-  )
+  return renderResult(attendanceResponse, (attendance) => (
+    <>
+      <ChildSearch
+        unitId={unitId}
+        show={showSearch}
+        toggleShow={toggleSearch}
+        attendanceResponse={attendance}
+      />
+      <TopBarWithGroupSelector
+        selectedGroup={selectedGroup}
+        onChangeGroup={changeGroup}
+        toggleSearch={toggleSearch}
+        countInfo={countInfo}
+      />
+      <AttendanceList
+        unitId={unitId}
+        groupId={groupId}
+        attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
+        attendanceResponse={attendance}
+      />
+      <BottomNavbar selected="child" />
+    </>
+  ))
 })
 
 const ChildSearch = React.memo(function Search({
