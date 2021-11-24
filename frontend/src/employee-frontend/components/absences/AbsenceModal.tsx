@@ -38,15 +38,11 @@ export default React.memo(function AbsenceModal({
     <FormModal
       title=""
       className="absence-modal"
-      resolve={{
-        action: onSave,
-        label: i18n.absences.modal.saveButton,
-        disabled: saveDisabled
-      }}
-      reject={{
-        action: onCancel,
-        label: i18n.absences.modal.cancelButton
-      }}
+      resolveAction={onSave}
+      resolveLabel={i18n.absences.modal.saveButton}
+      resolveDisabled={saveDisabled}
+      rejectAction={onCancel}
+      rejectLabel={i18n.absences.modal.cancelButton}
     >
       <FixedSpaceColumn spacing={'L'}>
         <Label>

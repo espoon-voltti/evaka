@@ -72,15 +72,11 @@ export default React.memo(function CreatePersonModal({
       iconColour={'blue'}
       icon={faPlus}
       title={i18n.personSearch.createNewPerson.title}
-      resolve={{
-        action: onConfirm,
-        label: i18n.personSearch.createNewPerson.modalConfirmLabel,
-        disabled: requestInFlight || !validateForm(form)
-      }}
-      reject={{
-        action: closeModal,
-        label: i18n.common.cancel
-      }}
+      resolveAction={onConfirm}
+      resolveLabel={i18n.personSearch.createNewPerson.modalConfirmLabel}
+      resolveDisabled={requestInFlight || !validateForm(form)}
+      rejectAction={closeModal}
+      rejectLabel={i18n.common.cancel}
     >
       <ModalContent>
         <ListGrid labelWidth="min-content">

@@ -63,15 +63,11 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
   return (
     <FormModal
       title={i18n.personProfile.addSsn}
-      resolve={{
-        action: submit,
-        label: i18n.common.confirm,
-        disabled: submitting || !isSsnValid(ssn.toUpperCase())
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.common.cancel
-      }}
+      resolveAction={submit}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={submitting || !isSsnValid(ssn.toUpperCase())}
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
     >
       <InputField
         value={ssn}

@@ -155,26 +155,22 @@ export default React.memo(function ReservationModal({
     <AsyncFormModal
       mobileFullScreen
       title={i18n.calendar.reservationModal.title}
-      resolve={{
-        action: (cancel) => {
-          if (validationResult.errors) {
-            setShowAllErrors(true)
-            return cancel()
-          } else {
-            return postReservations(validationResult.requestPayload)
-          }
-        },
-        onSuccess: () => {
-          onReload()
-          onClose()
-        },
-        label: i18n.common.confirm,
-        disabled: formData.selectedChildren.length === 0
+      resolveAction={(cancel) => {
+        if (validationResult.errors) {
+          setShowAllErrors(true)
+          return cancel()
+        } else {
+          return postReservations(validationResult.requestPayload)
+        }
       }}
-      reject={{
-        action: onClose,
-        label: i18n.common.cancel
+      onSuccess={() => {
+        onReload()
+        onClose()
       }}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={formData.selectedChildren.length === 0}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
     >
       <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
       <Label>{i18n.calendar.reservationModal.selectChildrenLabel}</Label>

@@ -118,15 +118,11 @@ function CreatePlacementModal({ childId, reload }: Props) {
       text={i18n.childInformation.placements.createPlacement.text}
       icon={faMapMarkerAlt}
       iconColour={'blue'}
-      resolve={{
-        action: submitForm,
-        label: i18n.common.confirm,
-        disabled: errors.length > 0 || submitting
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.common.cancel
-      }}
+      resolveAction={submitForm}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={errors.length > 0 || submitting}
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
         <section>

@@ -170,15 +170,11 @@ export default React.memo(function GroupPlacementModal({
       title={i18n.unit.placements.modal.createTitle}
       icon={faChild}
       iconColour={'blue'}
-      resolve={{
-        action: submitForm,
-        label: i18n.common.confirm,
-        disabled: form.errors.length > 0
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.common.cancel
-      }}
+      resolveAction={submitForm}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={form.errors.length > 0}
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
         <section>

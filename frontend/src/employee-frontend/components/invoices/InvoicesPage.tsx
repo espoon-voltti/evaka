@@ -107,15 +107,11 @@ const Modal = React.memo(function Modal({
       iconColour={'blue'}
       title={i18n.invoices.sendModal.title}
       icon={faEnvelope}
-      resolve={{
-        action: () => sendInvoices({ invoiceDate, dueDate }),
-        label: i18n.common.confirm,
-        onSuccess: onSendDone
-      }}
-      reject={{
-        action: actions.closeModal,
-        label: i18n.common.cancel
-      }}
+      resolveAction={() => sendInvoices({ invoiceDate, dueDate })}
+      resolveLabel={i18n.common.confirm}
+      onSuccess={onSendDone}
+      rejectAction={actions.closeModal}
+      rejectLabel={i18n.common.cancel}
       data-qa="send-invoices-dialog"
     >
       <ModalContent>

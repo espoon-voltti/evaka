@@ -127,15 +127,11 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           }
           icon={faChild}
           iconColour={'blue'}
-          resolve={{
-            action: childFormActions,
-            label: i18n.common.confirm,
-            disabled: !form.child || validationErrors.length > 0
-          }}
-          reject={{
-            action: clearUiMode,
-            label: i18n.common.cancel
-          }}
+          resolveAction={childFormActions}
+          resolveLabel={i18n.common.confirm}
+          resolveDisabled={!form.child || validationErrors.length > 0}
+          rejectAction={clearUiMode}
+          rejectLabel={i18n.common.cancel}
         >
           {errorStatusCode === 409 && (
             <section className="error">

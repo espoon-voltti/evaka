@@ -34,30 +34,27 @@ export default React.memo(function CopyTemplateModal({
   return (
     <FormModal
       title={t.templateModal.copyTitle}
-      resolve={{
-        action: () => {
-          setSubmitting(true)
-          void copyVasuTemplate(
-            template.id,
-            name,
-            new FiniteDateRange(startDate, endDate)
-          ).then((res) => {
-            setSubmitting(false)
-            if (res.isSuccess) {
-              onSuccess(res.value)
-            }
-          })
-        },
-        label: i18n.common.confirm,
-        disabled:
-          submitting ||
-          endDate.isEqualOrBefore(startDate) ||
-          name.trim().length === 0
+      resolveAction={() => {
+        setSubmitting(true)
+        void copyVasuTemplate(
+          template.id,
+          name,
+          new FiniteDateRange(startDate, endDate)
+        ).then((res) => {
+          setSubmitting(false)
+          if (res.isSuccess) {
+            onSuccess(res.value)
+          }
+        })
       }}
-      reject={{
-        action: onCancel,
-        label: i18n.common.cancel
-      }}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={
+        submitting ||
+        endDate.isEqualOrBefore(startDate) ||
+        name.trim().length === 0
+      }
+      rejectAction={onCancel}
+      rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">

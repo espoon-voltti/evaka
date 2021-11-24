@@ -2,54 +2,54 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { FormEvent, useCallback } from 'react'
 import Button from '../../atoms/buttons/Button'
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import { Gap } from '../../white-space'
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
 
 type FormModalProps = ModalBaseProps & {
-  resolve: {
-    action: () => void
-    label: string
-    disabled?: boolean
-  }
-  reject: {
-    action: () => void
-    label: string
-  }
+  resolveAction: () => void
+  resolveLabel: string
+  resolveDisabled?: boolean
+  rejectAction: () => void
+  rejectLabel: string
 }
 
 export default React.memo(function FormModal({
   children,
-  resolve,
-  reject,
+  resolveAction,
+  resolveLabel,
+  resolveDisabled,
+  rejectAction,
+  rejectLabel,
   ...props
 }: FormModalProps) {
+  const onSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (!resolveDisabled) resolveAction()
+    },
+    [resolveAction, resolveDisabled]
+  )
+
   return (
-    <BaseModal {...props} close={reject?.action}>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          if (!resolve.disabled) resolve.action()
-        }}
-      >
-        {children}
-      </form>
+    <BaseModal {...props} close={rejectAction}>
+      <form onSubmit={onSubmit}>{children}</form>
       <ModalButtons $singleButton={!('reject' in props)}>
         <Button
-          onClick={reject.action}
+          onClick={rejectAction}
           data-qa="modal-cancelBtn"
-          text={reject.label}
+          text={rejectLabel}
         />
         <Gap horizontal size={'xs'} />
         <Button
           primary
           type="submit"
           data-qa="modal-okBtn"
-          onClick={resolve.action}
-          disabled={resolve.disabled}
-          text={resolve.label}
+          onClick={resolveAction}
+          disabled={resolveDisabled}
+          text={resolveLabel}
         />
       </ModalButtons>
     </BaseModal>
@@ -57,41 +57,42 @@ export default React.memo(function FormModal({
 })
 
 type AsyncModalProps = ModalBaseProps & {
-  resolve: {
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    action: (cancel: () => Promise<void>) => Promise<any>
-    label: string
-    disabled?: boolean
-    onSuccess: () => void
-  }
-  reject: {
-    action: () => void
-    label: string
-  }
+  resolveAction: (
+    cancel: () => Promise<void>
+  ) => Promise<void | { isFailure: boolean }>
+  resolveLabel: string
+  resolveDisabled?: boolean
+  onSuccess: () => void
+  rejectAction: () => void
+  rejectLabel: string
 }
 
 export const AsyncFormModal = React.memo(function AsyncFormModal({
   children,
-  resolve,
-  reject,
+  resolveAction,
+  resolveLabel,
+  resolveDisabled,
+  onSuccess,
+  rejectAction,
+  rejectLabel,
   ...props
 }: AsyncModalProps) {
   return (
-    <BaseModal {...props} close={reject.action}>
+    <BaseModal {...props} close={rejectAction}>
       {children}
       <ModalButtons $singleButton={!('reject' in props)}>
         <Button
-          onClick={reject.action}
+          onClick={rejectAction}
           data-qa="modal-cancelBtn"
-          text={reject.label}
+          text={rejectLabel}
         />
         <Gap horizontal size={'xs'} />
         <AsyncButton
           primary
-          text={resolve.label}
-          disabled={resolve.disabled}
-          onClick={resolve.action}
-          onSuccess={resolve.onSuccess}
+          text={resolveLabel}
+          disabled={resolveDisabled}
+          onClick={resolveAction}
+          onSuccess={onSuccess}
           data-qa="modal-okBtn"
         />
       </ModalButtons>

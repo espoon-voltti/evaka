@@ -161,15 +161,11 @@ function CreateApplicationModal({
       title={i18nView.modalTitle}
       icon={faFileAlt}
       iconColour={'blue'}
-      resolve={{
-        action: submit,
-        label: i18nView.createButton,
-        disabled: !canSubmit()
-      }}
-      reject={{
-        action: clearUiMode,
-        label: i18n.common.cancel
-      }}
+      resolveAction={submit}
+      resolveLabel={i18nView.createButton}
+      resolveDisabled={!canSubmit()}
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn spacing="L">
         <div>
