@@ -31,7 +31,7 @@ class PresenceReportController {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ResponseEntity<List<PresenceReportRow>> {
         Audit.PresenceReportRead.log()
-        user.requireOneOfRoles(UserRole.DIRECTOR, UserRole.ADMIN)
+        user.requireOneOfRoles(UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
 

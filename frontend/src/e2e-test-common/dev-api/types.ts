@@ -301,8 +301,8 @@ export type UserRole =
   | 'STAFF'
   | 'END_USER'
   | 'DIRECTOR'
+  | 'REPORT_VIEWER'
   | 'MOBILE'
-  | 'MANAGER'
   | 'SPECIAL_EDUCATION_TEACHER'
 
 export interface Application {

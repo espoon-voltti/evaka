@@ -5,7 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.youngChildOccupancyCoefficient
 import fi.espoo.evaka.placement.PlacementType
@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -32,15 +31,13 @@ class RawReportController {
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
-    ): ResponseEntity<List<RawReportRow>> {
+    ): List<RawReportRow> {
         Audit.RawReportRead.log()
-        user.requireOneOfRoles(UserRole.DIRECTOR, UserRole.ADMIN)
+        user.requireOneOfRoles(UserRole.REPORT_VIEWER, UserRole.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 
-        return db.read {
-            it.getRawRows(from, to)
-        }.let(::ok)
+        return db.read { it.getRawRows(from, to) }
     }
 }
 
@@ -51,6 +48,8 @@ private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawRe
 SELECT
     t::date as day,
     p.id as child_id,
+    p.first_name,
+    p.last_name,
     p.date_of_birth,
     date_part('year', p.date_of_birth) as birth_year,
     date_part('year', age(t::date, p.date_of_birth)) as age,
@@ -123,6 +122,8 @@ ORDER BY p.id, t
 data class RawReportRow(
     val day: LocalDate,
     val childId: UUID,
+    val firstName: String,
+    val lastName: String,
     val dateOfBirth: LocalDate,
     val postOffice: String,
     val age: Int,
@@ -132,7 +133,7 @@ data class RawReportRow(
     val unitName: String,
     val careArea: String,
     val unitType: UnitType?,
-    val unitProviderType: String,
+    val unitProviderType: ProviderType,
     val costCenter: String?,
     val daycareGroupId: GroupId?,
     val groupName: String?,

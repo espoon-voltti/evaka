@@ -63,7 +63,8 @@ class EmployeeController {
                 UserRole.FINANCE_ADMIN,
                 UserRole.UNIT_SUPERVISOR,
                 UserRole.STAFF,
-                UserRole.DIRECTOR
+                UserRole.DIRECTOR,
+                UserRole.REPORT_VIEWER,
             )
         }
         return db.read { it.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }

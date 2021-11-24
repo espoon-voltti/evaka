@@ -106,6 +106,7 @@ export type UserRole =
   | 'END_USER'
   | 'CITIZEN_WEAK'
   | 'ADMIN'
+  | 'REPORT_VIEWER'
   | 'DIRECTOR'
   | 'FINANCE_ADMIN'
   | 'SERVICE_WORKER'

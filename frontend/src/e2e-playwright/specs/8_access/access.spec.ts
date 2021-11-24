@@ -50,10 +50,18 @@ beforeAll(async () => {
   await insertEmployeeFixture({
     id: config.directorAad,
     externalId: `espoo-ad:${config.directorAad}`,
+    email: 'hemmo.hallinto@evaka.test',
+    firstName: 'Hemmo',
+    lastName: 'Hallinto',
+    roles: ['DIRECTOR']
+  })
+  await insertEmployeeFixture({
+    id: config.reportViewerAad,
+    externalId: `espoo-ad:${config.reportViewerAad}`,
     email: 'raisa.raportoija@evaka.test',
     firstName: 'Raisa',
     lastName: 'Raportoija',
-    roles: ['DIRECTOR']
+    roles: ['REPORT_VIEWER']
   })
   await insertEmployeeFixture({
     id: config.unitSupervisorAad,
@@ -151,6 +159,19 @@ describe('Child information page', () => {
 
   test('Director sees only the reports tab', async () => {
     await employeeLogin(page, 'DIRECTOR')
+    await page.goto(config.employeeUrl)
+    await nav.tabsVisible({
+      applications: false,
+      units: false,
+      search: false,
+      finance: false,
+      reports: true,
+      messages: false
+    })
+  })
+
+  test('Reports sees only the reports tab', async () => {
+    await employeeLogin(page, 'REPORT_VIEWER')
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,

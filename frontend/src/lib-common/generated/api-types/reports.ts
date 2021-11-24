@@ -325,11 +325,13 @@ export interface RawReportRow {
   dateOfBirth: LocalDate
   day: LocalDate
   daycareGroupId: UUID | null
+  firstName: string
   groupName: string | null
   hasAssistanceNeed: boolean
   hasServiceNeed: boolean
   hoursPerWeek: number
   language: string | null
+  lastName: string
   partDay: boolean
   partWeek: boolean
   placementType: PlacementType
@@ -337,7 +339,7 @@ export interface RawReportRow {
   shiftCare: boolean
   unitId: UUID
   unitName: string
-  unitProviderType: string
+  unitProviderType: ProviderType
   unitType: UnitType | null
 }
 

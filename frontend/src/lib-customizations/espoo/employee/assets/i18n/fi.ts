@@ -2872,7 +2872,8 @@ export const fi = {
   roles: {
     adRoles: {
       ADMIN: 'Pääkäyttäjä',
-      DIRECTOR: 'Raportointi',
+      DIRECTOR: 'Hallinto',
+      REPORT_VIEWER: 'Raportointi',
       FINANCE_ADMIN: 'Talous',
       SERVICE_WORKER: 'Palveluohjaus',
       SPECIAL_EDUCATION_TEACHER: 'Erityisopettaja',

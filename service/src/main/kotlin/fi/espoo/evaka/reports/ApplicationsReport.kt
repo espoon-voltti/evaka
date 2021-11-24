@@ -29,7 +29,7 @@ class ApplicationsReportController {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ResponseEntity<List<ApplicationsReportRow>> {
         Audit.ApplicationsReportRead.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
         return db.read { it.getApplicationsRows(from, to) }.let(::ok)

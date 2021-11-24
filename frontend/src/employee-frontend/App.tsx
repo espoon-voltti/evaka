@@ -476,7 +476,7 @@ function RedirectToMainPage() {
     return <Redirect to={'/applications'} />
   } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
     return <Redirect to={'/units'} />
-  } else if (hasRole(roles, 'DIRECTOR')) {
+  } else if (hasRole(roles, 'DIRECTOR') || hasRole(roles, 'REPORT_VIEWER')) {
     return <Redirect to={'/reports'} />
   } else if (roles.length === 0) {
     return <Redirect to={'/welcome'} />

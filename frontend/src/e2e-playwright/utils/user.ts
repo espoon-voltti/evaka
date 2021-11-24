@@ -13,7 +13,7 @@ export type UserRole =
   | 'SERVICE_WORKER'
   | 'STAFF'
   | 'DIRECTOR'
-  | 'MANAGER'
+  | 'REPORT_VIEWER'
   | 'SPECIAL_EDUCATION_TEACHER'
 
 export interface DevLoginUser {
@@ -26,16 +26,12 @@ const devLoginRoles = [
   'SERVICE_WORKER',
   'FINANCE_ADMIN',
   'DIRECTOR',
+  'REPORT_VIEWER',
   'ADMIN'
 ] as const
 
 function getLoginUser(role: UserRole): DevLoginUser | string {
   switch (role) {
-    case 'MANAGER':
-      return {
-        aad: config.supervisorAad,
-        roles: []
-      }
     case 'ADMIN':
       return {
         aad: config.adminAad,
@@ -47,6 +43,8 @@ function getLoginUser(role: UserRole): DevLoginUser | string {
       return config.financeAdminAad
     case 'DIRECTOR':
       return config.directorAad
+    case 'REPORT_VIEWER':
+      return config.reportViewerAad
     case 'STAFF':
       return config.staffAad
     case 'UNIT_SUPERVISOR':

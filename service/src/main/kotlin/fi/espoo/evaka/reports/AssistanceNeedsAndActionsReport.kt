@@ -35,7 +35,7 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {
         Audit.AssistanceNeedsReportRead.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read {
             AssistanceNeedsAndActionsReport(
                 bases = it.getAssistanceBasisOptions(),
