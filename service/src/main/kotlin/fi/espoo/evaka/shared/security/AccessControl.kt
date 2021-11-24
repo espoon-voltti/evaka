@@ -218,6 +218,7 @@ WHERE employee_id = :userId
             reports = user.hasOneOfRoles(
                 UserRole.ADMIN,
                 UserRole.DIRECTOR,
+                UserRole.REPORT_VIEWER,
                 UserRole.SERVICE_WORKER,
                 UserRole.FINANCE_ADMIN,
                 UserRole.UNIT_SUPERVISOR,

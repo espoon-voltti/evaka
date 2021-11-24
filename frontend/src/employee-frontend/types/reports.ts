@@ -4,7 +4,6 @@
 
 import LocalDate from 'lib-common/local-date'
 import { UnitProviderType } from 'lib-customizations/types'
-import { AbsenceType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 import {
   AssistanceActionOption,
@@ -94,44 +93,6 @@ export interface DecisionsReportRow {
   preference3: number
   preferenceNone: number
   total: number
-}
-
-export interface RawReportRow {
-  day: LocalDate
-  childId: UUID
-  dateOfBirth: LocalDate
-  age: number
-  language: string | null
-  postOffice: string
-  placementType:
-    | 'CLUB'
-    | 'DAYCARE'
-    | 'DAYCARE_PART_TIME'
-    | 'PRESCHOOL'
-    | 'PRESCHOOL_DAYCARE'
-  unitId: UUID
-  unitName: string
-  careArea: string
-  unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
-  unitProviderType: UnitProviderType
-  costCenter: string | null
-  daycareGroupId: UUID | null
-  groupName: string | null
-  caretakersPlanned: number | null
-  caretakersRealized: number | null
-  backupUnitId: UUID | null
-  backupGroupId: UUID | null
-  hasServiceNeed: boolean
-  partDay: boolean | null
-  partWeek: boolean | null
-  shiftCare: boolean | null
-  preparatory: boolean | null
-  hoursPerWeek: number | null
-  hasAssistanceNeed: boolean
-  capacityFactor: number
-  capacity: number
-  absencePaid: AbsenceType | null
-  absenceFree: AbsenceType | null
 }
 
 export interface PresenceReportRow {

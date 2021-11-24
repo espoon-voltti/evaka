@@ -8,7 +8,6 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
-import { RawReportRow } from '../../types/reports'
 import { getRawReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { FilterLabel, FilterRow } from './common'
@@ -16,6 +15,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { RawReportRow } from 'lib-common/generated/api-types/reports'
 
 function Raw() {
   const { i18n } = useTranslation()
@@ -44,13 +44,8 @@ function Raw() {
     }
   }
 
-  const mapFloat = (value: number | null) => {
-    if (value === null) {
-      return null
-    } else {
-      return value.toString().replace(/\./, ',')
-    }
-  }
+  const mapFloat = (value: number | null) =>
+    value?.toString().replace(/\./, ',') ?? null
 
   return (
     <Container>
@@ -105,7 +100,6 @@ function Raw() {
                     partDay: mapYesNo(row.partDay),
                     partWeek: mapYesNo(row.partWeek),
                     shiftCare: mapYesNo(row.shiftCare),
-                    preparatory: mapYesNo(row.preparatory),
                     hoursPerWeek: mapFloat(row.hoursPerWeek),
                     hasAssistanceNeed: mapYesNo(row.hasAssistanceNeed),
                     capacityFactor: mapFloat(row.capacityFactor),
@@ -121,6 +115,8 @@ function Raw() {
                     { label: 'Päivämäärä', key: 'day' },
                     { label: 'Lapsen id', key: 'childId' },
                     { label: 'Linkki lapseen', key: 'childLink' },
+                    { label: 'Sukunimi', key: 'lastName' },
+                    { label: 'Etunimi', key: 'firstName' },
                     { label: 'Syntymäaika', key: 'dateOfBirth' },
                     { label: 'Ikä', key: 'age' },
                     { label: 'Kieli', key: 'language' },

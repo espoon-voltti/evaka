@@ -192,7 +192,9 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR']}>
+          <RequireRole
+            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'REPORT_VIEWER']}
+          >
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -210,7 +212,9 @@ function Reports() {
               <Description>{i18n.reports.applications.description}</Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR']}>
+          <RequireRole
+            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'REPORT_VIEWER']}
+          >
             <ReportItem>
               <TitleRow>
                 <RoundIcon size="L" color={colors.primary} content={faGavel} />
@@ -221,7 +225,9 @@ function Reports() {
               <Description>{i18n.reports.decisions.description}</Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR']}>
+          <RequireRole
+            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'REPORT_VIEWER']}
+          >
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -241,6 +247,7 @@ function Reports() {
               'ADMIN',
               'SERVICE_WORKER',
               'DIRECTOR',
+              'REPORT_VIEWER',
               'SPECIAL_EDUCATION_TEACHER'
             ]}
           >
@@ -257,7 +264,13 @@ function Reports() {
             </ReportItem>
           </RequireRole>
           <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'UNIT_SUPERVISOR']}
+            oneOf={[
+              'ADMIN',
+              'SERVICE_WORKER',
+              'DIRECTOR',
+              'REPORT_VIEWER',
+              'UNIT_SUPERVISOR'
+            ]}
           >
             <ReportItem>
               <TitleRow>
@@ -274,6 +287,7 @@ function Reports() {
               'ADMIN',
               'SERVICE_WORKER',
               'DIRECTOR',
+              'REPORT_VIEWER',
               'UNIT_SUPERVISOR',
               'SPECIAL_EDUCATION_TEACHER'
             ]}
@@ -343,7 +357,7 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'DIRECTOR']}>
+          <RequireRole oneOf={['ADMIN', 'DIRECTOR', 'REPORT_VIEWER']}>
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -359,7 +373,13 @@ function Reports() {
             </ReportItem>
           </RequireRole>
           <RequireRole
-            oneOf={['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR', 'UNIT_SUPERVISOR']}
+            oneOf={[
+              'ADMIN',
+              'FINANCE_ADMIN',
+              'DIRECTOR',
+              'REPORT_VIEWER',
+              'UNIT_SUPERVISOR'
+            ]}
           >
             <ReportItem>
               <TitleRow>
@@ -380,7 +400,7 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'DIRECTOR']}>
+          <RequireRole oneOf={['ADMIN', 'REPORT_VIEWER']}>
             <ReportItem>
               <TitleRow>
                 <RoundIcon

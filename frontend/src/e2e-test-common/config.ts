@@ -47,6 +47,7 @@ const directorAad = '00000000-0000-0000-0003-000000000000'
 const unitSupervisorAad = '00000000-0000-0000-0004-000000000000'
 const staffAad = '00000000-0000-0000-0005-000000000000'
 const specialEducationTeacher = '00000000-0000-0000-0006-000000000000'
+const reportViewerAad = '00000000-0000-0000-0007-000000000000'
 
 const ci = env('CI', parseBoolean) ?? false
 
@@ -77,6 +78,7 @@ const config = {
   serviceWorkerAad,
   financeAdminAad,
   directorAad,
+  reportViewerAad,
   unitSupervisorAad,
   staffAad,
   specialEducationTeacher

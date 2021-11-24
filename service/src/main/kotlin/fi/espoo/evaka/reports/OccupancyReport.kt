@@ -36,7 +36,7 @@ class OccupancyReportController {
         @RequestParam month: Int
     ): ResponseEntity<List<OccupancyUnitReportResultRow>> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
@@ -62,7 +62,7 @@ class OccupancyReportController {
         @RequestParam month: Int
     ): ResponseEntity<List<OccupancyGroupReportResultRow>> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 

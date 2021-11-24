@@ -176,3 +176,5 @@ V175__person_preferred_name.sql
 V176__evaka_user_income_updated_by.sql
 V177__income_statement_awaiting_handler_index.sql
 V178__delete_mobile_devices_from_employee.sql
+V179__report_viewer_user_role.sql
+V180__allow_new_report_viewer_role_on_employees.sql

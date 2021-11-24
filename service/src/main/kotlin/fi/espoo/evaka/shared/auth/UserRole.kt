@@ -11,6 +11,7 @@ enum class UserRole {
     CITIZEN_WEAK,
 
     ADMIN,
+    REPORT_VIEWER,
     DIRECTOR,
     FINANCE_ADMIN,
     SERVICE_WORKER,
@@ -39,6 +40,7 @@ interface RoleContainer {
     fun requireAnyEmployee() = requireOneOfRoles(
         UserRole.ADMIN,
         UserRole.DIRECTOR,
+        UserRole.REPORT_VIEWER,
         UserRole.FINANCE_ADMIN,
         UserRole.SERVICE_WORKER,
         UserRole.UNIT_SUPERVISOR,
