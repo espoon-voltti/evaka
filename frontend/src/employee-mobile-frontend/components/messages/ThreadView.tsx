@@ -8,7 +8,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
 import {
   Message,
-  MessageThread
+  MessageThread,
+  NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatTime } from 'lib-common/date'
 import React, { useCallback, useContext } from 'react'
@@ -34,8 +35,13 @@ export const ThreadView = React.memo(function ThreadView({
 }: ThreadViewProps) {
   const { i18n } = useTranslation()
 
-  const { getReplyContent, sendReply, selectedSender, setReplyContent } =
-    useContext(MessageContext)
+  const {
+    getReplyContent,
+    sendReply,
+    selectedSender,
+    setReplyContent,
+    nestedAccounts
+  } = useContext(MessageContext)
 
   const onUpdateContent = useCallback(
     (content) => setReplyContent(threadId, content),
@@ -47,17 +53,30 @@ export const ThreadView = React.memo(function ThreadView({
   const replyContent = getReplyContent(threadId)
 
   const onSubmitReply = useCallback(() => {
+    const allRecipients = messages.flatMap((m) => m.recipients)
+    const possibleSenderAccounts: NestedMessageAccount[] =
+      nestedAccounts.isSuccess
+        ? nestedAccounts.value.filter(({ account }) =>
+            allRecipients.some((r) => r.id === account.id)
+          )
+        : []
+
     replyContent.length > 0 &&
       selectedSender?.id &&
       sendReply({
         content: replyContent,
         messageId: messages.slice(-1)[0].id,
-        recipientAccountIds: recipients
-          .filter((r) => r.selected)
-          .map((r) => r.id),
-        accountId: selectedSender.id
+        recipientAccountIds: recipients.map((r) => r.id),
+        accountId: possibleSenderAccounts[0].account.id
       })
-  }, [replyContent, selectedSender, sendReply, recipients, messages])
+  }, [
+    replyContent,
+    selectedSender,
+    sendReply,
+    recipients,
+    messages,
+    nestedAccounts
+  ])
 
   return (
     <ThreadViewMobile data-qa={'thread-view-mobile'}>
