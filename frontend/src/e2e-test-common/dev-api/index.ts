@@ -304,6 +304,21 @@ export async function setAclForDaycares(
   }
 }
 
+export async function setAclForDaycareGroups(
+  employeeId: UUID,
+  daycareId: UUID,
+  groupIds: UUID[]
+): Promise<void> {
+  try {
+    await devClient.post(
+      `/daycare-group-acl`,
+      groupIds.map((groupId) => ({ groupId, employeeId }))
+    )
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function resetDatabase(): Promise<void> {
   try {
     await devClient.post(`/reset-db`, null)

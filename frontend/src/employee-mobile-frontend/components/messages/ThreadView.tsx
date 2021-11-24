@@ -108,7 +108,9 @@ function SingleMessage({
   return (
     <MessageContainer ours={ourMessage} data-qa={'single-message'}>
       <TitleRow>
-        <SenderName>{message.sender.name}</SenderName>
+        <SenderName data-qa={'single-message-sender-name'}>
+          {message.sender.name}
+        </SenderName>
         <SentDate white={ourMessage}>{formatTime(message.sentAt)}</SentDate>
       </TitleRow>
       <MessageContent data-qa="single-message-content">
