@@ -16,11 +16,11 @@ import React, { useCallback, useContext } from 'react'
 import { MessageContext } from '../../state/messages'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faArrowRight } from 'lib-icons'
-import InputField from 'lib-components/atoms/form/InputField'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { useTranslation } from '../../state/i18n'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { UUID } from 'lib-common/types'
+import TextArea from 'lib-components/atoms/form/TextArea'
 
 interface ThreadViewProps {
   accountId: UUID
@@ -95,23 +95,25 @@ export const ThreadView = React.memo(function ThreadView({
           accountId={accountId}
         />
       ))}
-      <ThreadViewReply>
-        <InputField
-          value={replyContent}
-          onChange={onUpdateContent}
-          className={'thread-view-input'}
-          wrapperClassName={'thread-view-input-wrapper'}
-          placeholder={i18n.messages.inputPlaceholder}
-          data-qa={'thread-reply-input'}
-        />
-        <RoundIconButton
-          onClick={onSubmitReply}
-          disabled={replyContent.length === 0}
-          data-qa={'thread-reply-button'}
-        >
-          <FontAwesomeIcon icon={faArrowRight} />
-        </RoundIconButton>
-      </ThreadViewReply>
+      <ThreadViewReplyContainer>
+        <ThreadViewReply>
+          <TextArea
+            value={replyContent}
+            onChange={onUpdateContent}
+            className={'thread-view-input'}
+            wrapperClassName={'thread-view-input-wrapper'}
+            placeholder={i18n.messages.inputPlaceholder}
+            data-qa={'thread-reply-input'}
+          />
+          <RoundIconButton
+            onClick={onSubmitReply}
+            disabled={replyContent.length === 0}
+            data-qa={'thread-reply-button'}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </RoundIconButton>
+        </ThreadViewReply>
+      </ThreadViewReplyContainer>
     </ThreadViewMobile>
   )
 })
@@ -172,8 +174,7 @@ const MessageContainer = styled.div`
       background-color: ${colors.blues.lighter};
     `}
   padding: ${defaultMargins.s};
-  margin: ${defaultMargins.s};
-  margin-bottom: 0;
+  margin: ${defaultMargins.xs};
 `
 
 const SentDate = styled.div`
@@ -223,13 +224,20 @@ const ThreadViewTitle = styled.span`
   font-weight: ${fontWeights.semibold};
 `
 
-const ThreadViewReply = styled.div`
+const ThreadViewReplyContainer = styled.div`
   position: fixed;
-  align-items: center;
-  bottom: ${defaultMargins.xs};
-  left: ${defaultMargins.s};
-  right: ${defaultMargins.s};
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
+  align-items: center;
+  background: ${colors.greyscale.white};
+  padding: ${defaultMargins.xxs} ${defaultMargins.xs} ${defaultMargins.xs};
+`
+const ThreadViewReply = styled.div`
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
   gap: ${defaultMargins.xs};
   .thread-view-input-wrapper {
     display: block;
