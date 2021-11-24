@@ -229,7 +229,7 @@ private fun addServiceNeedDataToVarda(
     } catch (e: Exception) {
         val errors = listOf("VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}")
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
-        error(errors)
+        if (e.message?.contains("MA003") != true) error(errors) // Error code MA003 should result to successful reset
     }
 }
 
