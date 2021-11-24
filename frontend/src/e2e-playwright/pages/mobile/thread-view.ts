@@ -21,11 +21,19 @@ export default class ThreadViewPage {
   }
 
   async getMessageContent(index: number): Promise<string> {
-    const foo = new RawElement(
+    const el = new RawElement(
       this.page,
       `:nth-match([data-qa="single-message-content"], ${index})`
     )
-    return foo.innerText
+    return el.innerText
+  }
+
+  async getMessageSender(index: number): Promise<string> {
+    const el = new RawElement(
+      this.page,
+      `:nth-match([data-qa="single-message-sender-name"], ${index})`
+    )
+    return el.innerText
   }
 
   async replyThread(content: string) {
