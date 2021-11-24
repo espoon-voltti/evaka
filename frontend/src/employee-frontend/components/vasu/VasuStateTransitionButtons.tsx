@@ -62,6 +62,7 @@ export function VasuStateTransitionButtons({
       text={i18n.vasu.transitions[eventType].buttonText}
       onClick={() => setSelectedEventType(eventType)}
       primary={primary}
+      data-qa={`transition-button-${eventType}`}
     />
   )
 

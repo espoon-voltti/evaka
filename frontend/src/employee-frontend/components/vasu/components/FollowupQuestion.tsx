@@ -25,8 +25,8 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
 }) {
   return (
     <Entry>
-      <EntryText>{entry.text}</EntryText>
-      <Dimmed>
+      <EntryText data-qa="vasu-followup-entry-text">{entry.text}</EntryText>
+      <Dimmed data-qa="vasu-followup-entry-metadata">
         {entry.date.format()} {entry.authorName}
       </Dimmed>
     </Entry>
@@ -64,13 +64,18 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
 
   return (
     <FollowupEntryInputRow fullWidth>
-      <TextArea value={textValue} onChange={setTextValue} />
+      <TextArea
+        value={textValue}
+        onChange={setTextValue}
+        data-qa="vasu-followup-input"
+      />
       <Button
         primary
         type="submit"
         disabled={textValue === ''}
         text={i18n.common.addNew}
         onClick={onSubmit}
+        data-qa="vasu-followup-addBtn"
       />
     </FollowupEntryInputRow>
   )
@@ -100,7 +105,10 @@ export default React.memo(function FollowupQuestion({
   )
 
   return (
-    <FollowupQuestionContainer editable={!!onChange}>
+    <FollowupQuestionContainer
+      editable={!!onChange}
+      data-qa="vasu-followup-question"
+    >
       <H2>{title}</H2>
       <QuestionInfo info={info}>
         <Label>{name}</Label>

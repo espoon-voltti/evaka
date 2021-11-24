@@ -44,7 +44,7 @@ export default React.memo(function VasuPage({
   const dynamicSectionsOffset = 2
 
   return (
-    <VasuContainer gapSize={'zero'}>
+    <VasuContainer gapSize={'zero'} data-qa="vasu-preview">
       <Gap size={'L'} />
       {vasu && (
         <>

@@ -58,7 +58,11 @@ export function DynamicSections({
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
       <Fragment key={section.name}>
-        <SectionContent opaque padBottom={!isLastQuestionFollowup}>
+        <SectionContent
+          opaque
+          padBottom={!isLastQuestionFollowup}
+          data-qa="vasu-document-section"
+        >
           <H2>
             {sectionIndex + 1 + sectionOffset}. {section.name}
           </H2>

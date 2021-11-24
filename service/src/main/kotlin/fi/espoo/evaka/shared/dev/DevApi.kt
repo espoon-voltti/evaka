@@ -88,6 +88,8 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -106,6 +108,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
+import fi.espoo.evaka.vasu.insertVasuDocument
 import fi.espoo.evaka.vasu.insertVasuTemplate
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -833,15 +836,22 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }.key
     }
 
-    @PostMapping("/vasu-template")
-    fun createVasuTemplate(db: Database.Connection) {
-        db.transaction { tx ->
+    @PostMapping("/vasu/template")
+    fun createVasuTemplate(db: Database.Connection): VasuTemplateId {
+        return db.transaction { tx ->
             tx.insertVasuTemplate(
                 name = "testipohja",
                 valid = FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
                 language = VasuLanguage.FI,
                 content = getDefaultTemplateContent(VasuLanguage.FI)
             )
+        }
+    }
+
+    @PostMapping("/vasu/doc")
+    fun createVasuDocument(db: Database.Connection, @RequestBody body: PostVasuDocBody): VasuDocumentId {
+        return db.transaction { tx ->
+            tx.insertVasuDocument(body.childId, body.templateId)
         }
     }
 
@@ -1199,4 +1209,9 @@ data class DevServiceNeed(
     val shiftCare: Boolean,
     val confirmedBy: UUID,
     val confirmedAt: LocalDate? = null
+)
+
+data class PostVasuDocBody(
+    val childId: UUID,
+    val templateId: VasuTemplateId
 )
