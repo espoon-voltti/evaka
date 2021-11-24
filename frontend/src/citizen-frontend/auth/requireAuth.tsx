@@ -8,7 +8,7 @@ import { RouteComponentProps } from 'react-router'
 import { Redirect } from 'react-router-dom'
 import { getWeakLoginUri, getLoginUri } from '../header/const'
 
-function refreshRedirect(uri: string) {
+export function refreshRedirect(uri: string) {
   window.location.replace(uri)
   return null
 }
