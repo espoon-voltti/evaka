@@ -40,9 +40,9 @@ export default function MessageEditorPage() {
   }>()
   const {
     nestedAccounts,
-    selectedAccount,
+    selectedSender,
     selectedUnit,
-    refreshMessages,
+    loadMessagesForSelectedAccount,
     loadNestedAccounts
   } = useContext(MessageContext)
 
@@ -73,7 +73,7 @@ export default function MessageEditorPage() {
       setSending(true)
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
-          refreshMessages(accountId)
+          loadMessagesForSelectedAccount()
           history.back()
         } else {
           // TODO handle eg. expired pin session correctly
@@ -82,33 +82,33 @@ export default function MessageEditorPage() {
         setSending(false)
       })
     },
-    [refreshMessages]
+    [loadMessagesForSelectedAccount]
   )
 
   const onDiscard = useCallback(
     (accountId: UUID, draftId: UUID) => {
       void deleteDraft(accountId, draftId)
-        .then(() => refreshMessages(accountId))
+        .then(() => loadMessagesForSelectedAccount())
         .then(() => history.back())
     },
-    [refreshMessages]
+    [loadMessagesForSelectedAccount]
   )
 
   const onHide = useCallback(
     (didChanges: boolean) => {
       if (didChanges) {
-        refreshMessages()
+        loadMessagesForSelectedAccount()
       }
       history.back()
     },
-    [refreshMessages]
+    [loadMessagesForSelectedAccount]
   )
 
   return (
     <>
       {nestedAccounts.isSuccess &&
         selectedReceivers &&
-        selectedAccount &&
+        selectedSender &&
         selectedUnit && (
           <MessageEditor
             availableReceivers={selectedReceivers}
@@ -116,8 +116,8 @@ export default function MessageEditorPage() {
               featureFlags.experimental?.messageAttachments ?? false
             }
             defaultSender={{
-              value: selectedAccount.id,
-              label: selectedAccount.name
+              value: selectedSender.id,
+              label: selectedSender.name
             }}
             deleteAttachment={deleteAttachment}
             draftContent={undefined}

@@ -12,11 +12,13 @@ import colors from 'lib-customizations/common'
 import { UnitContext } from '../../state/unit'
 import { UUID } from 'lib-common/types'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { renderResult } from '../async-rendering'
 
 interface GroupSelectorProps {
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   countInfo?: CountInfo
+  groups?: GroupInfo[]
 }
 
 export interface CountInfo {
@@ -28,57 +30,54 @@ export interface CountInfo {
 export default function GroupSelector({
   selectedGroup,
   onChangeGroup,
-  countInfo
+  countInfo,
+  groups
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
   const { unitInfoResponse } = useContext(UnitContext)
 
-  return (
+  return renderResult(unitInfoResponse, (unitInfo) => (
     <Wrapper>
       <ChipWrapper>
-        {unitInfoResponse.isSuccess && (
-          <>
-            <ChoiceChip
-              text={`${i18n.common.all}${
-                countInfo
-                  ? `(${countInfo.getPresentCount(
-                      undefined
-                    )}/${countInfo.getTotalCount(undefined)})`
-                  : ''
-              }`}
-              selected={!selectedGroup}
-              onChange={() => onChangeGroup(undefined)}
-              data-qa="group--all"
-            />
-            <Gap horizontal size={'xxs'} />
-            {unitInfoResponse.value.groups.map((group) => (
-              <Fragment key={group.id}>
-                <ChoiceChip
-                  text={`${group.name}${
-                    countInfo
-                      ? `(${countInfo.getPresentCount(
-                          group.id
-                        )}/${countInfo.getTotalCount(group.id)})`
-                      : ''
-                  }`}
-                  selected={
-                    selectedGroup ? selectedGroup.id === group.id : false
-                  }
-                  onChange={() => {
-                    onChangeGroup(group)
-                  }}
-                  data-qa={`group--${group.id}`}
-                />
-                <Gap horizontal size={'xxs'} />
-              </Fragment>
-            ))}
-          </>
-        )}
+        <>
+          <ChoiceChip
+            text={`${i18n.common.all}${
+              countInfo
+                ? `(${countInfo.getPresentCount(
+                    undefined
+                  )}/${countInfo.getTotalCount(undefined)})`
+                : ''
+            }`}
+            selected={!selectedGroup}
+            onChange={() => onChangeGroup(undefined)}
+            data-qa="group--all"
+          />
+          <Gap horizontal size={'xxs'} />
+          {(groups || unitInfo.groups).map((group) => (
+            <Fragment key={group.id}>
+              <ChoiceChip
+                text={`${group.name}${
+                  countInfo
+                    ? `(${countInfo.getPresentCount(
+                        group.id
+                      )}/${countInfo.getTotalCount(group.id)})`
+                    : ''
+                }`}
+                selected={selectedGroup ? selectedGroup.id === group.id : false}
+                onChange={() => {
+                  onChangeGroup(group)
+                }}
+                data-qa={`group--${group.id}`}
+              />
+              <Gap horizontal size={'xxs'} />
+            </Fragment>
+          ))}
+        </>
         {countInfo && <Info>{countInfo.infoText}</Info>}
       </ChipWrapper>
     </Wrapper>
-  )
+  ))
 }
 
 const Info = styled.span`
