@@ -23,13 +23,11 @@ import { UUID } from 'lib-common/types'
 import TextArea from 'lib-components/atoms/form/TextArea'
 
 interface ThreadViewProps {
-  accountId: UUID
   thread: MessageThread
   onBack: () => void
 }
 
 export const ThreadView = React.memo(function ThreadView({
-  accountId,
   thread: { id: threadId, messages, title },
   onBack
 }: ThreadViewProps) {
@@ -48,26 +46,30 @@ export const ThreadView = React.memo(function ThreadView({
     [setReplyContent, threadId]
   )
 
-  const { recipients } = useRecipients(messages, accountId)
-
   const replyContent = getReplyContent(threadId)
 
-  const onSubmitReply = useCallback(() => {
-    const allRecipients = messages.flatMap((m) => m.recipients)
-    const possibleSenderAccounts: NestedMessageAccount[] =
-      nestedAccounts.isSuccess
-        ? nestedAccounts.value.filter(({ account }) =>
-            allRecipients.some((r) => r.id === account.id)
-          )
-        : []
+  const allRecipients = messages.flatMap((m) => m.recipients)
 
+  const possibleSenderAccounts: NestedMessageAccount[] =
+    nestedAccounts.isSuccess
+      ? nestedAccounts.value.filter(({ account }) =>
+          allRecipients.some((r) => r.id === account.id)
+        )
+      : []
+
+  const senderAccountId: UUID | undefined =
+    possibleSenderAccounts[0]?.account.id
+
+  const { recipients } = useRecipients(messages, senderAccountId)
+
+  const onSubmitReply = useCallback(() => {
     replyContent.length > 0 &&
       selectedSender?.id &&
       sendReply({
         content: replyContent,
         messageId: messages.slice(-1)[0].id,
         recipientAccountIds: recipients.map((r) => r.id),
-        accountId: possibleSenderAccounts[0].account.id
+        accountId: senderAccountId
       })
   }, [
     replyContent,
@@ -75,7 +77,7 @@ export const ThreadView = React.memo(function ThreadView({
     sendReply,
     recipients,
     messages,
-    nestedAccounts
+    senderAccountId
   ])
 
   return (
@@ -92,7 +94,9 @@ export const ThreadView = React.memo(function ThreadView({
         <SingleMessage
           key={message.id}
           message={message}
-          accountId={accountId}
+          ours={possibleSenderAccounts.some(
+            ({ account }) => account.id === message.sender.id
+          )}
         />
       ))}
       <ThreadViewReplyContainer>
@@ -118,21 +122,14 @@ export const ThreadView = React.memo(function ThreadView({
   )
 })
 
-function SingleMessage({
-  message,
-  accountId
-}: {
-  message: Message
-  accountId: UUID
-}) {
-  const ourMessage = message.sender.id === accountId
+function SingleMessage({ message, ours }: { message: Message; ours: boolean }) {
   return (
-    <MessageContainer ours={ourMessage} data-qa={'single-message'}>
+    <MessageContainer ours={ours} data-qa={'single-message'}>
       <TitleRow>
         <SenderName data-qa={'single-message-sender-name'}>
           {message.sender.name}
         </SenderName>
-        <SentDate white={ourMessage}>{formatTime(message.sentAt)}</SentDate>
+        <SentDate white={ours}>{formatTime(message.sentAt)}</SentDate>
       </TitleRow>
       <MessageContent data-qa="single-message-content">
         {message.content}
