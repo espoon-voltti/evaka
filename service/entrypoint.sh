@@ -20,6 +20,7 @@ fi
 if [ "${DD_PROFILING_ENABLED:-false}" = "true" ]; then
   export DD_AGENT_HOST="${DD_AGENT_HOST:-localhost}"
   export DD_TRACE_AGENT_PORT="${DD_TRACE_AGENT_PORT:-8126}"
+  export DD_JMXFETCH_STATSD_HOST="${DD_JMXFETCH_STATSD_HOST:-$HOST_IP}"
   export DD_ENV="${DD_ENV:-$VOLTTI_ENV}"
   export DD_VERSION="${DD_VERSION:-$APP_COMMIT}"
   export DD_SERVICE="${DD_SERVICE:-$APP_NAME}"
