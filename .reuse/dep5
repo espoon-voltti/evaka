@@ -88,3 +88,11 @@ License: Apache-2.0
 Files: */gradle/wrapper/*
 Copyright: 2007-2020 The original author or authors <info@gradle.com>
 License: Apache-2.0
+
+Files: espoo-customizations/*.html
+Copyright: 2017-2021 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: espoo-customizations/*.svg
+Copyright: 2017-2021 City of Espoo
+License: LGPL-2.1-or-later
