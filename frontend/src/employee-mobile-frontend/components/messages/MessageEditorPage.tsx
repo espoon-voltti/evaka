@@ -40,7 +40,7 @@ export default function MessageEditorPage() {
   }>()
   const {
     nestedAccounts,
-    selectedAccount,
+    selectedSender,
     selectedUnit,
     loadMessagesForSelectedAccount,
     loadNestedAccounts
@@ -108,7 +108,7 @@ export default function MessageEditorPage() {
     <>
       {nestedAccounts.isSuccess &&
         selectedReceivers &&
-        selectedAccount &&
+        selectedSender &&
         selectedUnit && (
           <MessageEditor
             availableReceivers={selectedReceivers}
@@ -116,8 +116,8 @@ export default function MessageEditorPage() {
               featureFlags.experimental?.messageAttachments ?? false
             }
             defaultSender={{
-              value: selectedAccount.id,
-              label: selectedAccount.name
+              value: selectedSender.id,
+              label: selectedSender.name
             }}
             deleteAttachment={deleteAttachment}
             draftContent={undefined}

@@ -15,6 +15,7 @@ interface Props {
   onChangeGroup: (group: GroupInfo | undefined) => void
   onSearch?: () => void
   countInfo?: CountInfo
+  groups?: GroupInfo[]
 }
 
 export const TopBarWithGroupSelector = React.memo(
@@ -23,7 +24,8 @@ export const TopBarWithGroupSelector = React.memo(
     onChangeGroup,
     onSearch,
     selectedGroup,
-    title
+    title,
+    groups
   }: Props) {
     return (
       <>
@@ -34,6 +36,7 @@ export const TopBarWithGroupSelector = React.memo(
           onChangeGroup={onChangeGroup}
           onSearch={onSearch}
           countInfo={countInfo}
+          groups={groups}
         />
       </>
     )

@@ -45,7 +45,9 @@ export default function MessagesPage() {
 
   const {
     loadNestedAccounts,
+    groupAccounts,
     selectedAccount,
+    selectedSender,
     loadMessagesWhenGroupChanges,
     receivedMessages,
     selectedThread,
@@ -64,12 +66,34 @@ export default function MessagesPage() {
     combine(unitInfoResponse, receivedMessages),
     ([unit, messages]) => (
       <>
-        {!(selectedThread && selectedAccount) ? (
+        {selectedThread && selectedSender ? (
+          <ContentArea
+            opaque
+            fullHeight
+            paddingHorizontal={'zero'}
+            paddingVertical={'zero'}
+          >
+            <ThreadView
+              accountId={selectedSender.id}
+              thread={selectedThread}
+              onBack={() => selectThread(undefined)}
+            />
+          </ContentArea>
+        ) : (
           <ContentArea opaque fullHeight paddingHorizontal={'zero'}>
             <TopBarWithGroupSelector
               title={unit.name}
               selectedGroup={selectedGroup}
               onChangeGroup={changeGroup}
+              groups={
+                unitInfoResponse.isSuccess
+                  ? unitInfoResponse.value.groups.filter((g) =>
+                      groupAccounts
+                        .flatMap((ga) => ga.daycareGroup?.id || [])
+                        .includes(g.id)
+                    )
+                  : undefined
+              }
             />
             <ContentArea opaque paddingHorizontal={'zero'}>
               <HeaderContainer>
@@ -98,19 +122,6 @@ export default function MessagesPage() {
               )}
             </ContentArea>
             <BottomNavBar selected="messages" />
-          </ContentArea>
-        ) : (
-          <ContentArea
-            opaque
-            fullHeight
-            paddingHorizontal={'zero'}
-            paddingVertical={'zero'}
-          >
-            <ThreadView
-              accountId={selectedAccount.id}
-              thread={selectedThread}
-              onBack={() => selectThread(undefined)}
-            />
           </ContentArea>
         )}
       </>

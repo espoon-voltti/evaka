@@ -34,7 +34,7 @@ export const ThreadView = React.memo(function ThreadView({
 }: ThreadViewProps) {
   const { i18n } = useTranslation()
 
-  const { getReplyContent, sendReply, selectedAccount, setReplyContent } =
+  const { getReplyContent, sendReply, selectedSender, setReplyContent } =
     useContext(MessageContext)
 
   const onUpdateContent = useCallback(
@@ -48,16 +48,16 @@ export const ThreadView = React.memo(function ThreadView({
 
   const onSubmitReply = useCallback(() => {
     replyContent.length > 0 &&
-      selectedAccount?.id &&
+      selectedSender?.id &&
       sendReply({
         content: replyContent,
         messageId: messages.slice(-1)[0].id,
         recipientAccountIds: recipients
           .filter((r) => r.selected)
           .map((r) => r.id),
-        accountId: selectedAccount.id
+        accountId: selectedSender.id
       })
-  }, [replyContent, selectedAccount, sendReply, recipients, messages])
+  }, [replyContent, selectedSender, sendReply, recipients, messages])
 
   return (
     <ThreadViewMobile data-qa={'thread-view-mobile'}>
