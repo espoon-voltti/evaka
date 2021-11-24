@@ -6,16 +6,15 @@ import React from 'react'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import {
+  SortableTh,
   Table,
-  Tr,
-  Th,
-  Td,
-  Thead,
   Tbody,
-  SortableTh
+  Td,
+  Th,
+  Thead,
+  Tr
 } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
-import Loader from 'lib-components/atoms/Loader'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
@@ -27,6 +26,7 @@ import { formatDate } from 'lib-common/date'
 import { formatCents } from 'lib-common/money'
 import { SortByVoucherValueDecisions } from '../../api/invoicing'
 import Pagination from 'lib-components/Pagination'
+import { renderResult } from '../async-rendering'
 
 const TitleRowContainer = styled.div`
   display: flex;
@@ -171,7 +171,7 @@ export default React.memo(function VoucherValueDecisions({
             >
               {i18n.valueDecisions.table.status}
             </SortableTh>
-            {showCheckboxes ? (
+            {showCheckboxes && (!decisions || decisions.isSuccess) ? (
               <Td>
                 <Checkbox
                   label="all"
@@ -187,18 +187,17 @@ export default React.memo(function VoucherValueDecisions({
         </Thead>
         <Tbody>{rows}</Tbody>
       </Table>
-      {decisions?.isSuccess && (
-        <ResultsContainer>
-          <Pagination
-            pages={pages}
-            currentPage={currentPage}
-            setPage={setPage}
-            label={i18n.common.page}
-          />
-        </ResultsContainer>
-      )}
-      {decisions?.isLoading && <Loader />}
-      {decisions?.isFailure && <div>{i18n.common.error.unknown}</div>}
+      {decisions &&
+        renderResult(decisions, () => (
+          <ResultsContainer>
+            <Pagination
+              pages={pages}
+              currentPage={currentPage}
+              setPage={setPage}
+              label={i18n.common.page}
+            />
+          </ResultsContainer>
+        ))}
     </div>
   )
 })
