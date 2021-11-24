@@ -27,6 +27,10 @@ export default class CitizenHeader {
     await this.#loginButton.click()
   }
 
+  async waitUntilLoggedIn() {
+    await this.#userMenu.waitFor()
+  }
+
   async selectTab(
     tab:
       | 'applications'

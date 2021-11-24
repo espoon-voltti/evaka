@@ -27,6 +27,8 @@ afterEach(async () => {
 
 describe('Citizen page', () => {
   test('UI language can be changed', async () => {
+    await header.waitUntilLoggedIn()
+
     await header.selectLanguage('fi')
     await waitUntilEqual(
       async () => (await header.applyingTab.innerText()).toLowerCase(),
