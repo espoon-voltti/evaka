@@ -60,14 +60,7 @@ class AssistanceNeedController(
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
         return assistanceNeedService.getAssistanceNeedsByChildId(db, childId).filter { assistanceNeed ->
-            // If child is or has been in preschool, do not show pre preschool daycare assistance needs for non admin
-            if (!user.isAdmin) {
-                if (getChildPreschoolPlacements(db, childId).any { preschoolPlacement ->
-                    assistanceNeed.startDate.isBefore(preschoolPlacement.startDate)
-                }
-                ) false else true
-            } else
-                true
+            accessControl.hasPermissionFor(user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, assistanceNeed.id)
         }
     }
 

@@ -54,6 +54,7 @@ export type AssistanceAction =
 
 export type AssistanceNeed =
   | 'DELETE'
+  | 'READ_PRE_PRESCHOOL_ASSISTANCE_NEED'
   | 'UPDATE'
 
 export type BackupCare =
