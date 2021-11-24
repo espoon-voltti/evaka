@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilTrue } from 'e2e-playwright/utils'
-import { RawElement } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
 export default class CitizenHeader {
@@ -16,22 +15,20 @@ export default class CitizenHeader {
   #loginButton = this.page
     .locator(`[data-qa="${this.type}-nav"]`)
     .locator('[data-qa="login-btn"]')
-  #languageMenuToggle = new RawElement(
-    this.page,
-    '[data-qa="button-select-language"]'
-  )
-  #languageOptionList = new RawElement(this.page, '[data-qa="select-lang"]')
-  #userMenu = new RawElement(
-    this.page,
-    `[data-qa="user-menu-title-${this.type}"]`
-  )
-  applyingTab = new RawElement(this.page, '[data-qa="nav-applying"]')
+  #languageMenuToggle = this.page.locator('[data-qa="button-select-language"]')
+  #languageOptionList = this.page.locator('[data-qa="select-lang"]')
+  #userMenu = this.page.locator(`[data-qa="user-menu-title-${this.type}"]`)
+  applyingTab = this.page.locator('[data-qa="nav-applying"]')
 
   async logIn() {
     if (this.type === 'mobile') {
       await this.#menuButton.click()
     }
     await this.#loginButton.click()
+  }
+
+  async waitUntilLoggedIn() {
+    await this.#userMenu.waitFor()
   }
 
   async selectTab(
@@ -79,7 +76,7 @@ export default class CitizenHeader {
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
     await this.#languageMenuToggle.click()
-    await this.#languageOptionList.find(`[data-qa="lang-${lang}"]`).click()
+    await this.#languageOptionList.locator(`[data-qa="lang-${lang}"]`).click()
   }
 
   async checkPersonalDetailsAttentionIndicatorsAreShown() {
@@ -101,7 +98,7 @@ export default class CitizenHeader {
   async navigateToPersonalDetailsPage() {
     const personalDetailsLinkSelector = '[data-qa="user-menu-personal-details"]'
 
-    if (this.type === 'mobile' && !(await this.#userMenu.visible)) {
+    if (this.type === 'mobile' && !(await this.#userMenu.isVisible())) {
       await this.#menuButton.click()
     }
 
