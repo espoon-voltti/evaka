@@ -510,6 +510,11 @@ class MessageIntegrationTest : FullApplicationTest() {
         )
 
         // when the author himself replies to the bulletin, it succeeds
+        //
+        // NOTE: This will not be implemented for now, because author
+        //       replying to their own message (without other replies)
+        //       lacks spec. It would be bad UX to only allow replies
+        //       to own bulletin only. (Date 25.11.2021)
         assertEquals(
             200,
             replyAsEmployee(
