@@ -8,43 +8,59 @@ import { defaultMargins } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
 import {
   Message,
-  MessageThread
+  MessageThread,
+  NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatTime } from 'lib-common/date'
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import { MessageContext } from '../../state/messages'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faArrowRight } from 'lib-icons'
-import InputField from 'lib-components/atoms/form/InputField'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { useTranslation } from '../../state/i18n'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { UUID } from 'lib-common/types'
+import TextArea from 'lib-components/atoms/form/TextArea'
 
 interface ThreadViewProps {
-  accountId: UUID
   thread: MessageThread
   onBack: () => void
 }
 
 export const ThreadView = React.memo(function ThreadView({
-  accountId,
   thread: { id: threadId, messages, title },
   onBack
 }: ThreadViewProps) {
   const { i18n } = useTranslation()
 
-  const { getReplyContent, sendReply, selectedSender, setReplyContent } =
-    useContext(MessageContext)
+  const {
+    getReplyContent,
+    sendReply,
+    selectedSender,
+    setReplyContent,
+    nestedAccounts
+  } = useContext(MessageContext)
 
   const onUpdateContent = useCallback(
     (content) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
   )
 
-  const { recipients } = useRecipients(messages, accountId)
-
   const replyContent = getReplyContent(threadId)
+
+  const allRecipients = messages.flatMap((m) => m.recipients)
+
+  const possibleSenderAccounts: NestedMessageAccount[] =
+    nestedAccounts.isSuccess
+      ? nestedAccounts.value.filter(({ account }) =>
+          allRecipients.some((r) => r.id === account.id)
+        )
+      : []
+
+  const senderAccountId: UUID | undefined =
+    possibleSenderAccounts[0]?.account.id
+
+  const { recipients } = useRecipients(messages, senderAccountId)
 
   const onSubmitReply = useCallback(() => {
     replyContent.length > 0 &&
@@ -52,12 +68,22 @@ export const ThreadView = React.memo(function ThreadView({
       sendReply({
         content: replyContent,
         messageId: messages.slice(-1)[0].id,
-        recipientAccountIds: recipients
-          .filter((r) => r.selected)
-          .map((r) => r.id),
-        accountId: selectedSender.id
+        recipientAccountIds: recipients.map((r) => r.id),
+        accountId: senderAccountId
       })
-  }, [replyContent, selectedSender, sendReply, recipients, messages])
+  }, [
+    replyContent,
+    selectedSender,
+    sendReply,
+    recipients,
+    messages,
+    senderAccountId
+  ])
+
+  const endOfMessagesRef = useRef<null | HTMLDivElement>(null)
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView(true)
+  }, [messages])
 
   return (
     <ThreadViewMobile data-qa={'thread-view-mobile'}>
@@ -73,43 +99,43 @@ export const ThreadView = React.memo(function ThreadView({
         <SingleMessage
           key={message.id}
           message={message}
-          accountId={accountId}
+          ours={possibleSenderAccounts.some(
+            ({ account }) => account.id === message.sender.id
+          )}
         />
       ))}
-      <ThreadViewReply>
-        <InputField
-          value={replyContent}
-          onChange={onUpdateContent}
-          className={'thread-view-input'}
-          wrapperClassName={'thread-view-input-wrapper'}
-          placeholder={i18n.messages.inputPlaceholder}
-          data-qa={'thread-reply-input'}
-        />
-        <RoundIconButton
-          onClick={onSubmitReply}
-          disabled={replyContent.length === 0}
-          data-qa={'thread-reply-button'}
-        >
-          <FontAwesomeIcon icon={faArrowRight} />
-        </RoundIconButton>
-      </ThreadViewReply>
+      <div ref={endOfMessagesRef} />
+      <ThreadViewReplyContainer>
+        <ThreadViewReply>
+          <TextArea
+            value={replyContent}
+            onChange={onUpdateContent}
+            className={'thread-view-input'}
+            wrapperClassName={'thread-view-input-wrapper'}
+            placeholder={i18n.messages.inputPlaceholder}
+            data-qa={'thread-reply-input'}
+          />
+          <RoundIconButton
+            onClick={onSubmitReply}
+            disabled={replyContent.length === 0}
+            data-qa={'thread-reply-button'}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </RoundIconButton>
+        </ThreadViewReply>
+      </ThreadViewReplyContainer>
     </ThreadViewMobile>
   )
 })
 
-function SingleMessage({
-  message,
-  accountId
-}: {
-  message: Message
-  accountId: UUID
-}) {
-  const ourMessage = message.sender.id === accountId
+function SingleMessage({ message, ours }: { message: Message; ours: boolean }) {
   return (
-    <MessageContainer ours={ourMessage} data-qa={'single-message'}>
+    <MessageContainer ours={ours} data-qa={'single-message'}>
       <TitleRow>
-        <SenderName>{message.sender.name}</SenderName>
-        <SentDate white={ourMessage}>{formatTime(message.sentAt)}</SentDate>
+        <SenderName data-qa={'single-message-sender-name'}>
+          {message.sender.name}
+        </SenderName>
+        <SentDate white={ours}>{formatTime(message.sentAt)}</SentDate>
       </TitleRow>
       <MessageContent data-qa="single-message-content">
         {message.content}
@@ -133,6 +159,9 @@ const RoundIconButton = styled.button`
   align-items: center;
   justify-content: center;
   color: white;
+  &:disabled {
+    background: ${colors.greyscale.lighter};
+  }
 `
 
 const MessageContainer = styled.div`
@@ -151,8 +180,7 @@ const MessageContainer = styled.div`
       background-color: ${colors.blues.lighter};
     `}
   padding: ${defaultMargins.s};
-  margin: ${defaultMargins.s};
-  margin-bottom: 0;
+  margin: ${defaultMargins.xs};
 `
 
 const SentDate = styled.div`
@@ -186,7 +214,8 @@ const ThreadViewMobile = styled(ThreadContainer)`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-bottom: ${defaultMargins.XXL};
+  overflow-y: unset;
+  min-height: 100vh;
 `
 
 const ThreadViewTopbar = styled.div`
@@ -202,13 +231,20 @@ const ThreadViewTitle = styled.span`
   font-weight: ${fontWeights.semibold};
 `
 
-const ThreadViewReply = styled.div`
-  position: fixed;
-  align-items: center;
-  bottom: ${defaultMargins.xs};
-  left: ${defaultMargins.s};
-  right: ${defaultMargins.s};
+const ThreadViewReplyContainer = styled.div`
+  position: sticky;
+  bottom: 0;
+  width: 100%;
   display: flex;
+  align-items: center;
+  background: ${colors.greyscale.white};
+  margin-top: auto;
+  padding: ${defaultMargins.xxs} ${defaultMargins.xs} ${defaultMargins.xs};
+`
+const ThreadViewReply = styled.div`
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
   gap: ${defaultMargins.xs};
   .thread-view-input-wrapper {
     display: block;

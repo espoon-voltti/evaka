@@ -74,7 +74,6 @@ export default function MessagesPage() {
             paddingVertical={'zero'}
           >
             <ThreadView
-              accountId={selectedSender.id}
               thread={selectedThread}
               onBack={() => selectThread(undefined)}
             />
