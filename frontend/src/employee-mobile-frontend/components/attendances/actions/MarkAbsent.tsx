@@ -83,7 +83,7 @@ export default React.memo(function MarkAbsent() {
       {renderResult(combine(child, groupNote), ([child, groupNote]) => (
         <>
           <BackButtonInline
-            onClick={() => history.goBack()}
+            onClick={() => history.go(-2)}
             icon={faArrowLeft}
             text={
               child ? `${child.firstName} ${child.lastName}` : i18n.common.back
