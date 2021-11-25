@@ -26,12 +26,14 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faPen, fasExclamationTriangle } from 'lib-icons'
+import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Redirect } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 import { renderResult } from '../async-rendering'
+import { refreshRedirect } from '../auth/requireAuth'
 import Footer from '../Footer'
+import { getLoginUri } from '../header/const'
 import { Translations, useTranslation } from '../localization'
 import { updatePersonalData } from './api'
 
@@ -55,6 +57,8 @@ export default React.memo(function PersonalDetails() {
     () => getPreferredNameOptions(user),
     [user]
   )
+
+  const navigateToLogin = useCallback(() => refreshRedirect(getLoginUri()), [])
 
   const formWrapper = (children: React.ReactNode) =>
     editing ? (
@@ -105,8 +109,11 @@ export default React.memo(function PersonalDetails() {
               postOffice,
               phone,
               backupPhone,
-              email
+              email,
+              userType
             } = personalData
+
+            const canEdit = userType === 'ENDUSER'
 
             return (
               <>
@@ -120,10 +127,10 @@ export default React.memo(function PersonalDetails() {
                 <EditButtonRow>
                   <InlineButton
                     text={t.common.edit}
-                    icon={faPen}
-                    onClick={startEditing}
+                    icon={canEdit ? faPen : faLockAlt}
+                    onClick={canEdit ? startEditing : navigateToLogin}
                     disabled={editing}
-                    data-qa="start-editing"
+                    data-qa={canEdit ? 'start-editing' : 'start-editing-login'}
                   />
                 </EditButtonRow>
                 {formWrapper(
