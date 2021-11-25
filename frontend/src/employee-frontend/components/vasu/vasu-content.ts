@@ -103,25 +103,25 @@ export function isFollowup(question: VasuQuestion): question is Followup {
   return question.type === 'FOLLOWUP'
 }
 
+function isFollowupJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<Followup> {
+  return question.type === 'FOLLOWUP'
+}
+
 export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
-  sections: content.sections.map(
-    (section: JsonOf<VasuSection>) =>
-      ({
-        ...section,
-        questions: section.questions.map((question: JsonOf<VasuQuestion>) =>
-          question.type === 'FOLLOWUP'
-            ? {
-                ...question,
-                value: (question.value as JsonOf<FollowupEntry[]>).map(
-                  (entry: JsonOf<FollowupEntry>) =>
-                    ({
-                      ...entry,
-                      date: LocalDate.parseIso(entry.date)
-                    } as FollowupEntry)
-                )
-              }
-            : question
-        )
-      } as VasuSection)
-  )
+  sections: content.sections.map((section: JsonOf<VasuSection>) => ({
+    ...section,
+    questions: section.questions.map((question: JsonOf<VasuQuestion>) =>
+      isFollowupJson(question)
+        ? {
+            ...question,
+            value: question.value.map((entry: JsonOf<FollowupEntry>) => ({
+              ...entry,
+              date: LocalDate.parseIso(entry.date)
+            }))
+          }
+        : question
+    )
+  }))
 })
