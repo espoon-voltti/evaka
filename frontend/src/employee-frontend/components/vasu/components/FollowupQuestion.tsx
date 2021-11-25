@@ -60,7 +60,7 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
       text: textValue
     })
     setTextValue('')
-  }, [onChange, user, textValue, setTextValue])
+  }, [onChange, user, textValue])
 
   return (
     <FollowupEntryInputRow fullWidth>
