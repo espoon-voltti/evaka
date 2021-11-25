@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { useHistory, useParams } from 'react-router-dom'
@@ -62,73 +62,69 @@ export default function MessagesPage() {
 
   const { i18n } = useTranslation()
 
-  return renderResult(
-    combine(unitInfoResponse, receivedMessages),
-    ([unit, messages]) => (
-      <>
-        {selectedThread && selectedSender ? (
-          <ContentArea
-            opaque
-            fullHeight
-            paddingHorizontal={'zero'}
-            paddingVertical={'zero'}
-          >
-            <ThreadView
-              thread={selectedThread}
-              onBack={() => selectThread(undefined)}
+  const onBack = useCallback(() => selectThread(undefined), [selectThread])
+
+  return selectedThread && selectedSender ? (
+    <ContentArea
+      opaque
+      fullHeight
+      paddingHorizontal={'zero'}
+      paddingVertical={'zero'}
+    >
+      <ThreadView thread={selectedThread} onBack={onBack} />
+    </ContentArea>
+  ) : (
+    renderResult(
+      combine(unitInfoResponse, receivedMessages),
+      ([unit, messages]) => (
+        <ContentArea
+          opaque
+          fullHeight
+          paddingVertical={'zero'}
+          paddingHorizontal={'zero'}
+        >
+          <TopBarWithGroupSelector
+            title={unit.name}
+            selectedGroup={selectedGroup}
+            onChangeGroup={changeGroup}
+            groups={unit.groups.filter((g) =>
+              groupAccounts
+                .flatMap((ga) => ga.daycareGroup?.id || [])
+                .includes(g.id)
+            )}
+          />
+          <HeaderContainer>
+            <H1 noMargin={true}>{i18n.messages.title}</H1>
+          </HeaderContainer>
+          {messages.length > 0 ? (
+            messages.map((thread) => (
+              <MessagePreview
+                thread={thread}
+                hasUnreadMessages={thread.messages.some(
+                  (item) =>
+                    !item.readAt && item.sender.id !== selectedAccount?.id
+                )}
+                onClick={() => {
+                  selectThread(thread)
+                }}
+                key={thread.id}
+              />
+            ))
+          ) : (
+            <EmptyMessageFolder
+              loading={receivedMessages.isLoading}
+              iconColor={colors.greyscale.medium}
+              text={i18n.messages.emptyInbox}
             />
-          </ContentArea>
-        ) : (
-          <ContentArea opaque fullHeight paddingHorizontal={'zero'}>
-            <TopBarWithGroupSelector
-              title={unit.name}
-              selectedGroup={selectedGroup}
-              onChangeGroup={changeGroup}
-              groups={
-                unitInfoResponse.isSuccess
-                  ? unitInfoResponse.value.groups.filter((g) =>
-                      groupAccounts
-                        .flatMap((ga) => ga.daycareGroup?.id || [])
-                        .includes(g.id)
-                    )
-                  : undefined
-              }
-            />
-            <ContentArea opaque paddingHorizontal={'zero'}>
-              <HeaderContainer>
-                <H1>{i18n.messages.title}</H1>
-              </HeaderContainer>
-              {messages.length > 0 ? (
-                messages.map((thread) => (
-                  <MessagePreview
-                    thread={thread}
-                    hasUnreadMessages={thread.messages.some(
-                      (item) =>
-                        !item.readAt && item.sender.id !== selectedAccount?.id
-                    )}
-                    onClick={() => {
-                      selectThread(thread)
-                    }}
-                    key={thread.id}
-                  />
-                ))
-              ) : (
-                <EmptyMessageFolder
-                  loading={receivedMessages.isLoading}
-                  iconColor={colors.greyscale.medium}
-                  text={i18n.messages.emptyInbox}
-                />
-              )}
-            </ContentArea>
-            <BottomNavBar selected="messages" />
-          </ContentArea>
-        )}
-      </>
+          )}
+          <BottomNavBar selected="messages" />
+        </ContentArea>
+      )
     )
   )
 }
 
 export const HeaderContainer = styled.div`
-  padding: 0 ${defaultMargins.s};
+  padding: ${defaultMargins.m} ${defaultMargins.s};
   border-bottom: 1px solid ${colors.greyscale.lighter};
 `
