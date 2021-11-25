@@ -11,6 +11,9 @@ import {
   waitUntilTrue
 } from '.'
 
+/**
+ * @deprecated Use playwright locators instead
+ */
 export class RawElement {
   constructor(public page: Page, public selector: string) {}
 

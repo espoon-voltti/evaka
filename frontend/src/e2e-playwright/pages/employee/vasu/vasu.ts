@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { RawElement } from '../../../utils/element'
+import { Locator, Page } from 'playwright'
 
 export default class VasuPage {
   constructor(private readonly page: Page) {}
@@ -11,11 +10,10 @@ export default class VasuPage {
   readonly #followupQuestion = this.page.locator(
     '[data-qa="vasu-followup-question"]'
   )
-  readonly #finalizeButton = new RawElement(
-    this.page,
+  readonly #finalizeButton = this.page.locator(
     '[data-qa="transition-button-MOVED_TO_READY"]'
   )
-  readonly #modalOkButton = new RawElement(this.page, '[data-qa="modal-okBtn"]')
+  readonly #modalOkButton = this.page.locator('[data-qa="modal-okBtn"]')
   readonly #documentSection = this.page.locator(
     '[data-qa="vasu-document-section"]'
   )
@@ -37,11 +35,11 @@ export default class VasuPage {
       .then(() => this.#followupQuestion.count())
   }
 
-  get finalizeButton(): RawElement {
+  get finalizeButton(): Locator {
     return this.#finalizeButton
   }
 
-  get modalOkButton(): RawElement {
+  get modalOkButton(): Locator {
     return this.#modalOkButton
   }
 
