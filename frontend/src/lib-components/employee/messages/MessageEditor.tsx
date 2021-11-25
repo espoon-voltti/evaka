@@ -49,6 +49,7 @@ import {
   SaveDraftParams
 } from 'lib-components/employee/messages/types'
 import Combobox from '../../atoms/dropdowns/Combobox'
+import classNames from 'classnames'
 
 type Message = UpsertableDraftContent & {
   sender: ReactSelectOption
@@ -430,137 +431,154 @@ export default React.memo(function MessageEditor({
       </BottomBarMobile>
     </ContainerMobile>
   ) : (
-    <Container
-      data-qa="message-editor"
-      data-status={draftState}
-      expanded={expandedView}
+    //          className={classNames({ checked: selected })}
+
+    <FullScreenContainer
+      data-qa="fullscreen-container"
+      className={classNames({ fullscreen: expandedView })}
     >
-      <TopBar>
-        <Title>{title}</Title>
-        <HeaderButtonContainer>
-          {expandedView ? (
+      <Container
+        data-qa="message-editor"
+        data-status={draftState}
+        className={classNames({ fullscreen: expandedView })}
+      >
+        <TopBar>
+          <Title>{title}</Title>
+          <HeaderButtonContainer>
+            {expandedView ? (
+              <IconButton
+                icon={faDownLeftAndUpRightToCenter}
+                onClick={toggleExpandedView}
+                white
+                size={'s'}
+                data-qa="collapse-view-btn"
+              />
+            ) : (
+              <IconButton
+                icon={faUpRightAndDownLeftFromCenter}
+                onClick={toggleExpandedView}
+                white
+                size={'s'}
+                data-qa="expand-view-btn"
+              />
+            )}
             <IconButton
-              icon={faDownLeftAndUpRightToCenter}
-              onClick={toggleExpandedView}
+              icon={faTimes}
+              onClick={onCloseHandler}
               white
-              size={'s'}
-              data-qa="collapse-view-btn"
+              size={'m'}
+              data-qa="close-message-editor-btn"
             />
-          ) : (
-            <IconButton
-              icon={faUpRightAndDownLeftFromCenter}
-              onClick={toggleExpandedView}
-              white
-              size={'s'}
-              data-qa="expand-view-btn"
+          </HeaderButtonContainer>
+        </TopBar>
+        <ScrollableFormArea>
+          <Bold>{i18n.sender}</Bold>
+          <Gap size={'xs'} />
+          <Combobox
+            items={senderOptions}
+            onChange={(sender) =>
+              sender ? updateMessage({ sender }) : undefined
+            }
+            selectedItem={message.sender}
+            getItemLabel={(sender) => sender.label}
+            data-qa="select-sender"
+            fullWidth
+          />
+          <div>
+            <Gap size={'s'} />
+            <Bold>{i18n.receivers}</Bold>
+            <Gap size={'xs'} />
+          </div>
+          <MultiSelect
+            placeholder={i18n.search}
+            value={selectedReceivers}
+            options={receiverOptions}
+            onChange={updateReceiverTree}
+            noOptionsMessage={i18n.noResults}
+            getOptionId={({ value }) => value}
+            getOptionLabel={({ label }) => label}
+            data-qa="select-receiver"
+          />
+          <Gap size={'s'} />
+          <Bold>{i18n.type.label}</Bold>
+          <Gap size={'xs'} />
+          <FixedSpaceRow>
+            <Radio
+              label={i18n.type.message}
+              checked={message.type === 'MESSAGE'}
+              onChange={() => updateMessage({ type: 'MESSAGE' })}
+            />
+            <Radio
+              label={i18n.type.bulletin}
+              checked={message.type === 'BULLETIN'}
+              onChange={() => updateMessage({ type: 'BULLETIN' })}
+            />
+          </FixedSpaceRow>
+          <Gap size={'s'} />
+          <Bold>{i18n.title}</Bold>
+          <InputField
+            value={message.title ?? ''}
+            onChange={(title) => updateMessage({ title })}
+            data-qa={'input-title'}
+          />
+          <Gap size="m" />
+          <Bold>{i18n.message}</Bold>
+          <Gap size="xs" />
+          <StyledTextArea
+            value={message.content}
+            onChange={(e) => updateMessage({ content: e.target.value })}
+            data-qa="input-content"
+          />
+          {attachmentsEnabled && (
+            <FileUpload
+              slim
+              disabled={!draftId}
+              data-qa="upload-message-attachment"
+              files={message.attachments}
+              i18n={i18n}
+              onDownloadFile={getAttachmentBlob}
+              onUpload={handleAttachmentUpload}
+              onDelete={handleAttachmentDelete}
             />
           )}
-          <IconButton
-            icon={faTimes}
-            onClick={onCloseHandler}
-            white
-            size={'m'}
-            data-qa="close-message-editor-btn"
+          <Gap size={'L'} />
+        </ScrollableFormArea>
+        <BottomBar>
+          {draftId ? (
+            <InlineButton
+              onClick={() => onDiscard(message.sender.value, draftId)}
+              text={i18n.deleteDraft}
+              icon={faTrash}
+              data-qa="discard-draft-btn"
+            />
+          ) : (
+            <Gap horizontal />
+          )}
+          <Button
+            text={sending ? i18n.sending : i18n.send}
+            primary
+            disabled={!sendEnabled}
+            onClick={sendHandler}
+            data-qa="send-message-btn"
           />
-        </HeaderButtonContainer>
-      </TopBar>
-      <ScrollableFormArea>
-        <Bold>{i18n.sender}</Bold>
-        <Gap size={'xs'} />
-        <Combobox
-          items={senderOptions}
-          onChange={(sender) =>
-            sender ? updateMessage({ sender }) : undefined
-          }
-          selectedItem={message.sender}
-          getItemLabel={(sender) => sender.label}
-          data-qa="select-sender"
-          fullWidth
-        />
-        <div>
-          <Gap size={'s'} />
-          <Bold>{i18n.receivers}</Bold>
-          <Gap size={'xs'} />
-        </div>
-        <MultiSelect
-          placeholder={i18n.search}
-          value={selectedReceivers}
-          options={receiverOptions}
-          onChange={updateReceiverTree}
-          noOptionsMessage={i18n.noResults}
-          getOptionId={({ value }) => value}
-          getOptionLabel={({ label }) => label}
-          data-qa="select-receiver"
-        />
-        <Gap size={'s'} />
-        <Bold>{i18n.type.label}</Bold>
-        <Gap size={'xs'} />
-        <FixedSpaceRow>
-          <Radio
-            label={i18n.type.message}
-            checked={message.type === 'MESSAGE'}
-            onChange={() => updateMessage({ type: 'MESSAGE' })}
-          />
-          <Radio
-            label={i18n.type.bulletin}
-            checked={message.type === 'BULLETIN'}
-            onChange={() => updateMessage({ type: 'BULLETIN' })}
-          />
-        </FixedSpaceRow>
-        <Gap size={'s'} />
-        <Bold>{i18n.title}</Bold>
-        <InputField
-          value={message.title ?? ''}
-          onChange={(title) => updateMessage({ title })}
-          data-qa={'input-title'}
-        />
-        <Gap size="m" />
-        <Bold>{i18n.message}</Bold>
-        <Gap size="xs" />
-        <StyledTextArea
-          value={message.content}
-          onChange={(e) => updateMessage({ content: e.target.value })}
-          data-qa="input-content"
-        />
-        {attachmentsEnabled && (
-          <FileUpload
-            slim
-            disabled={!draftId}
-            data-qa="upload-message-attachment"
-            files={message.attachments}
-            i18n={i18n}
-            onDownloadFile={getAttachmentBlob}
-            onUpload={handleAttachmentUpload}
-            onDelete={handleAttachmentDelete}
-          />
-        )}
-        <Gap size={'L'} />
-      </ScrollableFormArea>
-      <BottomBar>
-        {draftId ? (
-          <InlineButton
-            onClick={() => onDiscard(message.sender.value, draftId)}
-            text={i18n.deleteDraft}
-            icon={faTrash}
-            data-qa="discard-draft-btn"
-          />
-        ) : (
-          <Gap horizontal />
-        )}
-        <Button
-          text={sending ? i18n.sending : i18n.send}
-          primary
-          disabled={!sendEnabled}
-          onClick={sendHandler}
-          data-qa="send-message-btn"
-        />
-      </BottomBar>
-    </Container>
+        </BottomBar>
+      </Container>
+    </FullScreenContainer>
   )
 })
 
-const Container = styled.div<{ expanded: boolean }>`
-  width: ${({ expanded }) => (expanded ? '100%' : '680px')};
+const FullScreenContainer = styled.div`
+  &.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+`
+
+const Container = styled.div`
+  width: 680px;
   max-height: 900px;
   height: 105%;
   position: absolute;
@@ -572,6 +590,15 @@ const Container = styled.div<{ expanded: boolean }>`
   flex-direction: column;
   background-color: ${(p) => p.theme.colors.greyscale.white};
   overflow: scroll;
+
+  &.fullscreen {
+    width: 95%;
+    max-height: none;
+    height: 95%;
+    right: none;
+    bottom: none;
+    margin: 20px;
+  }
 `
 
 const ContainerMobile = styled.div`
@@ -651,7 +678,7 @@ const BottomBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ${defaultMargins.m};
+  padding: ${defaultMargins.xs};
 `
 
 const BottomBarMobile = styled.div`
