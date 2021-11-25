@@ -85,9 +85,9 @@ describe('Child Information assistance need functionality for employees', () => 
     await setupUser(config.unitSupervisorAad)
     await logUserIn('UNIT_SUPERVISOR')
     await assistanceNeeds.createNewAssistanceNeed()
-    await assistanceNeeds.setAssistanceNeedDescription('a description')
+    await assistanceNeeds.setAssistanceNeedMultiplier('1,5')
     await assistanceNeeds.confirmAssistanceNeed()
-    await assistanceNeeds.assertAssistanceNeedDescription('a description')
+    await assistanceNeeds.assertAssistanceNeedMultiplier('1,5')
   })
 
   test('assistance need before preschool for a child in preschool is not shown for unit manager', async () => {

@@ -81,38 +81,39 @@ export class ChildAssistanceNeed {
   #createAssistanceNeedButton = this.page.locator(
     '[data-qa="assistance-need-create-btn"]'
   )
-  #assistanceNeedDescriptionInput = this.page.locator(
-    '[data-qa="input-assistance-need-description"]'
+  #assistanceNeedMultiplierInput = this.page.locator(
+    '[data-qa="input-assistance-need-multiplier"]'
   )
   #confirmAssistanceNeedButton = this.page.locator(
     '[data-qa="button-assistance-need-confirm"]'
   )
-  #assistanceNeedDescription = this.page.locator(
-    '[data-qa="assistance-need-description"]'
+  #assistanceNeedMultiplier = this.page.locator(
+    '[data-qa="assistance-need-multiplier"]'
   )
 
   async createNewAssistanceNeed() {
     await this.#createAssistanceNeedButton.click()
   }
 
-  async setAssistanceNeedDescription(description: string) {
-    await this.#assistanceNeedDescriptionInput.type(description)
+  async setAssistanceNeedMultiplier(multiplier: string) {
+    await this.#assistanceNeedMultiplierInput.selectText()
+    await this.#assistanceNeedMultiplierInput.type(multiplier)
   }
 
   async confirmAssistanceNeed() {
     await this.#confirmAssistanceNeedButton.click()
   }
 
-  async assertAssistanceNeedDescription(expected: string, nth = 0) {
+  async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
     await waitUntilEqual(
-      () => this.#assistanceNeedDescription.nth(nth).innerText(),
+      () => this.#assistanceNeedMultiplier.nth(nth).innerText(),
       expected
     )
   }
 
   async assertAssistanceNeedCount(expectedCount: number) {
     await waitUntilEqual(
-      () => this.#assistanceNeedDescription.count(),
+      () => this.#assistanceNeedMultiplier.count(),
       expectedCount
     )
   }

@@ -305,7 +305,6 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                       info={basis.descriptionFi}
                       ariaLabel={''}
                       fullWidth={true}
-                      data-qa={'input-assistance-need-description'}
                     >
                       <CheckboxRow key={basis.value}>
                         <Checkbox
