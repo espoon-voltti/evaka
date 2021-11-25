@@ -199,13 +199,17 @@ export default React.memo(function UnitPageWrapper() {
   )
 })
 
-export const NotificationCounter = styled.span`
-  height: 21px;
-  padding: 4px 8px;
+export const NotificationCounter = styled.div`
+  width: 1.25em;
+  height: 1.25em;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
   border-radius: 50%;
   background-color: ${({ theme: { colors } }) => colors.accents.orange};
   color: ${({ theme: { colors } }) => colors.greyscale.white};
   margin-left: ${defaultMargins.xs};
   font-weight: ${fontWeights.bold};
-  font-size: 16px;
+  font-size: 0.75em;
 `

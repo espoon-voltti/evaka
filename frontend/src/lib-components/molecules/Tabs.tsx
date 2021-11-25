@@ -170,12 +170,17 @@ const TabTitle = styled.span<TabContainerProps>`
   }
 `
 
-const TabCounter = styled.span`
-  height: 21px;
-  padding: 0 8px;
-  border-radius: 10px;
+const TabCounter = styled.div`
+  width: 1.5em;
+  height: 1.5em;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 50%;
   background-color: ${({ theme: { colors } }) => colors.accents.orange};
   color: ${({ theme: { colors } }) => colors.greyscale.white};
-  margin-left: ${defaultMargins.s};
+  margin-left: ${defaultMargins.xs};
   font-weight: ${fontWeights.bold};
+  font-size: 1em;
 `
