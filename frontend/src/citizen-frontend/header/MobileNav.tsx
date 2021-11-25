@@ -2,16 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useState
-} from 'react'
-import styled from 'styled-components'
-import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { desktopMin } from 'lib-components/breakpoints'
+import { fontWeights } from 'lib-components/typography'
+import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import {
   faBars,
   faChevronDown,
@@ -23,17 +19,21 @@ import {
   faTimes,
   faUser
 } from 'lib-icons'
-import { desktopMin } from 'lib-components/breakpoints'
-import colors from 'lib-customizations/common'
-import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { fontWeights } from 'lib-components/typography'
-import { AuthContext, User, useUser } from '../auth/state'
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useState
+} from 'react'
+import { NavLink } from 'react-router-dom'
+import styled from 'styled-components'
+import { UnwrapResult } from '../async-rendering'
+import { AuthContext, User } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
+import AttentionIndicator from './AttentionIndicator'
 import { getLoginUri, getLogoutUri } from './const'
 import { CircledChar } from './DesktopNav'
-import AttentionIndicator from './AttentionIndicator'
-import { UnwrapResult } from '../async-rendering'
 
 type Props = {
   showMenu: boolean
@@ -64,7 +64,7 @@ export default React.memo(function MobileNav({
           !showMenu &&
           (unreadMessagesCount > 0 ||
             unreadPedagogicalDocumentsCount > 0 ||
-            user?.email === null)
+            !!(user && !user.email))
 
         return (
           <Container ref={ref} data-qa="mobile-nav">
@@ -76,17 +76,20 @@ export default React.memo(function MobileNav({
                 <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
               </AttentionIndicator>
             </MenuButton>
-            {showMenu ? (
+            {showMenu && (
               <MenuContainer>
                 <LanguageMenu close={close} />
                 <Gap size="s" />
-                <Navigation
-                  close={close}
-                  unreadMessagesCount={unreadMessagesCount}
-                  unreadPedagogicalDocumentsCount={
-                    unreadPedagogicalDocumentsCount
-                  }
-                />
+                {user && (
+                  <Navigation
+                    close={close}
+                    user={user}
+                    unreadMessagesCount={unreadMessagesCount}
+                    unreadPedagogicalDocumentsCount={
+                      unreadPedagogicalDocumentsCount
+                    }
+                  />
+                )}
                 <VerticalSpacer />
                 <UserContainer>
                   {user && <UserNameSubMenu user={user} close={close} />}
@@ -110,7 +113,7 @@ export default React.memo(function MobileNav({
                   )}
                 </UserContainer>
               </MenuContainer>
-            ) : null}
+            )}
           </Container>
         )
       }}
@@ -201,7 +204,7 @@ const LangButton = styled.button<{ active: boolean }>`
   background: transparent;
   color: ${colors.greyscale.white};
   padding: ${defaultMargins.xs};
-  font-family: Montserrat;
+  font-family: Montserrat, sans-serif;
   font-size: 1em;
   text-transform: uppercase;
   font-weight: ${(props) =>
@@ -215,70 +218,52 @@ const LangButton = styled.button<{ active: boolean }>`
 
 const Navigation = React.memo(function Navigation({
   close,
+  user,
   unreadMessagesCount,
   unreadPedagogicalDocumentsCount
 }: {
   close: () => void
+  user: User
   unreadMessagesCount: number
   unreadPedagogicalDocumentsCount: number
 }) {
   const t = useTranslation()
-  const user = useUser()
 
-  const isEnduser = user?.userType === 'ENDUSER'
-  const maybeLockElem = !isEnduser && (
+  const maybeLockElem = user.userType !== 'ENDUSER' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
     <Nav>
-      {user && (
-        <>
-          <StyledNavLink
-            to="/applying"
-            onClick={close}
-            data-qa="nav-applications"
-          >
-            {t.header.nav.applying} {maybeLockElem}
-          </StyledNavLink>
-          {user.accessibleFeatures.pedagogicalDocumentation && (
-            <StyledNavLink
-              to="/pedagogical-documents"
-              data-qa="nav-pedagogical-documents"
-              onClick={close}
-            >
-              {t.header.nav.pedagogicalDocuments}{' '}
-              {isEnduser && unreadPedagogicalDocumentsCount > 0 && (
-                <FloatingCircledChar>
-                  {unreadPedagogicalDocumentsCount}
-                </FloatingCircledChar>
-              )}
-              {maybeLockElem}
-            </StyledNavLink>
+      <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
+        {t.header.nav.applying} {maybeLockElem}
+      </StyledNavLink>
+      {user.accessibleFeatures.pedagogicalDocumentation && (
+        <StyledNavLink
+          to="/pedagogical-documents"
+          data-qa="nav-pedagogical-documents"
+          onClick={close}
+        >
+          {t.header.nav.pedagogicalDocuments}
+          {maybeLockElem}
+          {unreadPedagogicalDocumentsCount > 0 && (
+            <FloatingCircledChar>
+              {unreadPedagogicalDocumentsCount}
+            </FloatingCircledChar>
           )}
-          {user.accessibleFeatures.messages && (
-            <StyledNavLink
-              to="/messages"
-              onClick={close}
-              data-qa="nav-messages"
-            >
-              {t.header.nav.messages}{' '}
-              {unreadMessagesCount > 0 ? (
-                <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
-              ) : (
-                ''
-              )}
-            </StyledNavLink>
+        </StyledNavLink>
+      )}
+      {user.accessibleFeatures.messages && (
+        <StyledNavLink to="/messages" onClick={close} data-qa="nav-messages">
+          {t.header.nav.messages}
+          {unreadMessagesCount > 0 && (
+            <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
           )}
-          {user.accessibleFeatures.reservations && (
-            <StyledNavLink
-              to="/calendar"
-              onClick={close}
-              data-qa="nav-calendar"
-            >
-              {t.header.nav.calendar}
-            </StyledNavLink>
-          )}
-        </>
+        </StyledNavLink>
+      )}
+      {user.accessibleFeatures.reservations && (
+        <StyledNavLink to="/calendar" onClick={close} data-qa="nav-calendar">
+          {t.header.nav.calendar}
+        </StyledNavLink>
       )}
     </Nav>
   )
@@ -295,8 +280,12 @@ const FloatingCircledChar = styled(CircledChar)`
 `
 
 const StyledNavLink = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.s};
+
   color: inherit;
-  font-family: Montserrat;
+  font-family: Montserrat, sans-serif;
   font-weight: ${fontWeights.medium};
   text-decoration: none;
   text-transform: uppercase;
@@ -312,10 +301,6 @@ const StyledNavLink = styled(NavLink)`
   &.active {
     font-weight: ${fontWeights.bold};
     border-color: ${colors.greyscale.white};
-  }
-
-  & > :last-child {
-    margin-left: ${defaultMargins.xs};
   }
 `
 
@@ -353,7 +338,7 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
     () => setShow((previous) => !previous),
     [setShow]
   )
-  const lock = user.userType !== 'ENDUSER' && (
+  const maybeLockElem = user.userType !== 'ENDUSER' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
 
@@ -361,7 +346,7 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
     <>
       <SubMenuButton onClick={toggleShow} data-qa="user-menu-title-mobile">
         <AttentionIndicator
-          toggled={user.email === null}
+          toggled={!user.email}
           data-qa="attention-indicator-mobile"
         >
           <FontAwesomeIcon icon={faUser} size="lg" />
@@ -382,7 +367,8 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
             data-qa="nav-personal-details"
           >
             {t.header.nav.personalDetails}
-            {user.email === null && (
+            {maybeLockElem}
+            {!user.email && (
               <FontAwesomeIcon
                 icon={faCircleExclamation}
                 size="lg"
@@ -391,7 +377,7 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
             )}
           </SubMenuLink>
           <SubMenuLink to="/income" onClick={close} data-qa="nav-income">
-            {t.header.nav.income} {lock}
+            {t.header.nav.income} {maybeLockElem}
           </SubMenuLink>
         </Nav>
       )}
@@ -413,6 +399,8 @@ const HorizontalSpacer = styled.div`
 const SubMenuLink = styled(StyledNavLink)`
   margin-left: ${defaultMargins.L};
   text-transform: none;
+  display: flex;
+  gap: ${defaultMargins.xs};
 `
 
 const UserName = styled.span`

@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { desktopMin } from 'lib-components/breakpoints'
+import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -19,13 +21,11 @@ import {
 import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
-import { AuthContext, useUser } from '../auth/state'
-import { Lang, langs, useLang, useTranslation } from '../localization'
-import { getLoginUri, getLogoutUri } from './const'
-import AttentionIndicator from './AttentionIndicator'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { UnwrapResult } from '../async-rendering'
+import { AuthContext, User } from '../auth/state'
+import { Lang, langs, useLang, useTranslation } from '../localization'
+import AttentionIndicator from './AttentionIndicator'
+import { getLoginUri, getLogoutUri } from './const'
 
 interface Props {
   unreadMessagesCount: number
@@ -42,7 +42,7 @@ export default React.memo(function DesktopNav({
     <UnwrapResult result={user} loading={() => null}>
       {(user) => {
         const isEnduser = user?.userType === 'ENDUSER'
-        const maybeLockElem = isEnduser ? null : (
+        const maybeLockElem = !isEnduser && (
           <FontAwesomeIcon icon={faLockAlt} size="xs" />
         )
         return (
@@ -59,14 +59,12 @@ export default React.memo(function DesktopNav({
                       data-qa="nav-pedagogical-documents"
                     >
                       {t.header.nav.pedagogicalDocuments}
+                      {maybeLockElem}
                       {isEnduser && unreadPedagogicalDocuments > 0 && (
-                        <CircledChar
-                          data-qa={'unread-pedagogical-documents-count'}
-                        >
+                        <CircledChar data-qa="unread-pedagogical-documents-count">
                           {unreadPedagogicalDocuments}
                         </CircledChar>
                       )}
-                      {maybeLockElem}
                     </StyledNavLink>
                   )}
                   {user.accessibleFeatures.messages && (
@@ -89,7 +87,7 @@ export default React.memo(function DesktopNav({
             </Nav>
             <LanguageMenu />
             {user ? (
-              <UserMenu />
+              <UserMenu user={user} />
             ) : (
               <Login href={getLoginUri()} data-qa="login-btn">
                 <Icon icon={faSignIn} />
@@ -126,6 +124,7 @@ const StyledNavLink = styled(NavLink)`
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: ${defaultMargins.xs};
   font-family: Montserrat, sans-serif;
   font-size: 0.9375rem;
   text-transform: uppercase;
@@ -136,10 +135,6 @@ const StyledNavLink = styled(NavLink)`
   &.active {
     border-color: ${colors.greyscale.white};
     font-weight: ${fontWeights.bold};
-  }
-
-  & > :last-child {
-    margin-left: ${defaultMargins.xs};
   }
 `
 
@@ -164,7 +159,6 @@ export const CircledChar = styled.div`
   height: ${defaultMargins.s};
   border: 1px solid ${colors.greyscale.white};
   padding: 10px;
-  margin-left: ${defaultMargins.xs};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -183,12 +177,12 @@ const LanguageMenu = React.memo(function LanguageMenu() {
 
   return (
     <div ref={dropDownRef}>
-      <DropDownButton onClick={toggleOpen} data-qa={'button-select-language'}>
+      <DropDownButton onClick={toggleOpen} data-qa="button-select-language">
         {lang.toUpperCase()}
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown data-qa={'select-lang'}>
+        <DropDown data-qa="select-lang">
           {langs.map((l: Lang) => (
             <DropDownItem
               key={l}
@@ -209,21 +203,23 @@ const LanguageMenu = React.memo(function LanguageMenu() {
   )
 })
 
-const UserMenu = React.memo(function UserMenu() {
+const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
   const t = useTranslation()
   const history = useHistory()
-  const user = useUser()
   const theme = useTheme()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
-  const showUserAttentionIndicator = user?.email === null
+  const showUserAttentionIndicator = !user.email
+  const maybeLockElem = user.userType !== 'ENDUSER' && (
+    <FontAwesomeIcon icon={faLockAlt} size="xs" />
+  )
 
   return (
     <div ref={dropDownRef}>
-      <DropDownButton onClick={toggleOpen} data-qa={'user-menu-title-desktop'}>
+      <DropDownButton onClick={toggleOpen} data-qa="user-menu-title-desktop">
         <AttentionIndicator
           toggled={showUserAttentionIndicator}
           data-qa="attention-indicator-desktop"
@@ -231,51 +227,48 @@ const UserMenu = React.memo(function UserMenu() {
           <Icon icon={faUser} />
         </AttentionIndicator>
         <Gap size="s" horizontal />
-        {user?.preferredName || user?.firstName} {user?.lastName}
+        {user.preferredName || user.firstName} {user.lastName}
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
-      {open && user ? (
-        <DropDown data-qa={'user-menu'}>
+      {open ? (
+        <DropDown data-qa="user-menu">
           <DropDownItem
             selected={window.location.pathname.includes('/personal-details')}
-            data-qa={'user-menu-personal-details'}
+            data-qa="user-menu-personal-details"
             onClick={() => {
               setOpen(false)
               history.push('/personal-details')
             }}
           >
             {t.header.nav.personalDetails}
+            {maybeLockElem}
             {showUserAttentionIndicator && (
-              <>
-                <Gap size="xs" horizontal />
-                <RoundIcon
-                  content={faExclamation}
-                  color={theme.colors.accents.orange}
-                  size="s"
-                  data-qa="personal-details-attention-indicator-desktop"
-                />
-              </>
+              <RoundIcon
+                content={faExclamation}
+                color={theme.colors.accents.orange}
+                size="s"
+                data-qa="personal-details-attention-indicator-desktop"
+              />
             )}
           </DropDownItem>
           <DropDownItem
             selected={window.location.pathname.includes('/income')}
-            data-qa={'user-menu-income'}
+            data-qa="user-menu-income"
             onClick={() => {
               setOpen(false)
               history.push('/income')
             }}
           >
-            {t.header.nav.income}
+            {t.header.nav.income} {maybeLockElem}
           </DropDownItem>
           <DropDownItem
-            key={'user-menu-logout'}
+            key="user-menu-logout"
             selected={false}
             onClick={() => {
               location.href = getLogoutUri(user)
             }}
           >
             {t.header.logout}
-            <Gap size="xs" horizontal />
             <FontAwesomeIcon icon={faSignOut} />
           </DropDownItem>
         </DropDown>
@@ -318,6 +311,7 @@ const DropDown = styled.ul`
 const DropDownItem = styled.button<{ selected: boolean }>`
   display: flex;
   flex-direction: row;
+  gap: ${defaultMargins.xs};
   align-items: center;
   border: none;
   background: transparent;
@@ -328,10 +322,7 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   font-size: 1em;
   font-weight: ${({ selected }) =>
     selected ? fontWeights.semibold : fontWeights.normal};
-  padding-top: 15px;
-  padding-bottom: 15px;
-  padding-left: 10px;
-  padding-right: 50px;
+  padding: 15px 50px 15px 10px;
   width: 100%;
 
   &:hover {
@@ -340,7 +331,5 @@ const DropDownItem = styled.button<{ selected: boolean }>`
 `
 
 const LanguageShort = styled.span`
-  width: 1.8rem;
   text-transform: uppercase;
-  text-align: left;
 `
