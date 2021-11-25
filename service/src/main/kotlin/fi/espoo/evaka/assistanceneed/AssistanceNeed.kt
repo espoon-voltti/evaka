@@ -16,18 +16,14 @@ data class AssistanceNeed(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val capacityFactor: Double,
-    val description: String,
     val bases: Set<String>,
-    val otherBasis: String
 )
 
 data class AssistanceNeedRequest(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val capacityFactor: Double,
-    val description: String = "",
     val bases: Set<String> = emptySet(),
-    val otherBasis: String = ""
 )
 
 data class AssistanceBasisOption(

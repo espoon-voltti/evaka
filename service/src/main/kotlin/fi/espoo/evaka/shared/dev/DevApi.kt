@@ -366,6 +366,7 @@ class DevApi(
         }
 
     data class DevCreateIncomeStatements(val personId: UUID, val data: List<IncomeStatementBody>)
+
     @PostMapping("/income-statements")
     fun createIncomeStatements(db: Database.Connection, @RequestBody body: DevCreateIncomeStatements) =
         db.transaction { tx -> body.data.forEach { tx.createIncomeStatement(body.personId, it) } }
@@ -1044,8 +1045,6 @@ data class DevAssistanceNeed(
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val capacityFactor: Double = 1.0,
     val bases: Set<String> = emptySet(),
-    val otherBasis: String = "",
-    val description: String = ""
 )
 
 data class DevAssistanceAction(

@@ -6,16 +6,15 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { AssistanceMeasure } from 'lib-customizations/types'
+import {
+  AssistanceBasisOption,
+  AssistanceNeed as ServiceAssistanceNeed
+} from 'lib-common/generated/api-types/assistanceneed'
 
-export interface AssistanceNeed {
-  id: UUID
-  childId: UUID
-  startDate: LocalDate
-  endDate: LocalDate
-  capacityFactor: number
-  description: string
+export type { AssistanceBasisOption }
+
+export interface AssistanceNeed extends Omit<ServiceAssistanceNeed, 'bases'> {
   bases: Set<string>
-  otherBasis: string
 }
 
 export type { AssistanceMeasure }
@@ -33,12 +32,6 @@ export interface AssistanceAction {
 export interface AssistanceActionOption {
   value: string
   nameFi: string
-}
-
-export interface AssistanceBasisOption {
-  value: string
-  nameFi: string
-  descriptionFi: string | null
 }
 
 export interface AdditionalInformation {

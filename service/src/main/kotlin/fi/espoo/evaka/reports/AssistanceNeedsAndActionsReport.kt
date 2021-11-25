@@ -61,7 +61,6 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         val unitProviderType: ProviderType,
         @Json
         val basisCounts: Map<AssistanceBasisOptionValue, Int>,
-        val otherBasisCount: Int,
         val noBasisCount: Int,
         @Json
         val actionCounts: Map<AssistanceActionOptionValue, Int>,
@@ -103,7 +102,6 @@ SELECT
             GROUP BY o.value
         ) basis_counts
     ) AS basis_counts,
-    coalesce(basis_stats.other_count, 0) AS other_basis_count,
     coalesce(basis_stats.none_count, 0) AS no_basis_count,
     (
         SELECT jsonb_object_agg(value, count)
@@ -146,8 +144,7 @@ JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_da
 LEFT JOIN (
     SELECT
         gpl.daycare_group_id AS group_id,
-        count(1) FILTER (WHERE an.other_basis != '') AS other_count,
-        count(1) FILTER (WHERE an.other_basis = '' AND NOT EXISTS (SELECT 1 FROM assistance_basis_option_ref WHERE need_id = an.id)) AS none_count
+        count(1) FILTER (WHERE NOT EXISTS (SELECT 1 FROM assistance_basis_option_ref WHERE need_id = an.id)) AS none_count
     FROM daycare_group_placement gpl
     JOIN placement pl ON pl.id = gpl.daycare_placement_id
     JOIN assistance_need an ON an.child_id = pl.child_id

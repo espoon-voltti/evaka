@@ -8,15 +8,9 @@ import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { AssistanceNeedRequest } from 'lib-common/generated/api-types/assistanceneed'
 
-export interface AssistanceNeedRequest {
-  startDate: LocalDate
-  endDate: LocalDate
-  capacityFactor: number
-  description: string
-  bases: string[]
-  otherBasis: string
-}
+export type { AssistanceNeedRequest }
 
 export async function createAssistanceNeed(
   childId: UUID,

@@ -24,10 +24,8 @@ export interface AssistanceNeed {
   bases: string[]
   capacityFactor: number
   childId: UUID
-  description: string
   endDate: LocalDate
   id: UUID
-  otherBasis: string
   startDate: LocalDate
 }
 
@@ -37,8 +35,6 @@ export interface AssistanceNeed {
 export interface AssistanceNeedRequest {
   bases: string[]
   capacityFactor: number
-  description: string
   endDate: LocalDate
-  otherBasis: string
   startDate: LocalDate
 }
