@@ -9,12 +9,14 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 data class ChildImage(
     val id: UUID,
-    val childId: UUID
+    val childId: UUID,
+    val updated: HelsinkiDateTime
 )
 
 const val childImagesBucketPrefix = "child-images/"

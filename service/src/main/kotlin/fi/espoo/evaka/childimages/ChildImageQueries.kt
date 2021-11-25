@@ -28,7 +28,7 @@ fun Database.Transaction.deleteChildImage(childId: UUID): UUID? {
 }
 
 fun Database.Read.getChildImage(imageId: UUID): ChildImage {
-    return createQuery("SELECT id, child_id FROM child_images WHERE id = :id;")
+    return createQuery("SELECT id, child_id, updated FROM child_images WHERE id = :id;")
         .bind("id", imageId)
         .mapTo<ChildImage>()
         .firstOrNull() ?: throw NotFound("Image $imageId not found")
