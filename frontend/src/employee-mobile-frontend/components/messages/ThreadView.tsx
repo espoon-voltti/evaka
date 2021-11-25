@@ -205,7 +205,8 @@ const ThreadViewMobile = styled(ThreadContainer)`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-bottom: ${defaultMargins.XXL};
+  overflow-y: unset;
+  min-height: 100vh;
 `
 
 const ThreadViewTopbar = styled.div`
@@ -222,13 +223,13 @@ const ThreadViewTitle = styled.span`
 `
 
 const ThreadViewReplyContainer = styled.div`
-  position: fixed;
+  position: sticky;
   bottom: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
   display: flex;
   align-items: center;
   background: ${colors.greyscale.white};
+  margin-top: auto;
   padding: ${defaultMargins.xxs} ${defaultMargins.xs} ${defaultMargins.xs};
 `
 const ThreadViewReply = styled.div`
