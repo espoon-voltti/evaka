@@ -39,7 +39,10 @@ const app = express()
 const redisClient = createRedisClient()
 trustReverseProxy(app)
 app.set('etag', false)
-app.use(nocache())
+
+const allRoutesExceptChildImages = /^(?!\/api\/internal\/child-images\/)/
+app.use(allRoutesExceptChildImages, nocache())
+
 app.use(
   helmet({
     // Content-Security-Policy is set by the nginx proxy

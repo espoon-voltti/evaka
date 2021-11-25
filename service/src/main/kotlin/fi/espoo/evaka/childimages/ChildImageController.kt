@@ -78,6 +78,7 @@ class ChildImageController(
 
         return ResponseEntity.ok()
             .contentType(MediaType.IMAGE_JPEG)
+            .lastModified(image.updated.toInstant())
             .body(InputStreamResource(stream))
     }
 }
