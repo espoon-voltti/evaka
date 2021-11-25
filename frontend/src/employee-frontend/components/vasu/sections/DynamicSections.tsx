@@ -17,6 +17,7 @@ import FollowupQuestionElem from '../components/FollowupQuestion'
 import {
   CheckboxQuestion,
   Followup,
+  FollowupEntry,
   isCheckboxQuestion,
   isFollowup,
   isMultiSelectQuestion,
@@ -57,7 +58,11 @@ export function DynamicSections({
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
       <Fragment key={section.name}>
-        <SectionContent opaque padBottom={!isLastQuestionFollowup}>
+        <SectionContent
+          opaque
+          padBottom={!isLastQuestionFollowup}
+          data-qa="vasu-document-section"
+        >
           <H2>
             {sectionIndex + 1 + sectionOffset}. {section.name}
           </H2>
@@ -175,12 +180,12 @@ export function DynamicSections({
                       translations={translations}
                       onChange={
                         setContent
-                          ? (value: string) =>
+                          ? (value: FollowupEntry) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 = clone.sections[sectionIndex]
                                   .questions[questionIndex] as Followup
-                                question1.value = value
+                                question1.value.push(value)
                                 return clone
                               })
                           : undefined

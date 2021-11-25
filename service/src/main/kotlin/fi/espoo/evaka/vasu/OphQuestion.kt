@@ -132,7 +132,7 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Laadittu-tilassa olevaa varhaiskasvatussuunnitelmaa päivitetään pääasiassa lisäämällä uutta tekstiä Täydennykset ja jatkuva arviointi -osioon. Sinne voidaan mm. lisätä huomioita koskien lapsen kehitystä, arjen tapahtumia sekä huoltajien kanssa käytyjä keskusteluja."
                         VasuLanguage.SV -> ""
                     },
-                    value = ""
+                    value = emptyList()
                 )
             )
         ),

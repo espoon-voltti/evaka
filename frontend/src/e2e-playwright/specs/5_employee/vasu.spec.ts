@@ -7,6 +7,7 @@ import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
+  insertVasuDocument,
   insertVasuTemplateFixture,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -22,14 +23,15 @@ import ChildInformationPage, {
 import { newBrowserContext } from 'e2e-playwright/browser'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
+import VasuPage from '../../pages/employee/vasu/vasu'
+import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let childInformationPage: ChildInformationPage
 let childId: UUID
+let templateId: UUID
 
-jest.setTimeout(100000)
-
-beforeEach(async () => {
+beforeAll(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
@@ -44,21 +46,86 @@ beforeEach(async () => {
     unitId
   )
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  await insertVasuTemplateFixture()
-
-  page = await (await newBrowserContext()).newPage()
-  await employeeLogin(page, 'ADMIN')
-  await page.goto(config.employeeUrl + '/child-information/' + childId)
-  childInformationPage = new ChildInformationPage(page)
+  templateId = await insertVasuTemplateFixture()
 })
 
-describe('Child Information - Vasu documents', () => {
+describe('Child Information - Vasu documents section', () => {
   let section: VasuAndLeopsSection
   beforeEach(async () => {
+    page = await (await newBrowserContext()).newPage()
+    await employeeLogin(page, 'ADMIN')
+    await page.goto(`${config.employeeUrl}/child-information/${childId}`)
+    childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('vasuAndLeops')
   })
 
   test('Can add a new vasu document', async () => {
     await section.addNew()
+  })
+})
+
+describe('Vasu document page', () => {
+  let vasuPage: VasuPage
+  let vasuDocId: UUID
+
+  const openDocument = async () => {
+    await page.goto(`${config.employeeUrl}/vasu/${vasuDocId}`)
+    return new VasuPage(page)
+  }
+
+  const editDocument = async () => {
+    await page.goto(`${config.employeeUrl}/vasu/${vasuDocId}/edit`)
+    return new VasuPage(page)
+  }
+
+  beforeAll(async () => {
+    vasuDocId = await insertVasuDocument(childId, templateId)
+  })
+
+  beforeEach(async () => {
+    page = await (await newBrowserContext()).newPage()
+    await employeeLogin(page, 'ADMIN')
+    vasuPage = await openDocument()
+  })
+
+  test('An unpublished vasu document has no followup questions', async () => {
+    const count = await vasuPage.followupQuestionCount
+    expect(count).toBe(0)
+  })
+
+  describe('With a finalized document', () => {
+    const finalizeDocument = async () => {
+      await vasuPage.finalizeButton.click()
+      await vasuPage.modalOkButton.click()
+      await vasuPage.modalOkButton.click()
+      vasuPage = await openDocument()
+      await vasuPage.assertDocumentVisible()
+    }
+
+    beforeAll(async () => {
+      page = await (await newBrowserContext()).newPage()
+      await employeeLogin(page, 'ADMIN')
+      vasuPage = await openDocument()
+      await finalizeDocument()
+    })
+
+    test('A published vasu document has one followup question', async () => {
+      const count = await vasuPage.followupQuestionCount
+      expect(count).toBe(1)
+    })
+
+    test('Adding a followup comment renders it on the page', async () => {
+      vasuPage = await editDocument()
+      await vasuPage.inputFollowupComment('This is a followup')
+      let entryTexts = await vasuPage.followupEntryTexts
+      expect(entryTexts).toEqual(['This is a followup'])
+      await vasuPage.inputFollowupComment('A second one')
+      entryTexts = await vasuPage.followupEntryTexts
+      expect(entryTexts).toEqual(['This is a followup', 'A second one'])
+
+      const entryMetadata = await vasuPage.followupEntryMetadata
+      const expectedMetadataStr = `${LocalDate.today().format()} Seppo Sorsa`
+      expect(entryMetadata).toEqual([expectedMetadataStr, expectedMetadataStr])
+    })
   })
 })

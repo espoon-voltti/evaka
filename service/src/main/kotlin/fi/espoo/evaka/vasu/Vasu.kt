@@ -211,7 +211,7 @@ sealed class VasuQuestion(
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
         val title: String = "",
-        val value: String
+        val value: List<FollowupEntry>
     ) : VasuQuestion(VasuQuestionType.FOLLOWUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is Followup && question.copy(value = this.value) == this
@@ -257,4 +257,11 @@ data class EvaluationDiscussionContent(
     val participants: String = "",
     val guardianViewsAndCollaboration: String = "",
     val evaluation: String = ""
+)
+
+@Json
+data class FollowupEntry(
+    val date: LocalDate = LocalDate.now(),
+    val authorName: String = "",
+    val text: String = ""
 )

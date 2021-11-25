@@ -840,9 +840,25 @@ export async function insertGuardianFixtures(
   }
 }
 
-export async function insertVasuTemplateFixture(): Promise<void> {
+export async function insertVasuTemplateFixture(): Promise<UUID> {
   try {
-    await devClient.post('/vasu-template')
+    const { data } = await devClient.post<UUID>('/vasu/template')
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertVasuDocument(
+  childId: UUID,
+  templateId: UUID
+): Promise<UUID> {
+  try {
+    const { data } = await devClient.post<UUID>('/vasu/doc', {
+      childId,
+      templateId
+    })
+    return data
   } catch (e) {
     throw new DevApiError(e)
   }
