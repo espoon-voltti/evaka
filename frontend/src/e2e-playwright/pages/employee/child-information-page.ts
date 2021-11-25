@@ -74,3 +74,47 @@ export default class ChildInformationPage {
       .click()
   }
 }
+
+export class ChildAssistanceNeed {
+  constructor(private page: Page) {}
+
+  #createAssistanceNeedButton = this.page.locator(
+    '[data-qa="assistance-need-create-btn"]'
+  )
+  #assistanceNeedMultiplierInput = this.page.locator(
+    '[data-qa="input-assistance-need-multiplier"]'
+  )
+  #confirmAssistanceNeedButton = this.page.locator(
+    '[data-qa="button-assistance-need-confirm"]'
+  )
+  #assistanceNeedMultiplier = this.page.locator(
+    '[data-qa="assistance-need-multiplier"]'
+  )
+
+  async createNewAssistanceNeed() {
+    await this.#createAssistanceNeedButton.click()
+  }
+
+  async setAssistanceNeedMultiplier(multiplier: string) {
+    await this.#assistanceNeedMultiplierInput.selectText()
+    await this.#assistanceNeedMultiplierInput.type(multiplier)
+  }
+
+  async confirmAssistanceNeed() {
+    await this.#confirmAssistanceNeedButton.click()
+  }
+
+  async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
+    await waitUntilEqual(
+      () => this.#assistanceNeedMultiplier.nth(nth).innerText(),
+      expected
+    )
+  }
+
+  async assertAssistanceNeedCount(expectedCount: number) {
+    await waitUntilEqual(
+      () => this.#assistanceNeedMultiplier.count(),
+      expectedCount
+    )
+  }
+}

@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildDailyNoteId
@@ -125,9 +126,10 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class AssistanceNeed(private val roles: EnumSet<UserRole>) : Action {
+    enum class AssistanceNeed(private val roles: EnumSet<UserRole>) : ScopedAction<AssistanceNeedId> {
         UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER);
+        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        READ_PRE_PRESCHOOL_ASSISTANCE_NEED;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -27,7 +28,8 @@ import java.util.UUID
 @RestController
 class AssistanceNeedController(
     private val assistanceNeedService: AssistanceNeedService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val personService: PersonService
 ) {
     @PostMapping("/children/{childId}/assistance-needs")
     fun createAssistanceNeed(
@@ -51,10 +53,12 @@ class AssistanceNeedController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
-    ): ResponseEntity<List<AssistanceNeed>> {
+    ): List<AssistanceNeed> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
-        return assistanceNeedService.getAssistanceNeedsByChildId(db, childId).let(::ok)
+        return assistanceNeedService.getAssistanceNeedsByChildId(db, childId).filter { assistanceNeed ->
+            accessControl.hasPermissionFor(user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, assistanceNeed.id)
+        }
     }
 
     @PutMapping("/assistance-needs/{id}")

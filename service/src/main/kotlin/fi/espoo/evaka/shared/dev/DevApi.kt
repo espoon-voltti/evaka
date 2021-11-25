@@ -892,6 +892,16 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db.transaction { it.insertVoucherValues() }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/assistance-needs")
+    fun createAssistanceNeeds(db: Database.Connection, @RequestBody assistanceNeeds: List<DevAssistanceNeed>): ResponseEntity<Unit> {
+        db.transaction { tx ->
+            assistanceNeeds.forEach {
+                tx.insertTestAssistanceNeed(it)
+            }
+        }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun Database.Transaction.ensureFakeAdminExists() {

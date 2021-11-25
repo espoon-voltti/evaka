@@ -114,7 +114,9 @@ export default React.memo(function AssistanceNeedRow({
                   i18n.childInformation.assistanceNeed.fields.capacityFactor,
                 value: (
                   <span>
-                    {formatDecimal(assistanceNeed.capacityFactor)}
+                    <span data-qa={'assistance-need-multiplier'}>
+                      {formatDecimal(assistanceNeed.capacityFactor)}
+                    </span>
                     <InfoBall
                       text={
                         i18n.childInformation.assistanceNeed.fields

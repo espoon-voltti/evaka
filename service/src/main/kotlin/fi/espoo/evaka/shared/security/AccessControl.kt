@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.application.isOwnApplication
 import fi.espoo.evaka.application.notes.getApplicationNoteCreatedBy
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.assistanceneed.getAssistanceNeedById
 import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
@@ -17,6 +18,8 @@ import fi.espoo.evaka.messaging.hasPermissionForMessageDraft
 import fi.espoo.evaka.pedagogicaldocument.citizenHasPermissionForPedagogicalDocument
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -282,6 +285,7 @@ WHERE employee_id = :userId
         when (action) {
             is Action.Application -> hasPermissionFor(user, action, id as ApplicationId)
             is Action.ApplicationNote -> hasPermissionFor(user, action, id as ApplicationNoteId)
+            is Action.AssistanceNeed -> hasPermissionFor(user, action, id as AssistanceNeedId)
             is Action.Attachment -> hasPermissionFor(user, action, id as AttachmentId)
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
             is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, id as ChildDailyNoteId)
@@ -341,6 +345,36 @@ WHERE employee_id = :userId
             mapping = permittedRoleActions::assistanceNeedActions
         )
     }
+
+    private fun hasPermissionFor(
+        user: AuthenticatedUser,
+        action: Action.AssistanceNeed,
+        id: AssistanceNeedId
+    ) =
+        when (user) {
+            is AuthenticatedUser.Employee -> when (action) {
+                Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED ->
+                    // If child is or has been in preschool, do not show pre preschool daycare assistance needs for non admin
+                    if (user.isAdmin) true
+                    else {
+                        Database(jdbi).connect { db ->
+                            db.read {
+                                it.getAssistanceNeedById(id).let { assistanceNeed ->
+                                    val preschoolPlacements = it.getPlacementsForChild(assistanceNeed.childId).filter {
+                                        (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
+                                    }
+                                    preschoolPlacements.size == 0 ||
+                                        preschoolPlacements.any { placement ->
+                                            placement.startDate.isBefore(assistanceNeed.startDate) || placement.startDate.equals(assistanceNeed.startDate)
+                                        }
+                                }
+                            }
+                        }
+                    }
+                else -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::assistanceNeedActions)
+            }
+            else -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::assistanceNeedActions)
+        }
 
     private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Attachment, id: AttachmentId) =
         when (user) {

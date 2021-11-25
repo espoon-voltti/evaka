@@ -589,3 +589,14 @@ export interface ServiceNeedFixture {
   confirmedBy: UUID
   confirmedAt: LocalDate
 }
+
+export interface AssistanceNeed {
+  id: string
+  updatedBy: string
+  childId: string
+  startDate: Date
+  endDate: Date
+  capacityFactor: number
+  description: string
+  otherBasis: string
+}
