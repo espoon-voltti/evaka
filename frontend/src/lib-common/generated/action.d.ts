@@ -50,6 +50,7 @@ export type Application =
 
 export type AssistanceAction =
   | 'DELETE'
+  | 'READ_PRE_PRESCHOOL_ASSISTANCE_ACTION'
   | 'UPDATE'
 
 export type AssistanceNeed =
