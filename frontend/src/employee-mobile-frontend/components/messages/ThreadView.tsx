@@ -159,6 +159,9 @@ const RoundIconButton = styled.button`
   align-items: center;
   justify-content: center;
   color: white;
+  &:disabled {
+    background: ${colors.greyscale.lighter};
+  }
 `
 
 const MessageContainer = styled.div`
