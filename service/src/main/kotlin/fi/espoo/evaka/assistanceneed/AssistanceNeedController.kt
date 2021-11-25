@@ -9,9 +9,6 @@ import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.pis.service.PersonService
-import fi.espoo.evaka.placement.Placement
-import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -61,12 +58,6 @@ class AssistanceNeedController(
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
         return assistanceNeedService.getAssistanceNeedsByChildId(db, childId).filter { assistanceNeed ->
             accessControl.hasPermissionFor(user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, assistanceNeed.id)
-        }
-    }
-
-    private fun getChildPreschoolPlacements(db: Database.Connection, childId: UUID): List<Placement> {
-        return db.read { it.getPlacementsForChild(childId) }.filter {
-            (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
         }
     }
 

@@ -8,15 +8,20 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,6 +32,8 @@ import kotlin.test.assertTrue
 
 class AssistanceNeedIntegrationTest : FullApplicationTest() {
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val testDaycareId = testDaycare.id
 
     @BeforeEach
     private fun beforeEach() {
@@ -265,6 +272,32 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
         whenDeleteAssistanceNeedThenExpectError(AssistanceNeedId(UUID.randomUUID()), 404)
     }
 
+    @Test
+    fun `if child is in preschool, only show preschool assistance needs if employee is not an admin`() {
+        val today = LocalDate.now().withMonth(8).withDayOfMonth(1)
+        givenAssistanceNeed(today.withMonth(1), today.withMonth(7), testChild_1.id)
+        val assistanceNeedDuringPreschool = givenAssistanceNeed(today.withMonth(8), today.withMonth(12), testChild_1.id)
+
+        // No preschool placement, so expect both
+        assertEquals(2, whenGetAssistanceNeedsThenExpectSuccess(testChild_1.id).size)
+
+        // With a non preschool placement expect seeing both
+        givenPlacement(today.withMonth(1), today.withMonth(7), PlacementType.DAYCARE)
+        assertEquals(2, whenGetAssistanceNeedsThenExpectSuccess(testChild_1.id).size)
+
+        // With a preschool placement, expect only seeing the assistance need starting after the placement
+        givenPlacement(today.withMonth(8), today.withMonth(12), PlacementType.PRESCHOOL)
+        val assistanceNeeds = whenGetAssistanceNeedsThenExpectSuccess(testChild_1.id)
+        assertEquals(1, assistanceNeeds.size)
+
+        with(assistanceNeeds[0]) {
+            assertEquals(assistanceNeedDuringPreschool, id)
+        }
+
+        // Admin sees all
+        assertEquals(2, whenGetAssistanceNeedsThenExpectSuccess(testChild_1.id, admin).size)
+    }
+
     private fun testDate(day: Int) = LocalDate.now().withMonth(1).withDayOfMonth(day)
 
     private fun givenAssistanceNeed(startDate: LocalDate, endDate: LocalDate, childId: UUID = testChild_1.id): AssistanceNeedId {
@@ -275,6 +308,20 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
                     startDate = startDate,
                     endDate = endDate,
                     updatedBy = assistanceWorker.id
+                )
+            )
+        }
+    }
+
+    private fun givenPlacement(startDate: LocalDate, endDate: LocalDate, type: PlacementType, childId: UUID = testChild_1.id): PlacementId {
+        return db.transaction {
+            it.insertTestPlacement(
+                DevPlacement(
+                    childId = childId,
+                    startDate = startDate,
+                    endDate = endDate,
+                    type = type,
+                    unitId = testDaycareId
                 )
             )
         }
