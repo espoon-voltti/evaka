@@ -85,6 +85,7 @@ import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { getAuthStatus } from './api/auth'
 import { UIContext } from './state/ui'
 import MobilePairingModal from './components/MobilePairingModal'
+import PersonalMobileDevicesPage from './components/PersonalMobileDevicesPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -376,6 +377,12 @@ export default function App() {
                     path="/reports/raw"
                     component={ensureAuthenticated(ReportRaw)}
                     title={i18n.titles.reports}
+                  />
+                  <RouteWithTitle
+                    exact
+                    path="/personal-mobile-devices"
+                    component={ensureAuthenticated(PersonalMobileDevicesPage)}
+                    title={i18n.titles.employeePinCode}
                   />
                   <RouteWithTitle
                     exact

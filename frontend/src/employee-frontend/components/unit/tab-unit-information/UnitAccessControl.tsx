@@ -53,7 +53,7 @@ import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { renderResult } from '../../async-rendering'
-import { SharedMobileDevice } from 'lib-common/generated/api-types/pairing'
+import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 
 type Props = {
   unitId: string
@@ -307,7 +307,7 @@ const DevicesTable = React.memo(function DevicesTable({
   onEditDevice,
   onDeleteDevice
 }: {
-  rows: SharedMobileDevice[]
+  rows: MobileDevice[]
   onEditDevice: (deviceId: UUID) => void
   onDeleteDevice: (deviceId: UUID) => void
 }) {
@@ -344,7 +344,7 @@ function DeviceRow({
   onClickEdit,
   onClickDelete
 }: {
-  row: SharedMobileDevice
+  row: MobileDevice
   onClickEdit: () => void
   onClickDelete: () => void
 }) {

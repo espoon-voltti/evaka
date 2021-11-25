@@ -19,6 +19,14 @@ export interface Employee {
 * Generated from fi.espoo.evaka.pairing.MobileDevice
 */
 export interface MobileDevice {
+  id: UUID
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.pairing.MobileDeviceDetails
+*/
+export interface MobileDeviceDetails {
   employeeId: UUID | null
   id: UUID
   name: string
@@ -115,13 +123,5 @@ export interface PostPairingValidationReq {
 * Generated from fi.espoo.evaka.pairing.MobileDevicesController.RenameRequest
 */
 export interface RenameRequest {
-  name: string
-}
-
-/**
-* Generated from fi.espoo.evaka.pairing.SharedMobileDevice
-*/
-export interface SharedMobileDevice {
-  id: UUID
   name: string
 }

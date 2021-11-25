@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 import { EmployeeFeatures } from '../generated/api-types/shared'
 import { UUID } from '../types'
 
@@ -12,7 +12,7 @@ export interface User {
   accessibleFeatures: EmployeeFeatures
 }
 
-export interface MobileUser extends MobileDevice {
+export interface MobileUser extends MobileDeviceDetails {
   pinLoginActive: boolean
 }
 

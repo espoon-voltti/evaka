@@ -36,7 +36,7 @@ class MobileDevicesController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
-    ): ResponseEntity<List<SharedMobileDevice>> {
+    ): ResponseEntity<List<MobileDevice>> {
         Audit.MobileDevicesList.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         return db
@@ -44,12 +44,22 @@ class MobileDevicesController(
             .let { ResponseEntity.ok(it) }
     }
 
+    @GetMapping("/mobile-devices/personal")
+    fun getMobileDevices(
+        db: Database.Connection,
+        user: AuthenticatedUser.Employee,
+    ): List<MobileDevice> {
+        Audit.MobileDevicesList.log(targetId = user.id)
+        user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+        return db.read { it.listPersonalDevices(EmployeeId(user.id)) }
+    }
+
     @GetMapping("/system/mobile-devices/{id}")
     fun getMobileDevice(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId
-    ): ResponseEntity<MobileDevice> {
+    ): ResponseEntity<MobileDeviceDetails> {
         Audit.MobileDevicesRead.log(targetId = id)
         user.assertSystemInternalUser()
 

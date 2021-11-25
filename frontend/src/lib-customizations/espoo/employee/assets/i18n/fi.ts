@@ -1612,8 +1612,18 @@ export const fi = {
     conflict:
       'Valitussa ajanjaksossa on päällekkäisyys aiemmin luodun ajanjakson kanssa. Poista päällekkäisyys muokkaamalla toista ajanjaksoa.'
   },
+  personalMobileDevices: {
+    title: 'Johtajan eVaka-mobiili',
+    infoParagraph1:
+      'Tällä sivulla voit yksikön johtajana/varajohtajana määrittää itsellesi omaan henkilökohtaiseen käyttöösi mobiililaitteen, jolla tarkastelet kaikkien yksiköidesi tietoja  eVakassa. Voit myös tarvittaessa poistaa tai lisätä useamman laitteen.',
+    infoParagraph2:
+      'Huolehdithan, että kaikissa mobiiliaitteissasi on pääsykoodi käytössä.',
+    name: 'Laitteen nimi',
+    addDevice: 'Lisää mobiililaite',
+    editName: 'Muokkaa laitteen nimeä',
+    deleteDevice: 'Haluatko poistaa mobiililaitteen?'
+  },
   mobilePairingModal: {
-    headerButtonLabel: 'Johtajan eVaka-mobiili',
     sharedDeviceModalTitle: 'Lisää yksikköön uusi mobiililaite',
     personalDeviceModalTitle: 'Lisää uusi johtajan mobiililaite',
     modalText1: 'Mene mobiililaitteella osoitteeseen',

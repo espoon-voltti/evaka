@@ -531,19 +531,19 @@ class PairingIntegrationTest : FullApplicationTest() {
         return result.get().status
     }
 
-    private fun getMobileDevicesAssertOk(): List<SharedMobileDevice> {
+    private fun getMobileDevicesAssertOk(): List<MobileDevice> {
         val (_, res, result) = http.get("/mobile-devices?unitId=$testUnitId")
             .asUser(user)
-            .responseObject<List<SharedMobileDevice>>(objectMapper)
+            .responseObject<List<MobileDevice>>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun getMobileDeviceAssertOk(id: MobileDeviceId): MobileDevice {
+    private fun getMobileDeviceAssertOk(id: MobileDeviceId): MobileDeviceDetails {
         val (_, res, result) = http.get("/system/mobile-devices/$id")
             .asUser(AuthenticatedUser.SystemInternalUser)
-            .responseObject<MobileDevice>(objectMapper)
+            .responseObject<MobileDeviceDetails>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
