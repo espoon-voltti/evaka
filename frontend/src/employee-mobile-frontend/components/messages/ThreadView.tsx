@@ -12,7 +12,7 @@ import {
   NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatTime } from 'lib-common/date'
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import { MessageContext } from '../../state/messages'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faArrowRight } from 'lib-icons'
@@ -80,6 +80,11 @@ export const ThreadView = React.memo(function ThreadView({
     senderAccountId
   ])
 
+  const endOfMessagesRef = useRef<null | HTMLDivElement>(null)
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView(true)
+  }, [messages])
+
   return (
     <ThreadViewMobile data-qa={'thread-view-mobile'}>
       <ThreadViewTopbar onClick={onBack}>
@@ -99,6 +104,7 @@ export const ThreadView = React.memo(function ThreadView({
           )}
         />
       ))}
+      <div ref={endOfMessagesRef} />
       <ThreadViewReplyContainer>
         <ThreadViewReply>
           <TextArea
