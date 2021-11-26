@@ -191,7 +191,6 @@ describe('Child message thread', () => {
     await waitUntilEqual(() => threadView.getMessageContent(1), content)
 
     const replyContent = 'Testivastauksen sisältö'
-    await page.waitForTimeout(500)
     await threadView.replyThread(replyContent)
     await waitUntilEqual(() => threadView.countMessages(), 2)
     await waitUntilEqual(() => threadView.getMessageContent(2), replyContent)
@@ -232,7 +231,6 @@ describe('Child message thread', () => {
     await waitUntilEqual(() => threadView.countMessages(), 1)
     const replyContent = 'Testivastauksen sisältö'
     await threadView.replyThread(replyContent)
-    await page.waitForTimeout(500)
     await waitUntilEqual(() => threadView.countMessages(), 2)
     await waitUntilEqual(() => threadView.getMessageContent(2), replyContent)
     await waitUntilEqual(

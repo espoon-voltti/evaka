@@ -8,12 +8,13 @@ import { defaultMargins } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
 import {
   Message,
+  MessageAccount,
   MessageThread,
   NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatTime } from 'lib-common/date'
 import React, { useCallback, useContext, useEffect, useRef } from 'react'
-import { MessageContext } from '../../state/messages'
+import { getAccountsByUserAndUnit, MessageContext } from '../../state/messages'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faArrowRight } from 'lib-icons'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
@@ -27,6 +28,23 @@ interface ThreadViewProps {
   onBack: () => void
 }
 
+const getAccountsInThread = (
+  messages: Message[],
+  groupAccounts: NestedMessageAccount[],
+  personalAccount: MessageAccount | undefined
+) => {
+  const allRecipients = messages.flatMap((m) => m.recipients)
+
+  const accountsByUserAndUnit = getAccountsByUserAndUnit(
+    groupAccounts,
+    personalAccount
+  )
+
+  return accountsByUserAndUnit.filter((account) =>
+    allRecipients.some((r) => r.id === account.id)
+  )
+}
+
 export const ThreadView = React.memo(function ThreadView({
   thread: { id: threadId, messages, title },
   onBack
@@ -38,7 +56,8 @@ export const ThreadView = React.memo(function ThreadView({
     sendReply,
     selectedSender,
     setReplyContent,
-    nestedAccounts
+    groupAccounts,
+    personalAccount
   } = useContext(MessageContext)
 
   const onUpdateContent = useCallback(
@@ -48,17 +67,13 @@ export const ThreadView = React.memo(function ThreadView({
 
   const replyContent = getReplyContent(threadId)
 
-  const allRecipients = messages.flatMap((m) => m.recipients)
+  const accountsInThread = getAccountsInThread(
+    messages,
+    groupAccounts,
+    personalAccount
+  )
 
-  const possibleSenderAccounts: NestedMessageAccount[] =
-    nestedAccounts.isSuccess
-      ? nestedAccounts.value.filter(({ account }) =>
-          allRecipients.some((r) => r.id === account.id)
-        )
-      : []
-
-  const senderAccountId: UUID | undefined =
-    possibleSenderAccounts[0]?.account.id
+  const senderAccountId: UUID | undefined = accountsInThread[0]?.id
 
   const { recipients } = useRecipients(messages, senderAccountId)
 
@@ -99,8 +114,8 @@ export const ThreadView = React.memo(function ThreadView({
         <SingleMessage
           key={message.id}
           message={message}
-          ours={possibleSenderAccounts.some(
-            ({ account }) => account.id === message.sender.id
+          ours={accountsInThread.some(
+            (account) => account.id === message.sender.id
           )}
         />
       ))}

@@ -5,12 +5,12 @@
 import { Loading, Paged, Result, Success } from 'lib-common/api'
 import {
   Message,
+  MessageAccount,
   MessageThread,
   NestedMessageAccount,
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
-import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import React, {
   createContext,
   useCallback,
@@ -51,6 +51,15 @@ const appendMessageAndMoveThreadToTopOfList =
       return [addMessageToThread(message, thread), ...otherThreads]
     })
 
+export const getAccountsByUserAndUnit = (
+  groupAccounts: NestedMessageAccount[],
+  personalAccount: MessageAccount | undefined
+) => {
+  return groupAccounts
+    .map(({ account }) => account)
+    .concat(personalAccount ? [personalAccount] : [])
+}
+
 export interface MessagesState {
   nestedAccounts: Result<NestedMessageAccount[]>
   loadNestedAccounts: (unitId: UUID) => void
@@ -61,6 +70,7 @@ export interface MessagesState {
   groupAccounts: NestedMessageAccount[]
   selectedSender: MessageAccount | undefined
   selectedAccount: MessageAccount | undefined
+  personalAccount: MessageAccount | undefined
   setSelectedAccount: (account: MessageAccount | undefined) => void
   receivedMessages: Result<MessageThread[]>
   loadMessagesForAllAccounts: () => void
@@ -85,6 +95,7 @@ const defaultState: MessagesState = {
   setPages: () => undefined,
   selectedSender: undefined,
   selectedAccount: undefined,
+  personalAccount: undefined,
   groupAccounts: [],
   setSelectedAccount: () => undefined,
   receivedMessages: Loading.of(),
@@ -153,6 +164,7 @@ export const MessageContextProvider = React.memo(
 
     const [selectedAccount, setSelectedAccount] = useState<MessageAccount>()
     const [selectedSender, setSelectedSender] = useState<MessageAccount>()
+    const [personalAccount, setPersonalAccount] = useState<MessageAccount>()
     const [groupAccounts, setGroupAccounts] = useState<NestedMessageAccount[]>(
       []
     )
@@ -160,7 +172,8 @@ export const MessageContextProvider = React.memo(
     useEffect(() => {
       if (nestedAccounts.isSuccess) {
         const groupAccounts = nestedAccounts.value.filter(
-          (a) => a.account.type === 'GROUP'
+          ({ account, daycareGroup }) =>
+            account.type === 'GROUP' && daycareGroup?.unitId === unitId
         )
         const maybePersonalAccount = nestedAccounts.value.find(
           (a) => a.account.type === 'PERSONAL'
@@ -168,8 +181,9 @@ export const MessageContextProvider = React.memo(
         const maybeGroupAccount = groupAccounts[0]?.account
         setGroupAccounts(groupAccounts)
         setSelectedSender(maybePersonalAccount ?? maybeGroupAccount)
+        if (maybePersonalAccount) setPersonalAccount(maybePersonalAccount)
       }
-    }, [nestedAccounts, setSelectedSender])
+    }, [nestedAccounts, setSelectedSender, unitId])
 
     const [unreadCountsByAccount, setUnreadCountsByAccount] = useState<
       Result<UnreadCountByAccount[]>
@@ -217,10 +231,9 @@ export const MessageContextProvider = React.memo(
 
     const loadMessagesForAllAccounts = useCallback(() => {
       setSelectedAccount(undefined)
-      if (!nestedAccounts.isSuccess) return
       void Promise.all(
-        nestedAccounts.value.map(({ account }) =>
-          getReceivedMessages(account.id, page, PAGE_SIZE)
+        getAccountsByUserAndUnit(groupAccounts, personalAccount).map(
+          (account) => getReceivedMessages(account.id, page, PAGE_SIZE)
         )
       ).then((result) => {
         const messages: MessageThread[] = result.flatMap(
@@ -230,15 +243,15 @@ export const MessageContextProvider = React.memo(
         )
         setReceivedMessages(Success.of(messages))
       })
-    }, [nestedAccounts, page])
+    }, [groupAccounts, personalAccount, page])
 
     const loadMessagesWhenGroupChanges = useCallback(
       (selectedGroup: GroupInfo | undefined): void => {
-        if (!nestedAccounts.isSuccess) return
+        console.log('loadMessagesWhenGroupChanges')
         if (selectedGroup === undefined) loadMessagesForAllAccounts()
         else {
           const maybeAccount =
-            nestedAccounts.value.find(({ account, daycareGroup }) =>
+            groupAccounts.find(({ account, daycareGroup }) =>
               selectedGroup
                 ? daycareGroup?.id === selectedGroup.id
                 : account.type === 'PERSONAL'
@@ -249,7 +262,7 @@ export const MessageContextProvider = React.memo(
         }
       },
       [
-        nestedAccounts,
+        groupAccounts,
         loadMessagesForAllAccounts,
         loadMessagesForSelectedAccount
       ]
@@ -273,18 +286,9 @@ export const MessageContextProvider = React.memo(
           )
         }
 
-        void markThreadRead(accountId, thread.id).then(() => {
-          if (selectedAccount) loadMessagesForSelectedAccount()
-          else loadMessagesForAllAccounts()
-        })
+        void markThreadRead(accountId, thread.id)
       },
-      [
-        selectedAccount,
-        selectedSender,
-        setUnreadCountsByAccount,
-        loadMessagesForSelectedAccount,
-        loadMessagesForAllAccounts
-      ]
+      [selectedAccount, selectedSender, setUnreadCountsByAccount]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
@@ -332,6 +336,7 @@ export const MessageContextProvider = React.memo(
         loadMessagesForAllAccounts,
         loadMessagesForSelectedAccount,
         loadMessagesWhenGroupChanges,
+        personalAccount,
         selectedUnit,
         selectThread,
         selectedThread,
@@ -353,6 +358,7 @@ export const MessageContextProvider = React.memo(
         loadMessagesForAllAccounts,
         loadMessagesForSelectedAccount,
         loadMessagesWhenGroupChanges,
+        personalAccount,
         selectedUnit,
         selectedThread,
         selectThread,
