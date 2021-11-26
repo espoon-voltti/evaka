@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import mu.KotlinLogging
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -29,6 +30,7 @@ class ChildImageController(
     private val documentClient: DocumentService,
     env: BucketEnv
 ) {
+    private val logger = KotlinLogging.logger { }
     private val bucket = env.data
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -67,18 +69,30 @@ class ChildImageController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable imageId: UUID
-    ): ResponseEntity<InputStreamResource> {
+    ): ResponseEntity<Any> {
         Audit.ChildImageDownload.log(targetId = imageId)
 
         val image = db.connect { dbc -> dbc.read { it.getChildImage(imageId) } }
         acl.getRolesForChild(user, image.childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 
-        val stream = documentClient.stream(bucket, "$childImagesBucketPrefix$imageId")
+        val key = "$childImagesBucketPrefix$imageId"
+        val presignedUrl = documentClient.presignedGetUrl(bucket, key)
 
-        return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_JPEG)
-            .lastModified(image.updated.toInstant())
-            .body(InputStreamResource(stream))
+        return if (presignedUrl != null) {
+            val url = "/internal_redirect/$presignedUrl"
+            logger.info("Child image $imageId: Using X-Accel-Redirect $url")
+            ResponseEntity.ok()
+                .header("X-Accel-Redirect", url)
+                .body("")
+        } else {
+            // In dev there's no nginx, so stream the data directly
+            logger.info("Child image $imageId: Streaming to client")
+            val stream = documentClient.stream(bucket, key)
+            ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .lastModified(image.updated.toInstant())
+                .body(InputStreamResource(stream))
+        }
     }
 }

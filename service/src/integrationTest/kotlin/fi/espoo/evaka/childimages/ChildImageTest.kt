@@ -20,10 +20,12 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.InputStream
+import java.net.URL
 import java.util.UUID
 import javax.xml.bind.DatatypeConverter
 import kotlin.test.assertEquals
@@ -132,7 +134,42 @@ class ChildImageTest : FullApplicationTest() {
     }
 
     @Test
-    fun `downloading image`() {
+    fun `downloading image (X-Accel-Redirect)`() {
+        val fakeS3Url = URL("https://fake-s3/path?foo=bar&baz=quux")
+        val expectedInternalRedirectUrl = "/internal_redirect/https://fake-s3/path?foo=bar&baz=quux"
+
+        val oldImageId = db.transaction {
+            it
+                .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
+                .bind("childId", testChild_1.id)
+                .mapTo<UUID>()
+                .one()
+        }
+
+        // This triggers using X-Accel-Redirect
+        whenever(documentService.presignedGetUrl("evaka-data-it", "$childImagesBucketPrefix$oldImageId"))
+            .thenReturn(fakeS3Url)
+
+        val response = controller.getImage(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            oldImageId
+        )
+
+        when (val body = response.body) {
+            is String -> assertEquals(body, "")
+            else -> throw AssertionError("Body is not a string")
+        }
+        assertEquals(expectedInternalRedirectUrl, response.headers["X-Accel-Redirect"]!!.first())
+
+        verify(documentService).presignedGetUrl(
+            bucketName = "evaka-data-it",
+            key = "child-images/$oldImageId"
+        )
+    }
+
+    @Test
+    fun `downloading image (stream)`() {
         val file = FileMock()
         val oldImageId = db.transaction {
             it
@@ -141,6 +178,11 @@ class ChildImageTest : FullApplicationTest() {
                 .mapTo<UUID>()
                 .one()
         }
+
+        // This triggers using streams
+        whenever(documentService.presignedGetUrl("evaka-data-it", "$childImagesBucketPrefix$oldImageId"))
+            .thenReturn(null)
+
         whenever(documentService.stream("evaka-data-it", "$childImagesBucketPrefix$oldImageId"))
             .thenReturn(file.inputStream)
 
@@ -150,9 +192,19 @@ class ChildImageTest : FullApplicationTest() {
             oldImageId
         )
 
-        assertEquals(file.inputStream.readAllBytes().asList(), response.body!!.inputStream.readAllBytes().asList())
+        when (val body = response.body) {
+            is InputStreamResource -> assertEquals(
+                file.inputStream.readAllBytes().asList(),
+                body.inputStream.readAllBytes().asList()
+            )
+            else -> throw AssertionError("Body is not a stream")
+        }
         assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType!!)
 
+        verify(documentService).presignedGetUrl(
+            bucketName = "evaka-data-it",
+            key = "child-images/$oldImageId"
+        )
         verify(documentService).stream(
             bucketName = "evaka-data-it",
             key = "child-images/$oldImageId"

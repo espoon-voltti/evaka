@@ -11,12 +11,35 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import java.io.InputStream
+import java.net.URL
+import java.time.Duration
 
 @Service("appS3DocumentClient")
-class S3DocumentClient(private val s3Client: S3Client) : DocumentService {
+class S3DocumentClient(
+    private val s3Client: S3Client,
+    private val s3Presigner: S3Presigner?
+) : DocumentService {
     override fun get(bucketName: String, key: String): Document = stream(bucketName, key).use {
         DocumentWrapper(name = key, bytes = it.readAllBytes())
+    }
+
+    override fun presignedGetUrl(bucketName: String, key: String): URL? {
+        if (s3Presigner == null) return null
+
+        val request = GetObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .build()
+
+        val getObjectPresignRequest = GetObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(1))
+            .getObjectRequest(request)
+            .build()
+
+        return s3Presigner.presignGetObject(getObjectPresignRequest).url()
     }
 
     override fun stream(bucketName: String, key: String): InputStream {
