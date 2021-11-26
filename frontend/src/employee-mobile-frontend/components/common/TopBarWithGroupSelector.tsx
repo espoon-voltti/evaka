@@ -11,7 +11,7 @@ import { useHistory } from 'react-router'
 import { UnitContext } from '../../state/unit'
 import { CountInfo } from './GroupSelector'
 import { GroupSelectorBar } from './GroupSelectorBar'
-import { TopBar } from './TopBar'
+import TopBar from './TopBar'
 
 interface Props {
   selectedGroup: GroupInfo | undefined
@@ -20,47 +20,45 @@ interface Props {
   countInfo?: CountInfo | undefined
 }
 
-export const TopBarWithGroupSelector = React.memo(
-  function TopBarWithGroupSelector({
-    onChangeGroup,
-    toggleSearch,
-    selectedGroup,
-    countInfo
-  }: Props) {
-    const history = useHistory()
-    const { user } = useContext(UserContext)
-    const { unitInfoResponse } = useContext(UnitContext)
+export default React.memo(function TopBarWithGroupSelector({
+  onChangeGroup,
+  toggleSearch,
+  selectedGroup,
+  countInfo
+}: Props) {
+  const history = useHistory()
+  const { user } = useContext(UserContext)
+  const { unitInfoResponse } = useContext(UnitContext)
 
-    const topBarProps = useMemo(() => {
-      return combine(user, unitInfoResponse)
-        .map(([user, unitInfo]) => {
-          const title = unitInfo.name
-          const onBack =
-            user && user.unitIds.length > 1
-              ? () => history.push('/units')
-              : undefined
-          return { title, onBack }
-        })
-        .getOrElse({ title: '' })
-    }, [history, user, unitInfoResponse])
+  const topBarProps = useMemo(() => {
+    return combine(user, unitInfoResponse)
+      .map(([user, unitInfo]) => {
+        const title = unitInfo.name
+        const onBack =
+          user && user.unitIds.length > 1
+            ? () => history.push('/units')
+            : undefined
+        return { title, onBack }
+      })
+      .getOrElse({ title: '' })
+  }, [history, user, unitInfoResponse])
 
-    const groups: GroupInfo[] = useMemo(
-      () => unitInfoResponse.map(({ groups }) => groups).getOrElse([]),
-      [unitInfoResponse]
-    )
+  const groups: GroupInfo[] = useMemo(
+    () => unitInfoResponse.map(({ groups }) => groups).getOrElse([]),
+    [unitInfoResponse]
+  )
 
-    return (
-      <>
-        <TopBar {...topBarProps} />
-        <Gap size="xxs" />
-        <GroupSelectorBar
-          selectedGroup={selectedGroup}
-          onChangeGroup={onChangeGroup}
-          onSearch={toggleSearch}
-          countInfo={countInfo}
-          groups={groups}
-        />
-      </>
-    )
-  }
-)
+  return (
+    <>
+      <TopBar {...topBarProps} />
+      <Gap size="xxs" />
+      <GroupSelectorBar
+        selectedGroup={selectedGroup}
+        onChangeGroup={onChangeGroup}
+        onSearch={toggleSearch}
+        countInfo={countInfo}
+        groups={groups}
+      />
+    </>
+  )
+})

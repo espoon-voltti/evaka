@@ -26,7 +26,7 @@ import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../../types'
 import { renderResult } from '../async-rendering'
 import BottomNavbar from '../common/BottomNavbar'
 import FreeTextSearch from '../common/FreeTextSearch'
-import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import { zIndex } from '../constants'
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
@@ -94,29 +94,33 @@ export default React.memo(function AttendancePageWrapper() {
     [i18n, attendanceResponse]
   )
 
-  return renderResult(attendanceResponse, (attendance) => (
+  return (
     <>
-      <ChildSearch
-        unitId={unitId}
-        show={showSearch}
-        toggleShow={toggleSearch}
-        attendanceResponse={attendance}
-      />
+      {attendanceResponse.isSuccess && (
+        <ChildSearch
+          unitId={unitId}
+          show={showSearch}
+          toggleShow={toggleSearch}
+          attendanceResponse={attendanceResponse.value}
+        />
+      )}
       <TopBarWithGroupSelector
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
         toggleSearch={toggleSearch}
         countInfo={countInfo}
       />
-      <AttendanceList
-        unitId={unitId}
-        groupId={groupId}
-        attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
-        attendanceResponse={attendance}
-      />
+      {renderResult(attendanceResponse, (attendance) => (
+        <AttendanceList
+          unitId={unitId}
+          groupId={groupId}
+          attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
+          attendanceResponse={attendance}
+        />
+      ))}
       <BottomNavbar selected="child" />
     </>
-  ))
+  )
 })
 
 const ChildSearch = React.memo(function Search({

@@ -16,12 +16,13 @@ import { formatTime } from 'lib-common/date'
 import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import { getAccountsByUserAndUnit, MessageContext } from '../../state/messages'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faArrowRight } from 'lib-icons'
+import { faArrowRight } from 'lib-icons'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { useTranslation } from '../../state/i18n'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { UUID } from 'lib-common/types'
 import TextArea from 'lib-components/atoms/form/TextArea'
+import TopBar from '../common/TopBar'
 
 interface ThreadViewProps {
   thread: MessageThread
@@ -102,14 +103,7 @@ export const ThreadView = React.memo(function ThreadView({
 
   return (
     <ThreadViewMobile data-qa={'thread-view-mobile'}>
-      <ThreadViewTopbar onClick={onBack}>
-        <FontAwesomeIcon
-          icon={faArrowLeft}
-          color={colors.blues.dark}
-          height={defaultMargins.s}
-        />
-        <ThreadViewTitle>{title}</ThreadViewTitle>
-      </ThreadViewTopbar>
+      <TopBar title={title} onBack={onBack} invertedColors />
       {messages.map((message) => (
         <SingleMessage
           key={message.id}
@@ -231,21 +225,6 @@ const ThreadViewMobile = styled(ThreadContainer)`
   align-items: flex-start;
   overflow-y: unset;
   min-height: 100vh;
-`
-
-const ThreadViewTopbar = styled.div`
-  position: sticky;
-  top: 0;
-  background: ${colors.greyscale.lightest};
-  padding: ${defaultMargins.m};
-  align-self: stretch;
-  cursor: pointer;
-`
-
-const ThreadViewTitle = styled.span`
-  margin-left: ${defaultMargins.s};
-  color: ${colors.blues.dark};
-  font-weight: ${fontWeights.semibold};
 `
 
 const ThreadViewReplyContainer = styled.div`

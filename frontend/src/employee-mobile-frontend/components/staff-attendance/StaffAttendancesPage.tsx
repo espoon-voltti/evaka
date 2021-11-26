@@ -17,7 +17,7 @@ import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
-import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import { toStaff } from './staff'
 import StaffListItem from './StaffListItem'
 
@@ -117,14 +117,20 @@ export default React.memo(function StaffAttendancesPage() {
     [groupId, showPresent, staffAttendanceResponse]
   )
 
-  return renderResult(unitInfoResponse, (unit) => (
+  const selectedGroup = useMemo(
+    () =>
+      unitInfoResponse
+        .map(({ groups }) =>
+          groupId === 'all' ? undefined : groups.find((g) => g.id === groupId)
+        )
+        .getOrElse(undefined),
+    [groupId, unitInfoResponse]
+  )
+
+  return (
     <>
       <TopBarWithGroupSelector
-        selectedGroup={
-          groupId === 'all'
-            ? undefined
-            : unit.groups.find((g) => g.id === groupId)
-        }
+        selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
       />
       <Tabs tabs={tabs} mobile type="buttons" />
@@ -144,5 +150,5 @@ export default React.memo(function StaffAttendancesPage() {
       </StaticIconContainer>
       <BottomNavBar selected="staff" />
     </>
-  ))
+  )
 })

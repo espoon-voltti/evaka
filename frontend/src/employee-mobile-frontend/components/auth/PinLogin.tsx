@@ -24,7 +24,7 @@ import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { UserContext } from '../../state/user'
-import { CloseableTopBar } from '../common/TopBar'
+import TopBar from '../common/TopBar'
 
 interface EmployeeOption {
   name: string
@@ -161,7 +161,7 @@ export const PinLogin = React.memo(function PinLogin() {
 
   return (
     <>
-      <CloseableTopBar title={title} onClose={onClose} />
+      <TopBar title={title} onClose={onClose} />
       <ContentArea
         opaque
         paddingHorizontal={defaultMargins.s}

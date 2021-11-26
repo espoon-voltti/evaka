@@ -15,7 +15,7 @@ import BottomNavBar from '../common/BottomNavbar'
 import { ContentArea } from 'lib-components/layout/Container'
 import { ThreadView } from './ThreadView'
 import { MessagePreview } from './MessagePreview'
-import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import colors from 'lib-customizations/common'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import styled from 'styled-components'
@@ -73,46 +73,45 @@ export default function MessagesPage() {
       <ThreadView thread={selectedThread} onBack={onBack} />
     </ContentArea>
   ) : (
-    renderResult(receivedMessages, (messages) => (
-      <ContentArea
-        opaque
-        fullHeight
-        paddingVertical={'zero'}
-        paddingHorizontal={'zero'}
-      >
-        <TopBarWithGroupSelector
-          selectedGroup={selectedGroup}
-          onChangeGroup={changeGroup}
-        />
-        <HeaderContainer>
-          <H1 noMargin={true}>{i18n.messages.title}</H1>
-        </HeaderContainer>
-        {messages.length > 0 ? (
-          messages.map((thread) => (
-            <MessagePreview
-              thread={thread}
-              hasUnreadMessages={thread.messages.some(
-                (item) =>
-                  !item.readAt &&
-                  item.sender.id !== personalAccount?.id &&
-                  !groupAccounts.some((ga) => ga.account.id === item.sender.id)
-              )}
-              onClick={() => {
-                selectThread(thread)
-              }}
-              key={thread.id}
+    <>
+      <TopBarWithGroupSelector
+        selectedGroup={selectedGroup}
+        onChangeGroup={changeGroup}
+      />
+      {renderResult(receivedMessages, (messages) => (
+        <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
+          <HeaderContainer>
+            <H1 noMargin={true}>{i18n.messages.title}</H1>
+          </HeaderContainer>
+          {messages.length > 0 ? (
+            messages.map((thread) => (
+              <MessagePreview
+                thread={thread}
+                hasUnreadMessages={thread.messages.some(
+                  (item) =>
+                    !item.readAt &&
+                    item.sender.id !== personalAccount?.id &&
+                    !groupAccounts.some(
+                      (ga) => ga.account.id === item.sender.id
+                    )
+                )}
+                onClick={() => {
+                  selectThread(thread)
+                }}
+                key={thread.id}
+              />
+            ))
+          ) : (
+            <EmptyMessageFolder
+              loading={receivedMessages.isLoading}
+              iconColor={colors.greyscale.medium}
+              text={i18n.messages.emptyInbox}
             />
-          ))
-        ) : (
-          <EmptyMessageFolder
-            loading={receivedMessages.isLoading}
-            iconColor={colors.greyscale.medium}
-            text={i18n.messages.emptyInbox}
-          />
-        )}
-        <BottomNavBar selected="messages" />
-      </ContentArea>
-    ))
+          )}
+          <BottomNavBar selected="messages" />
+        </ContentArea>
+      ))}
+    </>
   )
 }
 

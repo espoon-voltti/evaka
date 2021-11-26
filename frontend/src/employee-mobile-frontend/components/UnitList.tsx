@@ -16,7 +16,7 @@ import { getMobileUnitStats } from '../api/unit'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { renderResult } from './async-rendering'
-import { TopBar } from './common/TopBar'
+import TopBar from './common/TopBar'
 
 export default React.memo(function UnitList() {
   const { i18n } = useTranslation()
