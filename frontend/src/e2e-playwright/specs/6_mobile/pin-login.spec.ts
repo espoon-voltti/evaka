@@ -7,6 +7,7 @@ import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import PinLoginPage from 'e2e-playwright/pages/mobile/pin-login-page'
 import TopNav from 'e2e-playwright/pages/mobile/top-nav'
+import { waitUntilEqual } from 'e2e-playwright/utils'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import {
   insertBackupPickups,
@@ -232,6 +233,7 @@ describe('Mobile PIN login', () => {
 
     // when user logs out
     await topNav.logout()
+    await waitUntilEqual(() => topNav.getUserInitials(), '')
 
     await listPage.selectChild(child.id)
     await childPage.openSensitiveInfo()

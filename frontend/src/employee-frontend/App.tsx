@@ -81,8 +81,11 @@ import VardaErrors from './components/reports/VardaErrors'
 import UnitFeaturesPage from './components/UnitFeaturesPage'
 import SettingsPage from './components/SettingsPage'
 import ReloadNotification from 'lib-components/molecules/ReloadNotification'
-import { AuthStatus } from 'lib-common/api-types/employee-auth'
+import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { getAuthStatus } from './api/auth'
+import { UIContext } from './state/ui'
+import MobilePairingModal from './components/MobilePairingModal'
+import PersonalMobileDevicesPage from './components/PersonalMobileDevicesPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -377,6 +380,12 @@ export default function App() {
                   />
                   <RouteWithTitle
                     exact
+                    path="/personal-mobile-devices"
+                    component={ensureAuthenticated(PersonalMobileDevicesPage)}
+                    title={i18n.titles.employeePinCode}
+                  />
+                  <RouteWithTitle
+                    exact
                     path="/pin-code"
                     component={ensureAuthenticated(EmployeePinCodePage)}
                     title={i18n.titles.employeePinCode}
@@ -453,6 +462,7 @@ export default function App() {
                   apiVersion={authStatus?.apiVersion}
                 />
                 <LoginErrorModal translations={i18n.login.failedModal} />
+                <PairingModal />
               </Router>
             </StateProvider>
           </UserContextProvider>
@@ -502,8 +512,8 @@ const redirectTo = (urlMapper: (params: { [k: string]: string }) => string) =>
     return <Redirect to={urlMapper(routeParams)} />
   }
 
-function useAuthStatus(): AuthStatus | undefined {
-  const [authStatus, setAuthStatus] = useState<AuthStatus>()
+function useAuthStatus(): AuthStatus<User> | undefined {
+  const [authStatus, setAuthStatus] = useState<AuthStatus<User>>()
 
   const refreshAuthStatus = useCallback(
     () => getAuthStatus().then(setAuthStatus),
@@ -526,3 +536,15 @@ function useAuthStatus(): AuthStatus | undefined {
 
   return authStatus
 }
+
+const PairingModal = React.memo(function GlobalModals() {
+  const { uiMode, pairingState, closePairingModal } = useContext(UIContext)
+
+  if (uiMode !== 'pair-mobile-device' || !pairingState) {
+    return null
+  }
+
+  return (
+    <MobilePairingModal closeModal={closePairingModal} {...pairingState.id} />
+  )
+})

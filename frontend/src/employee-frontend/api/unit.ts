@@ -46,6 +46,7 @@ import {
 } from 'lib-common/api-types/reservations'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { UUID } from 'lib-common/types'
+import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -669,12 +670,10 @@ export interface PairingResponse {
 }
 
 export async function postPairing(
-  unitId: UUID
+  data: { unitId: UUID } | { employeeId: UUID }
 ): Promise<Result<PairingResponse>> {
   return client
-    .post<JsonOf<PairingResponse>>(`/pairings`, {
-      unitId
-    })
+    .post<JsonOf<PairingResponse>>(`/pairings`, data)
     .then((res) => res.data)
     .then((pairingResponse) => {
       return {
@@ -718,11 +717,6 @@ export async function putMobileDeviceName(
     .then((res) => res.data)
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
-}
-
-export interface MobileDevice {
-  id: UUID
-  name: string
 }
 
 export async function getMobileDevices(

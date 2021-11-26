@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 import { EmployeeFeatures } from '../generated/api-types/shared'
 import { UUID } from '../types'
 
@@ -9,8 +10,10 @@ export interface User {
   id: UUID
   name: string
   accessibleFeatures: EmployeeFeatures
-  unitId?: UUID // only mobile devices have this
-  employeeId?: UUID // present when PIN login session is still valid
+}
+
+export interface MobileUser extends MobileDeviceDetails {
+  pinLoginActive: boolean
 }
 
 export const globalRoles = [
@@ -35,9 +38,9 @@ export const adRoles = [...globalRoles, ...scopedRoles] as const
 
 export type AdRole = GlobalRole | ScopedRole
 
-export interface AuthStatus {
+export interface AuthStatus<U extends User | MobileUser> {
   loggedIn: boolean
-  user?: User
+  user?: U
   roles?: AdRole[]
   apiVersion: string
 }

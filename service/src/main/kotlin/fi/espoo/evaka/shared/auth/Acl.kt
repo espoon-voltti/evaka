@@ -225,9 +225,9 @@ WHERE employee_id = :userId AND service_need.id = :serviceNeedId
                     // language=SQL
                     """
 SELECT role
-FROM daycare_acl_view
-JOIN pairing p ON daycare_id = p.unit_id
-WHERE employee_id = :userId AND p.id = :pairingId
+FROM daycare_acl_view dav
+JOIN pairing p ON dav.daycare_id = p.unit_id OR dav.employee_id = p.employee_id
+WHERE dav.employee_id = :userId AND p.id = :pairingId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("pairingId", pairingId).mapTo<UserRole>().toSet()
             }
@@ -260,9 +260,9 @@ WHERE child_acl_view.employee_id = :userId AND pd.id = :documentId
                     // language=SQL
                     """
 SELECT role
-FROM daycare_acl_view
-JOIN mobile_device d ON daycare_id = d.unit_id
-WHERE employee_id = :userId AND d.id = :deviceId
+FROM daycare_acl_view dav
+JOIN mobile_device d ON dav.daycare_id = d.unit_id OR dav.employee_id = d.employee_id
+WHERE dav.employee_id = :userId AND d.id = :deviceId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("deviceId", deviceId).mapTo<UserRole>().toSet()
             }

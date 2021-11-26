@@ -14,7 +14,14 @@ CREATE VIEW daycare_acl_view(employee_id, daycare_id, role) AS (
 
     SELECT id, unit_id, 'MOBILE'
     FROM mobile_device
-    WHERE deleted = false
+    WHERE deleted = false AND unit_id IS NOT NULL
+
+    UNION ALL
+
+    SELECT mobile_device.id, daycare_acl.daycare_id, 'MOBILE'
+    FROM daycare_acl
+    JOIN mobile_device ON daycare_acl.employee_id = mobile_device.employee_id
+    WHERE mobile_device.deleted = false
 );
 
 CREATE VIEW daycare_group_acl_view(employee_id, daycare_group_id, role) AS (

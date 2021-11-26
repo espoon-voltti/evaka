@@ -33,22 +33,26 @@ interface EmployeeOption {
 
 const PinLoginForm = React.memo(function PinLoginForm() {
   const { i18n } = useTranslation()
-  const { refreshAuthStatus } = useContext(UserContext)
+  const { user, refreshAuthStatus } = useContext(UserContext)
   const { unitInfoResponse } = useContext(UnitContext)
+  const employeeId = user.map((u) => u?.employeeId ?? null).getOrElse(null)
+  const showEmployeeSelection = employeeId === null
 
   const employeeOptions = useMemo<EmployeeOption[]>(
     () =>
-      sortBy(
-        unitInfoResponse
-          .map(({ staff }) => staff.filter(({ pinSet }) => pinSet))
-          .getOrElse([]),
-        ({ lastName }) => lastName,
-        ({ firstName }) => firstName
-      ).map((staff) => ({
-        name: `${staff.lastName} ${staff.firstName}`,
-        id: staff.id
-      })),
-    [unitInfoResponse]
+      showEmployeeSelection
+        ? sortBy(
+            unitInfoResponse
+              .map(({ staff }) => staff.filter(({ pinSet }) => pinSet))
+              .getOrElse([]),
+            ({ lastName }) => lastName,
+            ({ firstName }) => firstName
+          ).map((staff) => ({
+            name: `${staff.lastName} ${staff.firstName}`,
+            id: staff.id
+          }))
+        : [],
+    [showEmployeeSelection, unitInfoResponse]
   )
 
   const [employee, setEmployee] = useState<EmployeeOption | null>(null)
@@ -60,7 +64,8 @@ const PinLoginForm = React.memo(function PinLoginForm() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const valid = pin.length === 4 && employee
+  const selectedEmployeeId = showEmployeeSelection ? employee?.id : employeeId
+  const valid = pin.length === 4 && selectedEmployeeId
 
   const submit = useCallback<FormEventHandler>(
     (e) => {
@@ -70,7 +75,7 @@ const PinLoginForm = React.memo(function PinLoginForm() {
       }
       setSubmitting(true)
       setError('')
-      return pinLogin(employee.id, pin).then((res) => {
+      return pinLogin(selectedEmployeeId, pin).then((res) => {
         setSubmitting(false)
         if (res.isSuccess) {
           if (res.value.status === 'SUCCESS') {
@@ -84,7 +89,7 @@ const PinLoginForm = React.memo(function PinLoginForm() {
       })
     },
     [
-      employee,
+      selectedEmployeeId,
       i18n.pin.status,
       i18n.pin.unknownError,
       pin,
@@ -101,17 +106,21 @@ const PinLoginForm = React.memo(function PinLoginForm() {
       <Gap />
       <form onSubmit={submit}>
         <FixedSpaceColumn>
-          <Label htmlFor="employee">{i18n.pin.staff}</Label>
-          <Select
-            id="employee"
-            items={employeeOptions}
-            selectedItem={employee}
-            onChange={selectEmployee}
-            placeholder={i18n.pin.selectStaff}
-            getItemValue={({ id }) => id}
-            getItemLabel={({ name }) => name}
-            data-qa="select-staff"
-          />
+          {showEmployeeSelection && (
+            <>
+              <Label htmlFor="employee">{i18n.pin.staff}</Label>
+              <Select
+                id="employee"
+                items={employeeOptions}
+                selectedItem={employee}
+                onChange={selectEmployee}
+                placeholder={i18n.pin.selectStaff}
+                getItemValue={({ id }) => id}
+                getItemLabel={({ name }) => name}
+                data-qa="select-staff"
+              />
+            </>
+          )}
 
           <Label htmlFor="pin">{i18n.pin.pinCode}</Label>
           <PlainPinInput

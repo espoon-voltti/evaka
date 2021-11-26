@@ -21,7 +21,17 @@ export interface Employee {
 export interface MobileDevice {
   id: UUID
   name: string
-  unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.pairing.MobileDeviceDetails
+*/
+export interface MobileDeviceDetails {
+  employeeId: UUID | null
+  id: UUID
+  name: string
+  personalDevice: boolean
+  unitIds: UUID[]
 }
 
 /**
@@ -37,12 +47,13 @@ export interface MobileDeviceIdentity {
 */
 export interface Pairing {
   challengeKey: string
+  employeeId: UUID | null
   expires: Date
   id: UUID
   mobileDeviceId: UUID | null
   responseKey: string | null
   status: PairingStatus
-  unitId: UUID
+  unitId: UUID | null
 }
 
 /**
@@ -90,13 +101,6 @@ export type PinLoginStatus =
 */
 export interface PostPairingChallengeReq {
   challengeKey: string
-}
-
-/**
-* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq
-*/
-export interface PostPairingReq {
-  unitId: UUID
 }
 
 /**

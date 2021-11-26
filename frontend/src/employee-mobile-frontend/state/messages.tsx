@@ -194,15 +194,13 @@ export const MessageContextProvider = React.memo(
       setUnreadCountsByAccount
     )
 
-    const userHasPin = !!(
-      user.isSuccess && user.map((item) => item?.employeeId).getOrElse(false)
-    )
+    const userHasActivePinLogin = user
+      .map((item) => item?.pinLoginActive)
+      .getOrElse(false)
 
     useEffect(() => {
-      loggedIn && userHasPin && user.map((item) => item?.employeeId) && unitId
-        ? loadUnreadCounts()
-        : null
-    }, [loadUnreadCounts, user, userHasPin, loggedIn, unitId])
+      loggedIn && userHasActivePinLogin && unitId ? loadUnreadCounts() : null
+    }, [loadUnreadCounts, user, userHasActivePinLogin, loggedIn, unitId])
 
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>

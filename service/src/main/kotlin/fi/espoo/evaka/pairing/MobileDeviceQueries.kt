@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
@@ -12,19 +13,24 @@ import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getDevice(id: MobileDeviceId): MobileDevice {
+fun Database.Read.getDevice(id: MobileDeviceId): MobileDeviceDetails {
     return createQuery(
         """
-SELECT 
-    id,
-    name,
-    unit_id
-FROM mobile_device
+SELECT
+    md.id, md.name, md.employee_id,
+    CASE
+        WHEN md.unit_id IS NOT NULL THEN ARRAY[md.unit_id]
+        ELSE coalesce(array_agg(acv.daycare_id) FILTER (WHERE acv.daycare_id IS NOT NULL), '{}')
+    END AS unit_ids,
+    md.employee_id IS NOT NULL AS personal_device
+FROM mobile_device md
+LEFT JOIN daycare_acl_view acv ON md.employee_id = acv.employee_id
 WHERE id = :id AND deleted = false
-        """.trimIndent()
+GROUP BY md.id, md.name, md.employee_id
+"""
     )
         .bind("id", id)
-        .mapTo<MobileDevice>()
+        .mapTo<MobileDeviceDetails>()
         .firstOrNull() ?: throw NotFound("Device $id not found")
 }
 
@@ -33,20 +39,18 @@ fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQu
 ).bind("token", token).mapTo<MobileDeviceIdentity>().singleOrNull()
     ?: throw NotFound("Device not found with token $token")
 
-fun Database.Read.listDevices(unitId: DaycareId): List<MobileDevice> {
-    return createQuery(
-        """
-SELECT 
-    id,
-    name,
-    unit_id
-FROM mobile_device
-WHERE unit_id = :unitId AND deleted = false
-        """.trimIndent()
-    )
+fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
+    return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId AND deleted = false")
         .bind("unitId", unitId)
         .mapTo<MobileDevice>()
         .list()
+}
+
+fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice> {
+    return createQuery("SELECT id, name FROM mobile_device WHERE employee_id = :employeeId AND deleted = false")
+        .bind("employeeId", employeeId)
+        .mapTo<MobileDevice>()
+        .toList()
 }
 
 fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {

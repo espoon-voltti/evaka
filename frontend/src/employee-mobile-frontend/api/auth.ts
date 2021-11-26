@@ -4,13 +4,13 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
-import { AuthStatus } from 'lib-common/api-types/employee-auth'
+import { AuthStatus, MobileUser } from 'lib-common/api-types/employee-auth'
 import { PinLoginResponse } from 'lib-common/generated/api-types/pairing'
 import { client } from './client'
 
-export async function getAuthStatus(): Promise<Result<AuthStatus>> {
+export async function getAuthStatus(): Promise<Result<AuthStatus<MobileUser>>> {
   return client
-    .get<JsonOf<AuthStatus>>('/auth/status')
+    .get<JsonOf<AuthStatus<MobileUser>>>('/auth/status')
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

@@ -4,8 +4,10 @@
 
 package fi.espoo.evaka.pairing
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class PairingsController(
@@ -35,20 +38,32 @@ class PairingsController(
      *
      * Pairing status is WAITING_CHALLENGE.
      */
-    data class PostPairingReq(
-        val unitId: DaycareId
-    )
+    @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+    sealed class PostPairingReq(val id: UUID) {
+        data class Unit(val unitId: DaycareId) : PostPairingReq(unitId.raw)
+        data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId.raw)
+    }
     @PostMapping("/pairings")
     fun postPairing(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestBody body: PostPairingReq
     ): ResponseEntity<Pairing> {
-        Audit.PairingInit.log(targetId = body.unitId)
-        acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        Audit.PairingInit.log(targetId = body.id)
+        when (body) {
+            is PostPairingReq.Unit ->
+                acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+            is PostPairingReq.Employee -> {
+                user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+                if (EmployeeId(user.id) != body.employeeId) throw Forbidden("Permission denied")
+            }
+        }
 
         return db.transaction { tx ->
-            val pairing = tx.initPairing(body.unitId)
+            val pairing = when (body) {
+                is PostPairingReq.Unit -> tx.initPairing(unitId = body.unitId)
+                is PostPairingReq.Employee -> tx.initPairing(employeeId = body.employeeId)
+            }
 
             asyncJobRunner.plan(
                 tx = tx,
@@ -101,8 +116,15 @@ class PairingsController(
         @RequestBody body: PostPairingResponseReq
     ): ResponseEntity<Pairing> {
         Audit.PairingResponse.log(targetId = id)
+        val (unitId, employeeId) = db.read { it.fetchPairingReferenceIds(id) }
         try {
-            acl.getRolesForPairing(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+            when {
+                unitId != null -> acl.getRolesForPairing(user, id)
+                    .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+                employeeId != null ->
+                    if (EmployeeId(user.id) != employeeId) throw Forbidden("Permission denied")
+                else -> error("Pairing unitId and employeeId were null")
+            }
         } catch (e: Forbidden) {
             throw NotFound("Pairing not found or not authorized")
         }

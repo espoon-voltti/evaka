@@ -121,6 +121,7 @@ interface BaseFeatureFlags {
     realtimeStaffAttendance?: boolean
     personalDetailsPage?: boolean
     mobileMessages?: boolean
+    personalMobileDevice?: boolean
   }
 }
 

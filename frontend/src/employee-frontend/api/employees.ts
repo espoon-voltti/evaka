@@ -9,6 +9,7 @@ import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
 import { Employee, EmployeeUser } from '../types/employee'
 import { UUID } from 'lib-common/types'
 import { GlobalRole } from 'lib-common/api-types/employee-auth'
+import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
   return client
@@ -84,5 +85,12 @@ export function updateEmployee(
       globalRoles
     })
     .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getPersonalMobileDevices(): Promise<Result<MobileDevice[]>> {
+  return client
+    .get<JsonOf<MobileDevice[]>>('/mobile-devices/personal')
+    .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

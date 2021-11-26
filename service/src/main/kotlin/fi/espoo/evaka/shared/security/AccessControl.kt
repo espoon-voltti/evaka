@@ -239,6 +239,7 @@ WHERE employee_id = :userId
                 UserRole.SPECIAL_EDUCATION_TEACHER
             ),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
+            personalMobileDevice = user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR),
         )
 
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {

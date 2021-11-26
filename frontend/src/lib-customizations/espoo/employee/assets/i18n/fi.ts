@@ -1360,15 +1360,8 @@ export const fi = {
       addPerson: 'Lisää henkilö',
       choosePerson: 'Valitse henkilö',
       mobileDevices: {
-        modalText1: 'Mene mobiililaitteella osoitteeseen',
-        modalText2: 'ja syötä laitteeseen alla oleva koodi.',
-        modalText3:
-          'Syötä mobiililaitteessa näkyvä vahvistuskoodi alla olevaan kenttään.',
-        modalText4:
-          'Anna mobiililaitteelle vielä nimi, jolla erotat sen yksikön muista mobiililaiteista.',
         mobileDevices: 'Yksikön mobiililaitteet',
         addMobileDevice: 'Lisää mobiililaite',
-        modalTitle: 'Lisää yksikköön uusi mobiililaite',
         editName: 'Muokkaa laitteen nimeä',
         removeConfirmation: 'Haluatko poistaa mobiililaitteen?',
         editPlaceholder: 'esim. Hippiäisten kännykkä'
@@ -1618,6 +1611,28 @@ export const fi = {
     status: 'Tila',
     conflict:
       'Valitussa ajanjaksossa on päällekkäisyys aiemmin luodun ajanjakson kanssa. Poista päällekkäisyys muokkaamalla toista ajanjaksoa.'
+  },
+  personalMobileDevices: {
+    title: 'Johtajan eVaka-mobiili',
+    infoParagraph1:
+      'Tällä sivulla voit yksikön johtajana/varajohtajana määrittää itsellesi omaan henkilökohtaiseen käyttöösi mobiililaitteen, jolla tarkastelet kaikkien yksiköidesi tietoja  eVakassa. Voit myös tarvittaessa poistaa tai lisätä useamman laitteen.',
+    infoParagraph2:
+      'Huolehdithan, että kaikissa mobiiliaitteissasi on pääsykoodi käytössä.',
+    name: 'Laitteen nimi',
+    addDevice: 'Lisää mobiililaite',
+    editName: 'Muokkaa laitteen nimeä',
+    deleteDevice: 'Haluatko poistaa mobiililaitteen?'
+  },
+  mobilePairingModal: {
+    sharedDeviceModalTitle: 'Lisää yksikköön uusi mobiililaite',
+    personalDeviceModalTitle: 'Lisää uusi johtajan mobiililaite',
+    modalText1: 'Mene mobiililaitteella osoitteeseen',
+    modalText2: 'ja syötä laitteeseen alla oleva koodi.',
+    modalText3:
+      'Syötä mobiililaitteessa näkyvä vahvistuskoodi alla olevaan kenttään.',
+    modalText4:
+      'Anna mobiililaitteelle vielä nimi, jolla erotat sen muista mobiililaiteista.',
+    namePlaceholder: 'Nimi'
   },
   invoices: {
     table: {

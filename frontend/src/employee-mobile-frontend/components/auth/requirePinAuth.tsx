@@ -19,7 +19,7 @@ export default function requirePinAuth<T>(
       if (!u) {
         return <Redirect to="/" />
       }
-      if (!u.employeeId) {
+      if (!u.pinLoginActive) {
         return <PinLogin />
       }
       return <WrappedComponent {...props} />

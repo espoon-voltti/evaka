@@ -415,7 +415,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         val (_, res, result) = http.post("/pairings")
             .jsonBody(
                 objectMapper.writeValueAsString(
-                    PairingsController.PostPairingReq(
+                    PairingsController.PostPairingReq.Unit(
                         unitId = unitId
                     )
                 )
@@ -540,10 +540,10 @@ class PairingIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getMobileDeviceAssertOk(id: MobileDeviceId): MobileDevice {
+    private fun getMobileDeviceAssertOk(id: MobileDeviceId): MobileDeviceDetails {
         val (_, res, result) = http.get("/system/mobile-devices/$id")
             .asUser(AuthenticatedUser.SystemInternalUser)
-            .responseObject<MobileDevice>(objectMapper)
+            .responseObject<MobileDeviceDetails>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
