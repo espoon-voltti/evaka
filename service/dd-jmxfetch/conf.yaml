@@ -98,3 +98,33 @@ instances:
             jspReloadCount:
               alias: tomcat.jsp.reload_count
               metric_type: counter
+      - include:
+          domain: com.zaxxer.hikari
+          type: Pool (evaka-service)
+          attribute:
+            IdleConnections:
+              alias: hikari.connections.idle
+              metric_type: gauge
+            ActiveConnections:
+              alias: hikari.connections.active
+              metric_type: gauge
+            ThreadsAwaitingConnection:
+              alias: hikari.threads.awaiting_connection
+              metric_type: gauge
+            TotalConnections:
+              alias: hikari.connections.total
+              metric_type: gauge
+      - include:
+          domain: org.apache.commons.pool2
+          type: GenericObjectPool
+          name: jedis
+          attribute:
+            NumIdle:
+              alias: jedis.clients.idle
+              metric_type: gauge
+            NumActive:
+              alias: jedis.clients.active
+              metric_type: gauge
+            MaxTotal:
+              alias: jedis.clients.total
+              metric_type: gauge

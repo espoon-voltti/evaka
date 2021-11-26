@@ -47,6 +47,8 @@ class DatabaseConfig {
                 password = env.password.value
                 maximumPoolSize = env.maximumPoolSize
                 leakDetectionThreshold = env.leakDetectionThreshold
+                isRegisterMbeans = true
+                poolName = "evaka-service"
                 addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
             }
         )
