@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -263,5 +264,15 @@ data class EvaluationDiscussionContent(
 data class FollowupEntry(
     val date: LocalDate = LocalDate.now(),
     val authorName: String = "",
-    val text: String = ""
+    val text: String = "",
+    val id: UUID = UUID.randomUUID(),
+    val authorId: PersonId? = null,
+    val edited: FollowupEntryEditDetails? = null
+)
+
+@Json
+data class FollowupEntryEditDetails(
+    val editedAt: LocalDate = LocalDate.now(),
+    val editorName: String = "",
+    val editorId: PersonId? = null
 )

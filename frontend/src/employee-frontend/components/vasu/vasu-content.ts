@@ -66,6 +66,15 @@ export interface FollowupEntry {
   date: LocalDate
   authorName: string
   text: string
+  id?: string
+  authorId?: string
+  edited?: FollowupEntryEditDetails
+}
+
+export interface FollowupEntryEditDetails {
+  editedAt: LocalDate
+  editorName: string
+  editorId: string
 }
 
 export type VasuQuestion =
@@ -118,7 +127,11 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
             ...question,
             value: question.value.map((entry: JsonOf<FollowupEntry>) => ({
               ...entry,
-              date: LocalDate.parseIso(entry.date)
+              date: LocalDate.parseIso(entry.date),
+              edited: entry.edited && {
+                ...entry.edited,
+                editedAt: LocalDate.parseIso(entry.edited.editedAt)
+              }
             }))
           }
         : question
