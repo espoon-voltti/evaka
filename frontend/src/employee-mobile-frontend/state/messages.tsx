@@ -273,18 +273,9 @@ export const MessageContextProvider = React.memo(
           )
         }
 
-        void markThreadRead(accountId, thread.id).then(() => {
-          if (selectedAccount) loadMessagesForSelectedAccount()
-          else loadMessagesForAllAccounts()
-        })
+        void markThreadRead(accountId, thread.id)
       },
-      [
-        selectedAccount,
-        selectedSender,
-        setUnreadCountsByAccount,
-        loadMessagesForSelectedAccount,
-        loadMessagesForAllAccounts
-      ]
+      [selectedAccount, selectedSender, setUnreadCountsByAccount]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
