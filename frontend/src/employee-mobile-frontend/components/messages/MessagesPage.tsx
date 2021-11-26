@@ -46,10 +46,10 @@ export default function MessagesPage() {
   const {
     loadNestedAccounts,
     groupAccounts,
-    selectedAccount,
     selectedSender,
     loadMessagesWhenGroupChanges,
     receivedMessages,
+    personalAccount,
     selectedThread,
     selectThread
   } = useContext(MessageContext)
@@ -102,7 +102,11 @@ export default function MessagesPage() {
                 thread={thread}
                 hasUnreadMessages={thread.messages.some(
                   (item) =>
-                    !item.readAt && item.sender.id !== selectedAccount?.id
+                    !item.readAt &&
+                    item.sender.id !== personalAccount?.id &&
+                    !groupAccounts.some(
+                      (ga) => ga.account.id === item.sender.id
+                    )
                 )}
                 onClick={() => {
                   selectThread(thread)
