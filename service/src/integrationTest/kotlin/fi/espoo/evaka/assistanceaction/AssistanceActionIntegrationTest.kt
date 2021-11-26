@@ -8,15 +8,20 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,6 +32,8 @@ import kotlin.test.assertTrue
 
 class AssistanceActionIntegrationTest : FullApplicationTest() {
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val testDaycareId = testDaycare.id
 
     @BeforeEach
     private fun beforeEach() {
@@ -97,7 +104,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post assistance action, no overlap`() {
-        givenAssistanceAction(1, 15)
+        givenAssistanceAction(testDate(1), testDate(15))
         whenPostAssistanceActionThenExpectSuccess(
             AssistanceActionRequest(
                 startDate = testDate(16),
@@ -113,7 +120,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post assistance action, fully encloses previous - responds 409`() {
-        givenAssistanceAction(10, 20)
+        givenAssistanceAction(testDate(10), testDate(20))
         whenPostAssistanceActionThenExpectError(
             AssistanceActionRequest(
                 startDate = testDate(1),
@@ -125,7 +132,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post assistance action, starts on same day, ends later - responds 409`() {
-        givenAssistanceAction(10, 20)
+        givenAssistanceAction(testDate(10), testDate(20))
         whenPostAssistanceActionThenExpectError(
             AssistanceActionRequest(
                 startDate = testDate(10),
@@ -137,7 +144,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post assistance action, overlaps start of previous - responds 409`() {
-        givenAssistanceAction(10, 20)
+        givenAssistanceAction(testDate(10), testDate(20))
         whenPostAssistanceActionThenExpectError(
             AssistanceActionRequest(
                 startDate = testDate(1),
@@ -149,7 +156,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post assistance action, overlaps end of previous - previous gets shortened`() {
-        givenAssistanceAction(10, 20)
+        givenAssistanceAction(testDate(10), testDate(20))
         whenPostAssistanceActionThenExpectSuccess(
             AssistanceActionRequest(
                 startDate = testDate(20),
@@ -165,7 +172,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post assistance action, is within previous - previous gets shortened`() {
-        givenAssistanceAction(10, 20)
+        givenAssistanceAction(testDate(10), testDate(20))
         whenPostAssistanceActionThenExpectSuccess(
             AssistanceActionRequest(
                 startDate = testDate(11),
@@ -181,9 +188,9 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get assistance actions`() {
-        givenAssistanceAction(1, 5, testChild_1.id)
-        givenAssistanceAction(25, 30, testChild_1.id)
-        givenAssistanceAction(25, 30, testChild_2.id)
+        givenAssistanceAction(testDate(1), testDate(5), testChild_1.id)
+        givenAssistanceAction(testDate(25), testDate(30), testChild_1.id)
+        givenAssistanceAction(testDate(25), testDate(30), testChild_2.id)
 
         val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
         assertEquals(2, assistanceActions.size)
@@ -201,8 +208,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `update assistance action`() {
-        val id1 = givenAssistanceAction(1, 5)
-        val id2 = givenAssistanceAction(10, 20)
+        val id1 = givenAssistanceAction(testDate(1), testDate(5))
+        val id2 = givenAssistanceAction(testDate(10), testDate(20))
         val updated = whenPutAssistanceActionThenExpectSuccess(
             id2,
             AssistanceActionRequest(
@@ -235,8 +242,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `update assistance action, conflict returns 409`() {
-        givenAssistanceAction(1, 5)
-        val id2 = givenAssistanceAction(10, 20)
+        givenAssistanceAction(testDate(1), testDate(5))
+        val id2 = givenAssistanceAction(testDate(10), testDate(20))
 
         whenPutAssistanceActionThenExpectError(
             id2,
@@ -250,8 +257,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `delete assistance action`() {
-        val id1 = givenAssistanceAction(1, 5)
-        val id2 = givenAssistanceAction(10, 20)
+        val id1 = givenAssistanceAction(testDate(1), testDate(5))
+        val id2 = givenAssistanceAction(testDate(10), testDate(20))
 
         whenDeleteAssistanceActionThenExpectSuccess(id2)
 
@@ -265,16 +272,56 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
         whenDeleteAssistanceActionThenExpectError(AssistanceActionId(UUID.randomUUID()), 404)
     }
 
-    private fun testDate(day: Int) = LocalDate.of(2000, 1, day)
+    @Test
+    fun `if child is in preschool, only show preschool assistance actions if employee is not an admin`() {
+        val today = LocalDate.now().withMonth(8).withDayOfMonth(1)
+        givenAssistanceAction(today.withMonth(1), today.withMonth(7), testChild_1.id)
+        val assistanceActionDuringPreschool = givenAssistanceAction(today.withMonth(8), today.withMonth(12), testChild_1.id)
 
-    private fun givenAssistanceAction(start: Int, end: Int, childId: UUID = testChild_1.id): AssistanceActionId {
+        // No preschool placement, so expect both
+        assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id).size)
+
+        // With a non preschool placement expect seeing both
+        givenPlacement(today.withMonth(1), today.withMonth(7), PlacementType.DAYCARE)
+        assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id).size)
+
+        // With a preschool placement, expect only seeing the assistance need starting after the placement
+        givenPlacement(today.withMonth(8), today.withMonth(12), PlacementType.PRESCHOOL)
+        val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
+        assertEquals(1, assistanceActions.size)
+
+        with(assistanceActions[0]) {
+            assertEquals(assistanceActionDuringPreschool, id)
+        }
+
+        // Admin sees all
+        assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, admin).size)
+    }
+
+    private fun testDate(day: Int) = LocalDate.now().withMonth(1).withDayOfMonth(day)
+
+    private fun givenAssistanceAction(startDate: LocalDate, endDate: LocalDate, childId: UUID = testChild_1.id): AssistanceActionId {
         return db.transaction {
             it.insertTestAssistanceAction(
                 DevAssistanceAction(
                     childId = childId,
-                    startDate = testDate(start),
-                    endDate = testDate(end),
+                    startDate = startDate,
+                    endDate = endDate,
                     updatedBy = assistanceWorker.id
+                )
+            )
+        }
+    }
+
+    private fun givenPlacement(startDate: LocalDate, endDate: LocalDate, type: PlacementType, childId: UUID = testChild_1.id): PlacementId {
+        return db.transaction {
+            it.insertTestPlacement(
+                DevPlacement(
+                    childId = childId,
+                    startDate = startDate,
+                    endDate = endDate,
+                    type = type,
+                    unitId = testDaycareId
                 )
             )
         }
@@ -299,9 +346,9 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun whenGetAssistanceActionsThenExpectSuccess(childId: UUID): List<AssistanceAction> {
+    private fun whenGetAssistanceActionsThenExpectSuccess(childId: UUID, user: AuthenticatedUser = assistanceWorker): List<AssistanceAction> {
         val (_, res, result) = http.get("/children/$childId/assistance-actions")
-            .asUser(assistanceWorker)
+            .asUser(user)
             .responseObject<List<AssistanceAction>>(objectMapper)
 
         assertEquals(200, res.statusCode)

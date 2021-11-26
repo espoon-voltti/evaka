@@ -51,10 +51,12 @@ class AssistanceActionController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
-    ): ResponseEntity<List<AssistanceAction>> {
+    ): List<AssistanceAction> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_ACTION, childId)
-        return assistanceActionService.getAssistanceActionsByChildId(db, childId).let(::ok)
+        return assistanceActionService.getAssistanceActionsByChildId(db, childId).filter {
+            accessControl.hasPermissionFor(user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, it.id)
+        }
     }
 
     @PutMapping("/assistance-actions/{id}")
