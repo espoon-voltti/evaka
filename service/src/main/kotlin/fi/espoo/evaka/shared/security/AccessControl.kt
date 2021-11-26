@@ -356,7 +356,7 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Employee -> when (action) {
                 Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION ->
-                    // If child is or has been in preschool, do not show pre preschool daycare assistance needs for non admin
+                    // If child is or has been in preschool, do not show pre preschool daycare assistance actions for non admin
                     if (user.isAdmin) true
                     else {
                         Database(jdbi).connect { db ->
