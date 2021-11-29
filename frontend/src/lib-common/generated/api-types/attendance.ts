@@ -249,5 +249,7 @@ export interface UnitStats {
   id: UUID
   name: string
   presentChildren: number
+  presentStaff: number
   totalChildren: number
+  totalStaff: number
 }

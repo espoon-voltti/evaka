@@ -45,11 +45,12 @@ class MobileUnitController(
         db: Database.Connection,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @RequestParam unitIds: List<DaycareId>
+        @RequestParam unitIds: List<DaycareId>,
+        @RequestParam useRealtimeStaffAttendance: Boolean
     ): List<UnitStats> {
         Audit.UnitRead.log(targetId = unitIds)
         unitIds.forEach { unitId -> acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE) }
-        return db.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today()) }
+        return db.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today(), useRealtimeStaffAttendance) }
     }
 }
 
@@ -148,39 +149,81 @@ data class UnitStats(
     val id: DaycareId,
     val name: String,
     val presentChildren: Int,
-    val totalChildren: Int
+    val totalChildren: Int,
+    val presentStaff: Int,
+    val totalStaff: Int
 )
 
-fun Database.Read.fetchUnitStats(unitIds: List<DaycareId>, date: LocalDate): List<UnitStats> {
+fun Database.Read.fetchUnitStats(
+    unitIds: List<DaycareId>,
+    date: LocalDate,
+    useRealtimeStaffAttendance: Boolean
+): List<UnitStats> {
     return createQuery(
         """
+WITH present_children AS (
+    SELECT ca.unit_id, count(*)
+    FROM child_attendance ca
+    WHERE ca.unit_id = ANY(:unitIds) AND ca.arrived IS NOT NULL AND ca.departed IS NULL
+    GROUP BY ca.unit_id
+), total_children AS (
+    SELECT p.unit_id, count(*)
+    FROM (
+        SELECT p.unit_id
+        FROM placement p
+        LEFT JOIN backup_care bc ON p.child_id = bc.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+        WHERE p.unit_id = ANY(:unitIds) AND daterange(p.start_date, p.end_date, '[]') @> :date AND bc.id IS NULL
+
+        UNION ALL
+
+        SELECT bc.unit_id
+        FROM backup_care bc
+        WHERE bc.unit_id = ANY(:unitIds) AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+    ) p
+    GROUP BY p.unit_id
+), present_staff AS (
+    SELECT g.daycare_id AS unit_id, sum(sa.count) AS count
+    FROM daycare_group g
+    JOIN (
+        SELECT sa.group_id, sa.count + sa.count_other AS count FROM staff_attendance sa
+        WHERE NOT :useRealtimeStaffAttendance AND sa.date = :date
+
+        UNION ALL
+
+        SELECT sa.group_id, 1 AS count FROM staff_attendance_realtime sa
+        WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
+
+        UNION ALL
+
+        SELECT sa.group_id, 1 AS count FROM staff_attendance_external sa
+        WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
+    ) sa ON sa.group_id = g.id
+    WHERE g.daycare_id = ANY(:unitIds) AND daterange(g.start_date, g.end_date, '[]') @> :date
+    GROUP BY g.daycare_id
+), total_staff AS (
+    SELECT g.daycare_id AS unit_id, sum(dc.amount) AS count
+    FROM daycare_group g
+    JOIN daycare_caretaker dc ON dc.group_id = g.id AND daterange(dc.start_date, dc.end_date, '[]') @> :date
+    WHERE g.daycare_id = ANY(:unitIds) AND daterange(g.start_date, g.end_date, '[]') @> :date
+    GROUP BY g.daycare_id
+)
 SELECT
     u.id, u.name,
-    sum(1) FILTER (WHERE ca.id IS NOT NULL) AS present_children,
-    sum(1) FILTER (WHERE p.child_id IS NOT NULL) AS total_children
+    coalesce(pc.count, 0) AS present_children,
+    coalesce(tc.count, 0) AS total_children,
+    coalesce(ps.count, 0) AS present_staff,
+    coalesce(ts.count, 0) AS total_staff
 FROM daycare u
-LEFT JOIN LATERAL (
-    SELECT p.child_id
-    FROM placement p
-    LEFT JOIN backup_care bc ON p.child_id = bc.child_id
-        AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-    WHERE p.unit_id = u.id AND daterange(p.start_date, p.end_date, '[]') @> :date AND bc.id IS NULL
-
-    UNION ALL
-
-    SELECT bc.child_id
-    FROM backup_care bc
-    WHERE bc.unit_id = u.id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-
-) p ON true
-LEFT JOIN child_attendance ca ON ca.unit_id = u.id AND ca.child_id = p.child_id
-    AND ca.arrived IS NOT NULL AND ca.departed IS NULL
+LEFT JOIN present_children pc ON pc.unit_id = u.id
+LEFT JOIN total_children tc ON tc.unit_id = u.id
+LEFT JOIN present_staff ps ON ps.unit_id = u.id
+LEFT JOIN total_staff ts ON ts.unit_id = u.id
 WHERE u.id = ANY(:unitIds)
-GROUP BY u.id, u.name
 """
     )
         .bind("unitIds", unitIds.toTypedArray())
         .bind("date", date)
+        .bind("useRealtimeStaffAttendance", useRealtimeStaffAttendance)
         .mapTo<UnitStats>()
         .toList()
 }

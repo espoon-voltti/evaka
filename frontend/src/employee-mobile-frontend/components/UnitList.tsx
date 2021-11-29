@@ -6,7 +6,10 @@ import { Loading } from 'lib-common/api'
 import { UnitStats } from 'lib-common/generated/api-types/attendance'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React, { useContext } from 'react'
@@ -41,15 +44,27 @@ export default React.memo(function UnitList() {
           </H1>
           <Gap size="L" />
           <FixedSpaceColumn spacing="m">
-            {units.map(({ id, name, presentChildren, totalChildren }) => {
-              return (
-                <UnitContainer key={id} to={`/units/${id}`}>
-                  <H2 noMargin>{name}</H2>
-                  <Gap size="xxs" />
-                  <div>{`${i18n.units.children} ${presentChildren}/${totalChildren}`}</div>
-                </UnitContainer>
-              )
-            })}
+            {units.map(
+              ({
+                id,
+                name,
+                presentChildren,
+                totalChildren,
+                presentStaff,
+                totalStaff
+              }) => {
+                return (
+                  <UnitContainer key={id} to={`/units/${id}`}>
+                    <H2 noMargin>{name}</H2>
+                    <Gap size="xxs" />
+                    <FixedSpaceRow spacing="m">
+                      <span>{`${i18n.units.children} ${presentChildren}/${totalChildren}`}</span>
+                      <span>{`${i18n.units.staff} ${presentStaff}/${totalStaff}`}</span>
+                    </FixedSpaceRow>
+                  </UnitContainer>
+                )
+              }
+            )}
           </FixedSpaceColumn>
           <Gap size="s" />
         </ContentArea>
