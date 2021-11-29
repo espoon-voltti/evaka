@@ -101,8 +101,7 @@ const ItemDescription = React.memo(function ItemDescription({
   }, [])
 
   // A description with more than 50 characters per line will be collapsed
-  const shouldShowExpandButton =
-    item?.description && item.description.length > 50 * clampLines
+  const shouldShowExpandButton = item.description.length > 50 * clampLines
 
   return (
     <FixedSpaceRow spacing="xs" alignItems="end">

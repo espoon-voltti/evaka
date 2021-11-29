@@ -23,7 +23,7 @@ export interface PedagogicalDocument {
   attachment: Attachment | null
   childId: UUID
   created: Date
-  description: string | null
+  description: string
   id: UUID
   updated: Date
 }
@@ -37,7 +37,7 @@ export interface PedagogicalDocumentCitizen {
   childId: UUID
   childPreferredName: string | null
   created: Date
-  description: string | null
+  description: string
   id: UUID
   isRead: boolean
 }

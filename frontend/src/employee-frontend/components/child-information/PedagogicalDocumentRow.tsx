@@ -24,14 +24,13 @@ import { updatePedagogicalDocument } from '../../api/child/pedagogical-documents
 import { UIContext } from '../../state/ui'
 import { defaultMargins } from 'lib-components/white-space'
 import LocalDate from 'lib-common/local-date'
-import { isNull } from 'lodash'
 import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID
   childId: UUID
   attachment: Attachment | null
-  description: string | null
+  description: string
   created: Date
   updated: Date
   initInEditMode: boolean
@@ -67,7 +66,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
 
   const updateDocument = () => {
     const { childId, description } = pedagogicalDocument
-    if (isNull(description)) return
+    if (!description) return
     setSubmitting(true)
     void updatePedagogicalDocument(id, { childId, description }).then((res) => {
       setSubmitting(false)
@@ -132,9 +131,9 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       <DescriptionTd data-qa="pedagogical-document-description">
         {editMode ? (
           <TextArea
-            value={pedagogicalDocument.description ?? ''}
-            onChange={(value) =>
-              setPedagogicalDocument((old) => ({ ...old, description: value }))
+            value={pedagogicalDocument.description}
+            onChange={(description) =>
+              setPedagogicalDocument((old) => ({ ...old, description }))
             }
           />
         ) : (
@@ -176,7 +175,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
               data-qa={'pedagogical-document-button-save'}
               onClick={updateDocument}
               text={i18n.common.save}
-              disabled={!pedagogicalDocument.description?.length || submitting}
+              disabled={!pedagogicalDocument.description.length || submitting}
             />
             <InlineButton
               data-qa={'pedagogical-document-button-cancel'}

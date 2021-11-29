@@ -9,6 +9,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentNotificationService
 import fi.espoo.evaka.s3.ContentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
@@ -46,6 +47,7 @@ import java.util.UUID
 class AttachmentsController(
     private val documentClient: DocumentService,
     private val stateService: ApplicationStateService,
+    private val pedagogicalDocumentNotificationService: PedagogicalDocumentNotificationService,
     private val accessControl: AccessControl,
     evakaEnv: EvakaEnv,
     bucketEnv: BucketEnv
@@ -103,7 +105,9 @@ class AttachmentsController(
         Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.CREATE_ATTACHMENT, documentId)
 
-        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttachmentContentTypes)
+        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttachmentContentTypes) { tx ->
+            pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, documentId)
+        }
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -121,8 +125,9 @@ class AttachmentsController(
         val attachTo = AttachmentParent.Application(applicationId)
         checkAttachmentCount(db, attachTo, user)
 
-        return handleFileUpload(db, user, attachTo, file, defaultAllowedAttachmentContentTypes, type)
-            .also { db.transaction { stateService.reCalculateDueDate(it, evakaClock.today(), applicationId) } }
+        return handleFileUpload(db, user, attachTo, file, defaultAllowedAttachmentContentTypes, type) { tx ->
+            stateService.reCalculateDueDate(tx, evakaClock.today(), applicationId)
+        }
     }
 
     @PostMapping(
@@ -186,7 +191,8 @@ class AttachmentsController(
         attachTo: AttachmentParent,
         file: MultipartFile,
         allowedContentTypes: Set<ContentType>,
-        type: AttachmentType? = null
+        type: AttachmentType? = null,
+        onSuccess: ((tx: Database.Transaction) -> Unit)? = null
     ): AttachmentId {
         val fileName = getAndCheckFileName(file)
         val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
@@ -211,6 +217,9 @@ class AttachmentsController(
                 ),
                 contentType
             )
+            if (onSuccess != null) {
+                onSuccess(tx)
+            }
         }
 
         return id

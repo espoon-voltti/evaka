@@ -83,7 +83,7 @@ private fun Database.Read.findPedagogicalDocumentsByGuardian(
             LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
             LEFT JOIN person chp ON chp.id = pd.child_id
             WHERE g.guardian_id = :guardian_id
-            AND (pd.description IS NOT NULL OR a.id IS NOT NULL)
+            AND (LENGTH(pd.description) > 0 OR a.id IS NOT NULL)
             ORDER BY pd.created DESC
         """.trimIndent()
     )
@@ -111,7 +111,7 @@ private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): In
                 SELECT pd.id, pd.child_id
                 FROM pedagogical_document pd
                 LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-                WHERE pd.description IS NOT NULL OR a.id IS NOT NULL
+                WHERE LENGTH(pd.description) > 0 OR a.id IS NOT NULL
             )
             SELECT count(*)
             FROM ready_documents d
@@ -145,7 +145,7 @@ fun Database.Read.citizenHasPermissionForPedagogicalDocument(user: Authenticated
 data class PedagogicalDocumentCitizen(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
-    val description: String?,
+    val description: String,
     val attachment: Attachment?,
     val created: HelsinkiDateTime,
     val isRead: Boolean,
