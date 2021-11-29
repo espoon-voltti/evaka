@@ -990,8 +990,7 @@ export const fi = {
     applications: 'Hakemukset',
     feeDecisions: {
       title: 'Päämiehen maksupäätökset',
-      button: 'Luo takautuva maksupäätösluonnos',
-      modalTitle: 'Luo takautuvia maksupäätösluonnoksia'
+      createRetroactive: 'Luo takautuvia maksupäätösluonnoksia'
     },
     invoices: 'Päämiehen laskut',
     voucherValueDecisions: 'Päämiehen arvopäätökset',
