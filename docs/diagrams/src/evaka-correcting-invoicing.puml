@@ -1,0 +1,26 @@
+@startuml evaka-correcting-invoicing
+title eVakan laskutuksen korjausprosessi
+
+:Asiakas huomaa virheen maksupäätöksessä tai laskussa;
+:Asiakas ottaa yhteyttä talouskoordinaattoriin (TK);
+:TK käsittelee korjaustarpeen asiakkaan ja 
+tarvittaessa yksikön kanssa;
+split
+  :Tulotiedot;
+  :TK korjaa tiedot;
+split again
+split
+  :Perhekoko;
+split again
+  :Perheen kokoonpano;
+split again
+  :Sijoitus tai palveluntarve;
+split again
+  :Päiväkirjatiedot;
+end split
+  :Päiväkodin johtaja korjaa tiedot;
+end split
+:Syntyy uusi maksupäätösluonnos;
+:TK luo maksupäätöksen;
+:TK korjaa laskutuksen käsin laskutusjärjestelmään;
+@enduml
