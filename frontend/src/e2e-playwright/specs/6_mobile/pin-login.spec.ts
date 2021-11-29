@@ -111,9 +111,6 @@ beforeEach(async () => {
   const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Mobile PIN login', () => {
   test('User can login with PIN and see child sensitive info', async () => {

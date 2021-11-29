@@ -23,9 +23,6 @@ beforeEach(async () => {
   header = new CitizenHeader(page)
   incomeStatementsPage = new IncomeStatementsPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 async function assertIncomeStatementCreated(
   startDate = LocalDate.today().format()

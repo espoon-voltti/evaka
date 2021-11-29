@@ -36,9 +36,6 @@ beforeEach(async () => {
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen club applications', () => {
   test('Sending incomplete club application gives validation error', async () => {

@@ -21,9 +21,6 @@ beforeEach(async () => {
   await enduserLogin(page)
   header = new CitizenHeader(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen page', () => {
   test('UI language can be changed', async () => {

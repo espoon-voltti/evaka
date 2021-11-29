@@ -46,9 +46,6 @@ beforeEach(async () => {
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen daycare applications', () => {
   test('Sending incomplete daycare application gives validation error', async () => {

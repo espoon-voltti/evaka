@@ -48,9 +48,6 @@ beforeEach(async () => {
   header = new CitizenHeader(page)
   pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen pedagogical documents', () => {
   describe('Citizen main page pedagogical documents header', () => {

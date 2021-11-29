@@ -34,9 +34,6 @@ beforeEach(async () => {
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen applications list', () => {
   test('Citizen sees their children and applications', async () => {
