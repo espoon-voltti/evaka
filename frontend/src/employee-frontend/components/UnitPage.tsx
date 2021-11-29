@@ -26,6 +26,7 @@ import { UUID } from 'lib-common/types'
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
+import useLocalStorage from 'lib-common/utils/useLocalStorage'
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
@@ -47,7 +48,38 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
     }
   }, [setTitle, unitInformation])
 
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+  const validateStoredOpenGroups = (value: string | null): value is string => {
+    try {
+      return !!value && JSON.parse(value) != null
+    } catch (e) {
+      return false
+    }
+  }
+
+  const [storedOpenGroups, setStoredOpenGroups] = useLocalStorage(
+    'evaka.unit-page.open-groups',
+    '{}',
+    validateStoredOpenGroups
+  )
+
+  const calculateInitialOpenGroups = (): Record<string, boolean> => {
+    try {
+      return (storedOpenGroups ? JSON.parse(storedOpenGroups) : {}) as Record<
+        string,
+        boolean
+      >
+    } catch (e) {
+      return {}
+    }
+  }
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
+    calculateInitialOpenGroups()
+  )
+
+  useEffect(() => {
+    setStoredOpenGroups(JSON.stringify(openGroups))
+  }, [openGroups, setStoredOpenGroups])
 
   const tabs = useMemo(
     () => [
