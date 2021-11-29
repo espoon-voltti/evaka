@@ -17,6 +17,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.ses.SesClient
 
 @Configuration
@@ -46,11 +47,23 @@ class AwsConfig {
     }
 
     @Bean
+    @Profile("local")
+    fun amazonS3PresignerLocal(): S3Presigner? = null
+
+    @Bean
     @Profile("production")
     fun amazonS3Prod(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Client = S3Client.builder()
         .region(env.awsRegion)
         .credentialsProvider(credentialsProvider)
         .build()
+
+    @Bean
+    @Profile("production")
+    fun amazonS3PresignerProd(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Presigner? =
+        S3Presigner.builder()
+            .region(env.awsRegion)
+            .credentialsProvider(credentialsProvider)
+            .build()
 
     @Bean
     fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient = SesClient.builder()

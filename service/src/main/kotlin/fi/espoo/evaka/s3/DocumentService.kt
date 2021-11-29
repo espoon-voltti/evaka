@@ -5,6 +5,7 @@
 package fi.espoo.evaka.s3
 
 import java.io.InputStream
+import java.net.URL
 
 interface Document {
     fun getName(): String
@@ -23,6 +24,11 @@ interface DocumentService {
      * Get attachment by attachment path. Subclasses can set add more restrictions to path value.
      */
     fun get(bucketName: String, key: String): Document
+
+    /**
+     * Create a presigned URL to get a file. Returns NULL if not supported.
+     */
+    fun presignedGetUrl(bucketName: String, key: String): URL?
 
     /**
      * Get InputStream of the file by path.
