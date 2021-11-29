@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, Fragment } from 'react'
+import React, { useContext, useEffect, Fragment, useCallback } from 'react'
 import LocalDate from 'lib-common/local-date'
 import {
   AreaFilter,
@@ -51,62 +51,67 @@ function InvoiceFilters() {
     }
   }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const toggleArea = (code: string) => () => {
-    searchFilters.area.includes(code)
-      ? setSearchFilters({
-          ...searchFilters,
-          area: searchFilters.area.filter((v) => v !== code)
-        })
-      : setSearchFilters({
-          ...searchFilters,
-          area: [...searchFilters.area, code]
-        })
-  }
+  const toggleArea = useCallback(
+    (code: string) => () => {
+      setSearchFilters((old) =>
+        old.area.includes(code)
+          ? {
+              ...old,
+              area: old.area.filter((v) => v !== code)
+            }
+          : {
+              ...old,
+              area: [...old.area, code]
+            }
+      )
+    },
+    [setSearchFilters]
+  )
 
-  const selectUnit = (id?: string) =>
-    setSearchFilters((filters) => ({ ...filters, unit: id }))
+  const selectUnit = useCallback(
+    (unit?: string) => setSearchFilters((old) => ({ ...old, unit })),
+    [setSearchFilters]
+  )
 
-  const toggleStatus = (id: InvoiceStatus) => () => {
-    setSearchFilters({
-      ...searchFilters,
-      status: id
-    })
-  }
+  const toggleStatus = useCallback(
+    (status: InvoiceStatus) => () =>
+      setSearchFilters((old) => ({ ...old, status })),
+    [setSearchFilters]
+  )
 
-  const toggleServiceNeed = (id: InvoiceDistinctiveDetails) => () => {
-    searchFilters.distinctiveDetails.includes(id)
-      ? setSearchFilters({
-          ...searchFilters,
-          distinctiveDetails: searchFilters.distinctiveDetails.filter(
-            (v) => v !== id
-          )
-        })
-      : setSearchFilters({
-          ...searchFilters,
-          distinctiveDetails: [...searchFilters.distinctiveDetails, id]
-        })
-  }
+  const toggleServiceNeed = useCallback(
+    (id: InvoiceDistinctiveDetails) => () =>
+      setSearchFilters((old) =>
+        old.distinctiveDetails.includes(id)
+          ? {
+              ...old,
+              distinctiveDetails: old.distinctiveDetails.filter((v) => v !== id)
+            }
+          : {
+              ...old,
+              distinctiveDetails: [...old.distinctiveDetails, id]
+            }
+      ),
+    [setSearchFilters]
+  )
 
-  const setStartDate = (startDate: LocalDate | undefined) => {
-    setSearchFilters({
-      ...searchFilters,
-      startDate: startDate
-    })
-  }
+  const setStartDate = useCallback(
+    (startDate: LocalDate | undefined) =>
+      setSearchFilters((old) => ({ ...old, startDate })),
+    [setSearchFilters]
+  )
 
-  const setEndDate = (endDate: LocalDate | undefined) => {
-    setSearchFilters({
-      ...searchFilters,
-      endDate: endDate
-    })
-  }
+  const setEndDate = useCallback(
+    (endDate: LocalDate | undefined) =>
+      setSearchFilters((old) => ({ ...old, endDate })),
+    [setSearchFilters]
+  )
 
-  const setUseCustomDatesForInvoiceSending = (value: boolean) => {
-    setSearchFilters({
-      ...searchFilters,
-      useCustomDatesForInvoiceSending: value
-    })
-  }
+  const setUseCustomDatesForInvoiceSending = useCallback(
+    (useCustomDatesForInvoiceSending: boolean) =>
+      setSearchFilters((old) => ({ ...old, useCustomDatesForInvoiceSending })),
+    [setSearchFilters]
+  )
 
   return (
     <Filters
@@ -169,4 +174,4 @@ function InvoiceFilters() {
   )
 }
 
-export default InvoiceFilters
+export default React.memo(InvoiceFilters)
