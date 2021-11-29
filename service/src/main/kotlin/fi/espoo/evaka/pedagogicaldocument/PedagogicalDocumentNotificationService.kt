@@ -92,7 +92,7 @@ SELECT EXISTS(
     WHERE
         doc.id = :id AND
         doc.email_job_created_at IS NULL AND 
-        (LENGTH(COALESCE(doc.description, '')) > 0 OR a.id IS NOT NULL)
+        (LENGTH(doc.description) > 0 OR a.id IS NOT NULL)
 )
             """.trimIndent()
         )
