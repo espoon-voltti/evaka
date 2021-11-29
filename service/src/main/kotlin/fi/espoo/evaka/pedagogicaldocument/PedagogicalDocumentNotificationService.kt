@@ -8,7 +8,6 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -18,6 +17,7 @@ import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.dateNow
 import mu.KotlinLogging
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -46,27 +46,27 @@ class PedagogicalDocumentNotificationService(
 
     fun getPedagogicalDocumentationNotifications(
         tx: Database.Transaction,
-        docId: PedagogicalDocumentId,
-        childId: ChildId
+        id: PedagogicalDocumentId
     ): List<AsyncJob.SendPedagogicalDocumentNotificationEmail> {
         // language=sql
         val sql = """
         SELECT DISTINCT
             p.email as recipient_email,
             coalesce(lower(p.language), 'fi') as language
-        FROM person p
-        JOIN guardian g ON (p.id = g.guardian_id)
-        WHERE g.child_id = :childId
-          AND NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = :childId AND bl.blocked_recipient = p.id)
+        FROM pedagogical_document doc 
+        JOIN guardian g ON doc.child_id = g.child_id
+        JOIN person p on g.guardian_id = p.id
+        WHERE doc.id = :id
+          AND NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = doc.child_id AND bl.blocked_recipient = p.id)
           AND p.email IS NOT NULL
         """.trimIndent()
 
         return tx.createQuery(sql)
-            .bind("childId", childId)
+            .bind("id", id)
             .bind("date", dateNow())
             .map { row ->
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
-                    pedagogicalDocumentId = docId,
+                    pedagogicalDocumentId = id,
                     recipientEmail = row.mapColumn("recipient_email"),
                     language = getLanguage(row.mapColumn("language"))
                 )
@@ -74,15 +74,45 @@ class PedagogicalDocumentNotificationService(
             .list()
     }
 
-    fun scheduleSendingNotifications(tx: Database.Transaction, docId: PedagogicalDocumentId, childId: ChildId) {
-        logger.info { "Scheduling sending of Pedagogical Documentation notification emails" }
+    private fun Database.Transaction.updateDocumentEmailJobCreatedAt(id: PedagogicalDocumentId, date: HelsinkiDateTime) {
+        this.createUpdate("UPDATE pedagogical_document SET email_job_created_at = :date WHERE id = :id")
+            .bind("id", id)
+            .bind("date", date)
+            .updateExactlyOne()
+    }
 
-        asyncJobRunner.plan(
-            tx,
-            payloads = getPedagogicalDocumentationNotifications(tx, docId, childId),
-            runAt = HelsinkiDateTime.now(),
-            retryCount = 10
+    private fun Database.Read.shouldCreateNotificationJobForDocument(id: PedagogicalDocumentId): Boolean {
+        // notification job should be created only if description is set or an attachment is uploaded
+        return this.createQuery(
+            """
+SELECT EXISTS(
+    SELECT 1
+    FROM pedagogical_document doc
+    LEFT JOIN attachment a ON doc.id = a.pedagogical_document_id
+    WHERE
+        doc.id = :id AND
+        doc.email_job_created_at IS NULL AND 
+        (LENGTH(COALESCE(doc.description, '')) > 0 OR a.id IS NOT NULL)
+)
+            """.trimIndent()
         )
+            .bind("id", id)
+            .mapTo<Boolean>()
+            .one()
+    }
+
+    fun maybeScheduleEmailNotification(tx: Database.Transaction, id: PedagogicalDocumentId) {
+        if (tx.shouldCreateNotificationJobForDocument(id)) {
+            tx.updateDocumentEmailJobCreatedAt(id, HelsinkiDateTime.now())
+
+            logger.info { "Scheduling sending of Pedagogical Documentation notification emails (id: $id)" }
+            asyncJobRunner.plan(
+                tx,
+                payloads = getPedagogicalDocumentationNotifications(tx, id),
+                runAt = HelsinkiDateTime.now(),
+                retryCount = 10
+            )
+        }
     }
 
     private fun getLanguage(languageStr: String?): Language {
@@ -163,9 +193,7 @@ class PedagogicalDocumentNotificationService(
     }
 }
 
-private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
-    documentId: PedagogicalDocumentId
-) {
+private fun Database.Transaction.markPedagogicalDocumentNotificationSent(id: PedagogicalDocumentId) {
     this.createUpdate(
         """
             UPDATE pedagogical_document
@@ -173,6 +201,6 @@ private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
             WHERE id = :id
         """.trimIndent()
     )
-        .bind("id", documentId)
+        .bind("id", id)
         .updateExactlyOne()
 }

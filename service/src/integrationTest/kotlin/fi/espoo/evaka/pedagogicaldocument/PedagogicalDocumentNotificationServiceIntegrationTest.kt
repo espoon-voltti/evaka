@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pedagogicaldocument
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
@@ -13,14 +14,15 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -31,11 +33,15 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.io.File
+import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -114,7 +120,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     fun `notifications are sent to guardians but not heads`() {
         postNewDocument(
             user = employee,
-            childId = testChild_1.id
+            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "foobar")
         )
         asyncJobRunner.runPendingJobsSync()
 
@@ -133,16 +139,66 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     fun `sending of notifications are tracked in the database`() {
         val doc = postNewDocument(
             user = employee,
-            childId = testChild_1.id
+            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "foobar")
+        )
+
+        db.read {
+            val emailJobCreatedAt = it.createQuery("SELECT email_job_created_at FROM pedagogical_document WHERE id = :id")
+                .bind("id", doc.id)
+                .mapTo<HelsinkiDateTime>()
+                .one()
+            assertTrue(HelsinkiDateTime.now().durationSince(emailJobCreatedAt) < Duration.ofSeconds(1))
+        }
+        assertEmailSent(doc.id, false)
+
+        asyncJobRunner.runPendingJobsSync()
+
+        assertEmailSent(doc.id)
+    }
+
+    @Test
+    fun `notifications are not sent before document has content`() {
+        val doc = postNewDocument(
+            user = employee,
+            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "")
         )
         asyncJobRunner.runPendingJobsSync()
 
-        db.transaction {
-            it.createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :docId").bind("docId", doc.id)
-                .map { row ->
-                    assertTrue(row.mapColumn("email_sent"))
-                }
-        }
+        assertEmailSent(doc.id, false)
+
+        updateDocument(user = employee, doc.id, PedagogicalDocumentPostBody(ChildId(testChild_1.id), "babar"))
+
+        asyncJobRunner.runPendingJobsSync()
+
+        assertEmailSent(doc.id)
+    }
+
+    @Test
+    fun `notifications are sent after document has an attachment`() {
+        val doc = postNewDocument(
+            user = employee,
+            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "")
+        )
+        asyncJobRunner.runPendingJobsSync()
+
+        assertEmailSent(doc.id, false)
+
+        uploadDocumentAttachment(employee, doc.id)
+
+        asyncJobRunner.runPendingJobsSync()
+
+        assertEmailSent(doc.id, true)
+    }
+
+    private fun assertEmailSent(id: PedagogicalDocumentId, sent: Boolean? = true) {
+        assertEquals(
+            sent,
+            db.read {
+                it.createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :id")
+                    .bind("id", id)
+                    .mapTo<Boolean>().one()
+            }
+        )
     }
 
     @Test
@@ -153,7 +209,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
 
         postNewDocument(
             user = employee,
-            childId = testChild_1.id
+            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "foobar")
         )
         asyncJobRunner.runPendingJobsSync()
 
@@ -170,14 +226,34 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
 
     private fun postNewDocument(
         user: AuthenticatedUser.Employee,
-        childId: UUID
+        body: PedagogicalDocumentPostBody
     ) = objectMapper.readValue<PedagogicalDocument>(
         http.post("/pedagogical-document")
-            .jsonBody("""{"childId": "$childId", "description": "foobar"}""")
+            .jsonBody(objectMapper.writeValueAsString(body))
             .asUser(user)
             .responseString()
             .third.get()
     )
+
+    private fun updateDocument(
+        user: AuthenticatedUser.Employee,
+        id: PedagogicalDocumentId,
+        body: PedagogicalDocumentPostBody
+    ) = objectMapper.readValue<PedagogicalDocument>(
+        http.put("/pedagogical-document/$id")
+            .jsonBody(objectMapper.writeValueAsString(body))
+            .asUser(user)
+            .responseString()
+            .third.get()
+    )
+
+    private fun uploadDocumentAttachment(user: AuthenticatedUser, id: PedagogicalDocumentId) {
+        http.upload("/attachments/pedagogical-documents/$id")
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(user)
+            .response()
+            .also { assertEquals(200, it.second.statusCode) }
+    }
 
     private fun getEmailFor(person: DevPerson): MockEmail {
         val address = person.email ?: throw Error("$person has no email")

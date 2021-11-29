@@ -10,12 +10,12 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.result.RowView
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -40,9 +40,9 @@ class PedagogicalDocumentController(
         Audit.PedagogicalDocumentUpdate.log(body.childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
         return db.transaction { tx ->
-            val document = tx.createDocument(user, body)
-            pedagogicalDocumentNotificationService.scheduleSendingNotifications(tx, document.id, document.childId)
-            document
+            tx.createDocument(user, body).also {
+                pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+            }
         }
     }
 
@@ -55,7 +55,11 @@ class PedagogicalDocumentController(
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, documentId)
-        return db.transaction { it.updateDocument(user, body, documentId) }
+        return db.transaction { tx ->
+            tx.updateDocument(user, body, documentId).also {
+                pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+            }
+        }
     }
 
     @GetMapping("/child/{childId}")
@@ -82,6 +86,7 @@ class PedagogicalDocumentController(
 }
 
 data class Attachment(
+    @PropagateNull
     val id: AttachmentId,
     val name: String,
     val contentType: String
@@ -90,7 +95,8 @@ data class Attachment(
 data class PedagogicalDocument(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
-    val description: String?,
+    val description: String,
+    @Nested("attachment")
     val attachment: Attachment?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime
@@ -107,12 +113,13 @@ private fun Database.Transaction.createDocument(
 ): PedagogicalDocument {
     return this.createUpdate(
         """
-            INSERT INTO pedagogical_document(child_id, created_by)
-            VALUES (:child_id, :created_by)
+            INSERT INTO pedagogical_document(child_id, created_by, description)
+            VALUES (:child_id, :created_by, :description)
             RETURNING *
         """.trimIndent()
     )
         .bind("child_id", body.childId)
+        .bind("description", body.description)
         .bind("created_by", user.id)
         .executeAndReturnGeneratedKeys()
         .mapTo<PedagogicalDocument>()
@@ -161,8 +168,8 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
         """.trimIndent()
     )
         .bind("child_id", childId)
-        .map { row -> mapPedagogicalDocument(row) }
-        .filterNotNull()
+        .mapTo<PedagogicalDocument>()
+        .list()
 }
 
 private fun Database.Transaction.deleteDocument(
@@ -177,22 +184,4 @@ private fun Database.Transaction.deleteDocument(
     this.createUpdate("DELETE FROM pedagogical_document WHERE id = :document_id")
         .bind("document_id", documentId)
         .execute()
-}
-
-fun mapPedagogicalDocument(row: RowView): PedagogicalDocument? {
-    val id: PedagogicalDocumentId = row.mapColumn("id") ?: return null
-    val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
-
-    return PedagogicalDocument(
-        id = id,
-        childId = row.mapColumn("child_id"),
-        description = row.mapColumn("description"),
-        attachment = if (hasAttachment) Attachment(
-            id = row.mapColumn("attachment_id"),
-            name = row.mapColumn("attachment_name"),
-            contentType = row.mapColumn("attachment_content_type"),
-        ) else null,
-        created = row.mapColumn("created"),
-        updated = row.mapColumn("updated")
-    )
 }
