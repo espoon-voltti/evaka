@@ -2,20 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { orderBy } from 'lodash'
-import { faChild } from 'lib-icons'
-import { Loading, Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { useTranslation } from '../../state/i18n'
-import { VoucherValueDecisionSummary } from '../../types/invoicing'
-import { getPersonVoucherValueDecisions } from '../../api/invoicing'
+import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { UnwrapResult } from '../async-rendering'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import { faChild, faPlus } from 'lib-icons'
+import { orderBy } from 'lodash'
+import React, { useCallback, useContext, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import {
+  createRetroactiveValueDecisions,
+  getPersonVoucherValueDecisions
+} from '../../api/invoicing'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   id: string
@@ -27,43 +37,52 @@ export default React.memo(function PersonVoucherValueDecisions({
   open
 }: Props) {
   const { i18n } = useTranslation()
-
-  const [voucherValueDecisions, setVoucherValueDecisions] = useState<
-    Result<VoucherValueDecisionSummary[]>
-  >(Loading.of())
-
-  const loadDecisions = useRestApi(
-    getPersonVoucherValueDecisions,
-    setVoucherValueDecisions
+  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const [voucherValueDecisions, reloadDecisions] = useApiState(
+    () => getPersonVoucherValueDecisions(id),
+    [id]
   )
-  useEffect(() => loadDecisions(id), [loadDecisions, id])
+
+  const openRetroactiveDecisionsModal = useCallback(
+    () => toggleUiMode('create-retroactive-value-decisions'),
+    [toggleUiMode]
+  )
 
   return (
     <CollapsibleSection
       icon={faChild}
-      title={i18n.personProfile.voucherValueDecisions}
+      title={i18n.personProfile.voucherValueDecisions.title}
       data-qa="person-voucher-value-decisions-collapsible"
       startCollapsed={!open}
     >
-      <UnwrapResult
-        result={voucherValueDecisions}
-        failure={() => <div>{i18n.common.loadingFailed}</div>}
-      >
-        {(data) => (
-          <Table data-qa="table-of-voucher-value-decisions">
-            <Thead>
-              <Tr>
-                <Th>{i18n.valueDecisions.table.validity}</Th>
-                <Th>{i18n.valueDecisions.table.number}</Th>
-                <Th>{i18n.valueDecisions.table.totalValue}</Th>
-                <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
-                <Th>{i18n.valueDecisions.table.createdAt}</Th>
-                <Th>{i18n.valueDecisions.table.sentAt}</Th>
-                <Th>{i18n.valueDecisions.table.status}</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {orderBy(data, ['createdAt'], ['desc']).map((decision) => (
+      {uiMode === 'create-retroactive-value-decisions' ? (
+        <Modal
+          headOfFamily={id}
+          clear={clearUiMode}
+          loadDecisions={reloadDecisions}
+        />
+      ) : null}
+      <AddButtonRow
+        text={i18n.personProfile.voucherValueDecisions.createRetroactive}
+        onClick={openRetroactiveDecisionsModal}
+        disabled={!!uiMode}
+      />
+      {renderResult(voucherValueDecisions, (voucherValueDecisions) => (
+        <Table data-qa="table-of-voucher-value-decisions">
+          <Thead>
+            <Tr>
+              <Th>{i18n.valueDecisions.table.validity}</Th>
+              <Th>{i18n.valueDecisions.table.number}</Th>
+              <Th>{i18n.valueDecisions.table.totalValue}</Th>
+              <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
+              <Th>{i18n.valueDecisions.table.createdAt}</Th>
+              <Th>{i18n.valueDecisions.table.sentAt}</Th>
+              <Th>{i18n.valueDecisions.table.status}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {orderBy(voucherValueDecisions, ['createdAt'], ['desc']).map(
+              (decision) => (
                 <Tr
                   key={`${decision.id}`}
                   data-qa="table-voucher-value-decision-row"
@@ -84,11 +103,77 @@ export default React.memo(function PersonVoucherValueDecisions({
                   <Td>{formatDate(decision.sentAt)}</Td>
                   <Td>{i18n.valueDecision.status[decision.status]}</Td>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        )}
-      </UnwrapResult>
+              )
+            )}
+          </Tbody>
+        </Table>
+      ))}
     </CollapsibleSection>
+  )
+})
+
+const StyledLabel = styled(Label)`
+  margin-top: ${defaultMargins.xs};
+`
+
+const Modal = React.memo(function Modal({
+  headOfFamily,
+  clear,
+  loadDecisions
+}: {
+  headOfFamily: string
+  clear: () => void
+  loadDecisions: () => void
+}) {
+  const { i18n, lang } = useTranslation()
+  const [date, setDate] = useState<string>('')
+  const dateIsValid = LocalDate.parseFiOrNull(date)
+
+  const resolve = useCallback(() => {
+    if (dateIsValid) {
+      return createRetroactiveValueDecisions(
+        headOfFamily,
+        LocalDate.parseFiOrThrow(date)
+      )
+    }
+    return Promise.resolve()
+  }, [headOfFamily, date, dateIsValid])
+
+  const onSuccess = useCallback(() => {
+    clear()
+    loadDecisions()
+  }, [clear, loadDecisions])
+
+  return (
+    <AsyncFormModal
+      icon={faPlus}
+      iconColour="blue"
+      title={i18n.personProfile.voucherValueDecisions.createRetroactive}
+      resolveAction={resolve}
+      resolveLabel={i18n.common.create}
+      resolveDisabled={!dateIsValid}
+      onSuccess={onSuccess}
+      rejectAction={clear}
+      rejectLabel={i18n.common.cancel}
+    >
+      <FixedSpaceRow justifyContent="center">
+        <StyledLabel>{i18n.common.form.startDate}</StyledLabel>
+        <DatePicker
+          locale={lang}
+          date={date}
+          onChange={setDate}
+          info={
+            !dateIsValid
+              ? {
+                  status: 'warning',
+                  text: i18n.validationError.dateRange
+                }
+              : undefined
+          }
+          hideErrorsBeforeTouched
+          openAbove
+        />
+      </FixedSpaceRow>
+    </AsyncFormModal>
   )
 })

@@ -166,7 +166,7 @@ class FeeDecisionController(
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { generator.createRetroactive(it, id, body.from) }
+        db.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) }
         return ResponseEntity.noContent().build()
     }
 

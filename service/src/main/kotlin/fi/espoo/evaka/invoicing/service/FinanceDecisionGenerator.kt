@@ -45,7 +45,7 @@ class FinanceDecisionGenerator(
     private val feeDecisionMinDate = env.feeDecisionMinDate
     private val valueDecisionCapacityFactorEnabled = featureFlags.valueDecisionCapacityFactorEnabled
 
-    fun createRetroactive(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
+    fun createRetroactiveFeeDecisions(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         tx.handleFeeDecisionChanges(
             objectMapper,
@@ -54,6 +54,26 @@ class FinanceDecisionGenerator(
             PersonData.JustId(headOfFamily),
             families
         )
+    }
+
+    fun createRetroactiveValueDecisions(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
+        val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
+        families
+            .flatMap { family -> family.children.map { it to family } }
+            .groupingBy { (child, _) -> child }
+            .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) ->
+                childFamilies + family
+            }
+            .forEach { (child, families) ->
+                tx.handleValueDecisionChanges(
+                    valueDecisionCapacityFactorEnabled,
+                    objectMapper,
+                    incomeTypesProvider,
+                    from,
+                    child,
+                    families
+                )
+            }
     }
 
     fun generateNewDecisionsForAdult(tx: Database.Transaction, personId: UUID, from: LocalDate) {

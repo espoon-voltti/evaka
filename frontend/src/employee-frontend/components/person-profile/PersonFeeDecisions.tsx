@@ -18,7 +18,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { formatDate } from 'lib-common/date'
 import {
   getPersonFeeDecisions,
-  createRetroactiveDecisions
+  createRetroactiveFeeDecisions
 } from '../../api/invoicing'
 import { FeeDecision } from '../../types/invoicing'
 import { DateTd, StatusTd } from '../PersonProfile'
@@ -127,7 +127,7 @@ const Modal = React.memo(function Modal({
 
   const resolve = useCallback(() => {
     if (dateIsValid) {
-      return createRetroactiveDecisions(
+      return createRetroactiveFeeDecisions(
         headOfFamily,
         LocalDate.parseFiOrThrow(date)
       )
