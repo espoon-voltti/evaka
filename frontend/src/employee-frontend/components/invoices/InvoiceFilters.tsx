@@ -1,24 +1,24 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, Fragment, useCallback } from 'react'
 import LocalDate from 'lib-common/local-date'
+import { Gap } from 'lib-components/white-space'
+import React, { Fragment, useCallback, useContext, useEffect } from 'react'
+import { getAreas, getUnits } from '../../api/daycare'
+import { useTranslation } from '../../state/i18n'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { InvoiceDistinctiveDetails, InvoiceStatus } from '../../types/invoicing'
 import {
   AreaFilter,
   Filters,
-  InvoiceStatusFilter,
-  UnitFilter,
+  InvoiceDateFilter,
   InvoiceDistinctionsFilter,
-  InvoiceDateFilter
+  InvoiceStatusFilter,
+  UnitFilter
 } from '../common/Filters'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { getAreas, getUnits } from '../../api/daycare'
-import { InvoiceStatus, InvoiceDistinctiveDetails } from '../../types/invoicing'
-import { Gap } from 'lib-components/white-space'
-import { useTranslation } from '../../state/i18n'
 
-function InvoiceFilters() {
+export default React.memo(function InvoiceFilters() {
   const {
     invoices: {
       searchFilters,
@@ -172,6 +172,4 @@ function InvoiceFilters() {
       }
     />
   )
-}
-
-export default React.memo(InvoiceFilters)
+})
