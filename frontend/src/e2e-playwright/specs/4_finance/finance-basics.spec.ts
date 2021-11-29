@@ -39,9 +39,6 @@ beforeEach(async () => {
   financeBasicsPage = new FinanceBasicsPage(page)
   nav = new EmployeeNav(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Finance basics', () => {
   test('Navigate to finance basics page', async () => {

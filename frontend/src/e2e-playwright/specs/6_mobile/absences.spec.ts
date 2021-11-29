@@ -65,9 +65,6 @@ beforeEach(async () => {
   const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
   await page.goto(mobileSignupUrl)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Future absences', () => {
   test('User can set and delete future absence periods', async () => {

@@ -95,9 +95,6 @@ beforeEach(async () => {
 
   notePage = new MobileNotePage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Child and group notes', () => {
   test('Child daily note can be created', async () => {

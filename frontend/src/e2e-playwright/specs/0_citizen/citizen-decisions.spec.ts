@@ -37,9 +37,6 @@ beforeEach(async () => {
   await enduserLogin(page)
   await page.goto(config.enduserUrl)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen page', () => {
   test('Citizen sees their decisions, accepts preschool and rejects preschool daycare', async () => {

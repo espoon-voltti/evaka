@@ -34,9 +34,6 @@ beforeEach(async () => {
   header = new CitizenHeader(page)
   personalDetailsPage = new CitizenPersonalDetailsPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen personal details', () => {
   test('Citizen sees indications of missing email', async () => {

@@ -60,9 +60,6 @@ beforeEach(async () => {
   await employeeLogin(page, 'FINANCE_ADMIN')
   await page.goto(config.employeeUrl)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
   await insertVoucherValueDecisionFixtures([

@@ -60,9 +60,6 @@ beforeEach(async () => {
 
   reports = new ReportsPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Reporting - voucher reports', () => {
   test('voucher service providers are reported correctly, respecting the area filter', async () => {

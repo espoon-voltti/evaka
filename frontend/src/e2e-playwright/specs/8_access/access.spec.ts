@@ -113,9 +113,6 @@ beforeEach(async () => {
   nav = new EmployeeNav(page)
   childInfo = new ChildInformationPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Child information page', () => {
   test('Admin sees every tab, except messaging', async () => {

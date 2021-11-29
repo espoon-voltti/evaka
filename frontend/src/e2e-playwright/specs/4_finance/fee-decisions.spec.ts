@@ -53,9 +53,6 @@ beforeEach(async () => {
   await employeeLogin(page, 'FINANCE_ADMIN')
   await page.goto(config.employeeUrl)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 const insertFeeDecisionFixtureAndNavigateToIt = async (
   headOfFamily: PersonDetail,

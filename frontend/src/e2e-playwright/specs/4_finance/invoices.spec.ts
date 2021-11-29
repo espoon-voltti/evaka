@@ -93,9 +93,6 @@ beforeEach(async () => {
   await nav.openTab('finance')
   invoicesPage = await new FinancePage(page).selectInvoicesTab()
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Invoices', () => {
   test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async () => {

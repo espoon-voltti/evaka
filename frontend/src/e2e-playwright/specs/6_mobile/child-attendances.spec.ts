@@ -50,9 +50,6 @@ beforeEach(async () => {
   childPage = new MobileChildPage(page)
   childAttendancePage = new ChildAttendancePage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 const createPlacementAndReload = async (
   placementType: PlacementType

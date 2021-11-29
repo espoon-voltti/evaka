@@ -60,9 +60,6 @@ beforeEach(async () => {
   await page.goto(mobileSignupUrl)
   await nav.openPage('staff')
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Staff page', () => {
   test('Staff for all groups is read-only', async () => {

@@ -150,9 +150,6 @@ beforeEach(async () => {
   const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 async function initCitizenPage() {
   citizenPage = await (await newBrowserContext()).newPage()
@@ -170,9 +167,7 @@ describe('Message editor in child page', () => {
 })
 
 describe('Child message thread', () => {
-  beforeEach(async () => {
-    await Promise.all([initCitizenPage()])
-  })
+  beforeEach(async () => await initCitizenPage())
 
   test('Employee can reply to thread', async () => {
     const title = 'Otsikko'

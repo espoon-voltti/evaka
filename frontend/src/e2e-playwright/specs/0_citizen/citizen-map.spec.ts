@@ -73,9 +73,6 @@ beforeEach(async () => {
   await page.goto(config.enduserUrl)
   mapPage = new CitizenMapPage(page)
 })
-afterEach(async () => {
-  await page.close()
-})
 
 describe('Citizen map page', () => {
   test('Unit type filter affects the unit list', async () => {

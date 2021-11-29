@@ -69,10 +69,6 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     await header.selectTab('calendar')
   })
 
-  afterEach(async () => {
-    await page.close()
-  })
-
   test('Citizen creates a repeating reservation for all children', async () => {
     const firstReservationDay = LocalDate.today().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
