@@ -9,7 +9,13 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Redirect, Route, Switch, useParams } from 'react-router-dom'
+import {
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+  useParams
+} from 'react-router-dom'
 import { useTranslation } from '../state/i18n'
 import { RouteWithTitle } from './RouteWithTitle'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -26,7 +32,6 @@ import { UUID } from 'lib-common/types'
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
-import useLocalStorage from 'lib-common/utils/useLocalStorage'
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
@@ -48,38 +53,53 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
     }
   }, [setTitle, unitInformation])
 
-  const validateStoredOpenGroups = (value: string | null): value is string => {
-    try {
-      return !!value && JSON.parse(value) != null
-    } catch (e) {
-      return false
-    }
-  }
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
-  const [storedOpenGroups, setStoredOpenGroups] = useLocalStorage(
-    'evaka.unit-page.open-groups',
-    '{}',
-    validateStoredOpenGroups
+  const history = useHistory()
+  const queryParams = useCallback(
+    () => new URLSearchParams(location.search),
+    []
   )
 
-  const calculateInitialOpenGroups = (): Record<string, boolean> => {
-    try {
-      return (storedOpenGroups ? JSON.parse(storedOpenGroups) : {}) as Record<
-        string,
-        boolean
-      >
-    } catch (e) {
+  const getOpenGroupsFromQueryParams = useCallback((): Record<
+    string,
+    boolean
+  > => {
+    const qp = queryParams().get('open_groups')
+    if (qp != null) {
+      return qp
+        .split(',')
+        .reduce(
+          (prev, cur) => (cur ? Object.assign(prev, { [cur]: true }) : prev),
+          {}
+        )
+    } else {
       return {}
     }
-  }
-
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
-    calculateInitialOpenGroups()
-  )
+  }, [queryParams])
 
   useEffect(() => {
-    setStoredOpenGroups(JSON.stringify(openGroups))
-  }, [openGroups, setStoredOpenGroups])
+    setOpenGroups(getOpenGroupsFromQueryParams())
+  }, [getOpenGroupsFromQueryParams])
+
+  const openGroupsToStringList = (
+    openGroups: Record<string, boolean>
+  ): string => {
+    return Object.keys(openGroups)
+      .reduce(
+        (prev: string[], cur: string) =>
+          openGroups[cur] == true ? prev.concat(cur) : prev,
+        []
+      )
+      .join(',')
+  }
+
+  useEffect(() => {
+    const openList = openGroupsToStringList(openGroups)
+    openList.length > 0
+      ? history.push(`?open_groups=${openList}`)
+      : history.push('?')
+  }, [openGroups, history])
 
   const tabs = useMemo(
     () => [
