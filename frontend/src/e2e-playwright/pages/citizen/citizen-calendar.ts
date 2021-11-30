@@ -17,33 +17,12 @@ export default class CitizenCalendarPage {
   #openCalendarActionsModal = this.page.locator(
     '[data-qa="open-calendar-actions-modal"]'
   )
-  #childCheckbox = (childId: string) =>
-    new CheckboxLocator(this.page.locator(`[data-qa="child-${childId}"]`))
-  #startDateInput = this.page.locator('[data-qa="start-date"]')
-  #endDateInput = this.page.locator('[data-qa="end-date"]')
-  #repetitionSelect = this.page.locator('[data-qa="repetition"] select')
-  #dailyStartTimeInput = this.page.locator('[data-qa="daily-start-time-0"]')
-  #dailyEndTimeInput = this.page.locator('[data-qa="daily-end-time-0"]')
-  #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
-    this.page.locator(`[data-qa="weekly-${index}-start-time-0"]`)
-  )
-  #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
-    this.page.locator(`[data-qa="weekly-${index}-end-time-0"]`)
-  )
-  #absenceChip = (type: string) =>
-    new CheckboxLocator(this.page.locator(`[data-qa="absence-${type}"]`))
-  #modalSendButton = this.page.locator('[data-qa="modal-okBtn"]')
-
   #dayCell = (date: LocalDate) =>
     this.page.locator(
       `[data-qa="${this.type}-calendar-day-${date.formatIso()}"]`
     )
 
-  async createRepeatingDailyReservation(
-    dateRange: FiniteDateRange,
-    startTime: string,
-    endTime: string
-  ) {
+  async openReservationsModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
       await this.page
@@ -52,60 +31,17 @@ export default class CitizenCalendarPage {
     } else {
       await this.page.locator('[data-qa="open-reservations-modal"]').click()
     }
-
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#dailyStartTimeInput.fill(startTime)
-    await this.#dailyEndTimeInput.fill(endTime)
-
-    await this.#modalSendButton.click()
+    return new ReservationsModal(this.page)
   }
 
-  async createRepeatingWeeklyReservation(
-    dateRange: FiniteDateRange,
-    weeklyTimes: { startTime: string; endTime: string }[]
-  ) {
-    if (this.type === 'mobile') {
-      await this.#openCalendarActionsModal.click()
-      await this.page
-        .locator('[data-qa="calendar-action-reservations"]')
-        .click()
-    } else {
-      await this.page.locator('[data-qa="open-reservations-modal"]').click()
-    }
-
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#repetitionSelect.selectOption({ value: 'WEEKLY' })
-    await weeklyTimes.reduce(async (promise, { startTime, endTime }, index) => {
-      await promise
-      await this.#weeklyStartTimeInputs[index].fill(startTime)
-      await this.#weeklyEndTimeInputs[index].fill(endTime)
-    }, Promise.resolve())
-
-    await this.#modalSendButton.click()
-  }
-
-  async markAbsence(
-    child: { id: string },
-    totalChildren: number,
-    dateRange: FiniteDateRange,
-    absenceType: 'SICKLEAVE' | 'OTHER_ABSENCE' | 'PLANNED_ABSENCE'
-  ) {
+  async openAbsencesModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
       await this.page.locator('[data-qa="calendar-action-absences"]').click()
     } else {
       await this.page.locator('[data-qa="open-absences-modal"]').click()
     }
-
-    await this.deselectChildren(3)
-    await this.#childCheckbox(child.id).click()
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#absenceChip(absenceType).click()
-
-    await this.#modalSendButton.click()
+    return new AbsencesModal(this.page)
   }
 
   async assertReservations(
@@ -122,6 +58,79 @@ export default class CitizenCalendarPage {
         )
       ].join(', ')
     )
+  }
+}
+
+class ReservationsModal {
+  constructor(private readonly page: Page) {}
+
+  #startDateInput = this.page.locator('[data-qa="start-date"]')
+  #endDateInput = this.page.locator('[data-qa="end-date"]')
+  #repetitionSelect = this.page.locator('[data-qa="repetition"] select')
+  #dailyStartTimeInput = this.page.locator('[data-qa="daily-start-time-0"]')
+  #dailyEndTimeInput = this.page.locator('[data-qa="daily-end-time-0"]')
+  #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
+    this.page.locator(`[data-qa="weekly-${index}-start-time-0"]`)
+  )
+  #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
+    this.page.locator(`[data-qa="weekly-${index}-end-time-0"]`)
+  )
+  #modalSendButton = this.page.locator('[data-qa="modal-okBtn"]')
+
+  async createRepeatingDailyReservation(
+    dateRange: FiniteDateRange,
+    startTime: string,
+    endTime: string
+  ) {
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#dailyStartTimeInput.fill(startTime)
+    await this.#dailyEndTimeInput.fill(endTime)
+
+    await this.#modalSendButton.click()
+  }
+
+  async createRepeatingWeeklyReservation(
+    dateRange: FiniteDateRange,
+    weeklyTimes: { startTime: string; endTime: string }[]
+  ) {
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#repetitionSelect.selectOption({ value: 'WEEKLY' })
+    await weeklyTimes.reduce(async (promise, { startTime, endTime }, index) => {
+      await promise
+      await this.#weeklyStartTimeInputs[index].fill(startTime)
+      await this.#weeklyEndTimeInputs[index].fill(endTime)
+    }, Promise.resolve())
+
+    await this.#modalSendButton.click()
+  }
+}
+
+class AbsencesModal {
+  constructor(private readonly page: Page) {}
+
+  #childCheckbox = (childId: string) =>
+    new CheckboxLocator(this.page.locator(`[data-qa="child-${childId}"]`))
+  #startDateInput = this.page.locator('[data-qa="start-date"]')
+  #endDateInput = this.page.locator('[data-qa="end-date"]')
+  #absenceChip = (type: string) =>
+    new CheckboxLocator(this.page.locator(`[data-qa="absence-${type}"]`))
+  #modalSendButton = this.page.locator('[data-qa="modal-okBtn"]')
+
+  async markAbsence(
+    child: { id: string },
+    totalChildren: number,
+    dateRange: FiniteDateRange,
+    absenceType: 'SICKLEAVE' | 'OTHER_ABSENCE' | 'PLANNED_ABSENCE'
+  ) {
+    await this.deselectChildren(3)
+    await this.#childCheckbox(child.id).click()
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#absenceChip(absenceType).click()
+
+    await this.#modalSendButton.click()
   }
 
   async deselectChildren(n: number) {

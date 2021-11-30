@@ -73,7 +73,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createRepeatingDailyReservation(
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservation.startTime,
       reservation.endTime
@@ -95,7 +96,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       endTime: `16:0${index}`
     }))
 
-    await calendarPage.createRepeatingWeeklyReservation(
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingWeeklyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservations
     )
@@ -114,13 +116,15 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createRepeatingDailyReservation(
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservation.startTime,
       reservation.endTime
     )
 
-    await calendarPage.markAbsence(
+    const absencesModal = await calendarPage.openAbsencesModal()
+    await absencesModal.markAbsence(
       children[0],
       children.length,
       new FiniteDateRange(firstReservationDay, firstReservationDay),
@@ -136,7 +140,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const initialReservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createRepeatingDailyReservation(
+    let reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       initialReservation.startTime,
       initialReservation.endTime
@@ -148,7 +153,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
     const newReservation = { startTime: '09:00', endTime: '17:00' }
 
-    await calendarPage.createRepeatingDailyReservation(
+    reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       newReservation.startTime,
       newReservation.endTime
