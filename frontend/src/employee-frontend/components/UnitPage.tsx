@@ -97,8 +97,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   useEffect(() => {
     const openList = openGroupsToStringList(openGroups)
     openList.length > 0
-      ? history.push(`?open_groups=${openList}`)
-      : history.push('?')
+      ? history.replace(`?open_groups=${openList}`)
+      : history.replace('?')
   }, [openGroups, history])
 
   const tabs = useMemo(
