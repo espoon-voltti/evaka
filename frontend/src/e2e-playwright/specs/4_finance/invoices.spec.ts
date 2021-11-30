@@ -36,6 +36,7 @@ import { employeeLogin } from 'e2e-playwright/utils/user'
 import { FeeDecision } from 'e2e-test-common/dev-api/types'
 
 let page: Page
+let financePage: FinancePage
 let invoicesPage: InvoicesPage
 let fixtures: AreaAndPersonFixtures
 let feeDecisionFixture: FeeDecision
@@ -91,7 +92,8 @@ beforeEach(async () => {
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
   await nav.openTab('finance')
-  invoicesPage = await new FinancePage(page).selectInvoicesTab()
+  financePage = new FinancePage(page)
+  invoicesPage = await financePage.selectInvoicesTab()
 })
 
 describe('Invoices', () => {
@@ -146,7 +148,9 @@ describe('Invoices', () => {
         'DRAFT'
       )
     ])
-    await page.reload()
+    // switch tabs to refresh data
+    await financePage.selectFeeDecisionsTab()
+    await financePage.selectInvoicesTab()
 
     await invoicesPage.toggleAllInvoices(true)
     await invoicesPage.sendInvoices()
@@ -169,6 +173,7 @@ describe('Invoices', () => {
     await invoicesPage.assertInvoiceCount(1)
     await invoicesPage.toggleAllInvoices(true)
     await invoicesPage.sendInvoices()
+    await invoicesPage.assertInvoiceCount(0)
     await invoicesPage.showWaitingForSendingInvoices()
     await invoicesPage.assertInvoiceCount(1)
     await invoicesPage.openFirstInvoice()
