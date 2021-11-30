@@ -77,7 +77,7 @@ export default React.memo(function CalendarPage() {
       {selectedDate && data.isSuccess ? (
         <DayView
           date={selectedDate}
-          data={data.value}
+          reservationsResponse={data.value}
           selectDate={selectDate}
           reloadData={loadDefaultRange}
           close={closeDayView}

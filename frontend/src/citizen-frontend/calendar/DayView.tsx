@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect, useMemo, useState } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import {
   faCheck,
@@ -23,10 +29,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../localization'
-import { TIME_REGEXP, regexp } from 'lib-common/form-validation'
 import {
   Reservation,
   ReservationChild,
@@ -35,20 +39,76 @@ import {
 import { AbsenceType } from 'lib-common/generated/enums'
 import { postReservations } from './api'
 import CalendarModal from './CalendarModal'
-import { errorToInputInfo } from '../input-info-helper'
+import { zip } from 'lodash'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { UUID } from 'lib-common/types'
+import TimeRangeInput, { TimeRange, validateTimeRange } from './TimeRangeInput'
 
 interface Props {
   date: LocalDate
-  data: ReservationsResponse
+  reservationsResponse: ReservationsResponse
   selectDate: (date: LocalDate) => void
   reloadData: () => void
   close: () => void
   openAbsenceModal: () => void
 }
 
+interface ChildWithReservations {
+  child: ReservationChild
+  absence: AbsenceType | undefined
+  reservations: Reservation[]
+  reservationEditable: boolean
+}
+
+function getChildrenWithReservations(
+  date: LocalDate,
+  reservationsResponse: ReservationsResponse
+): ChildWithReservations[] {
+  const dailyData = reservationsResponse.dailyData.find((day) =>
+    date.isEqual(day.date)
+  )
+  if (!dailyData) return []
+
+  return reservationsResponse.children
+    .filter(
+      (child) =>
+        child.placementMinStart.isEqualOrBefore(date) &&
+        child.placementMaxEnd.isEqualOrAfter(date)
+    )
+    .map((child) => {
+      const childReservations = dailyData?.children.find(
+        ({ childId }) => childId === child.id
+      )
+
+      const reservationEditable =
+        child.maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
+        (!dailyData.isHoliday || child.inShiftCareUnit)
+
+      return {
+        child,
+        reservationEditable,
+        absence: childReservations?.absence ?? undefined,
+        reservations: childReservations?.reservations ?? []
+      }
+    })
+}
+
+function getSurroundingDates(
+  date: LocalDate,
+  reservationsResponse: ReservationsResponse
+) {
+  const dateIndexInData = reservationsResponse.dailyData.findIndex(
+    (reservation) => date.isEqual(reservation.date)
+  )
+  return [
+    reservationsResponse.dailyData[dateIndexInData - 1]?.date,
+    reservationsResponse.dailyData[dateIndexInData + 1]?.date
+  ]
+}
+
 export default React.memo(function DayView({
   date,
-  data,
+  reservationsResponse,
   selectDate,
   reloadData,
   close,
@@ -56,47 +116,15 @@ export default React.memo(function DayView({
 }: Props) {
   const i18n = useTranslation()
 
-  const dateIndexInData = useMemo(
-    () =>
-      data.dailyData.findIndex((reservation) => date.isEqual(reservation.date)),
-    [date, data]
+  const childrenWithReservations = useMemo(
+    () => getChildrenWithReservations(date, reservationsResponse),
+    [date, reservationsResponse]
   )
 
-  const childrenWithReservations = useMemo(() => {
-    const dailyData = data.dailyData[dateIndexInData]
-
-    return data.children
-      .filter(
-        (child) =>
-          child.placementMinStart.isEqualOrBefore(date) &&
-          child.placementMaxEnd.isEqualOrAfter(date)
-      )
-      .map((child) => {
-        const childReservations = dailyData?.children.find(
-          ({ childId }) => childId === child.id
-        )
-
-        const editableReservation =
-          child.maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
-          (!dailyData.isHoliday || child.inShiftCareUnit)
-
-        return {
-          child,
-          editableReservation,
-          data: {
-            absence: childReservations?.absence ?? undefined,
-            reservations: childReservations?.reservations
-          }
-        }
-      })
-  }, [dateIndexInData, data, date])
-
-  const [previousDate, nextDate] = useMemo(() => {
-    return [
-      data.dailyData[dateIndexInData - 1]?.date,
-      data.dailyData[dateIndexInData + 1]?.date
-    ]
-  }, [dateIndexInData, data])
+  const [previousDate, nextDate] = useMemo(
+    () => getSurroundingDates(date, reservationsResponse),
+    [date, reservationsResponse]
+  )
 
   const {
     editable,
@@ -110,7 +138,21 @@ export default React.memo(function DayView({
     save,
     navigate,
     confirmationModal
-  } = useEditState(date, data, reloadData, childrenWithReservations)
+  } = useEditState(
+    date,
+    childrenWithReservations,
+    reservationsResponse.reservableDays,
+    reloadData
+  )
+
+  const navigateToPrevDate = useCallback(
+    () => selectDate(previousDate),
+    [selectDate, previousDate]
+  )
+  const navigateToNextDate = useCallback(
+    () => selectDate(nextDate),
+    [selectDate, nextDate]
+  )
 
   return (
     <CalendarModal close={navigate(close)}>
@@ -118,7 +160,7 @@ export default React.memo(function DayView({
         <DayPicker>
           <IconButton
             icon={faChevronLeft}
-            onClick={navigate(() => selectDate(previousDate))}
+            onClick={navigateToPrevDate}
             disabled={!previousDate}
           />
           <DayOfWeek>{`${
@@ -126,15 +168,15 @@ export default React.memo(function DayView({
           } ${date.format('d.M.yyyy')}`}</DayOfWeek>
           <IconButton
             icon={faChevronRight}
-            onClick={navigate(() => selectDate(nextDate))}
+            onClick={navigateToNextDate}
             disabled={!nextDate}
           />
         </DayPicker>
         <Gap size="m" />
         <ReservationTitle>
           <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
-          {editable ? (
-            editing ? (
+          {editable &&
+            (editing ? (
               <InlineButton
                 icon={faCheck}
                 disabled={saving}
@@ -149,13 +191,15 @@ export default React.memo(function DayView({
                 text={i18n.common.edit}
                 iconRight
               />
-            )
-          ) : null}
+            ))}
         </ReservationTitle>
         <Gap size="s" />
-        {childrenWithReservations.map(
-          ({ child, editableReservation, data }, childIndex) => {
-            const childState = editorState[childIndex]?.data
+        {zip(childrenWithReservations, editorState).map(
+          ([childWithReservation, childState], childIndex) => {
+            if (!childWithReservation || !childState) return null
+
+            const { child, absence, reservations, reservationEditable } =
+              childWithReservation
 
             return (
               <Fragment key={child.id}>
@@ -166,87 +210,21 @@ export default React.memo(function DayView({
                 <Gap size="s" />
                 <Grid>
                   <Label>{i18n.calendar.reservation}</Label>
-                  {editing &&
-                  childState &&
-                  (editableReservation || data.reservations?.length) ? (
-                    <FixedSpaceColumn>
-                      <FixedSpaceRow alignItems="center">
-                        <TimeInput
-                          onChange={editorStateSetter(child.id, 0, 'startTime')}
-                          value={childState[0].startTime}
-                          info={errorToInputInfo(
-                            childState[0].errors.startTime,
-                            i18n.validationErrors
-                          )}
-                          placeholder={i18n.calendar.reservationModal.start}
-                        />
-                        <span>–</span>
-                        <TimeInput
-                          onChange={editorStateSetter(child.id, 0, 'endTime')}
-                          value={childState[0].endTime}
-                          info={errorToInputInfo(
-                            childState[0].errors.endTime,
-                            i18n.validationErrors
-                          )}
-                          placeholder={i18n.calendar.reservationModal.end}
-                        />
-                        {data[1] || !child.inShiftCareUnit ? null : (
-                          <IconButton
-                            icon={faPlus}
-                            onClick={() => addSecondReservation(child.id)}
-                          />
-                        )}
-                      </FixedSpaceRow>
-                      {data[1] ? (
-                        <FixedSpaceRow alignItems="center">
-                          <TimeInput
-                            onChange={editorStateSetter(
-                              child.id,
-                              1,
-                              'startTime'
-                            )}
-                            value={childState[1].startTime}
-                            info={errorToInputInfo(
-                              childState[1].errors.startTime,
-                              i18n.validationErrors
-                            )}
-                            placeholder={i18n.calendar.reservationModal.start}
-                          />
-                          <span>–</span>
-                          <TimeInput
-                            onChange={editorStateSetter(child.id, 1, 'endTime')}
-                            value={childState[1].endTime}
-                            info={errorToInputInfo(
-                              childState[1].errors.endTime,
-                              i18n.validationErrors
-                            )}
-                            placeholder={i18n.calendar.reservationModal.end}
-                          />
-                          <IconButton
-                            icon={faTrash}
-                            onClick={() => removeSecondReservation(child.id)}
-                          />
-                        </FixedSpaceRow>
-                      ) : null}
-                    </FixedSpaceColumn>
-                  ) : data.absence ? (
-                    <span>
-                      {i18n.calendar.absences[data.absence] ??
-                        i18n.calendar.absent}
-                    </span>
-                  ) : data.reservations?.length &&
-                    data.reservations.some(({ startTime }) => !!startTime) ? (
-                    <span>
-                      {data.reservations
-                        .map(
-                          ({ startTime, endTime }) =>
-                            `${startTime} – ${endTime}`
-                        )
-                        .filter((res) => res)
-                        .join(', ')}
-                    </span>
+                  {editing && (reservationEditable || reservations.length) ? (
+                    <EditReservation
+                      childId={child.id}
+                      canAddSecondReservation={
+                        !reservations[1] && child.inShiftCareUnit
+                      }
+                      childState={childState}
+                      editorStateSetter={editorStateSetter}
+                      addSecondReservation={addSecondReservation}
+                      removeSecondReservation={removeSecondReservation}
+                    />
+                  ) : absence ? (
+                    <Absence absence={absence} />
                   ) : (
-                    <NoReservation>{i18n.calendar.noReservation}</NoReservation>
+                    <Reservations reservations={reservations} />
                   )}
                   <Label>{i18n.calendar.realized}</Label>
                   <span>–</span>
@@ -281,139 +259,133 @@ export default React.memo(function DayView({
   )
 })
 
+type EditorState = {
+  child: ReservationChild
+  reservations: TimeRange[]
+}
+
+const emptyReservation: TimeRange = {
+  startTime: '',
+  endTime: '',
+  errors: { startTime: undefined, endTime: undefined }
+}
+
+function reservationToTimeRange({
+  startTime,
+  endTime
+}: Reservation): TimeRange {
+  return { ...emptyReservation, startTime, endTime }
+}
+
 function useEditState(
   date: LocalDate,
-  data: ReservationsResponse,
-  reloadData: () => void,
-  childrenWithReservations: {
-    child: ReservationChild
-    editableReservation: boolean
-    data: {
-      absence: AbsenceType | undefined
-      reservations: Reservation[] | undefined
-    }
-  }[]
+  childrenWithReservations: ChildWithReservations[],
+  reservableDays: FiniteDateRange | null,
+  reloadData: () => void
 ) {
-  const editable =
-    (data.reservableDays?.includes(date) ?? false) &&
-    childrenWithReservations.some(
-      ({ editableReservation }) => editableReservation
-    )
+  const editable = useMemo(
+    () =>
+      (reservableDays?.includes(date) ?? false) &&
+      childrenWithReservations.some(
+        ({ reservationEditable }) => reservationEditable
+      ),
+    [date, reservableDays, childrenWithReservations]
+  )
 
   const [editing, setEditing] = useState(false)
-  const startEditing = () => setEditing(true)
+  const startEditing = useCallback(() => setEditing(true), [])
 
-  const editorStateFromProps = useMemo(
+  const initialEditorState: EditorState[] = useMemo(
     () =>
-      childrenWithReservations.map(({ child, data }) => ({
+      childrenWithReservations.map(({ child, reservations }) => ({
         child,
-        data: data?.reservations?.map(({ startTime, endTime }) => ({
-          startTime,
-          endTime,
-          errors: {
-            startTime: undefined,
-            endTime: undefined
-          }
-        })) ?? [
-          {
-            startTime: '',
-            endTime: '',
-            errors: { startTime: undefined, endTime: undefined }
-          }
-        ]
+        reservations:
+          reservations.length > 0
+            ? reservations.map(reservationToTimeRange)
+            : [emptyReservation]
       })),
     [childrenWithReservations]
   )
-  const [editorState, setEditorState] = useState(editorStateFromProps)
-  useEffect(() => setEditorState(editorStateFromProps), [editorStateFromProps])
+  const [editorState, setEditorState] = useState(initialEditorState)
+  useEffect(() => setEditorState(initialEditorState), [initialEditorState])
 
-  const editorStateSetter =
-    (childId: string, index: number, field: 'startTime' | 'endTime') =>
-    (value: string) =>
-      setEditorState((state) =>
-        state.map(({ child, data }) =>
-          child.id === childId
-            ? {
-                child,
-                data: data.map((timeRange, i) => {
-                  if (index !== i) {
-                    return timeRange
-                  }
-
-                  const oppositeField =
-                    field === 'startTime' ? 'endTime' : 'startTime'
-                  const oppositeValue = timeRange[oppositeField]
-
-                  return {
-                    ...timeRange,
-                    [field]: value,
-                    errors: {
-                      ...timeRange.errors,
-                      [field]:
-                        value === '' && oppositeValue !== ''
-                          ? 'required'
-                          : regexp(value, TIME_REGEXP, 'timeFormat'),
-                      [oppositeField]:
-                        oppositeValue === '' && value !== ''
-                          ? 'required'
-                          : regexp(oppositeValue, TIME_REGEXP, 'timeFormat')
-                    }
-                  }
-                })
-              }
-            : { child, data }
-        )
-      )
-
-  const addSecondReservation = (childId: string) =>
-    setEditorState((state) =>
-      state.map((childState) =>
-        childState.child.id === childId
-          ? {
-              ...childState,
-              data: [
-                childState.data[0],
-                {
-                  startTime: '',
-                  endTime: '',
-                  errors: { startTime: undefined, endTime: undefined }
+  const editorStateSetter = useCallback(
+    (childId: UUID, index: number, field: 'startTime' | 'endTime') =>
+      (value: string) =>
+        setEditorState((state) =>
+          state.map((childState) =>
+            childState.child.id === childId
+              ? {
+                  ...childState,
+                  reservations: childState.reservations.map((timeRange, i) =>
+                    index === i
+                      ? validateTimeRange({
+                          ...timeRange,
+                          [field]: value
+                        })
+                      : timeRange
+                  )
                 }
-              ]
-            }
-          : childState
-      )
-    )
+              : childState
+          )
+        ),
+    []
+  )
 
-  const removeSecondReservation = (childId: string) =>
-    setEditorState((state) =>
-      state.map((childState) =>
-        childState.child.id === childId
-          ? {
-              ...childState,
-              data: [childState.data[0]]
-            }
-          : childState
-      )
-    )
+  const addSecondReservation = useCallback(
+    (childId: UUID) =>
+      setEditorState((state) =>
+        state.map(
+          (childState): EditorState =>
+            childState.child.id === childId
+              ? {
+                  ...childState,
+                  reservations: [childState.reservations[0], emptyReservation]
+                }
+              : childState
+        )
+      ),
+    []
+  )
 
-  const stateIsValid = editorState.every(({ data }) =>
-    data?.every(
-      ({ errors }) =>
-        errors.startTime === undefined && errors.endTime === undefined
-    )
+  const removeSecondReservation = useCallback(
+    (childId: UUID) =>
+      setEditorState((state) =>
+        state.map(
+          (childState): EditorState =>
+            childState.child.id === childId
+              ? {
+                  ...childState,
+                  reservations: [childState.reservations[0]]
+                }
+              : childState
+        )
+      ),
+    []
+  )
+
+  const stateIsValid = useMemo(
+    () =>
+      editorState.every(({ reservations }) =>
+        reservations.every(
+          ({ errors }) =>
+            errors.startTime === undefined && errors.endTime === undefined
+        )
+      ),
+    [editorState]
   )
 
   const [saving, setSaving] = useState(false)
-  const save = () => {
+  const save = useCallback(() => {
     if (!stateIsValid) return Promise.resolve()
 
     setSaving(true)
     return postReservations(
-      editorState.map(({ child, data }) => ({
+      editorState.map(({ child, reservations }) => ({
         childId: child.id,
         date,
         reservations:
-          data?.flatMap(({ startTime, endTime }) =>
+          reservations.flatMap(({ startTime, endTime }) =>
             startTime !== '' && endTime !== '' ? [{ startTime, endTime }] : []
           ) ?? []
       }))
@@ -421,42 +393,42 @@ function useEditState(
       .then(() => setEditing(false))
       .then(() => reloadData())
       .finally(() => setSaving(false))
-  }
+  }, [date, editorState, reloadData, stateIsValid])
 
   const [confirmationModal, setConfirmationModal] =
     useState<{ close: () => void; resolve: () => void; reject: () => void }>()
 
-  const navigate = (callback: () => void) => () => {
-    const stateHasBeenModified = editorStateFromProps.some((childFromProps) => {
-      const childEditorState = editorState.find(
-        (child) => child.child.id === childFromProps.child.id
+  const navigate = useCallback(
+    (callback: () => void) => () => {
+      const stateHasBeenModified = zip(initialEditorState, editorState).some(
+        ([initial, current]) =>
+          initial &&
+          current &&
+          zip(initial.reservations, current.reservations).some(
+            ([initialReservation, currentReservation]) =>
+              initialReservation &&
+              currentReservation &&
+              (initialReservation.startTime !== currentReservation.startTime ||
+                initialReservation.endTime !== currentReservation.endTime)
+          )
       )
+      if (!editing || !stateHasBeenModified) return callback()
 
-      return (
-        !childEditorState ||
-        childFromProps.data.some(
-          ({ startTime, endTime }, index) =>
-            startTime !== childEditorState.data[index]?.startTime ||
-            endTime !== childEditorState.data[index]?.endTime
-        )
-      )
-    })
-
-    if (!editing || !stateHasBeenModified) return callback()
-
-    setConfirmationModal({
-      close: () => setConfirmationModal(undefined),
-      resolve: () => {
-        setConfirmationModal(undefined)
-        void save().then(() => callback())
-      },
-      reject: () => {
-        setEditing(false)
-        setConfirmationModal(undefined)
-        callback()
-      }
-    })
-  }
+      setConfirmationModal({
+        close: () => setConfirmationModal(undefined),
+        resolve: () => {
+          setConfirmationModal(undefined)
+          void save().then(() => callback())
+        },
+        reject: () => {
+          setEditing(false)
+          setConfirmationModal(undefined)
+          callback()
+        }
+      })
+    },
+    [editing, editorState, initialEditorState, save]
+  )
 
   return {
     editable,
@@ -473,6 +445,98 @@ function useEditState(
     confirmationModal
   }
 }
+
+const EditReservation = React.memo(function EditReservation({
+  childId,
+  canAddSecondReservation,
+  childState,
+  editorStateSetter,
+  addSecondReservation,
+  removeSecondReservation
+}: {
+  childId: UUID
+  canAddSecondReservation: boolean
+  childState: EditorState
+  editorStateSetter: (
+    childId: UUID,
+    index: number,
+    field: 'startTime' | 'endTime'
+  ) => (value: string) => void
+  addSecondReservation: (childId: UUID) => void
+  removeSecondReservation: (childId: UUID) => void
+}) {
+  const onChangeFirst = useCallback(
+    (field: 'startTime' | 'endTime') => editorStateSetter(childId, 0, field),
+    [editorStateSetter, childId]
+  )
+  const onChangeSecond = useCallback(
+    (field: 'startTime' | 'endTime') => editorStateSetter(childId, 1, field),
+    [editorStateSetter, childId]
+  )
+  return (
+    <FixedSpaceColumn>
+      <FixedSpaceRow alignItems="center">
+        <TimeRangeInput
+          value={childState.reservations[0]}
+          onChange={onChangeFirst}
+        />
+        {canAddSecondReservation && (
+          <IconButton
+            icon={faPlus}
+            onClick={() => addSecondReservation(childId)}
+          />
+        )}
+      </FixedSpaceRow>
+      {!!childState.reservations[1] && (
+        <FixedSpaceRow alignItems="center">
+          <TimeRangeInput
+            value={childState.reservations[1]}
+            onChange={onChangeSecond}
+          />
+          <IconButton
+            icon={faTrash}
+            onClick={() => removeSecondReservation(childId)}
+          />
+        </FixedSpaceRow>
+      )}
+    </FixedSpaceColumn>
+  )
+})
+
+const Absence = React.memo(function Absence({
+  absence
+}: {
+  absence: AbsenceType
+}) {
+  const i18n = useTranslation()
+  return <span>{i18n.calendar.absences[absence] ?? i18n.calendar.absent}</span>
+})
+
+const Reservations = React.memo(function Reservations({
+  reservations
+}: {
+  reservations: Reservation[]
+}) {
+  const i18n = useTranslation()
+
+  const hasReservations = useMemo(
+    () =>
+      reservations.length > 0 &&
+      reservations.some(({ startTime }) => !!startTime),
+    [reservations]
+  )
+
+  return hasReservations ? (
+    <span>
+      {reservations
+        .map(({ startTime, endTime }) => `${startTime} – ${endTime}`)
+        .filter((res) => res)
+        .join(', ')}
+    </span>
+  ) : (
+    <NoReservation>{i18n.calendar.noReservation}</NoReservation>
+  )
+})
 
 const Content = styled.div<{ highlight: boolean }>`
   background: ${(p) => p.theme.colors.greyscale.white};
