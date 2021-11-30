@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { RawElement } from '../../utils/element'
+import { RawElementDEPRECATED } from '../../utils/element'
 
 export default class MobileMessagesPage {
   constructor(private readonly page: Page) {}
@@ -16,7 +16,10 @@ export default class MobileMessagesPage {
   }
 
   async openThread() {
-    const elem = new RawElement(this.page, `[data-qa^="message-preview"]`)
+    const elem = new RawElementDEPRECATED(
+      this.page,
+      `[data-qa^="message-preview"]`
+    )
     return elem.click()
   }
 }

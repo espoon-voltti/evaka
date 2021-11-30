@@ -3,24 +3,30 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilVisible } from 'e2e-playwright/utils'
-import { RawElement } from 'e2e-playwright/utils/element'
+import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { Child } from 'e2e-test-common/dev-api/types'
 import { Page } from 'playwright'
 
 export default class MobileChildPage {
   constructor(private readonly page: Page) {}
 
-  #markPresentLink = new RawElement(this.page, '[data-qa="mark-present-link"]')
-  #markAbsentBeforehandLink = new RawElement(
+  #markPresentLink = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="mark-present-link"]'
+  )
+  #markAbsentBeforehandLink = new RawElementDEPRECATED(
     this.page,
     '[data-qa="mark-absent-beforehand"]'
   )
-  #sensitiveInfoLink = new RawElement(
+  #sensitiveInfoLink = new RawElementDEPRECATED(
     this.page,
     '[data-qa="link-child-sensitive-info"]'
   )
 
-  #messageEditorLink = new RawElement(this.page, '[data-qa="link-new-message"]')
+  #messageEditorLink = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="link-new-message"]'
+  )
 
   #notesLink = this.page.locator('[data-qa="link-child-daycare-daily-note"]')
 
@@ -32,23 +38,38 @@ export default class MobileChildPage {
   #goBackFromSensitivePage = this.page.locator('[data-qa="go-back"]')
 
   #sensitiveInfo = {
-    name: new RawElement(this.page, '[data-qa="child-info-name"]'),
-    allergies: new RawElement(this.page, '[data-qa="child-info-allergies"]'),
-    diet: new RawElement(this.page, '[data-qa="child-info-diet"]'),
-    medication: new RawElement(this.page, '[data-qa="child-info-medication"]'),
+    name: new RawElementDEPRECATED(this.page, '[data-qa="child-info-name"]'),
+    allergies: new RawElementDEPRECATED(
+      this.page,
+      '[data-qa="child-info-allergies"]'
+    ),
+    diet: new RawElementDEPRECATED(this.page, '[data-qa="child-info-diet"]'),
+    medication: new RawElementDEPRECATED(
+      this.page,
+      '[data-qa="child-info-medication"]'
+    ),
     contactName: (n: number) =>
-      new RawElement(this.page, `[data-qa="child-info-contact${n + 1}-name"]`),
+      new RawElementDEPRECATED(
+        this.page,
+        `[data-qa="child-info-contact${n + 1}-name"]`
+      ),
     contactPhone: (n: number) =>
-      new RawElement(this.page, `[data-qa="child-info-contact${n + 1}-phone"]`),
+      new RawElementDEPRECATED(
+        this.page,
+        `[data-qa="child-info-contact${n + 1}-phone"]`
+      ),
     contactEmail: (n: number) =>
-      new RawElement(this.page, `[data-qa="child-info-contact${n + 1}-email"]`),
+      new RawElementDEPRECATED(
+        this.page,
+        `[data-qa="child-info-contact${n + 1}-email"]`
+      ),
     backupPickupName: (n: number) =>
-      new RawElement(
+      new RawElementDEPRECATED(
         this.page,
         `[data-qa="child-info-backup-pickup${n + 1}-name"]`
       ),
     backupPickupPhone: (n: number) =>
-      new RawElement(
+      new RawElementDEPRECATED(
         this.page,
         `[data-qa="child-info-backup-pickup${n + 1}-phone"]`
       )

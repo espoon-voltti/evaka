@@ -6,18 +6,24 @@ import { Page } from 'playwright'
 
 import LocalDate from 'lib-common/local-date'
 
-import { RawElement } from 'e2e-playwright/utils/element'
+import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { AbsenceType } from 'lib-common/generated/enums'
 
 export default class MobileAbsencesPage {
   constructor(private readonly page: Page) {}
 
-  #markAbsentBtn = new RawElement(this.page, '[data-qa="mark-absent-btn"]')
-  #deleteAbsencePeriodBtn = new RawElement(
+  #markAbsentBtn = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="mark-absent-btn"]'
+  )
+  #deleteAbsencePeriodBtn = new RawElementDEPRECATED(
     this.page,
     '[data-qa="delete-absence-period"]'
   )
-  #confirmDeleteBtn = new RawElement(this.page, '[data-qa="modal-okBtn"]')
+  #confirmDeleteBtn = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="modal-okBtn"]'
+  )
 
   async markAbsent() {
     return this.#markAbsentBtn.click()
@@ -27,7 +33,10 @@ export default class MobileAbsencesPage {
     return this.page.$$eval('[data-qa="absence-row"]', (rows) => rows.length)
   }
   absenceChip(absenceType: AbsenceType) {
-    return new RawElement(this.page, `[data-qa="mark-absent-${absenceType}"]`)
+    return new RawElementDEPRECATED(
+      this.page,
+      `[data-qa="mark-absent-${absenceType}"]`
+    )
   }
 
   async markNewAbsencePeriod(

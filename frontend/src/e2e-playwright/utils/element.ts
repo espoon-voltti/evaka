@@ -14,7 +14,7 @@ import {
 /**
  * @deprecated Use playwright locators instead
  */
-export class RawElement {
+export class RawElementDEPRECATED {
   constructor(public page: Page, public selector: string) {}
 
   /**
@@ -61,8 +61,8 @@ export class RawElement {
     return this.page.getAttribute(this.selector, name)
   }
 
-  find(descendant: string): RawElement {
-    return new RawElement(this.page, `${this.selector} ${descendant}`)
+  find(descendant: string): RawElementDEPRECATED {
+    return new RawElementDEPRECATED(this.page, `${this.selector} ${descendant}`)
   }
 
   findInput(descendant: string): RawTextInput {
@@ -71,11 +71,11 @@ export class RawElement {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Constructor<T extends RawElement> = new (...args: any[]) => T
+type Constructor<T extends RawElementDEPRECATED> = new (...args: any[]) => T
 const identity = <T>(x: T) => x
 export const descendantInput = (selector: string) => `${selector} input`
 
-export const WithChecked = <T extends Constructor<RawElement>>(
+export const WithChecked = <T extends Constructor<RawElementDEPRECATED>>(
   Base: T,
   inputSelector: (selector: string) => string = identity
 ) =>
@@ -87,7 +87,7 @@ export const WithChecked = <T extends Constructor<RawElement>>(
     }
   }
 
-export const WithTextInput = <T extends Constructor<RawElement>>(
+export const WithTextInput = <T extends Constructor<RawElementDEPRECATED>>(
   Base: T,
   inputSelector: (selector: string) => string = identity
 ) =>
@@ -108,23 +108,32 @@ export const WithTextInput = <T extends Constructor<RawElement>>(
     }
   }
 
-export class Checkbox extends WithChecked(RawElement, descendantInput) {}
+export class Checkbox extends WithChecked(
+  RawElementDEPRECATED,
+  descendantInput
+) {}
 
-export class Radio extends WithChecked(RawElement, descendantInput) {}
+export class Radio extends WithChecked(RawElementDEPRECATED, descendantInput) {}
 
-export class RawTextInput extends WithTextInput(RawElement) {}
+export class RawTextInput extends WithTextInput(RawElementDEPRECATED) {}
 
-export class RawRadio extends WithChecked(RawElement) {}
+export class RawRadio extends WithChecked(RawElementDEPRECATED) {}
 
-export class SelectionChip extends WithChecked(RawElement, descendantInput) {}
+export class SelectionChip extends WithChecked(
+  RawElementDEPRECATED,
+  descendantInput
+) {}
 
-export class Combobox extends WithTextInput(RawElement, descendantInput) {
-  findItem(label: string): RawElement {
+export class Combobox extends WithTextInput(
+  RawElementDEPRECATED,
+  descendantInput
+) {
+  findItem(label: string): RawElementDEPRECATED {
     return this.find(`[data-qa="item"]:has-text(${toCssString(label)})`)
   }
 }
 
-export class Collapsible extends RawElement {
+export class Collapsible extends RawElementDEPRECATED {
   #trigger = this.find('[data-qa="collapsible-trigger"]')
 
   async isOpen() {

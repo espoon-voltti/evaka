@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { Checkbox, RawElement } from 'e2e-playwright/utils/element'
+import { Checkbox, RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { waitUntilEqual, waitUntilFalse } from 'e2e-playwright/utils'
 
 export default class ApplicationsPage {
   constructor(private readonly page: Page) {}
 
   applicationStatusFilter(status: 'ALL') {
-    return new RawElement(
+    return new RawElementDEPRECATED(
       this.page,
       `[data-qa="application-status-filter-${status}"]`
     )
@@ -21,7 +21,10 @@ export default class ApplicationsPage {
   }
 
   applicationRow(id: string) {
-    const element = new RawElement(this.page, `[data-application-id="${id}"]`)
+    const element = new RawElementDEPRECATED(
+      this.page,
+      `[data-application-id="${id}"]`
+    )
     return {
       status: element.find('[data-qa="application-status"]'),
       openApplication: async () => {
@@ -39,7 +42,7 @@ export default class ApplicationsPage {
   }
 
   readonly details = {
-    applicantDeadIndicator: new RawElement(
+    applicantDeadIndicator: new RawElementDEPRECATED(
       this.page,
       '[data-qa="applicant-dead"]'
     )
@@ -49,11 +52,17 @@ export default class ApplicationsPage {
 class ApplicationDetailsPage {
   constructor(private readonly page: Page) {}
 
-  #editButton = new RawElement(this.page, '[data-qa="edit-application"]')
-  #saveButton = new RawElement(this.page, '[data-qa="save-application"]')
+  #editButton = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="edit-application"]'
+  )
+  #saveButton = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="save-application"]'
+  )
   #urgentCheckbox = new Checkbox(this.page, '[data-qa="checkbox-urgent"]')
   #urgentAttachmentFileUploadSelector = '[data-qa="file-upload-urgent"]'
-  #urgentAttachmentFileUpload = new RawElement(
+  #urgentAttachmentFileUpload = new RawElementDEPRECATED(
     this.page,
     this.#urgentAttachmentFileUploadSelector
   )
@@ -62,12 +71,12 @@ class ApplicationDetailsPage {
     '[data-qa="checkbox-service-need-shift-care"]'
   )
   #shiftCareAttachmentFileUploadSelector = '[data-qa="file-upload-shift-care"]'
-  #shiftCareAttachmentFileUpload = new RawElement(
+  #shiftCareAttachmentFileUpload = new RawElementDEPRECATED(
     this.page,
     this.#shiftCareAttachmentFileUploadSelector
   )
 
-  applicantDeadIndicator = new RawElement(
+  applicantDeadIndicator = new RawElementDEPRECATED(
     this.page,
     '[data-qa="applicant-dead"]'
   )
@@ -105,7 +114,7 @@ class ApplicationDetailsPage {
   }
 
   async assertUrgencyAttachmentReceivedAtVisible(fileName: string) {
-    const attachment = new RawElement(
+    const attachment = new RawElementDEPRECATED(
       this.page,
       `[data-qa="urgent-attachment-${fileName}"]`
     )

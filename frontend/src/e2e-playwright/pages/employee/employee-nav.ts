@@ -4,33 +4,51 @@
 
 import { Page } from 'playwright'
 
-import { RawElement } from 'e2e-playwright/utils/element'
+import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class EmployeeNav {
   constructor(private readonly page: Page) {}
 
-  readonly #userNameBtn = new RawElement(this.page, '[data-qa="username"]')
+  readonly #userNameBtn = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="username"]'
+  )
 
-  readonly applicationsTab = new RawElement(
+  readonly applicationsTab = new RawElementDEPRECATED(
     this.page,
     '[data-qa="applications-nav"]'
   )
-  readonly unitsTab = new RawElement(this.page, '[data-qa="units-nav"]')
-  readonly searchTab = new RawElement(this.page, '[data-qa="search-nav"]')
-  readonly financeTab = new RawElement(this.page, '[data-qa="finance-nav"]')
-  readonly reportsTab = new RawElement(this.page, '[data-qa="reports-nav"]')
-  readonly messagesTab = new RawElement(this.page, '[data-qa="messages-nav"]')
+  readonly unitsTab = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="units-nav"]'
+  )
+  readonly searchTab = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="search-nav"]'
+  )
+  readonly financeTab = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="finance-nav"]'
+  )
+  readonly reportsTab = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="reports-nav"]'
+  )
+  readonly messagesTab = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="messages-nav"]'
+  )
 
-  readonly #employeesLink = new RawElement(
+  readonly #employeesLink = new RawElementDEPRECATED(
     this.page,
     '[data-qa="user-popup-employees"]'
   )
-  readonly #pinCodeLink = new RawElement(
+  readonly #pinCodeLink = new RawElementDEPRECATED(
     this.page,
     '[data-qa="user-popup-pin-code"]'
   )
-  readonly #financeBasicsLink = new RawElement(
+  readonly #financeBasicsLink = new RawElementDEPRECATED(
     this.page,
     '[data-qa="user-popup-finance-basics"]'
   )
