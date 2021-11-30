@@ -512,7 +512,7 @@ export async function getAbsencesByChild(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function createRetroactiveDecisions(
+export async function createRetroactiveFeeDecisions(
   headOfFamily: UUID,
   date: LocalDate
 ): Promise<Result<void>> {
@@ -520,6 +520,21 @@ export async function createRetroactiveDecisions(
     .post(`/fee-decisions/head-of-family/${headOfFamily}/create-retroactive`, {
       from: date
     })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function createRetroactiveValueDecisions(
+  headOfFamily: UUID,
+  date: LocalDate
+): Promise<Result<void>> {
+  return client
+    .post(
+      `/value-decisions/head-of-family/${headOfFamily}/create-retroactive`,
+      {
+        from: date
+      }
+    )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

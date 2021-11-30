@@ -20,9 +20,11 @@ const DatePickerWrapper = styled.div`
 `
 const minMargin = 16
 const overflow = 70
-const DayPickerPositioner = styled.div`
+
+const DayPickerPositioner = styled.div<{ openAbove?: boolean }>`
   position: absolute;
-  top: calc(2.5rem + ${minMargin}px);
+  ${({ openAbove }) =>
+    openAbove ? 'bottom' : 'top'}: calc(2.5rem + ${minMargin}px);
   left: -${overflow}px;
   right: -${overflow}px;
   z-index: 99999;
@@ -58,6 +60,7 @@ type DatePickerProps = {
   id?: string
   required?: boolean
   initialMonth?: LocalDate
+  openAbove?: boolean
 }
 
 export default React.memo(function DatePicker({
@@ -73,6 +76,7 @@ export default React.memo(function DatePicker({
   id,
   required,
   initialMonth,
+  openAbove,
   ...props
 }: DatePickerProps) {
   const [show, setShow] = useState<boolean>(false)
@@ -183,7 +187,7 @@ export default React.memo(function DatePicker({
         locale={locale}
       />
       {show ? (
-        <DayPickerPositioner ref={pickerRef}>
+        <DayPickerPositioner ref={pickerRef} openAbove={openAbove}>
           <DayPickerDiv>
             <DatePickerDay
               locale={locale}

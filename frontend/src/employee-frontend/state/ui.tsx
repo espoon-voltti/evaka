@@ -49,9 +49,9 @@ export const UIContextProvider = React.memo(function UIContextProvider({
 }) {
   const [uiMode, setUiMode] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<ErrorMessage | null>(null)
-  const clearErrorMessage = () => setErrorMessage(null)
-  const toggleUiMode = (mode: string) => setUiMode(mode)
-  const clearUiMode = () => setUiMode('')
+  const clearErrorMessage = useCallback(() => setErrorMessage(null), [])
+  const toggleUiMode = useCallback((mode: string) => setUiMode(mode), [])
+  const clearUiMode = useCallback(() => setUiMode(''), [])
 
   const [pairingState, setPairingState] = useState<PairingState>()
   const startPairing = useCallback(
@@ -80,8 +80,10 @@ export const UIContextProvider = React.memo(function UIContextProvider({
     }),
     [
       uiMode,
+      toggleUiMode,
+      clearUiMode,
       errorMessage,
-      setErrorMessage,
+      clearErrorMessage,
       pairingState,
       startPairing,
       closePairingModal

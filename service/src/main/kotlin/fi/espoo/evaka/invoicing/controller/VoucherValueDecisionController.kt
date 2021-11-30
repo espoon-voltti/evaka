@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_SE
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
+import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -57,6 +58,7 @@ import java.util.UUID
 @RequestMapping("/value-decisions")
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
+    private val generator: FinanceDecisionGenerator,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/search")
@@ -167,6 +169,18 @@ class VoucherValueDecisionController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { valueDecisionService.setType(it, uuid, request.type) }
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/head-of-family/{id}/create-retroactive")
+    fun generateRetroactiveDecisions(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID,
+        @RequestBody body: CreateRetroactiveFeeDecisionsBody
+    ) {
+        Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        db.transaction { generator.createRetroactiveValueDecisions(it, id, body.from) }
     }
 }
 

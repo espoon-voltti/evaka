@@ -2,108 +2,73 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
-
 import { faChild, faPlus } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
-import { fontWeights } from 'lib-components/typography'
-import { useTranslation, Translations } from '../../state/i18n'
+import { Label } from 'lib-components/typography'
+import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { Loading, Result } from 'lib-common/api'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import Loader from 'lib-components/atoms/Loader'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { formatDate } from 'lib-common/date'
 import {
   getPersonFeeDecisions,
-  createRetroactiveDecisions
+  createRetroactiveFeeDecisions
 } from '../../api/invoicing'
 import { FeeDecision } from '../../types/invoicing'
 import { DateTd, StatusTd } from '../PersonProfile'
 import { formatCents } from 'lib-common/money'
-import colors from 'lib-customizations/common'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { UUID } from 'lib-common/types'
+import { renderResult } from '../async-rendering'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { defaultMargins } from 'lib-components/white-space'
+import { useApiState } from 'lib-common/utils/useRestApi'
 
 interface Props {
   id: UUID
   open: boolean
 }
 
-const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
-  id,
-  open
-}: Props) {
+export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const [feeDecisions, setFeeDecisions] = useState<Result<FeeDecision[]>>(
-    Loading.of()
+  const [feeDecisions, reloadFeeDecisions] = useApiState(
+    () => getPersonFeeDecisions(id),
+    [id]
   )
 
-  const loadDecisions = useCallback(() => {
-    setFeeDecisions(Loading.of())
-    void getPersonFeeDecisions(id).then((response) => {
-      setFeeDecisions(response)
-    })
-  }, [id, setFeeDecisions])
-
-  useEffect(loadDecisions, [id, setFeeDecisions]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const renderFeeDecisions = () =>
-    feeDecisions.isSuccess
-      ? _.orderBy(feeDecisions.value, ['sentAt', 'createdAt'], ['desc']).map(
-          (feeDecision: FeeDecision) => {
-            return (
-              <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
-                <Td>
-                  <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
-                    Maksupäätös {feeDecision.validDuring.format()}
-                  </Link>
-                </Td>
-                <Td>{formatCents(feeDecision.totalFee)}</Td>
-                <Td>{feeDecision.decisionNumber}</Td>
-                <DateTd>{formatDate(feeDecision.created)}</DateTd>
-                <DateTd data-qa={`fee-decision-sent-at`}>
-                  {formatDate(feeDecision.sentAt)}
-                </DateTd>
-                <StatusTd>
-                  {i18n.feeDecision.status[feeDecision.status]}
-                </StatusTd>
-              </Tr>
-            )
-          }
-        )
-      : null
+  const openRetroactiveDecisionsModal = useCallback(
+    () => toggleUiMode('create-retroactive-fee-decision'),
+    [toggleUiMode]
+  )
 
   return (
-    <div>
-      <CollapsibleSection
-        icon={faChild}
-        title={i18n.personProfile.feeDecisions.title}
-        data-qa="person-fee-decisions-collapsible"
-        startCollapsed={!open}
-      >
-        {uiMode === 'create-retroactive-fee-decision' ? (
-          <Modal
-            i18n={i18n}
-            headOfFamily={id}
-            clear={clearUiMode}
-            loadDecisions={loadDecisions}
-          />
-        ) : null}
-        <AddButtonRow
-          text={i18n.personProfile.feeDecisions.button}
-          onClick={() => {
-            toggleUiMode('create-retroactive-fee-decision')
-          }}
-          disabled={!!uiMode}
-          data-qa="create-retroactive-fee-decision-button"
+    <CollapsibleSection
+      icon={faChild}
+      title={i18n.personProfile.feeDecisions.title}
+      data-qa="person-fee-decisions-collapsible"
+      startCollapsed={!open}
+    >
+      {uiMode === 'create-retroactive-fee-decision' ? (
+        <Modal
+          headOfFamily={id}
+          clear={clearUiMode}
+          loadDecisions={reloadFeeDecisions}
         />
+      ) : null}
+      <AddButtonRow
+        text={i18n.personProfile.feeDecisions.createRetroactive}
+        onClick={openRetroactiveDecisionsModal}
+        disabled={!!uiMode}
+        data-qa="create-retroactive-fee-decision-button"
+      />
+      {renderResult(feeDecisions, (feeDecisions) => (
         <Table data-qa="table-of-fee-decisions">
           <Thead>
             <Tr>
@@ -115,89 +80,96 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
               <Th>{i18n.feeDecisions.table.status}</Th>
             </Tr>
           </Thead>
-          <Tbody>{renderFeeDecisions()}</Tbody>
+          <Tbody>
+            {_.orderBy(feeDecisions, ['sentAt', 'createdAt'], ['desc']).map(
+              (feeDecision: FeeDecision) => (
+                <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
+                  <Td>
+                    <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
+                      Maksupäätös {feeDecision.validDuring.format()}
+                    </Link>
+                  </Td>
+                  <Td>{formatCents(feeDecision.totalFee)}</Td>
+                  <Td>{feeDecision.decisionNumber}</Td>
+                  <DateTd>{formatDate(feeDecision.created)}</DateTd>
+                  <DateTd data-qa={`fee-decision-sent-at`}>
+                    {formatDate(feeDecision.sentAt)}
+                  </DateTd>
+                  <StatusTd>
+                    {i18n.feeDecision.status[feeDecision.status]}
+                  </StatusTd>
+                </Tr>
+              )
+            )}
+          </Tbody>
         </Table>
-        {feeDecisions.isLoading && <Loader />}
-        {feeDecisions.isFailure && <div>{i18n.common.loadingFailed}</div>}
-      </CollapsibleSection>
-    </div>
+      ))}
+    </CollapsibleSection>
   )
 })
 
-const ModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`
-
-const InputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-`
-
-const Label = styled.label`
-  font-weight: ${fontWeights.semibold};
-  margin-right: 20px;
-  padding-bottom: calc(12px + 0.575em + 2px);
-`
-
-const ErrorMessage = styled.div`
-  color: ${colors.accents.red};
+const StyledLabel = styled(Label)`
+  margin-top: ${defaultMargins.xs};
 `
 
 const Modal = React.memo(function Modal({
-  i18n,
   headOfFamily,
   clear,
   loadDecisions
 }: {
-  i18n: Translations
   headOfFamily: string
   clear: () => void
   loadDecisions: () => void
 }) {
-  const [date, setDate] = useState<LocalDate>()
-  const [error, setError] = useState(false)
+  const { i18n, lang } = useTranslation()
+  const [date, setDate] = useState<string>('')
+  const dateIsValid = LocalDate.parseFiOrNull(date)
 
   const resolve = useCallback(() => {
-    if (date) {
-      setError(false)
-      void createRetroactiveDecisions(headOfFamily, date)
-        .then(clear)
-        .then(loadDecisions)
-        .catch(() => setError(true))
+    if (dateIsValid) {
+      return createRetroactiveFeeDecisions(
+        headOfFamily,
+        LocalDate.parseFiOrThrow(date)
+      )
     }
-  }, [clear, date]) // eslint-disable-line react-hooks/exhaustive-deps
+    return Promise.resolve()
+  }, [headOfFamily, date, dateIsValid])
+
+  const onSuccess = useCallback(() => {
+    clear()
+    loadDecisions()
+  }, [clear, loadDecisions])
 
   return (
-    <FormModal
+    <AsyncFormModal
       icon={faPlus}
-      iconColour={'blue'}
-      title={i18n.personProfile.feeDecisions.modalTitle}
+      iconColour="blue"
+      title={i18n.personProfile.feeDecisions.createRetroactive}
       resolveAction={resolve}
       resolveLabel={i18n.common.create}
-      resolveDisabled={date === undefined}
+      resolveDisabled={!dateIsValid}
+      onSuccess={onSuccess}
       rejectAction={clear}
       rejectLabel={i18n.common.cancel}
     >
-      <ModalContent>
-        <InputContainer>
-          <Label>Alkaen</Label>
-          <DatePickerDeprecated
-            type={'full-width'}
-            date={date ?? undefined}
-            onChange={(value) => setDate(value)}
-          />
-        </InputContainer>
-        {error ? (
-          <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage>
-        ) : null}
-      </ModalContent>
-    </FormModal>
+      <FixedSpaceRow justifyContent="center">
+        <StyledLabel>{i18n.common.form.startDate}</StyledLabel>
+        <DatePicker
+          locale={lang}
+          date={date}
+          onChange={setDate}
+          info={
+            !dateIsValid
+              ? {
+                  status: 'warning',
+                  text: i18n.validationError.dateRange
+                }
+              : undefined
+          }
+          hideErrorsBeforeTouched
+          openAbove
+        />
+      </FixedSpaceRow>
+    </AsyncFormModal>
   )
 })
-
-export default PersonFeeDecisions
