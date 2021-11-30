@@ -64,7 +64,8 @@ export default React.memo(function VasuEditPage({
     evaluationDiscussionContent,
     setEvaluationDiscussionContent,
     status,
-    translations
+    translations,
+    editFollowupEntry
   } = useVasu(id)
 
   function formatVasuStatus(status: VasuStatus): string | null {
@@ -112,6 +113,13 @@ export default React.memo(function VasuEditPage({
             sectionIndex={dynamicSectionsOffset}
             sections={content.sections}
             setContent={setContent}
+            editFollowupEntry={(entry) =>
+              editFollowupEntry({
+                documentId: vasu.id,
+                entryId: entry.id,
+                text: entry.text
+              })
+            }
             state={vasu.documentState}
             translations={translations}
           />

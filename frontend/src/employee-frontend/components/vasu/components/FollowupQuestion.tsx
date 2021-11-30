@@ -17,18 +17,53 @@ import Button from 'lib-components/atoms/buttons/Button'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { blueColors } from 'lib-customizations/common'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { faPen } from 'lib-icons'
 
 const FollowupEntryElement = React.memo(function FollowupEntryElement({
-  entry
+  entry,
+  onEdited
 }: {
   entry: FollowupEntry
+  onEdited?: (entry: FollowupEntry) => void
 }) {
+  const { i18n } = useTranslation()
+  const [editing, setEditing] = useState(false)
+  const [editedEntry, setEditedEntry] = useState<FollowupEntry>()
+  const { user } = useContext(UserContext)
+
+  const onCommitEdited = useCallback(
+    (editedEntry: FollowupEntry) => {
+      setEditing(false)
+      onEdited && onEdited(editedEntry)
+      setEditedEntry(editedEntry)
+    },
+    [onEdited]
+  )
+
+  const editAllowed = user?.id === entry.authorId
+
   return (
     <Entry>
-      <EntryText data-qa="vasu-followup-entry-text">{entry.text}</EntryText>
-      <Dimmed data-qa="vasu-followup-entry-metadata">
-        {entry.date.format()} {entry.authorName}
-      </Dimmed>
+      {editing && onEdited ? (
+        <FollowupEntryEditor
+          entry={entry}
+          buttonCaption={i18n.common.save}
+          onChange={onCommitEdited}
+        />
+      ) : (
+        <EntryText data-qa="vasu-followup-entry-text">
+          {editedEntry ? editedEntry.text : entry.text}
+        </EntryText>
+      )}
+      <FixedSpaceRow>
+        <Dimmed data-qa="vasu-followup-entry-metadata">
+          {entry.date.format()} {entry.authorName}
+        </Dimmed>
+        {onEdited && editAllowed && (
+          <IconButton icon={faPen} onClick={() => setEditing(true)} />
+        )}
+      </FixedSpaceRow>
     </Entry>
   )
 })
@@ -44,23 +79,38 @@ const EntryText = styled.p`
 
 const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
   entry,
+  buttonCaption,
   onChange
 }: {
   entry?: FollowupEntry
+  buttonCaption: string
   onChange: (entry: FollowupEntry) => void
 }) {
   const { user } = useContext(UserContext)
-  const { i18n } = useTranslation()
   const [textValue, setTextValue] = useState(entry ? entry.text : '')
 
   const onSubmit = useCallback(() => {
-    onChange({
-      date: LocalDate.today(),
-      authorName: user?.name || 'unknown',
-      text: textValue
-    })
+    if (entry?.id) {
+      onChange({
+        ...entry,
+        text: textValue,
+        edited: {
+          editedAt: LocalDate.today(),
+          editorName: user?.name || 'unknown',
+          editorId: user?.id
+        }
+      })
+    } else {
+      onChange({
+        ...entry,
+        date: LocalDate.today(),
+        authorName: user?.name || 'unknown',
+        authorId: user?.id,
+        text: textValue
+      })
+    }
     setTextValue('')
-  }, [onChange, user, textValue])
+  }, [onChange, entry, user, textValue])
 
   return (
     <FollowupEntryInputRow fullWidth>
@@ -73,7 +123,7 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
         primary
         type="submit"
         disabled={textValue === ''}
-        text={i18n.common.addNew}
+        text={buttonCaption}
         onClick={onSubmit}
         data-qa="vasu-followup-addBtn"
       />
@@ -89,14 +139,17 @@ const FollowupEntryInputRow = styled(FixedSpaceRow)`
 
 interface FollowupQuestionProps extends QuestionProps<Followup> {
   onChange?: (value: FollowupEntry) => void
+  onEdited?: (value: FollowupEntry) => void
   translations: VasuTranslations
 }
 
 export default React.memo(function FollowupQuestion({
   onChange,
+  onEdited,
   question: { title, name, value, info },
   translations
 }: FollowupQuestionProps) {
+  const { i18n } = useTranslation()
   const addNewEntry = useCallback(
     (entry: FollowupEntry) => {
       onChange && onChange(entry)
@@ -115,12 +168,17 @@ export default React.memo(function FollowupQuestion({
       </QuestionInfo>
       {value.length > 0 ? (
         value.map((entry, ix) => (
-          <FollowupEntryElement key={ix} entry={entry} />
+          <FollowupEntryElement key={ix} entry={entry} onEdited={onEdited} />
         ))
       ) : (
         <Dimmed>{translations.noRecord}</Dimmed>
       )}
-      {onChange && <FollowupEntryEditor onChange={addNewEntry} />}
+      {onChange && (
+        <FollowupEntryEditor
+          buttonCaption={i18n.common.addNew}
+          onChange={addNewEntry}
+        />
+      )}
     </FollowupQuestionContainer>
   )
 })

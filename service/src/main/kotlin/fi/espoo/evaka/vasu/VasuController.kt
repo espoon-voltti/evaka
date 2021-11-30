@@ -7,12 +7,14 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -23,6 +25,7 @@ import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_REVIEWED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.PUBLISHED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_READY
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_REVIEWED
+import fi.espoo.evaka.vasu.VasuQuestion.Followup
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -40,6 +43,7 @@ class VasuController(
     data class CreateDocumentRequest(
         val templateId: VasuTemplateId
     )
+
     @PostMapping("/children/{childId}/vasu")
     fun createDocument(
         db: Database.Connection,
@@ -101,6 +105,7 @@ class VasuController(
         val vasuDiscussionContent: VasuDiscussionContent,
         val evaluationDiscussionContent: EvaluationDiscussionContent
     )
+
     @PutMapping("/vasu/{id}")
     fun putDocument(
         db: Database.Connection,
@@ -130,6 +135,67 @@ class VasuController(
 
         if (!vasu.content.matchesStructurally(body.content))
             throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
+    }
+
+    data class EditFollowupEntryRequest(
+        val text: String
+    )
+
+    @PostMapping("/vasu/{id}/edit-followup/{entryId}")
+    fun editFollowupEntry(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: VasuDocumentId,
+        @PathVariable entryId: UUID,
+        @RequestBody body: EditFollowupEntryRequest
+    ) {
+        Audit.VasuDocumentEditFollowupEntry.log(id, entryId)
+        accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE, id)
+        db.transaction { tx ->
+            val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
+            val entry = findFollowupEntryWithId(vasu, entryId) ?: throw NotFound("Entry with $entryId not found")
+
+            if (entry.authorId?.raw  != user.id) {
+                throw Forbidden("Permission denied")
+            }
+
+            tx.updateVasuDocumentMaster(
+                id,
+                getEditedContent(vasu.content, user, entryId, body.text),
+                vasu.authorsContent,
+                vasu.vasuDiscussionContent,
+                vasu.evaluationDiscussionContent
+            )
+        }
+    }
+
+    fun findFollowupEntryWithId(vasu: VasuDocument, entryId: UUID): FollowupEntry? {
+        vasu.content.sections.forEach {
+            it.questions.forEach { question ->
+                if (question.type === VasuQuestionType.FOLLOWUP) {
+                    (question as Followup).value.forEach { entry ->
+                        if (entry.id == entryId) {
+                            return entry
+                        }
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    fun getEditedContent(content: VasuContent, user: AuthenticatedUser, entryId: UUID, text: String): VasuContent {
+        return content.copy(sections = content.sections.map {
+            it.copy(questions = it.questions.map { question ->
+                when(question) {
+                    is Followup -> question.copy(value = question.value.map { entry ->
+                            entry.copy(text = if (entry.id == entryId) { text } else { entry.text })
+                        })
+                    else -> question
+                }
+              }
+            )
+        })
     }
 
     @PostMapping("/vasu/{id}/update-state")

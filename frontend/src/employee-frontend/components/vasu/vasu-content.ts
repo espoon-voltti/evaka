@@ -74,7 +74,7 @@ export interface FollowupEntry {
 export interface FollowupEntryEditDetails {
   editedAt: LocalDate
   editorName: string
-  editorId: string
+  editorId?: string
 }
 
 export type VasuQuestion =
