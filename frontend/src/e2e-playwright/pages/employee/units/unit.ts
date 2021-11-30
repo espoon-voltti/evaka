@@ -4,15 +4,24 @@
 
 import { Locator, Page } from 'playwright'
 import { UUID } from 'lib-common/types'
+import { waitUntilVisible } from '../../../utils'
 
 export default class UnitPage {
   constructor(private readonly page: Page) {}
 
   readonly #unitInfoTab = this.page.locator('[data-qa="unit-info-tab"]')
+  readonly #groupsTab = this.page.locator('[data-qa="groups-tab"]')
 
   async openUnitInformation(): Promise<UnitInformationSection> {
     await this.#unitInfoTab.click()
     const section = new UnitInformationSection(this.page)
+    await section.waitFor()
+    return section
+  }
+
+  async openGroups(): Promise<GroupsSection> {
+    await this.#groupsTab.click()
+    const section = new GroupsSection(this.page)
     await section.waitFor()
     return section
   }
@@ -102,5 +111,36 @@ class StaffAclRowEditor {
   async save(): Promise<StaffAclRow> {
     await this.#save.click()
     return new StaffAclRow(this.root)
+  }
+}
+
+class GroupsSection {
+  constructor(private readonly page: Page) {}
+
+  readonly #groupCollapsible = (groupId: string, expectIsClosed = true) =>
+    this.page
+      .locator(
+        `[data-qa="daycare-group-collapsible-${groupId}"][data-status="${
+          expectIsClosed ? 'closed' : 'open'
+        }"]`
+      )
+      .locator('[data-qa="group-name"]')
+
+  async openGroupCollapsible(groupId: string) {
+    await waitUntilVisible(this.#groupCollapsible(groupId))
+    await this.#groupCollapsible(groupId).click()
+    await waitUntilVisible(this.#groupCollapsible(groupId, false))
+  }
+
+  async closeGroupCollapsible(groupId: string) {
+    await waitUntilVisible(this.#groupCollapsible(groupId, false))
+    await this.#groupCollapsible(groupId, false).click()
+    await waitUntilVisible(this.#groupCollapsible(groupId))
+  }
+
+  async waitFor() {
+    await waitUntilVisible(
+      this.page.locator('[data-qa="table-of-missing-groups"]').nth(0)
+    )
   }
 }
