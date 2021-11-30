@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from 'e2e-playwright/utils'
-import { Checkbox, RawTextInput } from 'e2e-playwright/utils/element'
+import { CheckboxLocator } from 'e2e-playwright/utils/element'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { Page } from 'playwright'
@@ -17,30 +17,21 @@ export default class CitizenCalendarPage {
   #openCalendarActionsModal = this.page.locator(
     '[data-qa="open-calendar-actions-modal"]'
   )
-
   #childCheckbox = (childId: string) =>
-    new Checkbox(this.page, `[data-qa="child-${childId}"]`)
-  #startDateInput = new RawTextInput(this.page, '[data-qa="start-date"]')
-  #endDateInput = new RawTextInput(this.page, '[data-qa="end-date"]')
+    new CheckboxLocator(this.page.locator(`[data-qa="child-${childId}"]`))
+  #startDateInput = this.page.locator('[data-qa="start-date"]')
+  #endDateInput = this.page.locator('[data-qa="end-date"]')
   #repetitionSelect = this.page.locator('[data-qa="repetition"] select')
-  #dailyStartTimeInput = new RawTextInput(
-    this.page,
-    '[data-qa="daily-start-time-0"]'
+  #dailyStartTimeInput = this.page.locator('[data-qa="daily-start-time-0"]')
+  #dailyEndTimeInput = this.page.locator('[data-qa="daily-end-time-0"]')
+  #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
+    this.page.locator(`[data-qa="weekly-${index}-start-time-0"]`)
   )
-  #dailyEndTimeInput = new RawTextInput(
-    this.page,
-    '[data-qa="daily-end-time-0"]'
-  )
-  #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
-    (index) =>
-      new RawTextInput(this.page, `[data-qa="weekly-${index}-start-time-0"]`)
-  )
-  #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
-    (index) =>
-      new RawTextInput(this.page, `[data-qa="weekly-${index}-end-time-0"]`)
+  #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
+    this.page.locator(`[data-qa="weekly-${index}-end-time-0"]`)
   )
   #absenceChip = (type: string) =>
-    new Checkbox(this.page, `[data-qa="absence-${type}"]`)
+    new CheckboxLocator(this.page.locator(`[data-qa="absence-${type}"]`))
   #modalSendButton = this.page.locator('[data-qa="modal-okBtn"]')
 
   #dayCell = (date: LocalDate) =>
@@ -48,7 +39,7 @@ export default class CitizenCalendarPage {
       `[data-qa="${this.type}-calendar-day-${date.formatIso()}"]`
     )
 
-  async createReperatingDailyReservation(
+  async createRepeatingDailyReservation(
     dateRange: FiniteDateRange,
     startTime: string,
     endTime: string
@@ -62,16 +53,15 @@ export default class CitizenCalendarPage {
       await this.page.locator('[data-qa="open-reservations-modal"]').click()
     }
 
-    await this.#startDateInput.clear()
-    await this.#startDateInput.type(dateRange.start.format())
-    await this.#endDateInput.type(dateRange.end.format())
-    await this.#dailyStartTimeInput.type(startTime)
-    await this.#dailyEndTimeInput.type(endTime)
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#dailyStartTimeInput.fill(startTime)
+    await this.#dailyEndTimeInput.fill(endTime)
 
     await this.#modalSendButton.click()
   }
 
-  async createReperatingWeeklyReservation(
+  async createRepeatingWeeklyReservation(
     dateRange: FiniteDateRange,
     weeklyTimes: { startTime: string; endTime: string }[]
   ) {
@@ -84,14 +74,13 @@ export default class CitizenCalendarPage {
       await this.page.locator('[data-qa="open-reservations-modal"]').click()
     }
 
-    await this.#startDateInput.clear()
-    await this.#startDateInput.type(dateRange.start.format())
-    await this.#endDateInput.type(dateRange.end.format())
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
     await this.#repetitionSelect.selectOption({ value: 'WEEKLY' })
     await weeklyTimes.reduce(async (promise, { startTime, endTime }, index) => {
       await promise
-      await this.#weeklyStartTimeInputs[index].type(startTime)
-      await this.#weeklyEndTimeInputs[index].type(endTime)
+      await this.#weeklyStartTimeInputs[index].fill(startTime)
+      await this.#weeklyEndTimeInputs[index].fill(endTime)
     }, Promise.resolve())
 
     await this.#modalSendButton.click()
@@ -112,9 +101,8 @@ export default class CitizenCalendarPage {
 
     await this.deselectChildren(3)
     await this.#childCheckbox(child.id).click()
-    await this.#startDateInput.clear()
-    await this.#startDateInput.type(dateRange.start.format())
-    await this.#endDateInput.type(dateRange.end.format())
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
     await this.#absenceChip(absenceType).click()
 
     await this.#modalSendButton.click()

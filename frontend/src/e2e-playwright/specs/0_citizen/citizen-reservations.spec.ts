@@ -73,7 +73,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    await calendarPage.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservation.startTime,
       reservation.endTime
@@ -95,7 +95,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       endTime: `16:0${index}`
     }))
 
-    await calendarPage.createReperatingWeeklyReservation(
+    await calendarPage.createRepeatingWeeklyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservations
     )
@@ -114,7 +114,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    await calendarPage.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservation.startTime,
       reservation.endTime
@@ -136,7 +136,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const initialReservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    await calendarPage.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       initialReservation.startTime,
       initialReservation.endTime
@@ -148,7 +148,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
     const newReservation = { startTime: '09:00', endTime: '17:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    await calendarPage.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       newReservation.startTime,
       newReservation.endTime
