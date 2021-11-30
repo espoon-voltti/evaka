@@ -4,21 +4,24 @@
 
 import { Page } from 'playwright'
 import { FeeThresholds } from 'lib-common/api-types/finance'
-import { RawElement, RawTextInput } from '../../utils/element'
+import { RawElementDEPRECATED, RawTextInput } from '../../utils/element'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class FinanceBasicsPage {
   constructor(private readonly page: Page) {}
 
   readonly feesSection = {
-    root: new RawElement(this.page, '[data-qa="fees-section"]'),
-    spinner: new RawElement(this.page, '[data-qa="fees-section-spinner"]'),
-    createFeeThresholdsButton: new RawElement(
+    root: new RawElementDEPRECATED(this.page, '[data-qa="fees-section"]'),
+    spinner: new RawElementDEPRECATED(
+      this.page,
+      '[data-qa="fees-section-spinner"]'
+    ),
+    createFeeThresholdsButton: new RawElementDEPRECATED(
       this.page,
       '[data-qa="create-new-fee-thresholds"]'
     ),
     item: (index: number) => {
-      const element = new RawElement(
+      const element = new RawElementDEPRECATED(
         this.page,
         `[data-qa="fee-thresholds-item-${index}"]`
       )
@@ -30,7 +33,10 @@ export default class FinanceBasicsPage {
         },
         edit: async () => {
           await element.find('[data-qa="edit"]').click()
-          await new RawElement(this.page, '[data-qa="modal-okBtn"]').click()
+          await new RawElementDEPRECATED(
+            this.page,
+            '[data-qa="modal-okBtn"]'
+          ).click()
         },
         assertItemContains: async (thresholds: FeeThresholds) => {
           const expectValueToBe = async (
@@ -116,7 +122,7 @@ export default class FinanceBasicsPage {
         this.page,
         '[data-qa="sibling-discount-2-plus"]'
       ),
-      saveButton: new RawElement(this.page, '[data-qa="save"]'),
+      saveButton: new RawElementDEPRECATED(this.page, '[data-qa="save"]'),
       fillInThresholds: async (feeThresholds: FeeThresholds) => {
         await this.feesSection.editor.validFromInput.fill(
           feeThresholds.validDuring.start.format()
@@ -162,7 +168,10 @@ export default class FinanceBasicsPage {
         await this.feesSection.editor.saveButton.click()
 
         if (retroactive) {
-          await new RawElement(this.page, '[data-qa="modal-okBtn"]').click()
+          await new RawElementDEPRECATED(
+            this.page,
+            '[data-qa="modal-okBtn"]'
+          ).click()
         }
 
         await waitUntilEqual(

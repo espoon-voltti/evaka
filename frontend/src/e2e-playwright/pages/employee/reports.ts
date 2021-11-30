@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { RawElement } from 'e2e-playwright/utils/element'
+import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { captureTextualDownload } from 'e2e-playwright/browser'
 
@@ -14,7 +14,7 @@ export default class ReportsPage {
   readonly #year = this.page.locator('[data-qa="select-year"] select')
   readonly #area = this.page.locator('[data-qa="select-area"] select')
 
-  readonly #downloadCsvLink = new RawElement(
+  readonly #downloadCsvLink = new RawElementDEPRECATED(
     this.page,
     '[data-qa="download-csv"] a'
   )
@@ -50,7 +50,7 @@ export default class ReportsPage {
     expectedChildCount: string,
     expectedMonthlySum: string
   ) {
-    const row = new RawElement(this.page, `[data-qa="${unitId}"]`)
+    const row = new RawElementDEPRECATED(this.page, `[data-qa="${unitId}"]`)
     await row.waitUntilVisible()
     expect(await row.find(`[data-qa="child-count"]`).innerText).toStrictEqual(
       expectedChildCount

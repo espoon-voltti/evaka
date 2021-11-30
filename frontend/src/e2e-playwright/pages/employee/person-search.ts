@@ -6,7 +6,7 @@ import { Page } from 'playwright'
 import LocalDate from 'lib-common/local-date'
 import {
   Checkbox,
-  RawElement,
+  RawElementDEPRECATED,
   RawTextInput
 } from 'e2e-playwright/utils/element'
 import { waitUntilEqual } from 'e2e-playwright/utils'
@@ -15,8 +15,8 @@ export default class PersonSearchPage {
   constructor(private readonly page: Page) {}
 
   #searchInput = new RawTextInput(this.page, '[data-qa="search-input"]')
-  #personLink = new RawElement(this.page, '[data-qa="person-row"] a')
-  #createPersonButton = new RawElement(
+  #personLink = new RawElementDEPRECATED(this.page, '[data-qa="person-row"] a')
+  #createPersonButton = new RawElementDEPRECATED(
     this.page,
     '[data-qa="create-person-button"]'
   )
@@ -41,20 +41,32 @@ export default class PersonSearchPage {
     )
   }
   #personData = {
-    firstName: new RawElement(this.page, '[data-qa="person-first-names"]'),
-    lastName: new RawElement(this.page, '[data-qa="person-last-name"]'),
-    dateOfBirth: new RawElement(this.page, '[data-qa="person-birthday"]'),
-    address: new RawElement(this.page, '[data-qa="person-address"]'),
-    ssn: new RawElement(this.page, '[data-qa="person-ssn"]')
+    firstName: new RawElementDEPRECATED(
+      this.page,
+      '[data-qa="person-first-names"]'
+    ),
+    lastName: new RawElementDEPRECATED(
+      this.page,
+      '[data-qa="person-last-name"]'
+    ),
+    dateOfBirth: new RawElementDEPRECATED(
+      this.page,
+      '[data-qa="person-birthday"]'
+    ),
+    address: new RawElementDEPRECATED(this.page, '[data-qa="person-address"]'),
+    ssn: new RawElementDEPRECATED(this.page, '[data-qa="person-ssn"]')
   }
-  #addSsnButton = new RawElement(this.page, '[data-qa="add-ssn-button"]')
-  #noSsnText = new RawElement(this.page, '[data-qa="no-ssn"]')
+  #addSsnButton = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="add-ssn-button"]'
+  )
+  #noSsnText = new RawElementDEPRECATED(this.page, '[data-qa="no-ssn"]')
   #disableSsnAddingCheckbox = new Checkbox(
     this.page,
     '[data-qa="disable-ssn-adding"]'
   )
   #ssnInput = new RawTextInput(this.page, '[data-qa="ssn-input"]')
-  #modalConfirm = new RawElement(this.page, '[data-qa="modal-okBtn"]')
+  #modalConfirm = new RawElementDEPRECATED(this.page, '[data-qa="modal-okBtn"]')
 
   async createPerson(personData: {
     firstName: string

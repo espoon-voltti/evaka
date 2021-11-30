@@ -3,24 +3,30 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
+import {
+  RawElementDEPRECATED,
+  RawTextInput
+} from 'e2e-playwright/utils/element'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
-  readonly #deceased = new RawElement(this.page, '[data-qa="deceased-label"]')
+  readonly #deceased = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="deceased-label"]'
+  )
   readonly #ophPersonOidInput = new RawTextInput(
     this.page,
     '[data-qa="person-oph-person-oid"]'
   )
 
-  readonly #editButton = new RawElement(
+  readonly #editButton = new RawElementDEPRECATED(
     this.page,
     '[data-qa="edit-person-settings-button"]'
   )
 
-  readonly #confirmButton = new RawElement(
+  readonly #confirmButton = new RawElementDEPRECATED(
     this.page,
     '[data-qa="confirm-edited-person-button"]'
   )
@@ -47,14 +53,14 @@ export default class ChildInformationPage {
     collapsible: C
   ): Promise<SectionFor<C>> {
     const { selector, section } = collapsibles[collapsible]
-    const element = new RawElement(this.page, selector)
+    const element = new RawElementDEPRECATED(this.page, selector)
     await element.click()
     return new section(element) as SectionFor<C>
   }
 }
 
 export class DailyServiceTimeSection {
-  constructor(private section: RawElement) {}
+  constructor(private section: RawElementDEPRECATED) {}
 
   readonly #typeText = this.section.find('[data-qa="times-type"]')
   readonly #timesText = this.section.find('[data-qa="times"]')
@@ -85,7 +91,7 @@ export class DailyServiceTimesSectionEdit {
   readonly #irregularRadio = this.section.find('[data-qa="radio-irregular"]')
   readonly #submitButton = this.section.find('[data-qa="submit-button"]')
 
-  constructor(private section: RawElement) {}
+  constructor(private section: RawElementDEPRECATED) {}
 
   async selectTimeNotSet() {
     await this.#notSetRadio.click()
@@ -118,7 +124,7 @@ export class DailyServiceTimesSectionEdit {
 }
 
 export class PedagogicalDocumentsSection {
-  constructor(private section: RawElement) {}
+  constructor(private section: RawElementDEPRECATED) {}
 
   readonly testFileName = 'test_file.png'
   testFilePath = `src/e2e-playwright/assets/${this.testFileName}`
@@ -197,14 +203,15 @@ export class PedagogicalDocumentsSection {
     await page.setInputFiles('[data-qa="btn-upload-file"]', this.testFilePath)
     await waitUntilTrue(async () =>
       (
-        await new RawElement(page, '[data-qa="file-download-button"]').innerText
+        await new RawElementDEPRECATED(page, '[data-qa="file-download-button"]')
+          .innerText
       ).includes(this.testFileName)
     )
   }
 }
 
 export class VasuAndLeopsSection {
-  constructor(private section: RawElement) {}
+  constructor(private section: RawElementDEPRECATED) {}
 
   readonly #addNew = this.section.find('[data-qa="add-new-vasu-button"]')
   async addNew() {

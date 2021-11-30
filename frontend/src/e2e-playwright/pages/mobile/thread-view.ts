@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { RawElement, RawTextInput } from '../../utils/element'
+import { RawElementDEPRECATED, RawTextInput } from '../../utils/element'
 
 export default class ThreadViewPage {
   constructor(private readonly page: Page) {}
   #inputContent = new RawTextInput(this.page, '[data-qa="thread-reply-input"]')
-  #sendReplyButton = new RawElement(
+  #sendReplyButton = new RawElementDEPRECATED(
     this.page,
     '[data-qa="thread-reply-button"]'
   )
@@ -21,7 +21,7 @@ export default class ThreadViewPage {
   }
 
   async getMessageContent(index: number): Promise<string> {
-    const el = new RawElement(
+    const el = new RawElementDEPRECATED(
       this.page,
       `:nth-match([data-qa="single-message-content"], ${index})`
     )
@@ -29,7 +29,7 @@ export default class ThreadViewPage {
   }
 
   async getMessageSender(index: number): Promise<string> {
-    const el = new RawElement(
+    const el = new RawElementDEPRECATED(
       this.page,
       `:nth-match([data-qa="single-message-sender-name"], ${index})`
     )

@@ -3,27 +3,39 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
-import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
+import {
+  RawElementDEPRECATED,
+  RawTextInput
+} from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
 export default class MessagesPage {
   constructor(private readonly page: Page) {}
 
-  #newMessageButton = new RawElement(this.page, '[data-qa="new-message-btn"]')
-  #sendMessageButton = new RawElement(this.page, '[data-qa="send-message-btn"]')
-  #closeMessageEditorButton = new RawElement(
+  #newMessageButton = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="new-message-btn"]'
+  )
+  #sendMessageButton = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="send-message-btn"]'
+  )
+  #closeMessageEditorButton = new RawElementDEPRECATED(
     this.page,
     '[data-qa="close-message-editor-btn"]'
   )
-  #discardMessageButton = new RawElement(
+  #discardMessageButton = new RawElementDEPRECATED(
     this.page,
     '[data-qa="discard-draft-btn"]'
   )
-  #receiverSelection = new RawElement(this.page, '[data-qa="select-receiver"]')
+  #receiverSelection = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="select-receiver"]'
+  )
   #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
   #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
   #fileUpload = this.page.locator('[data-qa="upload-message-attachment"]')
-  #sentMessagesBoxRow = new RawElement(
+  #sentMessagesBoxRow = new RawElementDEPRECATED(
     this.page,
     '[data-qa="message-box-row-SENT"]'
   )
@@ -31,13 +43,16 @@ export default class MessagesPage {
     this.page,
     '[data-qa="message-box-row-DRAFTS"]'
   )
-  #receivedMessage = new RawElement(
+  #receivedMessage = new RawElementDEPRECATED(
     this.page,
     '[data-qa="received-message-row"]'
   )
-  #draftMessage = new RawElement(this.page, '[data-qa="draft-message-row"]')
+  #draftMessage = new RawElementDEPRECATED(
+    this.page,
+    '[data-qa="draft-message-row"]'
+  )
   #messageContent = (index = 0) =>
-    new RawElement(
+    new RawElementDEPRECATED(
       this.page,
       `[data-qa="message-content"][data-index="${index}"]`
     )
@@ -108,9 +123,10 @@ export default class MessagesPage {
   }
 
   async getEditorState() {
-    return new RawElement(this.page, '[data-qa="message-editor"]').getAttribute(
-      'data-status'
-    )
+    return new RawElementDEPRECATED(
+      this.page,
+      '[data-qa="message-editor"]'
+    ).getAttribute('data-status')
   }
 
   async draftNewMessage(title: string, content: string) {

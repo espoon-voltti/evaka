@@ -7,7 +7,7 @@ import { Daycare } from 'e2e-test-common/dev-api/types'
 import { delay, waitUntilEqual } from '../../utils'
 import {
   descendantInput,
-  RawElement,
+  RawElementDEPRECATED,
   Radio,
   SelectionChip,
   WithTextInput
@@ -49,7 +49,10 @@ export default class CitizenMapPage {
   }
 
   listItemFor(daycare: Daycare) {
-    return new RawElement(this.page, `[data-qa="map-unit-list-${daycare.id}"]`)
+    return new RawElementDEPRECATED(
+      this.page,
+      `[data-qa="map-unit-list-${daycare.id}"]`
+    )
   }
 
   async testMapPopup(daycare: Daycare) {
@@ -59,15 +62,15 @@ export default class CitizenMapPage {
   }
 }
 
-class Map extends RawElement {
+class Map extends RawElementDEPRECATED {
   static readonly MAX_ZOOM_ATTEMPTS = 30
   readonly #zoomIn = `${this.selector} .leaflet-control-zoom-in`
   readonly #zoomOut = `${this.selector} .leaflet-control-zoom-out`
-  readonly #container = new RawElement(
+  readonly #container = new RawElementDEPRECATED(
     this.page,
     `${this.selector} .leaflet-container`
   )
-  readonly addressMarker = new RawElement(
+  readonly addressMarker = new RawElementDEPRECATED(
     this.page,
     `${this.selector} [data-qa="map-marker-address"]`
   )
@@ -117,7 +120,7 @@ class Map extends RawElement {
   }
 
   markerFor(daycare: Daycare) {
-    return new RawElement(this.page, `[title="${daycare.name}"]`)
+    return new RawElementDEPRECATED(this.page, `[title="${daycare.name}"]`)
   }
   popupFor(daycare: Daycare): MapPopup {
     return new MapPopup(this.page, `[data-qa="map-popup-${daycare.id}"]`)
@@ -134,9 +137,9 @@ class Map extends RawElement {
   }
 }
 
-class UnitDetailsPanel extends RawElement {
+class UnitDetailsPanel extends RawElementDEPRECATED {
   readonly #name = `${this.selector} [data-qa="map-unit-details-name"]`
-  readonly backButton = new RawElement(
+  readonly backButton = new RawElementDEPRECATED(
     this.page,
     `${this.selector} [data-qa="map-unit-details-back"]`
   )
@@ -146,9 +149,9 @@ class UnitDetailsPanel extends RawElement {
   }
 }
 
-class MapMarker extends RawElement {}
+class MapMarker extends RawElementDEPRECATED {}
 
-class MapPopup extends RawElement {
+class MapPopup extends RawElementDEPRECATED {
   readonly #name = `${this.selector} [data-qa="map-popup-name"]`
   readonly #noApplying = `${this.selector} [data-qa="map-popup-no-applying"]`
 
@@ -161,7 +164,10 @@ class MapPopup extends RawElement {
   }
 }
 
-class MapSearchInput extends WithTextInput(RawElement, descendantInput) {
+class MapSearchInput extends WithTextInput(
+  RawElementDEPRECATED,
+  descendantInput
+) {
   async clickUnitResult(daycare: Daycare) {
     await this.page.click(
       `${this.selector} [data-qa="map-search-${daycare.id}"]`
