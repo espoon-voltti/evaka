@@ -5,15 +5,15 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { UnitLanguage } from 'lib-common/api-types/units/enums'
 import { Gap } from 'lib-components/white-space'
-import SearchSection from '../map/SearchSection'
-import UnitList from '../map/UnitList'
-import { mapViewBreakpoint, MobileMode } from '../map/const'
-import { CareTypeOption, MapAddress, ProviderTypeOption } from '../map/MapView'
-import { UnitWithDistance } from '../map/distances'
+import SearchSection from './SearchSection'
+import UnitList from './UnitList'
+import { mapViewBreakpoint, MobileMode } from './const'
+import { CareTypeOption, MapAddress, ProviderTypeOption } from './MapView'
+import { UnitWithDistance } from './distances'
 import { desktopMin } from 'lib-components/breakpoints'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

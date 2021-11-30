@@ -2,26 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { FocusEventHandler, useCallback, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { combine, Result, Success } from 'lib-common/api'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import colors from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { fasMapMarkerAlt } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { fasMapMarkerAlt } from 'lib-icons'
+import React, { FocusEventHandler, useCallback, useMemo, useState } from 'react'
+import styled from 'styled-components'
+import { useTranslation } from '../localization'
 import { queryAutocomplete } from './api'
 import { MapAddress } from './MapView'
-import { useTranslation } from '../localization'
-import { useDebounce } from 'lib-common/utils/useDebounce'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

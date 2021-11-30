@@ -2,17 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { client } from './client'
 import { Failure, Result, Success } from 'lib-common/api'
-import { Unit } from '../types/invoicing'
-import { CareArea } from '../types/unit'
+import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import {
-  deserializePublicUnit,
-  PublicUnit
-} from 'lib-common/api-types/units/PublicUnit'
-import { PlacementType } from 'lib-common/generated/enums'
+import { Unit } from '../types/invoicing'
+import { CareArea } from '../types/unit'
+import { client } from './client'
 
 export async function getUnits(
   areas: string[],

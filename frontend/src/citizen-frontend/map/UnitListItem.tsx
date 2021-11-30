@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { fontWeights } from 'lib-components/typography'
 import { defaultMargins as dM } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { fontWeights } from 'lib-components/typography'
+import React from 'react'
+import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import { formatCareTypes } from './format'
 

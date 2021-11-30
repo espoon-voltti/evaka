@@ -941,6 +941,7 @@ const en: Translations = {
             info: 'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
             fi: 'finnish',
             sv: 'swedish',
+            en: 'english',
             moveUp: 'Move up',
             moveDown: 'Move down',
             remove: 'Remove preference'

@@ -2,13 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useRef } from 'react'
-import styled from 'styled-components'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import leaflet from 'leaflet'
+import leaflet, { LatLngTuple, LeafletEventHandlerFnMap } from 'leaflet'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { fontWeights } from 'lib-components/typography'
-import { FooterContent } from '../Footer'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { mapConfig } from 'lib-customizations/citizen'
+import colors from 'lib-customizations/common'
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef
+} from 'react'
 import {
   MapContainer,
   Marker,
@@ -17,24 +25,22 @@ import {
   useMap,
   ZoomControl
 } from 'react-leaflet'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import markerUnit from './marker-unit.svg'
-import markerUnitHighlight from './marker-unit-highlight.svg'
-import markerAddress from './marker-address.svg'
-import { formatDistance, UnitWithDistance } from '../map/distances'
+import styled from 'styled-components'
+import { FooterContent } from '../Footer'
 import { useTranslation } from '../localization'
+import { mapViewBreakpoint } from './const'
+import { formatDistance, UnitWithDistance } from './distances'
 import { formatCareTypes } from './format'
-import { MapAddress } from '../map/MapView'
-import { mapViewBreakpoint } from '../map/const'
-import { isAutomatedTest } from 'lib-common/utils/helpers'
-import ExternalLink from 'lib-components/atoms/ExternalLink'
-import { mapConfig } from 'lib-customizations/citizen'
+import { MapAddress } from './MapView'
+import markerAddress from './marker-address.svg'
+import markerUnitHighlight from './marker-unit-highlight.svg'
+import markerUnit from './marker-unit.svg'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
   selectedUnit: PublicUnit | null
   selectedAddress: MapAddress | null
-  setSelectedUnit: (u: PublicUnit | null) => void
+  setSelectedUnit: Dispatch<SetStateAction<PublicUnit | null>>
 }
 
 export default React.memo(function MapBox(props: Props) {
@@ -112,9 +118,8 @@ function MapContents({
         <UnitMarker
           key={unit.id}
           unit={unit}
+          onClick={setSelectedUnit}
           isSelected={selectedUnit?.id === unit.id}
-          selectedUnit={selectedUnit}
-          setSelectedUnit={setSelectedUnit}
         />
       ))}
     </>
@@ -143,68 +148,89 @@ function AddressMarker({ address }: { address: MapAddress }) {
   )
 }
 
-function UnitMarker({
+interface UnitMarkerProps {
+  unit: PublicUnit | UnitWithDistance
+  isSelected: boolean
+  onClick: (unit: PublicUnit) => void
+}
+
+const UnitMarker = React.memo(function UnitMarker({
   unit,
   isSelected,
-  selectedUnit,
-  setSelectedUnit
-}: {
-  unit: UnitWithDistance | PublicUnit
-  isSelected: boolean
-  selectedUnit: PublicUnit | null
-  setSelectedUnit: (u: PublicUnit | null) => void
-}) {
+  onClick
+}: UnitMarkerProps) {
+  const {
+    id,
+    name,
+    type,
+    location,
+    providerType,
+    streetAddress,
+    url,
+    clubApplyPeriod,
+    daycareApplyPeriod,
+    preschoolApplyPeriod
+  } = unit
+
+  const drivingDistance =
+    'drivingDistance' in unit ? unit.drivingDistance : null
+
+  const noApplying =
+    providerType === 'PRIVATE' &&
+    clubApplyPeriod === null &&
+    daycareApplyPeriod === null &&
+    preschoolApplyPeriod === null
+
   const t = useTranslation()
   const markerRef = useRef<leaflet.Marker>(null)
 
   useEffect(() => {
     const element = markerRef.current?.getElement()
     if (element) {
-      element.setAttribute('data-qa', `map-marker-${unit.id}`)
+      element.setAttribute('data-qa', `map-marker-${id}`)
     }
-  }, [markerRef, unit])
+  }, [markerRef, id])
 
-  if (unit.location?.lat == null || unit.location?.lon == null) return null
-  const { lat, lon } = unit.location
+  const position = useMemo<LatLngTuple>(
+    () => [location?.lat ?? 0, location?.lon ?? 0],
+    [location]
+  )
+  const eventHandlers = useMemo<LeafletEventHandlerFnMap>(
+    () => ({ click: () => onClick(unit) }),
+    [onClick, unit]
+  )
+
+  if (!location) return null
 
   return (
     <Marker
-      title={unit.name}
-      position={[lat, lon]}
+      title={name}
+      position={position}
       icon={isSelected ? unitHighlightIcon : unitIcon}
       zIndexOffset={isSelected ? 10 : 0}
       ref={markerRef}
-      eventHandlers={{
-        click: () => {
-          if (selectedUnit) {
-            setSelectedUnit(unit)
-          }
-        }
-      }}
+      eventHandlers={eventHandlers}
     >
       <UnitPopup>
-        <div data-qa={`map-popup-${unit.id}`}>
-          <UnitName data-qa="map-popup-name">{unit.name}</UnitName>
-          <div>{t.common.unit.providerTypes[unit.providerType]}</div>
-          {unit.providerType === 'PRIVATE' &&
-            unit.preschoolApplyPeriod === null &&
-            unit.daycareApplyPeriod === null &&
-            unit.clubApplyPeriod === null && (
-              <div data-qa="map-popup-no-applying">{t.map.noApplying}</div>
-            )}
+        <div data-qa={`map-popup-${id}`}>
+          <UnitName data-qa="map-popup-name">{name}</UnitName>
+          <div>{t.common.unit.providerTypes[providerType]}</div>
+          {noApplying && (
+            <div data-qa="map-popup-no-applying">{t.map.noApplying}</div>
+          )}
           <UnitDetails>
             <UnitDetailsLeft>
-              {unit.streetAddress}
+              {streetAddress}
               <br />
-              {formatCareTypes(t, unit.type).join(', ')}
+              {formatCareTypes(t, type).join(', ')}
             </UnitDetailsLeft>
-            {'drivingDistance' in unit && unit.drivingDistance !== null && (
+            {drivingDistance && (
               <UnitDetailsRight>
-                {formatDistance(unit.drivingDistance)}
+                {formatDistance(drivingDistance)}
               </UnitDetailsRight>
             )}
           </UnitDetails>
-          {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
+          {providerType === 'PRIVATE_SERVICE_VOUCHER' && (
             <>
               <Gap size="s" />
               <ExternalLink
@@ -214,17 +240,17 @@ function UnitMarker({
               />
             </>
           )}
-          {unit.url && (
+          {url && (
             <>
               <Gap size="xs" />
-              <ExternalLink text={t.map.homepage} href={unit.url} newTab />
+              <ExternalLink text={t.map.homepage} href={url} newTab />
             </>
           )}
         </div>
       </UnitPopup>
     </Marker>
   )
-}
+})
 
 const Wrapper = styled.div`
   position: relative;

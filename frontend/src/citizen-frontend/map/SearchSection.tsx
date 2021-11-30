@@ -2,31 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
-import styled from 'styled-components'
 import { Result } from 'lib-common/api'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { UnitLanguage } from 'lib-common/api-types/units/enums'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { SelectionChip } from 'lib-components/atoms/Chip'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import colors from 'lib-customizations/common'
-import { Gap } from 'lib-components/white-space'
-import { SelectionChip } from 'lib-components/atoms/Chip'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Radio from 'lib-components/atoms/form/Radio'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { fontWeights, H1, Label, P } from 'lib-components/typography'
-import { faAngleDown, faAngleUp, faList, fasMapMarkerAlt } from 'lib-icons'
-import { useTranslation } from '../localization'
-import { mapViewBreakpoint, MobileMode } from '../map/const'
-import SearchInput from '../map/SearchInput'
-import { CareTypeOption, MapAddress, ProviderTypeOption } from '../map/MapView'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
+import colors from 'lib-customizations/common'
+import { faAngleDown, faAngleUp, faList, fasMapMarkerAlt } from 'lib-icons'
+import React, { useState } from 'react'
+import styled from 'styled-components'
+import { useTranslation } from '../localization'
+import SearchInput from '../map/SearchInput'
+import { mapViewBreakpoint, MobileMode } from './const'
+import { CareTypeOption, MapAddress, ProviderTypeOption } from './MapView'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

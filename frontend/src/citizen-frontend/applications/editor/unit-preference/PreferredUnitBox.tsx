@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
-import colors from 'lib-customizations/common'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { StaticChip } from 'lib-components/atoms/Chip'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H4 } from 'lib-components/typography'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faArrowDown, faArrowUp, faTimes } from 'lib-icons'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { StaticChip } from 'lib-components/atoms/Chip'
+import colors from 'lib-customizations/common'
+import { faArrowDown, faArrowUp, faTimes } from 'lib-icons'
+import React from 'react'
+import styled from 'styled-components'
 import { useTranslation } from '../../../localization'
-import ExternalLink from 'lib-components/atoms/ExternalLink'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 
 export type PreferredUnitBoxProps = {
   unit: PublicUnit
