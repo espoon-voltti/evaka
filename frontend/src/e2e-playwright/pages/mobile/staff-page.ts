@@ -2,41 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
-import { Page } from 'playwright'
+import { Locator, Page } from 'playwright'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}
 
-  #staffCount = new RawElementDEPRECATED(this.page, '[data-qa="staff-count"]')
-  #staffOtherCount = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="staff-other-count"]'
-  )
-  #cancelButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="cancel-button"]'
-  )
-  #confirmButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="confirm-button"]'
-  )
-  #occupancyRealized = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="realized-occupancy"]'
-  )
-  #updated = new RawElementDEPRECATED(this.page, '[data-qa="updated"]')
+  #staffCount = this.page.locator('[data-qa="staff-count"]')
+  #staffOtherCount = this.page.locator('[data-qa="staff-other-count"]')
+  #cancelButton = this.page.locator('[data-qa="cancel-button"]')
+  #confirmButton = this.page.locator('[data-qa="confirm-button"]')
+  #occupancyRealized = this.page.locator('[data-qa="realized-occupancy"]')
+  #updated = this.page.locator('[data-qa="updated"]')
 
-  private countButton(parent: RawElementDEPRECATED, which: 'plus' | 'minus') {
-    return parent.find(`[data-qa="${which}-button"]`)
+  private countButton(parent: Locator, which: 'plus' | 'minus') {
+    return parent.locator(`[data-qa="${which}-button"]`)
   }
 
   get staffCount() {
-    return this.#staffCount.find('[data-qa="value"]').innerText
+    return this.#staffCount.locator('[data-qa="value"]').innerText()
   }
 
   get staffOtherCount() {
-    return this.#staffOtherCount.find('[data-qa="value"]').innerText
+    return this.#staffOtherCount.locator('[data-qa="value"]').innerText()
   }
 
   async incDecButtonsVisible(): Promise<boolean[]> {
@@ -48,7 +35,7 @@ export default class StaffPage {
           )
         )
         .flat()
-        .map((el) => el.visible)
+        .map((el) => el.isVisible())
     )
   }
 
@@ -78,8 +65,8 @@ export default class StaffPage {
 
   get buttonsDisabled() {
     return Promise.all([
-      this.#cancelButton.disabled,
-      this.#confirmButton.disabled
+      this.#cancelButton.isDisabled(),
+      this.#confirmButton.isDisabled()
     ]).then(([cancel, confirm]) => cancel && confirm)
   }
 
@@ -88,10 +75,10 @@ export default class StaffPage {
   }
 
   get updated() {
-    return this.#updated.innerText
+    return this.#updated.innerText()
   }
 
   get occupancy() {
-    return this.#occupancyRealized.innerText
+    return this.#occupancyRealized.innerText()
   }
 }

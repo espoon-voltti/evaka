@@ -3,76 +3,41 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilVisible } from 'e2e-playwright/utils'
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { Child } from 'e2e-test-common/dev-api/types'
 import { Page } from 'playwright'
 
 export default class MobileChildPage {
   constructor(private readonly page: Page) {}
 
-  #markPresentLink = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="mark-present-link"]'
-  )
-  #markAbsentBeforehandLink = new RawElementDEPRECATED(
-    this.page,
+  #markPresentLink = this.page.locator('[data-qa="mark-present-link"]')
+  #markAbsentBeforehandLink = this.page.locator(
     '[data-qa="mark-absent-beforehand"]'
   )
-  #sensitiveInfoLink = new RawElementDEPRECATED(
-    this.page,
+  #sensitiveInfoLink = this.page.locator(
     '[data-qa="link-child-sensitive-info"]'
   )
-
-  #messageEditorLink = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="link-new-message"]'
-  )
-
+  #messageEditorLink = this.page.locator('[data-qa="link-new-message"]')
   #notesLink = this.page.locator('[data-qa="link-child-daycare-daily-note"]')
-
   #notesExistsBubble = this.page.locator('[data-qa="daily-note-icon-bubble"]')
-
   #saveNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
-
   #goBack = this.page.locator('[data-qa="back-btn"]')
   #goBackFromSensitivePage = this.page.locator('[data-qa="go-back"]')
 
   #sensitiveInfo = {
-    name: new RawElementDEPRECATED(this.page, '[data-qa="child-info-name"]'),
-    allergies: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="child-info-allergies"]'
-    ),
-    diet: new RawElementDEPRECATED(this.page, '[data-qa="child-info-diet"]'),
-    medication: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="child-info-medication"]'
-    ),
+    name: this.page.locator('[data-qa="child-info-name"]'),
+    allergies: this.page.locator('[data-qa="child-info-allergies"]'),
+    diet: this.page.locator('[data-qa="child-info-diet"]'),
+    medication: this.page.locator('[data-qa="child-info-medication"]'),
     contactName: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-contact${n + 1}-name"]`
-      ),
+      this.page.locator(`[data-qa="child-info-contact${n + 1}-name"]`),
     contactPhone: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-contact${n + 1}-phone"]`
-      ),
+      this.page.locator(`[data-qa="child-info-contact${n + 1}-phone"]`),
     contactEmail: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-contact${n + 1}-email"]`
-      ),
+      this.page.locator(`[data-qa="child-info-contact${n + 1}-email"]`),
     backupPickupName: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-backup-pickup${n + 1}-name"]`
-      ),
+      this.page.locator(`[data-qa="child-info-backup-pickup${n + 1}-name"]`),
     backupPickupPhone: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-backup-pickup${n + 1}-phone"]`
-      )
+      this.page.locator(`[data-qa="child-info-backup-pickup${n + 1}-phone"]`)
   }
 
   async markFutureAbsences() {
@@ -100,7 +65,7 @@ export default class MobileChildPage {
   }
 
   async assertSensitiveInfoIsShown(name: string) {
-    await waitUntilEqual(() => this.#sensitiveInfo.name.innerText, name)
+    await waitUntilEqual(() => this.#sensitiveInfo.name.innerText(), name)
   }
 
   async assertSensitiveInfo(
@@ -117,33 +82,33 @@ export default class MobileChildPage {
     }>
   ) {
     await waitUntilEqual(
-      () => this.#sensitiveInfo.allergies.innerText,
+      () => this.#sensitiveInfo.allergies.innerText(),
       additionalInfo.allergies
     )
     await waitUntilEqual(
-      () => this.#sensitiveInfo.diet.innerText,
+      () => this.#sensitiveInfo.diet.innerText(),
       additionalInfo.diet
     )
     await waitUntilEqual(
-      () => this.#sensitiveInfo.medication.innerText,
+      () => this.#sensitiveInfo.medication.innerText(),
       additionalInfo.medication
     )
 
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i]
       await waitUntilEqual(
-        () => this.#sensitiveInfo.contactName(i).innerText,
+        () => this.#sensitiveInfo.contactName(i).innerText(),
         `${contact.firstName} ${contact.lastName}`
       )
       if (contact.phone) {
         await waitUntilEqual(
-          () => this.#sensitiveInfo.contactPhone(i).innerText,
+          () => this.#sensitiveInfo.contactPhone(i).innerText(),
           contact.phone
         )
       }
       if (contact.email) {
         await waitUntilEqual(
-          () => this.#sensitiveInfo.contactEmail(i).innerText,
+          () => this.#sensitiveInfo.contactEmail(i).innerText(),
           contact.email
         )
       }
@@ -152,11 +117,11 @@ export default class MobileChildPage {
     for (let i = 0; i < backupPickups.length; i++) {
       const backupPickup = backupPickups[i]
       await waitUntilEqual(
-        () => this.#sensitiveInfo.backupPickupName(i).innerText,
+        () => this.#sensitiveInfo.backupPickupName(i).innerText(),
         backupPickup.name
       )
       await waitUntilEqual(
-        () => this.#sensitiveInfo.backupPickupPhone(i).innerText,
+        () => this.#sensitiveInfo.backupPickupPhone(i).innerText(),
         backupPickup.phone
       )
     }

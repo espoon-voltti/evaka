@@ -2,33 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { UUID } from 'lib-common/types'
 import { Page } from 'playwright'
 
 export default class MobileNav {
   constructor(private readonly page: Page) {}
 
-  readonly #groupSelectorButton = new RawElementDEPRECATED(
-    this.page,
+  readonly #groupSelectorButton = this.page.locator(
     '[data-qa="group-selector-button"]'
   )
 
   private groupWithId(id: UUID) {
-    return new RawElementDEPRECATED(this.page, `[data-qa="group--${id}"]`)
+    return this.page.locator(`[data-qa="group--${id}"]`)
   }
 
-  readonly #children = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="bottomnav-children"]'
-  )
-  readonly #staff = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="bottomnav-staff"]'
-  )
+  readonly #children = this.page.locator('[data-qa="bottomnav-children"]')
+  readonly #staff = this.page.locator('[data-qa="bottomnav-staff"]')
 
   get selectedGroupName() {
-    return this.#groupSelectorButton.innerText
+    return this.#groupSelectorButton.innerText()
   }
 
   async selectGroup(id: UUID) {

@@ -3,32 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from 'e2e-playwright/utils'
-import {
-  RawElementDEPRECATED,
-  RawTextInput
-} from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
 export default class MobileMessageEditorPage {
   constructor(private readonly page: Page) {}
 
-  #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
-  #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
-  #sendMessageButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="send-message-btn"]'
-  )
+  #inputTitle = this.page.locator('[data-qa="input-title"]')
+  #inputContent = this.page.locator('[data-qa="input-content"]')
+  #sendMessageButton = this.page.locator('[data-qa="send-message-btn"]')
 
   async getEditorState() {
-    return new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="message-editor"]'
-    ).getAttribute('data-status')
+    return this.page
+      .locator('[data-qa="message-editor"]')
+      .getAttribute('data-status')
   }
 
   async isEditorVisible() {
-    return this.page.$$eval(
-      '[data-qa="input-content"]',
+    return this.#inputContent.evaluateAll(
       (contentInput) => contentInput.length > 0
     )
   }
