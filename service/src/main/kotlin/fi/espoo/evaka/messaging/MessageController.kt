@@ -17,6 +17,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -39,6 +41,7 @@ data class ReplyToMessageBody(
 @RequestMapping("/messages")
 class MessageController(
     private val acl: AccessControlList,
+    private val accessControl: AccessControl,
     messageNotificationEmailService: MessageNotificationEmailService
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
@@ -46,7 +49,7 @@ class MessageController(
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        user.requireAnyEmployee()
+        accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
         return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
     }
 

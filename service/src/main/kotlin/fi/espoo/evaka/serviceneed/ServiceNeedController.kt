@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -47,7 +46,7 @@ class ServiceNeedController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: ServiceNeedCreateRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
         accessControl.requirePermissionFor(user, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
 
@@ -65,7 +64,6 @@ class ServiceNeedController(
                 .let { id -> tx.getServiceNeedChildRange(id) }
                 .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
         }
-        return ResponseEntity.noContent().build()
     }
 
     data class ServiceNeedUpdateRequest(
@@ -81,7 +79,7 @@ class ServiceNeedController(
         user: AuthenticatedUser,
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PlacementServiceNeedUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.ServiceNeed.UPDATE, id)
 
@@ -109,7 +107,6 @@ class ServiceNeedController(
                 )
             )
         }
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/service-needs/{id}")
@@ -117,7 +114,7 @@ class ServiceNeedController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: ServiceNeedId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PlacementServiceNeedDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.ServiceNeed.DELETE, id)
 
@@ -126,8 +123,6 @@ class ServiceNeedController(
             tx.deleteServiceNeed(id)
             notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
         }
-
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/service-needs/options")
@@ -136,7 +131,7 @@ class ServiceNeedController(
         user: AuthenticatedUser
     ): List<ServiceNeedOption> {
         Audit.ServiceNeedOptionsRead.log()
-        user.requireAnyEmployee()
+        accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_NEED_OPTIONS)
 
         return db.read { it.getServiceNeedOptions() }
     }

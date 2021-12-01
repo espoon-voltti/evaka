@@ -305,7 +305,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun postServiceNeed(request: ServiceNeedController.ServiceNeedCreateRequest, expectedStatus: Int = 204) {
+    private fun postServiceNeed(request: ServiceNeedController.ServiceNeedCreateRequest, expectedStatus: Int = 200) {
         val (_, res, _) = http.post("/service-needs")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(unitSupervisor)
@@ -323,7 +323,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         return result.get().first { it.id == placementId }.serviceNeeds
     }
 
-    private fun putServiceNeed(id: ServiceNeedId, request: ServiceNeedController.ServiceNeedUpdateRequest, expectedStatus: Int = 204) {
+    private fun putServiceNeed(id: ServiceNeedId, request: ServiceNeedController.ServiceNeedUpdateRequest, expectedStatus: Int = 200) {
         val (_, res, _) = http.put("/service-needs/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(unitSupervisor)
@@ -337,6 +337,6 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             .asUser(unitSupervisor)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
     }
 }
