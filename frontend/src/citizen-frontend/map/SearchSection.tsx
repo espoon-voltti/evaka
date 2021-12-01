@@ -192,14 +192,14 @@ export default React.memo(function SearchSection({
         </>
       )}
 
-      <Gap size="s" />
-      <Centered>
-        <InlineButton
-          onClick={() => setShowMoreFilters(!showMoreFilters)}
-          text={showMoreFilters ? t.map.showLessFilters : t.map.showMoreFilters}
-          icon={showMoreFilters ? faAngleUp : faAngleDown}
-        />
-      </Centered>
+      <Gap size="m" />
+
+      <InlineButton
+        onClick={() => setShowMoreFilters(!showMoreFilters)}
+        text={showMoreFilters ? t.map.showLessFilters : t.map.showMoreFilters}
+        icon={showMoreFilters ? faAngleUp : faAngleDown}
+        iconRight
+      />
 
       <div className="mobile-tabs">
         <HorizontalLine />
@@ -244,12 +244,6 @@ const MobileTabs = styled.div`
   .inactive {
     color: ${colors.greyscale.medium} !important;
   }
-`
-
-const Centered = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
 `
 
 const PrivateUnitInfo = styled.span`
