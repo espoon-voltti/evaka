@@ -200,10 +200,6 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 
-  .mobile-tabs {
-    display: none;
-  }
-
   @media (max-width: ${mapViewBreakpoint}) {
     width: 100%;
   }
@@ -214,14 +210,4 @@ const Area = styled(ContentArea)`
   box-sizing: border-box;
   width: 100%;
   padding-right: 20px;
-
-  .mobile-tabs {
-    display: none;
-  }
-
-  @media (max-width: ${mapViewBreakpoint}) {
-    .mobile-tabs {
-      display: block !important;
-    }
-  }
 `

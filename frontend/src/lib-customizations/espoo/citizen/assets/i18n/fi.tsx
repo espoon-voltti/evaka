@@ -173,7 +173,7 @@ export default {
     showMore: 'Näytä lisää hakutuloksia',
     mobileTabs: {
       map: 'Kartta',
-      list: 'Lista yksiköistä'
+      list: 'Yksiköt'
     },
     serviceVoucherLink:
       'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',

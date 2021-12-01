@@ -174,7 +174,7 @@ const sv: Translations = {
     showMore: 'Visa fler sökresultat',
     mobileTabs: {
       map: 'Karta',
-      list: 'Lista på enheter'
+      list: 'Enheter'
     },
     serviceVoucherLink:
       'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',

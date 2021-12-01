@@ -9,7 +9,6 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -20,15 +19,14 @@ import { fontWeights, H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
-import { faAngleDown, faAngleUp, faList, fasMapMarkerAlt } from 'lib-icons'
+import { faAngleDown, faAngleUp } from 'lib-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import SearchInput from '../map/SearchInput'
-import { mapViewBreakpoint, MobileMode } from './const'
 import { CareTypeOption, MapAddress, ProviderTypeOption } from './MapView'
 
-type Props = {
+interface Props {
   allUnits: Result<PublicUnit[]>
   careType: CareTypeOption
   setCareType: (c: CareTypeOption) => void
@@ -38,8 +36,6 @@ type Props = {
   setProviderTypes: (val: ProviderTypeOption[]) => void
   shiftCare: boolean
   setShiftCare: (val: boolean) => void
-  mobileMode: MobileMode
-  setMobileMode: (mode: MobileMode) => void
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
   setSelectedUnit: (u: PublicUnit | null) => void
@@ -55,8 +51,6 @@ export default React.memo(function SearchSection({
   setProviderTypes,
   shiftCare,
   setShiftCare,
-  mobileMode,
-  setMobileMode,
   selectedAddress,
   setSelectedAddress,
   setSelectedUnit
@@ -200,24 +194,6 @@ export default React.memo(function SearchSection({
         icon={showMoreFilters ? faAngleUp : faAngleDown}
         iconRight
       />
-
-      <div className="mobile-tabs">
-        <HorizontalLine />
-        <MobileTabs>
-          <InlineButton
-            onClick={() => setMobileMode('map')}
-            text={t.map.mobileTabs.map}
-            icon={fasMapMarkerAlt}
-            className={mobileMode !== 'map' ? 'inactive' : undefined}
-          />
-          <InlineButton
-            onClick={() => setMobileMode('list')}
-            text={t.map.mobileTabs.list}
-            icon={faList}
-            className={mobileMode !== 'list' ? 'inactive' : undefined}
-          />
-        </MobileTabs>
-      </div>
     </Wrapper>
   )
 })
@@ -226,24 +202,6 @@ const Wrapper = styled(ContentArea)`
   box-sizing: border-box;
   width: 100%;
   padding-right: 20px;
-
-  .mobile-tabs {
-    display: none;
-  }
-  @media (max-width: ${mapViewBreakpoint}) {
-    .mobile-tabs {
-      display: block !important;
-    }
-  }
-`
-
-const MobileTabs = styled.div`
-  display: flex;
-  justify-content: space-evenly;
-
-  .inactive {
-    color: ${colors.greyscale.medium} !important;
-  }
 `
 
 const PrivateUnitInfo = styled.span`

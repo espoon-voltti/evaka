@@ -174,7 +174,7 @@ const en: Translations = {
     showMore: 'Show more results',
     mobileTabs: {
       map: 'Map',
-      list: 'List of units'
+      list: 'Units'
     },
     serviceVoucherLink:
       'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
