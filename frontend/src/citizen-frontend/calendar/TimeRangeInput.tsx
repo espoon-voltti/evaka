@@ -36,10 +36,12 @@ export function validateTimeRange({
 
 export default React.memo(function TimeRangeInput({
   value,
-  onChange
+  onChange,
+  'data-qa': dataQa
 }: {
   value: TimeRange
   onChange: (field: 'startTime' | 'endTime') => (value: string) => void
+  'data-qa'?: string
 }) {
   const i18n = useTranslation()
   const { startTime, endTime, errors } = value
@@ -56,6 +58,7 @@ export default React.memo(function TimeRangeInput({
         onChange={onChangeStart}
         info={errorToInputInfo(errors.startTime, i18n.validationErrors)}
         placeholder={i18n.calendar.reservationModal.start}
+        data-qa={dataQa ? `${dataQa}-start` : undefined}
       />
       <span>–</span>
       <TimeInput
@@ -63,6 +66,7 @@ export default React.memo(function TimeRangeInput({
         onChange={onChangeEnd}
         info={errorToInputInfo(errors.endTime, i18n.validationErrors)}
         placeholder={i18n.calendar.reservationModal.end}
+        data-qa={dataQa ? `${dataQa}-end` : undefined}
       />
     </>
   )

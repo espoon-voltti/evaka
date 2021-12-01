@@ -2,13 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import {
   faCheck,
@@ -155,7 +149,7 @@ export default React.memo(function DayView({
   )
 
   return (
-    <CalendarModal close={navigate(close)}>
+    <CalendarModal close={navigate(close)} data-qa="calendar-dayview">
       <Content highlight={date.isEqual(LocalDate.today())}>
         <DayPicker>
           <IconButton
@@ -183,6 +177,7 @@ export default React.memo(function DayView({
                 onClick={save}
                 text={i18n.common.save}
                 iconRight
+                data-qa="save"
               />
             ) : (
               <InlineButton
@@ -190,6 +185,7 @@ export default React.memo(function DayView({
                 onClick={startEditing}
                 text={i18n.common.edit}
                 iconRight
+                data-qa="edit"
               />
             ))}
         </ReservationTitle>
@@ -202,9 +198,9 @@ export default React.memo(function DayView({
               childWithReservation
 
             return (
-              <Fragment key={child.id}>
+              <div key={child.id} data-qa={`reservations-of-${child.id}`}>
                 {childIndex !== 0 ? <Separator /> : null}
-                <H3 noMargin>
+                <H3 noMargin data-qa="child-name">
                   {child.preferredName || child.firstName.split(' ')[0]}
                 </H3>
                 <Gap size="s" />
@@ -229,7 +225,7 @@ export default React.memo(function DayView({
                   <Label>{i18n.calendar.realized}</Label>
                   <span>–</span>
                 </Grid>
-              </Fragment>
+              </div>
             )
           }
         )}
@@ -479,6 +475,7 @@ const EditReservation = React.memo(function EditReservation({
         <TimeRangeInput
           value={childState.reservations[0]}
           onChange={onChangeFirst}
+          data-qa="first-reservation"
         />
         {canAddSecondReservation && (
           <IconButton
@@ -492,6 +489,7 @@ const EditReservation = React.memo(function EditReservation({
           <TimeRangeInput
             value={childState.reservations[1]}
             onChange={onChangeSecond}
+            data-qa="second-reservation"
           />
           <IconButton
             icon={faTrash}
@@ -527,14 +525,16 @@ const Reservations = React.memo(function Reservations({
   )
 
   return hasReservations ? (
-    <span>
+    <span data-qa="reservations">
       {reservations
         .map(({ startTime, endTime }) => `${startTime} – ${endTime}`)
         .filter((res) => res)
         .join(', ')}
     </span>
   ) : (
-    <NoReservation>{i18n.calendar.noReservation}</NoReservation>
+    <NoReservation data-qa="no-reservations">
+      {i18n.calendar.noReservation}
+    </NoReservation>
   )
 })
 

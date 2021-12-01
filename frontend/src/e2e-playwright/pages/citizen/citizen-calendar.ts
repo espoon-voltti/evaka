@@ -6,7 +6,8 @@ import { waitUntilEqual } from 'e2e-playwright/utils'
 import { CheckboxLocator } from 'e2e-playwright/utils/element'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'playwright'
+import { Locator, Page } from 'playwright'
+import { UUID } from 'lib-common/types'
 
 export default class CitizenCalendarPage {
   constructor(
@@ -42,6 +43,11 @@ export default class CitizenCalendarPage {
       await this.page.locator('[data-qa="open-absences-modal"]').click()
     }
     return new AbsencesModal(this.page)
+  }
+
+  async openDayView(date: LocalDate) {
+    await this.#dayCell(date).click()
+    return new DayView(this.page)
   }
 
   async assertReservations(
@@ -137,5 +143,58 @@ class AbsencesModal {
     for (let i = 0; i < n; i++) {
       await this.page.locator('div[data-qa*="child"]').nth(i).click()
     }
+  }
+}
+
+class DayView {
+  constructor(private readonly page: Page) {}
+
+  #root = this.page.locator('[data-qa="calendar-dayview"]')
+  #editButton = this.#root.locator('[data-qa="edit"]')
+
+  #reservationsOfChild(childId: UUID) {
+    return this.#root.locator(`[data-qa="reservations-of-${childId}"]`)
+  }
+
+  async assertNoReservation(childId: UUID) {
+    await this.#reservationsOfChild(childId)
+      .locator(`[data-qa="no-reservations"]`)
+      .waitFor()
+  }
+
+  async assertReservations(childId: UUID, value: string) {
+    const reservations = this.#reservationsOfChild(childId).locator(
+      `[data-qa="reservations"]`
+    )
+    await waitUntilEqual(() => reservations.textContent(), value)
+  }
+
+  async edit() {
+    await this.#editButton.click()
+    return new DayViewEditor(this.#root)
+  }
+}
+
+class DayViewEditor {
+  constructor(private readonly root: Locator) {}
+
+  #saveButton = this.root.locator('[data-qa="save"]')
+
+  #reservationsOfChild(childId: UUID) {
+    return this.root.locator(`[data-qa="reservations-of-${childId}"]`)
+  }
+
+  async fillReservationTimes(
+    childId: UUID,
+    startTime: string,
+    endTime: string
+  ) {
+    const child = this.#reservationsOfChild(childId)
+    await child.locator('[data-qa="first-reservation-start"]').fill(startTime)
+    await child.locator('[data-qa="first-reservation-end"]').fill(endTime)
+  }
+
+  async save() {
+    await this.#saveButton.click()
   }
 }

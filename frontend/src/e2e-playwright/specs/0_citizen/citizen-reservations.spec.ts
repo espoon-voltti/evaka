@@ -164,4 +164,23 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       newReservation
     ])
   })
-}
+
+  test('Citizen creates a reservation from day view', async () => {
+    const reservationDay = LocalDate.today().addDays(14)
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+
+    expect(children.length).toEqual(3)
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertNoReservation(children[1].id)
+    await dayView.assertNoReservation(children[2].id)
+
+    const editor = await dayView.edit()
+    await editor.fillReservationTimes(children[1].id, '08:00', '16:00')
+    await editor.save()
+
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertReservations(children[1].id, '08:00 – 16:00')
+    await dayView.assertNoReservation(children[2].id)
+  })
+})
