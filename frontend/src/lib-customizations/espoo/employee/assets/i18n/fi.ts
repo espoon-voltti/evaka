@@ -26,6 +26,7 @@ export const fi = {
     messages: 'Viestit',
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
+    personalMobileDevices: 'Johtajan eVaka-mobiili',
     employeePinCode: 'PIN-koodin hallinta',
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu 2021',
