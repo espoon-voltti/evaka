@@ -8,12 +8,7 @@ import {
   waitUntilDefined,
   waitUntilTrue
 } from 'e2e-playwright/utils'
-import {
-  Checkbox,
-  Radio,
-  RawElementDEPRECATED,
-  RawTextInput
-} from 'e2e-playwright/utils/element'
+import { Checkbox, CheckboxLocator } from 'e2e-playwright/utils/element'
 import {
   FormInput,
   Section,
@@ -25,54 +20,31 @@ export default class CitizenApplicationsPage {
   constructor(private readonly page: Page) {}
 
   #newApplicationButton = (childId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="new-application-${childId}"]`
-    )
+    this.page.locator(`[data-qa="new-application-${childId}"]`)
   #applicationTypeRadio = (type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB') =>
-    new Radio(this.page, `[data-qa="type-radio-${type}"]`)
-  #createNewApplicationButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="submit"]'
-  )
-  #transferApplicationNotification = new RawElementDEPRECATED(
-    this.page,
+    this.page.locator(`[data-qa="type-radio-${type}"]`)
+  #createNewApplicationButton = this.page.locator('[data-qa="submit"]')
+  #transferApplicationNotification = this.page.locator(
     '[data-qa="transfer-application-notification"]'
   )
-  #duplicateApplicationNotification = new RawElementDEPRECATED(
-    this.page,
+  #duplicateApplicationNotification = this.page.locator(
     '[data-qa="duplicate-application-notification"]'
   )
-  #applicationTitle = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="application-type-title"]'
-  )
+  #applicationTitle = this.page.locator('[data-qa="application-type-title"]')
   #openApplicationButton = (id: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="button-open-application-${id}"]`
-    )
+    this.page.locator(`[data-qa="button-open-application-${id}"]`)
   #cancelApplicationButton = (id: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="button-remove-application-${id}"]`
-    )
+    this.page.locator(`[data-qa="button-remove-application-${id}"]`)
   #childTitle = (childId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="title-applications-child-name-${childId}"]`
-    )
+    this.page.locator(`[data-qa="title-applications-child-name-${childId}"]`)
   #applicationType = (id: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="title-application-type-${id}"]`
-    )
+    this.page.locator(`[data-qa="title-application-type-${id}"]`)
   #applicationUnit = (id: string) =>
-    new RawElementDEPRECATED(this.page, `[data-qa="application-unit-${id}"]`)
+    this.page.locator(`[data-qa="application-unit-${id}"]`)
   #applicationPreferredStartDate = (id: string) =>
-    new RawElementDEPRECATED(this.page, `[data-qa="application-period-${id}"]`)
+    this.page.locator(`[data-qa="application-period-${id}"]`)
   #applicationStatus = (id: string) =>
-    new RawElementDEPRECATED(this.page, `[data-qa="application-status-${id}"]`)
+    this.page.locator(`[data-qa="application-status-${id}"]`)
 
   async createApplication(
     childId: string,
@@ -90,7 +62,7 @@ export default class CitizenApplicationsPage {
         : type === 'CLUB'
         ? 'Kerhohakemus'
         : ''
-    await waitUntilEqual(() => this.#applicationTitle.innerText, title)
+    await waitUntilEqual(() => this.#applicationTitle.innerText(), title)
 
     return new CitizenApplicationEditor(this.page)
   }
@@ -101,7 +73,7 @@ export default class CitizenApplicationsPage {
   ) {
     await this.#newApplicationButton(childId).click()
     await this.#applicationTypeRadio(type).click()
-    await this.#duplicateApplicationNotification.waitUntilVisible()
+    await this.#duplicateApplicationNotification.waitFor()
   }
 
   async assertTransferNotificationIsShown(
@@ -110,7 +82,7 @@ export default class CitizenApplicationsPage {
   ) {
     await this.#newApplicationButton(childId).click()
     await this.#applicationTypeRadio(type).click()
-    await this.#transferApplicationNotification.waitUntilVisible()
+    await this.#transferApplicationNotification.waitFor()
   }
 
   async editApplication(applicationId: string) {
@@ -120,7 +92,7 @@ export default class CitizenApplicationsPage {
   }
 
   async assertChildIsShown(childId: string, childName: string) {
-    await waitUntilEqual(() => this.#childTitle(childId).innerText, childName)
+    await waitUntilEqual(() => this.#childTitle(childId).innerText(), childName)
   }
 
   async assertApplicationIsListed(
@@ -130,14 +102,14 @@ export default class CitizenApplicationsPage {
     preferredStartDate: string,
     status: string
   ) {
-    await waitUntilEqual(() => this.#applicationType(id).innerText, title)
-    await waitUntilEqual(() => this.#applicationUnit(id).innerText, unitName)
+    await waitUntilEqual(() => this.#applicationType(id).innerText(), title)
+    await waitUntilEqual(() => this.#applicationUnit(id).innerText(), unitName)
     await waitUntilEqual(
-      () => this.#applicationPreferredStartDate(id).innerText,
+      () => this.#applicationPreferredStartDate(id).innerText(),
       preferredStartDate
     )
     await waitUntilTrue(async () =>
-      (await this.#applicationStatus(id).innerText)
+      (await this.#applicationStatus(id).innerText())
         .toLowerCase()
         .includes(status.toLowerCase())
     )
@@ -145,46 +117,39 @@ export default class CitizenApplicationsPage {
 
   async cancelApplication(id: string) {
     await this.#cancelApplicationButton(id).click()
-    await new RawElementDEPRECATED(this.page, '[data-qa="modal-okBtn"]').click()
+    await this.page.locator('[data-qa="modal-okBtn"]').click()
   }
 
   async assertApplicationDoesNotExist(id: string) {
-    await this.#applicationType(id).waitUntilHidden()
+    await this.#applicationType(id).waitFor({ state: 'hidden' })
   }
 }
 
 class CitizenApplicationEditor {
   constructor(private readonly page: Page) {}
 
-  #verifyButton = new RawElementDEPRECATED(this.page, '[data-qa="verify-btn"]')
-  #verifyCheckbox = new Checkbox(this.page, '[data-qa="verify-checkbox"]')
-  #sendButton = new RawElementDEPRECATED(this.page, '[data-qa="send-btn"]')
-  #applicationSentModal = new RawElementDEPRECATED(
-    this.page,
+  #verifyButton = this.page.locator('[data-qa="verify-btn"]')
+  #verifyCheckbox = new CheckboxLocator(
+    this.page.locator('[data-qa="verify-checkbox"]')
+  )
+  #sendButton = this.page.locator('[data-qa="send-btn"]')
+  #applicationSentModal = this.page.locator(
     '[data-qa="info-message-application-sent"]'
   )
-  #errorsTitle = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="application-has-errors-title"]'
-  )
-  #section = (name: string) =>
-    new RawElementDEPRECATED(this.page, `[data-qa="${name}-section"]`)
+  #errorsTitle = this.page.locator('[data-qa="application-has-errors-title"]')
+  #section = (name: string) => this.page.locator(`[data-qa="${name}-section"]`)
   #sectionHeader = (name: string) =>
-    new RawElementDEPRECATED(this.page, `[data-qa="${name}-section-header"]`)
-  #preferredUnitsInput = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="preferredUnits-input"]'
-  ).findInput('input')
-  #preferredStartDateInput = new RawTextInput(
-    this.page,
+    this.page.locator(`[data-qa="${name}-section-header"]`)
+  #preferredUnitsInput = this.page
+    .locator('[data-qa="preferredUnits-input"]')
+    .locator('input')
+  #preferredStartDateInput = this.page.locator(
     '[data-qa="preferredStartDate-input"]'
   )
-  #preferredStartDateWarning = new RawElementDEPRECATED(
-    this.page,
+  #preferredStartDateWarning = this.page.locator(
     '[data-qa="daycare-processing-time-warning"]'
   )
-  #preferredStartDateInfo = new RawElementDEPRECATED(
-    this.page,
+  #preferredStartDateInfo = this.page.locator(
     '[data-qa="preferredStartDate-input-info"]'
   )
 
@@ -201,12 +166,12 @@ class CitizenApplicationEditor {
     await this.goToVerification()
     await this.#verifyCheckbox.click()
     await this.#sendButton.click()
-    await this.#applicationSentModal.waitUntilVisible()
-    await this.#applicationSentModal.find('[data-qa="modal-okBtn"]').click()
+    await this.#applicationSentModal.waitFor()
+    await this.#applicationSentModal.locator('[data-qa="modal-okBtn"]').click()
   }
 
   async assertErrorsExist() {
-    await this.#errorsTitle.waitUntilVisible()
+    await this.#errorsTitle.waitFor()
   }
 
   async openSection(section: string) {
@@ -224,10 +189,9 @@ class CitizenApplicationEditor {
   }
 
   async selectBooleanRadio(field: string, value: boolean) {
-    await new Radio(
-      this.page,
-      `[data-qa="${field}-input-${String(value)}"]`
-    ).click()
+    await this.page
+      .locator(`[data-qa="${field}-input-${String(value)}"]`)
+      .click()
   }
 
   async setCheckbox(field: string, value: boolean) {
@@ -239,11 +203,12 @@ class CitizenApplicationEditor {
   }
 
   async fillInput(field: string, value: string, clearFirst = true) {
-    const element = new RawTextInput(this.page, `[data-qa="${field}-input"]`)
+    const element = this.page.locator(`[data-qa="${field}-input"]`)
     if (clearFirst) {
-      await element.clear()
+      await element.fill(value)
+    } else {
+      await element.type(value)
     }
-    await element.type(value)
   }
 
   async fillData(data: FormInput) {
@@ -271,20 +236,18 @@ class CitizenApplicationEditor {
             await this.setCheckbox(field, value)
             await new Checkbox(this.page, '[data-qa="other-sibling"]').click()
           } else if (field === 'otherGuardianAgreementStatus') {
-            await new Radio(
-              this.page,
-              `[data-qa="otherGuardianAgreementStatus-${String(value)}"]`
-            ).click()
+            await this.page
+              .locator(
+                `[data-qa="otherGuardianAgreementStatus-${String(value)}"]`
+              )
+              .click()
           } else if (
             data.contactInfo?.otherChildren &&
             field === 'otherChildren'
           ) {
             for (let i = 0; i < data.contactInfo?.otherChildren?.length; i++) {
               if (i > 0) {
-                await new RawElementDEPRECATED(
-                  this.page,
-                  '[data-qa="add-other-child"]'
-                ).click()
+                await this.page.locator('[data-qa="add-other-child"]').click()
               }
               await this.fillInput(
                 `otherChildren[${i}].firstName`,
@@ -318,30 +281,32 @@ class CitizenApplicationEditor {
   async assertChildAddress(fullAddress: string) {
     await this.openSection('contactInfo')
     await waitUntilEqual(
-      () =>
-        new RawElementDEPRECATED(this.page, '[data-qa="child-street-address"]')
-          .innerText,
+      () => this.page.locator('[data-qa="child-street-address"]').innerText(),
       fullAddress
     )
   }
 
   async setPreferredStartDate(formattedDate: string) {
     await this.openSection('serviceNeed')
-    await this.#preferredStartDateInput.clear()
-    await this.#preferredStartDateInput.type(formattedDate)
+    await this.#preferredStartDateInput.fill(formattedDate)
     await this.page.keyboard.press('Tab')
   }
 
   async assertPreferredStartDateWarningIsShown(visible: boolean) {
-    await waitUntilEqual(() => this.#preferredStartDateWarning.visible, visible)
+    await this.#preferredStartDateWarning.waitFor({
+      state: visible ? 'visible' : 'hidden'
+    })
   }
 
   async assertPreferredStartDateInfo(infoText: string | undefined) {
     if (infoText === undefined) {
-      await this.#preferredStartDateInfo.waitUntilHidden()
+      await this.#preferredStartDateInfo.waitFor({ state: 'hidden' })
       return
     }
-    await waitUntilEqual(() => this.#preferredStartDateInfo.innerText, infoText)
+    await waitUntilEqual(
+      () => this.#preferredStartDateInfo.innerText(),
+      infoText
+    )
   }
 
   async markApplicationUrgentAndAddAttachment(attachmentFilePath: string) {
@@ -356,10 +321,11 @@ class CitizenApplicationEditor {
   async assertAttachmentUploaded(attachmentFileName: string) {
     await waitUntilTrue(async () =>
       (
-        await new RawElementDEPRECATED(
-          this.page,
-          '[data-qa="uploaded-files"] [data-qa="file-download-button"]'
-        ).innerText
+        await this.page
+          .locator(
+            '[data-qa="uploaded-files"] [data-qa="file-download-button"]'
+          )
+          .innerText()
       ).includes(attachmentFileName)
     )
   }
@@ -367,10 +333,9 @@ class CitizenApplicationEditor {
   async assertUrgencyFileDownload(fileName: string) {
     const [download] = await Promise.all([
       this.page.waitForEvent('download'),
-      new RawElementDEPRECATED(
-        this.page,
-        '[data-qa="service-need-urgency-attachment-download"]'
-      ).click()
+      this.page
+        .locator('[data-qa="service-need-urgency-attachment-download"]')
+        .click()
     ])
     expect(download.suggestedFilename()).toEqual(fileName)
   }
