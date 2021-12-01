@@ -33,60 +33,55 @@ export async function childArrivesPOST(
   unitId: string,
   childId: string,
   time: string
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<void>> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
+    .post<JsonOf<void>>(
       `/attendances/units/${unitId}/children/${childId}/arrival`,
       {
         arrived: time
       }
     )
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
-// TODO: update context with the response!
 export async function childDeparts(
   unitId: string,
   childId: string,
   time: string
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<void>> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
+    .post<JsonOf<void>>(
       `/attendances/units/${unitId}/children/${childId}/departure`,
       {
         departed: time
       }
     )
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
 export async function returnToComing(
   unitId: string,
   childId: string
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<void>> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
+    .post<JsonOf<void>>(
       `/attendances/units/${unitId}/children/${childId}/return-to-coming`
     )
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
 export async function returnToPresent(
   unitId: string,
   childId: string
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<void>> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
+    .post<JsonOf<void>>(
       `/attendances/units/${unitId}/children/${childId}/return-to-present`
     )
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
@@ -94,16 +89,15 @@ export async function postFullDayAbsence(
   unitId: string,
   childId: string,
   absenceType: AbsenceType
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<void>> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
+    .post<JsonOf<void>>(
       `/attendances/units/${unitId}/children/${childId}/full-day-absence`,
       {
         absenceType
       }
     )
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
@@ -120,9 +114,9 @@ export async function postAbsenceRange(
   absenceType: AbsenceType,
   startDate: LocalDate,
   endDate: LocalDate
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<void>> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
+    .post<JsonOf<void>>(
       `/attendances/units/${unitId}/children/${childId}/absence-range`,
       {
         absenceType,
@@ -130,8 +124,7 @@ export async function postAbsenceRange(
         endDate
       }
     )
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
@@ -163,7 +156,7 @@ export async function postDeparture(
   childId: string,
   absenceType: AbsenceType,
   departed: string
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<void>> {
   return client
     .post<JsonOf<AttendanceResponse>>(
       `/attendances/units/${unitId}/children/${childId}/departure`,
@@ -172,8 +165,7 @@ export async function postDeparture(
         absenceType
       }
     )
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

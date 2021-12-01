@@ -90,11 +90,11 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: ArrivalRequest
-    ): AttendanceResponse {
+    ) {
         Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.transaction { tx ->
+        db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
 
             tx.deleteAbsencesByDate(childId, dateNow())
@@ -108,8 +108,6 @@ class ChildAttendanceController(
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
-
-            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }
     }
 
@@ -119,11 +117,11 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
-    ): AttendanceResponse {
+    ) {
         Audit.ChildAttendancesReturnToComing.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.transaction { tx ->
+        db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
             tx.deleteAbsencesByDate(childId, dateNow())
 
@@ -139,8 +137,6 @@ class ChildAttendanceController(
                     throw Conflict("Already departed, did you mean return-to-present?")
                 }
             }
-
-            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }
     }
 
@@ -188,11 +184,11 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: DepartureRequest
-    ): AttendanceResponse {
+    ) {
         Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.transaction { tx ->
+        db.transaction { tx ->
             val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
             val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
@@ -234,8 +230,6 @@ class ChildAttendanceController(
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
-
-            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }
     }
 
@@ -245,11 +239,11 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
-    ): AttendanceResponse {
+    ) {
         Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.transaction { tx ->
+        db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
             tx.deleteAbsencesByDate(childId, dateNow())
 
@@ -264,8 +258,6 @@ class ChildAttendanceController(
                     throw mapPSQLException(e)
                 }
             }
-
-            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }
     }
 
@@ -280,11 +272,11 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: FullDayAbsenceRequest
-    ): AttendanceResponse {
+    ) {
         Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.transaction { tx ->
+        db.transaction { tx ->
             val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
             val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
@@ -300,8 +292,6 @@ class ChildAttendanceController(
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
-
-            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }
     }
 
@@ -318,11 +308,11 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: AbsenceRangeRequest
-    ): AttendanceResponse {
+    ) {
         Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.transaction { tx ->
+        db.transaction { tx ->
             val typeOnDates = tx.fetchChildPlacementTypeDates(childId, unitId, body.startDate, body.endDate)
 
             try {
@@ -335,8 +325,6 @@ class ChildAttendanceController(
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
-
-            tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
         }
     }
 
