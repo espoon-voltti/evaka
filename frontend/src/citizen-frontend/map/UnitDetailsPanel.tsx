@@ -209,5 +209,4 @@ const Area = styled(ContentArea)`
   flex-grow: 1;
   box-sizing: border-box;
   width: 100%;
-  padding-right: 20px;
 `

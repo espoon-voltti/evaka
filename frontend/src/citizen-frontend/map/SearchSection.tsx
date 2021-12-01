@@ -201,7 +201,6 @@ export default React.memo(function SearchSection({
 const Wrapper = styled(ContentArea)`
   box-sizing: border-box;
   width: 100%;
-  padding-right: 20px;
 `
 
 const PrivateUnitInfo = styled.span`

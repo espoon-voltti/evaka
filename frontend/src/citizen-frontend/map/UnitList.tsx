@@ -8,7 +8,7 @@ import _ from 'lodash'
 import { Result } from 'lib-common/api'
 import colors from 'lib-customizations/common'
 import { fontWeights, H3, H4 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import { ContentArea } from 'lib-components/layout/Container'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -136,7 +136,6 @@ const Wrapper = styled(ContentArea)`
   box-sizing: border-box;
   width: 100%;
   flex-grow: 1;
-  padding-right: ${defaultMargins.s};
 `
 
 const Info = styled.div`
