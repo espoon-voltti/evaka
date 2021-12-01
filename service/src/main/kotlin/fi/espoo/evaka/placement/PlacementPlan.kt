@@ -44,7 +44,8 @@ enum class PlacementPlanConfirmationStatus {
     PENDING,
     ACCEPTED,
     REJECTED,
-    REJECTED_NOT_CONFIRMED
+    REJECTED_NOT_CONFIRMED,
+    REJECTED_BY_CITIZEN
 }
 
 enum class PlacementPlanRejectReason {

@@ -47,6 +47,7 @@ export const Th = styled.th<ThProps>`
 export const Td = styled.td<{
   align?: 'right' | 'left'
   verticalAlign?: 'top' | 'middle' | 'bottom'
+  color?: string
 }>`
   line-height: 1.3em;
   border-style: solid;
@@ -55,6 +56,7 @@ export const Td = styled.td<{
   padding: ${defaultMargins.s};
   vertical-align: ${(p) => p.verticalAlign ?? 'top'};
   text-align: ${(p) => p.align ?? 'left'};
+  ${(p) => (p.color ? `color: ${p.color};` : '')}
 `
 
 interface TrProps {

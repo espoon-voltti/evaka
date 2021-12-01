@@ -55,6 +55,7 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
+import fi.espoo.evaka.placement.markPlacementPlanCitizenRejected
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
@@ -523,6 +524,7 @@ class ApplicationStateService(
             throw BadRequest("Decision is not pending")
         }
 
+        tx.markPlacementPlanCitizenRejected(decisionId)
         tx.markDecisionRejected(user, decisionId)
 
         val alsoReject = if (decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)) {

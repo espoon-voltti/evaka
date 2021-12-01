@@ -1433,7 +1433,8 @@ export const fi = {
       infoTitle: 'Hyväksytyksi / hylätyksi merkitseminen',
       infoText:
         'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.',
-      describeOtherReason: 'Kirjoita perustelu'
+      describeOtherReason: 'Kirjoita perustelu',
+      citizenHasRejectedPlacement: 'Paikka hylätty'
     },
     applications: {
       title: 'Hakemukset',

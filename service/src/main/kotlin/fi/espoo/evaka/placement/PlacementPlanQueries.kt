@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -148,7 +149,17 @@ SELECT
 FROM placement_plan pp
 LEFT OUTER JOIN application a ON pp.application_id = a.id
 LEFT OUTER JOIN person p ON a.child_id = p.id
-WHERE unit_id = :unitId AND a.status = ANY(:statuses::application_status_type[]) AND deleted = false AND pp.unit_confirmation_status != 'REJECTED'::confirmation_status
+WHERE unit_id = :unitId AND (
+                                (
+                                    a.status = ANY(:statuses::application_status_type[])
+                                    AND deleted = false
+                                )
+                                OR (
+                                    pp.unit_confirmation_status = 'REJECTED_BY_CITIZEN'::confirmation_status
+                                    AND rejected_by_citizen_date > now() - interval '2 week'
+                                )
+                                AND pp.unit_confirmation_status != 'REJECTED'::confirmation_status
+                             )
     ${if (to != null) " AND (start_date <= :to OR preschool_daycare_start_date <= :to)" else ""}
     ${if (from != null) " AND (end_date >= :from OR preschool_daycare_end_date >= :from)" else ""} 
     """
@@ -231,3 +242,10 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
         .toList()
         .singleOrNull()
 }
+fun Database.Transaction.markPlacementPlanCitizenRejected(decisionId: DecisionId) = createUpdate(
+    """
+    UPDATE placement_plan
+    SET unit_confirmation_status = 'REJECTED_BY_CITIZEN'::confirmation_status, rejected_by_citizen_date = NOW()
+    WHERE application_id = (SELECT application_id FROM decision WHERE id = :decisionId)
+        """
+).bind("decisionId", decisionId).execute()
