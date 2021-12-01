@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 import { faChild, faComments, faPen } from 'lib-icons'
@@ -11,7 +11,8 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Child } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../../state/i18n'
-import featureFlags from 'lib-customizations/espoo/featureFlags'
+import { UnitContext } from '../../../state/unit'
+import { renderResult } from '../../async-rendering'
 
 interface Props {
   unitId: UUID
@@ -28,9 +29,11 @@ export default React.memo(function ChildButtons({
 }: Props) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
+
+  const { unitInfoResponse } = useContext(UnitContext)
   const noteFound =
     child.dailyNote !== null || child.stickyNotes.length > 0 || hasGroupNote
-  return (
+  return renderResult(unitInfoResponse, (unit) => (
     <IconWrapper>
       <FixedSpaceRow
         spacing={'52px'}
@@ -38,7 +41,7 @@ export default React.memo(function ChildButtons({
         maxWidth={'56px'}
         justifyContent={'center'}
       >
-        {featureFlags.experimental?.mobileMessages ? (
+        {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
             to={`/units/${unitId}/groups/${groupId}/messages/${child.id}/new-message`}
             data-qa={'link-new-message'}
@@ -79,7 +82,7 @@ export default React.memo(function ChildButtons({
         </Link>
       </FixedSpaceRow>
     </IconWrapper>
-  )
+  ))
 })
 
 const IconWrapper = styled.div`

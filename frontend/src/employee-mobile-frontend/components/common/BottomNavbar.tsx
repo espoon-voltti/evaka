@@ -9,12 +9,14 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { featureFlags } from 'lib-customizations/employee'
+import { UnitContext } from '../../state/unit'
+import { renderResult } from '../async-rendering'
 
 export type NavItem = 'child' | 'staff' | 'messages'
 
@@ -89,7 +91,9 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
     groupId: UUID | 'all'
   }>()
 
-  return (
+  const { unitInfoResponse } = useContext(UnitContext)
+
+  return renderResult(unitInfoResponse, (unit) => (
     <>
       {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
       <ReserveSpace />
@@ -124,7 +128,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
           </BottomText>
         </Button>
-        {featureFlags.experimental?.mobileMessages ? (
+        {unit.features.includes('MOBILE_MESSAGING') ? (
           <Button data-qa="bottomnav-messages">
             <BottomText
               text={i18n.common.messages}
@@ -145,5 +149,5 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
         )}
       </Root>
     </>
-  )
+  ))
 }
