@@ -289,7 +289,7 @@ WHERE employee_id = :userId
 
     fun <A : Action.ScopedAction<I>, I> requirePermissionFor(user: AuthenticatedUser, action: A, id: I) {
         if (!hasPermissionFor(user, action, id)) {
-            throw Forbidden("Permission denied")
+            throw Forbidden()
         }
     }
 
@@ -583,9 +583,9 @@ WHERE employee_id = :userId
                             )
                         }
                     }
-                    if (!hasPermission) throw Forbidden("Permission denied")
+                    if (!hasPermission) throw Forbidden()
                 }
-                else -> throw Forbidden("Permission denied")
+                else -> throw Forbidden()
             }
             is AuthenticatedUser.Employee -> when (action) {
                 Action.PedagogicalDocument.CREATE_ATTACHMENT,
@@ -599,7 +599,7 @@ WHERE employee_id = :userId
                         mapping = permittedRoleActions::pedagogicalDocumentActions
                     )
             }
-            else -> throw Forbidden("Permission denied")
+            else -> throw Forbidden()
         }
     }
 
@@ -825,7 +825,7 @@ WHERE employee_id = :userId
             }
         }
 
-        throw Forbidden("Permission denied")
+        throw Forbidden()
     }
 
     private inline fun <reified A> hasPermissionThroughRoles(
@@ -861,7 +861,7 @@ WHERE employee_id = :userId
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
         if (!hasPermissionUsingAllRoles(user, action, mapping)) {
-            throw Forbidden("Permission denied")
+            throw Forbidden()
         }
     }
 

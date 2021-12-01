@@ -55,7 +55,7 @@ class PairingsController(
                 acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
             is PostPairingReq.Employee -> {
                 user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
-                if (EmployeeId(user.id) != body.employeeId) throw Forbidden("Permission denied")
+                if (EmployeeId(user.id) != body.employeeId) throw Forbidden()
             }
         }
 
@@ -122,7 +122,7 @@ class PairingsController(
                 unitId != null -> acl.getRolesForPairing(user, id)
                     .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
                 employeeId != null ->
-                    if (EmployeeId(user.id) != employeeId) throw Forbidden("Permission denied")
+                    if (EmployeeId(user.id) != employeeId) throw Forbidden()
                 else -> error("Pairing unitId and employeeId were null")
             }
         } catch (e: Forbidden) {

@@ -240,7 +240,7 @@ class MessageController(
 
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
         when (user) {
-            is AuthenticatedUser.MobileDevice -> if (user.employeeId == null) throw Forbidden("Permission denied")
+            is AuthenticatedUser.MobileDevice -> if (user.employeeId == null) throw Forbidden()
             else -> user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         }
     }

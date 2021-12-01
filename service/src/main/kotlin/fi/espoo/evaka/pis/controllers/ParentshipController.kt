@@ -88,7 +88,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         accessControl.requirePermissionFor(user, Action.Parentship.READ, id)
 
         return db.read { it.getParentship(id) }
-            ?: throw NotFound("Not found")
+            ?: throw NotFound()
     }
 
     @PutMapping("/{id}")

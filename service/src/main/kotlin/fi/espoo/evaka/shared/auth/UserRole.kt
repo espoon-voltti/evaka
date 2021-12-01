@@ -34,7 +34,7 @@ interface RoleContainer {
     fun hasOneOfRoles(vararg requiredRoles: UserRole) = requiredRoles.any { roles.contains(it) }
 
     fun requireOneOfRoles(vararg roles: UserRole) {
-        if (!hasOneOfRoles(*roles)) throw Forbidden("Permission denied")
+        if (!hasOneOfRoles(*roles)) throw Forbidden()
     }
 
     fun requireAnyEmployee() = requireOneOfRoles(
