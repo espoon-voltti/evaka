@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.dateNow
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
@@ -46,7 +47,8 @@ data class UnitInfo(
     val id: DaycareId,
     val name: String,
     val groups: List<GroupInfo>,
-    val staff: List<Staff>
+    val staff: List<Staff>,
+    val features: List<PilotFeature>
 )
 
 data class GroupInfo(
@@ -66,12 +68,13 @@ data class Staff(
 fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     data class UnitBasics(
         val id: DaycareId,
-        val name: String
+        val name: String,
+        val features: List<PilotFeature>
     )
     // language=sql
     val unitSql =
         """
-        SELECT u.id, u.name
+        SELECT u.id, u.name, u.enabled_pilot_features AS features
         FROM daycare u
         WHERE u.id = :unitId
         """.trimIndent()
@@ -126,6 +129,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         id = unit.id,
         name = unit.name,
         groups = groups,
-        staff = staff
+        staff = staff,
+        features = unit.features
     )
 }
