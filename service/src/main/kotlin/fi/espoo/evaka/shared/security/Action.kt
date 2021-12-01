@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -346,6 +347,16 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+    enum class Partnership(private val roles: EnumSet<UserRole>) : ScopedAction<PartnershipId> {
+        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+        READ(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+        RETRY(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class PedagogicalDocument(private val roles: EnumSet<UserRole>) : ScopedAction<PedagogicalDocumentId> {
         CREATE_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
         DELETE(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
@@ -359,6 +370,7 @@ sealed interface Action {
     enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
         ADD_SSN(SERVICE_WORKER, FINANCE_ADMIN),
         CREATE_PARENTSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+        CREATE_PARTNERSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         DISABLE_SSN(),
         READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
@@ -367,6 +379,7 @@ sealed interface Action {
         READ_INVOICE_ADDRESS(FINANCE_ADMIN),
         READ_OPH_OID(DIRECTOR, UNIT_SUPERVISOR),
         READ_PARENTSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+        READ_PARTNERSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         UPDATE(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR),
         UPDATE_INVOICE_ADDRESS(FINANCE_ADMIN),
         UPDATE_OPH_OID(DIRECTOR, UNIT_SUPERVISOR);

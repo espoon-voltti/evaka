@@ -35,23 +35,17 @@ export async function addPartnership(
   partnerId: UUID,
   startDate: LocalDate,
   endDate: LocalDate | null
-): Promise<Result<Partnership>> {
+): Promise<Result<void>> {
   const body = {
-    personIds: [personId, partnerId],
+    person1Id: personId,
+    person2Id: partnerId,
     startDate,
     endDate
   }
 
   return client
     .post<JsonOf<Partnership>>('/partnerships', body)
-    .then((res) => res.data)
-    .then((data) => ({
-      ...data,
-      startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseNullableIso(data.endDate),
-      partners: data.partners.map(deserializePersonJSON)
-    }))
-    .then((v) => Success.of(v))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
@@ -59,35 +53,28 @@ export async function updatePartnership(
   id: UUID,
   startDate: LocalDate,
   endDate: LocalDate | null
-): Promise<Result<Partnership>> {
+): Promise<Result<void>> {
   const body = {
     startDate,
     endDate
   }
 
   return client
-    .put<JsonOf<Partnership>>(`/partnerships/${id}`, body)
-    .then((res) => res.data)
-    .then((data) => ({
-      ...data,
-      startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseNullableIso(data.endDate),
-      partners: data.partners.map(deserializePersonJSON)
-    }))
-    .then((v) => Success.of(v))
+    .put(`/partnerships/${id}`, body)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
-export async function retryPartnership(id: UUID): Promise<Result<null>> {
+export async function retryPartnership(id: UUID): Promise<Result<void>> {
   return client
     .put(`/partnerships/${id}/retry`)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
-export async function removePartnership(id: UUID): Promise<Result<null>> {
+export async function removePartnership(id: UUID): Promise<Result<void>> {
   return client
     .delete(`/partnerships/${id}`, {})
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

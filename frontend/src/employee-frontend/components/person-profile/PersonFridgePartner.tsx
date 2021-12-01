@@ -5,7 +5,6 @@
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
-import { Result } from 'lib-common/api'
 import { PersonContext } from '../../state/person'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
@@ -84,22 +83,19 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              removePartnership(selectedPartnershipId).then(
-                (res: Result<null>) => {
-                  clearUiMode()
-                  if (res.isFailure) {
-                    setErrorMessage({
-                      type: 'error',
-                      title:
-                        i18n.personProfile.fridgePartner.error.remove.title,
-                      text: i18n.common.tryAgain,
-                      resolveLabel: i18n.common.ok
-                    })
-                  } else {
-                    reload()
-                  }
+              removePartnership(selectedPartnershipId).then((res) => {
+                clearUiMode()
+                if (res.isFailure) {
+                  setErrorMessage({
+                    type: 'error',
+                    title: i18n.personProfile.fridgePartner.error.remove.title,
+                    text: i18n.common.tryAgain,
+                    resolveLabel: i18n.common.ok
+                  })
+                } else {
+                  reload()
                 }
-              ),
+              }),
             label: i18n.common.remove
           }}
         />

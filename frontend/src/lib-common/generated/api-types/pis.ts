@@ -282,7 +282,8 @@ export interface Partnership {
 */
 export interface PartnershipRequest {
   endDate: LocalDate | null
-  personIds: UUID[]
+  person1Id: UUID
+  person2Id: UUID
   startDate: LocalDate
 }
 
