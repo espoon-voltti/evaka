@@ -19,7 +19,7 @@ import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
 import { Page } from 'playwright'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 const swedishDaycare: Daycare = {
   ...daycare2Fixture,
@@ -76,60 +76,58 @@ beforeEach(async () => {
 
 describe('Citizen map page', () => {
   test('Unit type filter affects the unit list', async () => {
-    await mapPage.daycareFilter.waitUntilVisible()
-    expect(await mapPage.daycareFilter.checked).toBe(true)
-    await mapPage.listItemFor(daycare2Fixture).waitUntilVisible()
-    await mapPage.listItemFor(clubFixture).waitUntilHidden()
-    await mapPage.listItemFor(preschoolFixture).waitUntilVisible()
+    await waitUntilTrue(() => mapPage.daycareFilter.isChecked())
+    await mapPage.listItemFor(daycare2Fixture).waitFor()
+    await mapPage.listItemFor(clubFixture).waitFor({ state: 'hidden' })
+    await mapPage.listItemFor(preschoolFixture).waitFor()
 
     await mapPage.clubFilter.click()
-    await mapPage.listItemFor(clubFixture).waitUntilVisible()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()
-    await mapPage.listItemFor(preschoolFixture).waitUntilHidden()
+    await mapPage.listItemFor(clubFixture).waitFor()
+    await mapPage.listItemFor(daycare2Fixture).waitFor({ state: 'hidden' })
+    await mapPage.listItemFor(preschoolFixture).waitFor({ state: 'hidden' })
 
     await mapPage.preschoolFilter.click()
-    await mapPage.listItemFor(clubFixture).waitUntilHidden()
-    await mapPage.listItemFor(preschoolFixture).waitUntilVisible()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()
+    await mapPage.listItemFor(clubFixture).waitFor({ state: 'hidden' })
+    await mapPage.listItemFor(preschoolFixture).waitFor()
+    await mapPage.listItemFor(daycare2Fixture).waitFor({ state: 'hidden' })
   })
   test('Unit language filter affects the unit list', async () => {
-    await mapPage.daycareFilter.waitUntilVisible()
-    expect(await mapPage.daycareFilter.checked).toBe(true)
-    await mapPage.listItemFor(daycare2Fixture).waitUntilVisible()
-    await mapPage.listItemFor(swedishDaycare).waitUntilVisible()
+    await waitUntilTrue(() => mapPage.daycareFilter.isChecked())
+    await mapPage.listItemFor(daycare2Fixture).waitFor()
+    await mapPage.listItemFor(swedishDaycare).waitFor()
 
     await mapPage.setLanguageFilter('fi', true)
-    await mapPage.listItemFor(swedishDaycare).waitUntilHidden()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilVisible()
+    await mapPage.listItemFor(swedishDaycare).waitFor({ state: 'hidden' })
+    await mapPage.listItemFor(daycare2Fixture).waitFor()
 
     await mapPage.setLanguageFilter('sv', true)
     await mapPage.setLanguageFilter('fi', false)
-    await mapPage.listItemFor(swedishDaycare).waitUntilVisible()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()
+    await mapPage.listItemFor(swedishDaycare).waitFor()
+    await mapPage.listItemFor(daycare2Fixture).waitFor({ state: 'hidden' })
   })
   test('Unit details can be viewed by clicking a list item', async () => {
     await mapPage.listItemFor(daycare2Fixture).click()
-    await mapPage.unitDetailsPanel.waitUntilVisible()
+    await mapPage.unitDetailsPanel.waitFor()
     await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
+      () => mapPage.unitDetailsPanel.name(),
       daycare2Fixture.name
     )
 
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.listItemFor(swedishDaycare).click()
 
-    await mapPage.unitDetailsPanel.waitUntilVisible()
+    await mapPage.unitDetailsPanel.waitFor()
     await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
+      () => mapPage.unitDetailsPanel.name(),
       swedishDaycare.name
     )
   })
   test('Units can be searched', async () => {
-    await mapPage.searchInput.type('Svart')
+    await mapPage.searchInput.fill('Svart')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
-    await mapPage.unitDetailsPanel.waitUntilVisible()
+    await mapPage.unitDetailsPanel.waitFor()
     await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
+      () => mapPage.unitDetailsPanel.name(),
       swedishDaycare.name
     )
   })
@@ -137,9 +135,9 @@ describe('Citizen map page', () => {
     await putDigitransitAutocomplete({
       features: [testStreet]
     })
-    await mapPage.searchInput.type('Testikatu')
+    await mapPage.searchInput.fill('Testikatu')
     await mapPage.searchInput.clickAddressResult(testStreet.properties.name)
-    await mapPage.map.addressMarker.waitUntilVisible()
+    await mapPage.map.addressMarker.waitFor()
   })
   test('Unit markers can be clicked to open a popup', async () => {
     await mapPage.testMapPopup(daycare2Fixture)
