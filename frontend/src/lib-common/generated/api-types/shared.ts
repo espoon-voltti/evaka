@@ -68,7 +68,8 @@ export const pilotFeatures = [
   'MESSAGING',
   'MOBILE',
   'RESERVATIONS',
-  'VASU_AND_PEDADOC'
+  'VASU_AND_PEDADOC',
+  'MOBILE_MESSAGING'
 ] as const
 
 export type PilotFeature = typeof pilotFeatures[number]

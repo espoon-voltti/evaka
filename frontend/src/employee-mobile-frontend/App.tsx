@@ -41,7 +41,6 @@ import { UnitContextProvider } from './state/unit'
 import { UserContextProvider } from './state/user'
 import MessagesPage from './components/messages/MessagesPage'
 import { MessageContextProvider } from './state/messages'
-import { featureFlags } from 'lib-customizations/employee'
 import MessageEditorPage from './components/messages/MessageEditorPage'
 
 export default function App() {
@@ -101,9 +100,7 @@ function GroupRouter() {
         path={`${path}/staff-attendance`}
         component={StaffAttendanceRouter}
       />
-      {featureFlags.experimental?.mobileMessages && (
-        <Route path={`${path}/messages`} component={MessagesRouter} />
-      )}
+      <Route path={`${path}/messages`} component={MessagesRouter} />
     </Switch>
   )
 }

@@ -41,4 +41,4 @@ INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_ord
                                                                                         ('DEVELOPMENTAL_DISABILITY_1', 'Kehitysvamma 1', NULL, 15),
                                                                                         ('DEVELOPMENTAL_DISABILITY_2', 'Kehitysvamma 2', 'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.', 20);
 
-UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS}';
+UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS, MOBILE_MESSAGING}';

@@ -12,6 +12,7 @@ import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
 import { DailyServiceTimes } from '../../api-types/child/common'
 import { GroupNote } from './note'
+import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -234,6 +235,7 @@ export interface StaffMemberAttendance {
 * Generated from fi.espoo.evaka.attendance.UnitInfo
 */
 export interface UnitInfo {
+  features: PilotFeature[]
   groups: GroupInfo[]
   id: UUID
   name: string

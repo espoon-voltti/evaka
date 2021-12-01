@@ -245,7 +245,6 @@ export const MessageContextProvider = React.memo(
 
     const loadMessagesWhenGroupChanges = useCallback(
       (selectedGroup: GroupInfo | undefined): void => {
-        console.log('loadMessagesWhenGroupChanges')
         if (selectedGroup === undefined) loadMessagesForAllAccounts()
         else {
           const maybeAccount =

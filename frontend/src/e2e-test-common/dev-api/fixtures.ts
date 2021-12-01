@@ -121,7 +121,8 @@ export const daycareFixture: Daycare = {
     'MESSAGING',
     'MOBILE',
     'RESERVATIONS',
-    'VASU_AND_PEDADOC'
+    'VASU_AND_PEDADOC',
+    'MOBILE_MESSAGING'
   ]
 }
 

@@ -15,9 +15,8 @@ import { useTranslation } from '../../state/i18n'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { featureFlags } from 'lib-customizations/employee'
-import { fontWeights } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
-import { MessageContext } from '../../state/messages'
+import { UnitContext } from '../../state/unit'
+import { renderResult } from '../async-rendering'
 
 export type NavItem = 'child' | 'staff' | 'messages'
 
@@ -92,15 +91,9 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
     groupId: UUID | 'all'
   }>()
 
-  const { unreadCountsByAccount, selectedAccount } = useContext(MessageContext)
-  const unreadCount =
-    (unreadCountsByAccount.isSuccess && !!selectedAccount
-      ? unreadCountsByAccount.value.find(
-          ({ accountId }) => accountId === selectedAccount.id
-        )?.unreadCount
-      : null) || 0
+  const { unitInfoResponse } = useContext(UnitContext)
 
-  return (
+  return renderResult(unitInfoResponse, (unit) => (
     <>
       {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
       <ReserveSpace />
@@ -135,7 +128,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
           </BottomText>
         </Button>
-        {featureFlags.experimental?.mobileMessages ? (
+        {unit.features.includes('MOBILE_MESSAGING') ? (
           <Button data-qa="bottomnav-messages">
             <BottomText
               text={i18n.common.messages}
@@ -149,7 +142,6 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                 icon={faComments}
                 selected={selected === 'messages'}
               />
-              {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
             </BottomText>
           </Button>
         ) : (
@@ -157,23 +149,5 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
         )}
       </Root>
     </>
-  )
+  ))
 }
-
-const UnreadCount = styled.span`
-  color: ${colors.greyscale.white};
-  background-color: ${colors.accents.orange};
-  font-size: 16px;
-  font-weight: ${fontWeights.semibold};
-  margin-left: ${defaultMargins.xs};
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  border-radius: 100%;
-  width: ${defaultMargins.s};
-  height: ${defaultMargins.s};
-  position: absolute;
-  right: ${defaultMargins.L};
-`
