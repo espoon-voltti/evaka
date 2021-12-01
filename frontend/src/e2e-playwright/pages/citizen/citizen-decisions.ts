@@ -3,37 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from 'e2e-playwright/utils'
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
 export default class CitizenDecisionsPage {
   constructor(private readonly page: Page) {}
 
   #decisionChildName = (applicationId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="title-decision-child-name-${applicationId}"]`
-    )
+    this.page.locator(`[data-qa="title-decision-child-name-${applicationId}"]`)
   #decisionType = (decisionId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="title-decision-type-${decisionId}"]`
-    )
+    this.page.locator(`[data-qa="title-decision-type-${decisionId}"]`)
   #decisionSentDate = (decisionId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="decision-sent-date-${decisionId}"]`
-    )
+    this.page.locator(`[data-qa="decision-sent-date-${decisionId}"]`)
   #decisionStatus = (decisionId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="decision-status-${decisionId}"]`
-    )
+    this.page.locator(`[data-qa="decision-status-${decisionId}"]`)
   #decisionResponseButton = (applicationId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="button-confirm-decisions-${applicationId}"]`
-    )
+    this.page.locator(`[data-qa="button-confirm-decisions-${applicationId}"]`)
 
   async assertUnresolvedDecisionsCount(count: number) {
     return assertUnresolvedDecisionsCount(this.page, count)
@@ -48,26 +32,30 @@ export default class CitizenDecisionsPage {
     expectedStatus: string
   ) {
     await waitUntilEqual(
-      () => this.#decisionChildName(applicationId).innerText,
+      () => this.#decisionChildName(applicationId).innerText(),
       expectedChildName
     )
     await waitUntilEqual(
-      () => this.#decisionType(decisionId).innerText,
+      () => this.#decisionType(decisionId).innerText(),
       expectedType
     )
     await waitUntilEqual(
-      () => this.#decisionSentDate(decisionId).innerText,
+      () => this.#decisionSentDate(decisionId).innerText(),
       expectedSentDate
     )
     await waitUntilEqual(
       async () =>
-        (await this.#decisionStatus(decisionId).innerText).toLowerCase(),
+        (await this.#decisionStatus(decisionId).innerText()).toLowerCase(),
       expectedStatus.toLowerCase()
     )
   }
 
   async navigateToDecisionResponse(applicationId: string) {
-    await this.#decisionResponseButton(applicationId).click()
+    const buttons = this.#decisionResponseButton(applicationId)
+    // There may be two buttons if there are decisions for preschool and
+    // preschool daycare, but they both take to the same page
+    await buttons.first().click()
+
     const responsePage = new CitizenDecisionResponsePage(this.page)
     await responsePage.assertPageTitle()
     return responsePage
@@ -77,24 +65,24 @@ export default class CitizenDecisionsPage {
 class CitizenDecisionResponsePage {
   constructor(private readonly page: Page) {}
 
-  #title = new RawElementDEPRECATED(this.page, 'h1')
+  #title = this.page.locator('h1')
   #decisionBlock = (decisionId: string) =>
-    new RawElementDEPRECATED(this.page, `[data-qa="decision-${decisionId}"]`)
+    this.page.locator(`[data-qa="decision-${decisionId}"]`)
   #acceptRadioButton = (decisionId: string) =>
-    this.#decisionBlock(decisionId).find('[data-qa="radio-accept"]')
+    this.#decisionBlock(decisionId).locator('[data-qa="radio-accept"]')
   #rejectRadioButton = (decisionId: string) =>
-    this.#decisionBlock(decisionId).find('[data-qa="radio-reject"]')
+    this.#decisionBlock(decisionId).locator('[data-qa="radio-reject"]')
   #submitResponseButton = (decisionId: string) =>
-    this.#decisionBlock(decisionId).find('[data-qa="submit-response"]')
+    this.#decisionBlock(decisionId).locator('[data-qa="submit-response"]')
   #decisionTitle = (decisionId: string) =>
-    this.#decisionBlock(decisionId).find('[data-qa="title-decision-type"]')
+    this.#decisionBlock(decisionId).locator('[data-qa="title-decision-type"]')
   #decisionUnit = (decisionId: string) =>
-    this.#decisionBlock(decisionId).find('[data-qa="decision-unit"]')
+    this.#decisionBlock(decisionId).locator('[data-qa="decision-unit"]')
   #decisionStatus = (decisionId: string) =>
-    this.#decisionBlock(decisionId).find('[data-qa="decision-status"]')
+    this.#decisionBlock(decisionId).locator('[data-qa="decision-status"]')
 
   async assertPageTitle() {
-    await waitUntilEqual(() => this.#title.innerText, 'Päätökset')
+    await waitUntilEqual(() => this.#title.innerText(), 'Päätökset')
   }
 
   async assertUnresolvedDecisionsCount(count: number) {
@@ -115,11 +103,11 @@ class CitizenDecisionResponsePage {
     decisionStatusText: string
   ) {
     await waitUntilEqual(
-      () => this.#decisionTitle(decisionId).innerText,
+      () => this.#decisionTitle(decisionId).innerText(),
       decisionTypeText
     )
     await waitUntilEqual(
-      () => this.#decisionUnit(decisionId).innerText,
+      () => this.#decisionUnit(decisionId).innerText(),
       decisionUnitText
     )
     await this.assertDecisionStatus(decisionId, decisionStatusText)
@@ -128,7 +116,7 @@ class CitizenDecisionResponsePage {
   async assertDecisionStatus(decisionId: string, statusText: string) {
     await waitUntilEqual(
       async () =>
-        (await this.#decisionStatus(decisionId).innerText).toLowerCase(),
+        (await this.#decisionStatus(decisionId).innerText()).toLowerCase(),
       statusText.toLowerCase()
     )
   }
@@ -144,32 +132,30 @@ class CitizenDecisionResponsePage {
   }
 
   async confirmRejectCascade() {
-    await new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="cascade-warning-modal"] [data-qa="modal-okBtn"]'
-    ).click()
+    await this.page
+      .locator('[data-qa="cascade-warning-modal"] [data-qa="modal-okBtn"]')
+      .click()
   }
 }
 
 async function assertUnresolvedDecisionsCount(page: Page, count: number) {
-  const element = new RawElementDEPRECATED(
-    page,
+  const element = page.locator(
     '[data-qa="alert-box-unconfirmed-decisions-count"]'
   )
 
   if (count === 0) {
-    return element.waitUntilHidden()
+    return element.waitFor({ state: 'hidden' })
   }
 
   if (count === 1) {
     return await waitUntilEqual(
-      () => element.innerText,
+      () => element.innerText(),
       '1 päätös odottaa vahvistustasi'
     )
   }
 
   return await waitUntilEqual(
-    () => element.innerText,
+    () => element.innerText(),
     `${count} päätöstä odottaa vahvistustasi`
   )
 }
