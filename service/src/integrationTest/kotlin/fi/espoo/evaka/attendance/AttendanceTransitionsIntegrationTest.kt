@@ -545,10 +545,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
             .jsonBody("{\"arrived\": \"$time\"}") // test HH:mm deserialization
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(200, res.statusCode)
-        val response = result.get()
+        val response = getAttendances()
         assertEquals(1, response.children.size)
         return response.children.first()
     }
@@ -557,7 +557,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(status, res.statusCode)
     }
@@ -565,10 +565,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun returnToComingAssertOkOneChild(): Child {
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(200, res.statusCode)
-        val response = result.get()
+        val response = getAttendances()
         assertEquals(1, response.children.size)
         return response.children.first()
     }
@@ -576,7 +576,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun returnToComingAssertFail(status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(status, res.statusCode)
     }
@@ -602,10 +602,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(200, res.statusCode)
-        val response = result.get()
+        val response = getAttendances()
         assertEquals(1, response.children.size)
         return response.children.first()
     }
@@ -614,7 +614,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(status, res.statusCode)
     }
@@ -622,10 +622,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun returnToPresentAssertOkOneChild(): Child {
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present")
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(200, res.statusCode)
-        val response = result.get()
+        val response = getAttendances()
         assertEquals(1, response.children.size)
         return response.children.first()
     }
@@ -633,7 +633,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun returnToPresentAssertFail(status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present")
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(status, res.statusCode)
     }
@@ -642,10 +642,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(200, res.statusCode)
-        val response = result.get()
+        val response = getAttendances()
         assertEquals(1, response.children.size)
         return response.children.first()
     }
@@ -654,7 +654,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .response()
 
         assertEquals(status, res.statusCode)
     }
