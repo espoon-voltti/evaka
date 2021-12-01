@@ -4,14 +4,6 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import {
-  ClubTerm,
-  deserializeClubTerm,
-  deserializePreschoolTerm,
-  PreschoolTerm
-} from 'lib-common/api-types/units/terms'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
-import {
   ApplicationDetails,
   ApplicationFormUpdate,
   deserializeApplicationDetails
@@ -20,13 +12,19 @@ import {
   ApplicationsOfChild,
   deserializeApplicationsOfChild
 } from 'lib-common/api-types/application/ApplicationsOfChild'
-import { client } from '../api-client'
+import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import {
-  deserializePublicUnit,
-  PublicUnit
-} from 'lib-common/api-types/units/PublicUnit'
+  ClubTerm,
+  deserializeClubTerm,
+  deserializePreschoolTerm,
+  PreschoolTerm
+} from 'lib-common/api-types/units/terms'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { ApplicationType, PlacementType } from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { client } from '../api-client'
 
 export type ApplicationUnitType =
   | 'CLUB'

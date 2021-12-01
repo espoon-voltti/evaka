@@ -2,27 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useMemo, useState } from 'react'
-import styled from 'styled-components'
-import _ from 'lodash'
 import { Result, Success } from 'lib-common/api'
 import { UnitLanguage } from 'lib-common/api-types/units/enums'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { Coordinate } from 'lib-common/api-types/units/Coordinate'
-import { defaultMargins } from 'lib-components/white-space'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
-import { useTranslation } from '../localization'
-import useTitle from '../useTitle'
+import { defaultMargins } from 'lib-components/white-space'
+import _ from 'lodash'
+import React, { ReactNode, useMemo, useState } from 'react'
+import styled from 'styled-components'
+import { Coordinate } from 'lib-common/generated/api-types/shared'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { useUser } from '../auth/state'
 import { headerHeightDesktop } from '../header/const'
-import UnitSearchPanel from '../map/UnitSearchPanel'
-import MapBox from '../map/MapBox'
+import { useTranslation } from '../localization'
+import MapBox from './MapBox'
+import UnitDetailsPanel from './UnitDetailsPanel'
+import UnitSearchPanel from './UnitSearchPanel'
+import useTitle from '../useTitle'
+import { fetchUnits, queryDistances } from './api'
 import { mapViewBreakpoint, MobileMode } from './const'
 import { calcStraightDistance, UnitWithStraightDistance } from './distances'
-import { fetchUnits, queryDistances } from './api'
-import UnitDetailsPanel from '../map/UnitDetailsPanel'
-import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
-import { useUser } from '../auth/state'
 
 export type MapAddress = {
   coordinates: Coordinate
@@ -82,7 +82,7 @@ async function fetchUnitsWithDistances(
 export default React.memo(function MapView() {
   const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
-  const loggedIn = !!useUser()
+  const user = useUser()
 
   const [selectedUnit, setSelectedUnit] = useState<PublicUnit | null>(null)
 
@@ -108,8 +108,16 @@ export default React.memo(function MapView() {
 
   useTitle(t, t.map.title)
 
+  const units = useMemo(
+    () =>
+      selectedAddress
+        ? unitsWithDistances.getOrElse([])
+        : filteredUnits.getOrElse([]),
+    [filteredUnits, selectedAddress, unitsWithDistances]
+  )
+
   return (
-    <MapFullscreenContainer loggedIn={loggedIn}>
+    <MapFullscreenContainer loggedIn={!!user}>
       <FlexContainer
         className={`mobile-mode-${mobileMode}`}
         breakpoint={mapViewBreakpoint}
@@ -144,11 +152,7 @@ export default React.memo(function MapView() {
         )}
         <MapContainer>
           <MapBox
-            units={
-              selectedAddress
-                ? unitsWithDistances.getOrElse([])
-                : filteredUnits.getOrElse([])
-            }
+            units={units}
             selectedUnit={selectedUnit}
             selectedAddress={selectedAddress}
             setSelectedUnit={setSelectedUnit}

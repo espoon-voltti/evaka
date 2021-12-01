@@ -900,6 +900,7 @@ const sv: Translations = {
             info: 'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
             fi: 'Finskspråkig',
             sv: 'Svenskspråkig',
+            en: 'Engelskspråkig',
             moveUp: 'Flytta uppåt',
             moveDown: 'Flytta neråt',
             remove: 'Ta bort önskad enhet'

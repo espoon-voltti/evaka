@@ -2,34 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Loading, Result } from 'lib-common/api'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { formatPercentage } from 'lib-common/utils/number'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Loader from 'lib-components/atoms/Loader'
+import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
+import Title from 'lib-components/atoms/Title'
+import { fontWeights } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
+import { faCheck } from 'lib-icons'
 import React, {
-  useEffect,
-  useState,
-  memo,
   Dispatch,
-  SetStateAction
+  memo,
+  SetStateAction,
+  useEffect,
+  useState
 } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import LocalDate from 'lib-common/local-date'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Title from 'lib-components/atoms/Title'
-import Loader from 'lib-components/atoms/Loader'
-import { fontWeights } from 'lib-components/typography'
-
-import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
 import { getOccupancyRates, OccupancyResponse } from '../../api/unit'
-
-import colors from 'lib-customizations/common'
-import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
-import { faCheck } from 'lib-icons'
-
-import { formatPercentage } from 'lib-common/utils/number'
-import { Occupancy } from '../../types/unit'
+import { useTranslation } from '../../state/i18n'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
-import { UUID } from 'lib-common/types'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { Occupancy } from '../../types/unit'
 
 const MarginBox = styled.div`
   margin: 1rem;

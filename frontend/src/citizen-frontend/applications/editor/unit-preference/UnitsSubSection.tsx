@@ -13,6 +13,7 @@ import {
 import { Gap } from 'lib-components/white-space'
 import { Result, Success } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { ApplicationUnitType, getApplicationUnits } from '../../api'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
@@ -25,7 +26,6 @@ import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
 import { UnwrapResult } from '../../../async-rendering'
 import LocalDate from 'lib-common/local-date'
 import { ApplicationType } from 'lib-common/generated/enums'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 
 const maxUnits = 3
 

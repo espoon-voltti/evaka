@@ -2,6 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { History } from 'history'
+import { Loading, Result, Success } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { faLink } from 'lib-icons'
 import React, {
   Dispatch,
   Fragment,
@@ -13,37 +28,21 @@ import React, {
 import { RouteComponentProps, useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import { faLink } from 'lib-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import LocalDate from 'lib-common/local-date'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import Title from 'lib-components/atoms/Title'
-import { Gap } from 'lib-components/white-space'
-import Loader from 'lib-components/atoms/Loader'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { fontWeights } from 'lib-components/typography'
-
-import { useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from 'lib-common/api'
+import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import { getApplicationUnits } from '../../api/daycare'
-import { formatName } from '../../utils'
+import Tooltip from '../../components/common/Tooltip'
+import WarningLabel from '../../components/common/WarningLabel'
+import { useTranslation } from '../../state/i18n'
+import { TitleContext, TitleState } from '../../state/title'
 import {
   DaycarePlacementPlan,
   PlacementDraft,
   PlacementDraftPlacement
 } from '../../types/placementdraft'
-import UnitCards from './UnitCards'
+import { formatName } from '../../utils'
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
-import { TitleContext, TitleState } from '../../state/title'
-import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import WarningLabel from '../../components/common/WarningLabel'
-import Tooltip from '../../components/common/Tooltip'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { UUID } from 'lib-common/types'
-import { History } from 'history'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import UnitCards from './UnitCards'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;

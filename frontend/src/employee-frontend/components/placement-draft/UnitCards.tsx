@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, memo } from 'react'
-import MemoizedCard from './UnitCard'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
+import React, { Dispatch, memo, SetStateAction } from 'react'
 import styled from 'styled-components'
 import {
   DaycarePlacementPlan,
   PlacementDraft
 } from '../../types/placementdraft'
-import LocalDate from 'lib-common/local-date'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import MemoizedCard from './UnitCard'
 
 const FlexContainer = styled.div`
   display: flex;

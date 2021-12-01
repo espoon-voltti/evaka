@@ -891,6 +891,7 @@ export default {
             info: 'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
             fi: 'suomenkielinen',
             sv: 'ruotsinkielinen',
+            en: 'englanninkielinen',
             moveUp: 'Siirrä ylöspäin',
             moveDown: 'Siirrä alaspäin',
             remove: 'Poista hakutoive'
