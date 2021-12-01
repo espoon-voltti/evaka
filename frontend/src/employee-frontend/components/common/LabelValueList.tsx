@@ -9,16 +9,17 @@ import { fontWeights } from 'lib-components/typography'
 type Spacing = 'small' | 'large'
 type LabelWidth = '25%' | 'fit-content(40%)'
 
+type Content = {
+  label?: ReactNode
+  value: ReactNode
+  valueWidth?: string
+  dataQa?: string
+  onlyValue?: boolean
+}
 type Props = {
   spacing: Spacing
   labelWidth?: LabelWidth
-  contents: {
-    label?: ReactNode
-    value: ReactNode
-    valueWidth?: string
-    dataQa?: string
-    onlyValue?: boolean
-  }[]
+  contents: (Content | false)[]
 }
 
 const LabelValueList = React.memo(function LabelValueList({
@@ -32,20 +33,22 @@ const LabelValueList = React.memo(function LabelValueList({
       labelWidth={labelWidth}
       size={contents.length}
     >
-      {contents.map(({ label, value, valueWidth, dataQa, onlyValue }, index) =>
-        onlyValue ? (
-          <OnlyValue index={index + 1} width={valueWidth} key={index}>
-            {value}
-          </OnlyValue>
-        ) : (
-          <Fragment key={index}>
-            <Label index={index + 1}>{label}</Label>
-            <Value index={index + 1} width={valueWidth} data-qa={dataQa}>
+      {contents
+        .filter((content): content is Content => !!content)
+        .map(({ label, value, valueWidth, dataQa, onlyValue }, index) =>
+          onlyValue ? (
+            <OnlyValue index={index + 1} width={valueWidth} key={index}>
               {value}
-            </Value>
-          </Fragment>
-        )
-      )}
+            </OnlyValue>
+          ) : (
+            <Fragment key={index}>
+              <Label index={index + 1}>{label}</Label>
+              <Value index={index + 1} width={valueWidth} data-qa={dataQa}>
+                {value}
+              </Value>
+            </Fragment>
+          )
+        )}
     </GridContainer>
   )
 })
