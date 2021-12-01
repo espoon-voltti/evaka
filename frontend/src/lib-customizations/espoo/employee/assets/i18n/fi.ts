@@ -718,6 +718,9 @@ export const fi = {
       preferredName: 'Kutsumanimi',
       medication: 'Lääkitys'
     },
+    income: {
+      title: 'Tulotiedot'
+    },
     feeAlteration: {
       title: 'Alennukset, vapautukset ja korotukset',
       error: 'Maksumuutosten lataus epäonnistui',
