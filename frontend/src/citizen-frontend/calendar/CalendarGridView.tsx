@@ -271,6 +271,8 @@ const DayCell = styled.div<{ today: boolean; selected: boolean }>`
   padding: ${defaultMargins.s};
   background: ${({ theme }) => theme.colors.greyscale.white};
   outline: 1px solid ${colors.greyscale.lighter};
+  cursor: pointer;
+  user-select: none;
 
   ${(p) =>
     p.today
