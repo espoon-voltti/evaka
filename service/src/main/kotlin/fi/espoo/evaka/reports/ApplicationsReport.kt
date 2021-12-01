@@ -5,34 +5,33 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-class ApplicationsReportController {
+class ApplicationsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
-    ): ResponseEntity<List<ApplicationsReportRow>> {
+    ): List<ApplicationsReportRow> {
         Audit.ApplicationsReportRead.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_APPLCIATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.read { it.getApplicationsRows(from, to) }.let(::ok)
+        return db.read { it.getApplicationsRows(from, to) }
     }
 }
 

@@ -9,11 +9,11 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -21,17 +21,17 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class MissingHeadOfFamilyReportController(private val acl: AccessControlList) {
+class MissingHeadOfFamilyReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/missing-head-of-family")
     fun getMissingHeadOfFamilyReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
-    ): ResponseEntity<List<MissingHeadOfFamilyReportRow>> {
+    ): List<MissingHeadOfFamilyReportRow> {
         Audit.MissingHeadOfFamilyReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
-        return db.read { ResponseEntity.ok(it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user))) }
+        accessControl.requirePermissionFor(user, Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT)
+        return db.read { it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user)) }
     }
 }
 

@@ -16,9 +16,10 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -31,7 +32,11 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
-class ServiceVoucherValueReportController(private val acl: AccessControlList, private val featureFlags: FeatureFlags) {
+class ServiceVoucherValueReportController(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl,
+    private val featureFlags: FeatureFlags
+) {
 
     data class ServiceVoucherReport(
         val locked: LocalDate?,
@@ -41,11 +46,11 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList, pr
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @RequestParam(required = false) areaId: AreaId?
-    ): ResponseEntity<ServiceVoucherReport> {
+    ): ServiceVoucherReport {
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
         return db.read { tx ->
@@ -66,11 +71,9 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList, pr
                     )
                 }
 
-            ResponseEntity.ok(
-                ServiceVoucherReport(
-                    locked = snapshotTime,
-                    rows = aggregates
-                )
+            ServiceVoucherReport(
+                locked = snapshotTime,
+                rows = aggregates
             )
         }
     }
@@ -81,16 +84,16 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList, pr
         val voucherTotal: Int,
         val assistanceNeedCapacityFactorEnabled: Boolean
     )
+
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
         db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable("unitId") unitId: DaycareId,
+        user: AuthenticatedUser.Employee,
+        @PathVariable unitId: DaycareId,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): ResponseEntity<ServiceVoucherUnitReport> {
-        acl.getRolesForUnit(user, unitId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
+    ): ServiceVoucherUnitReport {
+        accessControl.requirePermissionFor(user, Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT, unitId)
 
         return db.read { tx ->
             val snapshotTime = tx.getSnapshotDate(year, month)
@@ -100,13 +103,11 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList, pr
                 tx.getServiceVoucherValues(year, month, unitIds = setOf(unitId))
             }
 
-            ResponseEntity.ok(
-                ServiceVoucherUnitReport(
-                    locked = snapshotTime,
-                    rows = rows,
-                    voucherTotal = rows.sumOf { it.realizedAmount },
-                    assistanceNeedCapacityFactorEnabled = featureFlags.valueDecisionCapacityFactorEnabled,
-                )
+            ServiceVoucherUnitReport(
+                locked = snapshotTime,
+                rows = rows,
+                voucherTotal = rows.sumOf { it.realizedAmount },
+                assistanceNeedCapacityFactorEnabled = featureFlags.valueDecisionCapacityFactorEnabled,
             )
         }
     }

@@ -5,12 +5,11 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import org.springframework.http.ResponseEntity
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -18,20 +17,20 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class EndedPlacementsReportController {
+class EndedPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/ended-placements")
     fun getEndedPlacementsReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): ResponseEntity<List<EndedPlacementsReportRow>> {
+    ): List<EndedPlacementsReportRow> {
         Audit.EndedPlacementsReportRead.log()
+        accessControl.requirePermissionFor(user, Action.Global.READ_ENDED_PLACEMENTS_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
-        return db.read { it.getEndedPlacementsRows(from, to) }.let(::ok)
+        return db.read { it.getEndedPlacementsRows(from, to) }
     }
 }
 

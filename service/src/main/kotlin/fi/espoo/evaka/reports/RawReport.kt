@@ -12,9 +12,10 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +25,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class RawReportController {
+class RawReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/raw")
     fun getRawReport(
         db: Database.Connection,
@@ -33,7 +34,7 @@ class RawReportController {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<RawReportRow> {
         Audit.RawReportRead.log()
-        user.requireOneOfRoles(UserRole.REPORT_VIEWER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_RAW_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 

@@ -16,8 +16,9 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-class AssistanceNeedsAndActionsReportController(private val acl: AccessControlList) {
+class AssistanceNeedsAndActionsReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-needs-and-actions")
     fun getAssistanceNeedReport(
         db: Database.Connection,
@@ -35,7 +36,7 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {
         Audit.AssistanceNeedsReportRead.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
         return db.read {
             AssistanceNeedsAndActionsReport(
                 bases = it.getAssistanceBasisOptions(),

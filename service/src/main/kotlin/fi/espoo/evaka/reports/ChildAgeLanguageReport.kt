@@ -5,32 +5,31 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-class ChildAgeLanguageReportController(private val acl: AccessControlList) {
+class ChildAgeLanguageReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): ResponseEntity<List<ChildAgeLanguageReportRow>> {
+    ): List<ChildAgeLanguageReportRow> {
         Audit.ChildAgeLanguageReportRead.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return db.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user)) }.let(::ok)
+        accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT)
+        return db.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user)) }
     }
 }
 

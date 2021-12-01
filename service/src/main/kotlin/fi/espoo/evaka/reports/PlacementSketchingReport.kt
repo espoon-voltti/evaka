@@ -8,11 +8,11 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -20,17 +20,17 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class PlacementSketchingReportController {
+class PlacementSketchingReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/placement-sketching")
     fun getPlacementSketchingReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("placementStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) placementStartDate: LocalDate,
         @RequestParam("earliestPreferredStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) earliestPreferredStartDate: LocalDate?
-    ): ResponseEntity<List<PlacementSketchingReportRow>> {
+    ): List<PlacementSketchingReportRow> {
         Audit.PlacementSketchingReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
-        return db.read { ResponseEntity.ok(it.getPlacementSketchingReportRows(placementStartDate, earliestPreferredStartDate)) }
+        accessControl.requirePermissionFor(user, Action.Global.READ_PLACEMENT_SKETCHING_REPORT)
+        return db.read { it.getPlacementSketchingReportRows(placementStartDate, earliestPreferredStartDate) }
     }
 }
 

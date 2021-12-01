@@ -5,32 +5,29 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-class ServiceNeedReport(private val acl: AccessControlList) {
+class ServiceNeedReport(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/service-need")
     fun getServiceNeedReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): ResponseEntity<List<ServiceNeedReportRow>> {
+    ): List<ServiceNeedReportRow> {
         Audit.ServiceNeedReportRead.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.UNIT_SUPERVISOR)
-        return db.read {
-            it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
-        }.let(::ok)
+        accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_NEED_REPORT)
+        return db.read { it.getServiceNeedRows(date, acl.getAuthorizedUnits(user)) }
     }
 }
 

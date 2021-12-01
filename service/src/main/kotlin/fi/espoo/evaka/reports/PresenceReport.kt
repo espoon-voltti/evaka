@@ -5,15 +5,14 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -22,20 +21,20 @@ import java.time.LocalDate
 const val MAX_NUMBER_OF_DAYS = 14
 
 @RestController
-class PresenceReportController {
+class PresenceReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/presences")
     fun getPresenceReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
-    ): ResponseEntity<List<PresenceReportRow>> {
+    ): List<PresenceReportRow> {
         Audit.PresenceReportRead.log()
-        user.requireOneOfRoles(UserRole.DIRECTOR, UserRole.REPORT_VIEWER, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_PRESENCE_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
 
-        return db.read { it.getPresenceRows(from, to) }.let(::ok)
+        return db.read { it.getPresenceRows(from, to) }
     }
 }
 
