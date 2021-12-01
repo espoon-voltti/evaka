@@ -15,7 +15,6 @@ import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
-import { faArrowLeft } from 'lib-icons'
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
@@ -24,10 +23,11 @@ import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
-import { Actions, BackButtonInline } from '../attendances/components'
+import { Actions } from '../attendances/components'
 import { TallContentArea } from '../mobile/components'
 import { TimeWrapper } from './components/staff-components'
 import { Label } from 'lib-components/typography'
+import TopBar from '../common/TopBar'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
@@ -106,13 +106,11 @@ export default React.memo(function StaffMarkArrivedPage() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      <div>
-        <BackButtonInline
-          onClick={() => history.goBack()}
-          icon={faArrowLeft}
-          text={backButtonText}
-        />
-      </div>
+      <TopBar
+        title={backButtonText}
+        onBack={() => history.goBack()}
+        invertedColors
+      />
       <ContentArea
         shadow
         opaque={true}
@@ -168,27 +166,25 @@ export default React.memo(function StaffMarkArrivedPage() {
                         : undefined
                     }
                   />
-                  {renderResult(
-                    combine(groupOptions, unitInfoResponse),
-                    ([groupOptions, { groups }]) =>
-                      groupOptions.length > 1 ? (
-                        <>
-                          <Gap />
-                          <Label>{i18n.common.group}</Label>
-                          <Select
-                            selectedItem={attendanceGroup}
-                            items={groupOptions}
-                            getItemLabel={(item) =>
-                              groups.find((group) => group.id === item)?.name ??
-                              ''
-                            }
-                            placeholder={i18n.attendances.chooseGroup}
-                            onChange={(group) =>
-                              setAttendanceGroup(group ?? undefined)
-                            }
-                          />
-                        </>
-                      ) : null
+                  {renderResult(groupOptions, (groupOptions) =>
+                    groupOptions.length > 1 ? (
+                      <>
+                        <Gap />
+                        <Label>{i18n.common.group}</Label>
+                        <Select
+                          selectedItem={attendanceGroup}
+                          items={groupOptions}
+                          getItemLabel={(item) =>
+                            unitInfo.groups.find((group) => group.id === item)
+                              ?.name ?? ''
+                          }
+                          placeholder={i18n.attendances.chooseGroup}
+                          onChange={(group) =>
+                            setAttendanceGroup(group ?? undefined)
+                          }
+                        />
+                      </>
+                    ) : null
                   )}
                   <Gap />
                 </TimeWrapper>

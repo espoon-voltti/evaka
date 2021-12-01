@@ -11,6 +11,7 @@ import {
   Redirect,
   Route,
   Switch,
+  useParams,
   useRouteMatch
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
@@ -23,7 +24,7 @@ import AttendanceChildPage from './components/attendances/child-info/AttendanceC
 import ChildSensitiveInfoPage from './components/attendances/child-info/ChildSensitiveInfoPage'
 import ChildNotes from './components/attendances/notes/ChildNotes'
 import requirePinAuth from './components/auth/requirePinAuth'
-import ensureAuthenticated from './components/ensureAuthenticated'
+import EnsureAuthenticated from './components/EnsureAuthenticated'
 import MobileLander from './components/mobile/MobileLander'
 import PairingWizard from './components/mobile/PairingWizard'
 import MobileReloadNotification from './components/MobileReloadNotification'
@@ -42,6 +43,7 @@ import { UserContextProvider } from './state/user'
 import MessagesPage from './components/messages/MessagesPage'
 import { MessageContextProvider } from './state/messages'
 import MessageEditorPage from './components/messages/MessageEditorPage'
+import UnitList from './components/UnitList'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -59,10 +61,16 @@ export default function App() {
               <Switch>
                 <Route exact path="/landing" component={MobileLander} />
                 <Route exact path="/pairing" component={PairingWizard} />
-                <Route
-                  path="/units/:unitId"
-                  component={ensureAuthenticated(UnitRouter)}
-                />
+                <Route exact path="/units">
+                  <EnsureAuthenticated>
+                    <UnitList />
+                  </EnsureAuthenticated>
+                </Route>
+                <Route path="/units/:unitId">
+                  <EnsureAuthenticated>
+                    <UnitRouter />
+                  </EnsureAuthenticated>
+                </Route>
                 <Redirect to="/landing" />
               </Switch>
             </Router>
@@ -76,11 +84,13 @@ export default function App() {
 
 function UnitRouter() {
   const { path } = useRouteMatch()
+  const { unitId } = useParams<{ unitId: string }>()
 
   return (
-    <UnitContextProvider>
+    <UnitContextProvider unitId={unitId}>
       <Switch>
         <Route path={`${path}/groups/:groupId`} component={GroupRouter} />
+        <Redirect to={`${path}/groups/all`} />
       </Switch>
     </UnitContextProvider>
   )
@@ -101,6 +111,7 @@ function GroupRouter() {
         component={StaffAttendanceRouter}
       />
       <Route path={`${path}/messages`} component={MessagesRouter} />
+      <Redirect to={`${path}/child-attendance`} />
     </Switch>
   )
 }

@@ -15,12 +15,11 @@ import BottomNavBar from '../common/BottomNavbar'
 import { ContentArea } from 'lib-components/layout/Container'
 import { ThreadView } from './ThreadView'
 import { MessagePreview } from './MessagePreview'
-import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import colors from 'lib-customizations/common'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
-import { combine } from 'lib-common/api'
 
 export default function MessagesPage() {
   const history = useHistory()
@@ -74,25 +73,13 @@ export default function MessagesPage() {
       <ThreadView thread={selectedThread} onBack={onBack} />
     </ContentArea>
   ) : (
-    renderResult(
-      combine(unitInfoResponse, receivedMessages),
-      ([unit, messages]) => (
-        <ContentArea
-          opaque
-          fullHeight
-          paddingVertical={'zero'}
-          paddingHorizontal={'zero'}
-        >
-          <TopBarWithGroupSelector
-            title={unit.name}
-            selectedGroup={selectedGroup}
-            onChangeGroup={changeGroup}
-            groups={unit.groups.filter((g) =>
-              groupAccounts
-                .flatMap((ga) => ga.daycareGroup?.id || [])
-                .includes(g.id)
-            )}
-          />
+    <>
+      <TopBarWithGroupSelector
+        selectedGroup={selectedGroup}
+        onChangeGroup={changeGroup}
+      />
+      {renderResult(receivedMessages, (messages) => (
+        <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
           <HeaderContainer>
             <H1 noMargin={true}>{i18n.messages.title}</H1>
           </HeaderContainer>
@@ -123,8 +110,8 @@ export default function MessagesPage() {
           )}
           <BottomNavBar selected="messages" />
         </ContentArea>
-      )
-    )
+      ))}
+    </>
   )
 }
 

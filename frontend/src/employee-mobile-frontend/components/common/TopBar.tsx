@@ -5,83 +5,89 @@
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { faTimes } from 'lib-icons'
-import React, { PropsWithChildren } from 'react'
+import { faArrowLeft, faTimes } from 'lib-icons'
+import React from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { topBarHeight, zIndex } from '../constants'
 import { LoggedInUser } from './top-bar/LoggedInUser'
 import { TopBarIconContainer } from './top-bar/TopBarIconContainer'
 
-const StickyTopBar = styled.section`
+const StickyTopBar = styled.section<{ invertedColors?: boolean }>`
   position: sticky;
   top: 0;
+  width: 100%;
   height: ${topBarHeight};
+  padding: 0 ${defaultMargins.s};
   z-index: ${zIndex.topBar};
 
   display: flex;
   justify-content: space-between;
   align-items: center;
 
-  background: ${colors.blues.primary};
-  color: ${colors.greyscale.white};
+  background: ${({ theme, invertedColors }) =>
+    invertedColors
+      ? theme.colors.greyscale.lightest
+      : theme.colors.main.primary};
+  color: ${({ theme, invertedColors }) =>
+    invertedColors ? theme.colors.main.dark : theme.colors.greyscale.white};
+
+  button {
+    color: ${({ theme, invertedColors }) =>
+      invertedColors ? theme.colors.main.dark : theme.colors.greyscale.white};
+  }
 `
 
 const Title = styled.div`
   flex-grow: 6; // occupy majority of the space, leaving rest for the user menu
-  margin: 0 ${defaultMargins.m};
+  margin: 0 ${defaultMargins.s};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
-  ${Label} {
-    color: ${colors.greyscale.white};
-  }
 `
 
 interface Props {
   title: string
+  onBack?: () => void
+  onClose?: () => void
+  invertedColors?: boolean
 }
 
-function TopBarWrapper({ children, title }: PropsWithChildren<Props>) {
+export default React.memo(function TopBar({
+  title,
+  onBack,
+  onClose,
+  invertedColors
+}: Props) {
+  const { i18n } = useTranslation()
+
   return (
-    <StickyTopBar>
+    <StickyTopBar invertedColors={invertedColors}>
+      {onBack ? (
+        <TopBarIconContainer>
+          <IconButton
+            icon={faArrowLeft}
+            onClick={onBack}
+            altText={i18n.common.back}
+            data-qa="go-back"
+          />
+        </TopBarIconContainer>
+      ) : null}
       <Title>
         <Label data-qa="top-bar-title">{title}</Label>
       </Title>
-      {children}
+      {onClose ? (
+        <TopBarIconContainer>
+          <IconButton
+            icon={faTimes}
+            white
+            onClick={onClose}
+            altText={i18n.common.close}
+          />
+        </TopBarIconContainer>
+      ) : (
+        <LoggedInUser />
+      )}
     </StickyTopBar>
-  )
-}
-
-export const TopBar = React.memo(function TopBar({ title }: Props) {
-  return (
-    <TopBarWrapper title={title}>
-      <LoggedInUser />
-    </TopBarWrapper>
-  )
-})
-
-interface CloseableTopBarProps extends Props {
-  onClose: () => void
-}
-
-export const CloseableTopBar = React.memo(function TopBar({
-  onClose,
-  title
-}: CloseableTopBarProps) {
-  const { i18n } = useTranslation()
-  return (
-    <TopBarWrapper title={title}>
-      <TopBarIconContainer>
-        <IconButton
-          icon={faTimes}
-          white
-          onClick={onClose}
-          altText={i18n.common.close}
-        />
-      </TopBarIconContainer>
-    </TopBarWrapper>
   )
 })

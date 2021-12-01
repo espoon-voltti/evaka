@@ -142,14 +142,14 @@ export const MessageContextProvider = React.memo(
     const [pages, setPages] = useState<number>()
     const { user, loggedIn } = useContext(UserContext)
     const { unitInfoResponse } = useContext(UnitContext)
-
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
-    const [selectedUnit, setSelectedUnit] = useState<SelectOption | undefined>()
-
-    useEffect(() => {
-      const unit = unitInfoResponse.getOrElse(undefined)
-      setSelectedUnit(unit && { value: unit.id, label: unit.name })
-    }, [unitInfoResponse])
+    const selectedUnit = useMemo(
+      () =>
+        unitInfoResponse
+          .map(({ id, name }) => ({ value: id, label: name }))
+          .getOrElse(undefined),
+      [unitInfoResponse]
+    )
 
     const [nestedAccounts, setNestedMessagingAccounts] = useState<
       Result<NestedMessageAccount[]>
@@ -199,8 +199,16 @@ export const MessageContextProvider = React.memo(
       .getOrElse(false)
 
     useEffect(() => {
-      loggedIn && userHasActivePinLogin && unitId ? loadUnreadCounts() : null
-    }, [loadUnreadCounts, user, userHasActivePinLogin, loggedIn, unitId])
+      loggedIn && userHasActivePinLogin && unitInfoResponse.isSuccess
+        ? loadUnreadCounts()
+        : null
+    }, [
+      loadUnreadCounts,
+      user,
+      userHasActivePinLogin,
+      loggedIn,
+      unitInfoResponse
+    ])
 
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>

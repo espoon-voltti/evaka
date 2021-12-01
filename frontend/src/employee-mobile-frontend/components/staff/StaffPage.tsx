@@ -17,7 +17,7 @@ import { UnitContext } from '../../state/unit'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
-import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import StaffAttendanceEditor from './StaffAttendanceEditor'
 
 export default React.memo(function StaffPage() {
@@ -77,30 +77,31 @@ export default React.memo(function StaffPage() {
 
   const today = useMemo(() => LocalDate.today(), [])
 
-  return renderResult(
-    combine(unitInfoResponse, unitOrGroupStaffAttendance, occupancy),
-    ([unitInfo, foobar, occupancy]) => (
-      <>
-        <TopBarWithGroupSelector
-          title={unitInfo.name}
-          selectedGroup={selectedGroup}
-          onChangeGroup={changeGroup}
-        />
-        <ContentArea opaque fullHeight>
-          <StaffAttendanceEditor
-            // Force re-render if the selected group changes
-            key={selectedGroup?.id}
-            groupId={selectedGroup?.id}
-            date={today}
-            count={foobar.count}
-            countOther={foobar.countOther}
-            updated={foobar.updated}
-            realizedOccupancy={occupancy}
-            onConfirm={updateAttendance}
-          />
-        </ContentArea>
-        <BottomNavBar selected="staff" />
-      </>
-    )
+  return (
+    <>
+      <TopBarWithGroupSelector
+        selectedGroup={selectedGroup}
+        onChangeGroup={changeGroup}
+      />
+      {renderResult(
+        combine(unitOrGroupStaffAttendance, occupancy),
+        ([staffAttendance, occupancy]) => (
+          <ContentArea opaque fullHeight>
+            <StaffAttendanceEditor
+              // Force re-render if the selected group changes
+              key={selectedGroup?.id}
+              groupId={selectedGroup?.id}
+              date={today}
+              count={staffAttendance.count}
+              countOther={staffAttendance.countOther}
+              updated={staffAttendance.updated}
+              realizedOccupancy={occupancy}
+              onConfirm={updateAttendance}
+            />
+          </ContentArea>
+        )
+      )}
+      <BottomNavBar selected="staff" />
+    </>
   )
 })

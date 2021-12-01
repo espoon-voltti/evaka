@@ -9,7 +9,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Tabs from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
 import { faPlus } from 'lib-icons'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
@@ -17,7 +17,7 @@ import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
-import { TopBarWithGroupSelector } from '../common/TopBarWithGroupSelector'
+import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import { toStaff } from './staff'
 import StaffListItem from './StaffListItem'
 
@@ -37,11 +37,9 @@ export default React.memo(function StaffAttendancesPage() {
     groupId: string
   }>()
   const { i18n } = useTranslation()
-
-  const { unitInfoResponse, showPresent, setShowPresent } =
-    useContext(UnitContext)
-
+  const { unitInfoResponse } = useContext(UnitContext)
   const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
+  const [showPresent, setShowPresent] = useState(false)
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
@@ -119,15 +117,20 @@ export default React.memo(function StaffAttendancesPage() {
     [groupId, showPresent, staffAttendanceResponse]
   )
 
-  return renderResult(unitInfoResponse, (unit) => (
+  const selectedGroup = useMemo(
+    () =>
+      unitInfoResponse
+        .map(({ groups }) =>
+          groupId === 'all' ? undefined : groups.find((g) => g.id === groupId)
+        )
+        .getOrElse(undefined),
+    [groupId, unitInfoResponse]
+  )
+
+  return (
     <>
       <TopBarWithGroupSelector
-        title={unit.name}
-        selectedGroup={
-          groupId === 'all'
-            ? undefined
-            : unit.groups.find((g) => g.id === groupId)
-        }
+        selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
       />
       <Tabs tabs={tabs} mobile type="buttons" />
@@ -147,5 +150,5 @@ export default React.memo(function StaffAttendancesPage() {
       </StaticIconContainer>
       <BottomNavBar selected="staff" />
     </>
-  ))
+  )
 })

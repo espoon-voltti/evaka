@@ -382,7 +382,7 @@ export default function App() {
                     exact
                     path="/personal-mobile-devices"
                     component={ensureAuthenticated(PersonalMobileDevicesPage)}
-                    title={i18n.titles.employeePinCode}
+                    title={i18n.titles.personalMobileDevices}
                   />
                   <RouteWithTitle
                     exact

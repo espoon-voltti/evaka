@@ -7,7 +7,6 @@ import { Staff } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { faLockOpenAlt, faTimes } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -17,12 +16,7 @@ import { renderResult } from '../../async-rendering'
 import { TopBarIconContainer } from './TopBarIconContainer'
 import { UserMenu } from './UserMenu'
 
-const UserContainer = styled(TopBarIconContainer)<{ active?: boolean }>`
-  border-bottom-style: solid;
-  border-bottom-width: 4px;
-  border-bottom-color: ${({ active }) =>
-    active ? colors.greyscale.white : 'transparent'};
-
+const UserContainer = styled(TopBarIconContainer)`
   // smaller gap between user initials and the icon
   button {
     span + svg {
@@ -46,11 +40,15 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
   const userNames = useMemo(
     () =>
       combine(user, unitInfoResponse)
-        .map(([user, unit]) =>
-          user?.employeeId
-            ? unit.staff.find(({ id }) => id === user.employeeId)
-            : undefined
-        )
+        .map(([user, unitInfo]) => {
+          const employeeId = user?.employeeId
+
+          if (!employeeId) {
+            return undefined
+          }
+
+          return unitInfo.staff.find(({ id }) => id === employeeId)
+        })
         .map(getUserName)
         .getOrElse(getUserName(undefined)),
     [unitInfoResponse, user]
@@ -65,7 +63,7 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), [])
 
   return (
-    <UserContainer active={menuOpen} data-qa="top-bar-user">
+    <UserContainer data-qa="top-bar-user">
       {renderResult(user, (u) =>
         u?.employeeId && u?.pinLoginActive ? (
           menuOpen ? (
@@ -85,7 +83,6 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
             <InlineButton
               icon={faLockOpenAlt}
               iconRight
-              color={colors.greyscale.white}
               text={userNames.initials}
               onClick={toggleMenu}
               data-qa="open-user-menu-btn"

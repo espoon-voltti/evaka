@@ -241,3 +241,15 @@ export interface UnitInfo {
   name: string
   staff: Staff[]
 }
+
+/**
+* Generated from fi.espoo.evaka.attendance.UnitStats
+*/
+export interface UnitStats {
+  id: UUID
+  name: string
+  presentChildren: number
+  presentStaff: number
+  totalChildren: number
+  totalStaff: number
+}
