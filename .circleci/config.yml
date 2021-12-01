@@ -490,7 +490,7 @@ commands:
           working_directory: *workspace_compose
           command: |
             tries=3
-            while !docker-compose build; do
+            while ! docker-compose build; do
               ((--tries)) || exit 1
               echo "Retrying ..."
               sleep 5
