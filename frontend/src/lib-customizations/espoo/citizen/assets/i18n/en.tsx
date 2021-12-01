@@ -140,6 +140,7 @@ const en: Translations = {
     searchPlaceholder: 'For example Purolan päiväkoti',
     address: 'Address',
     noResults: 'No results',
+    keywordRequired: 'Type a keyword',
     distanceWalking: 'Walking distance from selected address',
     careType: 'Service need',
     careTypePlural: 'Service needs',

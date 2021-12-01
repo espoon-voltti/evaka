@@ -139,6 +139,7 @@ export default {
     searchPlaceholder: 'Esim. Purolan päiväkoti',
     address: 'Osoite',
     noResults: 'Ei hakutuloksia',
+    keywordRequired: 'Kirjoita hakusana',
     distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',
     careType: 'Toimintamuoto',
     careTypePlural: 'Toimintamuodot',

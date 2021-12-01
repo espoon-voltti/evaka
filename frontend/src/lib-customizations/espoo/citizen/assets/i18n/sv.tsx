@@ -140,6 +140,7 @@ const sv: Translations = {
     searchPlaceholder: 'T.ex. Purola daghem',
     address: 'Adress',
     noResults: 'Inga sökresultat',
+    keywordRequired: 'Ange ett sökord',
     distanceWalking: 'Avstånd från vald enhet gående',
     careType: 'Verksamhetsform',
     careTypePlural: 'Verksamhetsformer',
