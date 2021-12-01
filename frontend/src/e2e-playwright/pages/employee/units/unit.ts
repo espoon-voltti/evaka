@@ -126,16 +126,24 @@ class GroupsSection {
       )
       .locator('[data-qa="group-name"]')
 
-  async openGroupCollapsible(groupId: string) {
-    await waitUntilVisible(this.#groupCollapsible(groupId))
-    await this.#groupCollapsible(groupId).click()
+  async assertGroupCollapsibleIsClosed(groupId: string) {
+    await waitUntilVisible(this.#groupCollapsible(groupId, true))
+  }
+
+  async assertGroupCollapsibleIsOpen(groupId: string) {
     await waitUntilVisible(this.#groupCollapsible(groupId, false))
   }
 
+  async openGroupCollapsible(groupId: string) {
+    await this.assertGroupCollapsibleIsClosed(groupId)
+    await this.#groupCollapsible(groupId).click()
+    await this.assertGroupCollapsibleIsOpen(groupId)
+  }
+
   async closeGroupCollapsible(groupId: string) {
-    await waitUntilVisible(this.#groupCollapsible(groupId, false))
+    await this.assertGroupCollapsibleIsOpen(groupId)
     await this.#groupCollapsible(groupId, false).click()
-    await waitUntilVisible(this.#groupCollapsible(groupId))
+    await this.assertGroupCollapsibleIsClosed(groupId)
   }
 
   async waitFor() {

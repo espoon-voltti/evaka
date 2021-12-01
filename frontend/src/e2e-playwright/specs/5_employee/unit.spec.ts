@@ -57,10 +57,18 @@ beforeEach(async () => {
 })
 
 describe('Employee - unit view', () => {
-  test('Open groups are open when returning to page', async () => {
+  test('Open groups stay open when reloading page', async () => {
     const groupsSection = await unitPage.openGroups()
     await groupsSection.openGroupCollapsible(groupId)
     await page.reload()
-    await groupsSection.closeGroupCollapsible(groupId)
+    await groupsSection.assertGroupCollapsibleIsOpen(groupId)
+  })
+
+  test('Open groups stay open when visiting other unit page tab', async () => {
+    const groupsSection = await unitPage.openGroups()
+    await groupsSection.openGroupCollapsible(groupId)
+    await unitPage.openUnitInformation()
+    await unitPage.openGroups()
+    await groupsSection.assertGroupCollapsibleIsOpen(groupId)
   })
 })
