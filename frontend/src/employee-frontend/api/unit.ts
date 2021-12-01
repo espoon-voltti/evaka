@@ -788,7 +788,7 @@ export async function createDaycare(
   fields: DaycareFields
 ): Promise<Result<UUID>> {
   return client
-    .put<JsonOf<CreateDaycareResponse>>('/daycares', fields)
+    .post<JsonOf<CreateDaycareResponse>>('/daycares', fields)
     .then(({ data }) => Success.of(data.id))
     .catch((e) => Failure.fromError(e))
 }

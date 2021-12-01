@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -59,7 +58,7 @@ class DaycareController(
     @GetMapping
     fun getDaycares(db: Database.Connection, user: AuthenticatedUser): List<Daycare> {
         Audit.UnitSearch.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Global.READ_UNITS)
         return db.read { it.getDaycares(acl.getAuthorizedDaycares(user)) }
     }
 
@@ -77,7 +76,7 @@ class DaycareController(
     fun putFeatures(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
+        @PathVariable daycareId: DaycareId,
         @RequestBody features: Set<PilotFeature>
     ) {
         Audit.UnitFeaturesUpdate.log(targetId = daycareId)
@@ -89,11 +88,10 @@ class DaycareController(
     fun getDaycare(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId
+        @PathVariable daycareId: DaycareId
     ): DaycareResponse {
         Audit.UnitRead.log(targetId = daycareId)
-        val currentUserRoles = acl.getRolesForUnit(user, daycareId)
-        currentUserRoles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Unit.READ, daycareId)
         return db.read { tx ->
             tx.getDaycare(daycareId)?.let { daycare ->
                 val groups = tx.getDaycareGroupSummaries(daycareId)
@@ -113,28 +111,20 @@ class DaycareController(
     fun getGroups(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @RequestParam(
-            value = "from",
-            required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate? = null,
-        @RequestParam(
-            value = "to",
-            required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate? = null
+        @PathVariable daycareId: DaycareId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
     ): List<DaycareGroup> {
         Audit.UnitGroupsSearch.log(targetId = daycareId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-
-        return db.read { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }
+        accessControl.requirePermissionFor(user, Action.Unit.READ_GROUPS, daycareId)
+        return db.read { daycareService.getDaycareGroups(it, daycareId, from, to) }
     }
 
     @PostMapping("/{daycareId}/groups")
     fun createGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
+        @PathVariable daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest
     ): DaycareGroup {
         Audit.UnitGroupsCreate.log(targetId = daycareId)
@@ -152,8 +142,8 @@ class DaycareController(
     fun updateGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @PathVariable("groupId") groupId: GroupId,
+        @PathVariable daycareId: DaycareId,
+        @PathVariable groupId: GroupId,
         @RequestBody body: GroupUpdateRequest
     ) {
         Audit.UnitGroupsUpdate.log(targetId = groupId)
@@ -166,8 +156,8 @@ class DaycareController(
     fun deleteGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @PathVariable("groupId") groupId: GroupId
+        @PathVariable daycareId: DaycareId,
+        @PathVariable groupId: GroupId
     ) {
         Audit.UnitGroupsDelete.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.DELETE, groupId)
@@ -179,8 +169,8 @@ class DaycareController(
     fun getCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @PathVariable("groupId") groupId: GroupId
+        @PathVariable daycareId: DaycareId,
+        @PathVariable groupId: GroupId
     ): CaretakersResponse {
         Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.READ_CARETAKERS, groupId)
@@ -198,8 +188,8 @@ class DaycareController(
     fun createCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @PathVariable("groupId") groupId: GroupId,
+        @PathVariable daycareId: DaycareId,
+        @PathVariable groupId: GroupId,
         @RequestBody body: CaretakerRequest
     ) {
         Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
@@ -220,9 +210,9 @@ class DaycareController(
     fun updateCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @PathVariable("groupId") groupId: GroupId,
-        @PathVariable("id") id: UUID,
+        @PathVariable daycareId: DaycareId,
+        @PathVariable groupId: GroupId,
+        @PathVariable id: UUID,
         @RequestBody body: CaretakerRequest
     ) {
         Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
@@ -244,9 +234,9 @@ class DaycareController(
     fun removeCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @PathVariable("groupId") groupId: GroupId,
-        @PathVariable("id") id: UUID
+        @PathVariable daycareId: DaycareId,
+        @PathVariable groupId: GroupId,
+        @PathVariable id: UUID
     ) {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Group.DELETE_CARETAKERS, groupId)
@@ -264,25 +254,20 @@ class DaycareController(
     fun getStats(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @RequestParam(
-            value = "from",
-            required = true
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam(value = "to", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
+        @PathVariable daycareId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): DaycareCapacityStats {
         Audit.UnitStatisticsCreate.log(targetId = daycareId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-
-        return db.read { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }
+        accessControl.requirePermissionFor(user, Action.Unit.READ_CAPACITY_STATS, daycareId)
+        return db.read { daycareService.getDaycareCapacityStats(it, daycareId, from, to) }
     }
 
     @PutMapping("/{daycareId}")
     fun updateDaycare(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: DaycareId,
+        @PathVariable daycareId: DaycareId,
         @RequestBody fields: DaycareFields
     ): Daycare {
         Audit.UnitUpdate.log(targetId = daycareId)
@@ -295,14 +280,14 @@ class DaycareController(
         }
     }
 
-    @PutMapping("")
+    @PostMapping
     fun createDaycare(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody fields: DaycareFields
     ): CreateDaycareResponse {
         Audit.UnitCreate.log()
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_UNIT)
         fields.validate()
         return CreateDaycareResponse(
             db.transaction {

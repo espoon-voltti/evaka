@@ -96,7 +96,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
 
     @Test
     fun testCreate() {
-        val (_, res, body) = http.put("/daycares")
+        val (_, res, body) = http.post("/daycares")
             .jsonBody(objectMapper.writeValueAsString(fields))
             .asUser(admin)
             .responseObject<DaycareController.CreateDaycareResponse>()
