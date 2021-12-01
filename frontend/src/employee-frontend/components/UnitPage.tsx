@@ -9,7 +9,13 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Redirect, Route, Switch, useParams } from 'react-router-dom'
+import {
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+  useParams
+} from 'react-router-dom'
 import { useTranslation } from '../state/i18n'
 import { RouteWithTitle } from './RouteWithTitle'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -48,6 +54,52 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   }, [setTitle, unitInformation])
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+
+  const history = useHistory()
+  const queryParams = useCallback(
+    () => new URLSearchParams(location.search),
+    []
+  )
+
+  const getOpenGroupsFromQueryParams = useCallback((): Record<
+    string,
+    boolean
+  > => {
+    const qp = queryParams().get('open_groups')
+    if (qp != null) {
+      return qp
+        .split(',')
+        .reduce(
+          (prev, cur) => (cur ? Object.assign(prev, { [cur]: true }) : prev),
+          {}
+        )
+    } else {
+      return {}
+    }
+  }, [queryParams])
+
+  useEffect(() => {
+    setOpenGroups(getOpenGroupsFromQueryParams())
+  }, [getOpenGroupsFromQueryParams])
+
+  const openGroupsToStringList = (
+    openGroups: Record<string, boolean>
+  ): string => {
+    return Object.keys(openGroups)
+      .reduce(
+        (prev: string[], cur: string) =>
+          openGroups[cur] == true ? prev.concat(cur) : prev,
+        []
+      )
+      .join(',')
+  }
+
+  useEffect(() => {
+    const openList = openGroupsToStringList(openGroups)
+    openList.length > 0
+      ? history.replace(`?open_groups=${openList}`)
+      : history.replace('?')
+  }, [openGroups, history])
 
   const tabs = useMemo(
     () => [

@@ -140,7 +140,6 @@ test('child can be placed into a group and removed from it', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await unitPage.openTabGroups()
   await unitPage.openGroups()
-
   // open the group placement modal and submit it with default values
   const missingPlacement = missingPlacementElement(
     unitPage.missingPlacementRows.nth(0)
