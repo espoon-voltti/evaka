@@ -49,7 +49,7 @@ export async function addParentship(
   childId: UUID,
   startDate: LocalDate,
   endDate: LocalDate
-): Promise<Result<Parentship>> {
+): Promise<Result<void>> {
   const body = {
     headOfChildId,
     childId,
@@ -57,16 +57,8 @@ export async function addParentship(
     endDate
   }
   return client
-    .post<JsonOf<Parentship>>('/parentships', body)
-    .then((res) => res.data)
-    .then((data) => ({
-      ...data,
-      startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseIso(data.endDate),
-      headOfChild: deserializePersonJSON(data.headOfChild),
-      child: deserializePersonJSON(data.child)
-    }))
-    .then((v) => Success.of(v))
+    .post('/parentships', body)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
@@ -74,35 +66,27 @@ export async function updateParentship(
   id: UUID,
   startDate: LocalDate,
   endDate: LocalDate
-): Promise<Result<Parentship>> {
+): Promise<Result<void>> {
   const body = {
     startDate,
     endDate
   }
   return client
-    .put<JsonOf<Parentship>>(`/parentships/${id}`, body)
-    .then((res) => res.data)
-    .then((data) => ({
-      ...data,
-      startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseIso(data.endDate),
-      headOfChild: deserializePersonJSON(data.headOfChild),
-      child: deserializePersonJSON(data.child)
-    }))
-    .then((v) => Success.of(v))
+    .put(`/parentships/${id}`, body)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
-export async function retryParentship(id: UUID): Promise<Result<null>> {
+export async function retryParentship(id: UUID): Promise<Result<void>> {
   return client
     .put(`/parentships/${id}/retry`)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
-export async function removeParentship(id: UUID): Promise<Result<null>> {
+export async function removeParentship(id: UUID): Promise<Result<void>> {
   return client
     .delete(`/parentships/${id}`, {})
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

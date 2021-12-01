@@ -33,6 +33,7 @@ interface PermittedRoleActions {
     fun messageDraftActions(role: UserRole): Set<Action.MessageDraft>
     fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice>
     fun pairingActions(role: UserRole): Set<Action.Pairing>
+    fun parentshipActions(role: UserRole): Set<Action.Parentship>
     fun pedagogicalDocumentActions(role: UserRole): Set<Action.PedagogicalDocument>
     fun personActions(role: UserRole): Set<Action.Person>
     fun placementActions(role: UserRole): Set<Action.Placement>
@@ -68,6 +69,7 @@ class StaticPermittedRoleActions(
     val messageDraft: ActionsByRole<Action.MessageDraft> = getDefaults(),
     val mobileDevice: ActionsByRole<Action.MobileDevice> = getDefaults(),
     val pairing: ActionsByRole<Action.Pairing> = getDefaults(),
+    val parentship: ActionsByRole<Action.Parentship> = getDefaults(),
     val pedagogicalDocument: ActionsByRole<Action.PedagogicalDocument> = getDefaults(),
     val person: ActionsByRole<Action.Person> = getDefaults(),
     val placement: ActionsByRole<Action.Placement> = getDefaults(),
@@ -96,6 +98,7 @@ class StaticPermittedRoleActions(
     override fun messageDraftActions(role: UserRole): Set<Action.MessageDraft> = messageDraft[role] ?: emptySet()
     override fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice> = mobileDevice[role] ?: emptySet()
     override fun pairingActions(role: UserRole): Set<Action.Pairing> = pairing[role] ?: emptySet()
+    override fun parentshipActions(role: UserRole): Set<Action.Parentship> = parentship[role] ?: emptySet()
     override fun pedagogicalDocumentActions(role: UserRole): Set<Action.PedagogicalDocument> = pedagogicalDocument[role] ?: emptySet()
     override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()
     override fun placementActions(role: UserRole): Set<Action.Placement> = placement[role] ?: emptySet()

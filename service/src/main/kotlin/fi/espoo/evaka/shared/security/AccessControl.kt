@@ -43,6 +43,7 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -160,6 +161,16 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "daycare_group_placement.id",
         permittedRoleActions::groupPlacementActions
+    )
+    private val parentship = ActionConfig(
+        """
+SELECT fridge_child.id, role
+FROM fridge_child
+JOIN person_acl_view ON fridge_child.head_of_child = person_acl_view.person_id OR fridge_child.child_id = person_acl_view.person_id
+WHERE employee_id = :userId
+""",
+        "fridge_child.id",
+        permittedRoleActions::parentshipActions
     )
     private val pedagogicalAttachment = ActionConfig(
         """
@@ -297,6 +308,7 @@ WHERE employee_id = :userId
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
             is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)
             is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
+            is Action.Parentship -> this.parentship.hasPermission(user, action, id as ParentshipId)
             is Action.Person -> hasPermissionFor(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)

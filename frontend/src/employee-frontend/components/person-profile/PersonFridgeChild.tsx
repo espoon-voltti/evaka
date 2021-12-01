@@ -4,7 +4,6 @@
 
 import React, { useContext, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Result } from 'lib-common/api'
 import { PersonContext } from '../../state/person'
 import { formatName } from '../../utils'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -76,21 +75,19 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              removeParentship(selectedParentshipId).then(
-                (res: Result<null>) => {
-                  clearUiMode()
-                  if (res.isFailure) {
-                    setErrorMessage({
-                      type: 'error',
-                      title: i18n.personProfile.fridgeChild.error.remove.title,
-                      text: i18n.common.tryAgain,
-                      resolveLabel: i18n.common.ok
-                    })
-                  } else {
-                    reload()
-                  }
+              removeParentship(selectedParentshipId).then((res) => {
+                clearUiMode()
+                if (res.isFailure) {
+                  setErrorMessage({
+                    type: 'error',
+                    title: i18n.personProfile.fridgeChild.error.remove.title,
+                    text: i18n.common.tryAgain,
+                    resolveLabel: i18n.common.ok
+                  })
+                } else {
+                  reload()
                 }
-              ),
+              }),
             label: i18n.common.remove
           }}
         />

@@ -132,6 +132,7 @@ export type Pairing = never
 
 export type Person =
   | 'ADD_SSN'
+  | 'CREATE_PARENTSHIP'
   | 'DISABLE_SSN'
   | 'READ'
   | 'READ_FAMILY_OVERVIEW'
@@ -139,6 +140,7 @@ export type Person =
   | 'READ_INCOME_STATEMENTS'
   | 'READ_INVOICE_ADDRESS'
   | 'READ_OPH_OID'
+  | 'READ_PARENTSHIPS'
   | 'UPDATE'
   | 'UPDATE_INVOICE_ADDRESS'
   | 'UPDATE_OPH_OID'

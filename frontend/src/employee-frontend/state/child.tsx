@@ -5,7 +5,6 @@
 import React, {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState
@@ -19,9 +18,7 @@ import { getPlacements } from '../api/child/placements'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { UUID } from 'lib-common/types'
 import { getChildDetails, getPersonGuardians } from '../api/person'
-import { requireRole } from '../utils/roles'
 import { getParentshipsByChild } from '../api/parentships'
-import { UserContext } from './user'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 
 export interface ChildState {
@@ -59,8 +56,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   id: UUID
   children: JSX.Element
 }) {
-  const { roles } = useContext(UserContext)
-
   const [childResponse, setChildResponse] = useState<Result<ChildResponse>>(
     Loading.of()
   )
@@ -106,10 +101,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   )
   const [parentships] = useApiState(
     async (): Promise<Result<Parentship[]>> =>
-      requireRole(roles, 'SERVICE_WORKER', 'UNIT_SUPERVISOR', 'FINANCE_ADMIN')
+      permittedActions.has('READ_PARENTSHIPS')
         ? await getParentshipsByChild(id)
         : Loading.of(),
-    [roles, id]
+    [id, permittedActions]
   )
   const [backupCares, setBackupCares] = useState<Result<ChildBackupCare[]>>(
     defaultState.backupCares
