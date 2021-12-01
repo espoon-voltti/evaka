@@ -44,7 +44,7 @@ interface Props {
   selectDate: (date: LocalDate) => void
   reloadData: () => void
   close: () => void
-  openAbsenceModal: () => void
+  openAbsenceModal: (initialDate: LocalDate) => void
 }
 
 interface ChildWithReservations {
@@ -147,6 +147,10 @@ export default React.memo(function DayView({
     () => selectDate(nextDate),
     [selectDate, nextDate]
   )
+  const onCreateAbsence = useCallback(
+    () => openAbsenceModal(date),
+    [openAbsenceModal, date]
+  )
 
   return (
     <CalendarModal close={navigate(close)} data-qa="calendar-dayview">
@@ -248,7 +252,8 @@ export default React.memo(function DayView({
         <AbsenceButton
           text={i18n.calendar.newAbsence}
           icon={faUserMinus}
-          onClick={openAbsenceModal}
+          onClick={onCreateAbsence}
+          data-qa="create-absence"
         />
       </BottomBar>
     </CalendarModal>

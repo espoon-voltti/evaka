@@ -144,6 +144,14 @@ class AbsencesModal {
       await this.page.locator('div[data-qa*="child"]').nth(i).click()
     }
   }
+
+  async assertStartDate(text: string) {
+    await waitUntilEqual(() => this.#startDateInput.inputValue(), text)
+  }
+
+  async assertEndDate(text: string) {
+    await waitUntilEqual(() => this.#endDateInput.inputValue(), text)
+  }
 }
 
 class DayView {
@@ -151,6 +159,7 @@ class DayView {
 
   #root = this.page.locator('[data-qa="calendar-dayview"]')
   #editButton = this.#root.locator('[data-qa="edit"]')
+  #createAbsenceButton = this.#root.locator('[data-qa="create-absence"]')
 
   #reservationsOfChild(childId: UUID) {
     return this.#root.locator(`[data-qa="reservations-of-${childId}"]`)
@@ -172,6 +181,11 @@ class DayView {
   async edit() {
     await this.#editButton.click()
     return new DayViewEditor(this.#root)
+  }
+
+  async createAbsence() {
+    await this.#createAbsenceButton.click()
+    return new AbsencesModal(this.page)
   }
 }
 

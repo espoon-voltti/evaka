@@ -183,4 +183,14 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     await dayView.assertReservations(children[1].id, '08:00 – 16:00')
     await dayView.assertNoReservation(children[2].id)
   })
-})
+
+  test('If absence modal is opened from day view, that day is filled by default', async () => {
+    const reservationDay = LocalDate.today().addDays(14)
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+    const absencesModal = await dayView.createAbsence()
+
+    await absencesModal.assertStartDate(reservationDay.format())
+    await absencesModal.assertEndDate(reservationDay.format())
+  })
+}
