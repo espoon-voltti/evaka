@@ -180,7 +180,10 @@ export default React.memo(function ServiceNeeds({
           iconColour={'orange'}
           icon={faQuestion}
           resolve={{
-            action: () => deleteServiceNeed(deletingId).then(reload),
+            action: () =>
+              deleteServiceNeed(deletingId)
+                .then(reload)
+                .finally(() => setDeletingId(null)),
             label: t.deleteServiceNeed.btn
           }}
           reject={{
