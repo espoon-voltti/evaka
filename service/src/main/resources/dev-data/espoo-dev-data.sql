@@ -22,8 +22,14 @@ VALUES
 INSERT INTO voucher_value (id, validity, base_value, age_under_three_coefficient) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000, 1.55);
 
 INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date) VALUES
-                                                                           ('6f82b730-5963-11ea-b4d8-6f19186c8118', '2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Ryhmä 1', '2020-03-01', NULL),
-                                                                           ('b4bd39f6-5963-11ea-b4da-ebed8135a791', '2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Ryhmä 2', '2020-03-01', NULL);
+    ('6f82b730-5963-11ea-b4d8-6f19186c8118', '2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Ryhmä 1', '2020-03-01', NULL),
+    ('b4bd39f6-5963-11ea-b4da-ebed8135a791', '2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Ryhmä 2', '2020-03-01', NULL),
+    ('4539f160-a616-41cb-ac51-6a12ba2c9645', '2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', 'Ryhmä 1', '2020-03-01', NULL);
+
+INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES
+    ('6f82b730-5963-11ea-b4d8-6f19186c8118', 3, '2020-03-01', NULL),
+    ('b4bd39f6-5963-11ea-b4da-ebed8135a791', 3, '2020-03-01', NULL),
+    ('4539f160-a616-41cb-ac51-6a12ba2c9645', 3, '2020-03-01', NULL);
 
 INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group;
 
