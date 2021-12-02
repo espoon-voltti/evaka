@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -52,11 +51,7 @@ class IncomeController(
     @GetMapping
     fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<Income>> {
         Audit.PersonIncomeRead.log(targetId = personId)
-        if (!accessControl.hasPermissionFor(user, Action.Person.READ_INCOME, personId) &&
-            !accessControl.hasPermissionFor(user, Action.Child.READ_INCOME, personId)
-        ) {
-            throw Forbidden("Permission denied")
-        }
+        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME, personId)
 
         val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId.raw) }
         return Wrapper(incomes)

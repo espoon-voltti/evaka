@@ -75,7 +75,7 @@ interface SectionProps {
 
 function requireOneOfPermittedActions(
   Component: React.FunctionComponent<SectionProps>,
-  ...actions: Action.Child[]
+  ...actions: Array<Action.Child | Action.Person>
 ): React.FunctionComponent<SectionProps> {
   return function Section({ id, startOpen }: SectionProps) {
     const { permittedActions } = useContext<ChildState>(ChildContext)
