@@ -112,22 +112,22 @@ export const MessageContextProvider = React.memo(
     const [selectedUnit, setSelectedUnit] = useState<
       ReactSelectOption | undefined
     >()
-    const { loggedIn } = useContext(UserContext)
+    const { user } = useContext(UserContext)
 
     const [accounts] = useApiState(
       () =>
-        loggedIn
+        user?.accessibleFeatures.messages
           ? getMessagingAccounts()
           : Promise.resolve(Loading.of<NestedMessageAccount[]>()),
-      [loggedIn]
+      [user]
     )
 
     const [unreadCountsByAccount, refreshUnreadCounts] = useApiState(
       () =>
-        loggedIn
+        user?.accessibleFeatures.messages
           ? getUnreadCounts()
           : Promise.resolve(Loading.of<UnreadCountByAccount[]>()),
-      [loggedIn]
+      [user]
     )
 
     usePeriodicRefresh(client, refreshUnreadCounts, { thresholdInMinutes: 1 })

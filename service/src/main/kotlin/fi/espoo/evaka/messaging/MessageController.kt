@@ -61,12 +61,9 @@ class MessageController(
     ): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
-        return when (user) {
-            is AuthenticatedUser.MobileDevice ->
-                if (user.employeeId != null) db.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) }
-                else setOf()
-            else -> setOf()
-        }
+        return if (user is AuthenticatedUser.MobileDevice && user.employeeId != null) {
+            db.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) }
+        } else setOf()
     }
 
     @GetMapping("/{accountId}/received")
