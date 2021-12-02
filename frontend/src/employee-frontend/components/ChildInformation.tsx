@@ -36,6 +36,8 @@ import CircularLabel from './common/CircularLabel'
 import { Action } from 'lib-common/generated/action'
 import PedagogicalDocuments from './child-information/PedagogicalDocuments'
 import { UUID } from 'lib-common/types'
+import ChildIncome from './child-information/ChildIncome'
+import { featureFlags } from 'lib-customizations/citizen'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -73,7 +75,7 @@ interface SectionProps {
 
 function requireOneOfPermittedActions(
   Component: React.FunctionComponent<SectionProps>,
-  ...actions: Action.Child[]
+  ...actions: Array<Action.Child | Action.Person>
 ): React.FunctionComponent<SectionProps> {
   return function Section({ id, startOpen }: SectionProps) {
     const { permittedActions } = useContext<ChildState>(ChildContext)
@@ -86,6 +88,7 @@ function requireOneOfPermittedActions(
 }
 
 const components = {
+  income: requireOneOfPermittedActions(ChildIncome, 'READ_INCOME'),
   'fee-alterations': requireOneOfPermittedActions(
     FeeAlteration,
     'READ_FEE_ALTERATIONS'
@@ -142,6 +145,9 @@ const layouts: Layouts<typeof components> = {
     },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
+    ...(featureFlags.childIncomeEnabled
+      ? [{ component: 'income' as const, open: false }]
+      : []),
     { component: 'fee-alterations', open: false }
   ],
   ['SERVICE_WORKER']: [
@@ -154,6 +160,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false }
   ],
   ['FINANCE_ADMIN']: [
+    ...(featureFlags.childIncomeEnabled
+      ? [{ component: 'income' as const, open: false }]
+      : []),
     { component: 'fee-alterations', open: true },
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },

@@ -45,6 +45,7 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
     >
       <IncomeStatements personId={id} />
       <Gap />
+      <H3>{i18n.personProfile.income.title}</H3>
       <Incomes personId={id} />
     </CollapsibleSection>
   )
@@ -80,7 +81,11 @@ const IncomeStatements = React.memo(function IncomeStatements({
   )
 })
 
-const Incomes = React.memo(function Incomes({ personId }: { personId: UUID }) {
+export const Incomes = React.memo(function Incomes({
+  personId
+}: {
+  personId: UUID
+}) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
   const { reloadFamily } = useContext(PersonContext)
@@ -159,7 +164,6 @@ const Incomes = React.memo(function Incomes({ personId }: { personId: UUID }) {
 
   return (
     <>
-      <H3>{i18n.personProfile.income.title}</H3>
       {renderResult(
         combine(incomes, incomeTypeOptions),
         ([incomes, incomeTypeOptions]) => (
