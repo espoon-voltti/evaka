@@ -148,7 +148,7 @@ data class VasuContent(
                 if (question.type === VasuQuestionType.FOLLOWUP) {
                     (question as VasuQuestion.Followup).value.forEach { entry ->
                         val thisEntry = this.findFollowupEntryWithId(entry.id)
-                        if (thisEntry != entry)
+                        if (thisEntry != null && thisEntry != entry)
                             return true
                     }
                 }

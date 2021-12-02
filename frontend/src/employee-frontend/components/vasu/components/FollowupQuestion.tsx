@@ -4,6 +4,7 @@
 
 import React, { useState, useContext, useCallback } from 'react'
 import styled, { css } from 'styled-components'
+import { v4 as uuid } from 'uuid'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UserContext } from '../../../state/user'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -75,7 +76,11 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
             } ${getEntry().edited?.editorName ?? ''}`}
         </Dimmed>
         {onEdited && editAllowed && (
-          <IconButton icon={faPen} onClick={() => setEditing(true)} />
+          <IconButton
+            icon={faPen}
+            onClick={() => setEditing(true)}
+            data-qa="vasu-followup-entry-edit-btn"
+          />
         )}
       </FixedSpaceRow>
     </Entry>
@@ -117,6 +122,7 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
     } else {
       onChange({
         ...entry,
+        id: uuid(),
         date: LocalDate.today(),
         authorName: user?.name || 'unknown',
         authorId: user?.id,
@@ -164,12 +170,6 @@ export default React.memo(function FollowupQuestion({
   translations
 }: FollowupQuestionProps) {
   const { i18n } = useTranslation()
-  const addNewEntry = useCallback(
-    (entry: FollowupEntry) => {
-      onChange && onChange(entry)
-    },
-    [onChange]
-  )
 
   return (
     <FollowupQuestionContainer
@@ -190,7 +190,7 @@ export default React.memo(function FollowupQuestion({
       {onChange && (
         <FollowupEntryEditor
           buttonCaption={i18n.common.addNew}
-          onChange={addNewEntry}
+          onChange={onChange}
         />
       )}
     </FollowupQuestionContainer>

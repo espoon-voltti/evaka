@@ -29,6 +29,10 @@ export default class VasuPage {
     '[data-qa="vasu-followup-entry-metadata"]'
   )
 
+  readonly #followupEntryEditBtn = this.page.locator(
+    '[data-qa="vasu-followup-entry-edit-btn"]'
+  )
+
   get followupQuestionCount(): Promise<number> {
     return this.page
       .waitForLoadState('networkidle')
@@ -59,5 +63,12 @@ export default class VasuPage {
 
   get followupEntryMetadata(): Promise<Array<string>> {
     return this.#followupEntryMetadata.allInnerTexts()
+  }
+
+  async editFollowupComment(ix: number, text: string) {
+    await this.#followupEntryEditBtn.nth(ix).click()
+    await this.#followupInput.first().type(text)
+    await this.#followupAddBtn.first().click()
+    await this.page.waitForLoadState('networkidle')
   }
 }

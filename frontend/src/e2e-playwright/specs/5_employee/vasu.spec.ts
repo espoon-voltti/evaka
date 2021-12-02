@@ -45,6 +45,7 @@ beforeAll(async () => {
     childId,
     unitId
   )
+
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
   templateId = await insertVasuTemplateFixture()
 })
@@ -126,6 +127,25 @@ describe('Vasu document page', () => {
       const entryMetadata = await vasuPage.followupEntryMetadata
       const expectedMetadataStr = `${LocalDate.today().format()} Seppo Sorsa`
       expect(entryMetadata).toEqual([expectedMetadataStr, expectedMetadataStr])
+    })
+
+    const lastElement = <T>(arr: Array<T>): T => arr[arr.length - 1]
+
+    test('A user can edit his own followup comment', async () => {
+      vasuPage = await editDocument()
+      await vasuPage.inputFollowupComment('This will be edited')
+      let entryTexts = await vasuPage.followupEntryTexts
+      expect(lastElement(entryTexts)).toEqual('This will be edited')
+
+      await vasuPage.editFollowupComment(entryTexts.length - 1, 'now edited: ')
+
+      entryTexts = await vasuPage.followupEntryTexts
+      expect(lastElement(entryTexts)).toEqual('now edited: This will be edited')
+
+      const entryMetadata = await vasuPage.followupEntryMetadata
+      const date = LocalDate.today().format()
+      const expectedMetadataStr = `${date} Seppo Sorsa, muokattu ${date} Seppo Sorsa`
+      expect(lastElement(entryMetadata)).toEqual(expectedMetadataStr)
     })
   })
 })
