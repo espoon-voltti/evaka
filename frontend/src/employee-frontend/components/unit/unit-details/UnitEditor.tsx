@@ -40,6 +40,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { UnitProviderType } from 'lib-customizations/types'
 import { UUID } from 'lib-common/types'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -172,6 +173,12 @@ const IndentChckboxLabel = styled.div`
 
 const Url = styled.a`
   word-break: break-all;
+`
+
+const AlertBoxContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 `
 
 function AddressEditor({
@@ -590,8 +597,17 @@ export default function UnitEditor(props: Props): JSX.Element {
     ? (label: string) => `${label}*`
     : (label: string) => label
 
+  const isMunicipalOrPurchasedOrServiceVoucherUnit = () => {
+    return (
+      form.providerType === 'MUNICIPAL' ||
+      form.providerType === 'PURCHASED' ||
+      form.providerType === 'PRIVATE_SERVICE_VOUCHER' ||
+      form.providerType === 'MUNICIPAL_SCHOOL'
+    )
+  }
+
   return (
-    <form action="#">
+    <form action="#" data-qa={'unit-editor-container'}>
       {props.unit && (
         <TopBar>
           <H1 fitted>{props.unit.name}</H1>
@@ -626,36 +642,47 @@ export default function UnitEditor(props: Props): JSX.Element {
       </FormPart>
       <FormPart>
         <div>{`${i18n.unitEditor.label.openingDate} / ${i18n.unitEditor.label.closingDate}`}</div>
-        <div>
-          {props.editable ? (
-            <DatePickerDeprecated
-              date={form.openingDate ?? undefined}
-              options={{
-                placeholderText: i18n.unitEditor.placeholder.openingDate
-              }}
-              onChange={(openingDate) => updateForm({ openingDate })}
-              className="inline-block"
-              maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
+        <AlertBoxContainer>
+          <div>
+            {props.editable ? (
+              <DatePickerDeprecated
+                date={form.openingDate ?? undefined}
+                options={{
+                  placeholderText: i18n.unitEditor.placeholder.openingDate
+                }}
+                onChange={(openingDate) => updateForm({ openingDate })}
+                className="inline-block"
+                maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
+              />
+            ) : (
+              form.openingDate?.format()
+            )}
+            {' - '}
+            {props.editable ? (
+              <DatePickerClearableDeprecated
+                date={form.closingDate}
+                options={{
+                  placeholderText: i18n.unitEditor.placeholder.closingDate
+                }}
+                onCleared={() => updateForm({ closingDate: null })}
+                onChange={(closingDate) => updateForm({ closingDate })}
+                className="inline-block"
+                minDate={form.openingDate ?? LocalDate.of(1960, 0, 0)}
+                data-qa={'closing-date-input'}
+              />
+            ) : (
+              form.closingDate?.format()
+            )}
+          </div>
+          {props.editable && !props.unit?.closingDate && form.closingDate && (
+            <AlertBox
+              message={
+                i18n.unitEditor.warning.placementsShouldBeEndedIfUnitIsClosed
+              }
+              data-qa={'closing-date-warning'}
             />
-          ) : (
-            form.openingDate?.format()
           )}
-          {' - '}
-          {props.editable ? (
-            <DatePickerClearableDeprecated
-              date={form.closingDate}
-              options={{
-                placeholderText: i18n.unitEditor.placeholder.closingDate
-              }}
-              onCleared={() => updateForm({ closingDate: null })}
-              onChange={(closingDate) => updateForm({ closingDate })}
-              className="inline-block"
-              minDate={form.openingDate ?? LocalDate.of(1960, 0, 0)}
-            />
-          ) : (
-            form.closingDate?.format()
-          )}
-        </div>
+        </AlertBoxContainer>
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.area)}</div>
@@ -839,6 +866,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 label={i18n.common.providerType[value]}
                 checked={form.providerType === value}
                 onChange={() => updateForm({ providerType: value })}
+                data-qa={`provider-type-${value}`}
               />
             ))}
           </FixedSpaceColumn>
@@ -934,12 +962,25 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.integrations)}</div>
         <FixedSpaceColumn>
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.uploadToVarda}
-            checked={form.uploadToVarda}
-            onChange={(uploadToVarda) => updateForm({ uploadToVarda })}
-          />
+          <AlertBoxContainer>
+            <Checkbox
+              disabled={!props.editable}
+              label={i18n.unitEditor.field.uploadToVarda}
+              checked={form.uploadToVarda}
+              onChange={(uploadToVarda) => updateForm({ uploadToVarda })}
+            />
+            {props.editable &&
+              form.uploadToVarda &&
+              !isMunicipalOrPurchasedOrServiceVoucherUnit() && (
+                <AlertBox
+                  message={
+                    i18n.unitEditor.warning
+                      .onlyMunicipalUnitsShouldBeSentToVarda
+                  }
+                  data-qa={'send-to-varda-warning'}
+                />
+              )}
+          </AlertBoxContainer>
           <Checkbox
             disabled={!props.editable}
             label={i18n.unitEditor.field.uploadChildrenToVarda}
@@ -956,16 +997,67 @@ export default function UnitEditor(props: Props): JSX.Element {
               onChange={(uploadToKoski) => updateForm({ uploadToKoski })}
             />
           )}
+        </FixedSpaceColumn>
+      </FormPart>
+      <FormPart>
+        <div>{showRequired(i18n.unitEditor.label.invoicedByMunicipality)}</div>
+        <div>
           <Checkbox
             disabled={!props.editable}
-            label={i18n.unitEditor.field.invoicedByMunicipality}
+            label={i18n.unitEditor.field.invoicingByEvaka}
             checked={form.invoicedByMunicipality}
             onChange={(invoicedByMunicipality) =>
               updateForm({ invoicedByMunicipality })
             }
+            data-qa={'check-invoice-by-municipality'}
           />
-        </FixedSpaceColumn>
+          {form.invoicedByMunicipality && (
+            <>
+              <Gap size={'m'} />
+              <FormPart>
+                <label htmlFor="unit-cost-center">
+                  {i18n.unitEditor.label.costCenter}
+                </label>
+                {props.editable ? (
+                  <InputField
+                    id="unit-cost-center"
+                    placeholder={showRequired(
+                      i18n.unitEditor.placeholder.costCenter
+                    )}
+                    value={form.costCenter}
+                    onChange={(value) => updateForm({ costCenter: value })}
+                  />
+                ) : (
+                  form.costCenter
+                )}
+              </FormPart>
+              <FormPart>
+                <div>{i18n.unitEditor.label.financeDecisionHandler}</div>
+                {props.editable ? (
+                  <Combobox
+                    items={props.financeDecisionHandlerOptions}
+                    placeholder={
+                      i18n.unitEditor.placeholder.financeDecisionHandler
+                    }
+                    selectedItem={selectedFinanceDecisionManager ?? null}
+                    onChange={(value) =>
+                      value
+                        ? updateForm({ financeDecisionHandlerId: value.value })
+                        : updateForm({ financeDecisionHandlerId: undefined })
+                    }
+                    clearable
+                    fullWidth
+                    getItemLabel={(item) => item.label}
+                  />
+                ) : (
+                  selectedFinanceDecisionManager?.label
+                )}
+              </FormPart>
+            </>
+          )}
+        </div>
       </FormPart>
+
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.ophUnitOid)}</div>
         {props.editable ? (
@@ -992,41 +1084,6 @@ export default function UnitEditor(props: Props): JSX.Element {
           />
         ) : (
           form.ophOrganizerOid
-        )}
-      </FormPart>
-      <FormPart>
-        <label htmlFor="unit-cost-center">
-          {i18n.unitEditor.label.costCenter}
-        </label>
-        {props.editable ? (
-          <InputField
-            id="unit-cost-center"
-            placeholder={showRequired(i18n.unitEditor.placeholder.costCenter)}
-            value={form.costCenter}
-            onChange={(value) => updateForm({ costCenter: value })}
-          />
-        ) : (
-          form.costCenter
-        )}
-      </FormPart>
-      <FormPart>
-        <div>{i18n.unitEditor.label.financeDecisionHandler}</div>
-        {props.editable ? (
-          <Combobox
-            items={props.financeDecisionHandlerOptions}
-            placeholder={i18n.unitEditor.placeholder.financeDecisionHandler}
-            selectedItem={selectedFinanceDecisionManager ?? null}
-            onChange={(value) =>
-              value
-                ? updateForm({ financeDecisionHandlerId: value.value })
-                : updateForm({ financeDecisionHandlerId: undefined })
-            }
-            clearable
-            fullWidth
-            getItemLabel={(item) => item.label}
-          />
-        ) : (
-          selectedFinanceDecisionManager?.label
         )}
       </FormPart>
       <FormPart>
@@ -1244,17 +1301,27 @@ export default function UnitEditor(props: Props): JSX.Element {
           {i18n.unitEditor.label.decisionCustomization.handlerAddress}
         </label>
         {props.editable ? (
-          <InputField
-            id="unit-handler-address"
-            placeholder={i18n.unitEditor.placeholder.streetAddress}
-            value={decisionCustomization.handlerAddress}
-            width={'L'}
-            onChange={(value) =>
-              updateDecisionCustomization({
-                handlerAddress: value
-              })
-            }
-          />
+          <AlertBoxContainer>
+            <InputField
+              id="unit-handler-address"
+              placeholder={i18n.unitEditor.placeholder.streetAddress}
+              value={decisionCustomization.handlerAddress}
+              width={'L'}
+              onChange={(value) =>
+                updateDecisionCustomization({
+                  handlerAddress: value
+                })
+              }
+            />
+            {props.editable &&
+              !form.decisionCustomization.handlerAddress &&
+              isMunicipalOrPurchasedOrServiceVoucherUnit() && (
+                <AlertBox
+                  message={i18n.unitEditor.warning.handlerAddressIsMandatory}
+                  data-qa={'handler-address-mandatory-warning'}
+                />
+              )}
+          </AlertBoxContainer>
         ) : (
           decisionCustomization.handlerAddress
         )}

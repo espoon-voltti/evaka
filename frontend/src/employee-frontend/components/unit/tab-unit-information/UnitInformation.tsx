@@ -88,7 +88,10 @@ function UnitInformation({ unit, permittedActions }: Props) {
       {permittedActions.has('UPDATE') && (
         <>
           <Gap size={'L'} />
-          <DetailsLink to={`/units/${unit.id}/details`}>
+          <DetailsLink
+            to={`/units/${unit.id}/details`}
+            data-qa={'unit-details-link'}
+          >
             {i18n.unit.openDetails}
           </DetailsLink>
         </>

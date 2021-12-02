@@ -2560,6 +2560,7 @@ export const fi = {
       language: 'Yksikön kieli',
       ghostUnit: 'Haamuyksikkö',
       integrations: 'Integraatiot',
+      invoicedByMunicipality: 'Laskutetaan eVakasta',
       ophUnitOid: 'Toimipaikan OID',
       ophOrganizerOid: 'Järjestäjän OID',
       costCenter: 'Kustannuspaikka',
@@ -2595,6 +2596,7 @@ export const fi = {
       uploadChildrenToVarda: 'Yksikön lasten tiedot lähetetään Vardaan',
       uploadToKoski: 'Lähetetään Koski-palveluun',
       invoicedByMunicipality: 'Laskutetaan eVakasta',
+      invoicingByEvaka: 'Yksikön laskutus tapahtuu eVakasta',
       decisionCustomization: {
         handler: [
           'Palveluohjaus',
@@ -2652,6 +2654,14 @@ export const fi = {
       ophUnitOid: 'Yksikön OID puuttuu',
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
       openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen'
+    },
+    warning: {
+      placementsShouldBeEndedIfUnitIsClosed:
+        'Huomioithan, että kaikki sijoitukset tulee päättää yksikön päättymispäivään mennessä, mukaan lukien myös mahdolliset tulevaisuuden sijoitukset.',
+      onlyMunicipalUnitsShouldBeSentToVarda:
+        'Älä lähetä Vardaan muiden kuin kunnallisten ja kunnallisten ostopalveluyksiköiden tietoja.',
+      handlerAddressIsMandatory:
+        'Ilmoituksen vastaanottajan osoite on pakollinen, jos yksikön järjestämismuodoksi on valittu kunnallinen, ostopalvelu tai palveluseteli.'
     }
   },
   fileUpload: {
