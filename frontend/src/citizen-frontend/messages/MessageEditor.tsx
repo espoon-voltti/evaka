@@ -19,6 +19,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import Button from 'lib-components/atoms/buttons/Button'
+import { desktopMin } from 'lib-components/breakpoints'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',
@@ -151,6 +152,15 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${colors.greyscale.white};
+  @media (max-width: ${desktopMin}) {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vh;
+    max-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
 `
 
 const ErrorMessage = styled.div`
