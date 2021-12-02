@@ -146,7 +146,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as keyof typeof components, open: false }]
+      ? [{ component: 'income' as const, open: false }]
       : []),
     { component: 'fee-alterations', open: false }
   ],
@@ -161,7 +161,7 @@ const layouts: Layouts<typeof components> = {
   ],
   ['FINANCE_ADMIN']: [
     ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as keyof typeof components, open: false }]
+      ? [{ component: 'income' as const, open: false }]
       : []),
     { component: 'fee-alterations', open: true },
     { component: 'guardiansAndParents', open: false },
