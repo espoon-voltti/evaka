@@ -59,50 +59,36 @@ export default React.memo(function AttendanceList({
 
   const tabs = useMemo(() => {
     const url = `/units/${unitId}/groups/${groupId}/child-attendance/list`
+
+    const getLabel = (title: string, count: number) => (
+      <Bold>
+        {title}
+        <br />
+        <span data-qa="count">{count}</span>/
+        <span data-qa="total">{totalAttendances}</span>
+      </Bold>
+    )
+
     return [
       {
         id: 'coming',
         link: `${url}/coming`,
-        label: (
-          <Bold>
-            {i18n.attendances.types.COMING}
-            <br />
-            {`${totalComing}/${totalAttendances}`}
-          </Bold>
-        )
+        label: getLabel(i18n.attendances.types.COMING, totalComing)
       },
       {
         id: 'present',
         link: `${url}/present`,
-        label: (
-          <Bold>
-            {i18n.attendances.types.PRESENT}
-            <br />
-            {`${totalPresent}/${totalAttendances}`}
-          </Bold>
-        )
+        label: getLabel(i18n.attendances.types.PRESENT, totalPresent)
       },
       {
         id: 'departed',
         link: `${url}/departed`,
-        label: (
-          <Bold>
-            {i18n.attendances.types.DEPARTED}
-            <br />
-            {`${totalDeparted}/${totalAttendances}`}
-          </Bold>
-        )
+        label: getLabel(i18n.attendances.types.DEPARTED, totalDeparted)
       },
       {
         id: 'absent',
         link: `${url}/absent`,
-        label: (
-          <Bold>
-            {i18n.attendances.types.ABSENT}
-            <br />
-            {`${totalAbsent}/${totalAttendances}`}
-          </Bold>
-        )
+        label: getLabel(i18n.attendances.types.ABSENT, totalAbsent)
       }
     ]
   }, [
