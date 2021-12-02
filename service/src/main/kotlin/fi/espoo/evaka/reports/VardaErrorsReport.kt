@@ -11,11 +11,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 import java.util.UUID
 
 @RestController
@@ -23,16 +20,15 @@ class VardaErrorReport(private val acl: AccessControlList) {
     @GetMapping("/reports/varda-errors")
     fun getVardaErrors(
         db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestParam("errorsSince") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) errorsSince: LocalDate
+        user: AuthenticatedUser
     ): List<VardaErrorReportRow> {
         Audit.VardaReportRead.log()
         user.requireOneOfRoles(UserRole.ADMIN)
-        return db.read { it.getVardaErrorsSince(errorsSince) }
+        return db.read { it.getVardaErrors() }
     }
 }
 
-private fun Database.Read.getVardaErrorsSince(errorsSince: LocalDate): List<VardaErrorReportRow> = createQuery(
+private fun Database.Read.getVardaErrors(): List<VardaErrorReportRow> = createQuery(
     """
 SELECT
     vsn.evaka_service_need_id AS service_need_id,
@@ -47,9 +43,10 @@ FROM varda_service_need vsn
 JOIN service_need sn on vsn.evaka_service_need_id = sn.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 LEFT JOIN varda_reset_child vrc ON vrc.evaka_child_id = vsn.evaka_child_id
-WHERE vsn.updated > :errorsSince AND vsn.update_failed = true
+WHERE vsn.update_failed = true
+ORDER BY vsn.updated DESC
     """.trimIndent()
-).bind("errorsSince", errorsSince)
+)
     .mapTo<VardaErrorReportRow>()
     .toList()
 
