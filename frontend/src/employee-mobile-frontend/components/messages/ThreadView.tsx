@@ -12,7 +12,7 @@ import {
   MessageThread,
   NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { formatTime } from 'lib-common/date'
+import { formatDateOrTime } from 'lib-common/date'
 import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import { getAccountsByUserAndUnit, MessageContext } from '../../state/messages'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -144,7 +144,7 @@ function SingleMessage({ message, ours }: { message: Message; ours: boolean }) {
         <SenderName data-qa={'single-message-sender-name'}>
           {message.sender.name}
         </SenderName>
-        <SentDate white={ours}>{formatTime(message.sentAt)}</SentDate>
+        <SentDate white={ours}>{formatDateOrTime(message.sentAt)}</SentDate>
       </TitleRow>
       <MessageContent data-qa="single-message-content">
         {message.content}

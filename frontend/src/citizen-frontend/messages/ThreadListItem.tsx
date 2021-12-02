@@ -2,21 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import React from 'react'
+import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { useTranslation } from '../localization'
-import { MessageTypeChip } from './MessageTypeChip'
-import { formatDate } from 'lib-common/date'
-import { getAttachmentBlob } from '../attachments'
 import {
   Container,
   Header,
   TitleAndDate,
   Truncated
 } from 'lib-components/molecules/ThreadListItem'
+import React from 'react'
+import { getAttachmentBlob } from '../attachments'
+import { useTranslation } from '../localization'
+import { MessageTypeChip } from './MessageTypeChip'
 
 interface Props {
   thread: MessageThread
@@ -52,16 +51,7 @@ export default React.memo(function ThreadListItem({
         </Header>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>
-          <span>
-            {formatDate(
-              lastMessage.sentAt,
-              LocalDate.fromSystemTzDate(lastMessage.sentAt).isEqual(
-                LocalDate.today()
-              )
-                ? 'HH:mm'
-                : 'd.M.'
-            )}
-          </span>
+          <span>{formatDateOrTime(lastMessage.sentAt)}</span>
         </TitleAndDate>
         <Truncated>
           {lastMessage.content.substring(0, 200).replace('\n', ' ')}

@@ -11,8 +11,7 @@ import {
 } from 'lib-components/molecules/ThreadListItem'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { formatDate } from 'lib-common/date'
-import LocalDate from 'lib-common/local-date'
+import { formatDateOrTime } from 'lib-common/date'
 import React from 'react'
 
 export function MessagePreview({
@@ -41,16 +40,7 @@ export function MessagePreview({
         </Header>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>
-          <span>
-            {formatDate(
-              lastMessage.sentAt,
-              LocalDate.fromSystemTzDate(lastMessage.sentAt).isEqual(
-                LocalDate.today()
-              )
-                ? 'HH:mm'
-                : 'd.M.'
-            )}
-          </span>
+          <span>{formatDateOrTime(lastMessage.sentAt)}</span>
         </TitleAndDate>
         <Truncated>
           {lastMessage.content.substring(0, 200).replace('\n', ' ')}

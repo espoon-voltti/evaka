@@ -2,16 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isToday } from 'date-fns'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React from 'react'
 import styled from 'styled-components'
-import {
-  DATE_FORMAT_NO_YEAR,
-  DATE_FORMAT_TIME_ONLY,
-  formatDate
-} from 'lib-common/date'
+import { formatDateOrTime } from 'lib-common/date'
 import { fontWeights } from 'lib-components/typography'
 
 export const MessageRow = styled.div<{ unread?: boolean }>`
@@ -56,10 +51,6 @@ export const TypeAndDate = styled.div`
   align-items: flex-end;
 `
 
-function formatTimestamp(sentAt: Date) {
-  const format = isToday(sentAt) ? DATE_FORMAT_TIME_ONLY : DATE_FORMAT_NO_YEAR
-  return formatDate(sentAt, format)
-}
 export function Timestamp({ date }: { date: Date }) {
-  return <span>{formatTimestamp(date)}</span>
+  return <span>{formatDateOrTime(date)}</span>
 }

@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format } from 'date-fns'
+import { format, isToday } from 'date-fns'
 
 export const DATE_FORMAT_DATE = 'dd.MM.yyyy'
 export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
 export const DATE_FORMAT_NO_YEAR = 'dd.MM.'
+export const DATE_FORMAT_SHORT_NO_YEAR = 'd.M.'
 export const DATE_FORMAT_ISO = 'yyyy-MM-dd'
 export const DATE_FORMAT_TIME_ONLY = 'HH:mm'
 
@@ -26,4 +27,11 @@ const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/
 
 export function isValidTime(time: string): boolean {
   return timeRegex.test(time)
+}
+
+export function formatDateOrTime(date: Date): string {
+  return format(
+    date,
+    isToday(date) ? DATE_FORMAT_TIME_ONLY : DATE_FORMAT_SHORT_NO_YEAR
+  )
 }
