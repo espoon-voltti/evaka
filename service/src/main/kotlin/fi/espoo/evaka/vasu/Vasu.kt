@@ -266,7 +266,7 @@ data class FollowupEntry(
     val authorName: String = "",
     val text: String = "",
     val id: UUID = UUID.randomUUID(),
-    val authorId: PersonId? = null,
+    val authorId: UUID? = null,
     val edited: FollowupEntryEditDetails? = null
 )
 
@@ -274,5 +274,5 @@ data class FollowupEntry(
 data class FollowupEntryEditDetails(
     val editedAt: LocalDate = LocalDate.now(),
     val editorName: String = "",
-    val editorId: PersonId? = null
+    val editorId: UUID? = null
 )

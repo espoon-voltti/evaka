@@ -7,7 +7,9 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.pis.Employee
+import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.util.UUID
 
 @ExcludeCodeGen
@@ -150,18 +153,23 @@ class VasuController(
         @RequestBody body: EditFollowupEntryRequest
     ) {
         Audit.VasuDocumentEditFollowupEntry.log(id, entryId)
-        accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE, id)
+        accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE_OWN_FOLLOWUP_ENTRY, id)
         db.transaction { tx ->
             val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
             val entry = findFollowupEntryWithId(vasu, entryId) ?: throw NotFound("Entry with $entryId not found")
 
-            if (entry.authorId?.raw  != user.id) {
+            val updateAnyAllowedBy = Action.VasuDocument.UPDATE_ANY_FOLLOWUP_ENTRY.defaultRoles().toTypedArray()
+            val userCanUpdateAnyEntry = user.hasOneOfRoles(*updateAnyAllowedBy)
+
+            if (entry.authorId != user.id && !userCanUpdateAnyEntry) {
                 throw Forbidden("Permission denied")
             }
 
+            val editor = tx.getEmployee(EmployeeId(user.id))
+
             tx.updateVasuDocumentMaster(
                 id,
-                getEditedContent(vasu.content, user, entryId, body.text),
+                getEditedContent(vasu.content, editor, entryId, body.text),
                 vasu.authorsContent,
                 vasu.vasuDiscussionContent,
                 vasu.evaluationDiscussionContent
@@ -184,13 +192,24 @@ class VasuController(
         return null
     }
 
-    fun getEditedContent(content: VasuContent, user: AuthenticatedUser, entryId: UUID, text: String): VasuContent {
+    fun getEditedContent(content: VasuContent, editor: Employee?, entryId: UUID, text: String): VasuContent {
         return content.copy(sections = content.sections.map {
             it.copy(questions = it.questions.map { question ->
                 when(question) {
                     is Followup -> question.copy(value = question.value.map { entry ->
-                            entry.copy(text = if (entry.id == entryId) { text } else { entry.text })
-                        })
+                        if(entry.id == entryId) {
+                            entry.copy(
+                                text = text,
+                                edited = FollowupEntryEditDetails(
+                                    editedAt = LocalDate.now(),
+                                    editorId = editor?.id?.raw,
+                                    editorName = "${editor?.firstName} ${editor?.lastName}"
+                                )
+                            )
+                        } else {
+                            entry.copy()
+                        }
+                    })
                     else -> question
                 }
               }

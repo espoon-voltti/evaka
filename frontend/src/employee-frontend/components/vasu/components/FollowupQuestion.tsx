@@ -30,7 +30,7 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [editedEntry, setEditedEntry] = useState<FollowupEntry>()
-  const { user } = useContext(UserContext)
+  const { user, roles } = useContext(UserContext)
 
   const onCommitEdited = useCallback(
     (editedEntry: FollowupEntry) => {
@@ -41,7 +41,17 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
     [onEdited]
   )
 
-  const editAllowed = user?.id === entry.authorId
+  const getEntry = useCallback(
+    () => (editedEntry ? editedEntry : entry),
+    [entry, editedEntry]
+  )
+
+  const editAllowed =
+    user?.id === entry.authorId ||
+    roles.includes('ADMIN') ||
+    roles.includes('UNIT_SUPERVISOR') ||
+    roles.includes('STAFF') ||
+    roles.includes('SPECIAL_EDUCATION_TEACHER')
 
   return (
     <Entry>
@@ -53,12 +63,16 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
         />
       ) : (
         <EntryText data-qa="vasu-followup-entry-text">
-          {editedEntry ? editedEntry.text : entry.text}
+          {getEntry().text}
         </EntryText>
       )}
       <FixedSpaceRow>
         <Dimmed data-qa="vasu-followup-entry-metadata">
-          {entry.date.format()} {entry.authorName}
+          {getEntry().date.format()} {getEntry().authorName}
+          {getEntry().edited &&
+            `, ${i18n.vasu.edited} ${
+              getEntry().edited?.editedAt.format() ?? ''
+            } ${getEntry().edited?.editorName ?? ''}`}
         </Dimmed>
         {onEdited && editAllowed && (
           <IconButton icon={faPen} onClick={() => setEditing(true)} />
