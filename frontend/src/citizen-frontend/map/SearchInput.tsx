@@ -112,6 +112,11 @@ export default React.memo(function SearchInput({
     [allUnits, clearSelection, setSelectedAddress, setSelectedUnit]
   )
 
+  const menuEmptyLabel =
+    debouncedInputString.length > 0
+      ? t.map.noResults
+      : `${t.map.keywordRequired}...`
+
   return (
     <div data-qa="map-search-input">
       <Combobox
@@ -123,7 +128,7 @@ export default React.memo(function SearchInput({
         selectedItem={selectedAddress}
         onChange={onChange}
         placeholder={t.map.searchPlaceholder}
-        menuEmptyLabel={t.map.noResults}
+        menuEmptyLabel={menuEmptyLabel}
         onFocus={onFocus}
       >
         {customComponents}

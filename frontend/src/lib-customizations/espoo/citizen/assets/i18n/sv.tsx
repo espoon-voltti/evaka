@@ -140,6 +140,7 @@ const sv: Translations = {
     searchPlaceholder: 'T.ex. Purola daghem',
     address: 'Adress',
     noResults: 'Inga sökresultat',
+    keywordRequired: 'Ange ett sökord',
     distanceWalking: 'Avstånd från vald enhet gående',
     careType: 'Verksamhetsform',
     careTypePlural: 'Verksamhetsformer',
@@ -173,7 +174,7 @@ const sv: Translations = {
     showMore: 'Visa fler sökresultat',
     mobileTabs: {
       map: 'Karta',
-      list: 'Lista på enheter'
+      list: 'Enheter'
     },
     serviceVoucherLink:
       'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',

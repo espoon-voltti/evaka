@@ -139,6 +139,7 @@ export default {
     searchPlaceholder: 'Esim. Purolan päiväkoti',
     address: 'Osoite',
     noResults: 'Ei hakutuloksia',
+    keywordRequired: 'Kirjoita hakusana',
     distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',
     careType: 'Toimintamuoto',
     careTypePlural: 'Toimintamuodot',
@@ -165,14 +166,14 @@ export default {
     shiftCareLabel: 'Näytä vain ilta- ja vuorohoitoyksiköt',
     shiftCareYes: 'Yksikkö tarjoaa ilta- ja/tai vuorohoitoa',
     shiftCareNo: 'Yksikkö ei tarjoa ilta- ja/tai vuorohoitoa',
-    showMoreFilters: 'Näytä lisää suodattimia',
-    showLessFilters: 'Näytä vähemmän suodattimia',
+    showMoreFilters: 'Näytä lisää filttereitä',
+    showLessFilters: 'Näytä vähemmän filttereitä',
     nearestUnits: 'Lähimmät yksiköt',
     moreUnits: 'Lisää yksiköitä',
     showMore: 'Näytä lisää hakutuloksia',
     mobileTabs: {
       map: 'Kartta',
-      list: 'Lista yksiköistä'
+      list: 'Yksiköt'
     },
     serviceVoucherLink:
       'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',

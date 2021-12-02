@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+export const stickyElementZIndex = 1
+
 export const modalZIndex = 40
 
 export const errorModalZIndex = modalZIndex * 2
