@@ -19,6 +19,14 @@ INSERT INTO evaka_user (id, type, employee_id, name)
 SELECT id, 'EMPLOYEE', id, first_name || ' ' || last_name
 FROM employee;
 
+INSERT INTO daycare_acl (daycare_id, employee_id, role) VALUES
+    ('2dcf0fc0-788e-11e9-bd12-db78e886e666', '00000000-0000-0000-0004-000000000000', 'UNIT_SUPERVISOR'),
+    ('2dcf0fc0-788e-11e9-bd12-db78e886e666', '00000000-0000-0000-0005-000000000000', 'STAFF'),
+    ('2dcf0fc0-788e-11e9-bd12-db78e886e666', '00000000-0000-0000-0006-000000000000', 'SPECIAL_EDUCATION_TEACHER'),
+    ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-0000-0004-000000000001', 'UNIT_SUPERVISOR'),
+    ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-0000-0005-000000000001', 'STAFF'),
+    ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-0000-0006-000000000000', 'SPECIAL_EDUCATION_TEACHER');
+
 INSERT INTO message_account (employee_id)
 SELECT id
 FROM employee e
