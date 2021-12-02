@@ -157,7 +157,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertNotNull(child.attendance)
         assertEquals(arrived, child.attendance!!.arrived)
         assertNull(child.attendance!!.departed)
-        assertEquals(testDaycare.id, child.attendance!!.unitId)
         assertEquals(0, child.absences.size)
     }
 
@@ -178,7 +177,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertNotNull(child.attendance)
         assertEquals(arrived, child.attendance!!.arrived)
         assertEquals(departed, child.attendance!!.departed)
-        assertEquals(testDaycare.id, child.attendance!!.unitId)
         assertEquals(0, child.absences.size)
     }
 
@@ -260,7 +258,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertNotNull(child.attendance)
         assertEquals(arrived, child.attendance!!.arrived)
         assertNull(child.attendance!!.departed)
-        assertEquals(testDaycare.id, child.attendance!!.unitId)
         assertEquals(0, child.absences.size)
     }
 
@@ -281,7 +278,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertNotNull(child.attendance)
         assertEquals(arrived, child.attendance!!.arrived)
         assertEquals(departed, child.attendance!!.departed)
-        assertEquals(testDaycare.id, child.attendance!!.unitId)
         assertEquals(0, child.absences.size)
     }
 

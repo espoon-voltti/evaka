@@ -66,11 +66,19 @@ export type AttendanceStatus =
   | 'ABSENT'
 
 /**
+* Generated from fi.espoo.evaka.attendance.AttendanceTimes
+*/
+export interface AttendanceTimes {
+  arrived: Date
+  departed: Date | null
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.Child
 */
 export interface Child {
   absences: ChildAbsence[]
-  attendance: ChildAttendance | null
+  attendance: AttendanceTimes | null
   backup: boolean
   dailyNote: ChildDailyNote | null
   dailyServiceTimes: DailyServiceTimes | null
@@ -92,19 +100,6 @@ export interface Child {
 */
 export interface ChildAbsence {
   careType: AbsenceCareType
-  childId: UUID
-  id: UUID
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.ChildAttendance
-*/
-export interface ChildAttendance {
-  arrived: Date
-  childId: UUID
-  departed: Date | null
-  id: UUID
-  unitId: UUID
 }
 
 /**

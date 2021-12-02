@@ -212,7 +212,6 @@ function deserializeAttendanceResponse(
             ...attendanceChild,
             attendance: attendanceChild.attendance
               ? {
-                  ...attendanceChild.attendance,
                   arrived: new Date(attendanceChild.attendance.arrived),
                   departed: attendanceChild.attendance.departed
                     ? new Date(attendanceChild.attendance.departed)

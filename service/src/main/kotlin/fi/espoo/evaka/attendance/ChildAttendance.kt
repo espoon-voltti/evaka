@@ -10,7 +10,6 @@ import fi.espoo.evaka.note.child.daily.ChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -41,7 +40,7 @@ data class Child(
     val groupId: GroupId,
     val backup: Boolean,
     val status: AttendanceStatus,
-    val attendance: ChildAttendance?,
+    val attendance: AttendanceTimes?,
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimes?,
     val dailyNote: ChildDailyNote?,
@@ -65,9 +64,12 @@ data class ChildAttendance(
     val departed: HelsinkiDateTime?
 )
 
+data class AttendanceTimes(
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?
+)
+
 data class ChildAbsence(
-    val id: AbsenceId,
-    val childId: UUID,
     val careType: AbsenceCareType
 )
 

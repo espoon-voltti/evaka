@@ -401,18 +401,14 @@ private fun Database.Read.fetchChildPlacementTypeDates(
 }
 
 private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: HelsinkiDateTime): AttendanceResponse {
-    val childrenBasics = fetchChildrenBasics(unitId, instant.toLocalDate())
-    val childrenAttendances = fetchChildrenAttendances(unitId, instant)
-    val childrenAbsences = fetchChildrenAbsences(unitId, instant.toLocalDate())
+    val childrenBasics = fetchChildrenBasics(unitId, instant)
     val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId)
     val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId)
     val attendanceReservations = fetchAttendanceReservations(unitId, instant.toLocalDate())
 
     val children = childrenBasics.map { child ->
-        val attendance = childrenAttendances.firstOrNull { it.childId == child.id }
-        val absences = childrenAbsences.filter { it.childId == child.id }
         val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
-        val status = getChildAttendanceStatus(placementBasics, attendance, absences)
+        val status = getChildAttendanceStatus(placementBasics, child.attendance, child.absences)
         val dailyNote = dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
         val stickyNotes = stickyNotesForChildrenInUnit.filter { it.childId == child.id }
 
@@ -425,8 +421,8 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
             groupId = child.groupId,
             backup = child.backup,
             status = status,
-            attendance = attendance,
-            absences = absences,
+            attendance = child.attendance,
+            absences = child.absences,
             dailyServiceTimes = child.dailyServiceTimes,
             dailyNote = dailyNote,
             stickyNotes = stickyNotes,
@@ -441,7 +437,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
 
 private fun getChildAttendanceStatus(
     placementBasics: ChildPlacementBasics,
-    attendance: ChildAttendance?,
+    attendance: AttendanceTimes?,
     absences: List<ChildAbsence>
 ): AttendanceStatus {
     if (attendance != null) {
