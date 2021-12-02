@@ -9,13 +9,12 @@ import Title from 'lib-components/atoms/Title'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { VardaErrorReportRow } from '../../types/reports'
-import { DateFilters, getVardaErrorsReport } from '../../api/reports'
+import { getVardaErrorsReport } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { TableScrollable } from './common'
 import LocalDate from 'lib-common/local-date'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Link } from 'react-router-dom'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 
@@ -28,14 +27,11 @@ const FlatList = styled.ul`
 function VardaErrors() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<VardaErrorReportRow[]>>(Loading.of())
-  const [filters, setFilters] = useState<DateFilters>({
-    date: LocalDate.today().subDays(1)
-  })
 
   useEffect(() => {
     setRows(Loading.of())
-    void getVardaErrorsReport(filters).then(setRows)
-  }, [filters])
+    void getVardaErrorsReport().then(setRows)
+  }, [])
 
   const ageInDays = (timestamp: Date): number => {
     const diff = new Date().getTime() - timestamp.getTime()
@@ -47,18 +43,6 @@ function VardaErrors() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.vardaErrors.title}</Title>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePicker
-            id="start-date"
-            date={filters.date.toString()}
-            onChange={(date) => {
-              const parsed = LocalDate.parseFiOrNull(date)
-              if (parsed) setFilters({ date: parsed })
-            }}
-            locale={'fi'}
-          />
-        </FilterRow>
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && (

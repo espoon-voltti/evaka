@@ -455,15 +455,11 @@ export async function getPlacementSketchingReport(
     )
 }
 
-export async function getVardaErrorsReport(
-  filters: DateFilters
-): Promise<Result<VardaErrorReportRow[]>> {
+export async function getVardaErrorsReport(): Promise<
+  Result<VardaErrorReportRow[]>
+> {
   return client
-    .get<JsonOf<VardaErrorReportRow[]>>(`/reports/varda-errors`, {
-      params: {
-        errorsSince: filters.date.formatIso()
-      }
-    })
+    .get<JsonOf<VardaErrorReportRow[]>>(`/reports/varda-errors`)
     .then((res) =>
       Success.of(
         res.data.map((row) => ({
