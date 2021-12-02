@@ -34,9 +34,7 @@ export default React.memo(function AttendanceList({
     () =>
       groupId === 'all'
         ? attendanceResponse.children
-        : attendanceResponse.children.filter(
-            ({ groupId }) => groupId === groupId
-          ),
+        : attendanceResponse.children.filter((c) => c.groupId === groupId),
     [groupId, attendanceResponse]
   )
 
