@@ -6,9 +6,9 @@ package fi.espoo.evaka.vasu
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -126,6 +126,69 @@ data class VasuContent(
         this.sections.size == content.sections.size && this.sections.withIndex().all { (index, section) ->
             section.matchesStructurally(content.sections.getOrNull(index))
         }
+
+    fun findFollowupEntryWithId(entryId: UUID): FollowupEntry? {
+        this.sections.forEach { section ->
+            section.questions.forEach { question ->
+                if (question.type === VasuQuestionType.FOLLOWUP) {
+                    (question as VasuQuestion.Followup).value.forEach { entry ->
+                        if (entry.id == entryId) {
+                            return entry
+                        }
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    fun containsModifiedFollowupEntries(content: VasuContent): Boolean {
+        content.sections.forEach { section ->
+            section.questions.forEach { question ->
+                if (question.type === VasuQuestionType.FOLLOWUP) {
+                    (question as VasuQuestion.Followup).value.forEach { entry ->
+                        val thisEntry = this.findFollowupEntryWithId(entry.id)
+                        if (thisEntry != entry)
+                            return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    /*
+     * returns a copy of this VasuContent where the followup entry has been updated with the text and editor metadata
+     */
+    fun editFollowupEntry(entryId: UUID, editor: Employee?, text: String): VasuContent {
+        return this.copy(
+            sections = this.sections.map { section ->
+                section.copy(
+                    questions = section.questions.map { question ->
+                        when (question) {
+                            is VasuQuestion.Followup -> question.copy(
+                                value = question.value.map { entry ->
+                                    if (entry.id == entryId) {
+                                        entry.copy(
+                                            text = text,
+                                            edited = FollowupEntryEditDetails(
+                                                editedAt = LocalDate.now(),
+                                                editorId = editor?.id?.raw,
+                                                editorName = "${editor?.firstName} ${editor?.lastName}"
+                                            )
+                                        )
+                                    } else {
+                                        entry.copy()
+                                    }
+                                }
+                            )
+                            else -> question
+                        }
+                    }
+                )
+            }
+        )
+    }
 }
 
 data class VasuSection(
@@ -268,11 +331,25 @@ data class FollowupEntry(
     val id: UUID = UUID.randomUUID(),
     val authorId: UUID? = null,
     val edited: FollowupEntryEditDetails? = null
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (other is FollowupEntry) {
+            return this.date == other.date && this.authorName == other.authorName && this.text == other.text && this.id == other.id && this.authorId == other.authorId && this.edited == other.edited
+        }
+        return false
+    }
+}
 
 @Json
 data class FollowupEntryEditDetails(
     val editedAt: LocalDate = LocalDate.now(),
     val editorName: String = "",
     val editorId: UUID? = null
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (other is FollowupEntryEditDetails) {
+            return this.editedAt == other.editedAt && this.editorName == other.editorName && this.editorId == other.editorId
+        }
+        return false
+    }
+}

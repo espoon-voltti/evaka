@@ -7,7 +7,6 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -27,14 +26,12 @@ import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_REVIEWED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.PUBLISHED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_READY
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_REVIEWED
-import fi.espoo.evaka.vasu.VasuQuestion.Followup
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 import java.util.UUID
 
 @ExcludeCodeGen
@@ -138,6 +135,9 @@ class VasuController(
 
         if (!vasu.content.matchesStructurally(body.content))
             throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
+
+        if (vasu.content.containsModifiedFollowupEntries(body.content))
+            throw Forbidden("Permission denied", "CANNOT_EDIT_FOLLOWUP_COMMENTS")
     }
 
     data class EditFollowupEntryRequest(
@@ -156,7 +156,7 @@ class VasuController(
         accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE_OWN_FOLLOWUP_ENTRY, id)
         db.transaction { tx ->
             val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
-            val entry = findFollowupEntryWithId(vasu, entryId) ?: throw NotFound("Entry with $entryId not found")
+            val entry = vasu.content.findFollowupEntryWithId(entryId) ?: throw NotFound("Entry with $entryId not found")
 
             val updateAnyAllowedBy = Action.VasuDocument.UPDATE_ANY_FOLLOWUP_ENTRY.defaultRoles().toTypedArray()
             val userCanUpdateAnyEntry = user.hasOneOfRoles(*updateAnyAllowedBy)
@@ -169,52 +169,12 @@ class VasuController(
 
             tx.updateVasuDocumentMaster(
                 id,
-                getEditedContent(vasu.content, editor, entryId, body.text),
+                vasu.content.editFollowupEntry(entryId, editor, body.text),
                 vasu.authorsContent,
                 vasu.vasuDiscussionContent,
                 vasu.evaluationDiscussionContent
             )
         }
-    }
-
-    fun findFollowupEntryWithId(vasu: VasuDocument, entryId: UUID): FollowupEntry? {
-        vasu.content.sections.forEach {
-            it.questions.forEach { question ->
-                if (question.type === VasuQuestionType.FOLLOWUP) {
-                    (question as Followup).value.forEach { entry ->
-                        if (entry.id == entryId) {
-                            return entry
-                        }
-                    }
-                }
-            }
-        }
-        return null
-    }
-
-    fun getEditedContent(content: VasuContent, editor: Employee?, entryId: UUID, text: String): VasuContent {
-        return content.copy(sections = content.sections.map {
-            it.copy(questions = it.questions.map { question ->
-                when(question) {
-                    is Followup -> question.copy(value = question.value.map { entry ->
-                        if(entry.id == entryId) {
-                            entry.copy(
-                                text = text,
-                                edited = FollowupEntryEditDetails(
-                                    editedAt = LocalDate.now(),
-                                    editorId = editor?.id?.raw,
-                                    editorName = "${editor?.firstName} ${editor?.lastName}"
-                                )
-                            )
-                        } else {
-                            entry.copy()
-                        }
-                    })
-                    else -> question
-                }
-              }
-            )
-        })
     }
 
     @PostMapping("/vasu/{id}/update-state")
