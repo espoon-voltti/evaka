@@ -132,7 +132,7 @@ export default React.memo(function AssistanceActionRow({
                   </ul>
                 )
               },
-              {
+              assistanceMeasures.length > 0 && {
                 label: i18n.childInformation.assistanceAction.fields.measures,
                 value: (
                   <ul>

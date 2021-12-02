@@ -298,7 +298,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
             ),
             valueWidth: '100%'
           },
-          {
+          assistanceMeasures.length > 0 && {
             label: i18n.childInformation.assistanceAction.fields.measures,
             value: (
               <div>
