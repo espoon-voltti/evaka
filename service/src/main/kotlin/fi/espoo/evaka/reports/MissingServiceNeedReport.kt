@@ -9,12 +9,12 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -22,19 +22,19 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class MissingServiceNeedReportController(private val acl: AccessControlList) {
+class MissingServiceNeedReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/missing-service-need")
     fun getMissingServiceNeedReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
-    ): ResponseEntity<List<MissingServiceNeedReportRow>> {
+    ): List<MissingServiceNeedReportRow> {
         Audit.MissingServiceNeedReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Global.READ_MISSING_SERVICE_NEED_REPORT)
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
-        return db.read { ResponseEntity.ok(it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user))) }
+        return db.read { it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user)) }
     }
 }
 

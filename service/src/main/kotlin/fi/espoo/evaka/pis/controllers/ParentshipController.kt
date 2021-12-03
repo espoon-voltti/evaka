@@ -5,18 +5,18 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.utils.noContent
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.shared.ParentshipId
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import org.springframework.http.ResponseEntity
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,35 +26,28 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.net.URI
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/parentships")
-class ParentshipController(
-    private val parentshipService: ParentshipService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
-) {
+class ParentshipController(private val parentshipService: ParentshipService, private val accessControl: AccessControl) {
     @PostMapping
     fun createParentship(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: ParentshipRequest
-    ): ResponseEntity<Parentship> {
+    ) {
         Audit.ParentShipsCreate.log(targetId = body.headOfChildId, objectId = body.childId)
-        user.requireOneOfRoles(
-            UserRole.ADMIN,
-            UserRole.SERVICE_WORKER,
-            UserRole.UNIT_SUPERVISOR,
-            UserRole.FINANCE_ADMIN
-        )
+        accessControl.requirePermissionFor(user, Action.Person.CREATE_PARENTSHIP, body.headOfChildId)
 
-        with(body) {
-            return db.transaction {
-                parentshipService.createParentship(it, childId, headOfChildId, startDate, endDate)
-            }
-                .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
+        db.transaction {
+            parentshipService.createParentship(
+                it,
+                body.childId.raw,
+                body.headOfChildId.raw,
+                body.startDate,
+                body.endDate
+            )
         }
     }
 
@@ -62,25 +55,27 @@ class ParentshipController(
     fun getParentships(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(value = "headOfChildId", required = false) headOfChildId: UUID? = null,
-        @RequestParam(value = "childId", required = false) childId: UUID? = null
-    ): ResponseEntity<List<Parentship>> {
+        @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
+        @RequestParam(value = "childId", required = false) childId: PersonId? = null
+    ): List<Parentship> {
         Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
-        user.requireOneOfRoles(
-            UserRole.ADMIN,
-            UserRole.SERVICE_WORKER,
-            UserRole.UNIT_SUPERVISOR,
-            UserRole.FINANCE_ADMIN
-        )
+
+        if ((childId != null) == (headOfChildId != null)) {
+            throw BadRequest("One and only one of parameters headOfChildId and childId is required")
+        }
+
+        val personId = headOfChildId ?: childId
+            ?: error("One of parameters headOfChildId and childId should be validated not to be null")
+
+        accessControl.requirePermissionFor(user, Action.Person.READ_PARENTSHIPS, personId)
 
         return db.read {
             it.getParentships(
-                headOfChildId = headOfChildId,
-                childId = childId,
+                headOfChildId = headOfChildId?.raw,
+                childId = childId?.raw,
                 includeConflicts = true
             )
         }
-            .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/{id}")
@@ -88,15 +83,12 @@ class ParentshipController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId
-    ): ResponseEntity<Parentship> {
+    ): Parentship {
         Audit.ParentShipsRead.log(targetId = id)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Parentship.READ, id)
 
-        return db.read {
-            it.getParentship(id)
-        }
-            ?.let { ResponseEntity.ok().body(it) }
-            ?: ResponseEntity.notFound().build()
+        return db.read { it.getParentship(id) }
+            ?: throw NotFound()
     }
 
     @PutMapping("/{id}")
@@ -105,19 +97,13 @@ class ParentshipController(
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
-    ): ResponseEntity<Parentship> {
+    ) {
         Audit.ParentShipsUpdate.log(targetId = id)
-        user.requireOneOfRoles(
-            UserRole.ADMIN,
-            UserRole.SERVICE_WORKER,
-            UserRole.UNIT_SUPERVISOR,
-            UserRole.FINANCE_ADMIN
-        )
+        accessControl.requirePermissionFor(user, Action.Parentship.UPDATE, id)
 
         return db.transaction {
             parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
         }
-            .let { ResponseEntity.ok().body(it) }
     }
 
     @PutMapping("/{id}/retry")
@@ -125,17 +111,11 @@ class ParentshipController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") parentshipId: ParentshipId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ParentShipsRetry.log(targetId = parentshipId)
-        user.requireOneOfRoles(
-            UserRole.ADMIN,
-            UserRole.SERVICE_WORKER,
-            UserRole.UNIT_SUPERVISOR,
-            UserRole.FINANCE_ADMIN
-        )
+        accessControl.requirePermissionFor(user, Action.Parentship.RETRY, parentshipId)
 
         db.transaction { parentshipService.retryParentship(it, parentshipId) }
-        return noContent()
     }
 
     @DeleteMapping("/{id}")
@@ -143,24 +123,22 @@ class ParentshipController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ParentShipsDelete.log(targetId = id)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
+        val parentship = db.transaction { it.getParentship(id) }
 
-        db.transaction {
-            if (it.getParentship(id)?.conflict == false) {
-                user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
-            }
-
-            parentshipService.deleteParentship(it, id)
+        if (parentship?.conflict == false) {
+            accessControl.requirePermissionFor(user, Action.Parentship.DELETE, id)
+        } else {
+            accessControl.requirePermissionFor(user, Action.Parentship.DELETE_CONFLICTED_PARENTSHIP, id)
         }
 
-        return ResponseEntity.noContent().build()
+        db.transaction { parentshipService.deleteParentship(it, id) }
     }
 
     data class ParentshipRequest(
-        val headOfChildId: UUID,
-        val childId: UUID,
+        val headOfChildId: PersonId,
+        val childId: PersonId,
         val startDate: LocalDate,
         val endDate: LocalDate
     )

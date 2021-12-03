@@ -1,24 +1,24 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.utils.noContent
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.pis.service.PartnershipService
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import org.springframework.http.ResponseEntity
+import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,138 +28,147 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.net.URI
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/partnerships")
-class PartnershipsController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val partnershipService: PartnershipService) {
+class PartnershipsController(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val partnershipService: PartnershipService,
+    private val accessControl: AccessControl
+) {
     @PostMapping
     fun createPartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PartnershipRequest
-    ): ResponseEntity<Partnership> {
-        Audit.PartnerShipsCreate.log(targetId = body.personIds)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+    ) {
+        Audit.PartnerShipsCreate.log(targetId = body.person1Id)
+        accessControl.requirePermissionFor(user, Action.Person.CREATE_PARTNERSHIP, body.person1Id)
 
-        with(body) {
-            if (personIds.size != 2) throw BadRequest("Must have exactly two partners")
-            val (personId1, personId2) = personIds.toList()
-            return db
-                .transaction { tx ->
-                    val partnership = partnershipService.createPartnership(tx, personId1, personId2, startDate, endDate)
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(AsyncJob.GenerateFinanceDecisions.forAdult(personId2, DateRange(startDate, endDate)))
+        db
+            .transaction { tx ->
+                partnershipService.createPartnership(
+                    tx,
+                    body.person1Id.raw,
+                    body.person2Id.raw,
+                    body.startDate,
+                    body.endDate
+                )
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            body.person1Id.raw,
+                            DateRange(body.startDate, body.endDate)
+                        )
                     )
-                    partnership
-                }
-                .let { ResponseEntity.created(URI.create("/partnerships/${it.id}")).body(it) }
-        }
+                )
+            }
     }
 
     @GetMapping
     fun getPartnerships(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(name = "personId", required = true) personId: UUID
-    ): ResponseEntity<List<Partnership>> {
+        @RequestParam personId: PersonId
+    ): List<Partnership> {
         Audit.PartnerShipsRead.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.READ_PARTNERSHIPS, personId)
 
-        return db.read { it.getPartnershipsForPerson(personId, includeConflicts = true) }
-            .let { ResponseEntity.ok().body(it) }
+        return db.read { it.getPartnershipsForPerson(personId.raw, includeConflicts = true) }
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{partnershipId}")
     fun getPartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: PartnershipId
-    ): ResponseEntity<Partnership> {
+        @PathVariable partnershipId: PartnershipId
+    ): Partnership {
         Audit.PartnerShipsRead.log(targetId = partnershipId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Partnership.READ, partnershipId)
 
         return db.read { it.getPartnership(partnershipId) }
-            ?.let { ResponseEntity.ok().body(it) }
-            ?: ResponseEntity.notFound().build()
+            ?: throw NotFound()
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{partnershipId}")
     fun updatePartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: PartnershipId,
+        @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
-    ): ResponseEntity<Partnership> {
+    ) {
         Audit.PartnerShipsUpdate.log(targetId = partnershipId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Partnership.UPDATE, partnershipId)
 
         return db
             .transaction { tx ->
-                val partnership = partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
+                val partnership =
+                    partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
                 asyncJobRunner.plan(
                     tx,
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
-                            partnership.partners.last().id,
+                            partnership.partners.first().id,
                             DateRange(partnership.startDate, partnership.endDate)
                         )
                     )
                 )
-                partnership
             }
-            .let { ResponseEntity.ok().body(it) }
     }
 
-    @PutMapping("/{id}/retry")
+    @PutMapping("/{partnershipId}/retry")
     fun retryPartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: PartnershipId
-    ): ResponseEntity<Unit> {
+        @PathVariable partnershipId: PartnershipId
+    ) {
         Audit.PartnerShipsRetry.log(targetId = partnershipId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Partnership.RETRY, partnershipId)
 
         db.transaction { tx ->
             partnershipService.retryPartnership(tx, partnershipId)?.let {
                 asyncJobRunner.plan(
                     tx,
                     listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(it.partners.first().id, DateRange(it.startDate, it.endDate))
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            it.partners.first().id,
+                            DateRange(it.startDate, it.endDate)
+                        )
                     )
                 )
             }
         }
-        return noContent()
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{partnershipId}")
     fun deletePartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: PartnershipId
-    ): ResponseEntity<Unit> {
+        @PathVariable partnershipId: PartnershipId
+    ) {
         Audit.PartnerShipsDelete.log(targetId = partnershipId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Partnership.DELETE, partnershipId)
 
         db.transaction { tx ->
             partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
                 asyncJobRunner.plan(
                     tx,
                     partnership.partners.map {
-                        AsyncJob.GenerateFinanceDecisions.forAdult(it.id, DateRange(partnership.startDate, partnership.endDate))
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            it.id,
+                            DateRange(partnership.startDate, partnership.endDate)
+                        )
                     }
                 )
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     data class PartnershipRequest(
-        val personIds: Set<UUID>,
+        val person1Id: PersonId,
+        val person2Id: PersonId,
         val startDate: LocalDate,
         val endDate: LocalDate?
     )

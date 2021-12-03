@@ -5,25 +5,25 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class VardaErrorReport(private val acl: AccessControlList) {
+class VardaErrorReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/varda-errors")
     fun getVardaErrors(
         db: Database.Connection,
         user: AuthenticatedUser
     ): List<VardaErrorReportRow> {
         Audit.VardaReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_VARDA_REPORT)
         return db.read { it.getVardaErrors() }
     }
 }

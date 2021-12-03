@@ -5,26 +5,25 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.pis.getTransferablePersonReferences
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class DuplicatePeopleReportController {
+class DuplicatePeopleReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/duplicate-people")
-    fun getDuplicatePeopleReport(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
+    fun getDuplicatePeopleReport(db: Database.Connection, user: AuthenticatedUser): List<DuplicatePeopleReportRow> {
         Audit.DuplicatePeopleReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN)
-        return db.read { it.getDuplicatePeople() }.let(::ok)
+        accessControl.requirePermissionFor(user, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
+        return db.read { it.getDuplicatePeople() }
     }
 }
 

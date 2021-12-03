@@ -43,6 +43,8 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -161,6 +163,26 @@ WHERE employee_id = :userId
         "daycare_group_placement.id",
         permittedRoleActions::groupPlacementActions
     )
+    private val parentship = ActionConfig(
+        """
+SELECT fridge_child.id, role
+FROM fridge_child
+JOIN person_acl_view ON fridge_child.head_of_child = person_acl_view.person_id OR fridge_child.child_id = person_acl_view.person_id
+WHERE employee_id = :userId
+""",
+        "fridge_child.id",
+        permittedRoleActions::parentshipActions
+    )
+    private val partnership = ActionConfig(
+        """
+SELECT fridge_partner.partnership_id AS id, role
+FROM fridge_partner
+JOIN person_acl_view ON fridge_partner.person_id = person_acl_view.person_id
+WHERE employee_id = :userId
+""",
+        "fridge_partner.partnership_id",
+        permittedRoleActions::partnershipActions
+    )
     private val pedagogicalAttachment = ActionConfig(
         """
 SELECT attachment.id, role
@@ -278,7 +300,7 @@ WHERE employee_id = :userId
 
     fun <A : Action.ScopedAction<I>, I> requirePermissionFor(user: AuthenticatedUser, action: A, id: I) {
         if (!hasPermissionFor(user, action, id)) {
-            throw Forbidden("Permission denied")
+            throw Forbidden()
         }
     }
 
@@ -297,6 +319,8 @@ WHERE employee_id = :userId
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
             is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)
             is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
+            is Action.Parentship -> this.parentship.hasPermission(user, action, id as ParentshipId)
+            is Action.Partnership -> this.partnership.hasPermission(user, action, id as PartnershipId)
             is Action.Person -> hasPermissionFor(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
@@ -571,9 +595,9 @@ WHERE employee_id = :userId
                             )
                         }
                     }
-                    if (!hasPermission) throw Forbidden("Permission denied")
+                    if (!hasPermission) throw Forbidden()
                 }
-                else -> throw Forbidden("Permission denied")
+                else -> throw Forbidden()
             }
             is AuthenticatedUser.Employee -> when (action) {
                 Action.PedagogicalDocument.CREATE_ATTACHMENT,
@@ -587,7 +611,7 @@ WHERE employee_id = :userId
                         mapping = permittedRoleActions::pedagogicalDocumentActions
                     )
             }
-            else -> throw Forbidden("Permission denied")
+            else -> throw Forbidden()
         }
     }
 
@@ -813,7 +837,7 @@ WHERE employee_id = :userId
             }
         }
 
-        throw Forbidden("Permission denied")
+        throw Forbidden()
     }
 
     private inline fun <reified A> hasPermissionThroughRoles(
@@ -849,7 +873,7 @@ WHERE employee_id = :userId
         crossinline mapping: (role: UserRole) -> Set<A>
     ) where A : Action, A : Enum<A> {
         if (!hasPermissionUsingAllRoles(user, action, mapping)) {
-            throw Forbidden("Permission denied")
+            throw Forbidden()
         }
     }
 

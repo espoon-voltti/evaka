@@ -89,7 +89,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
       ? updateParentship(parentship.id, form.startDate, form.endDate)
       : addParentship(headPersonId, form.child.id, form.startDate, form.endDate)
 
-    void apiCall.then((res: Result<Parentship>) => {
+    void apiCall.then((res: Result<void>) => {
       if (res.isFailure) {
         if (res.statusCode === 409) {
           setErrorStatusCode(res.statusCode)

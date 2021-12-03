@@ -9,23 +9,28 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
-import org.springframework.http.ResponseEntity
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class ChildrenInDifferentAddressReportController(private val acl: AccessControlList) {
+class ChildrenInDifferentAddressReportController(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
+) {
     @GetMapping("/reports/children-in-different-address")
-    fun getChildrenInDifferentAddressReport(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ChildrenInDifferentAddressReportRow>> {
+    fun getChildrenInDifferentAddressReport(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): List<ChildrenInDifferentAddressReportRow> {
         Audit.ChildrenInDifferentAddressReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-        val rows = db.read { it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user)) }
-        return ResponseEntity.ok(rows)
+        accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT)
+        return db.read { it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user)) }
     }
 }
 

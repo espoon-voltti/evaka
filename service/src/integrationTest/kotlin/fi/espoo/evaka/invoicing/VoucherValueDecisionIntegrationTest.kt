@@ -22,6 +22,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -323,8 +324,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         db.transaction { it.execute("DELETE FROM fridge_child WHERE child_id = ?", child.id) }
 
         val body = ParentshipController.ParentshipRequest(
-            childId = child.id,
-            headOfChildId = headOfFamilyId,
+            childId = PersonId(child.id),
+            headOfChildId = PersonId(headOfFamilyId),
             startDate = child.dateOfBirth,
             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
         )

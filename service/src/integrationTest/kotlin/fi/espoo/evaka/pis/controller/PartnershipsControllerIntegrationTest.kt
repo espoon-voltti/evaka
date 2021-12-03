@@ -4,23 +4,32 @@
 
 package fi.espoo.evaka.pis.controller
 
-import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
-import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestParentship
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -30,45 +39,78 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var controller: PartnershipsController
 
+    private val person = testAdult_1
+    private val partner = testAdult_2
+
+    private val unitSupervisorId = UUID.randomUUID()
+
+    @BeforeEach
+    fun init() {
+        db.transaction {
+            it.insertGeneralTestFixtures()
+            it.insertTestEmployee(DevEmployee(unitSupervisorId))
+            it.insertTestParentship(
+                DevParentship(
+                    id = ParentshipId(UUID.randomUUID()),
+                    headOfChildId = person.id,
+                    childId = testChild_1.id,
+                    startDate = testChild_1.dateOfBirth,
+                    endDate = LocalDate.now()
+                )
+            )
+            it.insertDaycareAclRow(
+                daycareId = testDaycare.id,
+                employeeId = unitSupervisorId,
+                role = UserRole.UNIT_SUPERVISOR
+            )
+            it.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    endDate = LocalDate.now()
+                )
+            )
+        }
+    }
+
     @Test
     fun `service worker can create and fetch partnerships`() {
-        `can create and fetch partnerships`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        `can create and fetch partnerships`(
+            AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        )
     }
 
     @Test
     fun `unit supervisor can create and fetch partnerships`() {
-        `can create and fetch partnerships`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        `can create and fetch partnerships`(
+            AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR))
+        )
     }
 
     @Test
     fun `finance admin can create and fetch partnerships`() {
-        `can create and fetch partnerships`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        `can create and fetch partnerships`(
+            AuthenticatedUser.Employee(
+                UUID.randomUUID(),
+                setOf(UserRole.FINANCE_ADMIN)
+            )
+        )
     }
 
     fun `can create and fetch partnerships`(user: AuthenticatedUser) {
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
-
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
-        val reqBody = PartnershipsController.PartnershipRequest(setOf(adult1.id, adult2.id), startDate, endDate)
-        val createResponse = controller.createPartnership(db, user, reqBody)
-        assertEquals(HttpStatus.CREATED, createResponse.statusCode)
-        with(createResponse.body!!) {
-            assertNotNull(this.id)
-            assertEquals(startDate, this.startDate)
-            assertEquals(endDate, this.endDate)
-            assertEquals(setOf(adult1, adult2), this.partners)
-        }
+        val reqBody =
+            PartnershipsController.PartnershipRequest(PersonId(person.id), PersonId(partner.id), startDate, endDate)
+        controller.createPartnership(db, user, reqBody)
 
-        val getResponse = controller.getPartnerships(db, user, adult1.id)
-        assertEquals(HttpStatus.OK, getResponse.statusCode)
-        assertEquals(1, getResponse.body?.size ?: 0)
-        with(getResponse.body!!.first()) {
+        val getResponse = controller.getPartnerships(db, user, PersonId(person.id))
+        assertEquals(1, getResponse.size)
+        with(getResponse.first()) {
             assertNotNull(this.id)
             assertEquals(startDate, this.startDate)
             assertEquals(endDate, this.endDate)
-            assertEquals(setOf(adult1, adult2), this.partners)
+            assertEquals(setOf(person.id, partner.id), this.partners.map { it.id }.toSet())
         }
     }
 
@@ -79,7 +121,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `unit supervisor can delete partnerships`() {
-        canDeletePartnership(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        canDeletePartnership(AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
@@ -88,19 +130,21 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun canDeletePartnership(user: AuthenticatedUser) {
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
         val partnership1 = db.transaction { tx ->
-            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(100)).also {
-                tx.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
-                assertEquals(2, tx.getPartnershipsForPerson(adult1.id).size)
+            tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(100)).also {
+                tx.createPartnership(
+                    person.id,
+                    partner.id,
+                    LocalDate.now().plusDays(200),
+                    LocalDate.now().plusDays(300)
+                )
+                assertEquals(2, tx.getPartnershipsForPerson(person.id).size)
             }
         }
 
-        val delResponse = controller.deletePartnership(db, user, partnership1.id)
-        assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
+        controller.deletePartnership(db, user, partnership1.id)
         db.read { r ->
-            assertEquals(1, r.getPartnershipsForPerson(adult1.id).size)
+            assertEquals(1, r.getPartnershipsForPerson(person.id).size)
         }
     }
 
@@ -111,7 +155,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `unit supervisor can update partnerships`() {
-        canUpdatePartnershipDuration(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
@@ -120,28 +164,24 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun canUpdatePartnershipDuration(user: AuthenticatedUser) {
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
         val partnership1 = db.transaction { tx ->
-            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
-                tx.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+            tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
+                tx.createPartnership(
+                    person.id,
+                    partner.id,
+                    LocalDate.now().plusDays(500),
+                    LocalDate.now().plusDays(700)
+                )
             }
         }
 
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
         val requestBody = PartnershipsController.PartnershipUpdateRequest(newStartDate, newEndDate)
-        val updateResponse = controller.updatePartnership(db, user, partnership1.id, requestBody)
-        assertEquals(HttpStatus.OK, updateResponse.statusCode)
-        with(updateResponse.body!!) {
-            assertEquals(partnership1.id, this.id)
-            assertEquals(newStartDate, this.startDate)
-            assertEquals(newEndDate, this.endDate)
-            assertEquals(setOf(adult1, adult2), this.partners)
-        }
+        controller.updatePartnership(db, user, partnership1.id, requestBody)
 
         // partnership1 should have new dates
-        val fetched1 = controller.getPartnership(db, user, partnership1.id).body!!
+        val fetched1 = controller.getPartnership(db, user, partnership1.id)
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
@@ -149,11 +189,14 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `can updating partnership duration to overlap throws conflict`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
         val partnership1 = db.transaction { tx ->
-            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
-                tx.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+            tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
+                tx.createPartnership(
+                    person.id,
+                    partner.id,
+                    LocalDate.now().plusDays(500),
+                    LocalDate.now().plusDays(700)
+                )
             }
         }
 
@@ -168,25 +211,22 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `error is thrown if enduser tries to get partnerships`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
         db.transaction { tx ->
-            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
 
         assertThrows<Forbidden> {
-            controller.getPartnerships(db, user, adult1.id)
+            controller.getPartnerships(db, user, PersonId(person.id))
         }
     }
 
     @Test
     fun `error is thrown if enduser tries to create a partnership`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
-        val reqBody = PartnershipsController.PartnershipRequest(setOf(adult1.id, adult2.id), startDate, endDate)
+        val reqBody =
+            PartnershipsController.PartnershipRequest(PersonId(person.id), PersonId(partner.id), startDate, endDate)
 
         assertThrows<Forbidden> {
             controller.createPartnership(db, user, reqBody)
@@ -196,13 +236,12 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `error is thrown if enduser tries to update partnerships`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
         val partnership = db.transaction { tx ->
-            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
 
-        val requestBody = PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
+        val requestBody =
+            PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
         assertThrows<Forbidden> {
             controller.updatePartnership(db, user, partnership.id, requestBody)
         }
@@ -211,32 +250,12 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `error is thrown if enduser tries to delete a partnership`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
-        val adult1 = testPerson1()
-        val adult2 = testPerson2()
         val partnership = db.transaction { tx ->
-            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
 
         assertThrows<Forbidden> {
             controller.deletePartnership(db, user, partnership.id)
         }
     }
-
-    private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction { tx ->
-        tx.insertTestPerson(
-            DevPerson(
-                ssn = ssn,
-                dateOfBirth = getDobFromSsn(ssn),
-                firstName = firstName,
-                lastName = "Meikäläinen",
-                email = "",
-                language = "fi"
-            )
-        )
-            .let { tx.getPersonById(it)!! }
-            .let { PersonJSON.from(it) }
-    }
-
-    private fun testPerson1() = createPerson("140881-172X", "Aku")
-    private fun testPerson2() = createPerson("150786-1766", "Iines")
 }

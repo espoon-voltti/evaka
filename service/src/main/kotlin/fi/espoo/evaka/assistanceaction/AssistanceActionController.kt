@@ -90,7 +90,7 @@ class AssistanceActionController(
 
     @GetMapping("/assistance-action-options")
     fun getAssistanceActionOptions(db: Database.Connection, user: AuthenticatedUser): List<AssistanceActionOption> {
-        user.requireAnyEmployee()
+        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
         return assistanceActionService.getAssistanceActionOptions(db)
     }
 }

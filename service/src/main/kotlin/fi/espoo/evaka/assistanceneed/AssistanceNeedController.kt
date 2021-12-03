@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
-import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -28,8 +27,7 @@ import java.util.UUID
 @RestController
 class AssistanceNeedController(
     private val assistanceNeedService: AssistanceNeedService,
-    private val accessControl: AccessControl,
-    private val personService: PersonService
+    private val accessControl: AccessControl
 ) {
     @PostMapping("/children/{childId}/assistance-needs")
     fun createAssistanceNeed(
@@ -92,7 +90,7 @@ class AssistanceNeedController(
 
     @GetMapping("/assistance-basis-options")
     fun getAssistanceBasisOptions(db: Database.Connection, user: AuthenticatedUser): List<AssistanceBasisOption> {
-        user.requireAnyEmployee()
+        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
         return assistanceNeedService.getAssistanceBasisOptions(db)
     }
 }

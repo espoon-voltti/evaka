@@ -102,7 +102,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           form.endDate
         )
 
-    void apiCall.then((res: Result<Partnership>) => {
+    void apiCall.then((res) => {
       if (res.isFailure) {
         setErrorStatusCode(res.statusCode)
 

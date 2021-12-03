@@ -6,12 +6,12 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.statement.StatementContext
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -21,18 +21,17 @@ import java.time.Month
 import java.util.UUID
 
 @RestController
-class StartingPlacementsReportController {
+class StartingPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/starting-placements")
     fun getStartingPlacementsReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int
-    ): ResponseEntity<List<StartingPlacementsRow>> {
+    ): List<StartingPlacementsRow> {
         Audit.StartingPlacementsReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-        val rows = db.read { it.getStartingPlacementsRows(year, month) }
-        return ResponseEntity.ok(rows)
+        accessControl.requirePermissionFor(user, Action.Global.READ_STARTING_PLACEMENTS_REPORT)
+        return db.read { it.getStartingPlacementsRows(year, month) }
     }
 }
 

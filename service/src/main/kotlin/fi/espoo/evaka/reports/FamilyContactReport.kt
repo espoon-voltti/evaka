@@ -8,27 +8,27 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapNullableColumn
-import org.springframework.http.ResponseEntity
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class FamilyContactReportController(private val acl: AccessControlList) {
+class FamilyContactReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/family-contacts")
     fun getFamilyContactsReport(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
-    ): ResponseEntity<List<FamilyContactReportRow>> {
+    ): List<FamilyContactReportRow> {
         Audit.FamilyContactReportRead.log()
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-        return db.read { it.getFamilyContacts(unitId) }.let { ResponseEntity.ok(it) }
+        accessControl.requirePermissionFor(user, Action.Unit.READ_FAMILY_CONTACT_REPORT, unitId)
+        return db.read { it.getFamilyContacts(unitId) }
     }
 }
 

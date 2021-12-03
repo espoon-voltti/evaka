@@ -14,18 +14,18 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.springframework.http.ResponseEntity
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-class OccupancyReportController {
+class OccupancyReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/occupancy-by-unit")
     fun getOccupancyUnitReport(
         db: Database.Connection,
@@ -34,13 +34,13 @@ class OccupancyReportController {
         @RequestParam careAreaId: AreaId,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): ResponseEntity<List<OccupancyUnitReportResultRow>> {
+    ): List<OccupancyUnitReportResultRow> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER)
+        accessControl.requirePermissionFor(user, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = db.read { tx ->
+        return db.read { tx ->
             tx.calculateUnitOccupancyReport(
                 LocalDate.now(),
                 careAreaId,
@@ -48,8 +48,6 @@ class OccupancyReportController {
                 type
             )
         }
-
-        return ResponseEntity.ok(occupancies)
     }
 
     @GetMapping("/reports/occupancy-by-group")
@@ -60,13 +58,13 @@ class OccupancyReportController {
         @RequestParam careAreaId: AreaId,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): ResponseEntity<List<OccupancyGroupReportResultRow>> {
+    ): List<OccupancyGroupReportResultRow> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.REPORT_VIEWER)
+        accessControl.requirePermissionFor(user, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = db.read { tx ->
+        return db.read { tx ->
             tx.calculateGroupOccupancyReport(
                 LocalDate.now(),
                 careAreaId,
@@ -74,8 +72,6 @@ class OccupancyReportController {
                 type
             )
         }
-
-        return ResponseEntity.ok(occupancies)
     }
 }
 
