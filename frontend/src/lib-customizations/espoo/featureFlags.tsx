@@ -51,7 +51,7 @@ const features: Features = {
       realtimeStaffAttendance: true,
       personalDetailsPage: true,
       mobileMessages: true,
-      personalMobileDevice: false
+      personalMobileDevice: true
     }
   },
   prod: {
