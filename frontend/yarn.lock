@@ -2853,6 +2853,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/uuid@npm:^8.3.3":
+  version: 8.3.3
+  resolution: "@types/uuid@npm:8.3.3"
+  checksum: 3f340155bb1161f9ffa7163926d6222fea8f3505c23619b72bcc230883354926672c08a06510c7a543f73553c792a84444cc1744cff631b4ba988763e4bd7a8f
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 20.2.0
   resolution: "@types/yargs-parser@npm:20.2.0"
@@ -5716,6 +5723,7 @@ __metadata:
     "@types/react-router-dom": ^5.3.2
     "@types/react-select": 3.0.22
     "@types/styled-components": ^5.1.15
+    "@types/uuid": ^8.3.3
     "@typescript-eslint/eslint-plugin": ^4.33.0
     "@typescript-eslint/parser": ^4.33.0
     axios: ^0.24.0
@@ -5785,6 +5793,7 @@ __metadata:
     tsconfig-paths-webpack-plugin: ^3.5.2
     tslib: ^2.3.1
     typescript: ~4.4.4
+    uuid: ^8.3.2
     webpack: 5.64.1
     webpack-cli: ^4.9.1
     webpack-dev-middleware: ^5.2.2

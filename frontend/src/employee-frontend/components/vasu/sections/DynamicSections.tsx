@@ -45,6 +45,7 @@ interface Props {
   setContent?: Dispatch<SetStateAction<VasuContent>>
   state: VasuDocumentState
   translations: VasuTranslations
+  editFollowupEntry?: (entry: FollowupEntry) => void
 }
 
 export function DynamicSections({
@@ -52,7 +53,8 @@ export function DynamicSections({
   sectionIndex: sectionOffset,
   setContent,
   state,
-  translations
+  translations,
+  editFollowupEntry
 }: Props) {
   const content = sections.map((section, sectionIndex) => {
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
@@ -190,6 +192,7 @@ export function DynamicSections({
                               })
                           : undefined
                       }
+                      onEdited={editFollowupEntry}
                     />
                   ) : undefined}
                 </Fragment>

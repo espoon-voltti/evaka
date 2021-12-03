@@ -66,6 +66,15 @@ export interface FollowupEntry {
   date: LocalDate
   authorName: string
   text: string
+  id?: string
+  authorId?: string
+  edited?: FollowupEntryEditDetails
+}
+
+export interface FollowupEntryEditDetails {
+  editedAt: LocalDate
+  editorName: string
+  editorId?: string
 }
 
 export type VasuQuestion =
@@ -103,25 +112,29 @@ export function isFollowup(question: VasuQuestion): question is Followup {
   return question.type === 'FOLLOWUP'
 }
 
+function isFollowupJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<Followup> {
+  return question.type === 'FOLLOWUP'
+}
+
 export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
-  sections: content.sections.map(
-    (section: JsonOf<VasuSection>) =>
-      ({
-        ...section,
-        questions: section.questions.map((question: JsonOf<VasuQuestion>) =>
-          question.type === 'FOLLOWUP'
-            ? {
-                ...question,
-                value: (question.value as JsonOf<FollowupEntry[]>).map(
-                  (entry: JsonOf<FollowupEntry>) =>
-                    ({
-                      ...entry,
-                      date: LocalDate.parseIso(entry.date)
-                    } as FollowupEntry)
-                )
+  sections: content.sections.map((section: JsonOf<VasuSection>) => ({
+    ...section,
+    questions: section.questions.map((question: JsonOf<VasuQuestion>) =>
+      isFollowupJson(question)
+        ? {
+            ...question,
+            value: question.value.map((entry: JsonOf<FollowupEntry>) => ({
+              ...entry,
+              date: LocalDate.parseIso(entry.date),
+              edited: entry.edited && {
+                ...entry.edited,
+                editedAt: LocalDate.parseIso(entry.edited.editedAt)
               }
-            : question
-        )
-      } as VasuSection)
-  )
+            }))
+          }
+        : question
+    )
+  }))
 })

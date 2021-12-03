@@ -16,6 +16,8 @@ import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
   AuthorsContent,
+  editFollowupEntry,
+  EditFollowupEntryParams,
   EvaluationDiscussionContent,
   getVasuDocument,
   putVasuDocument,
@@ -61,6 +63,7 @@ interface Vasu {
   >
   status: VasuStatus
   translations: VasuTranslations
+  editFollowupEntry: (params: EditFollowupEntryParams) => void
 }
 
 const debounceInterval = isAutomatedTest ? 200 : 2000
@@ -97,31 +100,33 @@ export function useVasu(id: string): Vasu {
       evaluation: ''
     })
 
+  const handleVasuDocLoaded = useCallback((res: Result<VasuDocument>) => {
+    res.mapAll({
+      loading: () => null,
+      failure: () => setStatus({ state: 'loading-error' }),
+      success: ({
+        content,
+        authorsContent,
+        vasuDiscussionContent,
+        evaluationDiscussionContent,
+        ...meta
+      }) => {
+        setStatus({ state: 'clean' })
+        setVasu(meta)
+        setContent(content)
+        setAuthorsContent(authorsContent)
+        setVasuDiscussionContent(vasuDiscussionContent)
+        setEvaluationDiscussionContent(evaluationDiscussionContent)
+      }
+    })
+  }, [])
+
   useEffect(
     function loadVasuDocument() {
       setStatus({ state: 'loading' })
-      void getVasuDocument(id).then((res) =>
-        res.mapAll({
-          loading: () => null,
-          failure: () => setStatus({ state: 'loading-error' }),
-          success: ({
-            content,
-            authorsContent,
-            vasuDiscussionContent,
-            evaluationDiscussionContent,
-            ...meta
-          }) => {
-            setStatus({ state: 'clean' })
-            setVasu(meta)
-            setContent(content)
-            setAuthorsContent(authorsContent)
-            setVasuDiscussionContent(vasuDiscussionContent)
-            setEvaluationDiscussionContent(evaluationDiscussionContent)
-          }
-        })
-      )
+      void getVasuDocument(id).then(handleVasuDocLoaded)
     },
-    [id]
+    [id, handleVasuDocLoaded]
   )
 
   const handleSaveResult = useCallback(
@@ -142,6 +147,23 @@ export function useVasu(id: string): Vasu {
     [save]
   )
   const debouncedSave = useDebouncedCallback(saveNow, debounceInterval)
+
+  const handleEditFollowupEntryResult = useCallback(
+    (res: Result<unknown>) =>
+      res.mapAll({
+        loading: () => null,
+        failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
+        success: () => {
+          setStatus({ state: 'loading' })
+          void getVasuDocument(id).then(handleVasuDocLoaded)
+        }
+      }),
+    [id, handleVasuDocLoaded]
+  )
+  const editFollowup = useRestApi(
+    editFollowupEntry,
+    handleEditFollowupEntryResult
+  )
 
   useEffect(
     function saveDirtyContent() {
@@ -217,6 +239,7 @@ export function useVasu(id: string): Vasu {
     evaluationDiscussionContent,
     setEvaluationDiscussionContent: setEvaluationDiscussionContentCallback,
     status,
-    translations
+    translations,
+    editFollowupEntry: editFollowup
   }
 }

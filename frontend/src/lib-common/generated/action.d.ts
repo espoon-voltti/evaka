@@ -183,6 +183,8 @@ export type VasuDocument =
   | 'EVENT_RETURNED_TO_REVIEWED'
   | 'READ'
   | 'UPDATE'
+  | 'UPDATE_ANY_FOLLOWUP_ENTRY'
+  | 'UPDATE_OWN_FOLLOWUP_ENTRY'
 
 export type VasuTemplate =
   | 'COPY'

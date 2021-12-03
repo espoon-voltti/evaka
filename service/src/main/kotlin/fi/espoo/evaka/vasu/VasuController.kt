@@ -7,12 +7,15 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -40,6 +43,7 @@ class VasuController(
     data class CreateDocumentRequest(
         val templateId: VasuTemplateId
     )
+
     @PostMapping("/children/{childId}/vasu")
     fun createDocument(
         db: Database.Connection,
@@ -101,6 +105,7 @@ class VasuController(
         val vasuDiscussionContent: VasuDiscussionContent,
         val evaluationDiscussionContent: EvaluationDiscussionContent
     )
+
     @PutMapping("/vasu/{id}")
     fun putDocument(
         db: Database.Connection,
@@ -130,6 +135,46 @@ class VasuController(
 
         if (!vasu.content.matchesStructurally(body.content))
             throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
+
+        if (vasu.content.containsModifiedFollowupEntries(body.content))
+            throw Forbidden("Permission denied", "CANNOT_EDIT_FOLLOWUP_COMMENTS")
+    }
+
+    data class EditFollowupEntryRequest(
+        val text: String
+    )
+
+    @PostMapping("/vasu/{id}/edit-followup/{entryId}")
+    fun editFollowupEntry(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: VasuDocumentId,
+        @PathVariable entryId: UUID,
+        @RequestBody body: EditFollowupEntryRequest
+    ) {
+        Audit.VasuDocumentEditFollowupEntry.log(id, entryId)
+        accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE_OWN_FOLLOWUP_ENTRY, id)
+        db.transaction { tx ->
+            val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
+            val entry = vasu.content.findFollowupEntryWithId(entryId) ?: throw NotFound("Entry with $entryId not found")
+
+            val updateAnyAllowedBy = Action.VasuDocument.UPDATE_ANY_FOLLOWUP_ENTRY.defaultRoles().toTypedArray()
+            val userCanUpdateAnyEntry = user.hasOneOfRoles(*updateAnyAllowedBy)
+
+            if (entry.authorId != user.id && !userCanUpdateAnyEntry) {
+                throw Forbidden("Permission denied")
+            }
+
+            val editor = tx.getEmployee(EmployeeId(user.id))
+
+            tx.updateVasuDocumentMaster(
+                id,
+                vasu.content.editFollowupEntry(entryId, editor, body.text),
+                vasu.authorsContent,
+                vasu.vasuDiscussionContent,
+                vasu.evaluationDiscussionContent
+            )
+        }
     }
 
     @PostMapping("/vasu/{id}/update-state")

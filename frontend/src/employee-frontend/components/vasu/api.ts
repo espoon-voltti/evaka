@@ -220,3 +220,23 @@ export async function updateDocumentState({
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
+
+export interface EditFollowupEntryParams {
+  documentId: UUID
+  entryId?: UUID
+  text: string
+}
+export async function editFollowupEntry({
+  documentId,
+  entryId,
+  text
+}: EditFollowupEntryParams): Promise<Result<null>> {
+  return entryId
+    ? client
+        .post(`/vasu/${documentId}/edit-followup/${entryId}`, {
+          text
+        })
+        .then(() => Success.of(null))
+        .catch((e) => Failure.fromError(e))
+    : Failure.of({ message: 'cannot edit without entry ID' })
+}
