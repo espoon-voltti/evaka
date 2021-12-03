@@ -887,7 +887,7 @@ export function createDaycareGroupPlacementFixture(
   endDate = '2022-08-31'
 ): DaycareGroupPlacement {
   return {
-    id: '2e19e400-ca0c-4059-b872-cce8b5282a72',
+    id: uuidv4(),
     daycareGroupId: groupId,
     daycarePlacementId: placementId,
     startDate,

@@ -2,33 +2,37 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
+import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
+import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import {
-  createDaycareGroupPlacementFixture,
-  createDaycarePlacementFixture,
-  daycareGroupFixture,
-  EmployeeBuilder,
-  Fixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from '../../browser'
-import { Page } from 'playwright'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
-import {
-  insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
-import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
-import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
-import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
+import {
+  createDaycareGroupPlacementFixture,
+  createDaycarePlacementFixture,
+  daycareFixture,
+  daycareGroupFixture,
+  EmployeeBuilder,
+  enduserChildFixtureJari,
+  enduserChildFixtureKaarina,
+  enduserChildFixturePorriHatterRestricted,
+  Fixture,
+  uuidv4
+} from 'e2e-test-common/dev-api/fixtures'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { Page } from 'playwright'
 import { DaycarePlacement } from '../../../e2e-test-common/dev-api/types'
+import { newBrowserContext } from '../../browser'
+import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
+import { waitUntilEqual } from '../../utils'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -37,12 +41,22 @@ let childPage: MobileChildPage
 let childAttendancePage: ChildAttendancePage
 let employee: EmployeeBuilder
 
+const group2 = {
+  id: uuidv4(),
+  name: '#2',
+  daycareId: daycareFixture.id,
+  startDate: '2021-01-01'
+}
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   await insertDefaultServiceNeedOptions()
 
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await Fixture.daycareGroup().with(daycareGroupFixture).save()
+
+  await Fixture.daycareGroup().with(group2).save()
+
   employee = await Fixture.employee().save()
 
   page = await (await newBrowserContext()).newPage()
@@ -51,23 +65,34 @@ beforeEach(async () => {
   childAttendancePage = new ChildAttendancePage(page)
 })
 
-const createPlacementAndReload = async (
-  placementType: PlacementType
-): Promise<DaycarePlacement> => {
+async function createPlacements(
+  childId: string,
+  groupId: string = daycareGroupFixture.id,
+  placementType: PlacementType = 'DAYCARE'
+) {
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
-    fixtures.familyWithTwoGuardians.children[0].id,
+    childId,
     fixtures.daycareFixture.id,
     '2021-05-01', // TODO use dynamic date
     '2022-08-31',
     placementType
   )
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  const groupPlacementFixture = createDaycareGroupPlacementFixture(
-    daycarePlacementFixture.id,
-    daycareGroupFixture.id
+  await insertDaycareGroupPlacementFixtures([
+    createDaycareGroupPlacementFixture(daycarePlacementFixture.id, groupId)
+  ])
+  return daycarePlacementFixture
+}
+
+const createPlacementAndReload = async (
+  placementType: PlacementType
+): Promise<DaycarePlacement> => {
+  const daycarePlacementFixture = await createPlacements(
+    fixtures.familyWithTwoGuardians.children[0].id,
+    daycareGroupFixture.id,
+    placementType
   )
-  await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
 
   const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
   await page.goto(mobileSignupUrl)
@@ -163,5 +188,56 @@ describe('Child mobile attendances', () => {
       .save()
 
     await checkAbsenceTypeSelectionButtonsExistence(true, '08:00', '11:00')
+  })
+})
+
+describe('Child mobile attendance list', () => {
+  test('Group selector works consistently', async () => {
+    const child1 = enduserChildFixtureKaarina.id
+    await createPlacements(child1)
+    await createPlacements(enduserChildFixturePorriHatterRestricted.id)
+    await createPlacements(enduserChildFixtureJari.id, group2.id)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
+      coming: 3,
+      present: 0,
+      departed: 0,
+      absent: 0,
+      total: 3
+    })
+
+    await listPage.selectChild(child1)
+    await childPage.selectMarkPresentView()
+    await childAttendancePage.setTime('08:00')
+    await childAttendancePage.selectMarkPresent()
+
+    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
+      coming: 2,
+      present: 1,
+      departed: 0,
+      absent: 0,
+      total: 3
+    })
+
+    await listPage.selectGroup(group2.id)
+    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
+      coming: 1,
+      present: 0,
+      departed: 0,
+      absent: 0,
+      total: 1
+    })
+
+    await listPage.selectGroup('all')
+    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
+      coming: 2,
+      present: 1,
+      departed: 0,
+      absent: 0,
+      total: 3
+    })
   })
 })

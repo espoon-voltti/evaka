@@ -71,7 +71,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
     config: { duration: 100 }
   })
   return (
-    <GroupContainer>
+    <GroupContainer data-qa={`selected-group--${selectedGroup?.id ?? 'all'}`}>
       <GroupSelectorWrapper
         style={{
           maxHeight: groupSelectorSpring.x.interpolate((x) => `${100 * x}%`)
