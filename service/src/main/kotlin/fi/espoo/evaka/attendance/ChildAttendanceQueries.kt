@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
@@ -117,9 +118,11 @@ data class ChildBasics(
     val placementType: PlacementType,
     val groupId: GroupId,
     val backup: Boolean,
+    val attendance: AttendanceTimes?,
+    val absences: List<ChildAbsence>,
     val imageUrl: String?
 )
-fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<ChildBasics> {
+fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTime): List<ChildBasics> {
     // language=sql
     val sql =
         """
@@ -208,16 +211,30 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
             cimg.id AS image_id,
             c.group_id,
             c.placement_type,
-            c.backup
+            c.backup,
+            ca.attendance,
+            coalesce(a.absences, '[]'::jsonb) AS absences
         FROM child_group_placement c
         JOIN person pe ON pe.id = c.child_id
         LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id
         LEFT JOIN child_images cimg ON pe.id = cimg.child_id
+        LEFT JOIN LATERAL (
+            SELECT jsonb_build_object('arrived', ca.arrived, 'departed', ca.departed) AS attendance
+            FROM child_attendance ca WHERE ca.child_id = pe.id
+            AND ((ca.arrived at time zone 'Europe/Helsinki')::date = :date OR tstzrange(arrived, departed) @> :departedThreshold)
+            ORDER BY ca.arrived DESC LIMIT 1
+        ) ca ON true
+        LEFT JOIN LATERAL (
+            SELECT jsonb_agg(jsonb_build_object('careType', a.care_type)) AS absences
+            FROM absence a WHERE a.child_id = pe.id AND a.date = :date
+            GROUP BY a.child_id
+        ) a ON true
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("date", date)
+        .bind("date", instant.toLocalDate())
+        .bind("departedThreshold", instant.minusMinutes(30))
         .map { row ->
             ChildBasics(
                 id = row.mapColumn("id"),
@@ -229,68 +246,11 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, date: LocalDate): List<
                 dailyServiceTimes = toDailyServiceTimes(row),
                 groupId = row.mapColumn("group_id"),
                 backup = row.mapColumn("backup"),
+                attendance = row.mapJsonColumn("attendance"),
+                absences = row.mapJsonColumn("absences"),
                 imageUrl = row.mapColumn<String?>("image_id")?.let { id -> "/api/internal/child-images/$id" }
             )
         }
-        .list()
-}
-
-// language=sql
-private val placedChildrenSql =
-    """
-    SELECT p.child_id
-    FROM placement p
-    WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') @> :date AND NOT EXISTS (
-        SELECT 1 FROM backup_care bc WHERE bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-    )
-    
-    UNION ALL
-    
-    SELECT bc.child_id
-    FROM backup_care bc
-    JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :date
-    WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-    """.trimIndent()
-
-fun Database.Read.fetchChildrenAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<ChildAttendance> {
-    // language=sql
-    val sql =
-        """
-        SELECT 
-            ca.id,
-            ca.child_id,
-            ca.unit_id,
-            ca.arrived,
-            ca.departed
-        FROM child_attendance ca
-        WHERE ca.unit_id = :unitId
-        AND (ca.arrived::date = :date OR tstzrange(ca.arrived, ca.departed) @> :departedThreshold)
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("date", now.toLocalDate())
-        .bind("departedThreshold", now.minusMinutes(30))
-        .mapTo<ChildAttendance>()
-        .list()
-}
-
-fun Database.Read.fetchChildrenAbsences(unitId: DaycareId, date: LocalDate): List<ChildAbsence> {
-    // language=sql
-    val sql =
-        """
-        SELECT 
-            ab.id,
-            ab.child_id,
-            ab.care_type
-        FROM absence ab
-        WHERE ab.date = :date AND ab.child_id IN ($placedChildrenSql)
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .mapTo<ChildAbsence>()
         .list()
 }
 

@@ -18,7 +18,7 @@ import {
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { combine } from 'lib-common/api'
 import { ContentArea } from 'lib-components/layout/Container'
-import { ChildAttendance } from 'lib-common/generated/api-types/attendance'
+import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import { TallContentArea } from '../../mobile/components'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import {
@@ -45,7 +45,7 @@ import { renderResult } from '../../async-rendering'
 function validateTime(
   i18n: Translations,
   time: string,
-  attendance: ChildAttendance | null | undefined
+  attendance: AttendanceTimes | null | undefined
 ): string | undefined {
   if (!attendance) return undefined
 
