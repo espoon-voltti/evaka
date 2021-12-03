@@ -10,7 +10,7 @@ import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
-import fi.espoo.evaka.shared.FeatureFlags
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
 import fi.espoo.evaka.shared.job.JobSchedule
@@ -65,9 +65,10 @@ class EspooConfig {
     fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
     @Bean
-    fun featureFlags(): FeatureFlags = FeatureFlags(
+    fun featureConfig(): FeatureConfig = FeatureConfig(
         valueDecisionCapacityFactorEnabled = false,
-        daycareApplicationServiceNeedOptionsEnabled = false
+        daycareApplicationServiceNeedOptionsEnabled = false,
+        citizenReservationThresholdHours = 150,
     )
 
     @Bean

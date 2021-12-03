@@ -89,13 +89,24 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(0, dailyData[2].children.size)
     }
 
-    private fun postReservations(request: List<DailyReservationRequest>) {
+    @Test
+    fun `adding reservations fails if past citizen reservation threshold setting`() {
+        val request = listOf(testChild_1.id, testChild_2.id).flatMap { child ->
+            listOf(
+                DailyReservationRequest(child, LocalDate.now(), listOf(TimeRange(startTime, endTime))),
+                DailyReservationRequest(child, LocalDate.now().plusDays(1), listOf(TimeRange(startTime, endTime)))
+            )
+        }
+        postReservations(request, 400)
+    }
+
+    private fun postReservations(request: List<DailyReservationRequest>, expectedStatus: Int? = 200) {
         val (_, res, _) = http.post("/citizen/reservations")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id))
             .response()
 
-        assertEquals(200, res.statusCode)
+        assertEquals(expectedStatus, res.statusCode)
     }
 
     private fun getReservations(range: FiniteDateRange): ReservationsResponse {

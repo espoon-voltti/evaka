@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.FeatureFlags
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -35,7 +35,7 @@ import java.util.UUID
 class ServiceVoucherValueReportController(
     private val acl: AccessControlList,
     private val accessControl: AccessControl,
-    private val featureFlags: FeatureFlags
+    private val featureConfig: FeatureConfig
 ) {
 
     data class ServiceVoucherReport(
@@ -107,7 +107,7 @@ class ServiceVoucherValueReportController(
                 locked = snapshotTime,
                 rows = rows,
                 voucherTotal = rows.sumOf { it.realizedAmount },
-                assistanceNeedCapacityFactorEnabled = featureFlags.valueDecisionCapacityFactorEnabled,
+                assistanceNeedCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled,
             )
         }
     }

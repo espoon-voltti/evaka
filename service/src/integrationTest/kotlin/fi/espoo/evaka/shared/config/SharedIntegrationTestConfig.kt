@@ -14,7 +14,7 @@ import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
-import fi.espoo.evaka.shared.FeatureFlags
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -167,8 +167,9 @@ class SharedIntegrationTestConfig {
     fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
     @Bean
-    fun featureFlags(): FeatureFlags = FeatureFlags(
+    fun featureConfig(): FeatureConfig = FeatureConfig(
         valueDecisionCapacityFactorEnabled = true,
-        daycareApplicationServiceNeedOptionsEnabled = false
+        daycareApplicationServiceNeedOptionsEnabled = false,
+        citizenReservationThresholdHours = 150,
     )
 }

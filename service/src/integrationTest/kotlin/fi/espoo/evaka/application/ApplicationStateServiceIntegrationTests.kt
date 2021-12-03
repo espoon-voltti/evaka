@@ -32,7 +32,7 @@ import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.FeatureFlags
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -81,7 +81,7 @@ import kotlin.test.assertTrue
 class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @MockBean
-    private lateinit var featureFlags: FeatureFlags
+    private lateinit var featureConfig: FeatureConfig
 
     @Autowired
     private lateinit var service: ApplicationStateService
@@ -118,7 +118,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `initialize daycare application form with null service need option`() {
-        whenever(featureFlags.daycareApplicationServiceNeedOptionsEnabled).thenReturn(false)
+        whenever(featureConfig.daycareApplicationServiceNeedOptionsEnabled).thenReturn(false)
         db.transaction { tx ->
             // given
             tx.insertApplication(
@@ -148,7 +148,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `initialize daycare application form with service need option`() {
-        whenever(featureFlags.daycareApplicationServiceNeedOptionsEnabled).thenReturn(true)
+        whenever(featureConfig.daycareApplicationServiceNeedOptionsEnabled).thenReturn(true)
         db.transaction { tx ->
             // given
             tx.insertApplication(

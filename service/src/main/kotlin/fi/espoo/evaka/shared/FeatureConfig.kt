@@ -4,7 +4,8 @@
 
 package fi.espoo.evaka.shared
 
-data class FeatureFlags(
+data class FeatureConfig(
     val valueDecisionCapacityFactorEnabled: Boolean,
-    val daycareApplicationServiceNeedOptionsEnabled: Boolean
+    val daycareApplicationServiceNeedOptionsEnabled: Boolean,
+    val citizenReservationThresholdHours: Long
 )
