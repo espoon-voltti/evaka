@@ -5,12 +5,13 @@
 import { ErrorBoundary } from '@sentry/react'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   BrowserRouter as Router,
   Redirect,
   Route,
   Switch,
+  useHistory,
   useParams,
   useRouteMatch
 } from 'react-router-dom'
@@ -98,6 +99,7 @@ function UnitRouter() {
 
 function GroupRouter() {
   const { path } = useRouteMatch()
+  useGroupIdInLocalStorage()
 
   return (
     <Switch>
@@ -225,4 +227,31 @@ function MessagesRouter() {
       </Switch>
     </MessageContextProvider>
   )
+}
+
+const groupIdKey = 'evakaEmployeeMobileGroupId'
+
+function useGroupIdInLocalStorage() {
+  const history = useHistory()
+  const { unitId, groupId } = useParams<{ unitId: string; groupId: string }>()
+
+  useEffect(() => {
+    try {
+      const storedGroupId = window.localStorage?.getItem(groupIdKey)
+
+      if (groupId === 'all' && storedGroupId && groupId !== storedGroupId) {
+        history.replace(`/units/${unitId}/groups/${storedGroupId}`)
+      }
+    } catch (e) {
+      // do nothing
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    try {
+      window.localStorage?.setItem(groupIdKey, groupId)
+    } catch (e) {
+      // do nothing
+    }
+  }, [groupId])
 }
