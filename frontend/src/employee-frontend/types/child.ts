@@ -29,11 +29,6 @@ export interface AssistanceAction {
   measures: Set<AssistanceMeasure>
 }
 
-export interface AssistanceActionOption {
-  value: string
-  nameFi: string
-}
-
 export interface AdditionalInformation {
   allergies: string
   diet: string

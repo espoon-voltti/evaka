@@ -17,11 +17,7 @@ import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import {
-  AssistanceAction,
-  AssistanceActionOption,
-  AssistanceMeasure
-} from '../../../types/child'
+import { AssistanceAction, AssistanceMeasure } from '../../../types/child'
 
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
@@ -42,6 +38,7 @@ import {
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { UUID } from 'lib-common/types'
+import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 
 const CheckboxRow = styled.div`
   display: flex;
