@@ -4,7 +4,7 @@
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { useTranslation } from '../../../state/i18n'
-import { AssistanceAction, AssistanceActionOption } from '../../../types/child'
+import { AssistanceAction } from '../../../types/child'
 import { UIContext } from '../../../state/ui'
 import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
 import { faQuestion } from 'lib-icons'
@@ -17,6 +17,7 @@ import Toolbar from '../../../components/common/Toolbar'
 import { scrollToRef } from '../../../utils'
 import { removeAssistanceAction } from '../../../api/child/assistance-actions'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 
 export interface Props {
   assistanceAction: AssistanceAction

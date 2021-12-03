@@ -17,11 +17,7 @@ import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import {
-  AssistanceAction,
-  AssistanceActionOption,
-  AssistanceMeasure
-} from '../../../types/child'
+import { AssistanceAction, AssistanceMeasure } from '../../../types/child'
 
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
@@ -42,6 +38,7 @@ import {
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { UUID } from 'lib-common/types'
+import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -249,20 +246,42 @@ export default React.memo(function AssistanceActionForm(props: Props) {
             label: i18n.childInformation.assistanceAction.fields.actions,
             value: (
               <div>
-                {props.assistanceActionOptions.map((option) => (
-                  <CheckboxRow key={option.value}>
-                    <Checkbox
-                      label={option.nameFi}
-                      checked={form.actions.has(option.value)}
-                      onChange={(value) => {
-                        const actions = new Set([...form.actions])
-                        if (value) actions.add(option.value)
-                        else actions.delete(option.value)
-                        updateFormState({ actions: actions })
-                      }}
-                    />
-                  </CheckboxRow>
-                ))}
+                {props.assistanceActionOptions.map((option) =>
+                  option.descriptionFi ? (
+                    <ExpandingInfo
+                      key={option.value}
+                      info={option.descriptionFi}
+                      ariaLabel={''}
+                      fullWidth={true}
+                    >
+                      <CheckboxRow>
+                        <Checkbox
+                          label={option.nameFi}
+                          checked={form.actions.has(option.value)}
+                          onChange={(value) => {
+                            const actions = new Set([...form.actions])
+                            if (value) actions.add(option.value)
+                            else actions.delete(option.value)
+                            updateFormState({ actions: actions })
+                          }}
+                        />
+                      </CheckboxRow>
+                    </ExpandingInfo>
+                  ) : (
+                    <CheckboxRow key={option.value}>
+                      <Checkbox
+                        label={option.nameFi}
+                        checked={form.actions.has(option.value)}
+                        onChange={(value) => {
+                          const actions = new Set([...form.actions])
+                          if (value) actions.add(option.value)
+                          else actions.delete(option.value)
+                          updateFormState({ actions: actions })
+                        }}
+                      />
+                    </CheckboxRow>
+                  )
+                )}
                 {featureFlags.assistanceActionOtherEnabled ? (
                   <>
                     <CheckboxRow>
