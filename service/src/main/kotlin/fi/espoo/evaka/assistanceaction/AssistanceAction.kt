@@ -28,7 +28,8 @@ data class AssistanceActionRequest(
 
 data class AssistanceActionOption(
     val value: String,
-    val nameFi: String
+    val nameFi: String,
+    val descriptionFi: String?
 )
 
 enum class AssistanceMeasure {

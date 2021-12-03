@@ -246,20 +246,42 @@ export default React.memo(function AssistanceActionForm(props: Props) {
             label: i18n.childInformation.assistanceAction.fields.actions,
             value: (
               <div>
-                {props.assistanceActionOptions.map((option) => (
-                  <CheckboxRow key={option.value}>
-                    <Checkbox
-                      label={option.nameFi}
-                      checked={form.actions.has(option.value)}
-                      onChange={(value) => {
-                        const actions = new Set([...form.actions])
-                        if (value) actions.add(option.value)
-                        else actions.delete(option.value)
-                        updateFormState({ actions: actions })
-                      }}
-                    />
-                  </CheckboxRow>
-                ))}
+                {props.assistanceActionOptions.map((option) =>
+                  option.descriptionFi ? (
+                    <ExpandingInfo
+                      key={option.value}
+                      info={option.descriptionFi}
+                      ariaLabel={''}
+                      fullWidth={true}
+                    >
+                      <CheckboxRow>
+                        <Checkbox
+                          label={option.nameFi}
+                          checked={form.actions.has(option.value)}
+                          onChange={(value) => {
+                            const actions = new Set([...form.actions])
+                            if (value) actions.add(option.value)
+                            else actions.delete(option.value)
+                            updateFormState({ actions: actions })
+                          }}
+                        />
+                      </CheckboxRow>
+                    </ExpandingInfo>
+                  ) : (
+                    <CheckboxRow key={option.value}>
+                      <Checkbox
+                        label={option.nameFi}
+                        checked={form.actions.has(option.value)}
+                        onChange={(value) => {
+                          const actions = new Set([...form.actions])
+                          if (value) actions.add(option.value)
+                          else actions.delete(option.value)
+                          updateFormState({ actions: actions })
+                        }}
+                      />
+                    </CheckboxRow>
+                  )
+                )}
                 {featureFlags.assistanceActionOtherEnabled ? (
                   <>
                     <CheckboxRow>

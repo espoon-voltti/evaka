@@ -25,6 +25,7 @@ export interface AssistanceAction {
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceActionOption
 */
 export interface AssistanceActionOption {
+  descriptionFi: string | null
   nameFi: string
   value: string
 }
