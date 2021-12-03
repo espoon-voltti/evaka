@@ -28,21 +28,41 @@ interface Props {
   close: () => void
   reload: () => void
   availableChildren: ReservationChild[]
+  initialDate: LocalDate | undefined
+}
+
+function initialForm(
+  initialDate: LocalDate | undefined,
+  availableChildren: ReservationChild[]
+): Form {
+  const selectedChildren = availableChildren.map((child) => child.id)
+  if (initialDate) {
+    return {
+      startDate: initialDate.format(),
+      endDate: initialDate.format(),
+      selectedChildren
+    }
+  }
+  return {
+    startDate: LocalDate.today().format(),
+    endDate: '',
+    selectedChildren
+  }
 }
 
 export default React.memo(function AbsenceModal({
   close,
   reload,
-  availableChildren
+  availableChildren,
+  initialDate
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const [form, setForm] = useState<Form>({
-    startDate: LocalDate.today().format(),
-    endDate: '',
-    selectedChildren: availableChildren.map(({ id }) => id)
-  })
+  const [form, setForm] = useState<Form>(() =>
+    initialForm(initialDate, availableChildren)
+  )
+
   const updateForm = useCallback(
     (partialForm: Partial<Form>) =>
       setForm((previous) => ({ ...previous, ...partialForm })),

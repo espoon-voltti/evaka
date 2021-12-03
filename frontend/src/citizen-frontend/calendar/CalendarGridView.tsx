@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect, useMemo, useRef } from 'react'
+import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import LocalDate from 'lib-common/local-date'
 import styled, { css } from 'styled-components'
 import { useTranslation } from '../localization'
@@ -20,7 +20,7 @@ import { headerHeightDesktop } from 'citizen-frontend/header/const'
 export interface Props {
   dailyData: DailyReservationData[]
   onCreateReservationClicked: () => void
-  onCreateAbsencesClicked: () => void
+  onCreateAbsencesClicked: (initialDate: LocalDate | undefined) => void
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
@@ -56,6 +56,11 @@ export default React.memo(function CalendarGridView({
     }
   }, [])
 
+  const onCreateAbsences = useCallback(
+    () => onCreateAbsencesClicked(undefined),
+    [onCreateAbsencesClicked]
+  )
+
   return (
     <>
       <StickyHeader ref={headerRef}>
@@ -64,7 +69,7 @@ export default React.memo(function CalendarGridView({
             <H1 noMargin>{i18n.calendar.title}</H1>
             <div>
               <InlineButton
-                onClick={onCreateAbsencesClicked}
+                onClick={onCreateAbsences}
                 text={i18n.calendar.newAbsence}
                 icon={faUserMinus}
                 data-qa="open-absences-modal"
@@ -266,6 +271,8 @@ const DayCell = styled.div<{ today: boolean; selected: boolean }>`
   padding: ${defaultMargins.s};
   background: ${({ theme }) => theme.colors.greyscale.white};
   outline: 1px solid ${colors.greyscale.lighter};
+  cursor: pointer;
+  user-select: none;
 
   ${(p) =>
     p.today

@@ -42,8 +42,24 @@ export default React.memo(function CalendarPage() {
 
   const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
   const [openModal, setOpenModal] = useState<
-    'pickAction' | 'reservations' | 'absences'
+    | { type: 'pickAction' | 'reservations' }
+    | { type: 'absences'; initialDate: LocalDate | undefined }
   >()
+
+  const openPickActionModal = useCallback(
+    () => setOpenModal({ type: 'pickAction' }),
+    []
+  )
+  const openReservationModal = useCallback(
+    () => setOpenModal({ type: 'reservations' }),
+    []
+  )
+  const openAbsenceModal = useCallback(
+    (initialDate: LocalDate | undefined) =>
+      setOpenModal({ type: 'absences', initialDate }),
+    []
+  )
+  const closeModal = useCallback(() => setOpenModal(undefined), [])
 
   const dateParam = new URLSearchParams(location.search).get('day')
   const selectedDate = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
@@ -77,11 +93,11 @@ export default React.memo(function CalendarPage() {
       {selectedDate && data.isSuccess ? (
         <DayView
           date={selectedDate}
-          data={data.value}
+          reservationsResponse={data.value}
           selectDate={selectDate}
           reloadData={loadDefaultRange}
           close={closeDayView}
-          openAbsenceModal={() => setOpenModal('absences')}
+          openAbsenceModal={openAbsenceModal}
         />
       ) : null}
       <UnwrapResult result={data}>
@@ -95,7 +111,7 @@ export default React.memo(function CalendarPage() {
               >
                 <CalendarListView
                   dailyData={response.dailyData}
-                  onHoverButtonClick={() => setOpenModal('pickAction')}
+                  onHoverButtonClick={openPickActionModal}
                   selectDate={selectDate}
                   dayIsReservable={dayIsReservable}
                 />
@@ -105,32 +121,33 @@ export default React.memo(function CalendarPage() {
               <Gap size="s" />
               <CalendarGridView
                 dailyData={response.dailyData}
-                onCreateReservationClicked={() => setOpenModal('reservations')}
-                onCreateAbsencesClicked={() => setOpenModal('absences')}
+                onCreateReservationClicked={openReservationModal}
+                onCreateAbsencesClicked={openAbsenceModal}
                 selectedDate={selectedDate}
                 selectDate={selectDate}
                 includeWeekends={response.includesWeekends}
                 dayIsReservable={dayIsReservable}
               />
             </DesktopOnly>
-            {openModal === 'pickAction' && (
+            {openModal?.type === 'pickAction' && (
               <ActionPickerModal
-                close={() => setOpenModal(undefined)}
-                openReservations={() => setOpenModal('reservations')}
-                openAbsences={() => setOpenModal('absences')}
+                close={closeModal}
+                openReservations={openReservationModal}
+                openAbsences={openAbsenceModal}
               />
             )}
-            {openModal === 'reservations' && (
+            {openModal?.type === 'reservations' && (
               <ReservationModal
-                onClose={() => setOpenModal(undefined)}
+                onClose={closeModal}
                 availableChildren={response.children}
                 onReload={loadDefaultRange}
                 reservableDays={response.reservableDays}
               />
             )}
-            {openModal === 'absences' && (
+            {openModal?.type === 'absences' && (
               <AbsenceModal
-                close={() => setOpenModal(undefined)}
+                close={closeModal}
+                initialDate={openModal.initialDate}
                 reload={loadDefaultRange}
                 availableChildren={response.children}
               />

@@ -73,7 +73,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservation.startTime,
       reservation.endTime
@@ -95,7 +96,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       endTime: `16:0${index}`
     }))
 
-    await calendarPage.createReperatingWeeklyReservation(
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingWeeklyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservations
     )
@@ -114,13 +116,15 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservation.startTime,
       reservation.endTime
     )
 
-    await calendarPage.markAbsence(
+    const absencesModal = await calendarPage.openAbsencesModal()
+    await absencesModal.markAbsence(
       children[0],
       children.length,
       new FiniteDateRange(firstReservationDay, firstReservationDay),
@@ -136,7 +140,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const firstReservationDay = LocalDate.today().addDays(14)
     const initialReservation = { startTime: '08:00', endTime: '16:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    let reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       initialReservation.startTime,
       initialReservation.endTime
@@ -148,7 +153,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
     const newReservation = { startTime: '09:00', endTime: '17:00' }
 
-    await calendarPage.createReperatingDailyReservation(
+    reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       newReservation.startTime,
       newReservation.endTime
@@ -157,5 +163,34 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     await calendarPage.assertReservations(firstReservationDay, false, [
       newReservation
     ])
+  })
+
+  test('Citizen creates a reservation from day view', async () => {
+    const reservationDay = LocalDate.today().addDays(14)
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+
+    expect(children.length).toEqual(3)
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertNoReservation(children[1].id)
+    await dayView.assertNoReservation(children[2].id)
+
+    const editor = await dayView.edit()
+    await editor.fillReservationTimes(children[1].id, '08:00', '16:00')
+    await editor.save()
+
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertReservations(children[1].id, '08:00 – 16:00')
+    await dayView.assertNoReservation(children[2].id)
+  })
+
+  test('If absence modal is opened from day view, that day is filled by default', async () => {
+    const reservationDay = LocalDate.today().addDays(14)
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+    const absencesModal = await dayView.createAbsence()
+
+    await absencesModal.assertStartDate(reservationDay.format())
+    await absencesModal.assertEndDate(reservationDay.format())
   })
 }

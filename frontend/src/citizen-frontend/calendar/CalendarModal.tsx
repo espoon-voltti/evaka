@@ -11,12 +11,17 @@ import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 
 interface Props {
   close: () => void
+  'data-qa'?: string
   children: ReactNode | ReactNode[]
 }
 
-export default React.memo(function CalendarModal({ close, children }: Props) {
+export default React.memo(function CalendarModal({
+  close,
+  'data-qa': dataQa,
+  children
+}: Props) {
   return (
-    <Modal>
+    <Modal data-qa={dataQa}>
       <TopBar>
         <CloseButton icon={faTimes} onClick={close} />
       </TopBar>

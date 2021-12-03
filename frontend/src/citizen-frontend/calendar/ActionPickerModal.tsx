@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCalendarPlus, faUserMinus } from 'lib-icons'
@@ -10,11 +10,12 @@ import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { useTranslation } from '../localization'
+import LocalDate from 'lib-common/local-date'
 
 interface Props {
   close: () => void
   openReservations: () => void
-  openAbsences: () => void
+  openAbsences: (initialDate: LocalDate | undefined) => void
 }
 
 export default React.memo(function ActionPickerModal({
@@ -23,11 +24,15 @@ export default React.memo(function ActionPickerModal({
   openAbsences
 }: Props) {
   const i18n = useTranslation()
+  const onCreateAbsences = useCallback(
+    () => openAbsences(undefined),
+    [openAbsences]
+  )
 
   return (
     <ModalBackground onClick={close}>
       <Container>
-        <Action onClick={openAbsences} data-qa="calendar-action-absences">
+        <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
           {i18n.calendar.newAbsence}
           <IconBackground>
             <FontAwesomeIcon icon={faUserMinus} size="1x" />
