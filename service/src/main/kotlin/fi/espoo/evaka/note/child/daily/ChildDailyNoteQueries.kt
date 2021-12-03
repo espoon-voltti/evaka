@@ -112,7 +112,7 @@ fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {
 }
 
 fun Database.Transaction.deleteExpiredNotes(now: HelsinkiDateTime) {
-    createUpdate("DELETE FROM child_daily_note WHERE modified_at < :now - INTERVAL '16 hours'")
+    createUpdate("DELETE FROM child_daily_note WHERE modified_at < :now - INTERVAL '14 hours'")
         .bind("now", now)
         .execute()
 
