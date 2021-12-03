@@ -9,6 +9,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import React, { createContext, useEffect, useMemo } from 'react'
 import { getAuthStatus } from '../api/auth'
 import { client } from '../api/client'
+import { renderResult } from '../components/async-rendering'
 
 export interface UserState {
   apiVersion: string | undefined
@@ -45,5 +46,11 @@ export const UserContextProvider = React.memo(function UserContextProvider({
     }),
     [authStatus, refreshAuthStatus]
   )
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>
+  return (
+    <UserContext.Provider value={value}>
+      {renderResult(authStatus, () => (
+        <>{children}</>
+      ))}
+    </UserContext.Provider>
+  )
 })
