@@ -5,103 +5,24 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
-import { getDocumentState } from './vasu-events'
-import { mapVasuContent, VasuContent } from './vasu-content'
+import { mapVasuContent } from './vasu-content'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  AuthorsContent,
+  EvaluationDiscussionContent,
+  VasuContent,
+  VasuDiscussionContent,
+  VasuDocument,
+  VasuDocumentEvent,
+  VasuDocumentEventType,
+  VasuDocumentSummary
+} from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
-import { VasuLanguage } from './templates/api'
 
-export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
-export type VasuDocumentEventType =
-  | 'PUBLISHED'
-  | 'MOVED_TO_READY'
-  | 'RETURNED_TO_READY'
-  | 'MOVED_TO_REVIEWED'
-  | 'RETURNED_TO_REVIEWED'
-  | 'MOVED_TO_CLOSED'
-
-export interface VasuDocumentEvent {
-  id: UUID
-  created: Date
-  eventType: VasuDocumentEventType
-}
 const mapVasuDocumentEvent = (
   e: JsonOf<VasuDocumentEvent>
 ): VasuDocumentEvent => ({ ...e, created: new Date(e.created) })
-
-interface VasuDocumentSummaryResponse {
-  id: UUID
-  name: string
-  modifiedAt: Date
-  events: VasuDocumentEvent[]
-}
-export interface VasuDocumentSummary extends VasuDocumentSummaryResponse {
-  documentState: VasuDocumentState
-}
-
-export interface AuthorsContent {
-  primaryAuthor: AuthorInfo
-  otherAuthors: AuthorInfo[]
-}
-
-export interface AuthorInfo {
-  name: string
-  title: string
-  phone: string
-}
-
-export interface VasuDiscussionContent {
-  discussionDate: LocalDate | null
-  participants: string
-  guardianViewsAndCollaboration: string
-}
-
-export interface EvaluationDiscussionContent {
-  discussionDate: LocalDate | null
-  participants: string
-  guardianViewsAndCollaboration: string
-  evaluation: string
-}
-
-export interface VasuBasics {
-  child: {
-    id: UUID
-    firstName: string
-    lastName: string
-    dateOfBirth: LocalDate
-  }
-  guardians: {
-    id: UUID
-    firstName: string
-    lastName: string
-  }[]
-  placements: {
-    unitId: UUID
-    unitName: string
-    groupId: UUID
-    groupName: string
-    range: FiniteDateRange
-  }[]
-}
-
-interface VasuDocumentResponse {
-  id: UUID
-  events: VasuDocumentEvent[]
-  modifiedAt: Date
-  basics: VasuBasics
-  templateName: string
-  templateRange: FiniteDateRange
-  language: VasuLanguage
-  content: VasuContent
-  authorsContent: AuthorsContent
-  vasuDiscussionContent: VasuDiscussionContent
-  evaluationDiscussionContent: EvaluationDiscussionContent
-}
-
-export interface VasuDocument extends VasuDocumentResponse {
-  documentState: VasuDocumentState
-}
 
 const mapVasuDocumentResponse = ({
   events,
@@ -112,11 +33,10 @@ const mapVasuDocumentResponse = ({
   vasuDiscussionContent,
   evaluationDiscussionContent,
   ...rest
-}: JsonOf<VasuDocumentResponse>): VasuDocument => ({
+}: JsonOf<VasuDocument>): VasuDocument => ({
   ...rest,
   content: mapVasuContent(content),
   events: events.map(mapVasuDocumentEvent),
-  documentState: getDocumentState(events),
   modifiedAt: new Date(modifiedAt),
   templateRange: FiniteDateRange.parseJson(templateRange),
   basics: {
@@ -125,10 +45,11 @@ const mapVasuDocumentResponse = ({
       ...basics.child,
       dateOfBirth: LocalDate.parseIso(basics.child.dateOfBirth)
     },
-    placements: basics.placements.map((pl) => ({
-      ...pl,
-      range: FiniteDateRange.parseJson(pl.range)
-    }))
+    placements:
+      basics.placements?.map((pl) => ({
+        ...pl,
+        range: FiniteDateRange.parseJson(pl.range)
+      })) ?? null
   },
   vasuDiscussionContent: {
     ...vasuDiscussionContent,
@@ -158,14 +79,11 @@ export async function getVasuDocumentSummaries(
   childId: UUID
 ): Promise<Result<VasuDocumentSummary[]>> {
   return client
-    .get<JsonOf<VasuDocumentSummaryResponse[]>>(
-      `/children/${childId}/vasu-summaries`
-    )
+    .get<JsonOf<VasuDocumentSummary[]>>(`/children/${childId}/vasu-summaries`)
     .then((res) =>
       Success.of(
         res.data.map(({ events, modifiedAt, ...rest }) => ({
           ...rest,
-          documentState: getDocumentState(events),
           events: events.map(mapVasuDocumentEvent),
           modifiedAt: new Date(modifiedAt)
         }))

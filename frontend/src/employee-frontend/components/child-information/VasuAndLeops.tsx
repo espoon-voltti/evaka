@@ -29,16 +29,16 @@ import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { VasuStateChip } from '../common/VasuStateChip'
 import {
+  VasuDocumentSummary,
+  VasuTemplateSummary
+} from 'lib-common/generated/api-types/vasu'
+import {
   createVasuDocument,
   getVasuDocumentSummaries,
-  updateDocumentState,
-  VasuDocumentSummary
+  updateDocumentState
 } from '../vasu/api'
 import { getLastPublished } from '../vasu/vasu-events'
-import {
-  getVasuTemplateSummaries,
-  VasuTemplateSummary
-} from '../vasu/templates/api'
+import { getVasuTemplateSummaries } from '../vasu/templates/api'
 import { RequireRole } from '../../utils/roles'
 import { renderResult, UnwrapResult } from '../async-rendering'
 import { UUID } from 'lib-common/types'

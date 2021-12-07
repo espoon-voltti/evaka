@@ -18,20 +18,24 @@ import {
   CheckboxQuestion,
   Followup,
   FollowupEntry,
+  MultiSelectQuestion,
+  QuestionOption,
+  RadioGroupQuestion,
+  TextQuestion
+} from 'lib-common/api-types/vasu'
+import {
+  VasuContent,
+  VasuSection,
+  VasuDocumentState
+} from 'lib-common/generated/api-types/vasu'
+import {
   isCheckboxQuestion,
   isFollowup,
   isMultiSelectQuestion,
   isRadioGroupQuestion,
-  isTextQuestion,
-  MultiSelectQuestion,
-  QuestionOption,
-  RadioGroupQuestion,
-  TextQuestion,
-  VasuContent,
-  VasuSection
+  isTextQuestion
 } from '../vasu-content'
 import { VasuTranslations } from 'lib-customizations/employee'
-import { VasuDocumentState } from '../api'
 
 const getDynamicQuestionNumber = (
   sectionOffset: number,

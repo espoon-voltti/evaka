@@ -9,7 +9,7 @@ import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
-import { VasuDocument } from '../api'
+import { VasuDocument } from 'lib-common/generated/api-types/vasu'
 import { vasuTranslations } from 'lib-customizations/employee'
 
 const HeaderSection = styled(ContentArea)`

@@ -9,6 +9,7 @@ import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -18,11 +19,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
-import {
-  deleteVasuTemplate,
-  getVasuTemplateSummaries,
-  VasuTemplateSummary
-} from './api'
+import { deleteVasuTemplate, getVasuTemplateSummaries } from './api'
 import CopyTemplateModal from './CopyTemplateModal'
 import CreateTemplateModal from './CreateOrEditTemplateModal'
 

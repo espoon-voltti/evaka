@@ -11,7 +11,7 @@ import React, { Dispatch, SetStateAction, useEffect } from 'react'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, Label } from 'lib-components/typography'
-import { AuthorInfo, AuthorsContent } from '../api'
+import { AuthorInfo, AuthorsContent } from 'lib-common/generated/api-types/vasu'
 import { ReadOnlyValue } from '../components/ReadOnlyValue'
 import { VasuTranslations } from 'lib-customizations/employee'
 

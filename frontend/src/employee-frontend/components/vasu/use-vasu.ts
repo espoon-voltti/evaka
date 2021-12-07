@@ -15,17 +15,19 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
-  AuthorsContent,
   editFollowupEntry,
   EditFollowupEntryParams,
-  EvaluationDiscussionContent,
   getVasuDocument,
   putVasuDocument,
-  PutVasuDocumentParams,
+  PutVasuDocumentParams
+} from './api'
+import {
+  AuthorsContent,
+  EvaluationDiscussionContent,
+  VasuContent,
   VasuDiscussionContent,
   VasuDocument
-} from './api'
-import { VasuContent } from './vasu-content'
+} from 'lib-common/generated/api-types/vasu'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
 type State =

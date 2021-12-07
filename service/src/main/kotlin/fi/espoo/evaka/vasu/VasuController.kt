@@ -5,7 +5,6 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.shared.EmployeeId
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
-@ExcludeCodeGen
 @RestController
 class VasuController(
     private val accessControl: AccessControl
@@ -56,7 +54,7 @@ class VasuController(
         accessControl.requirePermissionFor(user, Action.Child.CREATE_VASU_DOCUMENT, childId)
 
         return db.transaction { tx ->
-            if (tx.getVasuDocumentSummaries(childId).any { it.getState() != VasuDocumentState.CLOSED }) {
+            if (tx.getVasuDocumentSummaries(childId).any { it.documentState != VasuDocumentState.CLOSED }) {
                 throw Conflict("Cannot open a new vasu document while another is still active")
             }
 
@@ -131,7 +129,7 @@ class VasuController(
     }
 
     private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
-        if (vasu.getState() == VasuDocumentState.CLOSED)
+        if (vasu.documentState == VasuDocumentState.CLOSED)
             throw BadRequest("Closed vasu document cannot be edited", "CANNOT_EDIT_CLOSED_DOCUMENT")
 
         if (!vasu.content.matchesStructurally(body.content))
@@ -197,7 +195,8 @@ class VasuController(
         }
 
         db.transaction { tx ->
-            val currentState = tx.getVasuDocumentMaster(id)?.getState() ?: throw NotFound("Vasu was not found")
+            val currentState = tx.getVasuDocumentMaster(id)?.documentState
+                ?: throw NotFound("Vasu was not found")
             validateStateTransition(eventType = body.eventType, currentState = currentState)
 
             if (events.contains(PUBLISHED)) {
