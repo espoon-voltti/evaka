@@ -29,8 +29,7 @@ const features: Features = {
       messageAttachments: true,
       realtimeStaffAttendance: false,
       personalDetailsPage: true,
-      mobileMessages: true,
-      personalMobileDevice: true
+      mobileMessages: true
     }
   },
   staging: {
@@ -50,8 +49,7 @@ const features: Features = {
       messageAttachments: true,
       realtimeStaffAttendance: true,
       personalDetailsPage: true,
-      mobileMessages: true,
-      personalMobileDevice: true
+      mobileMessages: true
     }
   },
   prod: {
@@ -71,8 +69,7 @@ const features: Features = {
       messageAttachments: true,
       realtimeStaffAttendance: false,
       personalDetailsPage: false,
-      mobileMessages: false,
-      personalMobileDevice: false
+      mobileMessages: false
     }
   }
 }
