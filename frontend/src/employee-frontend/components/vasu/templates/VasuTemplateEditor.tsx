@@ -31,25 +31,24 @@ import { useTranslation } from '../../../state/i18n'
 import { vasuTranslations } from 'lib-customizations/employee'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
-  CheckboxQuestion,
-  Followup,
   isCheckboxQuestion,
   isFollowup,
   isMultiSelectQuestion,
   isRadioGroupQuestion,
-  isTextQuestion,
+  isTextQuestion
+} from '../vasu-content'
+import { getVasuTemplate, updateVasuTemplateContents } from './api'
+import CreateQuestionModal from './CreateQuestionModal'
+import QuestionInfo from '../QuestionInfo'
+import {
+  CheckboxQuestion,
+  Followup,
   MultiSelectQuestion,
   RadioGroupQuestion,
   TextQuestion,
   VasuQuestion
-} from '../vasu-content'
-import {
-  getVasuTemplate,
-  updateVasuTemplateContents,
-  VasuTemplate
-} from './api'
-import CreateQuestionModal from './CreateQuestionModal'
-import QuestionInfo from '../QuestionInfo'
+} from 'lib-common/api-types/vasu'
+import { VasuTemplate } from 'lib-common/generated/api-types/vasu'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()

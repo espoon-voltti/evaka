@@ -11,7 +11,7 @@ import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
-import { VasuDocument } from '../api'
+import { VasuDocument } from 'lib-common/generated/api-types/vasu'
 import { getLastPublished } from '../vasu-events'
 import LocalDate from 'lib-common/local-date'
 

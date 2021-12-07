@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from 'lib-common/json'
-import { VasuDocumentEvent, VasuDocumentState } from './api'
+import { VasuDocumentEvent } from 'lib-common/generated/api-types/vasu'
 
 export const getLastPublished = (
   events: VasuDocumentEvent[]
@@ -17,21 +16,3 @@ export const getLastPublished = (
     }
     return event.created > acc ? event.created : acc
   }, undefined)
-
-export const getDocumentState = (
-  events: JsonOf<VasuDocumentEvent>[]
-): VasuDocumentState =>
-  events.reduce<VasuDocumentState>((acc, { eventType }) => {
-    switch (eventType) {
-      case 'PUBLISHED':
-        return acc
-      case 'MOVED_TO_READY':
-      case 'RETURNED_TO_READY':
-        return 'READY'
-      case 'MOVED_TO_REVIEWED':
-      case 'RETURNED_TO_REVIEWED':
-        return 'REVIEWED'
-      case 'MOVED_TO_CLOSED':
-        return 'CLOSED'
-    }
-  }, 'DRAFT')

@@ -5,7 +5,7 @@
 import React from 'react'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { useTranslation } from '../../../state/i18n'
-import { CheckboxQuestion } from '../vasu-content'
+import { CheckboxQuestion } from 'lib-common/api-types/vasu'
 import { QuestionProps } from './question-props'
 import { ReadOnlyValue } from './ReadOnlyValue'
 import QuestionInfo from '../QuestionInfo'

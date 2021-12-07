@@ -14,14 +14,12 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import { createVasuTemplate, editVasuTemplate, vasuLanguages } from './api'
 import {
-  createVasuTemplate,
-  editVasuTemplate,
+  CreateTemplateRequest,
   VasuLanguage,
-  vasuLanguages,
-  VasuTemplateParams,
   VasuTemplateSummary
-} from './api'
+} from 'lib-common/generated/api-types/vasu'
 
 interface Props {
   onSuccess: (templateId: UUID) => void
@@ -50,7 +48,7 @@ export default React.memo(function CreateOrEditTemplateModal({
   const [submitting, setSubmitting] = useState(false)
 
   const apiCall = templateToEdit
-    ? (params: VasuTemplateParams) =>
+    ? (params: CreateTemplateRequest) =>
         editVasuTemplate(templateToEdit.id, params)
     : createVasuTemplate
 

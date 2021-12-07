@@ -20,13 +20,13 @@ import colors from 'lib-customizations/common'
 import { faCheck, faQuestion } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { RequireRole } from '../../utils/roles'
-import {
-  updateDocumentState,
-  VasuDocumentEventType,
-  VasuDocumentState
-} from './api'
+import { updateDocumentState } from './api'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
+import {
+  VasuDocumentEventType,
+  VasuDocumentState
+} from 'lib-common/generated/api-types/vasu'
 
 const PublishingDisclaimer = styled(FixedSpaceRow)`
   justify-content: flex-end;

@@ -3,41 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Result, Success, Failure } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { client } from '../../../api/client'
-import { mapVasuContent, VasuContent } from '../vasu-content'
+import {
+  CreateTemplateRequest,
+  VasuContent,
+  VasuTemplate,
+  VasuTemplateSummary
+} from 'lib-common/generated/api-types/vasu'
+import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-
-export interface VasuTemplateSummary {
-  id: UUID
-  name: string
-  valid: FiniteDateRange
-  language: VasuLanguage
-  documentCount: number
-}
-
-export interface VasuTemplate {
-  id: UUID
-  name: string
-  valid: FiniteDateRange
-  language: VasuLanguage
-  content: VasuContent
-  documentCount: number
-}
+import { client } from '../../../api/client'
+import { mapVasuContent } from '../vasu-content'
 
 export const vasuLanguages = ['FI', 'SV'] as const
 
-export type VasuLanguage = typeof vasuLanguages[number]
-
-export interface VasuTemplateParams {
-  name: string
-  valid: FiniteDateRange
-  language: VasuLanguage
-}
-
 export async function createVasuTemplate(
-  params: VasuTemplateParams
+  params: CreateTemplateRequest
 ): Promise<Result<UUID>> {
   return client
     .post<UUID>(`/vasu/templates`, params)
@@ -47,7 +28,7 @@ export async function createVasuTemplate(
 
 export async function editVasuTemplate(
   id: UUID,
-  params: VasuTemplateParams
+  params: CreateTemplateRequest
 ): Promise<Result<UUID>> {
   return client
     .put<UUID>(`/vasu/templates/${id}`, params)

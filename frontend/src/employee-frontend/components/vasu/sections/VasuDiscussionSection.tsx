@@ -8,7 +8,7 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import { ContentArea } from 'lib-components/layout/Container'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { H2, H3, Label } from 'lib-components/typography'
-import { VasuDiscussionContent } from '../api'
+import { VasuDiscussionContent } from 'lib-common/generated/api-types/vasu'
 import { ReadOnlyValue } from '../components/ReadOnlyValue'
 import { VasuTranslations } from 'lib-customizations/employee'
 

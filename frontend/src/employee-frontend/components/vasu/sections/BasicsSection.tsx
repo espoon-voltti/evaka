@@ -6,7 +6,7 @@ import React from 'react'
 import { Gap } from 'lib-components/white-space'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, Label } from 'lib-components/typography'
-import { VasuBasics } from '../api'
+import { VasuBasics } from 'lib-common/generated/api-types/vasu'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { VasuTranslations } from 'lib-customizations/employee'
 
@@ -44,7 +44,7 @@ export function BasicsSection({
       <Gap size="s" />
 
       <Label>{t.placements}</Label>
-      {content.placements.map((p) => (
+      {content.placements?.map((p) => (
         <div key={p.range.start.formatIso()}>
           {p.unitName} ({p.groupName}) {p.range.start.format()} -{' '}
           {p.range.end.isAfter(templateRange.end) ? '' : p.range.end.format()}

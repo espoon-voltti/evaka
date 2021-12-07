@@ -62,7 +62,8 @@ data class VasuDocumentSummary(
     val modifiedAt: HelsinkiDateTime,
     val events: List<VasuDocumentEvent> = listOf(),
 ) {
-    fun getState(): VasuDocumentState = getStateFromEvents(events)
+    val documentState: VasuDocumentState
+        get() = getStateFromEvents(events)
 }
 
 data class VasuDocument(
@@ -84,7 +85,8 @@ data class VasuDocument(
     @Json
     val evaluationDiscussionContent: EvaluationDiscussionContent
 ) {
-    fun getState(): VasuDocumentState = getStateFromEvents(events)
+    val documentState: VasuDocumentState
+        get() = getStateFromEvents(events)
 }
 
 @Json

@@ -19,7 +19,7 @@ import {
   VasuQuestion,
   VasuQuestionType,
   vasuQuestionTypes
-} from '../vasu-content'
+} from 'lib-common/api-types/vasu'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 
 interface Props {
