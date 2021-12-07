@@ -2,41 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-
 import LocalDate from 'lib-common/local-date'
-
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
+import { Page, TextInput } from 'e2e-playwright/utils/page'
 import { AbsenceType } from 'lib-common/generated/enums'
 
 export default class MobileAbsencesPage {
   constructor(private readonly page: Page) {}
 
-  #markAbsentBtn = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="mark-absent-btn"]'
-  )
-  #deleteAbsencePeriodBtn = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="delete-absence-period"]'
-  )
-  #confirmDeleteBtn = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="modal-okBtn"]'
-  )
+  #markAbsentBtn = this.page.find('[data-qa="mark-absent-btn"]')
+  #firstDeleteAbsencePeriodBtn = this.page
+    .findAll('[data-qa="delete-absence-period"]')
+    .first()
+  #confirmDeleteBtn = this.page.find('[data-qa="modal-okBtn"]')
 
   async markAbsent() {
     return this.#markAbsentBtn.click()
   }
 
   async getAbsencesCount() {
-    return this.page.$$eval('[data-qa="absence-row"]', (rows) => rows.length)
+    return this.page.findAll('[data-qa="absence-row"]').count()
   }
+
   absenceChip(absenceType: AbsenceType) {
-    return new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="mark-absent-${absenceType}"]`
-    )
+    return this.page.find(`[data-qa="mark-absent-${absenceType}"]`)
   }
 
   async markNewAbsencePeriod(
@@ -44,14 +32,18 @@ export default class MobileAbsencesPage {
     to: LocalDate,
     absenceType: AbsenceType
   ) {
-    await this.page.fill('[data-qa="start-date-input"]', from.formatIso())
-    await this.page.fill('[data-qa="end-date-input"]', to.formatIso())
+    await new TextInput(this.page.find('[data-qa="start-date-input"]')).fill(
+      from.formatIso()
+    )
+    await new TextInput(this.page.find('[data-qa="end-date-input"]')).fill(
+      to.formatIso()
+    )
     await this.absenceChip(absenceType).click()
     await this.markAbsent()
   }
 
   async deleteFirstAbsencePeriod() {
-    await this.#deleteAbsencePeriodBtn.click()
+    await this.#firstDeleteAbsencePeriodBtn.click()
     await this.#confirmDeleteBtn.click()
   }
 }

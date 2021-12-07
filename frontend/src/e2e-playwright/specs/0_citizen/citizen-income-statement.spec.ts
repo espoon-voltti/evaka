@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'playwright'
 import { resetDatabase } from '../../../e2e-test-common/dev-api'
-import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { enduserLogin } from '../../utils/user'
+import { Page } from '../../utils/page'
 
 let page: Page
 let header: CitizenHeader
@@ -18,7 +17,7 @@ let incomeStatementsPage: IncomeStatementsPage
 beforeEach(async () => {
   await resetDatabase()
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await enduserLogin(page)
   header = new CitizenHeader(page)
   incomeStatementsPage = new IncomeStatementsPage(page)
@@ -29,18 +28,18 @@ async function assertIncomeStatementCreated(
 ) {
   await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
   await waitUntilTrue(async () =>
-    (await incomeStatementsPage.rows.innerText()).includes(startDate)
+    (await incomeStatementsPage.rows.elem().innerText).includes(startDate)
   )
 }
 
 const assertRequiredAttachment = async (attachment: string, present = true) =>
   waitUntilTrue(async () =>
     present
-      ? (await incomeStatementsPage.requiredAttachments.innerText()).includes(
+      ? (await incomeStatementsPage.requiredAttachments.innerText).includes(
           attachment
         )
-      : !(await incomeStatementsPage.requiredAttachments.isVisible()) ||
-        !(await incomeStatementsPage.requiredAttachments.innerText()).includes(
+      : !(await incomeStatementsPage.requiredAttachments.visible) ||
+        !(await incomeStatementsPage.requiredAttachments.innerText).includes(
           attachment
         )
   )

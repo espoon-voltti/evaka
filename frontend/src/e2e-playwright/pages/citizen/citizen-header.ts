@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilTrue } from 'e2e-playwright/utils'
-import { Page } from 'playwright'
+import { Page } from 'e2e-playwright/utils/page'
 
 export default class CitizenHeader {
   constructor(
@@ -11,14 +10,14 @@ export default class CitizenHeader {
     private readonly type: 'desktop' | 'mobile' = 'desktop'
   ) {}
 
-  #menuButton = this.page.locator('[data-qa="menu-button"]')
-  #loginButton = this.page
-    .locator(`[data-qa="${this.type}-nav"]`)
-    .locator('[data-qa="login-btn"]')
-  #languageMenuToggle = this.page.locator('[data-qa="button-select-language"]')
-  #languageOptionList = this.page.locator('[data-qa="select-lang"]')
-  #userMenu = this.page.locator(`[data-qa="user-menu-title-${this.type}"]`)
-  applyingTab = this.page.locator('[data-qa="nav-applying"]')
+  #menuButton = this.page.find('[data-qa="menu-button"]')
+  #loginButton = this.page.find(
+    `[data-qa="${this.type}-nav"] [data-qa="login-btn"]`
+  )
+  #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')
+  #languageOptionList = this.page.find('[data-qa="select-lang"]')
+  #userMenu = this.page.find(`[data-qa="user-menu-title-${this.type}"]`)
+  applyingTab = this.page.find('[data-qa="nav-applying"]')
 
   async logIn() {
     if (this.type === 'mobile') {
@@ -28,7 +27,7 @@ export default class CitizenHeader {
   }
 
   async waitUntilLoggedIn() {
-    await this.#userMenu.waitFor()
+    await this.#userMenu.waitUntilVisible()
   }
 
   async selectTab(
@@ -49,63 +48,62 @@ export default class CitizenHeader {
     if (tab !== 'income') {
       if (isContainedInApplyingSubheader) {
         await this.page
-          .locator(`[data-qa="${this.type}-nav"]`)
-          .locator(`[data-qa="nav-applying"]`)
+          .find(`[data-qa="${this.type}-nav"] [data-qa="nav-applying"]`)
           .click()
-        await this.page.waitForSelector('[data-qa="applying-subnavigation"]', {
-          state: 'visible'
-        })
         await this.page
-          .locator(`[data-qa="applying-subnavigation"]`)
-          .locator(`[data-qa="${tab}-tab"]`)
+          .find('[data-qa="applying-subnavigation"]')
+          .waitUntilVisible()
+        await this.page
+          .find(`[data-qa="applying-subnavigation"] [data-qa="${tab}-tab"]`)
           .click()
       } else {
         await this.page
-          .locator(`[data-qa="${this.type}-nav"]`)
-          .locator(`[data-qa="nav-${tab}"]`)
+          .find(`[data-qa="${this.type}-nav"] [data-qa="nav-${tab}"]`)
           .click()
       }
     } else {
       await this.#userMenu.click()
-      await this.page.waitForSelector('[data-qa="user-menu-income"]', {
-        state: 'visible'
-      })
-      await this.page.locator(`[data-qa="user-menu-income"]`).click()
+      await this.page.find('[data-qa="user-menu-income"]').waitUntilVisible()
+      await this.page.find(`[data-qa="user-menu-income"]`).click()
     }
   }
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
     await this.#languageMenuToggle.click()
-    await this.#languageOptionList.locator(`[data-qa="lang-${lang}"]`).click()
+    await this.#languageOptionList.find(`[data-qa="lang-${lang}"]`).click()
   }
 
   async checkPersonalDetailsAttentionIndicatorsAreShown() {
-    const attentionIndicatorSelector = `[data-qa="attention-indicator-${this.type}"]`
-    const personalDetailsAttentionIndicatorSelector = `[data-qa="personal-details-attention-indicator-${this.type}"]`
+    const attentionIndicator = this.page.find(
+      `[data-qa="attention-indicator-${this.type}"]`
+    )
+    const personalDetailsAttentionIndicator = this.page.find(
+      `[data-qa="personal-details-attention-indicator-${this.type}"]`
+    )
 
-    await waitUntilTrue(() => this.page.isVisible(attentionIndicatorSelector))
+    await attentionIndicator.waitUntilVisible()
     if (this.type === 'mobile') {
       await this.#menuButton.click()
-      await waitUntilTrue(() => this.page.isVisible(attentionIndicatorSelector))
+      await attentionIndicator.waitUntilVisible()
     }
 
     await this.#userMenu.click()
-    await waitUntilTrue(() =>
-      this.page.isVisible(personalDetailsAttentionIndicatorSelector)
-    )
+    await personalDetailsAttentionIndicator.waitUntilVisible()
   }
 
   async navigateToPersonalDetailsPage() {
-    const personalDetailsLinkSelector = '[data-qa="user-menu-personal-details"]'
+    const personalDetailsLink = this.page.find(
+      '[data-qa="user-menu-personal-details"]'
+    )
 
-    if (this.type === 'mobile' && !(await this.#userMenu.isVisible())) {
+    if (this.type === 'mobile' && !(await this.#userMenu.visible)) {
       await this.#menuButton.click()
     }
 
-    if (!(await this.page.locator(personalDetailsLinkSelector).isVisible())) {
+    if (!(await personalDetailsLink.visible)) {
       await this.#userMenu.click()
     }
 
-    await this.page.locator(personalDetailsLinkSelector).click()
+    await personalDetailsLink.click()
   }
 }

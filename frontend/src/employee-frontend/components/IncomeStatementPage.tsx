@@ -462,6 +462,7 @@ function HandlerNotesForm({
         label={i18n.incomeStatement.handlerNotesForm.handled}
         checked={state.handled}
         onChange={(handled) => setState((old) => ({ ...old, handled }))}
+        data-qa="set-handled"
       />
 
       <Label htmlFor="handler-note">

@@ -2,75 +2,76 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import LocalDate from 'lib-common/local-date'
 import { runPendingAsyncJobs } from 'e2e-test-common/dev-api'
-import { AsyncButton, CheckboxLocator } from 'e2e-playwright/utils/element'
+import {
+  Page,
+  AsyncButton,
+  Checkbox,
+  TextInput
+} from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export class FinancePage {
   constructor(private readonly page: Page) {}
 
   async selectFeeDecisionsTab() {
-    await this.page.locator(`[data-qa="fee-decisions-tab"]`).click()
+    await this.page.find(`[data-qa="fee-decisions-tab"]`).click()
     return new FeeDecisionsPage(this.page)
   }
 
   async selectValueDecisionsTab() {
-    await this.page.locator(`[data-qa="value-decisions-tab"]`).click()
+    await this.page.find(`[data-qa="value-decisions-tab"]`).click()
     return new ValueDecisionsPage(this.page)
   }
 
   async selectInvoicesTab() {
-    await this.page.locator(`[data-qa="invoices-tab"]`).click()
+    await this.page.find(`[data-qa="invoices-tab"]`).click()
     const page = new InvoicesPage(this.page)
     await page.invoicesPageIsLoaded()
     return page
   }
 
   async selectIncomeStatementsTab() {
-    await this.page.locator(`[data-qa="income-statements-tab"]`).click()
+    await this.page.find(`[data-qa="income-statements-tab"]`).click()
   }
 }
 
 export class FeeDecisionsPage {
   constructor(private readonly page: Page) {}
 
-  #feeDecisionListPage = this.page.locator('[data-qa="fee-decisions-page"]')
-  #feeDecisionDetailsPage = this.page.locator(
+  #feeDecisionListPage = this.page.find('[data-qa="fee-decisions-page"]')
+  #feeDecisionDetailsPage = this.page.find(
     '[data-qa="fee-decision-details-page"]'
   )
   #firstFeeDecisionRow = this.page
-    .locator('[data-qa="table-fee-decision-row"]')
+    .findAll('[data-qa="table-fee-decision-row"]')
     .first()
-  #navigateBackButton = this.page.locator('[data-qa="navigate-back"]')
+  #navigateBackButton = this.page.find('[data-qa="navigate-back"]')
   #statusFilter = {
-    sent: new CheckboxLocator(
-      this.page.locator('[data-qa="fee-decision-status-filter-SENT"]')
+    sent: new Checkbox(
+      this.page.find('[data-qa="fee-decision-status-filter-SENT"]')
     )
   }
-  #allFeeDecisionsToggle = new CheckboxLocator(
-    this.page.locator('[data-qa="toggle-all-decisions"]')
+  #allFeeDecisionsToggle = new Checkbox(
+    this.page.find('[data-qa="toggle-all-decisions"]')
   )
   #sendFeeDecisionsButton = new AsyncButton(
-    this.page.locator('[data-qa="confirm-decisions"]')
+    this.page.find('[data-qa="confirm-decisions"]')
   )
 
   async getFeeDecisionCount() {
-    return this.page.$$eval(
-      '[data-qa="table-fee-decision-row"]',
-      (rows) => rows.length
-    )
+    return this.page.findAll('[data-qa="table-fee-decision-row"]').count()
   }
 
   async openFirstFeeDecision() {
     await this.#firstFeeDecisionRow.click()
-    await this.#feeDecisionDetailsPage.waitFor()
+    await this.#feeDecisionDetailsPage.waitUntilVisible()
   }
 
   async navigateBackFromDetails() {
     await this.#navigateBackButton.click()
-    await this.#feeDecisionListPage.waitFor()
+    await this.#feeDecisionListPage.waitUntilVisible()
   }
 
   async toggleAllFeeDecisions(toggledOn: boolean) {
@@ -89,11 +90,7 @@ export class FeeDecisionsPage {
     await this.#statusFilter.sent.click()
     await this.#statusFilter.sent.waitUntilChecked()
     await waitUntilEqual(
-      () =>
-        this.page.$$eval(
-          '[data-qa="table-fee-decision-row"]',
-          (rows) => rows.length
-        ),
+      () => this.page.findAll('[data-qa="table-fee-decision-row"]').count(),
       count
     )
   }
@@ -102,68 +99,65 @@ export class FeeDecisionsPage {
 export class FeeDecisionDetailsPage {
   constructor(private readonly page: Page) {}
 
-  #partnerName = this.page.locator('[data-qa="partner"]')
-  #headOfFamily = this.page.locator('[data-qa="head-of-family"]')
+  #partnerName = this.page.find('[data-qa="partner"]')
+  #headOfFamily = this.page.find('[data-qa="head-of-family"]')
 
   async assertPartnerName(expectedName: string) {
-    await waitUntilEqual(() => this.#partnerName.innerText(), expectedName)
+    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
   }
 
   async assertPartnerNameNotShown() {
-    await this.#headOfFamily.waitFor()
-    await this.#partnerName.waitFor({ state: 'hidden' })
+    await this.#headOfFamily.waitUntilVisible()
+    await this.#partnerName.waitUntilHidden()
   }
 }
 
 export class ValueDecisionsPage {
   constructor(private readonly page: Page) {}
 
-  #valueDecisionListPage = this.page.locator(
+  #valueDecisionListPage = this.page.find(
     '[data-qa="voucher-value-decisions-page"]'
   )
-  #valueDecisionDetailsPage = this.page.locator(
+  #valueDecisionDetailsPage = this.page.find(
     '[data-qa="voucher-value-decision-page"]'
   )
-  readonly #fromDateInput = this.page.locator(
-    '[data-qa="value-decisions-start-date"] input'
+  readonly #fromDateInput = new TextInput(
+    this.page.find('[data-qa="value-decisions-start-date"] input')
   )
-  readonly #toDateInput = this.page.locator(
-    '[data-qa="value-decisions-end-date"] input'
+  readonly #toDateInput = new TextInput(
+    this.page.find('[data-qa="value-decisions-end-date"] input')
   )
-  readonly #dateCheckbox = this.page.locator(
+  readonly #dateCheckbox = this.page.find(
     '[data-qa="value-decision-search-by-start-date"]'
   )
-  #allValueDecisionsToggle = new CheckboxLocator(
-    this.page.locator('[data-qa="toggle-all-decisions"]')
+  #allValueDecisionsToggle = new Checkbox(
+    this.page.find('[data-qa="toggle-all-decisions"]')
   )
   #sendValueDecisionsButton = new AsyncButton(
-    this.page.locator('[data-qa="send-decisions"]')
+    this.page.find('[data-qa="send-decisions"]')
   )
   #firstValueDecisionRow = this.page
-    .locator('[data-qa="table-value-decision-row"]')
+    .findAll('[data-qa="table-value-decision-row"]')
     .first()
-  #navigateBackButton = this.page.locator('[data-qa="navigate-back"]')
+  #navigateBackButton = this.page.find('[data-qa="navigate-back"]')
   #statusFilter = {
-    sent: new CheckboxLocator(
-      this.page.locator('[data-qa="value-decision-status-filter-SENT"]')
+    sent: new Checkbox(
+      this.page.find('[data-qa="value-decision-status-filter-SENT"]')
     )
   }
 
   async openFirstValueDecision() {
     await this.#firstValueDecisionRow.click()
-    await this.#valueDecisionDetailsPage.waitFor()
+    await this.#valueDecisionDetailsPage.waitUntilVisible()
   }
 
   async navigateBackFromDetails() {
     await this.#navigateBackButton.click()
-    await this.#valueDecisionListPage.waitFor()
+    await this.#valueDecisionListPage.waitUntilVisible()
   }
 
   async getValueDecisionCount() {
-    return this.page.$$eval(
-      '[data-qa="table-value-decision-row"]',
-      (rows) => rows.length
-    )
+    return this.page.findAll('[data-qa="table-value-decision-row"]').count()
   }
 
   async setDates(from: LocalDate, to: LocalDate) {
@@ -191,11 +185,7 @@ export class ValueDecisionsPage {
     await this.#statusFilter.sent.click()
     await this.#statusFilter.sent.waitUntilChecked()
     await waitUntilEqual(
-      () =>
-        this.page.$$eval(
-          '[data-qa="table-value-decision-row"]',
-          (rows) => rows.length
-        ),
+      () => this.page.findAll('[data-qa="table-value-decision-row"]').count(),
       count
     )
   }
@@ -204,86 +194,82 @@ export class ValueDecisionsPage {
 export class ValueDecisionDetailsPage {
   constructor(private readonly page: Page) {}
 
-  #partnerName = this.page.locator('[data-qa="partner"]')
-  #headOfFamily = this.page.locator('[data-qa="head-of-family"]')
+  #partnerName = this.page.find('[data-qa="partner"]')
+  #headOfFamily = this.page.find('[data-qa="head-of-family"]')
 
-  #sendDecisionButton = this.page.locator('[data-qa="button-send-decision"]')
+  #sendDecisionButton = this.page.find('[data-qa="button-send-decision"]')
 
   async sendValueDecision() {
     await this.#sendDecisionButton.click()
-    await this.#sendDecisionButton.waitFor({ state: 'hidden' })
+    await this.#sendDecisionButton.waitUntilHidden()
   }
 
   async assertPartnerName(expectedName: string) {
-    await waitUntilEqual(() => this.#partnerName.innerText(), expectedName)
+    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
   }
 
   async assertPartnerNameNotShown() {
-    await this.#headOfFamily.waitFor()
-    await this.#partnerName.waitFor({ state: 'hidden' })
+    await this.#headOfFamily.waitUntilVisible()
+    await this.#partnerName.waitUntilHidden()
   }
 }
 
 export class InvoicesPage {
   constructor(private readonly page: Page) {}
 
-  #invoicesPage = this.page.locator('[data-qa="invoices-page"]')
-  #invoiceDetailsPage = this.page.locator('[data-qa="invoice-details-page"]')
-  #spinner = this.page.locator('.loader-spinner')
-  #createInvoicesButton = this.page.locator('[data-qa="create-invoices"]')
-  #invoiceInList = this.page.locator('[data-qa="table-invoice-row"]')
-  #allInvoicesToggle = new CheckboxLocator(
-    this.page.locator('[data-qa="toggle-all-invoices"]')
+  #invoicesPage = this.page.find('[data-qa="invoices-page"]')
+  #invoiceDetailsPage = this.page.find('[data-qa="invoice-details-page"]')
+  #spinner = this.page.find('.loader-spinner')
+  #createInvoicesButton = this.page.find('[data-qa="create-invoices"]')
+  #invoiceInList = this.page.find('[data-qa="table-invoice-row"]')
+  #allInvoicesToggle = new Checkbox(
+    this.page.find('[data-qa="toggle-all-invoices"]')
   )
-  #openSendInvoicesDialogButton = this.page.locator(
+  #openSendInvoicesDialogButton = this.page.find(
     '[data-qa="open-send-invoices-dialog"]'
   )
-  #sendInvoicesDialog = this.page.locator('[data-qa="send-invoices-dialog"]')
+  #sendInvoicesDialog = this.page.find('[data-qa="send-invoices-dialog"]')
   #sendInvoicesButton = new AsyncButton(
-    this.page.locator(
-      '[data-qa="send-invoices-dialog"] [data-qa="modal-okBtn"]'
-    )
+    this.page.find('[data-qa="send-invoices-dialog"] [data-qa="modal-okBtn"]')
   )
-  #navigateBack = this.page.locator('[data-qa="navigate-back"]')
-  #invoiceDetailsHeadOfFamily = this.page.locator(
+  #navigateBack = this.page.find('[data-qa="navigate-back"]')
+  #invoiceDetailsHeadOfFamily = this.page.find(
     '[data-qa="invoice-details-head-of-family"]'
   )
-  #addInvoiceRowButton = this.page.locator('[data-qa="invoice-button-add-row"]')
+  #addInvoiceRowButton = this.page.find('[data-qa="invoice-button-add-row"]')
   #invoiceRow = (index: number) => {
-    const row = this.page.locator(
+    const row = this.page.find(
       `[data-qa="invoice-details-invoice-row"]:nth-child(${index + 1})`
     )
     return {
-      costCenterInput: row.locator('[data-qa="input-cost-center"]'),
-      amountInput: row.locator('[data-qa="input-amount"]'),
-      unitPriceInput: row.locator('[data-qa="input-price"]'),
-      deleteRowButton: row.locator('[data-qa="delete-invoice-row-button"]')
+      costCenterInput: new TextInput(row.find('[data-qa="input-cost-center"]')),
+      amountInput: new TextInput(row.find('[data-qa="input-amount"]')),
+      unitPriceInput: new TextInput(row.find('[data-qa="input-price"]')),
+      deleteRowButton: new TextInput(
+        row.find('[data-qa="delete-invoice-row-button"]')
+      )
     }
   }
   #saveChangesButton = new AsyncButton(
-    this.page.locator('[data-qa="invoice-actions-save-changes"]')
+    this.page.find('[data-qa="invoice-actions-save-changes"]')
   )
   #markInvoiceSentButton = new AsyncButton(
-    this.page.locator('[data-qa="invoice-actions-mark-sent"]')
+    this.page.find('[data-qa="invoice-actions-mark-sent"]')
   )
 
   async invoicesPageIsLoaded() {
-    await this.#invoicesPage.waitFor()
-    await this.#spinner.waitFor({ state: 'hidden' })
+    await this.#invoicesPage.waitUntilVisible()
+    await this.#spinner.waitUntilHidden()
   }
 
   async createInvoiceDrafts() {
     await this.#createInvoicesButton.click()
-    await this.#spinner.waitFor({ state: 'hidden' })
+    await this.#spinner.waitUntilHidden()
   }
 
   async assertInvoiceCount(count: number) {
     await waitUntilEqual(
-      () =>
-        this.page.$$eval(
-          '[data-qa="table-invoice-row"]',
-          (rows) => rows.length
-        ),
+      () => this.page.findAll('[data-qa="table-invoice-row"]').count(),
       count
     )
   }
@@ -296,46 +282,43 @@ export class InvoicesPage {
 
   async sendInvoices() {
     await this.#openSendInvoicesDialogButton.click()
-    await this.#sendInvoicesDialog.waitFor()
+    await this.#sendInvoicesDialog.waitUntilVisible()
     await this.#sendInvoicesButton.click()
     await this.#sendInvoicesButton.waitUntilSuccessful()
   }
 
   async showSentInvoices() {
-    await this.page.locator('[data-qa="invoice-status-filter-SENT"]').click()
+    await this.page.find('[data-qa="invoice-status-filter-SENT"]').click()
   }
 
   async showWaitingForSendingInvoices() {
     await this.page
-      .locator('[data-qa="invoice-status-filter-WAITING_FOR_SENDING"]')
+      .find('[data-qa="invoice-status-filter-WAITING_FOR_SENDING"]')
       .click()
   }
 
   async openFirstInvoice() {
     await this.#invoiceInList.click()
-    await this.#invoiceDetailsPage.waitFor()
+    await this.#invoiceDetailsPage.waitUntilVisible()
   }
 
   async assertInvoiceHeadOfFamily(fullName: string) {
-    await this.#invoiceDetailsPage.waitFor()
+    await this.#invoiceDetailsPage.waitUntilVisible()
     await waitUntilEqual(
-      () => this.#invoiceDetailsHeadOfFamily.innerText(),
+      () => this.#invoiceDetailsHeadOfFamily.innerText,
       fullName
     )
   }
 
   async navigateBackToInvoices() {
     await this.#navigateBack.click()
-    await this.#invoicesPage.waitFor()
+    await this.#invoicesPage.waitUntilVisible()
   }
 
   async assertInvoiceRowCount(count: number) {
     await waitUntilEqual(
       () =>
-        this.page.$$eval(
-          '[data-qa="invoice-details-invoice-row"]',
-          (rows) => rows.length
-        ),
+        this.page.findAll('[data-qa="invoice-details-invoice-row"]').count(),
       count
     )
   }
@@ -365,14 +348,15 @@ export class InvoicesPage {
 
   async assertInvoiceTotal(total: number) {
     await waitUntilEqual(
-      () =>
-        this.#invoiceInList.locator('[data-qa="invoice-total"]').innerText(),
+      () => this.#invoiceInList.find('[data-qa="invoice-total"]').innerText,
       this.formatFinnishDecimal(total)
     )
   }
 
   async freeTextFilter(text: string) {
-    await this.page.locator('[data-qa="free-text-search-input"]').type(text)
+    await new TextInput(
+      this.page.find('[data-qa="free-text-search-input"]')
+    ).type(text)
   }
 
   async markInvoiceSent() {
@@ -388,13 +372,13 @@ export class InvoicesPage {
 export class IncomeStatementsPage {
   constructor(private readonly page: Page) {}
 
-  #incomeStatementRow = this.page.locator(`[data-qa="income-statement-row"]`)
+  #incomeStatementRows = this.page.findAll(`[data-qa="income-statement-row"]`)
 
   async getRowCount(): Promise<number> {
-    return this.#incomeStatementRow.count()
+    return this.#incomeStatementRows.count()
   }
 
   async openNthIncomeStatement(nth: number) {
-    await this.#incomeStatementRow.nth(nth).locator('a').click()
+    await this.#incomeStatementRows.nth(nth).find('a').click()
   }
 }

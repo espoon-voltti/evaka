@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { newBrowserContext } from 'e2e-playwright/browser'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import config from 'e2e-test-common/config'
 import {
@@ -10,7 +9,6 @@ import {
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
-import { Page } from 'playwright'
 import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import UnitPage from 'e2e-playwright/pages/employee/units/unit'
@@ -19,6 +17,7 @@ import { UUID } from 'lib-common/types'
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import { waitUntilEqual, waitUntilSuccess } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
+import { Page } from '../../utils/page'
 
 let page: Page
 let nav: EmployeeNav
@@ -61,7 +60,7 @@ beforeEach(async () => {
   )
   staffId = await insertEmployeeFixture(tauno)
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await employeeLogin(page, 'UNIT_SUPERVISOR')
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)

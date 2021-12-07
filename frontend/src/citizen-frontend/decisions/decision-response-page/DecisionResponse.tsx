@@ -172,9 +172,7 @@ export default React.memo(function DecisionResponse({
       {decision.status === 'PENDING' && (
         <>
           <Gap size="s" />
-          <H3 data-qa="title-decision-type" fitted>
-            {t.decisions.applicationDecisions.response.title}
-          </H3>
+          <H3 fitted>{t.decisions.applicationDecisions.response.title}</H3>
           <Gap size="xs" />
           <FixedSpaceColumn>
             <FixedSpaceRow alignItems="center" spacing="xs">

@@ -6,14 +6,13 @@ import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin } from '../../utils/user'
 import { UUID } from 'lib-common/types'
-import { newBrowserContext } from '../../browser'
 import config from '../../../e2e-test-common/config'
-import { Page } from 'playwright'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import FridgeHeadInformationPage, {
   IncomesSection
 } from '../../pages/employee/fridge-head-information-page'
 import ErrorModal from '../../pages/employee/error-modal'
+import { Page } from '../../utils/page'
 
 let page: Page
 let personId: UUID
@@ -25,7 +24,7 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   personId = fixtures.enduserGuardianFixture.id
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl + '/profile/' + personId)
 

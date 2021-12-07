@@ -15,11 +15,10 @@ import {
   putDigitransitAutocomplete,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
-import { Page } from 'playwright'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { waitUntilEqual } from '../../utils'
+import { Page } from '../../utils/page'
 
 const swedishDaycare: Daycare = {
   ...daycare2Fixture,
@@ -69,7 +68,7 @@ beforeAll(async () => {
     .save()
 })
 beforeEach(async () => {
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await page.goto(config.enduserUrl)
   mapPage = new CitizenMapPage(page)
 })

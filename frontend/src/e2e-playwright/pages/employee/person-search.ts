@@ -2,71 +2,48 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import LocalDate from 'lib-common/local-date'
-import {
-  Checkbox,
-  RawElementDEPRECATED,
-  RawTextInput
-} from 'e2e-playwright/utils/element'
+import { Page, Checkbox, TextInput } from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class PersonSearchPage {
   constructor(private readonly page: Page) {}
 
-  #searchInput = new RawTextInput(this.page, '[data-qa="search-input"]')
-  #personLink = new RawElementDEPRECATED(this.page, '[data-qa="person-row"] a')
-  #createPersonButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="create-person-button"]'
-  )
+  #searchInput = new TextInput(this.page.find('[data-qa="search-input"]'))
+  #personLink = this.page.find('[data-qa="person-row"] a')
+  #createPersonButton = this.page.find('[data-qa="create-person-button"]')
   #createPersonModal = {
-    firstNameInput: new RawTextInput(this.page, '[data-qa="first-name-input"]'),
-    lastNameInput: new RawTextInput(this.page, '[data-qa="last-name-input"]'),
-    dateOfBirthInput: new RawTextInput(
-      this.page,
-      '[data-qa="date-of-birth-input"]'
+    firstNameInput: new TextInput(
+      this.page.find('[data-qa="first-name-input"]')
     ),
-    streetAddressInput: new RawTextInput(
-      this.page,
-      '[data-qa="street-address-input"]'
+    lastNameInput: new TextInput(this.page.find('[data-qa="last-name-input"]')),
+    dateOfBirthInput: new TextInput(
+      this.page.find('[data-qa="date-of-birth-input"]')
     ),
-    postalCodeInput: new RawTextInput(
-      this.page,
-      '[data-qa="postal-code-input"]'
+    streetAddressInput: new TextInput(
+      this.page.find('[data-qa="street-address-input"]')
     ),
-    postOfficeInput: new RawTextInput(
-      this.page,
-      '[data-qa="post-office-input"]'
+    postalCodeInput: new TextInput(
+      this.page.find('[data-qa="postal-code-input"]')
+    ),
+    postOfficeInput: new TextInput(
+      this.page.find('[data-qa="post-office-input"]')
     )
   }
   #personData = {
-    firstName: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="person-first-names"]'
-    ),
-    lastName: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="person-last-name"]'
-    ),
-    dateOfBirth: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="person-birthday"]'
-    ),
-    address: new RawElementDEPRECATED(this.page, '[data-qa="person-address"]'),
-    ssn: new RawElementDEPRECATED(this.page, '[data-qa="person-ssn"]')
+    firstName: this.page.find('[data-qa="person-first-names"]'),
+    lastName: this.page.find('[data-qa="person-last-name"]'),
+    dateOfBirth: this.page.find('[data-qa="person-birthday"]'),
+    address: this.page.find('[data-qa="person-address"]'),
+    ssn: this.page.find('[data-qa="person-ssn"]')
   }
-  #addSsnButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="add-ssn-button"]'
-  )
-  #noSsnText = new RawElementDEPRECATED(this.page, '[data-qa="no-ssn"]')
+  #addSsnButton = this.page.find('[data-qa="add-ssn-button"]')
+  #noSsnText = this.page.find('[data-qa="no-ssn"]')
   #disableSsnAddingCheckbox = new Checkbox(
-    this.page,
-    '[data-qa="disable-ssn-adding"]'
+    this.page.find('[data-qa="disable-ssn-adding"]')
   )
-  #ssnInput = new RawTextInput(this.page, '[data-qa="ssn-input"]')
-  #modalConfirm = new RawElementDEPRECATED(this.page, '[data-qa="modal-okBtn"]')
+  #ssnInput = new TextInput(this.page.find('[data-qa="ssn-input"]'))
+  #modalConfirm = this.page.find('[data-qa="modal-okBtn"]')
 
   async createPerson(personData: {
     firstName: string
@@ -91,8 +68,7 @@ export default class PersonSearchPage {
   }
 
   async findPerson(searchString: string) {
-    await this.#searchInput.clear()
-    await this.#searchInput.type(searchString)
+    await this.#searchInput.fill(searchString)
     await this.#personLink.click()
   }
 

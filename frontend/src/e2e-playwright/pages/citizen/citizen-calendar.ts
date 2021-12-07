@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from 'e2e-playwright/utils'
-import { CheckboxLocator } from 'e2e-playwright/utils/element'
+import {
+  Checkbox,
+  Element,
+  Page,
+  Select,
+  TextInput
+} from 'e2e-playwright/utils/page'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import { Locator, Page } from 'playwright'
 import { UUID } from 'lib-common/types'
 
 export default class CitizenCalendarPage {
@@ -15,22 +20,18 @@ export default class CitizenCalendarPage {
     private readonly type: 'desktop' | 'mobile'
   ) {}
 
-  #openCalendarActionsModal = this.page.locator(
+  #openCalendarActionsModal = this.page.find(
     '[data-qa="open-calendar-actions-modal"]'
   )
   #dayCell = (date: LocalDate) =>
-    this.page.locator(
-      `[data-qa="${this.type}-calendar-day-${date.formatIso()}"]`
-    )
+    this.page.find(`[data-qa="${this.type}-calendar-day-${date.formatIso()}"]`)
 
   async openReservationsModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
-      await this.page
-        .locator('[data-qa="calendar-action-reservations"]')
-        .click()
+      await this.page.find('[data-qa="calendar-action-reservations"]').click()
     } else {
-      await this.page.locator('[data-qa="open-reservations-modal"]').click()
+      await this.page.find('[data-qa="open-reservations-modal"]').click()
     }
     return new ReservationsModal(this.page)
   }
@@ -38,9 +39,9 @@ export default class CitizenCalendarPage {
   async openAbsencesModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
-      await this.page.locator('[data-qa="calendar-action-absences"]').click()
+      await this.page.find('[data-qa="calendar-action-absences"]').click()
     } else {
-      await this.page.locator('[data-qa="open-absences-modal"]').click()
+      await this.page.find('[data-qa="open-absences-modal"]').click()
     }
     return new AbsencesModal(this.page)
   }
@@ -56,7 +57,7 @@ export default class CitizenCalendarPage {
     reservations: { startTime: string; endTime: string }[]
   ) {
     await waitUntilEqual(
-      () => this.#dayCell(date).locator('[data-qa="reservations"]').innerText(),
+      () => this.#dayCell(date).find('[data-qa="reservations"]').innerText,
       [
         ...(absence ? ['Poissa'] : []),
         ...reservations.map(
@@ -70,18 +71,26 @@ export default class CitizenCalendarPage {
 class ReservationsModal {
   constructor(private readonly page: Page) {}
 
-  #startDateInput = this.page.locator('[data-qa="start-date"]')
-  #endDateInput = this.page.locator('[data-qa="end-date"]')
-  #repetitionSelect = this.page.locator('[data-qa="repetition"] select')
-  #dailyStartTimeInput = this.page.locator('[data-qa="daily-start-time-0"]')
-  #dailyEndTimeInput = this.page.locator('[data-qa="daily-end-time-0"]')
-  #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
-    this.page.locator(`[data-qa="weekly-${index}-start-time-0"]`)
+  #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
+  #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
+  #repetitionSelect = new Select(
+    this.page.find('[data-qa="repetition"] select')
   )
-  #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map((index) =>
-    this.page.locator(`[data-qa="weekly-${index}-end-time-0"]`)
+  #dailyStartTimeInput = new TextInput(
+    this.page.find('[data-qa="daily-start-time-0"]')
   )
-  #modalSendButton = this.page.locator('[data-qa="modal-okBtn"]')
+  #dailyEndTimeInput = new TextInput(
+    this.page.find('[data-qa="daily-end-time-0"]')
+  )
+  #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
+    (index) =>
+      new TextInput(this.page.find(`[data-qa="weekly-${index}-start-time-0"]`))
+  )
+  #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
+    (index) =>
+      new TextInput(this.page.find(`[data-qa="weekly-${index}-end-time-0"]`))
+  )
+  #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
 
   async createRepeatingDailyReservation(
     dateRange: FiniteDateRange,
@@ -117,12 +126,13 @@ class AbsencesModal {
   constructor(private readonly page: Page) {}
 
   #childCheckbox = (childId: string) =>
-    new CheckboxLocator(this.page.locator(`[data-qa="child-${childId}"]`))
-  #startDateInput = this.page.locator('[data-qa="start-date"]')
-  #endDateInput = this.page.locator('[data-qa="end-date"]')
+    new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
+
+  #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
+  #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
   #absenceChip = (type: string) =>
-    new CheckboxLocator(this.page.locator(`[data-qa="absence-${type}"]`))
-  #modalSendButton = this.page.locator('[data-qa="modal-okBtn"]')
+    new Checkbox(this.page.find(`[data-qa="absence-${type}"]`))
+  #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
 
   async markAbsence(
     child: { id: string },
@@ -141,41 +151,41 @@ class AbsencesModal {
 
   async deselectChildren(n: number) {
     for (let i = 0; i < n; i++) {
-      await this.page.locator('div[data-qa*="child"]').nth(i).click()
+      await this.page.findAll('div[data-qa*="child"]').nth(i).click()
     }
   }
 
   async assertStartDate(text: string) {
-    await waitUntilEqual(() => this.#startDateInput.inputValue(), text)
+    await waitUntilEqual(() => this.#startDateInput.inputValue, text)
   }
 
   async assertEndDate(text: string) {
-    await waitUntilEqual(() => this.#endDateInput.inputValue(), text)
+    await waitUntilEqual(() => this.#endDateInput.inputValue, text)
   }
 }
 
 class DayView {
   constructor(private readonly page: Page) {}
 
-  #root = this.page.locator('[data-qa="calendar-dayview"]')
-  #editButton = this.#root.locator('[data-qa="edit"]')
-  #createAbsenceButton = this.#root.locator('[data-qa="create-absence"]')
+  #root = this.page.find('[data-qa="calendar-dayview"]')
+  #editButton = this.#root.find('[data-qa="edit"]')
+  #createAbsenceButton = this.#root.find('[data-qa="create-absence"]')
 
   #reservationsOfChild(childId: UUID) {
-    return this.#root.locator(`[data-qa="reservations-of-${childId}"]`)
+    return this.#root.find(`[data-qa="reservations-of-${childId}"]`)
   }
 
   async assertNoReservation(childId: UUID) {
     await this.#reservationsOfChild(childId)
-      .locator(`[data-qa="no-reservations"]`)
-      .waitFor()
+      .find(`[data-qa="no-reservations"]`)
+      .waitUntilVisible()
   }
 
   async assertReservations(childId: UUID, value: string) {
-    const reservations = this.#reservationsOfChild(childId).locator(
+    const reservations = this.#reservationsOfChild(childId).find(
       `[data-qa="reservations"]`
     )
-    await waitUntilEqual(() => reservations.textContent(), value)
+    await waitUntilEqual(() => reservations.textContent, value)
   }
 
   async edit() {
@@ -190,12 +200,12 @@ class DayView {
 }
 
 class DayViewEditor {
-  constructor(private readonly root: Locator) {}
+  constructor(private readonly root: Element) {}
 
-  #saveButton = this.root.locator('[data-qa="save"]')
+  #saveButton = this.root.find('[data-qa="save"]')
 
   #reservationsOfChild(childId: UUID) {
-    return this.root.locator(`[data-qa="reservations-of-${childId}"]`)
+    return this.root.find(`[data-qa="reservations-of-${childId}"]`)
   }
 
   async fillReservationTimes(
@@ -204,8 +214,12 @@ class DayViewEditor {
     endTime: string
   ) {
     const child = this.#reservationsOfChild(childId)
-    await child.locator('[data-qa="first-reservation-start"]').fill(startTime)
-    await child.locator('[data-qa="first-reservation-end"]').fill(endTime)
+    await new TextInput(child.find('[data-qa="first-reservation-start"]')).fill(
+      startTime
+    )
+    await new TextInput(child.find('[data-qa="first-reservation-end"]')).fill(
+      endTime
+    )
   }
 
   async save() {

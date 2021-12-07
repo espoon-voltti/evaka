@@ -21,11 +21,10 @@ import {
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'playwright'
 import { enduserGuardianFixture } from '../../../e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from '../../browser'
 import { IncomeStatementPage } from '../../pages/employee/IncomeStatementPage'
 import { PersonProfilePage } from '../../pages/employee/person-profile'
+import { Page } from '../../utils/page'
 
 let page: Page
 let nav: EmployeeNav
@@ -36,7 +35,7 @@ let personProfilePage: PersonProfilePage
 
 beforeEach(async () => {
   await resetDatabase()
-  page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  page = await Page.open({ acceptDownloads: true })
 
   await insertPersonFixture(enduserGuardianFixture)
   await insertIncomeStatements(enduserGuardianFixture.id, [

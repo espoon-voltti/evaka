@@ -2,32 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import {
-  RawElementDEPRECATED,
-  RawTextInput
-} from 'e2e-playwright/utils/element'
+import { Page, Element, FileInput, TextInput } from 'e2e-playwright/utils/page'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
-  readonly #deceased = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="deceased-label"]'
-  )
-  readonly #ophPersonOidInput = new RawTextInput(
-    this.page,
-    '[data-qa="person-oph-person-oid"]'
+  readonly #deceased = this.page.find('[data-qa="deceased-label"]')
+  readonly #ophPersonOidInput = new TextInput(
+    this.page.find('[data-qa="person-oph-person-oid"]')
   )
 
-  readonly #editButton = new RawElementDEPRECATED(
-    this.page,
+  readonly #editButton = this.page.find(
     '[data-qa="edit-person-settings-button"]'
   )
 
-  readonly #confirmButton = new RawElementDEPRECATED(
-    this.page,
+  readonly #confirmButton = this.page.find(
     '[data-qa="confirm-edited-person-button"]'
   )
 
@@ -53,14 +43,14 @@ export default class ChildInformationPage {
     collapsible: C
   ): Promise<SectionFor<C>> {
     const { selector, section } = collapsibles[collapsible]
-    const element = new RawElementDEPRECATED(this.page, selector)
+    const element = this.page.find(selector)
     await element.click()
     return new section(element) as SectionFor<C>
   }
 }
 
 export class DailyServiceTimeSection {
-  constructor(private section: RawElementDEPRECATED) {}
+  constructor(private section: Element) {}
 
   readonly #typeText = this.section.find('[data-qa="times-type"]')
   readonly #timesText = this.section.find('[data-qa="times"]')
@@ -91,7 +81,7 @@ export class DailyServiceTimesSectionEdit {
   readonly #irregularRadio = this.section.find('[data-qa="radio-irregular"]')
   readonly #submitButton = this.section.find('[data-qa="submit-button"]')
 
-  constructor(private section: RawElementDEPRECATED) {}
+  constructor(private section: Element) {}
 
   async selectTimeNotSet() {
     await this.#notSetRadio.click()
@@ -106,8 +96,10 @@ export class DailyServiceTimesSectionEdit {
   }
 
   async fillTimeRange(which: string, start: string, end: string) {
-    await this.section.findInput(`[data-qa="${which}-start"]`).fill(start)
-    await this.section.findInput(`[data-qa="${which}-end"]`).fill(end)
+    await new TextInput(this.section.find(`[data-qa="${which}-start"]`)).fill(
+      start
+    )
+    await new TextInput(this.section.find(`[data-qa="${which}-end"]`)).fill(end)
   }
 
   async selectDay(day: string) {
@@ -124,7 +116,7 @@ export class DailyServiceTimesSectionEdit {
 }
 
 export class PedagogicalDocumentsSection {
-  constructor(private section: RawElementDEPRECATED) {}
+  constructor(private section: Element) {}
 
   readonly testFileName = 'test_file.png'
   testFilePath = `src/e2e-playwright/assets/${this.testFileName}`
@@ -137,8 +129,8 @@ export class PedagogicalDocumentsSection {
     '[data-qa="pedagogical-document-document"]'
   )
 
-  readonly #descriptionInput = this.section.findInput(
-    '[data-qa="pedagogical-document-description"]'
+  readonly #descriptionInput = new TextInput(
+    this.section.find('[data-qa="pedagogical-document-description"]')
   )
 
   readonly #description = this.section.find(
@@ -200,20 +192,22 @@ export class PedagogicalDocumentsSection {
   }
 
   async addAttachment(page: Page) {
-    await page.setInputFiles('[data-qa="btn-upload-file"]', this.testFilePath)
+    await new FileInput(page.find('[data-qa="btn-upload-file"]')).setInputFiles(
+      this.testFilePath
+    )
     await waitUntilTrue(async () =>
       (
-        await new RawElementDEPRECATED(page, '[data-qa="file-download-button"]')
-          .innerText
+        await page.find('[data-qa="file-download-button"]').innerText
       ).includes(this.testFileName)
     )
   }
 }
 
 export class VasuAndLeopsSection {
-  constructor(private section: RawElementDEPRECATED) {}
+  constructor(private section: Element) {}
 
   readonly #addNew = this.section.find('[data-qa="add-new-vasu-button"]')
+
   async addNew() {
     return this.#addNew.click()
   }

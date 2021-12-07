@@ -2,32 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
-import { Page } from 'playwright'
+import { Element, Page } from 'e2e-playwright/utils/page'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}
 
-  #staffCount = new RawElementDEPRECATED(this.page, '[data-qa="staff-count"]')
-  #staffOtherCount = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="staff-other-count"]'
-  )
-  #cancelButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="cancel-button"]'
-  )
-  #confirmButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="confirm-button"]'
-  )
-  #occupancyRealized = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="realized-occupancy"]'
-  )
-  #updated = new RawElementDEPRECATED(this.page, '[data-qa="updated"]')
+  #staffCount = this.page.find('[data-qa="staff-count"]')
+  #staffOtherCount = this.page.find('[data-qa="staff-other-count"]')
+  #cancelButton = this.page.find('[data-qa="cancel-button"]')
+  #confirmButton = this.page.find('[data-qa="confirm-button"]')
+  #occupancyRealized = this.page.find('[data-qa="realized-occupancy"]')
+  #updated = this.page.find('[data-qa="updated"]')
 
-  private countButton(parent: RawElementDEPRECATED, which: 'plus' | 'minus') {
+  private countButton(parent: Element, which: 'plus' | 'minus') {
     return parent.find(`[data-qa="${which}-button"]`)
   }
 

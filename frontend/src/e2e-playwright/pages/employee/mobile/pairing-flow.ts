@@ -2,29 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { waitUntilVisible } from '../../../utils'
+import { Page, TextInput } from '../../../utils/page'
 
 export class PairingFlow {
   constructor(private readonly page: Page) {}
-  #mobileStartPairingBtn = this.page.locator('[data-qa="start-pairing-btn"]')
-  #mobilePairingTitle1 = this.page.locator(
+
+  #mobileStartPairingBtn = this.page.find('[data-qa="start-pairing-btn"]')
+  #mobilePairingTitle1 = this.page.find(
     '[data-qa="mobile-pairing-wizard-title-1"]'
   )
-  #mobilePairingTitle3 = this.page.locator(
+  #mobilePairingTitle3 = this.page.find(
     '[data-qa="mobile-pairing-wizard-title-3"]'
   )
-  #challengeKeyInput = this.page.locator('[data-qa="challenge-key-input"]')
-  #submitChallengeKeyBtn = this.page.locator(
+  #challengeKeyInput = new TextInput(
+    this.page.find('[data-qa="challenge-key-input"]')
+  )
+  #submitChallengeKeyBtn = this.page.find(
     '[data-qa="submit-challenge-key-btn"]'
   )
-  #responseKey = this.page.locator('[data-qa="response-key"]')
-  #startCtaLink = this.page.locator('[data-qa="start-cta-link"]')
-  #topBarTitle = this.page.locator('[data-qa="top-bar-title"]')
+  #responseKey = this.page.find('[data-qa="response-key"]')
+  #startCtaLink = this.page.find('[data-qa="start-cta-link"]')
+  #topBarTitle = this.page.find('[data-qa="top-bar-title"]')
 
   async startPairing() {
     await this.#mobileStartPairingBtn.click()
-    await waitUntilVisible(this.#mobilePairingTitle1)
+    await this.#mobilePairingTitle1.waitUntilVisible()
   }
 
   async submitChallengeKey(challengeKey: string) {
@@ -33,16 +35,16 @@ export class PairingFlow {
   }
 
   async getResponseKey() {
-    await waitUntilVisible(this.#responseKey)
-    return this.#responseKey.innerText()
+    await this.#responseKey.waitUntilVisible()
+    return this.#responseKey.innerText
   }
 
   isPairingWizardFinished() {
-    return this.#mobilePairingTitle3.isVisible()
+    return this.#mobilePairingTitle3.visible
   }
 
   async clickStartCta() {
     await this.#startCtaLink.click()
-    await waitUntilVisible(this.#topBarTitle)
+    await this.#topBarTitle.waitUntilVisible()
   }
 }

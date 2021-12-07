@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import { UUID } from 'lib-common/types'
+import { Page } from './page'
 
 export type UserRole =
   | 'ADMIN'
@@ -56,19 +56,19 @@ function getLoginUser(role: UserRole): DevLoginUser | string {
 
 export async function enduserLogin(page: Page) {
   await page.goto(config.enduserUrl)
-  await page.click('[data-qa="login-btn"]')
+  await page.find('[data-qa="login-btn"]').click()
 }
 
 export async function employeeLogin(page: Page, role: UserRole) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
   const user = getLoginUser(role)
 
-  if (!page.url().startsWith(config.employeeUrl)) {
+  if (!page.url.startsWith(config.employeeUrl)) {
     // We must be in the correct domain to be able to fetch()
     await page.goto(config.employeeLoginUrl)
   }
 
-  await page.evaluate(
+  await page.page.evaluate(
     ({ user, authUrl }: { user: DevLoginUser | string; authUrl: string }) => {
       const params = new URLSearchParams()
       if (typeof user === 'string') {

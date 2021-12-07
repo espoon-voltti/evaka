@@ -3,89 +3,53 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
-import {
-  RawElementDEPRECATED,
-  RawTextInput
-} from 'e2e-playwright/utils/element'
-import { Page } from 'playwright'
+import { FileInput, TextInput, Page } from 'e2e-playwright/utils/page'
 
 export default class MessagesPage {
   constructor(private readonly page: Page) {}
 
-  #newMessageButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="new-message-btn"]'
-  )
-  #sendMessageButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="send-message-btn"]'
-  )
-  #closeMessageEditorButton = new RawElementDEPRECATED(
-    this.page,
+  #newMessageButton = this.page.find('[data-qa="new-message-btn"]')
+  #sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
+  #closeMessageEditorButton = this.page.find(
     '[data-qa="close-message-editor-btn"]'
   )
-  #discardMessageButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="discard-draft-btn"]'
+  #discardMessageButton = this.page.find('[data-qa="discard-draft-btn"]')
+  #receiverSelection = this.page.find('[data-qa="select-receiver"]')
+  #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
+  #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
+  #fileUpload = this.page.find('[data-qa="upload-message-attachment"]')
+  #personalAccount = this.page.find('[data-qa="personal-account"]')
+  #firstSentMessagesBoxRow = this.page
+    .findAll('[data-qa="message-box-row-SENT"]')
+    .first()
+  #draftMessagesBoxRow = new TextInput(
+    this.#personalAccount.find('[data-qa="message-box-row-DRAFTS"]')
   )
-  #receiverSelection = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="select-receiver"]'
-  )
-  #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
-  #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
-  #fileUpload = this.page.locator('[data-qa="upload-message-attachment"]')
-  #sentMessagesBoxRow = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="message-box-row-SENT"]'
-  )
-  #draftMessagesBoxRow = new RawTextInput(
-    this.page,
-    '[data-qa="message-box-row-DRAFTS"]'
-  )
-  #receivedMessage = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="received-message-row"]'
-  )
-  #draftMessage = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="draft-message-row"]'
-  )
+  #receivedMessage = this.page.find('[data-qa="received-message-row"]')
+  #draftMessage = this.page.find('[data-qa="draft-message-row"]')
   #messageContent = (index = 0) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="message-content"][data-index="${index}"]`
-    )
-  #inboxes = this.page.$$('[data-qa="message-box-row-RECEIVED"]')
+    this.page.find(`[data-qa="message-content"][data-index="${index}"]`)
+  #inboxes = this.page.findAll('[data-qa="message-box-row-RECEIVED"]')
 
   async inboxVisible() {
-    const inboxes = await this.#inboxes
-    return inboxes.length > 0
+    const inboxCount = await this.#inboxes.count()
+    return inboxCount > 0
   }
 
   async getReceivedMessageCount() {
-    return this.page.$$eval(
-      '[data-qa="received-message-row"]',
-      (rows) => rows.length
-    )
+    return await this.page.findAll('[data-qa="received-message-row"]').count()
   }
 
   async isEditorVisible() {
-    return this.page.$$eval(
-      '[data-qa="input-content"]',
-      (contentInput) => contentInput.length > 0
-    )
+    return (await this.page.findAll('[data-qa="input-content"]').count()) > 0
   }
 
   async existsSentMessage() {
-    return this.page.$$eval(
-      '[data-qa="sent-message-row"]',
-      (sentMessages) => sentMessages.length > 0
-    )
+    return (await this.page.findAll('[data-qa="sent-message-row"]').count()) > 0
   }
 
   async openInbox(index: number) {
-    await this.page.click(`:nth-match(:text("Saapuneet"), ${index})`)
+    await this.page.findAll(':text("Saapuneet")').nth(index).click()
   }
 
   async sendNewMessage(title: string, content: string, attachmentCount = 0) {
@@ -101,7 +65,7 @@ export default class MessagesPage {
         await waitUntilEqual(
           () =>
             this.#fileUpload
-              .locator('[data-qa="file-download-button"]')
+              .findAll('[data-qa="file-download-button"]')
               .count(),
           i
         )
@@ -110,23 +74,22 @@ export default class MessagesPage {
     await this.#sendMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), false)
 
-    await this.#sentMessagesBoxRow.click()
+    await this.#firstSentMessagesBoxRow.click()
     await waitUntilTrue(() => this.existsSentMessage())
   }
 
   async addAttachment() {
     const testFileName = 'test_file.png'
     const testFilePath = `src/e2e-playwright/assets/${testFileName}`
-    await this.#fileUpload
-      .locator('[data-qa="btn-upload-file"]')
-      .setInputFiles(testFilePath)
+    await new FileInput(
+      this.#fileUpload.find('[data-qa="btn-upload-file"]')
+    ).setInputFiles(testFilePath)
   }
 
   async getEditorState() {
-    return new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="message-editor"]'
-    ).getAttribute('data-status')
+    return this.page
+      .find('[data-qa="message-editor"]')
+      .getAttribute('data-status')
   }
 
   async draftNewMessage(title: string, content: string) {

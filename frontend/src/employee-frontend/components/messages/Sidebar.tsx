@@ -156,7 +156,7 @@ function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
       )}
 
       {personalAccount && (
-        <AccountSection>
+        <AccountSection data-qa="personal-account">
           <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
           {messageBoxes.map((view) => (
             <MessageBox
@@ -171,7 +171,7 @@ function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
       )}
 
       {groupAccounts.length > 0 && (
-        <AccountSection>
+        <AccountSection data-qa="unit-accounts">
           <AccountHeader>
             {i18n.messages.sidePanel.groupsMessages}
           </AccountHeader>

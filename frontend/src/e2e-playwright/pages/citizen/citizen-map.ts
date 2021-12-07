@@ -2,43 +2,38 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import { Daycare } from 'e2e-test-common/dev-api/types'
 import { delay, waitUntilEqual } from '../../utils'
 import {
-  descendantInput,
-  RawElementDEPRECATED,
+  Element,
+  Page,
   Radio,
   SelectionChip,
-  WithTextInput
-} from 'e2e-playwright/utils/element'
+  TextInput
+} from 'e2e-playwright/utils/page'
 
 export default class CitizenMapPage {
   constructor(private readonly page: Page) {}
 
   readonly daycareFilter = new Radio(
-    this.page,
-    '[data-qa="map-filter-daycare"]'
+    this.page.find('[data-qa="map-filter-daycare"]')
   )
   readonly preschoolFilter = new Radio(
-    this.page,
-    '[data-qa="map-filter-preschool"]'
+    this.page.find('[data-qa="map-filter-preschool"]')
   )
-  readonly clubFilter = new Radio(this.page, '[data-qa="map-filter-club"]')
+  readonly clubFilter = new Radio(this.page.find('[data-qa="map-filter-club"]'))
 
   readonly unitDetailsPanel = new UnitDetailsPanel(
-    this.page,
-    '[data-qa="map-unit-details"]'
+    this.page.find('[data-qa="map-unit-details"]')
   )
 
-  readonly map = new Map(this.page, '[data-qa="map-view"]')
+  readonly map = new Map(this.page.find('[data-qa="map-view"]'))
   readonly searchInput = new MapSearchInput(
-    this.page,
-    '[data-qa="map-search-input"]'
+    this.page.find('[data-qa="map-search-input"]')
   )
   readonly languageChips = {
-    fi: new SelectionChip(this.page, '[data-qa="map-filter-fi"]'),
-    sv: new SelectionChip(this.page, '[data-qa="map-filter-sv"]')
+    fi: new SelectionChip(this.page.find('[data-qa="map-filter-fi"]')),
+    sv: new SelectionChip(this.page.find('[data-qa="map-filter-sv"]'))
   }
 
   async setLanguageFilter(language: 'fi' | 'sv', selected: boolean) {
@@ -49,10 +44,7 @@ export default class CitizenMapPage {
   }
 
   listItemFor(daycare: Daycare) {
-    return new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="map-unit-list-${daycare.id}"]`
-    )
+    return this.page.find(`[data-qa="map-unit-list-${daycare.id}"]`)
   }
 
   async testMapPopup(daycare: Daycare) {
@@ -62,27 +54,21 @@ export default class CitizenMapPage {
   }
 }
 
-class Map extends RawElementDEPRECATED {
+class Map extends Element {
   static readonly MAX_ZOOM_ATTEMPTS = 30
-  readonly #zoomIn = `${this.selector} .leaflet-control-zoom-in`
-  readonly #zoomOut = `${this.selector} .leaflet-control-zoom-out`
-  readonly #container = new RawElementDEPRECATED(
-    this.page,
-    `${this.selector} .leaflet-container`
-  )
-  readonly addressMarker = new RawElementDEPRECATED(
-    this.page,
-    `${this.selector} [data-qa="map-marker-address"]`
-  )
+  readonly #zoomIn = this.find('.leaflet-control-zoom-in')
+  readonly #zoomOut = this.find('.leaflet-control-zoom-out')
+
+  readonly addressMarker = this.find('[data-qa="map-marker-address"]')
 
   get zoomInDisabled(): Promise<boolean> {
-    return this.page.$eval(this.#zoomIn, (el) =>
+    return this.#zoomIn.evaluate((el) =>
       el.classList.contains('leaflet-disabled')
     )
   }
 
   get zoomOutDisabled(): Promise<boolean> {
-    return this.page.$eval(this.#zoomOut, (el) =>
+    return this.#zoomOut.evaluate((el) =>
       el.classList.contains('leaflet-disabled')
     )
   }
@@ -93,7 +79,7 @@ class Map extends RawElementDEPRECATED {
       if (await this.zoomOutDisabled) {
         return
       }
-      await this.page.click(this.#zoomOut)
+      await this.#zoomOut.click()
       attempts--
       if (attempts === 0) return
       await delay(100)
@@ -107,7 +93,7 @@ class Map extends RawElementDEPRECATED {
       if (await this.zoomInDisabled) {
         return
       }
-      await this.page.click(this.#zoomIn)
+      await this.#zoomIn.click()
       attempts--
       if (attempts === 0) return
       await delay(100)
@@ -120,63 +106,47 @@ class Map extends RawElementDEPRECATED {
   }
 
   markerFor(daycare: Daycare) {
-    return new RawElementDEPRECATED(this.page, `[title="${daycare.name}"]`)
+    return this.find(`[title="${daycare.name}"]`)
   }
+
   popupFor(daycare: Daycare): MapPopup {
-    return new MapPopup(this.page, `[data-qa="map-popup-${daycare.id}"]`)
-  }
-
-  async isMarkerInView(marker: MapMarker): Promise<boolean> {
-    return (async () => {
-      const [mapBox, markerBox] = await Promise.all([
-        this.#container.boundingBox,
-        marker.boundingBox
-      ])
-      return mapBox.contains(markerBox)
-    })()
+    return new MapPopup(this.find(`[data-qa="map-popup-${daycare.id}"]`))
   }
 }
 
-class UnitDetailsPanel extends RawElementDEPRECATED {
-  readonly #name = `${this.selector} [data-qa="map-unit-details-name"]`
-  readonly backButton = new RawElementDEPRECATED(
-    this.page,
-    `${this.selector} [data-qa="map-unit-details-back"]`
-  )
+class UnitDetailsPanel extends Element {
+  readonly backButton = this.find('[data-qa="map-unit-details-back"]')
 
   get name(): Promise<string | null> {
-    return this.page.textContent(this.#name)
+    return this.find('[data-qa="map-unit-details-name"]').textContent
   }
 }
 
-class MapMarker extends RawElementDEPRECATED {}
-
-class MapPopup extends RawElementDEPRECATED {
-  readonly #name = `${this.selector} [data-qa="map-popup-name"]`
-  readonly #noApplying = `${this.selector} [data-qa="map-popup-no-applying"]`
+class MapPopup extends Element {
+  readonly #name = this.find('[data-qa="map-popup-name"]')
+  readonly #noApplying = this.find('[data-qa="map-popup-no-applying"]')
 
   get name(): Promise<string | null> {
-    return this.page.textContent(this.#name)
+    return this.#name.textContent
   }
 
   get noApplying(): Promise<string | null> {
-    return this.page.textContent(this.#noApplying)
+    return this.#noApplying.textContent
   }
 }
 
-class MapSearchInput extends WithTextInput(
-  RawElementDEPRECATED,
-  descendantInput
-) {
+class MapSearchInput extends Element {
+  async type(text: string) {
+    await new TextInput(this.find('input')).type(text)
+  }
+
   async clickUnitResult(daycare: Daycare) {
-    await this.page.click(
-      `${this.selector} [data-qa="map-search-${daycare.id}"]`
-    )
+    await this.find(`[data-qa="map-search-${daycare.id}"]`).click()
   }
 
   async clickAddressResult(streetAddress: string) {
-    await this.page.click(
-      `${this.selector} [data-qa="map-search-address"][data-address="${streetAddress}"]`
-    )
+    await this.find(
+      `[data-qa="map-search-address"][data-address="${streetAddress}"]`
+    ).click()
   }
 }

@@ -8,8 +8,6 @@ import {
   daycareGroupFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from '../../browser'
-import { Page } from 'playwright'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -27,6 +25,7 @@ import LocalDate from 'lib-common/local-date'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import MobileAbsencesPage from 'e2e-playwright/pages/mobile/absences-page'
 import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
+import { Page } from '../../utils/page'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -57,7 +56,7 @@ beforeEach(async () => {
   )
   await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   absencesPage = new MobileAbsencesPage(page)

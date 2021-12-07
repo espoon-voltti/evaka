@@ -2,54 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
+import { Page } from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class EmployeeNav {
   constructor(private readonly page: Page) {}
 
-  readonly #userNameBtn = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="username"]'
-  )
+  readonly #userNameBtn = this.page.find('[data-qa="username"]')
 
-  readonly applicationsTab = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="applications-nav"]'
-  )
-  readonly unitsTab = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="units-nav"]'
-  )
-  readonly searchTab = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="search-nav"]'
-  )
-  readonly financeTab = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="finance-nav"]'
-  )
-  readonly reportsTab = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="reports-nav"]'
-  )
-  readonly messagesTab = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="messages-nav"]'
-  )
+  readonly applicationsTab = this.page.find('[data-qa="applications-nav"]')
+  readonly unitsTab = this.page.find('[data-qa="units-nav"]')
+  readonly searchTab = this.page.find('[data-qa="search-nav"]')
+  readonly financeTab = this.page.find('[data-qa="finance-nav"]')
+  readonly reportsTab = this.page.find('[data-qa="reports-nav"]')
+  readonly messagesTab = this.page.find('[data-qa="messages-nav"]')
 
-  readonly #employeesLink = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="user-popup-employees"]'
-  )
-  readonly #pinCodeLink = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="user-popup-pin-code"]'
-  )
-  readonly #financeBasicsLink = new RawElementDEPRECATED(
-    this.page,
+  readonly #employeesLink = this.page.find('[data-qa="user-popup-employees"]')
+  readonly #pinCodeLink = this.page.find('[data-qa="user-popup-pin-code"]')
+  readonly #financeBasicsLink = this.page.find(
     '[data-qa="user-popup-finance-basics"]'
   )
 

@@ -18,19 +18,18 @@ import {
   insertGuardianFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
-import { Page } from 'playwright'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import {
-  FinancePage,
+  FeeDecisionDetailsPage,
   FeeDecisionsPage,
-  FeeDecisionDetailsPage
+  FinancePage
 } from 'e2e-playwright/pages/employee/finance/finance-page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { PersonDetail } from '../../../e2e-test-common/dev-api/types'
+import { Page } from '../../utils/page'
 
 let page: Page
 let feeDecisionsPage: FeeDecisionsPage
@@ -40,7 +39,7 @@ beforeEach(async () => {
   await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  page = await Page.open({ acceptDownloads: true })
 
   await insertEmployeeFixture({
     id: config.financeAdminAad,

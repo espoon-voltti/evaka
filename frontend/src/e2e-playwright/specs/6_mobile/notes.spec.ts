@@ -4,7 +4,6 @@
 
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'playwright'
 import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
@@ -26,11 +25,11 @@ import {
   DaycarePlacement,
   PersonDetail
 } from '../../../e2e-test-common/dev-api/types'
-import { newBrowserContext } from '../../browser'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
 import { pairMobileDevice } from '../../utils/mobile'
+import { Page } from '../../utils/page'
 
 let page: Page
 let childPage: MobileChildPage
@@ -84,7 +83,7 @@ beforeEach(async () => {
     }
   ])
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
 
   const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)

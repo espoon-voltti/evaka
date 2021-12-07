@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
@@ -20,11 +19,12 @@ import {
 import ChildInformationPage, {
   VasuAndLeopsSection
 } from 'e2e-playwright/pages/employee/child-information'
-import { newBrowserContext } from 'e2e-playwright/browser'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
 import VasuPage from '../../pages/employee/vasu/vasu'
 import LocalDate from 'lib-common/local-date'
+import { Page } from '../../utils/page'
+import { waitUntilEqual } from '../../utils'
 
 let page: Page
 let childInformationPage: ChildInformationPage
@@ -53,7 +53,7 @@ beforeAll(async () => {
 describe('Child Information - Vasu documents section', () => {
   let section: VasuAndLeopsSection
   beforeEach(async () => {
-    page = await (await newBrowserContext()).newPage()
+    page = await Page.open()
     await employeeLogin(page, 'ADMIN')
     await page.goto(`${config.employeeUrl}/child-information/${childId}`)
     childInformationPage = new ChildInformationPage(page)
@@ -84,14 +84,13 @@ describe('Vasu document page', () => {
   })
 
   beforeEach(async () => {
-    page = await (await newBrowserContext()).newPage()
+    page = await Page.open()
     await employeeLogin(page, 'ADMIN')
     vasuPage = await openDocument()
   })
 
   test('An unpublished vasu document has no followup questions', async () => {
-    const count = await vasuPage.followupQuestionCount
-    expect(count).toBe(0)
+    await waitUntilEqual(() => vasuPage.followupQuestionCount, 0)
   })
 
   describe('With a finalized document', () => {
@@ -104,29 +103,34 @@ describe('Vasu document page', () => {
     }
 
     beforeAll(async () => {
-      page = await (await newBrowserContext()).newPage()
+      page = await Page.open()
       await employeeLogin(page, 'ADMIN')
       vasuPage = await openDocument()
       await finalizeDocument()
     })
 
     test('A published vasu document has one followup question', async () => {
-      const count = await vasuPage.followupQuestionCount
-      expect(count).toBe(1)
+      await waitUntilEqual(() => vasuPage.followupQuestionCount, 1)
     })
 
     test('Adding a followup comment renders it on the page', async () => {
       vasuPage = await editDocument()
       await vasuPage.inputFollowupComment('This is a followup')
-      let entryTexts = await vasuPage.followupEntryTexts
-      expect(entryTexts).toEqual(['This is a followup'])
+      await waitUntilEqual(
+        () => vasuPage.followupEntryTexts,
+        ['This is a followup']
+      )
       await vasuPage.inputFollowupComment('A second one')
-      entryTexts = await vasuPage.followupEntryTexts
-      expect(entryTexts).toEqual(['This is a followup', 'A second one'])
+      await waitUntilEqual(
+        () => vasuPage.followupEntryTexts,
+        ['This is a followup', 'A second one']
+      )
 
-      const entryMetadata = await vasuPage.followupEntryMetadata
       const expectedMetadataStr = `${LocalDate.today().format()} Seppo Sorsa`
-      expect(entryMetadata).toEqual([expectedMetadataStr, expectedMetadataStr])
+      await waitUntilEqual(
+        () => vasuPage.followupEntryMetadata,
+        [expectedMetadataStr, expectedMetadataStr]
+      )
     })
 
     const lastElement = <T>(arr: Array<T>): T => arr[arr.length - 1]

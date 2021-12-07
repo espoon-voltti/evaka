@@ -13,14 +13,13 @@ import {
   insertVoucherValueDecisionFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
-import { Page } from 'playwright'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ReportsPage from 'e2e-playwright/pages/employee/reports'
 import assert from 'assert'
 import { employeeLogin } from 'e2e-playwright/utils/user'
+import { Page } from 'e2e-playwright/utils/page'
 
 let page: Page
 let reports: ReportsPage
@@ -53,7 +52,7 @@ beforeEach(async () => {
     )
   ])
 
-  page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  page = await Page.open({ acceptDownloads: true })
   await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')

@@ -15,10 +15,9 @@ import {
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
-import { Page } from 'playwright'
-import { newBrowserContext } from '../../browser'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
+import { Page } from 'e2e-playwright/utils/page'
 
 const employeeExternalIds = [
   'espoo-ad:df979243-f081-4241-bc4f-e93a019bddfa',
@@ -30,7 +29,7 @@ let pairingFlow: PairingFlow
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
-  page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  page = await Page.open({ acceptDownloads: true })
   pairingFlow = new PairingFlow(page)
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()

@@ -2,35 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
+import { Page } from '../../utils/page'
 import { waitUntilEqual } from '../../utils'
 
 export default class CitizenPedagogicalDocumentsPage {
   constructor(private readonly page: Page) {}
 
   readonly #date = (id: string) =>
-    this.page.locator(`[data-qa="pedagogical-document-date-${id}"]`)
+    this.page.find(`[data-qa="pedagogical-document-date-${id}"]`)
   readonly #childName = (id: string) =>
-    this.page.locator(`[data-qa="pedagogical-document-child-name-${id}"]`)
+    this.page.find(`[data-qa="pedagogical-document-child-name-${id}"]`)
   readonly #description = (id: string) =>
-    this.page.locator(`[data-qa="pedagogical-document-description-${id}"]`)
+    this.page.find(`[data-qa="pedagogical-document-description-${id}"]`)
   readonly #downloadAttachment = (id: string) =>
-    this.page.locator(
-      `[data-qa="pedagogical-document-attachment-download-${id}"]`
-    )
-  readonly #unreadDocumentCount = this.page.locator(
+    this.page.find(`[data-qa="pedagogical-document-attachment-download-${id}"]`)
+  readonly #unreadDocumentCount = this.page.find(
     '[data-qa="unread-pedagogical-documents-count"]'
   )
 
   async assertUnreadPedagogicalDocumentIndicatorCount(expectedCount: number) {
     await waitUntilEqual(
-      () => this.#unreadDocumentCount.innerText(),
+      () => this.#unreadDocumentCount.innerText,
       expectedCount.toString()
     )
   }
 
   async assertUnreadPedagogicalDocumentIndicatorIsNotShown() {
-    await this.#unreadDocumentCount.waitFor({ state: 'hidden' })
+    await this.#unreadDocumentCount.waitUntilHidden()
   }
 
   async assertPedagogicalDocumentExists(
@@ -38,9 +36,9 @@ export default class CitizenPedagogicalDocumentsPage {
     expectedDate: string,
     expectedDescription: string
   ) {
-    await waitUntilEqual(() => this.#date(id).innerText(), expectedDate)
+    await waitUntilEqual(() => this.#date(id).innerText, expectedDate)
     await waitUntilEqual(
-      () => this.#description(id).innerText(),
+      () => this.#description(id).innerText,
       expectedDescription
     )
   }
@@ -50,14 +48,14 @@ export default class CitizenPedagogicalDocumentsPage {
   }
 
   async assertChildNameIsNotShown(id: string) {
-    await this.#childName(id).waitFor({ state: 'hidden' })
+    await this.#childName(id).waitUntilHidden()
   }
 
   async assertChildNameIsShown(id: string) {
-    await this.#childName(id).waitFor({ state: 'visible' })
+    await this.#childName(id).waitUntilVisible()
   }
 
   async assertChildNameIs(id: string, expectedName: string) {
-    await waitUntilEqual(() => this.#childName(id).innerText(), expectedName)
+    await waitUntilEqual(() => this.#childName(id).innerText, expectedName)
   }
 }

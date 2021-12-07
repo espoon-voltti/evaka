@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
-import { Page } from 'playwright'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -22,6 +20,7 @@ import {
   createDaycarePlacementFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
+import { Page } from '../../utils/page'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -109,7 +108,7 @@ beforeAll(async () => {
   await insertDaycarePlacementFixtures([placementFixture])
 })
 beforeEach(async () => {
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   nav = new EmployeeNav(page)
   childInfo = new ChildInformationPage(page)
 })

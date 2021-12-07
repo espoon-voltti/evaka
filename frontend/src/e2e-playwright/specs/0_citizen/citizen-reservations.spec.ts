@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import config from 'e2e-test-common/config'
@@ -18,7 +17,7 @@ import {
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import CitizenHeader from 'e2e-playwright/pages/citizen/citizen-header'
 import CitizenCalendarPage from 'e2e-playwright/pages/citizen/citizen-calendar'
-import { newBrowserContext } from '../../browser'
+import { Page } from 'e2e-playwright/utils/page'
 
 describe('Citizen attendance reservations (desktop)', () => {
   citizenReservationTests('desktop')
@@ -59,9 +58,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
         ? { width: 375, height: 812 }
         : { width: 1920, height: 1080 }
 
-    page = await (
-      await newBrowserContext({ viewport, screen: viewport })
-    ).newPage()
+    page = await Page.open({ viewport, screen: viewport })
     await page.goto(config.enduserUrl)
     header = new CitizenHeader(page, env)
     calendarPage = new CitizenCalendarPage(page, env)

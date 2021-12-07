@@ -2,80 +2,48 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from 'e2e-playwright/utils'
-import { waitUntilTrue } from 'e2e-playwright/utils'
-import {
-  RawElementDEPRECATED,
-  RawTextInput
-} from 'e2e-playwright/utils/element'
-import { Page } from 'playwright'
+import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
+import { Page, TextInput } from 'e2e-playwright/utils/page'
 
 export default class CitizenMessagesPage {
   constructor(private readonly page: Page) {}
+
   replyButtonTag = 'message-reply-editor-btn'
 
-  #messageReplyContent = new RawTextInput(
-    this.page,
-    '[data-qa="message-reply-content"]'
+  #messageReplyContent = new TextInput(
+    this.page.find('[data-qa="message-reply-content"]')
   )
-  #threadListItem = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="thread-list-item"]'
-  )
-  #threadTitle = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="thread-reader-title"]'
-  )
-  #threadContent = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="thread-reader-content"]'
-  )
-  #openReplyEditorButton = new RawElementDEPRECATED(
-    this.page,
-    `[data-qa="${this.replyButtonTag}"]`
-  )
-  #sendReplyButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="message-send-btn"]'
-  )
-  #newMessageButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="new-message-btn"]'
-  )
-  #sendMessageButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="send-message-btn"]'
-  )
-  #receiverSelection = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="select-receiver"]'
-  )
-  #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
-  #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
+  #threadListItem = this.page.find('[data-qa="thread-list-item"]')
+  #threadTitle = this.page.find('[data-qa="thread-reader-title"]')
+  #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
+  #openReplyEditorButton = this.page.find(`[data-qa="${this.replyButtonTag}"]`)
+  #sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
+  #newMessageButton = this.page.find('[data-qa="new-message-btn"]')
+  #sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
+  #receiverSelection = this.page.find('[data-qa="select-receiver"]')
+  #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
+  #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
 
   async getMessageCount() {
-    return this.page.$$eval(
-      '[data-qa="thread-reader-content"]',
-      (messages) => messages.length
-    )
+    return this.#threadContent.count()
   }
 
   async assertThreadContent(title: string, content: string) {
     await this.#threadListItem.click()
     await waitUntilEqual(() => this.#threadTitle.innerText, title)
-    await waitUntilEqual(() => this.#threadContent.innerText, content)
+    await waitUntilEqual(() => this.#threadContent.elem().innerText, content)
   }
 
   getThreadAttachmentCount(): Promise<number> {
-    return this.page.locator('[data-qa="attachment"]').count()
+    return this.page.findAll('[data-qa="attachment"]').count()
   }
 
   async getThreadCount() {
-    return this.page.locator('[data-qa="thread-list-item"]').count()
+    return this.page.findAll('[data-qa="thread-list-item"]').count()
   }
 
   async isEditorVisible() {
-    return this.page.locator('[data-qa="input-content"]').isVisible()
+    return this.page.find('[data-qa="input-content"]').visible
   }
 
   async replyToFirstThread(content: string) {
@@ -92,7 +60,7 @@ export default class CitizenMessagesPage {
     await this.#inputContent.fill(content)
     await this.#receiverSelection.click()
     for (const receiver of receivers) {
-      await this.page.click(`text="${receiver}"`)
+      await this.page.find(`text="${receiver}"`).click()
     }
     await this.#sendMessageButton.click()
     await waitUntilTrue(() => this.getThreadCount().then((count) => count > 0))

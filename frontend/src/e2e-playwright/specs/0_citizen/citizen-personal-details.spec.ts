@@ -8,10 +8,9 @@ import {
   enduserGuardianFixture,
   Fixture
 } from 'e2e-test-common/dev-api/fixtures'
-import { Page } from 'playwright'
-import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
+import { Page } from '../../utils/page'
 
 let page: Page
 let header: CitizenHeader
@@ -29,7 +28,7 @@ beforeEach(async () => {
   await resetDatabase()
   await Fixture.person().with(citizenFixture).save()
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await enduserLogin(page)
   header = new CitizenHeader(page)
   personalDetailsPage = new CitizenPersonalDetailsPage(page)

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { newBrowserContext } from 'e2e-playwright/browser'
 import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import PinLoginPage from 'e2e-playwright/pages/mobile/pin-login-page'
+import { Page } from 'e2e-playwright/utils/page'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import config from 'e2e-test-common/config'
 import {
@@ -13,11 +13,15 @@ import {
   insertDaycarePlacementFixtures,
   insertGuardianFixtures,
   resetDatabase,
-  setAclForDaycares,
   setAclForDaycareGroups,
+  setAclForDaycares,
   upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
-import { Daycare } from 'e2e-test-common/dev-api/types'
+import {
+  Daycare,
+  DaycarePlacement,
+  PersonDetail
+} from 'e2e-test-common/dev-api/types'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -29,8 +33,6 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { DaycarePlacement, PersonDetail } from 'e2e-test-common/dev-api/types'
-import { Page } from 'playwright'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MobileMessageEditorPage from '../../pages/mobile/message-editor'
 import MobileMessagesPage from '../../pages/mobile/messages'
@@ -138,7 +140,7 @@ beforeEach(async () => {
     }
   ])
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   pinLoginPage = new PinLoginPage(page)
@@ -152,7 +154,7 @@ beforeEach(async () => {
 })
 
 async function initCitizenPage() {
-  citizenPage = await (await newBrowserContext()).newPage()
+  citizenPage = await Page.open()
   await enduserLogin(citizenPage)
 }
 
@@ -183,12 +185,12 @@ describe('Child message thread', () => {
     await messagesPage.messagesExist()
     await messagesPage.openThread()
     await waitUntilEqual(() => threadView.countMessages(), 1)
-    await waitUntilEqual(() => threadView.getMessageContent(1), content)
+    await waitUntilEqual(() => threadView.getMessageContent(0), content)
 
     const replyContent = 'Testivastauksen sisältö'
     await threadView.replyThread(replyContent)
     await waitUntilEqual(() => threadView.countMessages(), 2)
-    await waitUntilEqual(() => threadView.getMessageContent(2), replyContent)
+    await waitUntilEqual(() => threadView.getMessageContent(1), replyContent)
   })
 
   test("Staff sees citizen's message for group", async () => {
@@ -206,7 +208,7 @@ describe('Child message thread', () => {
     await messagesPage.messagesExist()
     await messagesPage.openThread()
     await waitUntilEqual(() => threadView.countMessages(), 1)
-    await waitUntilEqual(() => threadView.getMessageContent(1), content)
+    await waitUntilEqual(() => threadView.getMessageContent(0), content)
   })
 
   test('Employee replies as a group to message sent to group', async () => {
@@ -227,9 +229,9 @@ describe('Child message thread', () => {
     const replyContent = 'Testivastauksen sisältö'
     await threadView.replyThread(replyContent)
     await waitUntilEqual(() => threadView.countMessages(), 2)
-    await waitUntilEqual(() => threadView.getMessageContent(2), replyContent)
+    await waitUntilEqual(() => threadView.getMessageContent(1), replyContent)
     await waitUntilEqual(
-      () => threadView.getMessageSender(2),
+      () => threadView.getMessageSender(1),
       `${unit.name} - ${daycareGroup.data.name}`
     )
   })

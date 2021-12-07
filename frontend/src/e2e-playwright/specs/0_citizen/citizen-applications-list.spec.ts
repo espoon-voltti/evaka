@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import {
   execSimpleApplicationActions,
   insertApplications,
@@ -15,10 +14,10 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
 import { enduserLogin } from 'e2e-playwright/utils/user'
-import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import LocalDate from 'lib-common/local-date'
+import { Page } from '../../utils/page'
 
 let page: Page
 let header: CitizenHeader
@@ -29,7 +28,7 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
