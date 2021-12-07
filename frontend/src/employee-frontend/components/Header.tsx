@@ -272,16 +272,15 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 {i18n.unitFeatures.title}
               </Link>
             )}
-            {featureFlags.experimental?.personalMobileDevice &&
-              user?.accessibleFeatures.personalMobileDevice && (
-                <Link
-                  to="/personal-mobile-devices"
-                  onClick={closeUserPopup}
-                  data-qa="user-popup-personal-mobile-devices"
-                >
-                  {i18n.personalMobileDevices.title}
-                </Link>
-              )}
+            {user?.accessibleFeatures.personalMobileDevice && (
+              <Link
+                to="/personal-mobile-devices"
+                onClick={closeUserPopup}
+                data-qa="user-popup-personal-mobile-devices"
+              >
+                {i18n.personalMobileDevices.title}
+              </Link>
+            )}
             <Link
               to={`/pin-code`}
               onClick={closeUserPopup}
