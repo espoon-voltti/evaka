@@ -1382,6 +1382,7 @@ export default {
       provideAttachments:
         'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
       estimate: 'Arvio bruttotuloistani',
+      estimatedMonthlyIncome: 'Keskimääräiset tulot sisältäen lomarahat, €/kk',
       otherIncome: 'Muut tulot',
       otherIncomeDescription:
         'Jos sinulla on muita tuloja, on niistä toimitettavana tositteet liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',

@@ -535,21 +535,18 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         <FixedSpaceRow>
           <FixedSpaceColumn>
             <LightLabel htmlFor="estimated-monthly-income">
-              {t.income.selfEmployed.estimatedMonthlyIncome}
+              {t.income.grossIncome.estimatedMonthlyIncome} *
             </LightLabel>
             <InputField
               id="estimated-monthly-income"
+              data-qa="gross-monthly-income-estimate"
               value={formData.estimatedMonthlyIncome}
               onChange={useFieldDispatch(onChange, 'estimatedMonthlyIncome')}
-              hideErrorsBeforeTouched
-              info={
-                formData.estimatedMonthlyIncome
-                  ? errorToInputInfo(
-                      validInt(formData.estimatedMonthlyIncome),
-                      t.validationErrors
-                    )
-                  : undefined
-              }
+              hideErrorsBeforeTouched={!showFormErrors}
+              info={errorToInputInfo(
+                validate(formData.estimatedMonthlyIncome, required, validInt),
+                t.validationErrors
+              )}
             />
           </FixedSpaceColumn>
         </FixedSpaceRow>

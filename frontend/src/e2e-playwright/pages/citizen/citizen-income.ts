@@ -129,4 +129,10 @@ export default class CitizenIncomePage {
       '0400123456'
     )
   }
+
+  async setGrossIncomeEstimate(income: number) {
+    await new TextInput(
+      this.page.find('[data-qa="gross-monthly-income-estimate"]')
+    ).fill(String(income))
+  }
 }

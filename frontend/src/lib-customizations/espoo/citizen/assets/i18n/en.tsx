@@ -1443,6 +1443,8 @@ const en: Translations = {
       provideAttachments:
         'I will submit the information as attachments, and my information can be checked from Kela if necessary',
       estimate: 'Estimate of my gross income',
+      estimatedMonthlyIncome:
+        'Average earnings including holiday bonus, €/month',
       otherIncome: 'Other income',
       otherIncomeDescription:
         'If you have other income, it must be itemised in an attachment. A list of the required attachments can be found at the bottom of the form under: Attachments related to income and early childhood education fees.',

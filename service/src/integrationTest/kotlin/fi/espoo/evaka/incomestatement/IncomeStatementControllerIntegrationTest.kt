@@ -119,7 +119,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     gross = Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedMonthlyIncome = null,
+                        estimatedMonthlyIncome = 2000,
                         otherIncome = setOf(),
                         otherIncomeInfo = "",
                     ),
@@ -142,7 +142,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedMonthlyIncome = null,
+                    estimatedMonthlyIncome = 2000,
                     otherIncome = setOf(),
                     otherIncomeInfo = "",
                 ),

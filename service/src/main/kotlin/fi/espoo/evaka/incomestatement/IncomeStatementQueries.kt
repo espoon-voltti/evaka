@@ -236,7 +236,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
 
 private fun <This : SqlStatement<This>> SqlStatement<This>.bindGross(gross: Gross): This =
     bind("grossIncomeSource", gross.incomeSource)
-        .bindNullable("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
+        .bind("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
         .bind("grossOtherIncome", gross.otherIncome.toTypedArray())
         .bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
 
