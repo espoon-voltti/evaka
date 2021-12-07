@@ -1,3 +1,4 @@
+CREATE TYPE curriculum_type AS ENUM ('DAYCARE', 'PRESCHOOL');
 CREATE TYPE curriculum_language AS ENUM ('FI', 'SV');
 
 CREATE TABLE curriculum_template(
@@ -5,6 +6,7 @@ CREATE TABLE curriculum_template(
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
     valid daterange NOT NULL,
+    type curriculum_type NOT NULL,
     language curriculum_language NOT NULL,
     name text NOT NULL,
     content jsonb NOT NULL

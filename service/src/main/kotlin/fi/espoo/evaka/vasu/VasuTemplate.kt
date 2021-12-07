@@ -13,6 +13,7 @@ import org.jdbi.v3.json.Json
 data class VasuTemplate(
     val id: VasuTemplateId,
     val name: String,
+    val type: CurriculumType,
     val valid: FiniteDateRange,
     val language: VasuLanguage,
     @Json
@@ -24,6 +25,7 @@ data class VasuTemplateSummary(
     val id: VasuTemplateId,
     val name: String,
     val valid: FiniteDateRange,
+    val type: CurriculumType,
     val language: VasuLanguage,
     val documentCount: Int
 )

@@ -32,6 +32,7 @@ class VasuTemplateController(
     data class CreateTemplateRequest(
         val name: String,
         val valid: FiniteDateRange,
+        val type: CurriculumType,
         val language: VasuLanguage
     )
 
@@ -48,8 +49,9 @@ class VasuTemplateController(
             it.insertVasuTemplate(
                 name = body.name,
                 valid = body.valid,
+                type = body.type,
                 language = body.language,
-                content = getDefaultTemplateContent(body.language)
+                content = getDefaultTemplateContent(body.type, body.language)
             )
         }
     }
@@ -91,6 +93,7 @@ class VasuTemplateController(
             it.insertVasuTemplate(
                 name = body.name,
                 valid = body.valid,
+                type = template.type,
                 language = template.language,
                 content = copyTemplateContentWithCurrentlyValidOphSections(template)
             )

@@ -35,8 +35,8 @@ import kotlin.test.assertNull
 class VasuIntegrationTest : FullApplicationTest() {
     private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
-    lateinit var templateId: VasuTemplateId
-    lateinit var template: VasuTemplate
+    lateinit var daycareTemplate: VasuTemplate
+    lateinit var preschoolTemplate: VasuTemplate
 
     @BeforeEach
     private fun beforeEach() {
@@ -45,37 +45,61 @@ class VasuIntegrationTest : FullApplicationTest() {
             tx.insertGeneralTestFixtures()
         }
 
-        templateId = postVasuTemplate(
-            VasuTemplateController.CreateTemplateRequest(
-                name = "vasu",
-                valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
-                language = VasuLanguage.FI
-            )
-        )
-
-        putVasuTemplateContent(
-            templateId,
-            VasuContent(
-                listOf(
-                    VasuSection(
-                        "foo",
-                        listOf(
-                            VasuQuestion.TextQuestion("bar", multiline = false, value = "")
-                        )
-                    )
+        daycareTemplate = let {
+            val templateId = postVasuTemplate(
+                VasuTemplateController.CreateTemplateRequest(
+                    name = "vasu",
+                    valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
+                    type = CurriculumType.DAYCARE,
+                    language = VasuLanguage.FI
                 )
             )
-        )
+            putVasuTemplateContent(
+                templateId,
+                getDefaultVasuContent(VasuLanguage.FI)
+            )
+            getVasuTemplate(templateId)
+        }
 
-        template = getVasuTemplate(templateId)
+        preschoolTemplate = let {
+            val templateId = postVasuTemplate(
+                VasuTemplateController.CreateTemplateRequest(
+                    name = "vasu",
+                    valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
+                    type = CurriculumType.PRESCHOOL,
+                    language = VasuLanguage.FI
+                )
+            )
+            putVasuTemplateContent(
+                templateId,
+                getDefaultLeopsContent()
+            )
+            getVasuTemplate(templateId)
+        }
+    }
+
+    private fun getTemplate(type: CurriculumType) = when (type) {
+        CurriculumType.DAYCARE -> daycareTemplate
+        CurriculumType.PRESCHOOL -> preschoolTemplate
     }
 
     @Test
-    fun `creating new document`() {
+    fun `creating new daycare document`() {
+        createNewDocument(CurriculumType.DAYCARE)
+    }
+
+    @Test
+    fun `creating new preschool document`() {
+        createNewDocument(CurriculumType.PRESCHOOL)
+    }
+
+    private fun createNewDocument(type: CurriculumType) {
+        val template = getTemplate(type)
+
         val documentId = postVasuDocument(
             testChild_1.id,
             VasuController.CreateDocumentRequest(
-                templateId = templateId
+                templateId = template.id
             )
         )
 
@@ -113,15 +137,26 @@ class VasuIntegrationTest : FullApplicationTest() {
         }
 
         // vasu template cannot be deleted if it has been used
-        deleteVasuTemplate(templateId, expectedStatus = 404)
+        deleteVasuTemplate(template.id, expectedStatus = 404)
     }
 
     @Test
-    fun `updating document content and authors`() {
+    fun `updating daycare document content and authors`() {
+        updateDocumentContentAndAuthors(CurriculumType.DAYCARE)
+    }
+
+    @Test
+    fun `updating preschool document content and authors`() {
+        updateDocumentContentAndAuthors(CurriculumType.PRESCHOOL)
+    }
+
+    private fun updateDocumentContentAndAuthors(type: CurriculumType) {
+        val template = getTemplate(type)
+
         val documentId = postVasuDocument(
             testChild_1.id,
             VasuController.CreateDocumentRequest(
-                templateId = templateId
+                templateId = template.id
             )
         )
 
@@ -161,11 +196,22 @@ class VasuIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `publishing and state transitions`() {
+    fun `daycare document publishing and state transitions`() {
+        documentPublishingAndStateTransitions(CurriculumType.DAYCARE)
+    }
+
+    @Test
+    fun `preschool document publishing and state transitions`() {
+        documentPublishingAndStateTransitions(CurriculumType.PRESCHOOL)
+    }
+
+    private fun documentPublishingAndStateTransitions(type: CurriculumType) {
+        val template = getTemplate(type)
+
         val documentId = postVasuDocument(
             testChild_1.id,
             VasuController.CreateDocumentRequest(
-                templateId = templateId
+                templateId = template.id
             )
         )
         val content = getVasuDocument(documentId).content

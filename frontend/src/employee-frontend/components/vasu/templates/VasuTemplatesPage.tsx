@@ -58,6 +58,7 @@ export default React.memo(function VasuTemplatesPage() {
                 <Tr>
                   <Th>{t.name}</Th>
                   <Th>{t.valid}</Th>
+                  <Th>{t.type}</Th>
                   <Th>{t.language}</Th>
                   <Th>{t.documentCount}</Th>
                   <Th />
@@ -72,6 +73,7 @@ export default React.memo(function VasuTemplatesPage() {
                       </Link>
                     </Td>
                     <Td>{template.valid.format()}</Td>
+                    <Td>{t.types[template.type]}</Td>
                     <Td>{t.languages[template.language]}</Td>
                     <Td>{template.documentCount}</Td>
                     <Td>

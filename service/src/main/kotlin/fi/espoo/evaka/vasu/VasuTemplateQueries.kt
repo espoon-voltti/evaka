@@ -13,19 +13,21 @@ import org.jdbi.v3.core.kotlin.mapTo
 fun Database.Transaction.insertVasuTemplate(
     name: String,
     valid: FiniteDateRange,
+    type: CurriculumType,
     language: VasuLanguage,
     content: VasuContent
 ): VasuTemplateId {
     // language=sql
     val sql = """
-        INSERT INTO curriculum_template (valid, language, name, content)
-        VALUES (:valid, :language, :name, :content)
+        INSERT INTO curriculum_template (valid, type, language, name, content)
+        VALUES (:valid, :type, :language, :name, :content)
         RETURNING id
     """.trimIndent()
 
     return createQuery(sql)
         .bind("name", name)
         .bind("valid", valid)
+        .bind("type", type)
         .bind("language", language)
         .bind("content", content)
         .mapTo<VasuTemplateId>()
@@ -53,6 +55,7 @@ fun Database.Read.getVasuTemplates(validOnly: Boolean): List<VasuTemplateSummary
             id,
             name,
             valid,
+            type,
             language,
             (SELECT count(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count
         FROM curriculum_template ct
@@ -84,6 +87,7 @@ SELECT
     id,
     name,
     valid,
+    type,
     language,
     (SELECT COUNT(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count
 FROM curriculum_template ct

@@ -16,6 +16,11 @@ import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
+enum class CurriculumType {
+    DAYCARE,
+    PRESCHOOL;
+}
+
 enum class VasuDocumentEventType {
     PUBLISHED,
     MOVED_TO_READY,

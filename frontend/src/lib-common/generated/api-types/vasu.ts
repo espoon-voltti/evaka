@@ -55,8 +55,16 @@ export interface CreateDocumentRequest {
 export interface CreateTemplateRequest {
   language: VasuLanguage
   name: string
+  type: CurriculumType
   valid: FiniteDateRange
 }
+
+/**
+* Generated from fi.espoo.evaka.vasu.CurriculumType
+*/
+export type CurriculumType = 
+  | 'DAYCARE'
+  | 'PRESCHOOL'
 
 /**
 * Generated from fi.espoo.evaka.vasu.VasuController.EditFollowupEntryRequest
@@ -222,6 +230,7 @@ export interface VasuTemplate {
   id: UUID
   language: VasuLanguage
   name: string
+  type: CurriculumType
   valid: FiniteDateRange
 }
 
@@ -233,6 +242,7 @@ export interface VasuTemplateSummary {
   id: UUID
   language: VasuLanguage
   name: string
+  type: CurriculumType
   valid: FiniteDateRange
 }
 

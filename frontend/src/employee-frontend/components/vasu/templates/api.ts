@@ -15,6 +15,7 @@ import { UUID } from 'lib-common/types'
 import { client } from '../../../api/client'
 import { mapVasuContent } from '../vasu-content'
 
+export const curriculumTypes = ['DAYCARE', 'PRESCHOOL'] as const
 export const vasuLanguages = ['FI', 'SV'] as const
 
 export async function createVasuTemplate(

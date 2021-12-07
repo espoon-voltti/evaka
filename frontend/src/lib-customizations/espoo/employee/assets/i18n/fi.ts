@@ -2833,6 +2833,11 @@ export const fi = {
     title: 'Vasu-pohjat',
     name: 'Nimi',
     valid: 'Käytössä aikavälillä',
+    type: 'Tyyppi',
+    types: {
+      DAYCARE: 'Varhaiskasvatussuunnitelma',
+      PRESCHOOL: 'Esiopetuksen oppimissuunnitelma'
+    },
     language: 'Kieli',
     languages: {
       FI: 'Suomenkielinen',

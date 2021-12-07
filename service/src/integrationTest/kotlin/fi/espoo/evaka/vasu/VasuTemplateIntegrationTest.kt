@@ -38,6 +38,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
             VasuTemplateController.CreateTemplateRequest(
                 name = "vasu",
                 valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
+                type = CurriculumType.DAYCARE,
                 language = VasuLanguage.FI
             )
         )
@@ -47,11 +48,12 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
         with(summaries.first()) {
             assertEquals("vasu", name)
             assertEquals(FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)), valid)
+            assertEquals(CurriculumType.DAYCARE, type)
             assertEquals(VasuLanguage.FI, language)
             assertEquals(0, documentCount)
         }
 
-        val defaultQuestions = getDefaultTemplateContent(VasuLanguage.FI)
+        val defaultQuestions = getDefaultTemplateContent(CurriculumType.DAYCARE, VasuLanguage.FI)
 
         val templateId = summaries.first().id
         val template = getVasuTemplate(templateId)
@@ -68,6 +70,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
             VasuTemplateController.CreateTemplateRequest(
                 name = "vasu",
                 valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
+                type = CurriculumType.DAYCARE,
                 language = VasuLanguage.FI
             )
         )
