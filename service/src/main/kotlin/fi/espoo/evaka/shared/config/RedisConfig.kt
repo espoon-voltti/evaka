@@ -8,6 +8,7 @@ import fi.espoo.evaka.RedisEnv
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.Protocol
 
@@ -15,7 +16,10 @@ import redis.clients.jedis.Protocol
 class RedisConfig {
     @Bean
     fun redisPool(env: RedisEnv) = JedisPool(
-        GenericObjectPoolConfig(),
+        GenericObjectPoolConfig<Jedis>().apply {
+            jmxEnabled = true
+            jmxNamePrefix = "jedis"
+        },
         env.url,
         env.port,
         Protocol.DEFAULT_TIMEOUT,
