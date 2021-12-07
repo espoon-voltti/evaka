@@ -8,7 +8,6 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -136,7 +135,8 @@ fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: Loc
         val dateOfBirth: LocalDate,
         val unitConfirmationStatus: PlacementPlanConfirmationStatus,
         val unitRejectReason: PlacementPlanRejectReason?,
-        val unitRejectOtherReason: String?
+        val unitRejectOtherReason: String?,
+        val rejectedByCitizen: Boolean?
     )
 
     return createQuery(
@@ -145,18 +145,22 @@ fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: Loc
 SELECT 
     pp.id, pp.unit_id, pp.application_id, pp.type, pp.start_date, pp.end_date, pp.preschool_daycare_start_date, pp.preschool_daycare_end_date,
     pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
-    p.id as child_id, p.first_name, p.last_name, p.date_of_birth
+    p.id as child_id, p.first_name, p.last_name, p.date_of_birth, (d.status = 'REJECTED'::decision_status AND d.updated > now() - interval '2 week') AS rejected_by_citizen
 FROM placement_plan pp
 LEFT OUTER JOIN application a ON pp.application_id = a.id
 LEFT OUTER JOIN person p ON a.child_id = p.id
-WHERE unit_id = :unitId AND (
+LEFT JOIN decision d ON d.application_id = a.id
+WHERE pp.unit_id = :unitId AND (
                                 (
                                     a.status = ANY(:statuses::application_status_type[])
+                                    AND a.status != 'REJECTED'::application_status_type
                                     AND deleted = false
                                 )
                                 OR (
-                                    pp.unit_confirmation_status = 'REJECTED_BY_CITIZEN'::confirmation_status
-                                    AND rejected_by_citizen_date > now() - interval '2 week'
+                                    d.status = 'REJECTED'::decision_status
+                                    AND a.status = ANY(:statuses::application_status_type[])
+                                    AND a.status = 'REJECTED'::application_status_type
+                                    AND d.updated > now() - interval '2 week'
                                 )
                                 AND pp.unit_confirmation_status != 'REJECTED'::confirmation_status
                              )
@@ -187,7 +191,8 @@ WHERE unit_id = :unitId AND (
                 ),
                 unitConfirmationStatus = it.unitConfirmationStatus,
                 unitRejectReason = it.unitRejectReason,
-                unitRejectOtherReason = it.unitRejectOtherReason
+                unitRejectOtherReason = it.unitRejectOtherReason,
+                rejectedByCitizen = it.rejectedByCitizen ?: false
             )
         }
 }
@@ -242,10 +247,3 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
         .toList()
         .singleOrNull()
 }
-fun Database.Transaction.markPlacementPlanCitizenRejected(decisionId: DecisionId) = createUpdate(
-    """
-    UPDATE placement_plan
-    SET unit_confirmation_status = 'REJECTED_BY_CITIZEN'::confirmation_status, rejected_by_citizen_date = NOW()
-    WHERE application_id = (SELECT application_id FROM decision WHERE id = :decisionId)
-        """
-).bind("decisionId", decisionId).execute()

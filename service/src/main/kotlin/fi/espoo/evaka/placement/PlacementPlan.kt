@@ -30,7 +30,8 @@ data class PlacementPlanDetails(
     val child: PlacementPlanChild,
     val unitConfirmationStatus: PlacementPlanConfirmationStatus = PlacementPlanConfirmationStatus.PENDING,
     val unitRejectReason: PlacementPlanRejectReason? = null,
-    val unitRejectOtherReason: String? = null
+    val unitRejectOtherReason: String? = null,
+    val rejectedByCitizen: Boolean = false
 )
 
 data class PlacementPlanChild(
@@ -44,8 +45,7 @@ enum class PlacementPlanConfirmationStatus {
     PENDING,
     ACCEPTED,
     REJECTED,
-    REJECTED_NOT_CONFIRMED,
-    REJECTED_BY_CITIZEN
+    REJECTED_NOT_CONFIRMED
 }
 
 enum class PlacementPlanRejectReason {

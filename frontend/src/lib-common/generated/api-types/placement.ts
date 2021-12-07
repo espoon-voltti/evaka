@@ -138,7 +138,6 @@ export type PlacementPlanConfirmationStatus =
   | 'ACCEPTED'
   | 'REJECTED'
   | 'REJECTED_NOT_CONFIRMED'
-  | 'REJECTED_BY_CITIZEN'
 
 /**
 * Generated from fi.espoo.evaka.placement.PlacementPlanDetails
@@ -149,6 +148,7 @@ export interface PlacementPlanDetails {
   id: UUID
   period: FiniteDateRange
   preschoolDaycarePeriod: FiniteDateRange | null
+  rejectedByCitizen: boolean
   type: PlacementType
   unitConfirmationStatus: PlacementPlanConfirmationStatus
   unitId: UUID

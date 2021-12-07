@@ -78,6 +78,7 @@ type Props = {
     otherReason?: string
   ) => undefined | void
   loadUnitData: () => void
+  rejectedByCitizen: boolean
 }
 
 export default React.memo(function PlacementProposalRow({
@@ -85,7 +86,8 @@ export default React.memo(function PlacementProposalRow({
   confirmationState,
   submitting,
   onChange,
-  loadUnitData
+  loadUnitData,
+  rejectedByCitizen
 }: Props) {
   const { i18n } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
@@ -145,7 +147,7 @@ export default React.memo(function PlacementProposalRow({
         data-qa={`placement-proposal-row-${placementPlan.applicationId}`}
       >
         <Td data-qa="child-name">
-          {confirmationState !== 'REJECTED_BY_CITIZEN' ? (
+          {!rejectedByCitizen ? (
             <Link to={`/child-information/${placementPlan.child.id}`}>
               {childName}
             </Link>
@@ -157,16 +159,12 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td
           data-qa="child-dob"
-          color={
-            confirmationState === 'REJECTED_BY_CITIZEN'
-              ? colors.greyscale.medium
-              : undefined
-          }
+          color={rejectedByCitizen ? colors.greyscale.medium : undefined}
         >
           {placementPlan.child.dateOfBirth.format()}
         </Td>
         <Td data-qa="placement-duration">
-          {confirmationState !== 'REJECTED_BY_CITIZEN' ? (
+          {!rejectedByCitizen ? (
             `${placementPlan.period.start.format()} - ${placementPlan.period.end.format()}`
           ) : (
             <FlexRow>
@@ -190,7 +188,7 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td data-qa="application-link">
           <CenteredDiv>
-            {confirmationState !== 'REJECTED_BY_CITIZEN' ? (
+            {!rejectedByCitizen ? (
               <a
                 href={`${getEmployeeUrlPrefix()}/employee/applications/${
                   placementPlan.applicationId
@@ -215,7 +213,7 @@ export default React.memo(function PlacementProposalRow({
           </CenteredDiv>
         </Td>
         <Td>
-          {!submitting && confirmationState !== 'REJECTED_BY_CITIZEN' && (
+          {!submitting && !rejectedByCitizen && (
             <FixedSpaceRow spacing="m">
               <div>
                 <CheckIconButton

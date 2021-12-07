@@ -102,7 +102,7 @@ class UnitsView(private val accessControl: AccessControl) {
                 val unitOccupancies = getUnitOccupancies(tx, unitId, period)
                 val groupOccupancies = getGroupOccupancies(tx, unitId, period)
                 val placementProposals =
-                    tx.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
+                    tx.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION, ApplicationStatus.REJECTED))
                 val placementPlans = tx.getPlacementPlans(
                     unitId,
                     null,
