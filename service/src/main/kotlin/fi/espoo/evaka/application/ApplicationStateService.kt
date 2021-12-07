@@ -62,7 +62,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.FeatureFlags
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -97,7 +97,7 @@ class ApplicationStateService(
     private val mapper: ObjectMapper,
     private val documentClient: DocumentService,
     private val incomeTypesProvider: IncomeTypesProvider,
-    private val featureFlags: FeatureFlags,
+    private val featureConfig: FeatureConfig,
     env: BucketEnv
 ) {
     private val filesBucket = env.attachments
@@ -169,7 +169,7 @@ class ApplicationStateService(
         form: ApplicationForm
     ): ApplicationForm {
         var defaultServiceNeedOption: ServiceNeedOptionPublicInfo? = null
-        if (ApplicationType.DAYCARE == type && featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
+        if (ApplicationType.DAYCARE == type && featureConfig.daycareApplicationServiceNeedOptionsEnabled) {
             defaultServiceNeedOption = tx.getServiceNeedOptionPublicInfos(listOf(PlacementType.DAYCARE)).firstOrNull()
         }
 

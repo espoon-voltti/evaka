@@ -18,7 +18,7 @@ import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.getChildGuardians
-import fi.espoo.evaka.shared.FeatureFlags
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -40,10 +40,10 @@ class FinanceDecisionGenerator(
     private val objectMapper: ObjectMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
     env: EvakaEnv,
-    featureFlags: FeatureFlags
+    featureConfig: FeatureConfig
 ) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
-    private val valueDecisionCapacityFactorEnabled = featureFlags.valueDecisionCapacityFactorEnabled
+    private val valueDecisionCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled
 
     fun createRetroactiveFeeDecisions(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)

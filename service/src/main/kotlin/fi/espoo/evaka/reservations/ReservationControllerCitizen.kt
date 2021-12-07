@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -22,13 +23,13 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
 
 @RestController
 class ReservationControllerCitizen(
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
@@ -52,7 +53,7 @@ class ReservationControllerCitizen(
                 it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
             }
             val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
-            val reservableDays = getReservableDays(HelsinkiDateTime.now().toLocalDate()).let { reservableDays ->
+            val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours).let { reservableDays ->
                 val maxPlacementEnd = children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
                 if (reservableDays.start > maxPlacementEnd) null
                 else FiniteDateRange(
@@ -79,12 +80,13 @@ class ReservationControllerCitizen(
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.map { it.childId }.toSet())
 
-        val reservableDays = getReservableDays(dateNow())
-        if (body.any { !reservableDays.includes(it.date) }) {
-            throw BadRequest("Some days are not reservable")
+        db.transaction { tx ->
+            val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours)
+            if (body.any { !reservableDays.includes(it.date) }) {
+                throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
+            }
+            createReservationsAsCitizen(tx, user.id, body)
         }
-
-        db.transaction { createReservationsAsCitizen(it, user.id, body) }
     }
 
     @PostMapping("/citizen/absences")
@@ -241,21 +243,26 @@ ORDER BY first_name
         .list()
 }
 
-fun getReservableDays(today: LocalDate): FiniteDateRange {
-    // Start of the next week if it's currently Monday, otherwise start of the week after next
-    val start = if (today.dayOfWeek == DayOfWeek.MONDAY) {
-        today.plusWeeks(1)
+fun getNextMonday(now: LocalDate): LocalDate = now.plusDays(7 - now.dayOfWeek.value + 1L)
+
+fun getNextReservableMonday(now: HelsinkiDateTime, thresholdHours: Long, nextMonday: LocalDate): LocalDate =
+    if (nextMonday.isAfter(now.plusHours(thresholdHours).toLocalDate())) {
+        nextMonday
     } else {
-        today.plusWeeks(2).minusDays(today.dayOfWeek.value - 1L)
+        getNextReservableMonday(now, thresholdHours, nextMonday.plusWeeks(1))
     }
 
-    val end = if (start.withMonth(7).withDayOfMonth(1) <= start) {
-        start.plusYears(1).withMonth(7).withDayOfMonth(31)
+fun getReservableDays(now: HelsinkiDateTime, thresholdHours: Long): FiniteDateRange {
+    val nextReservableMonday = getNextReservableMonday(now, thresholdHours, getNextMonday(now.toLocalDate()))
+
+    val firstOfJuly = nextReservableMonday.withMonth(7).withDayOfMonth(1)
+    val lastReservableDay = if (nextReservableMonday.isBefore(firstOfJuly)) {
+        firstOfJuly.withDayOfMonth(31)
     } else {
-        start.withMonth(7).withDayOfMonth(31)
+        firstOfJuly.withDayOfMonth(31).plusYears(1)
     }
 
-    return FiniteDateRange(start, end)
+    return FiniteDateRange(nextReservableMonday, lastReservableDay)
 }
 
 fun createReservationsAsCitizen(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
