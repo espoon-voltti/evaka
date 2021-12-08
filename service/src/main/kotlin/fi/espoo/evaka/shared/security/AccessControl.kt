@@ -580,16 +580,27 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: UUID) {
-        when (action) {
-            Action.Child.READ_SENSITIVE_INFO -> requirePinLogin(user)
-            else -> Unit
+        when (user) {
+            is AuthenticatedUser.Employee, is AuthenticatedUser.MobileDevice -> {
+                when (action) {
+                    Action.Child.READ_SENSITIVE_INFO -> requirePinLogin(user)
+                    else -> Unit
+                }
+                assertPermission(
+                    user = user,
+                    getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForChild(user, id).roles },
+                    action = action,
+                    mapping = permittedRoleActions::childActions
+                )
+            }
+            is AuthenticatedUser.Citizen -> {
+                when (action) {
+                    Action.Child.READ_PLACEMENT, Action.Child.TERMINATE_PLACEMENT -> requireGuardian(user, setOf(id))
+                    else -> throw Forbidden()
+                }
+            }
+            else -> throw Forbidden()
         }
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForChild(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::childActions
-        )
     }
 
     fun getPermittedChildActions(user: AuthenticatedUser, ids: Collection<ChildId>): Map<ChildId, Set<Action.Child>> =

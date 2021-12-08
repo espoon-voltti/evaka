@@ -15,5 +15,7 @@ data class Placement(
     val childId: UUID,
     val unitId: DaycareId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
+    val terminationRequestedDate: LocalDate?,
+    val terminationRequestedBy: UUID?
 )

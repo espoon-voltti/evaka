@@ -26,7 +26,7 @@ import java.util.UUID
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
 FROM placement p
 WHERE p.id = :id
         """.trimIndent()
@@ -75,7 +75,7 @@ fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraf
 fun Database.Read.getPlacementsForChild(childId: UUID): List<Placement> {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
 FROM placement p
 WHERE p.child_id = :childId
         """.trimIndent()
@@ -88,7 +88,7 @@ WHERE p.child_id = :childId
 fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: LocalDate?): List<Placement> {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
@@ -104,7 +104,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
 fun Database.Read.getCurrentPlacementForChild(childId: UUID): Placement? {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') @> now()::date
