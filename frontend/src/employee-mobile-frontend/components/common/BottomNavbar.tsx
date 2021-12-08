@@ -135,7 +135,9 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               selected={selected === 'messages'}
               onClick={() =>
                 selected !== 'messages' &&
-                history.push(`/units/${unitId}/groups/${groupId}/messages`)
+                history.push(
+                  `/units/${unitId}/groups/${unit.groups[0].id}/messages`
+                )
               }
             >
               <CustomIcon

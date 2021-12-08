@@ -16,6 +16,7 @@ import TopBar from './TopBar'
 interface Props {
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
+  includeSelectAll?: boolean
   toggleSearch?: () => void
   countInfo?: CountInfo | undefined
 }
@@ -24,7 +25,8 @@ export default React.memo(function TopBarWithGroupSelector({
   onChangeGroup,
   toggleSearch,
   selectedGroup,
-  countInfo
+  countInfo,
+  includeSelectAll = true
 }: Props) {
   const history = useHistory()
   const { user } = useContext(UserContext)
@@ -58,6 +60,7 @@ export default React.memo(function TopBarWithGroupSelector({
         onSearch={toggleSearch}
         countInfo={countInfo}
         groups={groups}
+        includeSelectAll={includeSelectAll}
       />
     </>
   )

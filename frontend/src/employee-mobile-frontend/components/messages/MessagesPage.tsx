@@ -23,7 +23,7 @@ import { defaultMargins } from 'lib-components/white-space'
 
 export default function MessagesPage() {
   const history = useHistory()
-  const { unitId, groupId: groupIdOrAll } = useParams<{
+  const { unitId, groupId } = useParams<{
     unitId: UUID
     groupId: UUID | 'all'
   }>()
@@ -31,15 +31,14 @@ export default function MessagesPage() {
   const { unitInfoResponse } = useContext(UnitContext)
 
   function changeGroup(group: GroupInfo | undefined) {
-    const groupId = group === undefined ? 'all' : group.id
-    history.push(`/units/${unitId}/groups/${groupId}/messages`)
+    if (group) history.push(`/units/${unitId}/groups/${group.id}/messages`)
   }
 
   const selectedGroup =
-    groupIdOrAll === 'all'
+    groupId === 'all'
       ? undefined
       : unitInfoResponse
-          .map((res) => res.groups.find((g) => g.id === groupIdOrAll))
+          .map((res) => res.groups.find((g) => g.id === groupId))
           .getOrElse(undefined)
 
   const {

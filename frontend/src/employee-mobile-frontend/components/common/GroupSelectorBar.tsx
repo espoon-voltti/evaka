@@ -55,6 +55,7 @@ export interface Props {
   onSearch?: () => void
   countInfo?: CountInfo
   groups?: GroupInfo[]
+  includeSelectAll: boolean
 }
 
 export const GroupSelectorBar = React.memo(function GroupSelectorBar({
@@ -62,7 +63,8 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
   onChangeGroup,
   onSearch,
   countInfo,
-  groups
+  groups,
+  includeSelectAll
 }: Props) {
   const { i18n } = useTranslation()
   const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
@@ -104,6 +106,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
           }}
           countInfo={countInfo}
           groups={groups}
+          includeSelectAll={includeSelectAll}
           data-qa="group-selector"
         />
       </GroupSelectorWrapper>
