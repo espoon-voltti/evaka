@@ -55,13 +55,12 @@ export default function MessagesPage() {
 
   useEffect(() => {
     const maybeAccount = groupAccounts.find(
-      ({ daycareGroup }) =>
-        daycareGroup?.id === groupId
+      ({ daycareGroup }) => daycareGroup?.id === groupId
     )?.account
     if (maybeAccount) {
       setSelectedAccount(maybeAccount)
     }
-  }, [groupAccounts, setSelectedAccount])
+  }, [groupAccounts, setSelectedAccount, groupId])
 
   const { i18n } = useTranslation()
 
@@ -85,6 +84,10 @@ export default function MessagesPage() {
       <TopBarWithGroupSelector
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
+        allowedGroupIds={groupAccounts.flatMap(
+          (ga) => ga.daycareGroup?.id || []
+        )}
+        includeSelectAll={false}
       />
       {renderResult(receivedMessages, (messages) => (
         <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>

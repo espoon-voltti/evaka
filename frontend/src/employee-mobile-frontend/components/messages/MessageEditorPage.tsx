@@ -38,20 +38,25 @@ export default function MessageEditorPage() {
     groupId: UUID
     childId: UUID
   }>()
-  const { nestedAccounts, selectedAccount, selectedUnit, loadNestedAccounts, groupAccounts, setSelectedAccount } =
-    useContext(MessageContext)
+  const {
+    nestedAccounts,
+    selectedAccount,
+    selectedUnit,
+    loadNestedAccounts,
+    groupAccounts,
+    setSelectedAccount
+  } = useContext(MessageContext)
 
   useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
 
   useEffect(() => {
     const maybeAccount = groupAccounts.find(
-      ({ daycareGroup }) =>
-        daycareGroup?.id === groupId
+      ({ daycareGroup }) => daycareGroup?.id === groupId
     )?.account
     if (maybeAccount) {
       setSelectedAccount(maybeAccount)
     }
-  }, [groupAccounts, setSelectedAccount])
+  }, [groupAccounts, setSelectedAccount, groupId])
 
   const [sending, setSending] = useState(false)
 
