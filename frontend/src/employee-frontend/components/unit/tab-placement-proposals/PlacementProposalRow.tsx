@@ -78,7 +78,6 @@ type Props = {
     otherReason?: string
   ) => undefined | void
   loadUnitData: () => void
-  rejectedByCitizen: boolean
 }
 
 export default React.memo(function PlacementProposalRow({
@@ -86,8 +85,7 @@ export default React.memo(function PlacementProposalRow({
   confirmationState,
   submitting,
   onChange,
-  loadUnitData,
-  rejectedByCitizen
+  loadUnitData
 }: Props) {
   const { i18n } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
@@ -147,7 +145,7 @@ export default React.memo(function PlacementProposalRow({
         data-qa={`placement-proposal-row-${placementPlan.applicationId}`}
       >
         <Td data-qa="child-name">
-          {!rejectedByCitizen ? (
+          {!placementPlan.rejectedByCitizen ? (
             <Link to={`/child-information/${placementPlan.child.id}`}>
               {childName}
             </Link>
@@ -159,12 +157,16 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td
           data-qa="child-dob"
-          color={rejectedByCitizen ? colors.greyscale.medium : undefined}
+          color={
+            placementPlan.rejectedByCitizen
+              ? colors.greyscale.medium
+              : undefined
+          }
         >
           {placementPlan.child.dateOfBirth.format()}
         </Td>
         <Td data-qa="placement-duration">
-          {!rejectedByCitizen ? (
+          {!placementPlan.rejectedByCitizen ? (
             `${placementPlan.period.start.format()} - ${placementPlan.period.end.format()}`
           ) : (
             <FlexRow>
@@ -188,7 +190,7 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td data-qa="application-link">
           <CenteredDiv>
-            {!rejectedByCitizen ? (
+            {!placementPlan.rejectedByCitizen ? (
               <a
                 href={`${getEmployeeUrlPrefix()}/employee/applications/${
                   placementPlan.applicationId
@@ -213,7 +215,7 @@ export default React.memo(function PlacementProposalRow({
           </CenteredDiv>
         </Td>
         <Td>
-          {!submitting && !rejectedByCitizen && (
+          {!submitting && !placementPlan.rejectedByCitizen && (
             <FixedSpaceRow spacing="m">
               <div>
                 <CheckIconButton

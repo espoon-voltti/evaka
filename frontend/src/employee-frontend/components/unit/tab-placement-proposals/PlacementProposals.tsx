@@ -155,7 +155,6 @@ export default React.memo(function PlacementProposals({
                   sendConfirmation(p.applicationId, state, reason, otherReason)
                 }
                 loadUnitData={loadUnitData}
-                rejectedByCitizen={p.rejectedByCitizen}
               />
             ))}
           </Tbody>

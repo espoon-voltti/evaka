@@ -136,7 +136,7 @@ fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: Loc
         val unitConfirmationStatus: PlacementPlanConfirmationStatus,
         val unitRejectReason: PlacementPlanRejectReason?,
         val unitRejectOtherReason: String?,
-        val rejectedByCitizen: Boolean?
+        val rejectedByCitizen: Boolean
     )
 
     return createQuery(
@@ -151,18 +151,19 @@ LEFT OUTER JOIN application a ON pp.application_id = a.id
 LEFT OUTER JOIN person p ON a.child_id = p.id
 LEFT JOIN decision d ON d.application_id = a.id
 WHERE pp.unit_id = :unitId AND (
-                                (
-                                    a.status = ANY(:statuses::application_status_type[])
-                                    AND a.status != 'REJECTED'::application_status_type
-                                    AND deleted = false
-                                )
-                                OR (
-                                    d.status = 'REJECTED'::decision_status
-                                    AND a.status = ANY(:statuses::application_status_type[])
-                                    AND a.status = 'REJECTED'::application_status_type
-                                    AND d.updated > now() - interval '2 week'
-                                )
-                                AND pp.unit_confirmation_status != 'REJECTED'::confirmation_status
+                                a.status = ANY(:statuses::application_status_type[])
+                                    AND  (
+                                        (
+                                            a.status != 'REJECTED'::application_status_type
+                                            AND deleted = false
+                                        )
+                                        OR (
+                                            d.status = 'REJECTED'::decision_status
+                                            AND a.status = 'REJECTED'::application_status_type
+                                            AND d.updated > now() - interval '2 week'
+                                        )
+                                        AND pp.unit_confirmation_status != 'REJECTED'::confirmation_status
+                                     )
                              )
     ${if (to != null) " AND (start_date <= :to OR preschool_daycare_start_date <= :to)" else ""}
     ${if (from != null) " AND (end_date >= :from OR preschool_daycare_end_date >= :from)" else ""} 
@@ -192,7 +193,7 @@ WHERE pp.unit_id = :unitId AND (
                 unitConfirmationStatus = it.unitConfirmationStatus,
                 unitRejectReason = it.unitRejectReason,
                 unitRejectOtherReason = it.unitRejectOtherReason,
-                rejectedByCitizen = it.rejectedByCitizen ?: false
+                rejectedByCitizen = it.rejectedByCitizen
             )
         }
 }

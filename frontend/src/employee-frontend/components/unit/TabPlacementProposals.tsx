@@ -31,9 +31,12 @@ export default React.memo(function TabPlacementProposals({
       title={
         <Title size={2}>
           {i18n.unit.placementProposals.title}
-          {unitData?.placementProposals?.length || 0 > 0 ? (
+          {unitData?.placementProposals?.filter((p) => !p.rejectedByCitizen)
+            .length || 0 > 0 ? (
             <NotificationCounter>
-              {unitData?.placementProposals?.length || 0}
+              {unitData?.placementProposals?.filter(
+                (p) => !p?.rejectedByCitizen
+              ).length || 0}
             </NotificationCounter>
           ) : null}
         </Title>
