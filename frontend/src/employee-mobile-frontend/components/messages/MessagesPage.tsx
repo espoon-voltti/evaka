@@ -43,33 +43,42 @@ export default function MessagesPage() {
 
   const {
     loadNestedAccounts,
+    setSelectedAccount,
     groupAccounts,
-    selectedSender,
-    loadMessagesWhenGroupChanges,
     receivedMessages,
-    personalAccount,
     selectedThread,
-    selectThread
+    selectThread,
+    selectedAccount
   } = useContext(MessageContext)
 
   useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
 
   useEffect(() => {
-    loadMessagesWhenGroupChanges(selectedGroup)
-  }, [selectedGroup, loadMessagesWhenGroupChanges])
+    const maybeAccount = groupAccounts.find(
+      ({ daycareGroup }) =>
+        daycareGroup?.id === groupId
+    )?.account
+    if (maybeAccount) {
+      setSelectedAccount(maybeAccount)
+    }
+  }, [groupAccounts, setSelectedAccount])
 
   const { i18n } = useTranslation()
 
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
 
-  return selectedThread && selectedSender ? (
+  return selectedThread && selectedAccount ? (
     <ContentArea
       opaque
       fullHeight
       paddingHorizontal={'zero'}
       paddingVertical={'zero'}
     >
-      <ThreadView thread={selectedThread} onBack={onBack} />
+      <ThreadView
+        thread={selectedThread}
+        onBack={onBack}
+        senderAccountId={selectedAccount.id}
+      />
     </ContentArea>
   ) : (
     <>
@@ -89,7 +98,7 @@ export default function MessagesPage() {
                 hasUnreadMessages={thread.messages.some(
                   (item) =>
                     !item.readAt &&
-                    item.sender.id !== personalAccount?.id &&
+                    item.sender.id !== selectedAccount?.id &&
                     !groupAccounts.some(
                       (ga) => ga.account.id === item.sender.id
                     )

@@ -8,13 +8,12 @@ import { defaultMargins } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
 import {
   Message,
-  MessageAccount,
   MessageThread,
   NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatDateOrTime } from 'lib-common/date'
 import React, { useCallback, useContext, useEffect, useRef } from 'react'
-import { getAccountsByUserAndUnit, MessageContext } from '../../state/messages'
+import { MessageContext } from '../../state/messages'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRight } from 'lib-icons'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
@@ -27,39 +26,29 @@ import TopBar from '../common/TopBar'
 interface ThreadViewProps {
   thread: MessageThread
   onBack: () => void
+  senderAccountId: UUID
 }
 
 const getAccountsInThread = (
   messages: Message[],
-  groupAccounts: NestedMessageAccount[],
-  personalAccount: MessageAccount | undefined
+  groupAccounts: NestedMessageAccount[]
 ) => {
   const allRecipients = messages.flatMap((m) => m.recipients)
 
-  const accountsByUserAndUnit = getAccountsByUserAndUnit(
-    groupAccounts,
-    personalAccount
-  )
-
-  return accountsByUserAndUnit.filter((account) =>
+  return groupAccounts.filter(({ account }) =>
     allRecipients.some((r) => r.id === account.id)
   )
 }
 
 export const ThreadView = React.memo(function ThreadView({
   thread: { id: threadId, messages, title },
-  onBack
+  onBack,
+  senderAccountId
 }: ThreadViewProps) {
   const { i18n } = useTranslation()
 
-  const {
-    getReplyContent,
-    sendReply,
-    selectedSender,
-    setReplyContent,
-    groupAccounts,
-    personalAccount
-  } = useContext(MessageContext)
+  const { getReplyContent, sendReply, setReplyContent, groupAccounts } =
+    useContext(MessageContext)
 
   const onUpdateContent = useCallback(
     (content) => setReplyContent(threadId, content),
@@ -68,33 +57,19 @@ export const ThreadView = React.memo(function ThreadView({
 
   const replyContent = getReplyContent(threadId)
 
-  const accountsInThread = getAccountsInThread(
-    messages,
-    groupAccounts,
-    personalAccount
-  )
-
-  const senderAccountId: UUID | undefined = accountsInThread[0]?.id
+  const accountsInThread = getAccountsInThread(messages, groupAccounts)
 
   const { recipients } = useRecipients(messages, senderAccountId)
 
   const onSubmitReply = useCallback(() => {
     replyContent.length > 0 &&
-      selectedSender?.id &&
       sendReply({
         content: replyContent,
         messageId: messages.slice(-1)[0].id,
         recipientAccountIds: recipients.map((r) => r.id),
         accountId: senderAccountId
       })
-  }, [
-    replyContent,
-    selectedSender,
-    sendReply,
-    recipients,
-    messages,
-    senderAccountId
-  ])
+  }, [replyContent, sendReply, recipients, messages, senderAccountId])
 
   const endOfMessagesRef = useRef<null | HTMLDivElement>(null)
   useEffect(() => {
@@ -109,7 +84,7 @@ export const ThreadView = React.memo(function ThreadView({
           key={message.id}
           message={message}
           ours={accountsInThread.some(
-            (account) => account.id === message.sender.id
+            ({ account }) => account.id === message.sender.id
           )}
         />
       ))}
