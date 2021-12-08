@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Combobox, Element, Page } from 'e2e-playwright/utils/page'
+import { Combobox, Element, Page, TextInput } from 'e2e-playwright/utils/page'
 import { UUID } from 'lib-common/types'
 
 type UnitProviderType =
@@ -19,10 +19,10 @@ export class UnitPage {
   readonly #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
   readonly #groupsTab = this.page.find('[data-qa="groups-tab"]')
 
-  readonly #unitDetailsLink = this.page.locator('[data-qa="unit-details-link"]')
-  readonly #editUnitButton = this.page.locator('[data-qa="enable-edit-button"]')
+  readonly #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
+  readonly #editUnitButton = this.page.find('[data-qa="enable-edit-button"]')
 
-  readonly #unitEditorContainer = this.page.locator(
+  readonly #unitEditorContainer = this.page.find(
     '[data-qa="unit-editor-container"]'
   )
 
@@ -35,12 +35,12 @@ export class UnitPage {
 
   async openUnitDetails() {
     await this.#unitDetailsLink.click()
-    await waitUntilVisible(this.#editUnitButton)
+    await this.#editUnitButton.waitUntilVisible()
   }
 
   async clickEditUnit(): Promise<UnitEditor> {
     await this.#editUnitButton.click()
-    await waitUntilVisible(this.#unitEditorContainer)
+    await this.#unitEditorContainer.waitUntilVisible()
     return new UnitEditor(this.page)
   }
 
@@ -67,40 +67,40 @@ export class UnitInformationSection {
 export class UnitEditor {
   constructor(private readonly page: Page) {}
 
-  readonly #closingDateInput = this.page.locator(
+  readonly #closingDateInput = this.page.find(
     '[data-qa="closing-date-input"] input'
   )
 
-  readonly #reactDatePickerDays = this.page.locator('.react-datepicker__day')
+  readonly #reactDatePickerDays = this.page.findAll('.react-datepicker__day')
 
-  readonly #reactDatePickerCloseIcon = this.page.locator(
+  readonly #reactDatePickerCloseIcon = this.page.find(
     '.react-datepicker__close-icon'
   )
 
   readonly #providerTypeRadio = (providerType: UnitProviderType) =>
-    this.page.locator(`[data-qa="provider-type-${providerType}"]`)
+    this.page.find(`[data-qa="provider-type-${providerType}"]`)
 
-  readonly #unitHandlerAddressInput = this.page.locator('#unit-handler-address')
+  readonly #unitHandlerAddressInput = new TextInput(
+    this.page.find('#unit-handler-address')
+  )
 
-  readonly #checkInvoicedByMunicipality = this.page.locator(
+  readonly #checkInvoicedByMunicipality = this.page.find(
     '[data-qa="check-invoice-by-municipality"]'
   )
-  readonly #unitCostCenterInput = this.page.locator('#unit-cost-center')
+  readonly #unitCostCenterInput = new TextInput(
+    this.page.find('#unit-cost-center')
+  )
 
   async assertWarningIsVisible(dataQa: string) {
-    await this.page
-      .locator(`[data-qa="${dataQa}"]`)
-      .waitFor({ state: 'visible' })
+    await this.page.find(`[data-qa="${dataQa}"]`).waitUntilVisible()
   }
 
   async assertWarningIsNotVisible(dataQa: string) {
-    await this.page
-      .locator(`[data-qa="${dataQa}"]`)
-      .waitFor({ state: 'hidden' })
+    await this.page.find(`[data-qa="${dataQa}"]`).waitUntilHidden()
   }
 
   async selectSomeClosingDate() {
-    await waitUntilVisible(this.#closingDateInput)
+    await this.#closingDateInput.waitUntilVisible()
     await this.#closingDateInput.click()
     await this.#reactDatePickerDays.nth(15).click()
   }
@@ -114,9 +114,7 @@ export class UnitEditor {
   }
 
   async setUnitHandlerAddress(text: string) {
-    await this.#unitHandlerAddressInput.selectText()
-    await this.page.keyboard.press('Backspace')
-    await this.#unitHandlerAddressInput.type(text)
+    await this.#unitHandlerAddressInput.fill(text)
   }
 
   async assertUnitHandlerAddressVisibility(
@@ -138,9 +136,9 @@ export class UnitEditor {
   }
 
   async assertInvoicingFieldsVisibility(visible: boolean) {
-    await this.#unitCostCenterInput.waitFor({
-      state: visible ? 'visible' : 'hidden'
-    })
+    visible
+      ? await this.#unitCostCenterInput.waitUntilVisible()
+      : await this.#unitCostCenterInput.waitUntilHidden()
   }
 }
 

@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { newBrowserContext } from 'e2e-playwright/browser'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import config from 'e2e-test-common/config'
 import { insertEmployeeFixture, resetDatabase } from 'e2e-test-common/dev-api'
-import { Page } from 'playwright'
+import { Page } from '../../utils/page'
 import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { UnitPage, UnitEditor } from 'e2e-playwright/pages/employee/units/unit'
@@ -30,7 +29,7 @@ beforeEach(async () => {
     roles: []
   })
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
