@@ -1401,6 +1401,8 @@ const sv: Translations = {
       provideAttachments:
         'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA vid behov',
       estimate: 'Uppskattning av mina bruttoinkomster',
+      estimatedMonthlyIncome:
+        'Genomsnittliga inkomster inklusive semesterpenning, €/månad',
       otherIncome: 'Övriga inkomster',
       otherIncomeDescription:
         'Om du har några andra inkomster, ska du lämna in uppgifterna som bilaga. En lista över nödvändiga bilagor finns längst ner på blanketten under: Bilagor som rör inkomsterna och avgifterna för småbarnspedagogik.',

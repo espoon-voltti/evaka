@@ -65,6 +65,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.checkAssured()
+      await incomeStatementsPage.setGrossIncomeEstimate(1500)
       await incomeStatementsPage.submit()
 
       await assertIncomeStatementCreated()

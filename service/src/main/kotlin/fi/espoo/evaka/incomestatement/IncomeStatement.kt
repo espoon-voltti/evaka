@@ -45,7 +45,7 @@ enum class IncomeSource {
 
 data class Gross(
     val incomeSource: IncomeSource,
-    val estimatedMonthlyIncome: Int?,
+    val estimatedMonthlyIncome: Int,
     val otherIncome: Set<OtherIncome>,
     val otherIncomeInfo: String,
 )

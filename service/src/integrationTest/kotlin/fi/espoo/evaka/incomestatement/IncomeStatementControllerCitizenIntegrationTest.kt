@@ -182,7 +182,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.of(2021, 4, 2),
                 gross = Gross(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedMonthlyIncome = null,
+                    estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
                     otherIncomeInfo = "",
                 ),
@@ -291,7 +291,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedMonthlyIncome = null,
+                    estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
                     otherIncomeInfo = "",
                 ),
@@ -312,7 +312,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                     endDate = null,
                     gross = Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedMonthlyIncome = null,
+                        estimatedMonthlyIncome = 1500,
                         otherIncome = setOf(),
                         otherIncomeInfo = "",
                     ),
@@ -341,7 +341,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedMonthlyIncome = null,
+                    estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
                     otherIncomeInfo = "",
                 ),
@@ -366,7 +366,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
                 endDate = null,
                 gross = Gross(
                     incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedMonthlyIncome = null,
+                    estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
                     otherIncomeInfo = "",
                 ),
