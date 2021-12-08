@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
+import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
@@ -269,7 +270,7 @@ fun Database.Read.getDaycarePlacements(
     val sql =
         """
         SELECT
-            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id,
+            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id, pl.termination_requested_date, pl.termination_requested_by,
             d.name AS daycare_name, d.provider_type, d.enabled_pilot_features, a.name AS area_name,
             ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
             CASE
@@ -567,6 +568,8 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
         startDate = rs.getDate("start_date").toLocalDate(),
         endDate = rs.getDate("end_date").toLocalDate(),
         type = rs.getEnum("type"),
-        missingServiceNeedDays = rs.getInt("missing_service_need")
+        missingServiceNeedDays = rs.getInt("missing_service_need"),
+        terminationRequestedDate = rs.getDate("termination_requested_date")?.toLocalDate(),
+        terminationRequestedBy = rs.getNullableUUID("termination_requested_by")
     )
 }

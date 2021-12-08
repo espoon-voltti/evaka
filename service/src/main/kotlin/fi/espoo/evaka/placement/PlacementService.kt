@@ -307,6 +307,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                 missingServiceNeedDays = daycarePlacement.missingServiceNeedDays,
                 groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
+                terminationRequestedBy = daycarePlacement.terminationRequestedBy,
+                terminationRequestedDate = daycarePlacement.terminationRequestedDate
             )
         }
         .map(::addMissingGroupPlacements)
@@ -522,7 +524,9 @@ data class DaycarePlacementDetails(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val type: PlacementType,
-    val missingServiceNeedDays: Int
+    val missingServiceNeedDays: Int,
+    val terminationRequestedDate: LocalDate?,
+    val terminationRequestedBy: UUID?
 )
 
 data class DaycarePlacementWithDetails(
@@ -535,7 +539,9 @@ data class DaycarePlacementWithDetails(
     val missingServiceNeedDays: Int,
     val groupPlacements: List<DaycareGroupPlacement>,
     val serviceNeeds: List<ServiceNeed>,
-    val isRestrictedFromUser: Boolean = false
+    val isRestrictedFromUser: Boolean = false,
+    val terminationRequestedDate: LocalDate?,
+    val terminationRequestedBy: UUID?
 )
 
 data class DaycareGroupPlacement(

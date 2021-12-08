@@ -423,7 +423,10 @@ sealed interface Action {
 
         CREATE_GROUP_PLACEMENT(UNIT_SUPERVISOR),
 
-        CREATE_SERVICE_NEED(UNIT_SUPERVISOR);
+        CREATE_SERVICE_NEED(UNIT_SUPERVISOR),
+
+        READ_TERMINATIONS,
+        TERMINATE;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

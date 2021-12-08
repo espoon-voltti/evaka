@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -252,3 +253,19 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
         .toList()
         .singleOrNull()
 }
+
+fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminationRequestedBy: UUID) =
+    createUpdate(
+        """
+UPDATE placement
+SET termination_requested_date = :terminationRequestedDate,
+    termination_requested_by = :terminationRequestedBy,
+    end_date = :placementTerminationDate
+WHERE id = :placementId
+        """.trimIndent()
+    )
+        .bind("terminationRequestedDate", terminationRequestedDate)
+        .bind("placementTerminationDate", placementTerminationDate)
+        .bind("terminationRequestedBy", terminationRequestedBy)
+        .bind("placementId", placementId)
+        .execute()

@@ -59,6 +59,8 @@ export interface DaycarePlacementWithDetails {
   missingServiceNeedDays: number
   serviceNeeds: ServiceNeed[]
   startDate: LocalDate
+  terminationRequestedBy: UUID | null
+  terminationRequestedDate: LocalDate | null
   type: PlacementType
 }
 
@@ -177,6 +179,13 @@ export type PlacementPlanRejectReason =
   | 'REASON_1'
   | 'REASON_2'
   | 'REASON_3'
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementTerminationRequestBody
+*/
+export interface PlacementTerminationRequestBody {
+  placementTerminationDate: LocalDate
+}
 
 /**
 * Generated from fi.espoo.evaka.placement.PlacementType

@@ -229,6 +229,8 @@ enum class Audit(
     PlacementServiceNeedCreate("evaka.placement.service-need.create"),
     PlacementServiceNeedDelete("evaka.placement.service-need.delete"),
     PlacementServiceNeedUpdate("evaka.placement.service-need.update"),
+    PlacementTerminate("evaka.placement.terminate"),
+    PlacementTerminateRead("evaka.placement.read"),
     PresenceReportRead("evaka.presence-report.read"),
     RawReportRead("evaka.raw-report.read"),
     ServiceNeedOptionsRead("evaka.service-need-options.read"),

@@ -176,6 +176,8 @@ export type Placement =
   | 'CREATE_GROUP_PLACEMENT'
   | 'CREATE_SERVICE_NEED'
   | 'DELETE'
+  | 'READ_TERMINATIONS'
+  | 'TERMINATE'
   | 'UPDATE'
 
 export type ServiceNeed =
