@@ -43,6 +43,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
@@ -393,6 +394,7 @@ class DevApi(
     fun createPerson(db: Database.Connection, @RequestBody body: DevPerson): ResponseEntity<UUID> {
         return db.transaction { tx ->
             val personId = tx.insertTestPerson(body)
+            tx.createPersonMessageAccount(personId)
             val dto = body.copy(id = personId).toPersonDTO()
             if (dto.identity is ExternalIdentifier.SSN) {
                 tx.updatePersonFromVtj(dto)
