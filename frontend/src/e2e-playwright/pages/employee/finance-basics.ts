@@ -2,29 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import { FeeThresholds } from 'lib-common/api-types/finance'
-import { RawElementDEPRECATED, RawTextInput } from '../../utils/element'
+import { Page, TextInput } from '../../utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class FinanceBasicsPage {
   constructor(private readonly page: Page) {}
 
   readonly feesSection = {
-    root: new RawElementDEPRECATED(this.page, '[data-qa="fees-section"]'),
-    spinner: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="fees-section-spinner"]'
-    ),
-    createFeeThresholdsButton: new RawElementDEPRECATED(
-      this.page,
+    root: this.page.find('[data-qa="fees-section"]'),
+    spinner: this.page.find('[data-qa="fees-section-spinner"]'),
+    createFeeThresholdsButton: this.page.find(
       '[data-qa="create-new-fee-thresholds"]'
     ),
     item: (index: number) => {
-      const element = new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="fee-thresholds-item-${index}"]`
-      )
+      const element = this.page.find(`[data-qa="fee-thresholds-item-${index}"]`)
 
       return {
         element,
@@ -33,10 +25,7 @@ export default class FinanceBasicsPage {
         },
         edit: async () => {
           await element.find('[data-qa="edit"]').click()
-          await new RawElementDEPRECATED(
-            this.page,
-            '[data-qa="modal-okBtn"]'
-          ).click()
+          await this.page.find('[data-qa="modal-okBtn"]').click()
         },
         assertItemContains: async (thresholds: FeeThresholds) => {
           const expectValueToBe = async (
@@ -89,40 +78,36 @@ export default class FinanceBasicsPage {
       }
     },
     editor: {
-      validFromInput: new RawTextInput(this.page, '[data-qa="valid-from"]'),
-      validToInput: new RawTextInput(this.page, '[data-qa="valid-to"]'),
-      maxFeeInput: new RawTextInput(this.page, '[data-qa="max-fee"]'),
-      minFeeInput: new RawTextInput(this.page, '[data-qa="min-fee"]'),
+      validFromInput: new TextInput(this.page.find('[data-qa="valid-from"]')),
+      validToInput: new TextInput(this.page.find('[data-qa="valid-to"]')),
+      maxFeeInput: new TextInput(this.page.find('[data-qa="max-fee"]')),
+      minFeeInput: new TextInput(this.page.find('[data-qa="min-fee"]')),
       minIncomeThreshold: (familySize: number) =>
-        new RawTextInput(
-          this.page,
-          `[data-qa="min-income-threshold-${familySize}"]`
+        new TextInput(
+          this.page.find(`[data-qa="min-income-threshold-${familySize}"]`)
         ),
       maxIncomeThreshold: (familySize: number) =>
-        new RawTextInput(
-          this.page,
-          `[data-qa="max-income-threshold-${familySize}"]`
+        new TextInput(
+          this.page.find(`[data-qa="max-income-threshold-${familySize}"]`)
         ),
       incomeMultiplier: (familySize: number) =>
-        new RawTextInput(
-          this.page,
-          `[data-qa="income-multiplier-${familySize}"]`
+        new TextInput(
+          this.page.find(`[data-qa="income-multiplier-${familySize}"]`)
         ),
       maxFeeError: (familySize: number) =>
-        new RawTextInput(this.page, `[data-qa="max-fee-error-${familySize}"]`),
-      incomeThresholdIncrease6Plus: new RawTextInput(
-        this.page,
-        '[data-qa="income-threshold-increase"]'
+        new TextInput(
+          this.page.find(`[data-qa="max-fee-error-${familySize}"]`)
+        ),
+      incomeThresholdIncrease6Plus: new TextInput(
+        this.page.find('[data-qa="income-threshold-increase"]')
       ),
-      siblingDiscount2: new RawTextInput(
-        this.page,
-        '[data-qa="sibling-discount-2"]'
+      siblingDiscount2: new TextInput(
+        this.page.find('[data-qa="sibling-discount-2"]')
       ),
-      siblingDiscount2Plus: new RawTextInput(
-        this.page,
-        '[data-qa="sibling-discount-2-plus"]'
+      siblingDiscount2Plus: new TextInput(
+        this.page.find('[data-qa="sibling-discount-2-plus"]')
       ),
-      saveButton: new RawElementDEPRECATED(this.page, '[data-qa="save"]'),
+      saveButton: this.page.find('[data-qa="save"]'),
       fillInThresholds: async (feeThresholds: FeeThresholds) => {
         await this.feesSection.editor.validFromInput.fill(
           feeThresholds.validDuring.start.format()
@@ -168,10 +153,7 @@ export default class FinanceBasicsPage {
         await this.feesSection.editor.saveButton.click()
 
         if (retroactive) {
-          await new RawElementDEPRECATED(
-            this.page,
-            '[data-qa="modal-okBtn"]'
-          ).click()
+          await this.page.find('[data-qa="modal-okBtn"]').click()
         }
 
         await waitUntilEqual(

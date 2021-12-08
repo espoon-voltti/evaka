@@ -61,6 +61,7 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
           entry={entry}
           buttonCaption={i18n.common.save}
           onChange={onCommitEdited}
+          data-qa="vasu-followup-entry-edit"
         />
       ) : (
         <EntryText data-qa="vasu-followup-entry-text">
@@ -99,11 +100,13 @@ const EntryText = styled.p`
 const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
   entry,
   buttonCaption,
-  onChange
+  onChange,
+  'data-qa': dataQa
 }: {
   entry?: FollowupEntry
   buttonCaption: string
   onChange: (entry: FollowupEntry) => void
+  'data-qa': string
 }) {
   const { user } = useContext(UserContext)
   const [textValue, setTextValue] = useState(entry ? entry.text : '')
@@ -137,7 +140,7 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
       <TextArea
         value={textValue}
         onChange={setTextValue}
-        data-qa="vasu-followup-input"
+        data-qa={`${dataQa}-input`}
       />
       <Button
         primary
@@ -145,7 +148,7 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
         disabled={textValue === ''}
         text={buttonCaption}
         onClick={onSubmit}
-        data-qa="vasu-followup-addBtn"
+        data-qa={`${dataQa}-submit`}
       />
     </FollowupEntryInputRow>
   )
@@ -191,6 +194,7 @@ export default React.memo(function FollowupQuestion({
         <FollowupEntryEditor
           buttonCaption={i18n.common.addNew}
           onChange={onChange}
+          data-qa="vasu-followup-entry-new"
         />
       )}
     </FollowupQuestionContainer>

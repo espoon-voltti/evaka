@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import {
   execSimpleApplicationActions,
@@ -13,11 +12,11 @@ import {
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
 import { Family } from 'e2e-test-common/dev-api/types'
-import { newBrowserContext } from 'e2e-playwright/browser'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ApplicationsPage from 'e2e-playwright/pages/employee/applications'
+import { Page } from '../../utils/page'
 
 let page: Page
 let applicationsPage: ApplicationsPage
@@ -36,7 +35,7 @@ beforeEach(async () => {
     roles: ['SERVICE_WORKER']
   })
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   applicationsPage = new ApplicationsPage(page)
 
   await employeeLogin(page, 'SERVICE_WORKER')

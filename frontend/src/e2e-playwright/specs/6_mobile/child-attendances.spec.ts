@@ -28,11 +28,10 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { Page } from 'playwright'
 import { DaycarePlacement } from '../../../e2e-test-common/dev-api/types'
-import { newBrowserContext } from '../../browser'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import { waitUntilEqual } from '../../utils'
+import { Page } from '../../utils/page'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -59,7 +58,7 @@ beforeEach(async () => {
 
   employee = await Fixture.employee().save()
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   childAttendancePage = new ChildAttendancePage(page)
@@ -183,7 +182,7 @@ describe('Child mobile attendances', () => {
         placementId: placement.id,
         startDate: new Date(placement.startDate),
         endDate: new Date(placement.endDate),
-        confirmedBy: employee.data.id!, // eslint-disable-line
+        confirmedBy: employee.data.id! // eslint-disable-line
       })
       .save()
 

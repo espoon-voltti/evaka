@@ -3,37 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from 'e2e-playwright/utils'
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
-import { Page } from 'playwright'
+import { Page } from 'e2e-playwright/utils/page'
 
 export default class CitizenDecisionsPage {
   constructor(private readonly page: Page) {}
 
   #decisionChildName = (applicationId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="title-decision-child-name-${applicationId}"]`
-    )
+    this.page.find(`[data-qa="title-decision-child-name-${applicationId}"]`)
   #decisionType = (decisionId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="title-decision-type-${decisionId}"]`
-    )
+    this.page.find(`[data-qa="title-decision-type-${decisionId}"]`)
   #decisionSentDate = (decisionId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="decision-sent-date-${decisionId}"]`
-    )
+    this.page.find(`[data-qa="decision-sent-date-${decisionId}"]`)
   #decisionStatus = (decisionId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="decision-status-${decisionId}"]`
-    )
+    this.page.find(`[data-qa="decision-status-${decisionId}"]`)
   #decisionResponseButton = (applicationId: string) =>
-    new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="button-confirm-decisions-${applicationId}"]`
-    )
+    this.page
+      .findAll(`[data-qa="button-confirm-decisions-${applicationId}"]`)
+      .first()
 
   async assertUnresolvedDecisionsCount(count: number) {
     return assertUnresolvedDecisionsCount(this.page, count)
@@ -77,9 +63,9 @@ export default class CitizenDecisionsPage {
 class CitizenDecisionResponsePage {
   constructor(private readonly page: Page) {}
 
-  #title = new RawElementDEPRECATED(this.page, 'h1')
+  #title = this.page.find('h1')
   #decisionBlock = (decisionId: string) =>
-    new RawElementDEPRECATED(this.page, `[data-qa="decision-${decisionId}"]`)
+    this.page.find(`[data-qa="decision-${decisionId}"]`)
   #acceptRadioButton = (decisionId: string) =>
     this.#decisionBlock(decisionId).find('[data-qa="radio-accept"]')
   #rejectRadioButton = (decisionId: string) =>
@@ -144,18 +130,14 @@ class CitizenDecisionResponsePage {
   }
 
   async confirmRejectCascade() {
-    await new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="cascade-warning-modal"] [data-qa="modal-okBtn"]'
-    ).click()
+    await this.page
+      .find('[data-qa="cascade-warning-modal"] [data-qa="modal-okBtn"]')
+      .click()
   }
 }
 
 async function assertUnresolvedDecisionsCount(page: Page, count: number) {
-  const element = new RawElementDEPRECATED(
-    page,
-    '[data-qa="alert-box-unconfirmed-decisions-count"]'
-  )
+  const element = page.find('[data-qa="alert-box-unconfirmed-decisions-count"]')
 
   if (count === 0) {
     return element.waitUntilHidden()

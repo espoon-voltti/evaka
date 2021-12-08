@@ -230,9 +230,7 @@ export default React.memo(function ChildApplicationsBlock({
                 )}
 
                 <Label>{t.applicationsList.status.title}</Label>
-                <StatusContainer
-                  data-qa={`application-status-${applicationId}`}
-                >
+                <StatusContainer>
                   <div>
                     <RoundIcon
                       content={

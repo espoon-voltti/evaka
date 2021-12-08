@@ -2,27 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Locator, Page } from 'playwright'
+import { Combobox, Element, Page } from 'e2e-playwright/utils/page'
 import { UUID } from 'lib-common/types'
-import { waitUntilVisible } from '../../../utils'
 
 export default class UnitPage {
   constructor(private readonly page: Page) {}
 
-  readonly #unitInfoTab = this.page.locator('[data-qa="unit-info-tab"]')
-  readonly #groupsTab = this.page.locator('[data-qa="groups-tab"]')
+  readonly #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
+  readonly #groupsTab = this.page.find('[data-qa="groups-tab"]')
 
   async openUnitInformation(): Promise<UnitInformationSection> {
     await this.#unitInfoTab.click()
     const section = new UnitInformationSection(this.page)
-    await section.waitFor()
+    await section.waitUntilVisible()
     return section
   }
 
   async openGroups(): Promise<GroupsSection> {
     await this.#groupsTab.click()
     const section = new GroupsSection(this.page)
-    await section.waitFor()
+    await section.waitUntilVisible()
     return section
   }
 }
@@ -31,29 +30,28 @@ class UnitInformationSection {
   constructor(private readonly page: Page) {}
 
   readonly staffAcl = new StaffAclSection(
-    this.page.locator('[data-qa="daycare-acl-staff"]')
+    this.page.find('[data-qa="daycare-acl-staff"]')
   )
 
-  async waitFor() {
-    await this.page.locator('[data-qa="unit-name"]').waitFor()
+  async waitUntilVisible() {
+    await this.page.find('[data-qa="unit-name"]').waitUntilVisible()
   }
 }
 
 class StaffAclSection {
-  constructor(private root: Locator) {}
+  constructor(private root: Element) {}
 
-  readonly #table = this.root.locator('[data-qa="acl-table"]')
-  readonly #tableRows = this.#table.locator('[data-qa="acl-row"]')
+  readonly #table = this.root.find('[data-qa="acl-table"]')
+  readonly #tableRows = this.#table.findAll('[data-qa="acl-row"]')
 
-  readonly #combobox = this.root.locator('[data-qa="acl-combobox"]')
-  readonly #addButton = this.root.locator('[data-qa="acl-add-button"]')
+  readonly #combobox = new Combobox(this.root.find('[data-qa="acl-combobox"]'))
+  readonly #addButton = this.root.find('[data-qa="acl-add-button"]')
 
   async addEmployeeAcl(employeeEmail: string, employeeId: UUID) {
     await this.#combobox.click()
-    await this.#combobox.locator('input').type(employeeEmail)
-    await this.#combobox.locator(`[data-qa="value-${employeeId}"]`).click()
+    await this.#combobox.fillAndSelectItem(employeeEmail, employeeId)
     await this.#addButton.click()
-    await this.#table.waitFor()
+    await this.#table.waitUntilVisible()
   }
 
   get rows() {
@@ -74,17 +72,15 @@ class StaffAclSection {
       throw new Error(`Row with name ${name} not found`)
     }
     return new StaffAclRow(
-      this.#table.locator(
-        `tbody tr:nth-child(${rowIndex + 1})[data-qa="acl-row"]`
-      )
+      this.#table.find(`tbody tr:nth-child(${rowIndex + 1})[data-qa="acl-row"]`)
     )
   }
 }
 
 class StaffAclRow {
-  constructor(private root: Locator) {}
+  constructor(private root: Element) {}
 
-  readonly #editButton = this.root.locator('[data-qa="edit"]')
+  readonly #editButton = this.root.find('[data-qa="edit"]')
 
   async edit(): Promise<StaffAclRowEditor> {
     await this.#editButton.click()
@@ -93,19 +89,19 @@ class StaffAclRow {
 }
 
 class StaffAclRowEditor {
-  constructor(private root: Locator) {}
+  constructor(private root: Element) {}
 
-  readonly #groupEditor = this.root.locator('[data-qa="groups"]')
-  readonly #save = this.root.locator('[data-qa="save"]')
+  readonly #groupEditor = this.root.find('[data-qa="groups"]')
+  readonly #save = this.root.find('[data-qa="save"]')
 
   async toggleStaffGroups(groupIds: UUID[]) {
-    await this.#groupEditor.locator('> div').click()
+    await this.#groupEditor.find('> div').click()
     for (const groupId of groupIds) {
       await this.#groupEditor
-        .locator(`[data-qa="option"][data-id="${groupId}"]`)
+        .find(`[data-qa="option"][data-id="${groupId}"]`)
         .click()
     }
-    await this.#groupEditor.locator('> div').click()
+    await this.#groupEditor.find('> div').click()
   }
 
   async save(): Promise<StaffAclRow> {
@@ -119,19 +115,19 @@ class GroupsSection {
 
   readonly #groupCollapsible = (groupId: string, expectIsClosed = true) =>
     this.page
-      .locator(
+      .find(
         `[data-qa="daycare-group-collapsible-${groupId}"][data-status="${
           expectIsClosed ? 'closed' : 'open'
         }"]`
       )
-      .locator('[data-qa="group-name"]')
+      .find('[data-qa="group-name"]')
 
   async assertGroupCollapsibleIsClosed(groupId: string) {
-    await waitUntilVisible(this.#groupCollapsible(groupId, true))
+    await this.#groupCollapsible(groupId, true).waitUntilVisible()
   }
 
   async assertGroupCollapsibleIsOpen(groupId: string) {
-    await waitUntilVisible(this.#groupCollapsible(groupId, false))
+    await this.#groupCollapsible(groupId, false).waitUntilVisible()
   }
 
   async openGroupCollapsible(groupId: string) {
@@ -146,9 +142,10 @@ class GroupsSection {
     await this.assertGroupCollapsibleIsClosed(groupId)
   }
 
-  async waitFor() {
-    await waitUntilVisible(
-      this.page.locator('[data-qa="table-of-missing-groups"]').nth(0)
-    )
+  async waitUntilVisible() {
+    await this.page
+      .findAll('[data-qa="table-of-missing-groups"]')
+      .nth(0)
+      .waitUntilVisible()
   }
 }

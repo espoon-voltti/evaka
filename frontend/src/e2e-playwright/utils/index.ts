@@ -6,7 +6,6 @@ import { differenceInSeconds } from 'date-fns'
 import config from 'e2e-test-common/config'
 import { isEqual } from 'lodash'
 import { BaseError } from 'make-error-cause'
-import { Locator } from 'playwright'
 
 /**
  * Returns a promise that is resolved after the given amount of milliseconds
@@ -108,17 +107,6 @@ export async function waitUntilFalse(f: () => Promise<boolean>) {
     f,
     (value) => !value,
     (value) => expect(value).toStrictEqual(false)
-  )
-}
-
-/**
- * Waits until the element matching the given locator is visible
- */
-export async function waitUntilVisible(locator: Locator) {
-  return waitForCondition(
-    () => locator.isVisible(),
-    (value) => value,
-    (value) => expect(value).toStrictEqual(true)
   )
 }
 

@@ -2,47 +2,51 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Page, TextInput } from 'e2e-playwright/utils/page'
 import {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
   ChildDailyNoteReminder
 } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'playwright'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}
 
   #stickyNote = {
-    note: this.page.locator('[data-qa="sticky-note"]'),
-    newNoteBtn: this.page.locator('[data-qa="sticky-note-new"]'),
-    editBtn: this.page.locator('[data-qa="sticky-note-edit"]'),
-    removeBtn: this.page.locator('[data-qa="sticky-note-remove"]'),
-    saveBtn: this.page.locator('[data-qa="sticky-note-save"]'),
-    input: this.page.locator('[data-qa="sticky-note-input"]')
+    note: this.page.findAll('[data-qa="sticky-note"]'),
+    newNoteBtn: this.page.find('[data-qa="sticky-note-new"]'),
+    editBtn: this.page.findAll('[data-qa="sticky-note-edit"]'),
+    removeBtn: this.page.findAll('[data-qa="sticky-note-remove"]'),
+    saveBtn: this.page.find('[data-qa="sticky-note-save"]'),
+    input: new TextInput(this.page.find('[data-qa="sticky-note-input"]'))
   }
 
-  #createNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
+  #createNoteButton = this.page.find('[data-qa="create-daily-note-btn"]')
   #note = {
-    dailyNote: this.page.locator('[data-qa="daily-note-note-input"]'),
-    sleepingTimeHours: this.page.locator(
-      '[data-qa="sleeping-time-hours-input"]'
+    dailyNote: new TextInput(
+      this.page.find('[data-qa="daily-note-note-input"]')
     ),
-    sleepingTimeMinutes: this.page.locator(
-      '[data-qa="sleeping-time-minutes-input"]'
+    sleepingTimeHours: new TextInput(
+      this.page.find('[data-qa="sleeping-time-hours-input"]')
     ),
-    reminderNote: this.page.locator('[data-qa="reminder-note-input"]'),
+    sleepingTimeMinutes: new TextInput(
+      this.page.find('[data-qa="sleeping-time-minutes-input"]')
+    ),
+    reminderNote: new TextInput(
+      this.page.find('[data-qa="reminder-note-input"]')
+    ),
     feedingNote: (level: ChildDailyNoteLevel) =>
-      this.page.locator(`[data-qa="feeding-note-${level}"]`),
+      this.page.find(`[data-qa="feeding-note-${level}"]`),
     sleepingNote: (level: ChildDailyNoteLevel) =>
-      this.page.locator(`[data-qa="sleeping-note-${level}"]`),
+      this.page.find(`[data-qa="sleeping-note-${level}"]`),
     reminders: (reminder: ChildDailyNoteReminder) =>
-      this.page.locator(`[data-qa="reminders-${reminder}"]`)
+      this.page.find(`[data-qa="reminders-${reminder}"]`)
   }
 
   async selectTab(tab: 'note' | 'group' | 'sticky') {
-    await this.page.locator(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
+    await this.page.find(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
   }
 
   async initNewStickyNote() {
@@ -56,8 +60,7 @@ export default class MobileNotePage {
 
   async editStickyNote(text: string, nth: number) {
     await this.#stickyNote.editBtn.nth(nth).click()
-    await this.#stickyNote.input.selectText()
-    await this.#stickyNote.input.type(text)
+    await this.#stickyNote.input.fill(text)
     await this.#stickyNote.saveBtn.click()
   }
 
@@ -67,17 +70,17 @@ export default class MobileNotePage {
 
   async assertStickyNote(expected: string, nth = 0) {
     await waitUntilEqual(
-      () => this.#stickyNote.note.nth(nth).locator('p').textContent(),
+      () => this.#stickyNote.note.nth(nth).find('p').textContent,
       expected
     )
   }
+
   async assertStickyNoteExpires(date: LocalDate, nth = 0) {
     await waitUntilTrue(() =>
       this.#stickyNote.note
         .nth(nth)
-        .locator('[data-qa="sticky-note-expires"]')
-        .textContent()
-        .then((t) => !!t?.includes(date.format()))
+        .find('[data-qa="sticky-note-expires"]')
+        .textContent.then((t) => !!t?.includes(date.format()))
     )
   }
 
@@ -108,20 +111,18 @@ export default class MobileNotePage {
 
   async assertNote(expected: ChildDailyNoteBody) {
     await waitUntilEqual(
-      () => this.#note.dailyNote.inputValue(),
+      () => this.#note.dailyNote.inputValue,
       expected.note || ''
     )
     await waitUntilEqual(
-      () => this.#note.reminderNote.inputValue(),
+      () => this.#note.reminderNote.inputValue,
       expected.reminderNote || ''
     )
 
     await waitUntilEqual(async () => {
-      const hours = Number(
-        (await this.#note.sleepingTimeHours.inputValue()) || 0
-      )
+      const hours = Number((await this.#note.sleepingTimeHours.inputValue) || 0)
       const minutes = Number(
-        (await this.#note.sleepingTimeMinutes.inputValue()) || 0
+        (await this.#note.sleepingTimeMinutes.inputValue) || 0
       )
       return (hours * 60 + minutes).toString()
     }, expected.sleepingMinutes?.toString() || '0')

@@ -2,56 +2,58 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
+import { Checkbox, Page, TextInput } from 'e2e-playwright/utils/page'
 
 export default class CitizenIncomePage {
   constructor(private readonly page: Page) {}
 
-  rows = this.page.locator('tbody tr')
-  requiredAttachments = this.page.locator('[data-qa="required-attachments"]')
+  rows = this.page.findAll('tbody tr')
+  requiredAttachments = this.page.find('[data-qa="required-attachments"]')
 
   async createNewIncomeStatement() {
-    await this.page.locator('[data-qa="new-income-statement-btn"]').click()
+    await this.page.find('[data-qa="new-income-statement-btn"]').click()
   }
 
   async selectIncomeStatementType(
     type: 'highest-fee' | 'gross-income' | 'entrepreneur-income'
   ) {
-    await this.page.locator(`[data-qa="${type}-checkbox"]`).click()
+    await this.page.find(`[data-qa="${type}-checkbox"]`).click()
   }
 
-  #startDate = this.page.locator('#start-date')
+  #startDate = new TextInput(this.page.find('#start-date'))
+
   async setValidFromDate(date: string) {
-    await this.#startDate.selectText()
-    await this.#startDate.type(date)
+    await this.#startDate.fill(date)
   }
 
   async submit() {
-    await this.page.locator('button.primary').click()
+    await this.page.find('button.primary').click()
   }
 
   async checkAssured() {
-    await this.page.locator('[data-qa="assure-checkbox"]').click()
+    await this.page.find('[data-qa="assure-checkbox"]').click()
   }
 
   async checkIncomesRegisterConsent() {
     await this.page
-      .locator('[data-qa="incomes-register-consent-checkbox"]')
+      .find('[data-qa="incomes-register-consent-checkbox"]')
       .click()
   }
 
   async selectEntrepreneurType(value: 'full-time' | 'part-time') {
-    await this.page.locator(`[data-qa="entrepreneur-${value}-option"]`).click()
+    await this.page.find(`[data-qa="entrepreneur-${value}-option"]`).click()
   }
 
-  #entrepreneurDate = this.page.locator('[data-qa="entrepreneur-start-date"]')
+  #entrepreneurDate = new TextInput(
+    this.page.find('[data-qa="entrepreneur-start-date"]')
+  )
+
   async setEntrepreneurStartDate(date: string) {
-    await this.#entrepreneurDate.selectText()
-    await this.#entrepreneurDate.type(date)
+    await this.#entrepreneurDate.fill(date)
   }
 
   async selectEntrepreneurSpouse(yesNo: 'yes' | 'no') {
-    await this.page.locator(`[data-qa="entrepreneur-spouse-${yesNo}"]`).click()
+    await this.page.find(`[data-qa="entrepreneur-spouse-${yesNo}"]`).click()
   }
 
   private async toggleCheckbox(
@@ -68,10 +70,8 @@ export default class CitizenIncomePage {
       | 'self-employed-estimated-income',
     check: boolean
   ) {
-    const locator = this.page.locator(`[data-qa="${checkbox}-input"]`)
-    check
-      ? await locator.check({ force: true })
-      : await locator.uncheck({ force: true })
+    const elem = new Checkbox(this.page.find(`[data-qa="${checkbox}"]`))
+    check ? await elem.check() : await elem.uncheck()
   }
 
   async toggleEntrepreneurStartupGrant(check: boolean) {
@@ -87,7 +87,7 @@ export default class CitizenIncomePage {
   }
 
   async toggleLlcType(value: 'attachments' | 'incomes-register') {
-    await this.page.locator(`[data-qa="llc-${value}"]`).click()
+    await this.page.find(`[data-qa="llc-${value}"]`).click()
   }
 
   async toggleLightEntrepreneur(check: boolean) {
@@ -119,10 +119,14 @@ export default class CitizenIncomePage {
   }
 
   async fillAccountant() {
-    await this.page.locator('[data-qa="accountant-name"]').type('Kirjanpitäjä')
-    await this.page
-      .locator('[data-qa="accountant-email"]')
-      .type('foo@example.com')
-    await this.page.locator('[data-qa="accountant-phone"]').type('0400123456')
+    await new TextInput(this.page.find('[data-qa="accountant-name"]')).fill(
+      'Kirjanpitäjä'
+    )
+    await new TextInput(this.page.find('[data-qa="accountant-email"]')).fill(
+      'foo@example.com'
+    )
+    await new TextInput(this.page.find('[data-qa="accountant-phone"]')).fill(
+      '0400123456'
+    )
   }
 }

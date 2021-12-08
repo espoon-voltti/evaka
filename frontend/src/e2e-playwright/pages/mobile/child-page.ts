@@ -2,77 +2,45 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual, waitUntilVisible } from 'e2e-playwright/utils'
-import { RawElementDEPRECATED } from 'e2e-playwright/utils/element'
+import { waitUntilEqual } from 'e2e-playwright/utils'
+import { Page } from 'e2e-playwright/utils/page'
 import { Child } from 'e2e-test-common/dev-api/types'
-import { Page } from 'playwright'
 
 export default class MobileChildPage {
   constructor(private readonly page: Page) {}
 
-  #markPresentLink = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="mark-present-link"]'
-  )
-  #markAbsentBeforehandLink = new RawElementDEPRECATED(
-    this.page,
+  #markPresentLink = this.page.find('[data-qa="mark-present-link"]')
+  #markAbsentBeforehandLink = this.page.find(
     '[data-qa="mark-absent-beforehand"]'
   )
-  #sensitiveInfoLink = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="link-child-sensitive-info"]'
-  )
+  #sensitiveInfoLink = this.page.find('[data-qa="link-child-sensitive-info"]')
 
-  #messageEditorLink = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="link-new-message"]'
-  )
+  #messageEditorLink = this.page.find('[data-qa="link-new-message"]')
 
-  #notesLink = this.page.locator('[data-qa="link-child-daycare-daily-note"]')
+  #notesLink = this.page.find('[data-qa="link-child-daycare-daily-note"]')
 
-  #notesExistsBubble = this.page.locator('[data-qa="daily-note-icon-bubble"]')
+  #notesExistsBubble = this.page.find('[data-qa="daily-note-icon-bubble"]')
 
-  #saveNoteButton = this.page.locator('[data-qa="create-daily-note-btn"]')
+  #saveNoteButton = this.page.find('[data-qa="create-daily-note-btn"]')
 
-  #goBack = this.page.locator('[data-qa="back-btn"]')
-  #goBackFromSensitivePage = this.page.locator('[data-qa="go-back"]')
+  #goBack = this.page.find('[data-qa="back-btn"]')
+  #goBackFromSensitivePage = this.page.find('[data-qa="go-back"]')
 
   #sensitiveInfo = {
-    name: new RawElementDEPRECATED(this.page, '[data-qa="child-info-name"]'),
-    allergies: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="child-info-allergies"]'
-    ),
-    diet: new RawElementDEPRECATED(this.page, '[data-qa="child-info-diet"]'),
-    medication: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="child-info-medication"]'
-    ),
+    name: this.page.find('[data-qa="child-info-name"]'),
+    allergies: this.page.find('[data-qa="child-info-allergies"]'),
+    diet: this.page.find('[data-qa="child-info-diet"]'),
+    medication: this.page.find('[data-qa="child-info-medication"]'),
     contactName: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-contact${n + 1}-name"]`
-      ),
+      this.page.find(`[data-qa="child-info-contact${n + 1}-name"]`),
     contactPhone: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-contact${n + 1}-phone"]`
-      ),
+      this.page.find(`[data-qa="child-info-contact${n + 1}-phone"]`),
     contactEmail: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-contact${n + 1}-email"]`
-      ),
+      this.page.find(`[data-qa="child-info-contact${n + 1}-email"]`),
     backupPickupName: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-backup-pickup${n + 1}-name"]`
-      ),
+      this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-name"]`),
     backupPickupPhone: (n: number) =>
-      new RawElementDEPRECATED(
-        this.page,
-        `[data-qa="child-info-backup-pickup${n + 1}-phone"]`
-      )
+      this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-phone"]`)
   }
 
   async markFutureAbsences() {
@@ -164,10 +132,10 @@ export default class MobileChildPage {
 
   async openNotes() {
     await this.#notesLink.click()
-    await waitUntilVisible(this.#saveNoteButton)
+    await this.#saveNoteButton.waitUntilVisible()
   }
 
   async assertNotesExist() {
-    await waitUntilVisible(this.#notesExistsBubble)
+    await this.#notesExistsBubble.waitUntilVisible()
   }
 }

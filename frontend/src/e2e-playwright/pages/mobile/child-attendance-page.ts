@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { Page, TextInput } from '../../utils/page'
 
 export default class ChildAttendancePage {
   constructor(private readonly page: Page) {}
 
-  #presentTab = this.page.locator('[data-qa="present-tab"]')
-  #markPresentButton = this.page.locator('[data-qa="mark-present-btn"]')
-  #childLink = (n: number) => this.page.locator('[data-qa="child-name"]').nth(n)
-  #markDepartedLink = this.page.locator('[data-qa="mark-departed-link"]')
-  #markDepartedButton = this.page.locator('[data-qa="mark-departed-btn"]')
-  #markDepartedWithAbsenceButton = this.page.locator(
+  #presentTab = this.page.find('[data-qa="present-tab"]')
+  #markPresentButton = this.page.find('[data-qa="mark-present-btn"]')
+  #childLink = (n: number) => this.page.findAll('[data-qa="child-name"]').nth(n)
+  #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
+  #markDepartedButton = this.page.find('[data-qa="mark-departed-btn"]')
+  #markDepartedWithAbsenceButton = this.page.find(
     '[data-qa="mark-departed-with-absence-btn"]'
   )
   #noChildrenIndicator = this.page
-    .locator('[data-qa="no-children-indicator"]')
+    .findAll('[data-qa="no-children-indicator"]')
     .first()
-  #childStatusLabel = this.page.locator('[data-qa="child-status"]')
-  #nonAbsenceActions = this.page.locator('[data-qa="non-absence-actions"]')
-  #setTimeInput = this.page.locator('[data-qa="set-time"]')
+  #childStatusLabel = this.page.find('[data-qa="child-status"]')
+  #nonAbsenceActions = this.page.find('[data-qa="non-absence-actions"]')
+  #setTimeInput = new TextInput(this.page.find('[data-qa="set-time"]'))
 
   #markAbsentByTypeButton = (type: AbsenceType) =>
-    this.page.locator(`[data-qa="mark-absent-${type}"]`)
+    this.page.find(`[data-qa="mark-absent-${type}"]`)
 
   async selectMarkPresent() {
     await this.#markPresentButton.click()
@@ -56,19 +56,19 @@ export default class ChildAttendancePage {
   }
 
   async assertMarkAbsenceTypeButtonsNotShown() {
-    await waitUntilTrue(() => this.#nonAbsenceActions.isVisible())
+    await waitUntilTrue(() => this.#nonAbsenceActions.visible)
   }
 
   async assertMarkAbsenceTypeButtonsAreShown(type: AbsenceType) {
-    await waitUntilTrue(() => this.#markAbsentByTypeButton(type).isVisible())
+    await waitUntilTrue(() => this.#markAbsentByTypeButton(type).visible)
   }
 
   async assertNoChildrenPresentIndicatorIsShown() {
-    await waitUntilTrue(() => this.#noChildrenIndicator.isVisible())
+    await waitUntilTrue(() => this.#noChildrenIndicator.visible)
   }
 
   async assertChildStatusLabelIsShown(expectedText: string) {
-    await waitUntilEqual(() => this.#childStatusLabel.innerText(), expectedText)
+    await waitUntilEqual(() => this.#childStatusLabel.innerText, expectedText)
   }
 
   // time format: "09:46"

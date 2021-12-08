@@ -8,8 +8,6 @@ import {
   daycareGroupFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from '../../browser'
-import { Page } from 'playwright'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import MobileNav from 'e2e-playwright/pages/mobile/mobile-nav'
 import StaffPage from 'e2e-playwright/pages/mobile/staff-page'
@@ -23,6 +21,7 @@ import {
 import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 import { DaycareGroup } from 'e2e-test-common/dev-api/types'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
+import { Page } from '../../utils/page'
 
 let page: Page
 let nav: MobileNav
@@ -52,7 +51,7 @@ beforeEach(async () => {
   )
   await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   nav = new MobileNav(page)
   staffPage = new StaffPage(page)
 

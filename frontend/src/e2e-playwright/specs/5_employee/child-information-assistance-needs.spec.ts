@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
@@ -19,7 +18,6 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from 'e2e-playwright/browser'
 import { employeeLogin, UserRole } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
 import ChildInformationPage, {
@@ -27,6 +25,7 @@ import ChildInformationPage, {
 } from '../../pages/employee/child-information-page'
 import { format, subDays } from 'date-fns'
 import { PlacementType } from 'lib-common/generated/enums'
+import { Page } from '../../utils/page'
 
 let page: Page
 let childInformationPage: ChildInformationPage
@@ -43,7 +42,7 @@ beforeEach(async () => {
 
   unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
 })
 
 const setupPlacement = async (childPlacementType: PlacementType) => {

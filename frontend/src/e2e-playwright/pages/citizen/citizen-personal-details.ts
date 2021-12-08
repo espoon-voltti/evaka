@@ -7,23 +7,22 @@ import {
   waitUntilFalse,
   waitUntilTrue
 } from 'e2e-playwright/utils'
-import { Checkbox } from 'e2e-playwright/utils/element'
-import { Page } from 'playwright'
+import { Page, Checkbox, Select, TextInput } from 'e2e-playwright/utils/page'
 
 export default class CitizenPersonalDetails {
   constructor(private readonly page: Page) {}
 
-  #missingEmailBox = this.page.locator('[data-qa="missing-email-box"]')
-  #startEditing = this.page.locator('[data-qa="start-editing"]')
-  #preferredName = this.page.locator('[data-qa="preferred-name"]')
-  #phone = this.page.locator('[data-qa="phone"]')
-  #backupPhone = this.page.locator('[data-qa="backup-phone"]')
-  #email = this.page.locator('[data-qa="email"]')
-  #noEmail = new Checkbox(this.page, '[data-qa="no-email"]')
-  #save = this.page.locator('[data-qa="save"]')
+  #missingEmailBox = this.page.find('[data-qa="missing-email-box"]')
+  #startEditing = this.page.find('[data-qa="start-editing"]')
+  #preferredName = this.page.find('[data-qa="preferred-name"]')
+  #phone = this.page.find('[data-qa="phone"]')
+  #backupPhone = this.page.find('[data-qa="backup-phone"]')
+  #email = this.page.find('[data-qa="email"]')
+  #noEmail = new Checkbox(this.page.find('[data-qa="no-email"]'))
+  #save = this.page.find('[data-qa="save"]')
 
   async checkMissingEmailWarningIsShown() {
-    await waitUntilTrue(() => this.#missingEmailBox.isVisible())
+    await waitUntilTrue(() => this.#missingEmailBox.visible)
   }
 
   async editPersonalData(data: {
@@ -33,20 +32,20 @@ export default class CitizenPersonalDetails {
     email: string | null
   }) {
     await this.#startEditing.click()
-    await this.#preferredName
-      .locator('select')
-      .selectOption({ label: data.preferredName })
-    await this.#phone.locator('input').type(data.phone)
-    await this.#backupPhone.locator('input').type(data.backupPhone)
+    await new Select(this.#preferredName.find('select')).selectOption({
+      label: data.preferredName
+    })
+    await new TextInput(this.#phone.find('input')).fill(data.phone)
+    await new TextInput(this.#backupPhone.find('input')).fill(data.backupPhone)
     if (data.email === null) {
       if (!(await this.#noEmail.checked)) {
         await this.#noEmail.click()
       }
     } else {
-      await this.#email.locator('input').type(data.email)
+      await new TextInput(this.#email.find('input')).fill(data.email)
     }
     await this.#save.click()
-    await waitUntilFalse(() => this.#startEditing.isDisabled())
+    await waitUntilFalse(() => this.#startEditing.disabled)
   }
 
   async checkPersonalData(data: {
@@ -56,16 +55,13 @@ export default class CitizenPersonalDetails {
     email: string | null
   }) {
     await waitUntilEqual(
-      () => this.#preferredName.textContent(),
+      () => this.#preferredName.textContent,
       data.preferredName
     )
-    await waitUntilEqual(() => this.#phone.textContent(), data.phone)
+    await waitUntilEqual(() => this.#phone.textContent, data.phone)
+    await waitUntilEqual(() => this.#backupPhone.textContent, data.backupPhone)
     await waitUntilEqual(
-      () => this.#backupPhone.textContent(),
-      data.backupPhone
-    )
-    await waitUntilEqual(
-      () => this.#email.textContent(),
+      () => this.#email.textContent,
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
     )
   }

@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Locator, Page } from 'playwright'
+import { Element, Page, Select, TextInput } from 'e2e-playwright/utils/page'
 
 export default class FridgeHeadInformationPage {
   constructor(private readonly page: Page) {}
 
-  readonly incomesCollapsible = this.page.locator(
+  readonly incomesCollapsible = this.page.find(
     '[data-qa="person-income-collapsible"]'
   )
 
@@ -15,11 +15,9 @@ export default class FridgeHeadInformationPage {
     await this.openCollapsible(this.incomesCollapsible)
   }
 
-  async openCollapsible(collapsibleSelector: Locator) {
+  async openCollapsible(collapsibleSelector: Element) {
     if ((await collapsibleSelector.getAttribute('data-status')) === 'closed') {
-      await collapsibleSelector
-        .locator('[data-qa="collapsible-trigger"]')
-        .click()
+      await collapsibleSelector.find('[data-qa="collapsible-trigger"]').click()
     }
   }
 
@@ -31,18 +29,18 @@ export default class FridgeHeadInformationPage {
 export class IncomesSection {
   constructor(public page: Page) {}
 
-  #newIncomeButton = this.page.locator('[data-qa="add-income-button"]')
+  #newIncomeButton = this.page.find('[data-qa="add-income-button"]')
 
   async openNewIncomeForm() {
     await this.#newIncomeButton.click()
   }
 
-  #incomeDateRange = this.page.locator('[data-qa="income-date-range"]')
-  #incomeStartDateInput = this.#incomeDateRange.locator(
-    '[data-qa="date-range-input-start-date"] input'
+  #incomeDateRange = this.page.find('[data-qa="income-date-range"]')
+  #incomeStartDateInput = new TextInput(
+    this.#incomeDateRange.find('[data-qa="date-range-input-start-date"] input')
   )
-  #incomeEndDateInput = this.#incomeDateRange.locator(
-    '[data-qa="date-range-input-end-date"] input'
+  #incomeEndDateInput = new TextInput(
+    this.#incomeDateRange.find('[data-qa="date-range-input-end-date"] input')
   )
 
   async fillIncomeStartDate(value: string) {
@@ -54,61 +52,63 @@ export class IncomesSection {
   }
 
   #incomeInput = (type: string) =>
-    this.page.locator(`[data-qa="income-input-${type}"]`)
+    new TextInput(this.page.find(`[data-qa="income-input-${type}"]`))
 
   async fillIncome(type: string, value: string) {
     await this.#incomeInput(type).fill(value)
   }
 
   #incomeEffect = (effect: string) =>
-    this.page.locator(`[data-qa="income-effect-${effect}"]`)
+    this.page.find(`[data-qa="income-effect-${effect}"]`)
 
   async chooseIncomeEffect(effect: string) {
     await this.#incomeEffect(effect).click()
   }
 
   #coefficientSelect = (type: string) =>
-    this.page.locator(`[data-qa="income-coefficient-select-${type}"] select`)
+    new Select(
+      this.page.find(`[data-qa="income-coefficient-select-${type}"] select`)
+    )
 
   async chooseCoefficient(type: string, coefficient: string) {
     await this.#coefficientSelect(type).selectOption({ value: coefficient })
   }
 
-  #saveIncomeButton = this.page.locator('[data-qa="save-income"]')
+  #saveIncomeButton = this.page.find('[data-qa="save-income"]')
 
   async save() {
     await this.#saveIncomeButton.click()
   }
 
   async saveIsDisabled() {
-    return await this.#saveIncomeButton.isDisabled()
+    return await this.#saveIncomeButton.disabled
   }
 
-  #incomeListItem = this.page.locator('[data-qa="income-list-item"]')
+  #incomeListItems = this.page.findAll('[data-qa="income-list-item"]')
 
   async incomeListItemCount() {
-    return await this.#incomeListItem.count()
+    return await this.#incomeListItems.count()
   }
 
-  #toggleIncomeItemButton = this.page.locator('[data-qa="toggle-income-item"]')
+  #toggleIncomeItemButton = this.page.find('[data-qa="toggle-income-item"]')
 
   async toggleIncome() {
     await this.#toggleIncomeItemButton.click()
   }
 
-  #incomeSum = this.page.locator('[data-qa="income-sum-income"]')
+  #incomeSum = this.page.find('[data-qa="income-sum-income"]')
 
   async getIncomeSum() {
-    return await this.#incomeSum.textContent()
+    return await this.#incomeSum.textContent
   }
 
-  #expensesSum = this.page.locator('[data-qa="income-sum-expenses"]')
+  #expensesSum = this.page.find('[data-qa="income-sum-expenses"]')
 
   async getExpensesSum() {
-    return await this.#expensesSum.textContent()
+    return await this.#expensesSum.textContent
   }
 
-  #editIncomeItemButton = this.page.locator('[data-qa="edit-income-item"]')
+  #editIncomeItemButton = this.page.find('[data-qa="edit-income-item"]')
 
   async edit() {
     await this.#editIncomeItemButton.click()

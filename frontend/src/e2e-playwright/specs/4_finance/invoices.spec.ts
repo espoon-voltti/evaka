@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import config from 'e2e-test-common/config'
@@ -26,14 +25,14 @@ import {
   invoiceFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from 'e2e-playwright/browser'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import {
-  InvoicesPage,
-  FinancePage
+  FinancePage,
+  InvoicesPage
 } from 'e2e-playwright/pages/employee/finance/finance-page'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { FeeDecision } from 'e2e-test-common/dev-api/types'
+import { Page } from '../../utils/page'
 
 let page: Page
 let financePage: FinancePage
@@ -77,7 +76,7 @@ beforeEach(async () => {
     )
   ])
 
-  page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  page = await Page.open({ acceptDownloads: true })
 
   await insertEmployeeFixture({
     id: config.financeAdminAad,

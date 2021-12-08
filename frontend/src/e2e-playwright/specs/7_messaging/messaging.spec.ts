@@ -29,8 +29,7 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
-import { Page } from 'playwright'
-import { newBrowserContext } from '../../browser'
+import { Page } from '../../utils/page'
 
 let unitSupervisorPage: Page
 let citizenPage: Page
@@ -80,12 +79,12 @@ beforeEach(async () => {
 })
 
 async function initSupervisorPage() {
-  unitSupervisorPage = await (await newBrowserContext()).newPage()
+  unitSupervisorPage = await Page.open()
   await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
 }
 
 async function initCitizenPage() {
-  citizenPage = await (await newBrowserContext()).newPage()
+  citizenPage = await Page.open()
   await enduserLogin(citizenPage)
 }
 
@@ -137,7 +136,7 @@ describe('Sending and receiving messages', () => {
       const content = 'Tämän ei pitäisi mennä perille'
 
       // Add child's guardian to block list
-      const adminPage = await (await newBrowserContext()).newPage()
+      const adminPage = await Page.open()
       await employeeLogin(adminPage, 'ADMIN')
       await adminPage.goto(`${config.employeeUrl}/child-information/${childId}`)
       const childInformationPage = new ChildInformationPage(adminPage)
@@ -165,9 +164,9 @@ describe('Sending and receiving messages', () => {
       await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.openInbox(1)
+      await messagesPage.openInbox(0)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
-      await messagesPage.openInbox(2)
+      await messagesPage.openInbox(1)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
     })
 
@@ -182,9 +181,9 @@ describe('Sending and receiving messages', () => {
       await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.openInbox(1)
+      await messagesPage.openInbox(0)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
-      await messagesPage.openInbox(2)
+      await messagesPage.openInbox(1)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
     })
   })
@@ -215,7 +214,7 @@ describe('Sending and receiving messages', () => {
       await messagesPage.assertNoDrafts()
     })
 
-    test('A draft is not saved when its discarded', async () => {
+    test("A draft is not saved when it's discarded", async () => {
       const title = 'Luonnos'
       const content = 'Tässä luonnostellaan'
 

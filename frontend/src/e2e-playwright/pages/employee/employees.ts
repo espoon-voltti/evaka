@@ -2,21 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { RawTextInput } from '../../utils/element'
+import { Page, TextInput } from '../../utils/page'
 
 export class EmployeesPage {
   constructor(private readonly page: Page) {}
 
-  readonly nameInput = new RawTextInput(
-    this.page,
-    '[data-qa="employee-name-filter"]'
+  readonly nameInput = new TextInput(
+    this.page.find('[data-qa="employee-name-filter"]')
   )
 
   get visibleUsers(): Promise<string[]> {
-    return this.page.$$eval<string[], HTMLElement>(
-      '[data-qa="employee-name"]',
-      (list) => list.map((ele) => ele.innerText)
-    )
+    return this.page.findAll('[data-qa="employee-name"]').allInnerTexts()
   }
 }

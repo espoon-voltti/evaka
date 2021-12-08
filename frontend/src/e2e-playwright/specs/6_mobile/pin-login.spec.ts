@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { newBrowserContext } from 'e2e-playwright/browser'
 import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import PinLoginPage from 'e2e-playwright/pages/mobile/pin-login-page'
@@ -38,7 +37,7 @@ import {
   PersonDetail
 } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'playwright'
+import { Page } from '../../utils/page'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
@@ -102,7 +101,7 @@ beforeEach(async () => {
     }
   ])
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   pinLoginPage = new PinLoginPage(page)

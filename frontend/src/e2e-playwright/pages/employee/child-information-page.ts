@@ -2,44 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Collapsible } from 'e2e-playwright/utils/element'
-import { Page } from 'playwright'
+import { Collapsible, Page, TextInput } from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
   readonly feeAlterationsCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="fee-alteration-collapsible"]'
+    this.page.find('[data-qa="fee-alteration-collapsible"]')
   )
   readonly guardiansCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="person-guardians-collapsible"]'
+    this.page.find('[data-qa="person-guardians-collapsible"]')
   )
   readonly placementsCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="child-placements-collapsible"]'
+    this.page.find('[data-qa="child-placements-collapsible"]')
   )
   readonly assistanceCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="assistance-collapsible"]'
+    this.page.find('[data-qa="assistance-collapsible"]')
   )
   readonly backupCareCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="backup-cares-collapsible"]'
+    this.page.find('[data-qa="backup-cares-collapsible"]')
   )
   readonly familyContactsCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="family-contacts-collapsible"]'
+    this.page.find('[data-qa="family-contacts-collapsible"]')
   )
   readonly childApplicationsCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="applications-collapsible"]'
+    this.page.find('[data-qa="applications-collapsible"]')
   )
   readonly messageBlocklistCollapsible = new Collapsible(
-    this.page,
-    '[data-qa="child-message-blocklist-collapsible"]'
+    this.page.find('[data-qa="child-message-blocklist-collapsible"]')
   )
 
   async childCollapsiblesVisible(params: {
@@ -78,16 +69,16 @@ export default class ChildInformationPage {
 export class ChildAssistanceNeed {
   constructor(private page: Page) {}
 
-  #createAssistanceNeedButton = this.page.locator(
+  #createAssistanceNeedButton = this.page.find(
     '[data-qa="assistance-need-create-btn"]'
   )
-  #assistanceNeedMultiplierInput = this.page.locator(
-    '[data-qa="input-assistance-need-multiplier"]'
+  #assistanceNeedMultiplierInput = new TextInput(
+    this.page.find('[data-qa="input-assistance-need-multiplier"]')
   )
-  #confirmAssistanceNeedButton = this.page.locator(
+  #confirmAssistanceNeedButton = this.page.find(
     '[data-qa="button-assistance-need-confirm"]'
   )
-  #assistanceNeedMultiplier = this.page.locator(
+  #assistanceNeedMultiplier = this.page.findAll(
     '[data-qa="assistance-need-multiplier"]'
   )
 
@@ -96,8 +87,7 @@ export class ChildAssistanceNeed {
   }
 
   async setAssistanceNeedMultiplier(multiplier: string) {
-    await this.#assistanceNeedMultiplierInput.selectText()
-    await this.#assistanceNeedMultiplierInput.type(multiplier)
+    await this.#assistanceNeedMultiplierInput.fill(multiplier)
   }
 
   async confirmAssistanceNeed() {
@@ -106,7 +96,7 @@ export class ChildAssistanceNeed {
 
   async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
     await waitUntilEqual(
-      () => this.#assistanceNeedMultiplier.nth(nth).innerText(),
+      () => this.#assistanceNeedMultiplier.nth(nth).innerText,
       expected
     )
   }

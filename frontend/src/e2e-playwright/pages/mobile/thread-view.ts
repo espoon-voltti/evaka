@@ -2,38 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { RawElementDEPRECATED, RawTextInput } from '../../utils/element'
+import { Page, TextInput } from '../../utils/page'
 
 export default class ThreadViewPage {
   constructor(private readonly page: Page) {}
-  #inputContent = new RawTextInput(this.page, '[data-qa="thread-reply-input"]')
-  #sendReplyButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="thread-reply-button"]'
+
+  #inputContent = new TextInput(
+    this.page.find('[data-qa="thread-reply-input"]')
+  )
+  #sendReplyButton = this.page.find('[data-qa="thread-reply-button"]')
+  #singleMessages = this.page.findAll('[data-qa="single-message"]')
+  #singleMessageContents = this.page.findAll(
+    '[data-qa="single-message-content"]'
+  )
+  #singleMessageSenderName = this.page.findAll(
+    '[data-qa="single-message-sender-name"]'
   )
 
   async countMessages(): Promise<number> {
-    return this.page.$$eval(
-      '[data-qa="single-message"]',
-      (threads) => threads.length
-    )
+    return this.#singleMessages.count()
   }
 
   async getMessageContent(index: number): Promise<string> {
-    const el = new RawElementDEPRECATED(
-      this.page,
-      `:nth-match([data-qa="single-message-content"], ${index})`
-    )
-    return el.innerText
+    return this.#singleMessageContents.nth(index).innerText
   }
 
   async getMessageSender(index: number): Promise<string> {
-    const el = new RawElementDEPRECATED(
-      this.page,
-      `:nth-match([data-qa="single-message-sender-name"], ${index})`
-    )
-    return el.innerText
+    return this.#singleMessageSenderName.nth(index).innerText
   }
 
   async replyThread(content: string) {

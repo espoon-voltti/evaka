@@ -2,18 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { Checkbox, RawElementDEPRECATED } from 'e2e-playwright/utils/element'
+import { Page, Checkbox, FileInput } from 'e2e-playwright/utils/page'
 import { waitUntilEqual, waitUntilFalse } from 'e2e-playwright/utils'
 
 export default class ApplicationsPage {
   constructor(private readonly page: Page) {}
 
   applicationStatusFilter(status: 'ALL') {
-    return new RawElementDEPRECATED(
-      this.page,
-      `[data-qa="application-status-filter-${status}"]`
-    )
+    return this.page.find(`[data-qa="application-status-filter-${status}"]`)
   }
 
   async toggleApplicationStatusFilter(status: 'ALL') {
@@ -21,18 +17,13 @@ export default class ApplicationsPage {
   }
 
   applicationRow(id: string) {
-    const element = new RawElementDEPRECATED(
-      this.page,
-      `[data-application-id="${id}"]`
-    )
+    const element = this.page.find(`[data-application-id="${id}"]`)
     return {
       status: element.find('[data-qa="application-status"]'),
       openApplication: async () => {
         const applicationDetails = new Promise<ApplicationDetailsPage>(
           (res) => {
-            this.page.on('popup', (page) =>
-              res(new ApplicationDetailsPage(page))
-            )
+            this.page.onPopup((page) => res(new ApplicationDetailsPage(page)))
           }
         )
         await element.click()
@@ -42,44 +33,25 @@ export default class ApplicationsPage {
   }
 
   readonly details = {
-    applicantDeadIndicator: new RawElementDEPRECATED(
-      this.page,
-      '[data-qa="applicant-dead"]'
-    )
+    applicantDeadIndicator: this.page.find('[data-qa="applicant-dead"]')
   }
 }
 
 class ApplicationDetailsPage {
   constructor(private readonly page: Page) {}
 
-  #editButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="edit-application"]'
-  )
-  #saveButton = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="save-application"]'
-  )
-  #urgentCheckbox = new Checkbox(this.page, '[data-qa="checkbox-urgent"]')
-  #urgentAttachmentFileUploadSelector = '[data-qa="file-upload-urgent"]'
-  #urgentAttachmentFileUpload = new RawElementDEPRECATED(
-    this.page,
-    this.#urgentAttachmentFileUploadSelector
-  )
+  #editButton = this.page.find('[data-qa="edit-application"]')
+  #saveButton = this.page.find('[data-qa="save-application"]')
+  #urgentCheckbox = new Checkbox(this.page.find('[data-qa="checkbox-urgent"]'))
+  #urgentAttachmentFileUpload = this.page.find('[data-qa="file-upload-urgent"]')
   #shiftCareCheckbox = new Checkbox(
-    this.page,
-    '[data-qa="checkbox-service-need-shift-care"]'
+    this.page.find('[data-qa="checkbox-service-need-shift-care"]')
   )
-  #shiftCareAttachmentFileUploadSelector = '[data-qa="file-upload-shift-care"]'
-  #shiftCareAttachmentFileUpload = new RawElementDEPRECATED(
-    this.page,
-    this.#shiftCareAttachmentFileUploadSelector
+  #shiftCareAttachmentFileUpload = this.page.find(
+    '[data-qa="file-upload-shift-care"]'
   )
 
-  applicantDeadIndicator = new RawElementDEPRECATED(
-    this.page,
-    '[data-qa="applicant-dead"]'
-  )
+  applicantDeadIndicator = this.page.find('[data-qa="applicant-dead"]')
 
   async startEditing() {
     await this.#editButton.click()
@@ -97,10 +69,9 @@ class ApplicationDetailsPage {
   }
 
   async uploadUrgentAttachment(filePath: string) {
-    await this.page.setInputFiles(
-      `${this.#urgentAttachmentFileUploadSelector} [data-qa="btn-upload-file"]`,
-      filePath
-    )
+    await new FileInput(
+      this.#urgentAttachmentFileUpload.find('[data-qa="btn-upload-file"]')
+    ).setInputFiles(filePath)
   }
 
   async assertUrgentAttachmentUploaded(fileName: string) {
@@ -114,8 +85,7 @@ class ApplicationDetailsPage {
   }
 
   async assertUrgencyAttachmentReceivedAtVisible(fileName: string) {
-    const attachment = new RawElementDEPRECATED(
-      this.page,
+    const attachment = this.page.find(
       `[data-qa="urgent-attachment-${fileName}"]`
     )
     await attachment.waitUntilVisible()
@@ -132,12 +102,9 @@ class ApplicationDetailsPage {
   }
 
   async uploadShiftCareAttachment(filePath: string) {
-    await this.page.setInputFiles(
-      `${
-        this.#shiftCareAttachmentFileUploadSelector
-      } [data-qa="btn-upload-file"]`,
-      filePath
-    )
+    await new FileInput(
+      this.#shiftCareAttachmentFileUpload.find('[data-qa="btn-upload-file"]')
+    ).setInputFiles(filePath)
   }
 
   async deleteShiftCareAttachment(fileName: string) {

@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'playwright'
 import {
   insertDaycarePlacementFixtures,
   insertPedagogicalDocumentAttachment,
   resetDatabase
 } from '../../../e2e-test-common/dev-api'
-import { newBrowserContext } from '../../browser'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { enduserLogin } from '../../utils/user'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
@@ -22,6 +20,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../../e2e-test-common/dev-api/data-init'
+import { Page } from '../../utils/page'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -43,7 +42,7 @@ beforeEach(async () => {
     )
   ])
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await enduserLogin(page)
   header = new CitizenHeader(page)
   pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)

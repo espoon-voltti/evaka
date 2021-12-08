@@ -2,21 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
-import { waitUntilVisible } from '../../utils'
+import { Page } from '../../utils/page'
 
 export default class ErrorModal {
   constructor(private page: Page) {}
 
-  #modal = this.page.locator('[data-qa="app-error-modal"]')
-  #title = this.#modal.locator('[data-qa="title"]')
-  #text = this.#modal.locator('[data-qa="text"]')
+  #modal = this.page.find('[data-qa="app-error-modal"]')
+  #title = this.#modal.find('[data-qa="title"]')
+  #text = this.#modal.find('[data-qa="text"]')
 
   async ensureTitle(title: string) {
-    await waitUntilVisible(this.#title.locator(`text=${title}`))
+    await this.#title.find(`text=${title}`).waitUntilVisible()
   }
 
   async ensureText(title: string) {
-    await waitUntilVisible(this.#text.locator(`text=${title}`))
+    await this.#text.find(`text=${title}`).waitUntilVisible()
   }
 }

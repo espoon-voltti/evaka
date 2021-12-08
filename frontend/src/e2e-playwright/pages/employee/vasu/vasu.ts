@@ -2,73 +2,71 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Locator, Page } from 'playwright'
+import { Page, TextInput } from '../../../utils/page'
 
 export default class VasuPage {
   constructor(private readonly page: Page) {}
 
-  readonly #followupQuestion = this.page.locator(
+  readonly #followupQuestions = this.page.findAll(
     '[data-qa="vasu-followup-question"]'
   )
-  readonly #finalizeButton = this.page.locator(
+  readonly finalizeButton = this.page.find(
     '[data-qa="transition-button-MOVED_TO_READY"]'
   )
-  readonly #modalOkButton = this.page.locator('[data-qa="modal-okBtn"]')
-  readonly #documentSection = this.page.locator(
-    '[data-qa="vasu-document-section"]'
-  )
+  readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
+  readonly #firstDocumentSection = this.page
+    .findAll('[data-qa="vasu-document-section"]')
+    .first()
 
-  readonly #followupInput = this.page.locator('[data-qa="vasu-followup-input"]')
-  readonly #followupAddBtn = this.page.locator(
-    '[data-qa="vasu-followup-addBtn"]'
+  readonly #followupNewInput = new TextInput(
+    this.page.findAll('[data-qa="vasu-followup-entry-new-input"]').first()
   )
-  readonly #followupEntryText = this.page.locator(
+  readonly #followupNewSaveButton = this.page.find(
+    '[data-qa="vasu-followup-entry-new-submit"]'
+  )
+  readonly #followupEntryTexts = this.page.findAll(
     '[data-qa="vasu-followup-entry-text"]'
   )
-  readonly #followupEntryMetadata = this.page.locator(
+  readonly #followupEntryMetadatas = this.page.findAll(
     '[data-qa="vasu-followup-entry-metadata"]'
   )
-
-  readonly #followupEntryEditBtn = this.page.locator(
+  readonly #followupEntryEditButtons = this.page.findAll(
     '[data-qa="vasu-followup-entry-edit-btn"]'
+  )
+  readonly #followupEntryInput = new TextInput(
+    this.page.find('[data-qa="vasu-followup-entry-edit-input"]')
+  )
+  readonly #followupEntrySaveButton = this.page.find(
+    '[data-qa="vasu-followup-entry-edit-submit"]'
   )
 
   get followupQuestionCount(): Promise<number> {
-    return this.page
-      .waitForLoadState('networkidle')
-      .then(() => this.#followupQuestion.count())
-  }
-
-  get finalizeButton(): Locator {
-    return this.#finalizeButton
-  }
-
-  get modalOkButton(): Locator {
-    return this.#modalOkButton
+    return this.#followupQuestions.count()
   }
 
   async assertDocumentVisible() {
-    await this.#documentSection.first().waitFor({ state: 'visible' })
+    await this.#firstDocumentSection.waitUntilVisible()
   }
 
   async inputFollowupComment(comment: string) {
-    await this.#followupInput.type(comment)
-    await this.#followupAddBtn.click()
-    await this.page.waitForLoadState('networkidle')
+    await this.#followupNewInput.type(comment)
+    await this.#followupNewSaveButton.click()
+
+    // TODO: Doesn't work without some sleeping here, I have no idea why
+    await this.page.page.waitForTimeout(500)
   }
 
   get followupEntryTexts(): Promise<Array<string>> {
-    return this.#followupEntryText.allInnerTexts()
+    return this.#followupEntryTexts.allInnerTexts()
   }
 
   get followupEntryMetadata(): Promise<Array<string>> {
-    return this.#followupEntryMetadata.allInnerTexts()
+    return this.#followupEntryMetadatas.allInnerTexts()
   }
 
   async editFollowupComment(ix: number, text: string) {
-    await this.#followupEntryEditBtn.nth(ix).click()
-    await this.#followupInput.first().type(text)
-    await this.#followupAddBtn.first().click()
-    await this.page.waitForLoadState('networkidle')
+    await this.#followupEntryEditButtons.nth(ix).click()
+    await this.#followupEntryInput.type(text)
+    await this.#followupEntrySaveButton.click()
   }
 }

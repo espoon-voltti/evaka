@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
@@ -18,11 +17,11 @@ import {
 import ChildInformationPage, {
   PedagogicalDocumentsSection
 } from 'e2e-playwright/pages/employee/child-information'
-import { newBrowserContext } from 'e2e-playwright/browser'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { format } from 'date-fns'
 import { UUID } from 'lib-common/types'
+import { Page } from '../../utils/page'
 
 let page: Page
 let childInformationPage: ChildInformationPage
@@ -44,7 +43,7 @@ beforeEach(async () => {
   )
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
-  page = await (await newBrowserContext()).newPage()
+  page = await Page.open()
   await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)

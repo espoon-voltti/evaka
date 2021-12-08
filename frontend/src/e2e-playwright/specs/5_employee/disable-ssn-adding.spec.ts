@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import { insertEmployeeFixture, resetDatabase } from 'e2e-test-common/dev-api'
-import { newBrowserContext } from 'e2e-playwright/browser'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import PersonSearchPage from 'e2e-playwright/pages/employee/person-search'
 import LocalDate from 'lib-common/local-date'
+import { Page } from '../../utils/page'
 
 let adminPage: Page
 let adminPersonSearchPage: PersonSearchPage
@@ -27,12 +26,12 @@ beforeEach(async () => {
     roles: ['SERVICE_WORKER']
   })
 
-  adminPage = await (await newBrowserContext()).newPage()
+  adminPage = await Page.open()
   await employeeLogin(adminPage, 'ADMIN')
   await adminPage.goto(`${config.employeeUrl}/search`)
   adminPersonSearchPage = new PersonSearchPage(adminPage)
 
-  serviceWorkerPage = await (await newBrowserContext()).newPage()
+  serviceWorkerPage = await Page.open()
   await employeeLogin(serviceWorkerPage, 'SERVICE_WORKER')
   await serviceWorkerPage.goto(`${config.employeeUrl}/search`)
   serviceWorkerPersonSearchPage = new PersonSearchPage(serviceWorkerPage)

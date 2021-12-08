@@ -9,7 +9,6 @@ import {
   insertFeeDecisionFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import { Page } from 'playwright'
 import {
   daycareFixture,
   enduserChildFixtureKaarina,
@@ -17,11 +16,11 @@ import {
   feeDecisionsFixture,
   uuidv4
 } from '../../../e2e-test-common/dev-api/fixtures'
-import { newBrowserContext } from '../../browser'
 import { PersonProfilePage } from '../../pages/employee/person-profile'
 import { initializeAreaAndPersonData } from '../../../e2e-test-common/dev-api/data-init'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
+import { Page } from 'e2e-playwright/utils/page'
 
 let page: Page
 let personProfilePage: PersonProfilePage
@@ -30,7 +29,7 @@ beforeEach(async () => {
   await resetDatabase()
   await initializeAreaAndPersonData()
 
-  page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  page = await Page.open({ acceptDownloads: true })
 
   await insertEmployeeFixture({
     id: config.financeAdminAad,
