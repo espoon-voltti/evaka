@@ -738,13 +738,18 @@ WHERE employee_id = :userId
         if (action != Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY) {
             throw Forbidden()
         }
+        val mapping = permittedRoleActions::vasuDocumentFollowupActions
 
         val globalRoles = when (user) {
             is AuthenticatedUser.Employee -> user.globalRoles
             else -> user.roles
         }
-        val mapping = permittedRoleActions::vasuDocumentFollowupActions
-        if (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) }) {
+        if (globalRoles.any { it == UserRole.ADMIN }) {
+            return
+        }
+
+        val roles = acl.getRolesForVasuDocument(user, id.first).roles
+        if (roles.any { mapping(it).contains(action) }) {
             return
         }
 
