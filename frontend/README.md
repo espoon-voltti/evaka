@@ -241,6 +241,14 @@ in order to only run tests related to messaging, use the following command:
 yarn jest --testTimeout 600000 --runInBand src/e2e-playwright/specs/7_messaging
 ```
 
+[Playwright traces](https://playwright.dev/docs/trace-viewer) are collected from
+failed tests to the `traces/` directory. Use the following command to inspect a
+trace in the Playwright trace viewer:
+
+```
+yarn playwright show-trace traces/<filename>.zip
+```
+
 #### Run tests by fixture or test meta data
 
 ```sh
