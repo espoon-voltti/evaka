@@ -521,7 +521,9 @@ data class DaycarePlacement(
 
 data class DaycarePlacementDetails(
     val id: PlacementId,
+    @Nested("child")
     val child: ChildBasics,
+    @Nested("daycare")
     val daycare: DaycareBasics,
     val startDate: LocalDate,
     val endDate: LocalDate,

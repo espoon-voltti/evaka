@@ -272,10 +272,19 @@ fun Database.Read.getDaycarePlacements(
     val sql =
         """
         SELECT
-            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id, pl.termination_requested_date, 
-            terminated_by.id AS terminated_by_id, terminated_by.name AS terminated_by_name, terminated_by.type AS terminated_by_type,
-            d.name AS daycare_name, d.provider_type, d.enabled_pilot_features, a.name AS area_name,
-            ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
+            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.termination_requested_date, 
+            terminated_by.id AS terminated_by_id,
+            terminated_by.name AS terminated_by_name,
+            terminated_by.type AS terminated_by_type,
+            pl.unit_id AS daycare_id,
+            d.name AS daycare_name,
+            d.provider_type AS daycare_provider_type,
+            d.enabled_pilot_features AS daycare_enabled_pilot_features,
+            a.name AS daycare_area,
+            ch.first_name as child_first_name,
+            ch.last_name as child_last_name,
+            ch.social_security_number as child_social_security_number,
+            ch.date_of_birth as child_date_of_birth,
             CASE
                 WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
                 ELSE (
@@ -284,11 +293,11 @@ fun Database.Read.getDaycarePlacements(
                     LEFT JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                     WHERE sn.id IS NULL
                 )
-            END AS missing_service_need
+            END AS missing_service_need_days
         FROM placement pl
-        LEFT OUTER JOIN daycare d on pl.unit_id = d.id
-        LEFT OUTER JOIN person ch on pl.child_id = ch.id
-        LEFT JOIN care_area a ON d.care_area_id = a.id
+        JOIN daycare d on pl.unit_id = d.id
+        JOIN person ch on pl.child_id = ch.id
+        JOIN care_area a ON d.care_area_id = a.id
         LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:daycareId::uuid IS NULL OR pl.unit_id = :daycareId)
