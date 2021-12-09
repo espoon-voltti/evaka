@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,10 +24,11 @@ class PlacementControllerCitizen(
     fun getPlacements(
         db: Database.Connection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestParam(value = "childId") childId: UUID,
-    ): List<Placement> {
+    ): List<ChildPlacement> {
         Audit.PlacementSearch.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PLACEMENT, childId)
-        return db.read { it.getPlacementsForChild(childId) }
+        return db.read { it.getCitizenChildPlacements(evakaClock.today(), childId) }
     }
 }

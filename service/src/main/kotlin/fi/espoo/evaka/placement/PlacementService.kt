@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
@@ -307,7 +308,7 @@ fun Database.Read.getDetailedDaycarePlacements(
                 missingServiceNeedDays = daycarePlacement.missingServiceNeedDays,
                 groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
-                terminationRequestedBy = daycarePlacement.terminationRequestedBy,
+                terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate
             )
         }
@@ -526,7 +527,8 @@ data class DaycarePlacementDetails(
     val type: PlacementType,
     val missingServiceNeedDays: Int,
     val terminationRequestedDate: LocalDate?,
-    val terminationRequestedBy: UUID?
+    @Nested
+    val terminatedBy: TerminatedBy?
 )
 
 data class DaycarePlacementWithDetails(
@@ -541,7 +543,8 @@ data class DaycarePlacementWithDetails(
     val serviceNeeds: List<ServiceNeed>,
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
-    val terminationRequestedBy: UUID?
+    @Nested
+    val terminatedBy: TerminatedBy?
 )
 
 data class DaycareGroupPlacement(

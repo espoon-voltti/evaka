@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { AuthenticatedUserType } from './shared'
 import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
@@ -21,6 +22,21 @@ export interface ChildBasics {
   id: UUID
   lastName: string
   socialSecurityNumber: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.ChildPlacement
+*/
+export interface ChildPlacement {
+  childId: UUID
+  currentGroupName: string
+  placementEndDate: LocalDate
+  placementId: UUID
+  placementStartDate: LocalDate
+  placementType: PlacementType
+  placementUnitName: string
+  terminatedBy: TerminatedBy | null
+  terminationRequestedDate: LocalDate | null
 }
 
 /**
@@ -59,7 +75,7 @@ export interface DaycarePlacementWithDetails {
   missingServiceNeedDays: number
   serviceNeeds: ServiceNeed[]
   startDate: LocalDate
-  terminationRequestedBy: UUID | null
+  terminatedBy: TerminatedBy | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
 }
@@ -210,4 +226,13 @@ export type PlacementType =
 export interface PlacementUpdateRequestBody {
   endDate: LocalDate
   startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.TerminatedBy
+*/
+export interface TerminatedBy {
+  id: UUID
+  name: string
+  type: AuthenticatedUserType
 }

@@ -4,10 +4,12 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.auth.AuthenticatedUserType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
@@ -18,6 +20,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -26,7 +30,7 @@ import java.util.UUID
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.id = :id
         """.trimIndent()
@@ -75,7 +79,7 @@ fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraf
 fun Database.Read.getPlacementsForChild(childId: UUID): List<Placement> {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.child_id = :childId
         """.trimIndent()
@@ -88,7 +92,7 @@ WHERE p.child_id = :childId
 fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: LocalDate?): List<Placement> {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
@@ -104,7 +108,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
 fun Database.Read.getCurrentPlacementForChild(childId: UUID): Placement? {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.termination_requested_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') @> now()::date
@@ -270,7 +274,8 @@ fun Database.Read.getDaycarePlacements(
     val sql =
         """
         SELECT
-            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id, pl.termination_requested_date, pl.termination_requested_by,
+            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id, pl.termination_requested_date, 
+            terminated_by.id AS terminated_by_id, terminated_by.name AS terminated_by_name, terminated_by.type AS terminated_by_type,
             d.name AS daycare_name, d.provider_type, d.enabled_pilot_features, a.name AS area_name,
             ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
             CASE
@@ -286,6 +291,7 @@ fun Database.Read.getDaycarePlacements(
         LEFT OUTER JOIN daycare d on pl.unit_id = d.id
         LEFT OUTER JOIN person ch on pl.child_id = ch.id
         LEFT JOIN care_area a ON d.care_area_id = a.id
+        LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:daycareId::uuid IS NULL OR pl.unit_id = :daycareId)
         AND (:childId::uuid IS NULL OR pl.child_id = :childId)
@@ -331,6 +337,52 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
         .map(toDaycarePlacement)
         .firstOrNull()
 }
+
+@PropagateNull("id")
+data class TerminatedBy(
+    val id: UUID,
+    val name: String,
+    val type: AuthenticatedUserType
+)
+
+data class ChildPlacement(
+    val childId: ChildId,
+    val placementId: PlacementId,
+    val placementType: PlacementType,
+    val placementStartDate: LocalDate,
+    val placementEndDate: LocalDate,
+    val terminationRequestedDate: LocalDate?,
+    @Nested
+    val terminatedBy: TerminatedBy?,
+    val placementUnitName: String,
+    val currentGroupName: String
+)
+
+fun Database.Read.getCitizenChildPlacements(today: LocalDate, childId: UUID): List<ChildPlacement> = createQuery(
+    """
+SELECT
+    child.id AS child_id,
+    p.id AS placement_id,
+    p.type AS placement_type,
+    p.start_date AS placement_start_date,
+    p.end_date AS placement_end_end,
+    p.termination_requested_date,
+    d.name AS placement_unit_name,
+    COALESCE(dg.name, '') AS currentGroupName,
+    evaka_user AS terminatedBy    
+FROM placement p
+JOIN daycare d ON p.unit_id = d.id
+JOIN person child ON p.child_id = child.id
+LEFT JOIN evaka_user ON p.terminated_by = evaka_user.id
+LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = p.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today
+LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+WHERE child.id = :childId            
+    """.trimIndent()
+)
+    .bind("childId", childId)
+    .bind("today", today)
+    .mapTo<ChildPlacement>()
+    .list()
 
 fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPlacement? {
     // language=SQL
@@ -570,6 +622,10 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
         type = rs.getEnum("type"),
         missingServiceNeedDays = rs.getInt("missing_service_need"),
         terminationRequestedDate = rs.getDate("termination_requested_date")?.toLocalDate(),
-        terminationRequestedBy = rs.getNullableUUID("termination_requested_by")
+        terminatedBy = if (rs.getNullableUUID("terminated_by_id") != null) TerminatedBy(
+            id = rs.getUUID("terminated_by_id"),
+            name = rs.getString("terminated_by_name"),
+            type = rs.getEnum("terminated_by_type")
+        ) else null
     )
 }

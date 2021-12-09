@@ -781,7 +781,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         )
                     ),
                     serviceNeeds = emptyList(),
-                    terminationRequestedBy = null,
+                    terminatedBy = null,
                     terminationRequestedDate = null
                 )
             ),
@@ -929,7 +929,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         )
                     ),
                     serviceNeeds = emptyList(),
-                    terminationRequestedBy = null,
+                    terminatedBy = null,
                     terminationRequestedDate = null
                 ),
             ),

@@ -56,6 +56,9 @@ export async function getPlacements(
         },
         startDate: LocalDate.parseIso(p.startDate),
         endDate: LocalDate.parseIso(p.endDate),
+        terminationRequestedDate: p.terminationRequestedDate
+          ? LocalDate.parseIso(p.terminationRequestedDate)
+          : null,
         groupPlacements: p.groupPlacements.map((gp) => ({
           ...gp,
           startDate: LocalDate.parseIso(gp.startDate),

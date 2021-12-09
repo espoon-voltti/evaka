@@ -254,18 +254,18 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
         .singleOrNull()
 }
 
-fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminationRequestedBy: UUID) =
+fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: UUID) =
     createUpdate(
         """
 UPDATE placement
 SET termination_requested_date = :terminationRequestedDate,
-    termination_requested_by = :terminationRequestedBy,
+    terminated_by = :terminationRequestedBy,
     end_date = :placementTerminationDate
 WHERE id = :placementId
         """.trimIndent()
     )
         .bind("terminationRequestedDate", terminationRequestedDate)
         .bind("placementTerminationDate", placementTerminationDate)
-        .bind("terminationRequestedBy", terminationRequestedBy)
+        .bind("terminationRequestedBy", terminatedBy)
         .bind("placementId", placementId)
         .execute()
