@@ -17,6 +17,8 @@ import { UnwrapResult } from './async-rendering'
 import requireAuth from './auth/requireAuth'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
+import ChildPage from './children/ChildPage'
+import ChildrenPage from './children/ChildrenPage'
 import CitizenReloadNotification from './CitizenReloadNotification'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
@@ -85,6 +87,16 @@ export default function App() {
                           exact
                           path="/applications/:applicationId/edit"
                           component={requireAuth(ApplicationEditor)}
+                        />
+                        <Route
+                          exact
+                          path="/children/:childId"
+                          component={requireAuth(ChildPage)}
+                        />
+                        <Route
+                          exact
+                          path="/children"
+                          component={requireAuth(ChildrenPage)}
                         />
                         <Route
                           exact

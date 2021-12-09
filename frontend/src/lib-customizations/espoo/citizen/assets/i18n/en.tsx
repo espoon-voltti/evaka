@@ -99,7 +99,8 @@ const en: Translations = {
       messages: 'Messages',
       calendar: 'Calendar',
       applying: 'Applications',
-      pedagogicalDocuments: 'Growth and learning'
+      pedagogicalDocuments: 'Growth and learning',
+      children: 'Children'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1747,6 +1748,11 @@ const en: Translations = {
   reloadNotification: {
     title: 'New version of eVaka is available',
     buttonText: 'Reload page'
+  },
+  children: {
+    title: 'Children',
+    pageDescription: 'Your children are listed on this page.', // TODO copy
+    noChildren: 'No children'
   }
 }
 

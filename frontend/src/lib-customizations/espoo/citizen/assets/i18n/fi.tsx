@@ -98,7 +98,8 @@ export default {
       messages: 'Viestit',
       calendar: 'Kalenteri',
       applying: 'Hakeminen',
-      pedagogicalDocuments: 'Kasvu ja oppiminen'
+      pedagogicalDocuments: 'Kasvu ja oppiminen',
+      children: 'Lapset'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1677,5 +1678,11 @@ export default {
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
+  },
+  children: {
+    title: 'Lapset',
+    pageDescription:
+      'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
+    noChildren: 'Ei lapsia'
   }
 }

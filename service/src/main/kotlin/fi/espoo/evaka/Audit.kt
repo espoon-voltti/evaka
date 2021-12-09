@@ -87,6 +87,7 @@ enum class Audit(
     ChildStickyNoteUpdate("evaka.child-sticky-note.update"),
     ChildStickyNoteDelete("evaka.child-sticky-note.delete"),
     ChildVasuDocumentsRead("evaka.child.vasu-documents.read"),
+    CitizenChildrenRead("evaka.citizen.children.read", securityEvent = true, securityLevel = "high"),
     CitizenLogin("evaka.citizen.login", securityEvent = true, securityLevel = "high"),
     DaycareGroupPlacementCreate("evaka.daycare-group-placement.create"),
     DaycareGroupPlacementDelete("evaka.daycare-group-placement.delete"),
