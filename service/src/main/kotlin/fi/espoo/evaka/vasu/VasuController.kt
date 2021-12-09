@@ -9,6 +9,7 @@ import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -153,23 +154,15 @@ class VasuController(
         @RequestBody body: EditFollowupEntryRequest
     ) {
         Audit.VasuDocumentEditFollowupEntry.log(id, entryId)
-        accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE_OWN_FOLLOWUP_ENTRY, id)
+        accessControl.requirePermissionFor(user, Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY, VasuDocumentFollowupEntryId(id, entryId))
         db.transaction { tx ->
             val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
-            val entry = vasu.content.findFollowupEntryWithId(entryId) ?: throw NotFound("Entry with $entryId not found")
 
-            val updateAnyAllowedBy = Action.VasuDocument.UPDATE_ANY_FOLLOWUP_ENTRY.defaultRoles().toTypedArray()
-            val userCanUpdateAnyEntry = user.hasOneOfRoles(*updateAnyAllowedBy)
-
-            if (entry.authorId != user.id && !userCanUpdateAnyEntry) {
-                throw Forbidden("Permission denied")
-            }
-
-            val editor = tx.getEmployee(EmployeeId(user.id))
+            val editedBy = tx.getEmployee(EmployeeId(user.id))
 
             tx.updateVasuDocumentMaster(
                 id,
-                vasu.content.editFollowupEntry(entryId, editor, body.text),
+                vasu.content.editFollowupEntry(entryId, editedBy, body.text),
                 vasu.authorsContent,
                 vasu.vasuDiscussionContent,
                 vasu.evaluationDiscussionContent

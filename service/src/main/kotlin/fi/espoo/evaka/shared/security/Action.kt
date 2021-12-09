@@ -479,14 +479,21 @@ sealed interface Action {
     enum class VasuDocument(private val roles: EnumSet<UserRole>) : Action {
         READ(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         UPDATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        UPDATE_OWN_FOLLOWUP_ENTRY(ADMIN, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        UPDATE_ANY_FOLLOWUP_ENTRY(ADMIN, UNIT_SUPERVISOR),
         EVENT_PUBLISHED(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         EVENT_MOVED_TO_READY(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         EVENT_RETURNED_TO_READY(UNIT_SUPERVISOR),
         EVENT_MOVED_TO_REVIEWED(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         EVENT_RETURNED_TO_REVIEWED(),
         EVENT_MOVED_TO_CLOSED(),
+        ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+
+    enum class VasuDocumentFollowup(private val roles: EnumSet<UserRole>) : Action {
+        UPDATE_FOLLOWUP_ENTRY(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

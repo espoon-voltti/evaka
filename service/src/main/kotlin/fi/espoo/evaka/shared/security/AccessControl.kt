@@ -49,6 +49,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -59,6 +60,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
+import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
@@ -730,6 +732,35 @@ WHERE employee_id = :userId
             action = action,
             mapping = permittedRoleActions::vasuDocumentActions
         )
+    }
+
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
+        if (action != Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY) {
+            throw Forbidden()
+        }
+        val mapping = permittedRoleActions::vasuDocumentFollowupActions
+
+        val globalRoles = when (user) {
+            is AuthenticatedUser.Employee -> user.globalRoles
+            else -> user.roles
+        }
+        if (globalRoles.any { it == UserRole.ADMIN }) {
+            return
+        }
+
+        val roles = acl.getRolesForVasuDocument(user, id.first).roles
+        if (roles.any { mapping(it).contains(action) }) {
+            return
+        }
+
+        Database(jdbi).connect { db ->
+            db.read { tx ->
+                val entry = tx.getVasuFollowupEntry(id)
+                if (entry.authorId != user.id) {
+                    throw Forbidden()
+                }
+            }
+        }
     }
 
     fun requirePermissionFor(
