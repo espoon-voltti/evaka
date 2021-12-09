@@ -45,6 +45,7 @@ import MessagesPage from './components/messages/MessagesPage'
 import { MessageContextProvider } from './state/messages'
 import MessageEditorPage from './components/messages/MessageEditorPage'
 import UnitList from './components/UnitList'
+import UnreadMessagesPage from './components/messages/UnreadMessagesPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -218,6 +219,11 @@ function MessagesRouter() {
     <MessageContextProvider>
       <Switch>
         <Route exact path={path} component={requirePinAuth(MessagesPage)} />
+        <Route
+          exact
+          path={`${path}/unread-messages`}
+          component={UnreadMessagesPage}
+        />
         <Route
           exact
           path={`${path}/:childId/new-message`}

@@ -13,7 +13,8 @@ import {
   PostMessageBody,
   ReplyToMessageBody,
   ThreadReply,
-  UnreadCountByAccount
+  UnreadCountByAccount,
+  UnreadCountByAccountAndGroup
 } from 'lib-common/generated/api-types/messaging'
 import {
   deserializeMessageThread,
@@ -40,6 +41,15 @@ export async function getUnreadCounts(): Promise<
 > {
   return client
     .get<JsonOf<UnreadCountByAccount[]>>(`/messages/unread`)
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getUnreadCountsByUnit(
+  unitId: UUID
+): Promise<Result<UnreadCountByAccountAndGroup[]>> {
+  return client
+    .get<JsonOf<UnreadCountByAccountAndGroup[]>>(`/messages/unread/${unitId}`)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

@@ -16,6 +16,14 @@ export const fontWeights = {
   bold: 700
 }
 
+export const fontSizesMobile = {
+  h1: '24px',
+  h2: '22px',
+  h3: '18px',
+  h4: '16px',
+  nav: '14px'
+}
+
 type HeadingProps = BaseProps & {
   fitted?: boolean
   'data-qa'?: string
