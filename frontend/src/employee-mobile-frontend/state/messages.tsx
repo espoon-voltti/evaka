@@ -123,8 +123,9 @@ export const MessageContextProvider = React.memo(
     const [page, setPage] = useState<number>(1)
     const [pages, setPages] = useState<number>()
     const { user, loggedIn } = useContext(UserContext)
-    const { unitInfoResponse } = useContext(UnitContext)
+    const { unitInfoResponse, reloadUnreadCounts } = useContext(UnitContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
+
     const selectedUnit = useMemo(
       () =>
         unitInfoResponse
@@ -210,13 +211,14 @@ export const MessageContextProvider = React.memo(
       setReceivedMessagesResult
     )
 
-    useEffect(() => {
-      if (selectedAccount) {
-        loadReceivedMessages(selectedAccount.id, page, PAGE_SIZE)
-      }
-    }, [loadReceivedMessages, page, selectedAccount])
-
     const [selectedThread, setSelectedThread] = useState<MessageThread>()
+
+    useEffect(() => {
+      if (selectedAccount && !selectedThread) {
+        loadReceivedMessages(selectedAccount.id, page, PAGE_SIZE)
+        reloadUnreadCounts()
+      }
+    }, [loadReceivedMessages, reloadUnreadCounts, page, selectedAccount, selectedThread])
 
     const selectThread = useCallback(
       (thread: MessageThread | undefined) => {
