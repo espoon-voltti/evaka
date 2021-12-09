@@ -590,7 +590,9 @@ export const fi = {
         tuesday: 'Tiistai',
         wednesday: 'Keskiviikko',
         thursday: 'Torstai',
-        friday: 'Perjantai'
+        friday: 'Perjantai',
+        saturday: 'Lauantai',
+        sunday: 'Sunnuntai'
       },
       errors: {
         required: 'Pakollinen tieto'

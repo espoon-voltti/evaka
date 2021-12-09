@@ -95,7 +95,7 @@ describe('Child Information - daily service times', () => {
   })
 
   test('set regular daily service times', async () => {
-    const editor = await section.edit()
+    let editor = await section.edit()
     await editor.selectRegularTime()
     await editor.fillTimeRange('regular', '09:00', '17:00')
     await editor.submit()
@@ -108,6 +108,11 @@ describe('Child Information - daily service times', () => {
       () => section.timesText,
       'maanantai-perjantai 09:00–17:00'
     )
+
+    // Check that initial values are correct when editing
+    editor = await section.edit()
+    await waitUntilTrue(() => editor.regularTimeIsSelected())
+    await waitUntilTrue(() => editor.hasTimeRange('regular', '09:00', '17:00'))
   })
 
   test('cannot save irregular without setting times', async () => {
@@ -117,12 +122,14 @@ describe('Child Information - daily service times', () => {
   })
 
   test('set irregular daily service times', async () => {
-    const editor = await section.edit()
+    let editor = await section.edit()
     await editor.selectIrregularTime()
     await editor.selectDay('monday')
     await editor.fillTimeRange('monday', '08:15', '16:45')
     await editor.selectDay('friday')
     await editor.fillTimeRange('friday', '09:00', '13:30')
+    await editor.selectDay('sunday')
+    await editor.fillTimeRange('sunday', '13:50', '09:20')
     await editor.submit()
 
     await waitUntilEqual(
@@ -131,7 +138,20 @@ describe('Child Information - daily service times', () => {
     )
     await waitUntilEqual(
       () => section.timesText,
-      'maanantai 08:15-16:45, perjantai 09:00-13:30'
+      'maanantai 08:15-16:45, perjantai 09:00-13:30, sunnuntai 13:50-09:20'
     )
+
+    // Check that initial values are correct when editing
+    editor = await section.edit()
+    await waitUntilTrue(() => editor.dayIsSelected('monday'))
+    await waitUntilTrue(() => editor.hasTimeRange('monday', '08:15', '16:45'))
+    await waitUntilFalse(() => editor.dayIsSelected('tuesday'))
+    await waitUntilFalse(() => editor.dayIsSelected('wednesday'))
+    await waitUntilFalse(() => editor.dayIsSelected('thursday'))
+    await waitUntilTrue(() => editor.dayIsSelected('friday'))
+    await waitUntilTrue(() => editor.hasTimeRange('friday', '09:00', '13:30'))
+    await waitUntilFalse(() => editor.dayIsSelected('saturday'))
+    await waitUntilTrue(() => editor.dayIsSelected('sunday'))
+    await waitUntilTrue(() => editor.hasTimeRange('sunday', '13:50', '09:20'))
   })
 })

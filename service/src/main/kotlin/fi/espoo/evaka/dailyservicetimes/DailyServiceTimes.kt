@@ -47,7 +47,9 @@ sealed class DailyServiceTimes(
         val tuesday: TimeRange?,
         val wednesday: TimeRange?,
         val thursday: TimeRange?,
-        val friday: TimeRange?
+        val friday: TimeRange?,
+        val saturday: TimeRange?,
+        val sunday: TimeRange?,
     ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR)
 
     @JsonTypeName("VARIABLE_TIME")
@@ -71,7 +73,11 @@ SELECT
     thursday_start,
     thursday_end,
     friday_start,
-    friday_end
+    friday_end,
+    saturday_start,
+    saturday_end,
+    sunday_start,
+    sunday_end
 FROM daily_service_time
 WHERE child_id = :childId
         """.trimIndent()
@@ -94,6 +100,8 @@ fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
             wednesday = toTimeRange(row, "wednesday"),
             thursday = toTimeRange(row, "thursday"),
             friday = toTimeRange(row, "friday"),
+            saturday = toTimeRange(row, "saturday"),
+            sunday = toTimeRange(row, "sunday"),
         )
         DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimes.VariableTimes
     }.exhaust()
@@ -116,7 +124,10 @@ fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: Dail
     }
 }
 
-private fun Database.Transaction.upsertRegularChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes.RegularTimes) {
+private fun Database.Transaction.upsertRegularChildDailyServiceTimes(
+    childId: UUID,
+    times: DailyServiceTimes.RegularTimes
+) {
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
@@ -164,7 +175,10 @@ private fun Database.Transaction.upsertRegularChildDailyServiceTimes(childId: UU
         .execute()
 }
 
-private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes.IrregularTimes) {
+private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(
+    childId: UUID,
+    times: DailyServiceTimes.IrregularTimes
+) {
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
@@ -174,7 +188,9 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
             tuesday_start, tuesday_end,
             wednesday_start, wednesday_end, 
             thursday_start, thursday_end, 
-            friday_start, friday_end
+            friday_start, friday_end,
+            saturday_start, saturday_end,
+            sunday_start, sunday_end
         )
         VALUES (
             :childId, 'IRREGULAR'::daily_service_time_type, 
@@ -183,7 +199,9 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
             :tuesdayStart, :tuesdayEnd,
             :wednesdayStart, :wednesdayEnd, 
             :thursdayStart, :thursdayEnd, 
-            :fridayStart, :fridayEnd
+            :fridayStart, :fridayEnd,
+            :saturdayStart, :saturdayEnd,
+            :sundayStart, :sundayEnd
         )
         
         ON CONFLICT (child_id) DO UPDATE
@@ -201,7 +219,11 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
             thursday_start = :thursdayStart, 
             thursday_end = :thursdayEnd, 
             friday_start = :fridayStart, 
-            friday_end = :fridayEnd
+            friday_end = :fridayEnd,
+            saturday_start = :saturdayStart, 
+            saturday_end = :saturdayEnd,
+            sunday_start = :sundayStart, 
+            sunday_end = :sundayEnd
             
     """.trimIndent()
 
@@ -217,6 +239,10 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
         .bind("thursdayEnd", times.thursday?.end)
         .bind("fridayStart", times.friday?.start)
         .bind("fridayEnd", times.friday?.end)
+        .bind("saturdayStart", times.saturday?.start)
+        .bind("saturdayEnd", times.saturday?.end)
+        .bind("sundayStart", times.sunday?.start)
+        .bind("sundayEnd", times.sunday?.end)
         .execute()
 }
 
@@ -230,11 +256,15 @@ private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: U
             tuesday_start, tuesday_end,
             wednesday_start, wednesday_end, 
             thursday_start, thursday_end, 
-            friday_start, friday_end
+            friday_start, friday_end,
+            saturday_start, saturday_end,
+            sunday_start, sunday_end
         )
         VALUES (
             :childId, 'VARIABLE_TIME'::daily_service_time_type, 
             NULL, NULL, 
+            NULL, NULL,
+            NULL, NULL,
             NULL, NULL,
             NULL, NULL,
             NULL, NULL,
@@ -257,7 +287,11 @@ private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: U
             thursday_start = NULL, 
             thursday_end = NULL, 
             friday_start = NULL, 
-            friday_end = NULL
+            friday_end = NULL,
+            saturday_start = NULL, 
+            saturday_end = NULL,
+            sunday_start = NULL, 
+            sunday_end = NULL
             
     """.trimIndent()
 

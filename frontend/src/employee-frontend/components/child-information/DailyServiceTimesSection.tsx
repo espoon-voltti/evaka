@@ -5,9 +5,9 @@
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { H2, Label, P } from 'lib-components/typography'
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
-import { useTranslation } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -49,7 +49,9 @@ const weekdays = [
   'tuesday',
   'wednesday',
   'thursday',
-  'friday'
+  'friday',
+  'saturday',
+  'sunday'
 ] as const
 
 type Weekday = typeof weekdays[number]
@@ -83,6 +85,8 @@ const emptyForm: FormData = {
   wednesday: emptyRange,
   thursday: emptyRange,
   friday: emptyRange,
+  saturday: emptyRange,
+  sunday: emptyRange,
   variableTimes: false
 }
 
@@ -94,7 +98,138 @@ interface ValidationResult {
   wednesday: NullableValues<TimeInputRange>
   thursday: NullableValues<TimeInputRange>
   friday: NullableValues<TimeInputRange>
+  saturday: NullableValues<TimeInputRange>
+  sunday: NullableValues<TimeInputRange>
   variableTimes: boolean
+}
+
+function required(i18n: Translations, v: string): string | null {
+  return v.trim().length === 0
+    ? i18n.childInformation.dailyServiceTimes.errors.required
+    : null
+}
+
+function validateWeekday(
+  i18n: Translations,
+  data: FormData,
+  day: Weekday
+): NullableValues<TimeInputRange> {
+  return {
+    start:
+      data.type === 'IRREGULAR' && data[day].selected
+        ? required(i18n, data[day].start)
+        : null,
+    end:
+      data.type === 'IRREGULAR' && data[day].selected
+        ? required(i18n, data[day].end)
+        : null
+  }
+}
+
+function validate(
+  i18n: Translations,
+  formData: FormData | null
+): ValidationResult | null {
+  if (formData === null) {
+    return null
+  } else {
+    return {
+      regular: {
+        start:
+          formData.type === 'REGULAR'
+            ? required(i18n, formData.regular.start)
+            : null,
+        end:
+          formData.type === 'REGULAR'
+            ? required(i18n, formData.regular.end)
+            : null
+      },
+      irregular:
+        formData.type === 'IRREGULAR' &&
+        !weekdays.some((day) => formData[day].selected)
+          ? true
+          : null,
+      monday: validateWeekday(i18n, formData, 'monday'),
+      tuesday: validateWeekday(i18n, formData, 'tuesday'),
+      wednesday: validateWeekday(i18n, formData, 'wednesday'),
+      thursday: validateWeekday(i18n, formData, 'thursday'),
+      friday: validateWeekday(i18n, formData, 'friday'),
+      saturday: validateWeekday(i18n, formData, 'saturday'),
+      sunday: validateWeekday(i18n, formData, 'sunday'),
+      variableTimes: formData.type === 'VARIABLE_TIME'
+    }
+  }
+}
+
+function saveFormData(id: UUID, formData: FormData) {
+  switch (formData.type) {
+    case 'NOT_SET':
+      return deleteChildDailyServiceTimes(id)
+    case 'REGULAR': {
+      const data: RegularDailyServiceTimes = {
+        type: 'REGULAR',
+        regularTimes: {
+          start: formData.regular.start,
+          end: formData.regular.end
+        }
+      }
+      return putChildDailyServiceTimes(id, data)
+    }
+    case 'IRREGULAR': {
+      const data: IrregularDailyServiceTimes = {
+        type: 'IRREGULAR',
+        monday: formData.monday.selected
+          ? {
+              start: formData.monday.start,
+              end: formData.monday.end
+            }
+          : null,
+        tuesday: formData.tuesday.selected
+          ? {
+              start: formData.tuesday.start,
+              end: formData.tuesday.end
+            }
+          : null,
+        wednesday: formData.wednesday.selected
+          ? {
+              start: formData.wednesday.start,
+              end: formData.wednesday.end
+            }
+          : null,
+        thursday: formData.thursday.selected
+          ? {
+              start: formData.thursday.start,
+              end: formData.thursday.end
+            }
+          : null,
+        friday: formData.friday.selected
+          ? {
+              start: formData.friday.start,
+              end: formData.friday.end
+            }
+          : null,
+        saturday: formData.saturday.selected
+          ? {
+              start: formData.saturday.start,
+              end: formData.saturday.end
+            }
+          : null,
+        sunday: formData.sunday.selected
+          ? {
+              start: formData.sunday.start,
+              end: formData.sunday.end
+            }
+          : null
+      }
+      return putChildDailyServiceTimes(id, data)
+    }
+    case 'VARIABLE_TIME': {
+      const data: VariableDailyServiceTimes = {
+        type: 'VARIABLE_TIME'
+      }
+      return putChildDailyServiceTimes(id, data)
+    }
+  }
 }
 
 interface Props {
@@ -164,6 +299,16 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
             selected: apiData.value.friday !== null,
             start: apiData.value.friday?.start ?? '',
             end: apiData.value.friday?.end ?? ''
+          },
+          saturday: {
+            selected: apiData.value.saturday !== null,
+            start: apiData.value.saturday?.start ?? '',
+            end: apiData.value.saturday?.end ?? ''
+          },
+          sunday: {
+            selected: apiData.value.sunday !== null,
+            start: apiData.value.sunday?.start ?? '',
+            end: apiData.value.sunday?.end ?? ''
           }
         })
       } else if (isVariableTime(apiData.value)) {
@@ -177,134 +322,49 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     }
   }
 
-  const required = (v: string) =>
-    v.trim().length === 0
-      ? i18n.childInformation.dailyServiceTimes.errors.required
-      : null
+  const formIsValid = useMemo(
+    () =>
+      validationResult !== null &&
+      validationResult.irregular === null &&
+      Object.values(validationResult.regular).find((v) => v !== null) ===
+        undefined &&
+      Object.values(validationResult.monday).find((v) => v !== null) ===
+        undefined &&
+      Object.values(validationResult.tuesday).find((v) => v !== null) ===
+        undefined &&
+      Object.values(validationResult.wednesday).find((v) => v !== null) ===
+        undefined &&
+      Object.values(validationResult.thursday).find((v) => v !== null) ===
+        undefined &&
+      Object.values(validationResult.friday).find((v) => v !== null) ===
+        undefined,
+    [validationResult]
+  )
 
-  const validateWeekday = (
-    data: FormData,
-    day: Weekday
-  ): NullableValues<TimeInputRange> => ({
-    start:
-      data.type === 'IRREGULAR' && data[day].selected
-        ? required(data[day].start)
-        : null,
-    end:
-      data.type === 'IRREGULAR' && data[day].selected
-        ? required(data[day].end)
-        : null
-  })
+  useEffect(() => {
+    setValidationResult(validate(i18n, formData))
+  }, [i18n, formData])
 
-  const validate = () => {
-    if (formData === null) {
-      setValidationResult(null)
-    } else {
-      setValidationResult({
-        regular: {
-          start:
-            formData.type === 'REGULAR'
-              ? required(formData.regular.start)
-              : null,
-          end:
-            formData.type === 'REGULAR' ? required(formData.regular.end) : null
-        },
-        irregular:
-          formData.type === 'IRREGULAR' &&
-          !weekdays.some((day) => formData[day].selected)
-            ? true
-            : null,
-        monday: validateWeekday(formData, 'monday'),
-        tuesday: validateWeekday(formData, 'tuesday'),
-        wednesday: validateWeekday(formData, 'wednesday'),
-        thursday: validateWeekday(formData, 'thursday'),
-        friday: validateWeekday(formData, 'friday'),
-        variableTimes: formData.type === 'VARIABLE_TIME'
-      })
-    }
-  }
-
-  useEffect(validate, [formData]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const onSubmit = () => {
+  const onSubmit = useCallback(() => {
     if (!formIsValid || !formData) return
-
     setSubmitting(true)
 
-    let apiCall
-    if (formData.type === 'NOT_SET') {
-      apiCall = deleteChildDailyServiceTimes(id)
-    } else if (formData.type === 'REGULAR') {
-      const data: RegularDailyServiceTimes = {
-        type: 'REGULAR',
-        regularTimes: {
-          start: formData.regular.start,
-          end: formData.regular.end
+    saveFormData(id, formData)
+      .then((res) => {
+        if (res.isSuccess) {
+          setFormData(null)
+          loadData(id)
+        } else {
+          setErrorMessage({
+            type: 'error',
+            title: i18n.common.error.unknown,
+            text: i18n.common.error.saveFailed,
+            resolveLabel: i18n.common.ok
+          })
         }
-      }
-      apiCall = putChildDailyServiceTimes(id, data)
-    } else if (formData.type === 'IRREGULAR') {
-      const data: IrregularDailyServiceTimes = {
-        type: 'IRREGULAR',
-        monday: formData.monday.selected
-          ? {
-              start: formData.monday.start,
-              end: formData.monday.end
-            }
-          : null,
-        tuesday: formData.tuesday.selected
-          ? {
-              start: formData.tuesday.start,
-              end: formData.tuesday.end
-            }
-          : null,
-        wednesday: formData.wednesday.selected
-          ? {
-              start: formData.wednesday.start,
-              end: formData.wednesday.end
-            }
-          : null,
-        thursday: formData.thursday.selected
-          ? {
-              start: formData.thursday.start,
-              end: formData.thursday.end
-            }
-          : null,
-        friday: formData.friday.selected
-          ? {
-              start: formData.friday.start,
-              end: formData.friday.end
-            }
-          : null
-      }
-      apiCall = putChildDailyServiceTimes(id, data)
-    } else if (formData.type === 'VARIABLE_TIME') {
-      const data: VariableDailyServiceTimes = {
-        type: 'VARIABLE_TIME'
-      }
-      apiCall = putChildDailyServiceTimes(id, data)
-    }
-
-    if (apiCall) {
-      apiCall
-        .then((res) => {
-          if (res.isSuccess) {
-            setFormData(null)
-            loadData(id)
-          } else {
-            setErrorMessage({
-              type: 'error',
-              title: i18n.common.error.unknown,
-              text: i18n.common.error.saveFailed,
-              resolveLabel: i18n.common.ok
-            })
-          }
-        })
-        .finally(() => setSubmitting(false))
-    } else {
-      setSubmitting(false)
-    }
-  }
+      })
+      .finally(() => setSubmitting(false))
+  }, [formData, formIsValid, i18n, id, loadData, setErrorMessage])
 
   const setType = (type: 'NOT_SET' | DailyServiceTimesType) => () =>
     setFormData((old) => (old !== null ? { ...old, type } : null))
@@ -316,21 +376,6 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     setFormData((old) =>
       old !== null ? { ...old, [wd]: { ...old[wd], selected: value } } : null
     )
-
-  const formIsValid =
-    validationResult !== null &&
-    validationResult.irregular === null &&
-    Object.values(validationResult.regular).find((v) => v !== null) ===
-      undefined &&
-    Object.values(validationResult.monday).find((v) => v !== null) ===
-      undefined &&
-    Object.values(validationResult.tuesday).find((v) => v !== null) ===
-      undefined &&
-    Object.values(validationResult.wednesday).find((v) => v !== null) ===
-      undefined &&
-    Object.values(validationResult.thursday).find((v) => v !== null) ===
-      undefined &&
-    Object.values(validationResult.friday).find((v) => v !== null) === undefined
 
   return (
     <CollapsibleContentArea

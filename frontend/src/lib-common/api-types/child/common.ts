@@ -19,6 +19,8 @@ export interface IrregularDailyServiceTimes {
   wednesday: TimeRange | null
   thursday: TimeRange | null
   friday: TimeRange | null
+  saturday: TimeRange | null
+  sunday: TimeRange | null
 }
 
 export interface VariableDailyServiceTimes {

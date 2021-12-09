@@ -231,6 +231,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             wednesday = TimeRange("08:17", "17:19"),
             thursday = null,
             friday = TimeRange("08:19", "17:19"),
+            saturday = null,
+            sunday = TimeRange("18:00", "10:30"),
         )
         db.transaction { tx ->
             tx.upsertChildDailyServiceTimes(
