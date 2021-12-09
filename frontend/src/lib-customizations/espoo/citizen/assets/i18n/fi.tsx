@@ -1683,6 +1683,7 @@ export default {
     title: 'Lapset',
     pageDescription:
       'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
-    noChildren: 'Ei lapsia'
+    noChildren: 'Ei lapsia',
+    placementTermination: { title: 'Paikan irtisanominen' }
   }
 }

@@ -12,20 +12,20 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
-@RestController("/citizen/placements")
+@RestController
 class PlacementControllerCitizen(
     private val accessControl: AccessControl
 ) {
-    @GetMapping()
+    @GetMapping("/citizen/children/{childId}/placements")
     fun getPlacements(
         db: Database.Connection,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @RequestParam(value = "childId") childId: UUID,
+        @PathVariable childId: UUID,
     ): List<ChildPlacement> {
         Audit.PlacementSearch.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PLACEMENT, childId)

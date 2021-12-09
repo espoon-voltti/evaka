@@ -1709,7 +1709,8 @@ const sv: Translations = {
   children: {
     title: 'Barn',
     pageDescription: 'Your children are listed on this page.', // TODO copy
-    noChildren: 'Inga barn'
+    noChildren: 'Inga barn',
+    placementTermination: { title: 'Placement termination' } // TODO copy
   }
 }
 

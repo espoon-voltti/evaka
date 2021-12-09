@@ -8,16 +8,6 @@
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.shared.auth.AuthenticatedUserType
-*/
-export type AuthenticatedUserType = 
-  | 'citizen'
-  | 'citizen_weak'
-  | 'employee'
-  | 'mobile'
-  | 'system'
-
-/**
 * Generated from fi.espoo.evaka.shared.security.CitizenFeatures
 */
 export interface CitizenFeatures {

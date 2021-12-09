@@ -9,19 +9,17 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.auth.AuthenticatedUserType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -302,7 +300,7 @@ fun Database.Read.getDaycarePlacements(
         .bind("to", endDate)
         .bindNullable("daycareId", daycareId)
         .bindNullable("childId", childId)
-        .map(toDaycarePlacementDetails)
+        .mapTo<DaycarePlacementDetails>()
         .toList()
 }
 
@@ -338,23 +336,16 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
         .firstOrNull()
 }
 
-@PropagateNull("id")
-data class TerminatedBy(
-    val id: UUID,
-    val name: String,
-    val type: AuthenticatedUserType
-)
-
 data class ChildPlacement(
     val childId: ChildId,
     val placementId: PlacementId,
     val placementType: PlacementType,
     val placementStartDate: LocalDate,
     val placementEndDate: LocalDate,
-    val terminationRequestedDate: LocalDate?,
-    @Nested
-    val terminatedBy: TerminatedBy?,
     val placementUnitName: String,
+    val terminationRequestedDate: LocalDate?,
+    @Nested("terminated_by")
+    val terminatedBy: EvakaUser?,
     val currentGroupName: String
 )
 
@@ -365,11 +356,13 @@ SELECT
     p.id AS placement_id,
     p.type AS placement_type,
     p.start_date AS placement_start_date,
-    p.end_date AS placement_end_end,
+    p.end_date AS placement_end_date,
     p.termination_requested_date,
     d.name AS placement_unit_name,
-    COALESCE(dg.name, '') AS currentGroupName,
-    evaka_user AS terminatedBy    
+    COALESCE(dg.name, '') AS current_group_name,
+    evaka_user.id as terminated_by_id,
+    evaka_user.name as terminated_by_name,
+    evaka_user.type as terminated_by_type
 FROM placement p
 JOIN daycare d ON p.unit_id = d.id
 JOIN person child ON p.child_id = child.id
@@ -597,35 +590,5 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
         startDate = rs.getDate("placement_start").toLocalDate(),
         endDate = rs.getDate("placement_end").toLocalDate(),
         type = rs.getEnum("placement_type")
-    )
-}
-
-private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycarePlacementDetails = { rs, ctx ->
-    DaycarePlacementDetails(
-        id = PlacementId(rs.getUUID("id")),
-        child = ChildBasics(
-            id = rs.getUUID("child_id"),
-            socialSecurityNumber = rs.getString("social_security_number"),
-            firstName = rs.getString("first_name"),
-            lastName = rs.getString("last_name"),
-            dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
-        ),
-        daycare = DaycareBasics(
-            id = DaycareId(rs.getUUID("unit_id")),
-            name = rs.getString("daycare_name"),
-            area = rs.getString("area_name"),
-            providerType = rs.getEnum("provider_type"),
-            enabledPilotFeatures = ctx.mapColumn<Array<PilotFeature>>(rs, "enabled_pilot_features").toList()
-        ),
-        startDate = rs.getDate("start_date").toLocalDate(),
-        endDate = rs.getDate("end_date").toLocalDate(),
-        type = rs.getEnum("type"),
-        missingServiceNeedDays = rs.getInt("missing_service_need"),
-        terminationRequestedDate = rs.getDate("termination_requested_date")?.toLocalDate(),
-        terminatedBy = if (rs.getNullableUUID("terminated_by_id") != null) TerminatedBy(
-            id = rs.getUUID("terminated_by_id"),
-            name = rs.getString("terminated_by_name"),
-            type = rs.getEnum("terminated_by_type")
-        ) else null
     )
 }

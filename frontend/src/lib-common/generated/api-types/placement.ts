@@ -7,7 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { AuthenticatedUserType } from './shared'
+import { EvakaUser } from './user'
 import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
@@ -35,7 +35,7 @@ export interface ChildPlacement {
   placementStartDate: LocalDate
   placementType: PlacementType
   placementUnitName: string
-  terminatedBy: TerminatedBy | null
+  terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
 }
 
@@ -75,7 +75,7 @@ export interface DaycarePlacementWithDetails {
   missingServiceNeedDays: number
   serviceNeeds: ServiceNeed[]
   startDate: LocalDate
-  terminatedBy: TerminatedBy | null
+  terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
 }
@@ -226,13 +226,4 @@ export type PlacementType =
 export interface PlacementUpdateRequestBody {
   endDate: LocalDate
   startDate: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.placement.TerminatedBy
-*/
-export interface TerminatedBy {
-  id: UUID
-  name: string
-  type: AuthenticatedUserType
 }

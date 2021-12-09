@@ -1752,7 +1752,8 @@ const en: Translations = {
   children: {
     title: 'Children',
     pageDescription: 'Your children are listed on this page.', // TODO copy
-    noChildren: 'No children'
+    noChildren: 'No children',
+    placementTermination: { title: 'Placement termination' } // TODO copy
   }
 }
 
