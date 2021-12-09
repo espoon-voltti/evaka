@@ -171,7 +171,7 @@ describe('Message editor in child page', () => {
 describe('Child message thread', () => {
   beforeEach(async () => await initCitizenPage())
 
-  test('Employee can reply to thread', async () => {
+  test('Employee does not see messages to personal account', async () => {
     const title = 'Otsikko'
     const content = 'Testiviestin sisältö'
     const receivers = [`${empLastName} ${empFirstName}`]
@@ -182,15 +182,8 @@ describe('Child message thread', () => {
 
     await listPage.gotoMessages()
     await pinLoginPage.login(employeeName, pin)
-    await messagesPage.messagesExist()
-    await messagesPage.openThread()
-    await waitUntilEqual(() => threadView.countMessages(), 1)
-    await waitUntilEqual(() => threadView.getMessageContent(0), content)
 
-    const replyContent = 'Testivastauksen sisältö'
-    await threadView.replyThread(replyContent)
-    await waitUntilEqual(() => threadView.countMessages(), 2)
-    await waitUntilEqual(() => threadView.getMessageContent(1), replyContent)
+    await messagesPage.messagesDontExist()
   })
 
   test("Staff sees citizen's message for group", async () => {

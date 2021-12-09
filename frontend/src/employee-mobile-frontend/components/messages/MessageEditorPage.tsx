@@ -33,20 +33,30 @@ import { Result } from 'lib-common/api'
 
 export default function MessageEditorPage() {
   const { i18n } = useTranslation()
-  const { childId, unitId } = useParams<{
+  const { childId, groupId, unitId } = useParams<{
     unitId: UUID
-    groupId: UUID | 'all'
+    groupId: UUID
     childId: UUID
   }>()
   const {
     nestedAccounts,
-    selectedSender,
+    selectedAccount,
     selectedUnit,
-    loadMessagesForSelectedAccount,
-    loadNestedAccounts
+    loadNestedAccounts,
+    groupAccounts,
+    setSelectedAccount
   } = useContext(MessageContext)
 
   useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
+
+  useEffect(() => {
+    const maybeAccount = groupAccounts.find(
+      ({ daycareGroup }) => daycareGroup?.id === groupId
+    )?.account
+    if (maybeAccount) {
+      setSelectedAccount(maybeAccount)
+    }
+  }, [groupAccounts, setSelectedAccount, groupId])
 
   const [sending, setSending] = useState(false)
 
@@ -73,7 +83,6 @@ export default function MessageEditorPage() {
       setSending(true)
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
-          loadMessagesForSelectedAccount()
           history.back()
         } else {
           // TODO handle eg. expired pin session correctly
@@ -82,33 +91,22 @@ export default function MessageEditorPage() {
         setSending(false)
       })
     },
-    [loadMessagesForSelectedAccount]
+    []
   )
 
-  const onDiscard = useCallback(
-    (accountId: UUID, draftId: UUID) => {
-      void deleteDraft(accountId, draftId)
-        .then(() => loadMessagesForSelectedAccount())
-        .then(() => history.back())
-    },
-    [loadMessagesForSelectedAccount]
-  )
+  const onDiscard = useCallback((accountId: UUID, draftId: UUID) => {
+    void deleteDraft(accountId, draftId).then(() => history.back())
+  }, [])
 
-  const onHide = useCallback(
-    (didChanges: boolean) => {
-      if (didChanges) {
-        loadMessagesForSelectedAccount()
-      }
-      history.back()
-    },
-    [loadMessagesForSelectedAccount]
-  )
+  const onHide = useCallback(() => {
+    history.back()
+  }, [])
 
   return (
     <>
       {nestedAccounts.isSuccess &&
         selectedReceivers &&
-        selectedSender &&
+        selectedAccount &&
         selectedUnit && (
           <MessageEditor
             availableReceivers={selectedReceivers}
@@ -116,8 +114,8 @@ export default function MessageEditorPage() {
               featureFlags.experimental?.messageAttachments ?? false
             }
             defaultSender={{
-              value: selectedSender.id,
-              label: selectedSender.name
+              value: selectedAccount.id,
+              label: selectedAccount.name
             }}
             deleteAttachment={deleteAttachment}
             draftContent={undefined}

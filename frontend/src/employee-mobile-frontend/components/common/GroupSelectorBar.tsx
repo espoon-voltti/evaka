@@ -55,6 +55,7 @@ export interface Props {
   onSearch?: () => void
   countInfo?: CountInfo
   groups?: GroupInfo[]
+  includeSelectAll: boolean
 }
 
 export const GroupSelectorBar = React.memo(function GroupSelectorBar({
@@ -62,7 +63,8 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
   onChangeGroup,
   onSearch,
   countInfo,
-  groups
+  groups,
+  includeSelectAll
 }: Props) {
   const { i18n } = useTranslation()
   const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
@@ -70,6 +72,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
     x: showGroupSelector ? 1 : 0,
     config: { duration: 100 }
   })
+  const hasMultipleGroups = groups && groups.length > 1
   return (
     <GroupContainer data-qa={`selected-group--${selectedGroup?.id ?? 'all'}`}>
       <GroupSelectorWrapper
@@ -83,7 +86,13 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
             onClick={() => {
               setShowGroupSelector(!showGroupSelector)
             }}
-            icon={showGroupSelector ? faAngleUp : faAngleDown}
+            icon={
+              hasMultipleGroups
+                ? showGroupSelector
+                  ? faAngleUp
+                  : faAngleDown
+                : undefined
+            }
             iconRight
             data-qa="group-selector-button"
           />
@@ -97,6 +106,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
           }}
           countInfo={countInfo}
           groups={groups}
+          includeSelectAll={includeSelectAll}
           data-qa="group-selector"
         />
       </GroupSelectorWrapper>

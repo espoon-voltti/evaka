@@ -19,6 +19,7 @@ interface GroupSelectorProps {
   onChangeGroup: (group: GroupInfo | undefined) => void
   countInfo?: CountInfo
   groups?: GroupInfo[]
+  includeSelectAll: boolean
 }
 
 export interface CountInfo {
@@ -31,7 +32,8 @@ export default function GroupSelector({
   selectedGroup,
   onChangeGroup,
   countInfo,
-  groups
+  groups,
+  includeSelectAll
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
@@ -41,18 +43,20 @@ export default function GroupSelector({
     <Wrapper>
       <ChipWrapper>
         <>
-          <ChoiceChip
-            text={`${i18n.common.all}${
-              countInfo
-                ? `(${countInfo.getPresentCount(
-                    undefined
-                  )}/${countInfo.getTotalCount(undefined)})`
-                : ''
-            }`}
-            selected={!selectedGroup}
-            onChange={() => onChangeGroup(undefined)}
-            data-qa="group--all"
-          />
+          {includeSelectAll && (
+            <ChoiceChip
+              text={`${i18n.common.all}${
+                countInfo
+                  ? `(${countInfo.getPresentCount(
+                      undefined
+                    )}/${countInfo.getTotalCount(undefined)})`
+                  : ''
+              }`}
+              selected={!selectedGroup}
+              onChange={() => onChangeGroup(undefined)}
+              data-qa="group--all"
+            />
+          )}
           <Gap horizontal size={'xxs'} />
           {(groups || unitInfo.groups).map((group) => (
             <Fragment key={group.id}>

@@ -23,7 +23,7 @@ import { defaultMargins } from 'lib-components/white-space'
 
 export default function MessagesPage() {
   const history = useHistory()
-  const { unitId, groupId: groupIdOrAll } = useParams<{
+  const { unitId, groupId } = useParams<{
     unitId: UUID
     groupId: UUID | 'all'
   }>()
@@ -31,52 +31,63 @@ export default function MessagesPage() {
   const { unitInfoResponse } = useContext(UnitContext)
 
   function changeGroup(group: GroupInfo | undefined) {
-    const groupId = group === undefined ? 'all' : group.id
-    history.push(`/units/${unitId}/groups/${groupId}/messages`)
+    if (group) history.push(`/units/${unitId}/groups/${group.id}/messages`)
   }
 
   const selectedGroup =
-    groupIdOrAll === 'all'
+    groupId === 'all'
       ? undefined
       : unitInfoResponse
-          .map((res) => res.groups.find((g) => g.id === groupIdOrAll))
+          .map((res) => res.groups.find((g) => g.id === groupId))
           .getOrElse(undefined)
 
   const {
     loadNestedAccounts,
+    setSelectedAccount,
     groupAccounts,
-    selectedSender,
-    loadMessagesWhenGroupChanges,
     receivedMessages,
-    personalAccount,
     selectedThread,
-    selectThread
+    selectThread,
+    selectedAccount
   } = useContext(MessageContext)
 
   useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
 
   useEffect(() => {
-    loadMessagesWhenGroupChanges(selectedGroup)
-  }, [selectedGroup, loadMessagesWhenGroupChanges])
+    const maybeAccount = groupAccounts.find(
+      ({ daycareGroup }) => daycareGroup?.id === groupId
+    )?.account
+    if (maybeAccount) {
+      setSelectedAccount(maybeAccount)
+    }
+  }, [groupAccounts, setSelectedAccount, groupId])
 
   const { i18n } = useTranslation()
 
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
 
-  return selectedThread && selectedSender ? (
+  return selectedThread && selectedAccount ? (
     <ContentArea
       opaque
       fullHeight
       paddingHorizontal={'zero'}
       paddingVertical={'zero'}
     >
-      <ThreadView thread={selectedThread} onBack={onBack} />
+      <ThreadView
+        thread={selectedThread}
+        onBack={onBack}
+        senderAccountId={selectedAccount.id}
+      />
     </ContentArea>
   ) : (
     <>
       <TopBarWithGroupSelector
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
+        allowedGroupIds={groupAccounts.flatMap(
+          (ga) => ga.daycareGroup?.id || []
+        )}
+        includeSelectAll={false}
       />
       {renderResult(receivedMessages, (messages) => (
         <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
@@ -90,7 +101,7 @@ export default function MessagesPage() {
                 hasUnreadMessages={thread.messages.some(
                   (item) =>
                     !item.readAt &&
-                    item.sender.id !== personalAccount?.id &&
+                    item.sender.id !== selectedAccount?.id &&
                     !groupAccounts.some(
                       (ga) => ga.account.id === item.sender.id
                     )

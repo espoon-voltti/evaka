@@ -12,19 +12,24 @@ import { UnitContext } from '../../state/unit'
 import { CountInfo } from './GroupSelector'
 import { GroupSelectorBar } from './GroupSelectorBar'
 import TopBar from './TopBar'
+import { UUID } from 'lib-common/types'
 
 interface Props {
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
+  includeSelectAll?: boolean
   toggleSearch?: () => void
   countInfo?: CountInfo | undefined
+  allowedGroupIds?: UUID[] | undefined
 }
 
 export default React.memo(function TopBarWithGroupSelector({
   onChangeGroup,
   toggleSearch,
   selectedGroup,
-  countInfo
+  countInfo,
+  includeSelectAll = true,
+  allowedGroupIds = undefined
 }: Props) {
   const history = useHistory()
   const { user } = useContext(UserContext)
@@ -44,8 +49,16 @@ export default React.memo(function TopBarWithGroupSelector({
   }, [history, user, unitInfoResponse])
 
   const groups: GroupInfo[] = useMemo(
-    () => unitInfoResponse.map(({ groups }) => groups).getOrElse([]),
-    [unitInfoResponse]
+    () =>
+      unitInfoResponse
+        .map(({ groups }) => groups)
+        .getOrElse([])
+        .filter(
+          (g) =>
+            allowedGroupIds === undefined ||
+            allowedGroupIds.findIndex((gid) => gid === g.id) > -1
+        ),
+    [unitInfoResponse, allowedGroupIds]
   )
 
   return (
@@ -58,6 +71,7 @@ export default React.memo(function TopBarWithGroupSelector({
         onSearch={toggleSearch}
         countInfo={countInfo}
         groups={groups}
+        includeSelectAll={includeSelectAll}
       />
     </>
   )

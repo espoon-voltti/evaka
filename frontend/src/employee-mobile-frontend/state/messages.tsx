@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Paged, Result, Success } from 'lib-common/api'
+import { Loading, Paged, Result } from 'lib-common/api'
 import {
   Message,
   MessageAccount,
@@ -33,7 +33,6 @@ import { UserContext } from './user'
 import { UUID } from 'lib-common/types'
 import { UnitContext } from './unit'
 import { SelectOption } from 'lib-components/molecules/Select'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 
 const PAGE_SIZE = 20
 
@@ -51,15 +50,6 @@ const appendMessageAndMoveThreadToTopOfList =
       return [addMessageToThread(message, thread), ...otherThreads]
     })
 
-export const getAccountsByUserAndUnit = (
-  groupAccounts: NestedMessageAccount[],
-  personalAccount: MessageAccount | undefined
-) => {
-  return groupAccounts
-    .map(({ account }) => account)
-    .concat(personalAccount ? [personalAccount] : [])
-}
-
 export interface MessagesState {
   nestedAccounts: Result<NestedMessageAccount[]>
   loadNestedAccounts: (unitId: UUID) => void
@@ -70,12 +60,8 @@ export interface MessagesState {
   groupAccounts: NestedMessageAccount[]
   selectedSender: MessageAccount | undefined
   selectedAccount: MessageAccount | undefined
-  personalAccount: MessageAccount | undefined
   setSelectedAccount: (account: MessageAccount | undefined) => void
   receivedMessages: Result<MessageThread[]>
-  loadMessagesForAllAccounts: () => void
-  loadMessagesForSelectedAccount: () => void
-  loadMessagesWhenGroupChanges: (selectedGroup: GroupInfo | undefined) => void
   selectedUnit: SelectOption | undefined
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
@@ -95,13 +81,9 @@ const defaultState: MessagesState = {
   setPages: () => undefined,
   selectedSender: undefined,
   selectedAccount: undefined,
-  personalAccount: undefined,
   groupAccounts: [],
   setSelectedAccount: () => undefined,
   receivedMessages: Loading.of(),
-  loadMessagesForAllAccounts: () => undefined,
-  loadMessagesForSelectedAccount: () => undefined,
-  loadMessagesWhenGroupChanges: () => undefined,
   selectedUnit: undefined,
   selectedThread: undefined,
   selectThread: () => undefined,
@@ -164,7 +146,6 @@ export const MessageContextProvider = React.memo(
 
     const [selectedAccount, setSelectedAccount] = useState<MessageAccount>()
     const [selectedSender, setSelectedSender] = useState<MessageAccount>()
-    const [personalAccount, setPersonalAccount] = useState<MessageAccount>()
     const [groupAccounts, setGroupAccounts] = useState<NestedMessageAccount[]>(
       []
     )
@@ -175,15 +156,15 @@ export const MessageContextProvider = React.memo(
           ({ account, daycareGroup }) =>
             account.type === 'GROUP' && daycareGroup?.unitId === unitId
         )
-        const maybePersonalAccount = nestedAccounts.value.find(
-          (a) => a.account.type === 'PERSONAL'
-        )?.account
-        const maybeGroupAccount = groupAccounts[0]?.account
         setGroupAccounts(groupAccounts)
-        setSelectedSender(maybePersonalAccount ?? maybeGroupAccount)
-        if (maybePersonalAccount) setPersonalAccount(maybePersonalAccount)
       }
-    }, [nestedAccounts, setSelectedSender, unitId])
+    }, [
+      nestedAccounts,
+      unitId,
+      setGroupAccounts,
+      setSelectedSender,
+      setSelectedAccount
+    ])
 
     const [unreadCountsByAccount, setUnreadCountsByAccount] = useState<
       Result<UnreadCountByAccount[]>
@@ -229,49 +210,11 @@ export const MessageContextProvider = React.memo(
       setReceivedMessagesResult
     )
 
-    const loadMessagesForSelectedAccount = useCallback(() => {
-      setReceivedMessages(Loading.of())
-      if (selectedAccount)
+    useEffect(() => {
+      if (selectedAccount) {
         loadReceivedMessages(selectedAccount.id, page, PAGE_SIZE)
+      }
     }, [loadReceivedMessages, page, selectedAccount])
-
-    const loadMessagesForAllAccounts = useCallback(() => {
-      setSelectedAccount(undefined)
-      void Promise.all(
-        getAccountsByUserAndUnit(groupAccounts, personalAccount).map(
-          (account) => getReceivedMessages(account.id, page, PAGE_SIZE)
-        )
-      ).then((result) => {
-        const messages: MessageThread[] = result.flatMap(
-          (item: Result<Paged<MessageThread>>) => {
-            return item.isSuccess ? item.value.data : []
-          }
-        )
-        setReceivedMessages(Success.of(messages))
-      })
-    }, [groupAccounts, personalAccount, page])
-
-    const loadMessagesWhenGroupChanges = useCallback(
-      (selectedGroup: GroupInfo | undefined): void => {
-        if (selectedGroup === undefined) loadMessagesForAllAccounts()
-        else {
-          const maybeAccount =
-            groupAccounts.find(({ account, daycareGroup }) =>
-              selectedGroup
-                ? daycareGroup?.id === selectedGroup.id
-                : account.type === 'PERSONAL'
-            )?.account ?? undefined
-
-          setSelectedAccount(maybeAccount)
-          loadMessagesForSelectedAccount()
-        }
-      },
-      [
-        groupAccounts,
-        loadMessagesForAllAccounts,
-        loadMessagesForSelectedAccount
-      ]
-    )
 
     const [selectedThread, setSelectedThread] = useState<MessageThread>()
 
@@ -279,7 +222,7 @@ export const MessageContextProvider = React.memo(
       (thread: MessageThread | undefined) => {
         setSelectedThread(thread)
         if (!thread) return
-        if (!selectedSender) throw new Error('Should never happen')
+        if (!selectedAccount) throw new Error('Should never happen')
         const { id: accountId } = selectedAccount || selectedSender
 
         const threadUnreadCount = getThreadUnreadCount(thread, accountId)
@@ -338,10 +281,6 @@ export const MessageContextProvider = React.memo(
         pages,
         setPages,
         receivedMessages,
-        loadMessagesForAllAccounts,
-        loadMessagesForSelectedAccount,
-        loadMessagesWhenGroupChanges,
-        personalAccount,
         selectedUnit,
         selectThread,
         selectedThread,
@@ -360,10 +299,6 @@ export const MessageContextProvider = React.memo(
         page,
         pages,
         receivedMessages,
-        loadMessagesForAllAccounts,
-        loadMessagesForSelectedAccount,
-        loadMessagesWhenGroupChanges,
-        personalAccount,
         selectedUnit,
         selectedThread,
         selectThread,
