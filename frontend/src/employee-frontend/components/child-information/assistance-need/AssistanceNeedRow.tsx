@@ -6,7 +6,6 @@ import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { useTranslation } from '../../../state/i18n'
 import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
 import { UIContext } from '../../../state/ui'
-import InfoBall from '../../../components/common/InfoBall'
 import AssistanceNeedForm from '../../../components/child-information/assistance-need/AssistanceNeedForm'
 import { faQuestion } from 'lib-icons'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
@@ -17,6 +16,7 @@ import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
 import { scrollToRef } from '../../../utils'
 import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 export interface Props {
   assistanceNeed: AssistanceNeed
@@ -113,18 +113,18 @@ export default React.memo(function AssistanceNeedRow({
                 label:
                   i18n.childInformation.assistanceNeed.fields.capacityFactor,
                 value: (
-                  <span>
+                  <ExpandingInfo
+                    info={
+                      i18n.childInformation.assistanceNeed.fields
+                        .capacityFactorInfo
+                    }
+                    ariaLabel={''}
+                    fullWidth={true}
+                  >
                     <span data-qa={'assistance-need-multiplier'}>
                       {formatDecimal(assistanceNeed.capacityFactor)}
                     </span>
-                    <InfoBall
-                      text={
-                        i18n.childInformation.assistanceNeed.fields
-                          .capacityFactorInfo
-                      }
-                      inline
-                    />
-                  </span>
+                  </ExpandingInfo>
                 )
               },
               {
