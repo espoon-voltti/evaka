@@ -129,6 +129,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     integrationTestImplementation("org.testcontainers:postgresql")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security")
 
     ktlint("com.pinterest:ktlint:${Version.ktlint}")
 
