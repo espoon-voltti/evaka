@@ -158,3 +158,19 @@ export async function editFollowupEntry({
         .catch((e) => Failure.fromError(e))
     : Failure.of({ message: 'cannot edit without entry ID' })
 }
+
+export interface EditFollowupEntryAllowedParams {
+  documentId: UUID
+  entryId?: UUID
+}
+export async function getEditFollowupEntryAllowed({
+  documentId,
+  entryId
+}: EditFollowupEntryAllowedParams): Promise<Result<boolean>> {
+  return entryId
+    ? client
+        .get(`/vasu/${documentId}/edit-followup-allowed/${entryId}`)
+        .then((res) => Success.of(res.data))
+        .catch((e) => Failure.fromError(e))
+    : Failure.of({ message: 'cannot edit without entry ID' })
+}

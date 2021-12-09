@@ -139,6 +139,16 @@ class VasuController(
             throw Forbidden("Permission denied", "CANNOT_EDIT_FOLLOWUP_COMMENTS")
     }
 
+    @GetMapping("/vasu/{id}/edit-followup-allowed/{entryId}")
+    fun isEditFollowupEntryAllowed(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: VasuDocumentId,
+        @PathVariable entryId: UUID
+    ): Boolean {
+        return accessControl.hasPermissionFor(user, Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY, VasuDocumentFollowupEntryId(id, entryId))
+    }
+
     data class EditFollowupEntryRequest(
         val text: String
     )

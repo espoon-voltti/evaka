@@ -20,18 +20,28 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { blueColors } from 'lib-customizations/common'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faPen } from 'lib-icons'
+import { getEditFollowupEntryAllowed } from '../api'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { UUID } from 'lib-common/types'
+import { renderResult } from 'employee-frontend/components/async-rendering'
 
 const FollowupEntryElement = React.memo(function FollowupEntryElement({
   entry,
-  onEdited
+  onEdited,
+  documentId
 }: {
   entry: FollowupEntry
   onEdited?: (entry: FollowupEntry) => void
+  documentId: UUID
 }) {
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [editedEntry, setEditedEntry] = useState<FollowupEntry>()
-  const { user, roles } = useContext(UserContext)
+
+  const [editAllowed] = useApiState(
+    () => getEditFollowupEntryAllowed({ documentId, entryId: entry.id }),
+    [documentId, entry.id]
+  )
 
   const onCommitEdited = useCallback(
     (editedEntry: FollowupEntry) => {
@@ -46,13 +56,6 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
     () => (editedEntry ? editedEntry : entry),
     [entry, editedEntry]
   )
-
-  const editAllowed =
-    user?.id === entry.authorId ||
-    roles.includes('ADMIN') ||
-    roles.includes('UNIT_SUPERVISOR') ||
-    roles.includes('STAFF') ||
-    roles.includes('SPECIAL_EDUCATION_TEACHER')
 
   return (
     <Entry>
@@ -76,13 +79,16 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
               getEntry().edited?.editedAt.format() ?? ''
             } ${getEntry().edited?.editorName ?? ''}`}
         </Dimmed>
-        {onEdited && editAllowed && (
-          <IconButton
-            icon={faPen}
-            onClick={() => setEditing(true)}
-            data-qa="vasu-followup-entry-edit-btn"
-          />
-        )}
+        {onEdited &&
+          renderResult(editAllowed, (allowed) =>
+            allowed ? (
+              <IconButton
+                icon={faPen}
+                onClick={() => setEditing(true)}
+                data-qa="vasu-followup-entry-edit-btn"
+              />
+            ) : null
+          )}
       </FixedSpaceRow>
     </Entry>
   )
@@ -164,13 +170,15 @@ interface FollowupQuestionProps extends QuestionProps<Followup> {
   onChange?: (value: FollowupEntry) => void
   onEdited?: (value: FollowupEntry) => void
   translations: VasuTranslations
+  documentId: UUID
 }
 
 export default React.memo(function FollowupQuestion({
   onChange,
   onEdited,
   question: { title, name, value, info },
-  translations
+  translations,
+  documentId
 }: FollowupQuestionProps) {
   const { i18n } = useTranslation()
 
@@ -185,7 +193,12 @@ export default React.memo(function FollowupQuestion({
       </QuestionInfo>
       {value.length > 0 ? (
         value.map((entry, ix) => (
-          <FollowupEntryElement key={ix} entry={entry} onEdited={onEdited} />
+          <FollowupEntryElement
+            key={ix}
+            entry={entry}
+            onEdited={onEdited}
+            documentId={documentId}
+          />
         ))
       ) : (
         <Dimmed>{translations.noRecord}</Dimmed>

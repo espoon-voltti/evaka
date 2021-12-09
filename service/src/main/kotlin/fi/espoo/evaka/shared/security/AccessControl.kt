@@ -735,8 +735,14 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
-        if (action != Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY) {
+        if (!this.hasPermissionFor(user, action, id)) {
             throw Forbidden()
+        }
+    }
+
+    fun hasPermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId): Boolean {
+        if (action != Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY) {
+            return false
         }
         val mapping = permittedRoleActions::vasuDocumentFollowupActions
 
@@ -745,20 +751,18 @@ WHERE employee_id = :userId
             else -> user.roles
         }
         if (globalRoles.any { it == UserRole.ADMIN }) {
-            return
+            return true
         }
 
         val roles = acl.getRolesForVasuDocument(user, id.first).roles
         if (roles.any { mapping(it).contains(action) }) {
-            return
+            return true
         }
 
-        Database(jdbi).connect { db ->
+        return Database(jdbi).connect { db ->
             db.read { tx ->
                 val entry = tx.getVasuFollowupEntry(id)
-                if (entry.authorId != user.id) {
-                    throw Forbidden()
-                }
+                entry.authorId == user.id
             }
         }
     }

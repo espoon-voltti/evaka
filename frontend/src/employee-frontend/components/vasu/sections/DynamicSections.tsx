@@ -36,6 +36,7 @@ import {
   isTextQuestion
 } from '../vasu-content'
 import { VasuTranslations } from 'lib-customizations/employee'
+import { UUID } from 'lib-common/types'
 
 const getDynamicQuestionNumber = (
   sectionOffset: number,
@@ -48,6 +49,7 @@ interface Props {
   sectionIndex: number
   setContent?: Dispatch<SetStateAction<VasuContent>>
   state: VasuDocumentState
+  documentId: UUID
   translations: VasuTranslations
   editFollowupEntry?: (entry: FollowupEntry) => void
 }
@@ -57,6 +59,7 @@ export function DynamicSections({
   sectionIndex: sectionOffset,
   setContent,
   state,
+  documentId,
   translations,
   editFollowupEntry
 }: Props) {
@@ -184,6 +187,7 @@ export function DynamicSections({
                       question={question}
                       questionNumber={questionNumber}
                       translations={translations}
+                      documentId={documentId}
                       onChange={
                         setContent
                           ? (value: FollowupEntry) =>

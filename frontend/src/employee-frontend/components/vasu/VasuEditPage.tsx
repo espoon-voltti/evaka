@@ -121,6 +121,7 @@ export default React.memo(function VasuEditPage({
               })
             }
             state={vasu.documentState}
+            documentId={vasu.id}
             translations={translations}
           />
           <EditableVasuDiscussionSection
