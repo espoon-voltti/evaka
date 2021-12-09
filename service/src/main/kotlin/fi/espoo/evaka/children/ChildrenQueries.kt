@@ -33,3 +33,27 @@ WHERE
         .bind("userId", id)
         .mapTo<Child>()
         .list()
+
+fun Database.Read.getChild(id: PersonId): Child? =
+    this.createQuery(
+        """
+SELECT
+    p.id,
+    p.first_name,
+    p.last_name,
+    img.id AS image_id,
+    dg.id AS group_id,
+    dg.name AS group_name
+FROM person p
+LEFT JOIN child_images img ON p.id = img.child_id
+LEFT JOIN placement pl ON pl.child_id = p.id AND daterange(pl.start_date, pl.end_date, '[]') @> :today::date
+LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
+LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
+WHERE
+    p.id = :childId
+        """.trimIndent()
+    )
+        .bind("today", HelsinkiDateTime.now().toLocalDate())
+        .bind("childId", id)
+        .mapTo<Child>()
+        .firstOrNull()
