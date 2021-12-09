@@ -17,9 +17,7 @@ declare global {
   namespace NodeJS {
     interface Global {
       evaka?: {
-        captureScreenshots: (namePrefix: string) => Promise<void>
-        saveVideos: (namePrefix: string) => Promise<void>
-        deleteTemporaryVideos: () => Promise<void>
+        saveTraces: (namePrefix: string) => Promise<void>
         promises: Promise<void>[]
       }
     }
@@ -42,23 +40,22 @@ beforeEach((done) => {
 beforeAll(async () => {
   configureJestTimeout()
   browser = await playwright[config.playwright.browser].launch({
-    headless: config.playwright.headless
+    headless: config.playwright.headless,
+    tracesDir: '/tmp/playwright-traces'
   })
   global.evaka = {
-    captureScreenshots,
-    saveVideos,
-    deleteTemporaryVideos,
+    saveTraces,
     promises: []
   }
 })
 
 afterEach(async () => {
-  for (const ctx of browser?.contexts() ?? []) {
-    await ctx.close()
-  }
   if (global.evaka) {
     await Promise.all(global.evaka.promises)
     global.evaka.promises = []
+  }
+  for (const ctx of browser?.contexts() ?? []) {
+    await ctx.close()
   }
 })
 
@@ -72,51 +69,19 @@ window.evakaAutomatedTest = true
 ${mockedTime ? `window.evakaMockedTime = '${mockedTime.toISOString()}'` : ''}
 `
 
-async function forEachPage(
-  fn: (pageInfo: {
-    ctxIndex: number
-    pageIndex: number
-    page: Page
-  }) => Promise<void>
+async function forEachContext(
+  fn: (ctxInfo: { ctx: BrowserContext; ctxIndex: number }) => Promise<void>
 ): Promise<void> {
   if (!browser) return
-  const pages = browser.contexts().flatMap((ctx, ctxIndex) =>
-    ctx.pages().map((page, pageIndex) => ({
-      ctxIndex,
-      pageIndex,
-      page
-    }))
-  )
-  for (const pageInfo of pages) {
-    await fn(pageInfo)
+  const contexts = browser.contexts().map((ctx, i) => [ctx, i] as const)
+  for (const [ctx, ctxIndex] of contexts) {
+    await fn({ ctx, ctxIndex })
   }
 }
 
-async function captureScreenshots(namePrefix: string): Promise<void> {
-  await forEachPage(async ({ ctxIndex, pageIndex, page }) => {
-    await page.screenshot({
-      type: 'png',
-      path: `screenshots/${namePrefix}.${ctxIndex}.${pageIndex}.png`
-    })
-    await page.screenshot({
-      type: 'png',
-      path: `screenshots/${namePrefix}.${ctxIndex}.full.${pageIndex}.png`,
-      fullPage: true
-    })
-  })
-}
-
-async function saveVideos(namePrefix: string): Promise<void> {
-  await forEachPage(async ({ ctxIndex, pageIndex, page }) => {
-    await page
-      .video()
-      ?.saveAs(`videos/${namePrefix}.${ctxIndex}.${pageIndex}.webm`)
-  })
-}
-
-async function deleteTemporaryVideos(): Promise<void> {
-  await forEachPage(async ({ page }) => {
-    await page.video()?.delete()
+async function saveTraces(namePrefix: string): Promise<void> {
+  await forEachContext(async ({ ctxIndex, ctx }) => {
+    await ctx.tracing.stop({ path: `traces/${namePrefix}.${ctxIndex}.zip` })
   })
 }
 
@@ -151,10 +116,12 @@ function configurePage(page: Page) {
 export async function newBrowserContext(
   options?: BrowserContextOptions & { mockedTime?: Date }
 ): Promise<BrowserContext> {
-  const recordVideoOptions = config.playwright.ci
-    ? { recordVideo: { dir: '/tmp/playwright_videos' } }
-    : undefined
-  const ctx = await browser.newContext({ ...recordVideoOptions, ...options })
+  const ctx = await browser.newContext(options)
+  await ctx.tracing.start({
+    snapshots: true,
+    screenshots: true,
+    sources: true
+  })
   ctx.on('page', configurePage)
   ctx.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
   await ctx.addInitScript({ content: initScript(options?.mockedTime) })

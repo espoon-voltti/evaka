@@ -14,12 +14,7 @@ const NodeEnvironment = require('jest-environment-node')
 class PlaywrightEnvironment extends NodeEnvironment {
   async handleTestEvent(event, _state) {
     if (!this.global.evaka) return
-    const {
-      captureScreenshots,
-      saveVideos,
-      deleteTemporaryVideos,
-      promises
-    } = this.global.evaka
+    const { saveTraces, promises } = this.global.evaka
 
     if (event.name === 'test_fn_failure') {
       /** @type {string} **/
@@ -28,11 +23,7 @@ class PlaywrightEnvironment extends NodeEnvironment {
       const specName = event.test.name.replace(/\W/g, '-')
 
       const namePrefix = `${parentName}_${specName}`
-      await captureScreenshots(namePrefix)
-      promises.push(saveVideos(namePrefix))
-      promises.push(deleteTemporaryVideos(namePrefix))
-    } else if (event.name === 'test_fn_success') {
-      promises.push(deleteTemporaryVideos())
+      promises.push(saveTraces(namePrefix))
     }
   }
 }
