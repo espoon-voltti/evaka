@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCount: Int)
+data class UnreadCountByAccountAndGroup(val accountId: MessageAccountId, val unreadCount: Int, val groupId: GroupId)
 
 data class ReplyToMessageBody(
     val content: String,
@@ -100,6 +102,17 @@ class MessageController(
         Audit.MessagingUnreadMessagesRead.log()
         requireAuthorizedMessagingRole(user)
         return db.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user))) }
+    }
+
+    @GetMapping("/unread/{unitId}")
+    fun getUnreadMessagesByUnit(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId
+    ): Set<UnreadCountByAccountAndGroup> {
+        Audit.MessagingUnreadMessagesRead.log()
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        return db.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) }
     }
 
     data class PostMessageBody(

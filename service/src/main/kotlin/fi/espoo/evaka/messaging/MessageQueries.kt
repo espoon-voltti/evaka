@@ -42,6 +42,25 @@ fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Se
         .mapTo<UnreadCountByAccount>().toSet()
 }
 
+fun Database.Read.getUnreadMessagesCountsByDaycare(daycareId: DaycareId): Set<UnreadCountByAccountAndGroup> {
+    // language=SQL
+    val sql = """
+        SELECT
+            acc.id as account_id,
+            acc.daycare_group_id as group_id,
+            SUM(CASE WHEN m.id IS NOT NULL AND m.read_at IS NULL THEN 1 ELSE 0 END) as unread_count
+        FROM message_account acc
+        LEFT JOIN message_recipients m ON m.recipient_id = acc.id
+        JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
+        WHERE acc.active = true
+        GROUP BY acc.id, acc.daycare_group_id
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("daycareId", daycareId)
+        .mapTo<UnreadCountByAccountAndGroup>().toSet()
+}
+
 fun Database.Transaction.markThreadRead(accountId: MessageAccountId, threadId: MessageThreadId): Int {
     // language=SQL
     val sql = """
