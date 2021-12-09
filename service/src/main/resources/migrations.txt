@@ -185,3 +185,4 @@ V184__mobile_messaging_pilot_feature.sql
 V185__assistance_action_option_description.sql
 V186__evaka_user_for_application_guardians.sql
 V187__income_statement_gross_income_estimate_update.sql
+V188__daily_service_time_weekend.sql

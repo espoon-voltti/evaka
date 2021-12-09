@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, Element, FileInput, TextInput } from 'e2e-playwright/utils/page'
+import {
+  Page,
+  Element,
+  FileInput,
+  TextInput,
+  Checkbox,
+  Radio
+} from 'e2e-playwright/utils/page'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 
 export default class ChildInformationPage {
@@ -77,8 +84,12 @@ export class DailyServiceTimeSection {
 export class DailyServiceTimesSectionEdit {
   readonly #notSetRadio = this.section.find('[data-qa="radio-not-set"]')
 
-  readonly #regularRadio = this.section.find('[data-qa="radio-regular"]')
-  readonly #irregularRadio = this.section.find('[data-qa="radio-irregular"]')
+  readonly #regularRadio = new Radio(
+    this.section.find('[data-qa="radio-regular"]')
+  )
+  readonly #irregularRadio = new Radio(
+    this.section.find('[data-qa="radio-irregular"]')
+  )
   readonly #submitButton = this.section.find('[data-qa="submit-button"]')
 
   constructor(private section: Element) {}
@@ -91,19 +102,40 @@ export class DailyServiceTimesSectionEdit {
     await this.#regularRadio.click()
   }
 
+  async regularTimeIsSelected() {
+    return await this.#regularRadio.checked
+  }
+
   async selectIrregularTime() {
     await this.#irregularRadio.click()
   }
 
+  #timeInput(which: string, startEnd: 'start' | 'end') {
+    return new TextInput(this.section.find(`[data-qa="${which}-${startEnd}"]`))
+  }
+
   async fillTimeRange(which: string, start: string, end: string) {
-    await new TextInput(this.section.find(`[data-qa="${which}-start"]`)).fill(
-      start
-    )
-    await new TextInput(this.section.find(`[data-qa="${which}-end"]`)).fill(end)
+    await this.#timeInput(which, 'start').fill(start)
+    await this.#timeInput(which, 'end').fill(end)
+  }
+
+  #checkbox(day: string) {
+    return this.section.find(`[data-qa="${day}-checkbox"]`)
   }
 
   async selectDay(day: string) {
-    await this.section.find(`[data-qa="${day}-checkbox"]`).click()
+    await this.#checkbox(day).click()
+  }
+
+  async dayIsSelected(day: string) {
+    return new Checkbox(this.#checkbox(day)).checked
+  }
+
+  async hasTimeRange(day: string, start: string, end: string) {
+    return (
+      (await this.#timeInput(day, 'start').inputValue) === start &&
+      (await this.#timeInput(day, 'end').inputValue) === end
+    )
   }
 
   get submitIsDisabled(): Promise<boolean> {

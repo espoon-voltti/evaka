@@ -243,7 +243,11 @@ SELECT
     thursday_start,
     thursday_end,
     friday_start,
-    friday_end
+    friday_end,
+    saturday_start,
+    saturday_end,
+    sunday_start,
+    sunday_end
 FROM daily_service_time
 WHERE child_id = ANY(:childIds)
     """.trimIndent()
