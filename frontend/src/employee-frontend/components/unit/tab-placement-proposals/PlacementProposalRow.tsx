@@ -19,7 +19,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faFileAlt } from 'lib-icons'
+import { faFileAlt, faTimes } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../../constants'
 import CheckIconButton from 'lib-components/atoms/buttons/CheckIconButton'
 import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
@@ -31,6 +31,10 @@ import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
+import { P } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FlexRow } from 'employee-frontend/components/common/styled/containers'
 
 const CenteredDiv = styled.div`
   display: flex;
@@ -45,6 +49,23 @@ const CenteredRow = styled(Tr)`
     padding-top: 8px;
     padding-bottom: 8px;
   }
+`
+const CircleIcon = styled.div`
+  display: flex;
+  float: left;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  font-size: 16px !important;
+  border-radius: 100%;
+  color: ${colors.greyscale.white};
+`
+
+const CircleIconOrange = styled(CircleIcon)`
+  background-color: ${colors.accents.orange};
 `
 
 type Props = {
@@ -70,6 +91,13 @@ export default React.memo(function PlacementProposalRow({
   const [modalOpen, setModalOpen] = useState(false)
   const [reason, setReason] = useState<PlacementPlanRejectReason | null>(null)
   const [otherReason, setOtherReason] = useState<string>('')
+
+  const childName = formatName(
+    placementPlan.child.firstName,
+    placementPlan.child.lastName,
+    i18n,
+    true
+  )
 
   return (
     <>
@@ -117,18 +145,39 @@ export default React.memo(function PlacementProposalRow({
         data-qa={`placement-proposal-row-${placementPlan.applicationId}`}
       >
         <Td data-qa="child-name">
-          <Link to={`/child-information/${placementPlan.child.id}`}>
-            {formatName(
-              placementPlan.child.firstName,
-              placementPlan.child.lastName,
-              i18n,
-              true
-            )}
-          </Link>
+          {!placementPlan.rejectedByCitizen ? (
+            <Link to={`/child-information/${placementPlan.child.id}`}>
+              {childName}
+            </Link>
+          ) : (
+            <P noMargin color={colors.greyscale.medium}>
+              {childName}
+            </P>
+          )}
         </Td>
-        <Td data-qa="child-dob">{placementPlan.child.dateOfBirth.format()}</Td>
+        <Td
+          data-qa="child-dob"
+          color={
+            placementPlan.rejectedByCitizen
+              ? colors.greyscale.medium
+              : undefined
+          }
+        >
+          {placementPlan.child.dateOfBirth.format()}
+        </Td>
         <Td data-qa="placement-duration">
-          {`${placementPlan.period.start.format()} - ${placementPlan.period.end.format()}`}
+          {!placementPlan.rejectedByCitizen ? (
+            `${placementPlan.period.start.format()} - ${placementPlan.period.end.format()}`
+          ) : (
+            <FlexRow>
+              <CircleIconOrange>
+                <FontAwesomeIcon icon={faTimes} />
+              </CircleIconOrange>
+              <P noMargin>
+                {i18n.unit.placementProposals.citizenHasRejectedPlacement}
+              </P>
+            </FlexRow>
+          )}
         </Td>
         <Td data-qa="placement-type">
           {careTypesFromPlacementType(placementPlan.type)}
@@ -141,23 +190,32 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td data-qa="application-link">
           <CenteredDiv>
-            <a
-              href={`${getEmployeeUrlPrefix()}/employee/applications/${
-                placementPlan.applicationId
-              }`}
-              target="_blank"
-              rel="noreferrer"
-            >
+            {!placementPlan.rejectedByCitizen ? (
+              <a
+                href={`${getEmployeeUrlPrefix()}/employee/applications/${
+                  placementPlan.applicationId
+                }`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <IconButton
+                  onClick={() => undefined}
+                  icon={faFileAlt}
+                  altText={i18n.personProfile.application.open}
+                />
+              </a>
+            ) : (
               <IconButton
                 onClick={() => undefined}
                 icon={faFileAlt}
                 altText={i18n.personProfile.application.open}
+                disabled
               />
-            </a>
+            )}
           </CenteredDiv>
         </Td>
         <Td>
-          {!submitting && (
+          {!submitting && !placementPlan.rejectedByCitizen && (
             <FixedSpaceRow spacing="m">
               <div>
                 <CheckIconButton

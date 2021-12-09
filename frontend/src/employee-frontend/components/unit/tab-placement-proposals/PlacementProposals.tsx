@@ -162,7 +162,7 @@ export default React.memo(function PlacementProposals({
       </div>
       <Gap />
 
-      {placementPlans.length > 0 && (
+      {placementPlans.filter((p) => !p.rejectedByCitizen).length > 0 && (
         <ButtonRow>
           <Button
             data-qa={'placement-proposals-accept-button'}

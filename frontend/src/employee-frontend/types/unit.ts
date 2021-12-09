@@ -149,6 +149,7 @@ export interface DaycarePlacementPlan {
   unitConfirmationStatus: PlacementPlanConfirmationStatus
   unitRejectReason: PlacementPlanRejectReason | null
   unitRejectOtherReason: string | null
+  rejectedByCitizen: boolean
 }
 
 export interface DaycareGroupPlacement {

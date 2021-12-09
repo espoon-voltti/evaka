@@ -30,7 +30,8 @@ data class PlacementPlanDetails(
     val child: PlacementPlanChild,
     val unitConfirmationStatus: PlacementPlanConfirmationStatus = PlacementPlanConfirmationStatus.PENDING,
     val unitRejectReason: PlacementPlanRejectReason? = null,
-    val unitRejectOtherReason: String? = null
+    val unitRejectOtherReason: String? = null,
+    val rejectedByCitizen: Boolean = false
 )
 
 data class PlacementPlanChild(
