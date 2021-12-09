@@ -11,7 +11,7 @@ import {
 } from 'e2e-test-common/dev-api'
 import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import UnitPage from 'e2e-playwright/pages/employee/units/unit'
+import { UnitPage } from 'e2e-playwright/pages/employee/units/unit'
 import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { employeeLogin } from 'e2e-playwright/utils/user'
