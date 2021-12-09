@@ -19,6 +19,7 @@ import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import { combine } from 'lib-common/api'
 import { defaultMargins } from 'lib-components/white-space'
+import { UserContext } from '../../state/user'
 
 export type NavItem = 'child' | 'staff' | 'messages'
 
@@ -94,10 +95,11 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
   }>()
 
   const { unitInfoResponse, unreadCountsResponse } = useContext(UnitContext)
+  const { user } = useContext(UserContext)
 
   return renderResult(
-    combine(unitInfoResponse, unreadCountsResponse),
-    ([unit, unreadCounts]) => (
+    combine(unitInfoResponse, unreadCountsResponse, user),
+    ([unit, unreadCounts, user]) => (
       <>
         {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
         <ReserveSpace />
@@ -140,9 +142,9 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                 onClick={() =>
                   selected !== 'messages' &&
                   history.push(
-                    unreadCounts.some(({ unreadCount }) => unreadCount > 0)
-                      ? `/units/${unitId}/groups/${unit.groups[0].id}/messages/unread-messages`
-                      : `/units/${unitId}/groups/${unit.groups[0].id}/messages`
+                    user?.pinLoginActive
+                      ? `/units/${unitId}/groups/${unit.groups[0].id}/messages`
+                      : `/units/${unitId}/groups/${unit.groups[0].id}/messages/unread-messages`
                   )
                 }
               >
@@ -151,7 +153,9 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                   selected={selected === 'messages'}
                 />
                 {unreadCounts.some(({ unreadCount }) => unreadCount > 0) && (
-                  <UnreadMessagesIndicator />
+                  <UnreadMessagesIndicator
+                    data-qa={'unread-messages-indicator'}
+                  />
                 )}
               </BottomText>
             </Button>

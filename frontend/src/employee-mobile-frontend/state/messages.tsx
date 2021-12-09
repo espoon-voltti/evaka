@@ -218,7 +218,13 @@ export const MessageContextProvider = React.memo(
         loadReceivedMessages(selectedAccount.id, page, PAGE_SIZE)
         reloadUnreadCounts()
       }
-    }, [loadReceivedMessages, reloadUnreadCounts, page, selectedAccount, selectedThread])
+    }, [
+      loadReceivedMessages,
+      reloadUnreadCounts,
+      page,
+      selectedAccount,
+      selectedThread
+    ])
 
     const selectThread = useCallback(
       (thread: MessageThread | undefined) => {

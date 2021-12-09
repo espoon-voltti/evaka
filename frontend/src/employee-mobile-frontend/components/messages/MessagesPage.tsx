@@ -63,7 +63,6 @@ export default function MessagesPage() {
   }, [groupAccounts, setSelectedAccount, groupId])
 
   const { i18n } = useTranslation()
-
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
 
   return selectedThread && selectedAccount ? (
@@ -72,6 +71,7 @@ export default function MessagesPage() {
       fullHeight
       paddingHorizontal={'zero'}
       paddingVertical={'zero'}
+      data-qa={`messages-page-content-area`}
     >
       <ThreadView
         thread={selectedThread}
@@ -90,7 +90,12 @@ export default function MessagesPage() {
         includeSelectAll={false}
       />
       {renderResult(receivedMessages, (messages) => (
-        <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
+        <ContentArea
+          opaque
+          paddingVertical={'zero'}
+          paddingHorizontal={'zero'}
+          data-qa={`messages-page-content-area`}
+        >
           <HeaderContainer>
             <H1 noMargin={true}>{i18n.messages.title}</H1>
           </HeaderContainer>

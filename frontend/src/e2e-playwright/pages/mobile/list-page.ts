@@ -8,6 +8,10 @@ import { UUID } from 'lib-common/types'
 export default class MobileListPage {
   constructor(private readonly page: Page) {}
 
+  unreadMessagesIndicator = this.page.find(
+    `[data-qa="unread-messages-indicator"]`
+  )
+
   async selectChild(childId: UUID) {
     const elem = this.page.find(`[data-qa="child-${childId}"]`)
     return elem.click()

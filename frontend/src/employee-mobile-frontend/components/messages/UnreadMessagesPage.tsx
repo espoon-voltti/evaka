@@ -47,11 +47,13 @@ export default function UnreadMessagesPage() {
           {unit.groups.map((group) => (
             <UnreadCountByGroupRow key={group.id}>
               <LinkToGroupMessages
+                data-qa={`link-to-group-messages-${group.id}`}
                 to={`/units/${unitId}/groups/${group.id}/messages`}
               >
                 {group.name}
               </LinkToGroupMessages>
               <UnreadCountNumber
+                dataQa={`unread-count-by-group-${group.id}`}
                 maybeNumber={
                   counts.find((c) => c.groupId === group.id)?.unreadCount
                 }
@@ -66,7 +68,7 @@ export default function UnreadMessagesPage() {
             </P>
             <WideLinkButton
               $primary
-              data-qa="go-to-messages"
+              data-qa="pin-login-button"
               to={`/units/${unitId}/groups/${groupId}/messages`}
             >
               {i18n.messages.openPinLock}
@@ -80,14 +82,18 @@ export default function UnreadMessagesPage() {
 }
 
 function UnreadCountNumber({
-  maybeNumber
+  maybeNumber,
+  dataQa
 }: {
   maybeNumber: number | undefined
+  dataQa: string
 }) {
   return maybeNumber && maybeNumber > 0 ? (
-    <UnreadCountNumberCircle>{maybeNumber}</UnreadCountNumberCircle>
+    <UnreadCountNumberCircle data-qa={dataQa}>
+      {maybeNumber}
+    </UnreadCountNumberCircle>
   ) : (
-    <AllReadIndicator>&ndash;</AllReadIndicator>
+    <AllReadIndicator data-qa={dataQa}>&ndash;</AllReadIndicator>
   )
 }
 

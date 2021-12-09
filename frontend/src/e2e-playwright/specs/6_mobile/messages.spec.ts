@@ -40,6 +40,7 @@ import ThreadViewPage from '../../pages/mobile/thread-view'
 import { waitUntilEqual } from '../../utils'
 import { enduserLogin } from '../../utils/user'
 import MobileNav from '../../pages/mobile/mobile-nav'
+import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
@@ -50,11 +51,13 @@ let messageEditorPage: MobileMessageEditorPage
 let messagesPage: MobileMessagesPage
 let threadView: ThreadViewPage
 let pinLoginPage: PinLoginPage
+let unreadMessageCountsPage: UnreadMobileMessagesPage
 let nav: MobileNav
 
 const employeeId = uuidv4()
 const staffId = uuidv4()
 const daycareGroupPlacementId = uuidv4()
+const daycareGroupId = uuidv4()
 
 let daycarePlacementFixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
@@ -106,7 +109,7 @@ beforeEach(async () => {
   await Fixture.employeePin().with({ userId: staff.data.id, pin }).save()
 
   daycareGroup = await Fixture.daycareGroup()
-    .with({ daycareId: unit.id })
+    .with({ id: daycareGroupId, daycareId: unit.id })
     .save()
 
   daycarePlacementFixture = createDaycarePlacementFixture(
@@ -143,6 +146,7 @@ beforeEach(async () => {
   page = await Page.open()
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
+  unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
   pinLoginPage = new PinLoginPage(page)
   messageEditorPage = new MobileMessageEditorPage(page)
   messagesPage = new MobileMessagesPage(page)
@@ -171,53 +175,36 @@ describe('Message editor in child page', () => {
 describe('Child message thread', () => {
   beforeEach(async () => await initCitizenPage())
 
-  test('Employee does not see messages to personal account', async () => {
-    const title = 'Otsikko'
-    const content = 'Testiviestin sisältö'
-    const receivers = [`${empLastName} ${empFirstName}`]
-    await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-    await citizenMessagesPage.sendNewMessage(title, content, receivers)
-    await citizenPage.close()
+  test('Employee sees unread counts and pin login button', async () => {
+    await citizenSendsMessageToGroup()
+    await userSeesNewMessageIndicatorAndClicks()
 
-    await listPage.gotoMessages()
-    await pinLoginPage.login(employeeName, pin)
-
-    await messagesPage.messagesDontExist()
+    await unreadMessageCountsPage.groupLinksExist()
+    await unreadMessageCountsPage.pinButtonExists()
   })
 
-  test("Staff sees citizen's message for group", async () => {
-    await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-    const title = 'Otsikko'
-    const content = 'Testiviestin sisältö'
-    const receivers = [daycareGroup.data.name + ' (Henkilökunta)']
-    await citizenMessagesPage.sendNewMessage(title, content, receivers)
-    await citizenPage.close()
-
-    await listPage.gotoMessages()
-    await pinLoginPage.login(staffName, pin)
-    await nav.selectGroup(daycareGroup.data.id)
+  test('Employee navigates using login button and sees messages', async () => {
+    await citizenSendsMessageToGroup()
+    await userSeesNewMessagesIndicator()
+    await employeeLoginsToMessagesPage()
     await messagesPage.messagesExist()
-    await messagesPage.openThread()
-    await waitUntilEqual(() => threadView.countMessages(), 1)
-    await waitUntilEqual(() => threadView.getMessageContent(0), content)
+  })
+
+  test('Employee navigates using group link and sees messages', async () => {
+    await citizenSendsMessageToGroup()
+    await userSeesNewMessagesIndicator()
+    await employeeLoginsToMessagesPageThroughGroup()
+    await messagesPage.messagesExist()
   })
 
   test('Employee replies as a group to message sent to group', async () => {
-    await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-    const title = 'Otsikko'
-    const content = 'Testiviestin sisältö'
-    const receivers = [daycareGroup.data.name + ' (Henkilökunta)']
-    await citizenMessagesPage.sendNewMessage(title, content, receivers)
-    await citizenPage.close()
+    await citizenSendsMessageToGroup()
+    await userSeesNewMessagesIndicator()
+    await employeeLoginsToMessagesPage()
 
-    await listPage.gotoMessages()
-    await pinLoginPage.login(employeeName, pin)
-    await nav.selectGroup(daycareGroup.data.id)
-    await messagesPage.messagesExist()
-    await messagesPage.openThread()
+    await nav.selectGroup(daycareGroupId)
+
+    await messagesPage.openFirstThread()
     await waitUntilEqual(() => threadView.countMessages(), 1)
     const replyContent = 'Testivastauksen sisältö'
     await threadView.replyThread(replyContent)
@@ -228,4 +215,96 @@ describe('Child message thread', () => {
       `${unit.name} - ${daycareGroup.data.name}`
     )
   })
+
+  test('Employee does not see messages to personal account', async () => {
+    await citizenSendsPersonalMessageToEmployee()
+    await employeeLoginsToMessagesPage()
+    await messagesPage.messagesDontExist()
+  })
+
+  test('Message button goes to unread messages if user has no pin session', async () => {
+    await listPage.gotoMessages()
+    await unreadMessageCountsPage.groupLinksExist()
+    await unreadMessageCountsPage.pinButtonExists()
+  })
+
+  test('Message button goes to messages if user has pin session', async () => {
+    await employeeLoginsToMessagesPage()
+    await page.goto(config.mobileUrl)
+    await listPage.gotoMessages()
+    await messagesPage.messagesContainer.waitUntilVisible()
+  })
+
+  test("Staff sees citizen's message for group", async () => {
+    await citizenSendsMessageToGroup()
+    await userSeesNewMessagesIndicator()
+    await staffLoginsToMessagesPage()
+
+    await messagesPage.messagesExist()
+    await messagesPage.openFirstThread()
+
+    await waitUntilEqual(() => threadView.countMessages(), 1)
+    await waitUntilEqual(
+      () => threadView.getMessageContent(0),
+      'Testiviestin sisältö'
+    )
+  })
 })
+
+async function citizenSendsMessageToGroup() {
+  await citizenPage.goto(config.enduserMessagesUrl)
+  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  const title = 'Otsikko'
+  const content = 'Testiviestin sisältö'
+  const receivers = [daycareGroup.data.name + ' (Henkilökunta)']
+  await citizenMessagesPage.sendNewMessage(title, content, receivers)
+  await citizenPage.close()
+}
+
+async function userSeesNewMessagesIndicator() {
+  await page.goto(config.mobileUrl)
+  await listPage.unreadMessagesIndicator.waitUntilVisible()
+}
+
+async function userSeesNewMessageIndicatorAndClicks() {
+  await userSeesNewMessagesIndicator()
+  await listPage.gotoMessages()
+}
+
+async function staffLoginsToMessagesPage() {
+  await listPage.gotoMessages()
+  await unreadMessageCountsPage.pinLoginButton.click()
+  await pinLoginPage.login(staffName, pin)
+}
+
+async function employeeNavigatesToMessagesSelectingLogin() {
+  await unreadMessageCountsPage.pinLoginButton.click()
+  await pinLoginPage.login(employeeName, pin)
+}
+
+async function employeeNavigatesToMessagesSelectingGroup() {
+  const linkToGroup = unreadMessageCountsPage.linkToGroup(daycareGroupId)
+  await linkToGroup.waitUntilVisible()
+  await linkToGroup.click()
+  await pinLoginPage.login(employeeName, pin)
+}
+
+async function employeeLoginsToMessagesPage() {
+  await listPage.gotoMessages()
+  await employeeNavigatesToMessagesSelectingLogin()
+}
+
+async function employeeLoginsToMessagesPageThroughGroup() {
+  await listPage.gotoMessages()
+  await employeeNavigatesToMessagesSelectingGroup()
+}
+
+async function citizenSendsPersonalMessageToEmployee() {
+  const title = 'Otsikko'
+  const content = 'Testiviestin sisältö'
+  const receivers = [`${empLastName} ${empFirstName}`]
+  await citizenPage.goto(config.enduserMessagesUrl)
+  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  await citizenMessagesPage.sendNewMessage(title, content, receivers)
+  await citizenPage.close()
+}
