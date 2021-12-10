@@ -1702,15 +1702,48 @@ const sv: Translations = {
     },
     toggleExpandText: 'Visa eller göm texten'
   },
+  placement: {
+    // TODO i18n
+    type: {
+      CLUB: 'Kerho',
+      DAYCARE: 'Varhaiskasvatus',
+      FIVE_YEARS_OLD_DAYCARE: '5-vuotiaiden varhaiskasvatus',
+      PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
+      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
+        '5-vuotiaiden osapäiväinen varhaiskasvatus',
+      PRESCHOOL: 'Esiopetus',
+      PREPARATORY: 'Valmistava opetus',
+      PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
+      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+    }
+  },
   reloadNotification: {
     title: 'En ny version av eVaka är tillgänglig',
     buttonText: 'Ladda om sidan'
   },
   children: {
+    // TODO copy
     title: 'Barn',
-    pageDescription: 'Your children are listed on this page.', // TODO copy
+    pageDescription:
+      'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
     noChildren: 'Inga barn',
-    placementTermination: { title: 'Placement termination' } // TODO copy
+    placementTermination: {
+      title: 'Paikan irtisanominen',
+      description:
+        'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
+      until: (date: string) => `voimassa ${date}`,
+      choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
+      lastDayInfo:
+        'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
+      lastDayOfPresence: 'Viimeinen läsnäolopäivä',
+      terminate: 'Irtisano paikka'
+    }
   }
 }
 

@@ -187,3 +187,7 @@ export const P = styled.p<ParagraphProps>`
 export const Dimmed = styled.span`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `
+
+export const Strong = styled.span`
+  font-weight: ${fontWeights.bold};
+`

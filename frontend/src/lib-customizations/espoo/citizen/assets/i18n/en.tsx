@@ -1745,15 +1745,47 @@ const en: Translations = {
     },
     toggleExpandText: 'Show or hide the text'
   },
+  placement: {
+    // TODO i18n
+    type: {
+      CLUB: 'Kerho',
+      DAYCARE: 'Varhaiskasvatus',
+      FIVE_YEARS_OLD_DAYCARE: '5-vuotiaiden varhaiskasvatus',
+      PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
+      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
+        '5-vuotiaiden osapäiväinen varhaiskasvatus',
+      PRESCHOOL: 'Esiopetus',
+      PREPARATORY: 'Valmistava opetus',
+      PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
+      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+    }
+  },
   reloadNotification: {
     title: 'New version of eVaka is available',
     buttonText: 'Reload page'
   },
   children: {
+    // TODO copy
     title: 'Children',
-    pageDescription: 'Your children are listed on this page.', // TODO copy
+    pageDescription: 'Your children are listed on this page.',
     noChildren: 'No children',
-    placementTermination: { title: 'Placement termination' } // TODO copy
+    placementTermination: {
+      title: 'Placement termination',
+      description:
+        'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
+      until: (date: string) => `until ${date}`,
+      choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
+      lastDayInfo:
+        'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
+      lastDayOfPresence: 'Last day of presence',
+      terminate: 'Terminate placement'
+    }
   }
 }
 
