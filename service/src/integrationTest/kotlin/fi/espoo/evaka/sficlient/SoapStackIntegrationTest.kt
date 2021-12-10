@@ -32,7 +32,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.core.io.ClassPathResource
-import org.springframework.mock.env.MockEnvironment
 import org.springframework.ws.client.WebServiceFaultException
 import org.springframework.ws.client.WebServiceIOException
 import java.io.InputStream
@@ -54,12 +53,12 @@ class SoapStackIntegrationTest {
 
     private val message = ISfiClientService.MessageMetadata(
         message = ISfiClientService.MessageDetails(
-            messageId = null,
-            uniqueCaseIdentifier = "",
-            header = "",
-            content = "",
+            messageId = "id",
+            uniqueCaseIdentifier = "case",
+            header = "header",
+            content = "content",
             sendDate = LocalDate.of(2021, 1, 1),
-            senderName = "",
+            senderName = "sender",
             recipient = ISfiClientService.Recipient(
                 ssn = "ssn",
                 name = "name",
@@ -74,9 +73,12 @@ class SoapStackIntegrationTest {
             pdfDetails = ISfiClientService.PdfDetails(
                 fileDescription = "description",
                 fileName = "test.pdf",
-                content = ByteArray(0)
+                content = byteArrayOf(0x00, 0x11, 0x22, 0x33)
             ),
-            emailNotification = null
+            emailNotification = ISfiClientService.EmailNotification(
+                header = "header",
+                message = "message"
+            )
         )
     )
     private val clientKeystore = KeystoreEnv(
@@ -98,8 +100,22 @@ class SoapStackIntegrationTest {
         address = "https://localhost:${server.port}",
         signingKeyAlias = "",
         wsSecurityEnabled = true,
-        message = SfiMessageEnv.fromEnvironment(MockEnvironment()),
-        printing = SfiPrintingEnv.fromEnvironment(MockEnvironment())
+        message = SfiMessageEnv(
+            authorityIdentifier = "authority",
+            serviceIdentifier = "service",
+            messageApiVersion = "1.1",
+            certificateCommonName = "common-name"
+        ),
+        printing = SfiPrintingEnv(
+            enabled = true,
+            forcePrintForElectronicUser = false,
+            printingProvider = "provider",
+            billingId = "billing-id",
+            billingPassword = "billing-password",
+            contactPersonName = "contact-name",
+            contactPersonPhone = "contact-phone",
+            contactPersonEmail = "contact-email",
+        )
     )
 
     @BeforeEach
@@ -145,19 +161,56 @@ class SoapStackIntegrationTest {
 
     @Test
     fun `a correctly signed message is sent successfully`() {
-        val client = SfiClientService(
-            defaultEnv().copy(
-                keyStore = clientKeystore,
-                signingKeyAlias = "client"
-            )
+        val env = defaultEnv().copy(
+            keyStore = clientKeystore,
+            signingKeyAlias = "client"
         )
+        val client = SfiClientService(env)
         server.service.implementation.set { viranomainen, request ->
+            assertEquals(message.message.messageId, viranomainen.sanomaTunniste)
+            assertEquals(env.message.authorityIdentifier, viranomainen.viranomaisTunnus)
+            assertEquals(env.message.certificateCommonName, viranomainen.sanomaVarmenneNimi)
+            assertEquals(env.message.messageApiVersion, viranomainen.sanomaVersio)
+            assertEquals(env.message.serviceIdentifier, viranomainen.palveluTunnus)
+            assertEquals(env.printing.contactPersonName, viranomainen.yhteyshenkilo.nimi)
+            assertEquals(env.printing.contactPersonEmail, viranomainen.yhteyshenkilo.sahkoposti)
+            assertEquals(env.printing.contactPersonPhone, viranomainen.yhteyshenkilo.matkapuhelin)
+
+            assertEquals(env.printing.printingProvider, request.tulostustoimittaja)
+            assertTrue(request.isLahetaTulostukseen)
+
+            assertEquals(env.printing.billingId, request.laskutus.tunniste)
+            assertEquals(env.printing.billingPassword, request.laskutus.salasana)
+
             assertEquals(1, request.kohteet.kohde.size)
             val kohde = request.kohteet.kohde[0]
+
+            assertEquals(message.message.uniqueCaseIdentifier, kohde.viranomaisTunniste)
+            assertEquals(message.message.senderName, kohde.lahettajaNimi)
+            assertEquals(message.message.header, kohde.nimeke)
+            assertEquals(message.message.content, kohde.kuvausTeksti)
+            assertEquals(message.message.sendDate, kohde.lahetysPvm.toGregorianCalendar().toZonedDateTime().toLocalDate())
+
+            assertEquals(message.message.emailNotification?.header, kohde.emailLisatietoOtsikko)
+            assertEquals(message.message.emailNotification?.message, kohde.emailLisatietoSisalto)
+
             assertEquals(1, kohde.asiakas.size)
             val asiakas = kohde.asiakas[0]
             assertEquals(message.message.recipient.ssn, asiakas.asiakasTunnus)
             assertEquals("SSN", asiakas.tunnusTyyppi)
+
+            assertEquals(message.message.recipient.name, asiakas.osoite.nimi)
+            assertEquals(message.message.recipient.address.streetAddress, asiakas.osoite.lahiosoite)
+            assertEquals(message.message.recipient.address.postalCode, asiakas.osoite.postinumero)
+            assertEquals(message.message.recipient.address.postOffice, asiakas.osoite.postitoimipaikka)
+            assertEquals(message.message.recipient.address.countryCode, asiakas.osoite.maa)
+
+            assertEquals(1, kohde.tiedostot.tiedosto.size)
+            val tiedosto = kohde.tiedostot.tiedosto[0]
+            assertEquals(message.message.pdfDetails.fileDescription, tiedosto.tiedostonKuvaus)
+            assertTrue(message.message.pdfDetails.content.contentEquals(tiedosto.tiedostoSisalto))
+            assertEquals(message.message.pdfDetails.fileType, tiedosto.tiedostoMuoto)
+            assertEquals(message.message.pdfDetails.fileName, tiedosto.tiedostoNimi)
 
             successResponse(viranomainen)
         }
