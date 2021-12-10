@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Element, Page, Select, TextInput } from 'e2e-playwright/utils/page'
+import { waitUntilNotEqual } from '../../utils'
 
 export default class FridgeHeadInformationPage {
   constructor(private readonly page: Page) {}
@@ -45,10 +46,12 @@ export class IncomesSection {
 
   async fillIncomeStartDate(value: string) {
     await this.#incomeStartDateInput.fill(value)
+    await waitUntilNotEqual(() => this.#incomeStartDateInput.inputValue, '')
   }
 
   async fillIncomeEndDate(value: string) {
     await this.#incomeEndDateInput.fill(value)
+    await waitUntilNotEqual(() => this.#incomeEndDateInput.inputValue, '')
   }
 
   #incomeInput = (type: string) =>
@@ -77,6 +80,11 @@ export class IncomesSection {
   #saveIncomeButton = this.page.find('[data-qa="save-income"]')
 
   async save() {
+    await this.#saveIncomeButton.click()
+    await this.#saveIncomeButton.waitUntilHidden()
+  }
+
+  async saveFailing() {
     await this.#saveIncomeButton.click()
   }
 
