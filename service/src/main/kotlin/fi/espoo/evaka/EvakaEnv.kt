@@ -345,6 +345,7 @@ data class SfiEnv(
     val keyStore: KeystoreEnv,
     val address: String,
     val signingKeyAlias: String,
+    val wsSecurityEnabled: Boolean,
     val message: SfiMessageEnv,
     val printing: SfiPrintingEnv
 ) {
@@ -362,6 +363,7 @@ data class SfiEnv(
             ),
             address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address") ?: "",
             signingKeyAlias = env.lookup("evaka.integration.sfi.signing_key_alias", "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias") ?: "signing-key",
+            wsSecurityEnabled = env.lookup("evaka.integration.sfi.ws_security_enabled") ?: true,
             message = SfiMessageEnv.fromEnvironment(env),
             printing = SfiPrintingEnv.fromEnvironment(env)
         )
@@ -409,9 +411,9 @@ data class SfiPrintingEnv(
 }
 
 data class KeystoreEnv(
-    val type: String,
-    val location: String?,
-    val password: Sensitive<String>,
+    val type: String = "pkcs12",
+    val location: String? = null,
+    val password: Sensitive<String> = Sensitive(""),
 )
 
 data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {

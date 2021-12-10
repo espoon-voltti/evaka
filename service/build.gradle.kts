@@ -148,6 +148,10 @@ dependencies {
     testImplementation("org.springframework.ws:spring-ws-test")
 
     integrationTestImplementation("io.javalin:javalin")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security")
     integrationTestImplementation("org.testcontainers:postgresql")
 
     implementation(project(":sficlient"))
