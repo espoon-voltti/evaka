@@ -33,7 +33,7 @@ export const fi = {
     evaluationDiscussion: {
       title: 'Toteutumisen arviointi',
       title2:
-        'Varhaiskasvatussuunnitelman arviointikeskustelu huoltajien kanssa',
+        'Lapsen varhaiskasvatussuunnitelman arviointikeskustelu huoltajien kanssa',
       discussionDate: 'Arviointikeskustelun päivämäärä',
       participants: 'Arviointikeskusteluun osallistuneet huoltajat',
       guardianViewsAndCollaboration:
