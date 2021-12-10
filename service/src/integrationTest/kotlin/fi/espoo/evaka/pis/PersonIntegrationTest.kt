@@ -108,6 +108,7 @@ class PersonIntegrationTest : PureJdbiTest() {
                 PersonReference("child_daily_note", "child_id"),
                 PersonReference("child_images", "child_id"),
                 PersonReference("child_sticky_note", "child_id"),
+                PersonReference("curriculum_document", "child_id"),
                 PersonReference("daily_service_time", "child_id"),
                 PersonReference("evaka_user", "citizen_id"),
                 PersonReference("family_contact", "child_id"),

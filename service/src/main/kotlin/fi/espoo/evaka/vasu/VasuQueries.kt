@@ -34,7 +34,7 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTempl
 
     val documentId = createQuery(
         """
-        INSERT INTO vasu_document (child_id, basics, template_id, modified_at) 
+        INSERT INTO curriculum_document (child_id, basics, template_id, modified_at)
         VALUES (:childId, :basics, :templateId, now())
         RETURNING id
         """.trimIndent()
@@ -47,8 +47,8 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTempl
 
     createUpdate(
         """
-        INSERT INTO vasu_content (document_id, content, authors_content, vasu_discussion_content, evaluation_discussion_content) 
-        SELECT :documentId, vt.content, :authors, :discussion, :evaluation FROM vasu_template vt WHERE vt.id = :templateId
+        INSERT INTO curriculum_content (document_id, content, authors_content, curriculum_discussion_content, evaluation_discussion_content)
+        SELECT :documentId, ct.content, :authors, :discussion, :evaluation FROM curriculum_template ct WHERE ct.id = :templateId
         """.trimIndent()
     )
         .bind("documentId", documentId)
@@ -65,29 +65,29 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
     // language=sql
     val sql = """
         SELECT
-            vd.id,
-            vd.child_id,
-            vd.modified_at,
-            vd.basics,
-            vt.name AS template_name,
-            vt.valid AS template_range,
-            vt.language,
+            cd.id,
+            cd.child_id,
+            cd.modified_at,
+            cd.basics,
+            ct.name AS template_name,
+            ct.valid AS template_range,
+            ct.language,
             vc.content,
             vc.authors_content,
-            vc.vasu_discussion_content,
+            vc.curriculum_discussion_content AS vasu_discussion_content,
             vc.evaluation_discussion_content,
             (SELECT jsonb_agg(json_build_object(
                    'id', event.id,
                    'created', event.created,
                    'eventType', event.event_type
                ) ORDER BY event.created) 
-               FROM vasu_document_event event
-               WHERE event.vasu_document_id = :id
+               FROM curriculum_document_event event
+               WHERE event.curriculum_document_id = :id
            ) AS events
-        FROM vasu_document vd
-        JOIN vasu_content vc ON vc.document_id = vd.id AND vc.master
-        JOIN vasu_template vt ON vd.template_id = vt.id
-        WHERE vd.id =:id
+        FROM curriculum_document cd
+        JOIN curriculum_content vc ON vc.document_id = cd.id AND vc.master
+        JOIN curriculum_template ct ON cd.template_id = ct.id
+        WHERE cd.id =:id
     """.trimIndent()
 
     return createQuery(sql)
@@ -109,35 +109,35 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
     // language=sql
     val sql = """
         SELECT
-            vd.id,
-            vd.child_id,
-            vd.basics,
-            vd.modified_at,
-            vt.name AS template_name,
-            vt.valid AS template_range,
-            vt.language,
+            cd.id,
+            cd.child_id,
+            cd.basics,
+            cd.modified_at,
+            ct.name AS template_name,
+            ct.valid AS template_range,
+            ct.language,
             vc.content,
             vc.authors_content,
-            vc.vasu_discussion_content,
+            vc.curriculum_discussion_content AS vasu_discussion_content,
             vc.evaluation_discussion_content,
             (SELECT jsonb_agg(json_build_object(
                    'id', event.id,
                    'created', event.created,
                    'eventType', event.event_type
                ) ORDER BY event.created) 
-               FROM vasu_document_event event
-               WHERE event.vasu_document_id = :id
+               FROM curriculum_document_event event
+               WHERE event.curriculum_document_id = :id
            ) AS events
-        FROM vasu_document vd
+        FROM curriculum_document cd
         JOIN LATERAL (
-            SELECT vc.content, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
-            FROM vasu_content vc
-            WHERE vc.published_at IS NOT NULL AND vc.document_id = vd.id
+            SELECT vc.content, vc.authors_content, vc.curriculum_discussion_content, vc.evaluation_discussion_content
+            FROM curriculum_content vc
+            WHERE vc.published_at IS NOT NULL AND vc.document_id = cd.id
             ORDER BY vc.published_at DESC
             LIMIT 1
         ) vc ON TRUE
-        JOIN vasu_template vt ON vd.template_id = vt.id
-        WHERE vd.id =:id
+        JOIN curriculum_template ct ON cd.template_id = ct.id
+        WHERE cd.id =:id
     """.trimIndent()
 
     return createQuery(sql)
@@ -164,11 +164,11 @@ fun Database.Transaction.updateVasuDocumentMaster(
 ) {
     // language=sql
     val updateContentSql = """
-        UPDATE vasu_content
+        UPDATE curriculum_content
         SET 
             content = :content, 
             authors_content = :authorsContent,
-            vasu_discussion_content = :vasuDiscussionContent, 
+            curriculum_discussion_content = :vasuDiscussionContent,
             evaluation_discussion_content = :evaluationDiscussionContent
         WHERE document_id = :id AND master
     """.trimIndent()
@@ -181,7 +181,7 @@ fun Database.Transaction.updateVasuDocumentMaster(
         .bind("evaluationDiscussionContent", evaluationDiscussionContent)
         .updateExactlyOne()
 
-    createUpdate("UPDATE vasu_document SET modified_at = now() WHERE id = :id")
+    createUpdate("UPDATE curriculum_document SET modified_at = now() WHERE id = :id")
         .bind("id", id)
         .updateExactlyOne()
 }
@@ -189,9 +189,9 @@ fun Database.Transaction.updateVasuDocumentMaster(
 fun Database.Transaction.publishVasuDocument(id: VasuDocumentId) {
     // language=sql
     val insertContentSql = """
-        INSERT INTO vasu_content (document_id, published_at, content, authors_content, vasu_discussion_content, evaluation_discussion_content)
-        SELECT vc.document_id, now(), vc.content, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
-        FROM vasu_content vc
+        INSERT INTO curriculum_content (document_id, published_at, content, authors_content, curriculum_discussion_content, evaluation_discussion_content)
+        SELECT vc.document_id, now(), vc.content, vc.authors_content, vc.curriculum_discussion_content, vc.evaluation_discussion_content
+        FROM curriculum_content vc
         WHERE vc.document_id = :id AND master
     """.trimIndent()
 
@@ -199,7 +199,7 @@ fun Database.Transaction.publishVasuDocument(id: VasuDocumentId) {
         .bind("id", id)
         .updateExactlyOne()
 
-    createUpdate("UPDATE vasu_document SET modified_at = now() WHERE id = :id")
+    createUpdate("UPDATE curriculum_document SET modified_at = now() WHERE id = :id")
         .bind("id", id)
         .updateExactlyOne()
 }
@@ -217,18 +217,18 @@ fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSumm
     // language=sql
     val sql = """
         SELECT 
-            vd.id,
-            vt.name,
-            vd.modified_at,
+            cd.id,
+            ct.name,
+            cd.modified_at,
             e.id AS event_id,
             e.created AS event_created,
             e.event_type
-        FROM vasu_document vd
-        JOIN vasu_template vt ON vd.template_id = vt.id
-        JOIN child c ON c.id = vd.child_id
-        LEFT JOIN vasu_document_event e ON vd.id = e.vasu_document_id 
+        FROM curriculum_document cd
+        JOIN curriculum_template ct ON cd.template_id = ct.id
+        JOIN child c ON c.id = cd.child_id
+        LEFT JOIN curriculum_document_event e ON cd.id = e.curriculum_document_id
         WHERE c.id = :childId
-        ORDER BY vd.modified_at DESC
+        ORDER BY cd.modified_at DESC
     """.trimIndent()
 
     return createQuery(sql)
@@ -253,7 +253,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSumm
 
 fun Database.Transaction.insertVasuDocumentEvent(documentId: VasuDocumentId, eventType: VasuDocumentEventType, employeeId: UUID): VasuDocumentEvent {
     val sql = """
-        INSERT INTO vasu_document_event (vasu_document_id, employee_id, event_type)
+        INSERT INTO curriculum_document_event (curriculum_document_id, employee_id, event_type)
         VALUES (:documentId, :employeeId, :eventType)
         RETURNING id, created, event_type
     """.trimIndent()
@@ -267,12 +267,12 @@ fun Database.Transaction.insertVasuDocumentEvent(documentId: VasuDocumentId, eve
 }
 
 fun Database.Transaction.freezeVasuPlacements(id: VasuDocumentId) {
-    createQuery("SELECT basics FROM vasu_document WHERE id = :id")
+    createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
         .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
         .firstOrNull()
         ?.let { basics ->
-            createUpdate("UPDATE vasu_document SET basics = :basics WHERE id = :id")
+            createUpdate("UPDATE curriculum_document SET basics = :basics WHERE id = :id")
                 .bind("id", id)
                 .bind(
                     "basics",
@@ -293,13 +293,13 @@ private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacem
             dg.id AS group_id,
             dg.name AS group_name,
             daterange(dgp.start_date, dgp.end_date, '[]') AS range
-        FROM vasu_document vd
-        JOIN vasu_template vt on vt.id = vd.template_id
-        JOIN placement p ON p.child_id = vd.child_id AND daterange(p.start_date, p.end_date, '[]') && vt.valid
+        FROM curriculum_document cd
+        JOIN curriculum_template ct on ct.id = cd.template_id
+        JOIN placement p ON p.child_id = cd.child_id AND daterange(p.start_date, p.end_date, '[]') && ct.valid
         JOIN daycare d ON d.id = p.unit_id
-        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND daterange(dgp.start_date, dgp.end_date, '[]') && vt.valid
+        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND daterange(dgp.start_date, dgp.end_date, '[]') && ct.valid
         JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-        WHERE vd.id = :id
+        WHERE cd.id = :id
         ORDER BY dgp.start_date
         """.trimIndent()
     )
@@ -314,7 +314,7 @@ fun Database.Read.getVasuFollowupEntry(id: VasuDocumentFollowupEntryId): Followu
         """
         WITH followup_entries AS (
             SELECT jsonb_path_query(content, '$.sections[*].questions ? (@.type=="FOLLOWUP").value[*]') AS entry 
-            FROM vasu_content
+            FROM curriculum_content
             WHERE document_id = :docId AND master = true
         )
         SELECT entry FROM followup_entries WHERE entry ->> 'id' = :entryId
