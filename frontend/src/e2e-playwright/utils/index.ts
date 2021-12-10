@@ -89,6 +89,20 @@ export async function waitUntilEqual<T>(
 }
 
 /**
+ * Waits until the given function returns a promise which resolves to other than the given expected value.
+ */
+export async function waitUntilNotEqual<T>(
+  f: () => Promise<T>,
+  expected: T
+): Promise<T> {
+  return waitForCondition(
+    f,
+    (value) => !isEqual(value, expected),
+    (value) => expect(value).not.toEqual(expected)
+  )
+}
+
+/**
  * Waits until the given function returns a promise which resolves to true
  */
 export async function waitUntilTrue(f: () => Promise<boolean>) {
