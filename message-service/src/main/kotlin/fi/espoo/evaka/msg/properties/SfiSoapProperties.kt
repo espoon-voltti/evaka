@@ -13,7 +13,8 @@ import java.net.URI
 data class SfiSoapProperties(
     var trustStore: KeystoreProperties = KeystoreProperties(),
     var keyStore: KeystoreProperties = KeystoreProperties(),
-    var address: String? = ""
+    var address: String? = "",
+    var wsSecurityEnabled: Boolean? = null
 )
 
 @ConfigurationProperties(prefix = "fi.espoo.evaka.msg.sfi.message")
