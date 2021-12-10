@@ -89,7 +89,6 @@ button.inline {
   color: #db0c41;
 }
 
-
 @media print {
   .section-toggle,
   .navbar-menu {
@@ -124,4 +123,9 @@ button.inline {
   a {
     color: #000000 !important;
   }
+}
+
+@page {
+  size: A4;
+  margin: 1cm;
 }

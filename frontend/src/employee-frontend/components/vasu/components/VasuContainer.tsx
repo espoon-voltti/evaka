@@ -19,4 +19,18 @@ export const VasuContainer = styled(Container)<VasuContainerProps>`
   & > section {
     padding-bottom: ${defaultMargins.L};
   }
+
+  @media print {
+    display: block;
+    * {
+      overflow: visible;
+      text-overflow: visible;
+    }
+
+    section {
+      display: block;
+      break-inside: avoid-page;
+      break-before: auto;
+    }
+  }
 `
