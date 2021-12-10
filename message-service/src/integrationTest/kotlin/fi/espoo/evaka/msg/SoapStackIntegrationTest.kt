@@ -4,11 +4,8 @@
 
 package fi.espoo.evaka.msg
 
-import fi.espoo.evaka.msg.config.CryptoBuildHelper
 import fi.espoo.evaka.msg.config.SfiErrorResponseHandlerConfig
 import fi.espoo.evaka.msg.config.SfiSoapClientConfig
-import fi.espoo.evaka.msg.config.SoapCryptoConfig
-import fi.espoo.evaka.msg.config.TrustManagerConfig
 import fi.espoo.evaka.msg.mapper.SfiMapper
 import fi.espoo.evaka.msg.properties.SfiMessageProperties
 import fi.espoo.evaka.msg.properties.SfiPrintingProperties
@@ -102,7 +99,6 @@ class SoapStackIntegrationTest {
         server = MockServer.start(clazz = Viranomaispalvelut::class, service = MockViranomaisPalvelut(), serverKeys = serverKeys, clientKeys = clientKeys)
         contextRunner = ApplicationContextRunner().withConfiguration(
             AutoConfigurations.of(
-                CryptoBuildHelper::class.java,
                 SfiAccountDetailsService::class.java,
                 SfiClientService::class.java,
                 SfiErrorResponseHandlerConfig::class.java,
@@ -110,8 +106,6 @@ class SoapStackIntegrationTest {
                 SfiPrintingProperties::class.java,
                 SfiSoapClientConfig::class.java,
                 SfiMapper::class.java,
-                SoapCryptoConfig::class.java,
-                TrustManagerConfig::class.java,
             )
         ).withPropertyValues("spring.profiles.active=production", "voltti.env=prod")
     }
