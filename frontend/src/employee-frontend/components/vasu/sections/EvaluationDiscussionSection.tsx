@@ -3,14 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Dispatch, SetStateAction } from 'react'
+import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, H3, Label } from 'lib-components/typography'
 import { EvaluationDiscussionContent } from '../api'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { ReadOnlyValue } from '../components/ReadOnlyValue'
 import { VasuTranslations } from 'lib-customizations/employee'
+import { blueColors } from 'lib-customizations/common'
 
 interface Props {
   sectionIndex: number
@@ -27,7 +29,7 @@ export function EditableEvaluationDiscussionSection({
 }: Props) {
   const t = translations.staticSections.evaluationDiscussion
   return (
-    <ContentArea opaque>
+    <HighlightedContentArea opaque>
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>
@@ -96,9 +98,15 @@ export function EditableEvaluationDiscussionSection({
           }))
         }
       />
-    </ContentArea>
+    </HighlightedContentArea>
   )
 }
+
+const HighlightedContentArea = styled(ContentArea)`
+  border-left: 5px solid ${blueColors.medium};
+  box-shadow: 0px -4px 4px rgba(15, 15, 15, 0.1);
+  padding: ${defaultMargins.L};
+`
 
 export function EvaluationDiscussionSection({
   sectionIndex,
