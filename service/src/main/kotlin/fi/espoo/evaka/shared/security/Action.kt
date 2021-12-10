@@ -440,7 +440,7 @@ sealed interface Action {
         CREATE_SERVICE_NEED(UNIT_SUPERVISOR),
 
         READ_TERMINATIONS,
-        TERMINATE;
+        TERMINATE();
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

@@ -756,6 +756,28 @@ WHERE employee_id = :userId
         else -> this.person.hasPermission(user, action, id)
     }
 
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Placement, id: PlacementId) =
+        when (user) {
+            is AuthenticatedUser.Citizen -> when (action) {
+                Action.Placement.TERMINATE -> {
+                    Database(jdbi).connect {
+                        val childId = it.read { tx ->
+                            tx.createQuery("SELECT child_id FROM placement WHERE id = :id")
+                                .bind("id", id)
+                                .mapTo<UUID>()
+                                .one()
+                        }
+                        requireGuardian(user, setOf(childId))
+                    }
+                }
+                else -> throw Forbidden()
+            }
+            is AuthenticatedUser.Employee -> if (!hasPermissionFor(user, action, id)) {
+                throw Forbidden()
+            } else Unit
+            else -> throw Forbidden()
+        }
+
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
         assertPermission(
             user = user,
