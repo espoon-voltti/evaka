@@ -6,8 +6,8 @@ function isCallExpression(node) {
   return node.type === 'CallExpression'
 }
 
-function isMethodOf(name, node) {
-  return node.callee.object && node.callee.object.name === name
+function isMethodOf(names, node) {
+  return node.callee.object && names.includes(node.callee.object.name)
 }
 
 function isCallOfOnly(node) {
@@ -16,13 +16,9 @@ function isCallOfOnly(node) {
 
 function isTestOnlyCall(node) {
   return (
-    isCallExpression(node) && isMethodOf('test', node) && isCallOfOnly(node)
-  )
-}
-
-function isFixtureOnlyCall(node) {
-  return (
-    isCallExpression(node) && isMethodOf('fixture', node) && isCallOfOnly(node)
+    isCallExpression(node) &&
+    isMethodOf(['test', 'it', 'describe', 'fixture'], node) &&
+    isCallOfOnly(node)
   )
 }
 
@@ -30,7 +26,7 @@ module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'disallow test.only and fixture.only',
+      description: 'disallow test.only and similar',
       category: 'Best Practices',
       recommended: true
     },
@@ -42,14 +38,7 @@ module.exports = {
         if (isTestOnlyCall(node)) {
           context.report({
             node,
-            message: 'Use of test.only'
-          })
-        }
-
-        if (isFixtureOnlyCall(node)) {
-          context.report({
-            node,
-            message: 'Use of fixture.only'
+            message: 'Use of .only'
           })
         }
       }
