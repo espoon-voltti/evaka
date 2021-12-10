@@ -35,8 +35,13 @@ private data class Registration<T : AsyncJobPayload>(val handler: (db: Database,
         handler(db, msg as T)
 }
 
-class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi, threadPoolSize: Int = 4) : AutoCloseable {
-    private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(threadPoolSize)
+data class AsyncJobRunnerConfig(
+    val threadPoolSize: Int = 4,
+    val throttleInterval: Duration? = null,
+)
+
+class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {
+    private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(config.threadPoolSize)
     private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
@@ -121,6 +126,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi, threadPoolSize
                     runPendingJob(db, job)
                 }
                 remaining -= 1
+                config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
             } while (job != null && remaining > 0)
         }
     }

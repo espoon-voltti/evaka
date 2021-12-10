@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.message.SuomiFiMessage
 import org.apache.commons.text.StringEscapeUtils.unescapeJava
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.concurrent.TimeUnit
 
 @Service
 class SfiAsyncJobs(
@@ -22,7 +21,6 @@ class SfiAsyncJobs(
     init {
         asyncJobRunner.registerHandler { _, payload: SuomiFiAsyncJob.SendMessage ->
             sendMessagePDF(payload.message)
-            TimeUnit.SECONDS.sleep(1)
         }
     }
 

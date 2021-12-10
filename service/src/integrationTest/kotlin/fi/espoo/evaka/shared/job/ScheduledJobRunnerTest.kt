@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.BeforeEach
@@ -35,7 +36,7 @@ class ScheduledJobRunnerTest : PureJdbiTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { it.resetDatabase() }
-        asyncJobRunner = AsyncJobRunner(jdbi)
+        asyncJobRunner = AsyncJobRunner(jdbi, AsyncJobRunnerConfig())
     }
 
     @Test
