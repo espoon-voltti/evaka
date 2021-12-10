@@ -7,9 +7,8 @@
   "scripts": {
     "clean": "rm -rf ./build ./dist",
     "build": "yarn clean && yarn install && tsc --build src",
-    "lint": "eslint --ext .ts,.tsx src/",
-    "lint:strict": "eslint --ext .ts,.tsx --max-warnings 0 src/",
-    "lint:fix": "eslint --fix --ext .ts,.tsx src/",
+    "lint": "eslint --ext .ts,.tsx --max-warnings 0 .",
+    "lint:fix": "yarn lint --fix",
     "pretest": "tsc --build src/pino-cli",
     "test": "yarn lint:fix && NODE_ENV=test jest",
     "dev": "tsc --build src && concurrently --prefix '[{name}]' --names 'tsc,nodemon' 'tsc --build --preserveWatchOutput -w src' 'NODE_ENV=local nodemon dist/index.js'",
