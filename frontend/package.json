@@ -7,8 +7,7 @@
   "scripts": {
     "clean": "rm -rf dist screenshots videos node_modules/.cache",
     "dev": "tsc -b . && node dev-server.js",
-    "lint": "eslint --ext .ts,.tsx src",
-    "lint:strict": "eslint --ext .ts,.tsx --max-warnings 0 src",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
     "type-check": "tsc -b .",
     "build": "webpack --mode production",
@@ -201,52 +200,30 @@
     }
   },
   "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "env": {
+      "browser": true,
+      "node": true
+    },
     "extends": [
       "eslint:recommended",
       "plugin:react/recommended",
-      "plugin:@typescript-eslint/eslint-recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:@typescript-eslint/recommended-requiring-type-checking",
       "plugin:prettier/recommended",
       "plugin:react-hooks/recommended",
       "plugin:@evaka/recommended"
     ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "project": "./tsconfig.eslint.json"
-    },
-    "plugins": [
-      "@typescript-eslint",
-      "react-hooks"
-    ],
+    "plugins": ["react-hooks"],
     "settings": {
       "react": {
         "version": "detect"
       }
     },
     "rules": {
-      "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/member-delimiter-style": [
-        "warn",
-        {
-          "multiline": {
-            "delimiter": "none"
-          },
-          "singleline": {
-            "delimiter": "semi",
-            "requireLast": false
-          }
-        }
-      ],
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_"
-        }
-      ],
-      "@typescript-eslint/no-floating-promises": "error",
       "react/prop-types": 0,
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": [
@@ -255,6 +232,45 @@
           "additionalHooks": "(useApiState)"
         }
       ]
-    }
+    },
+    "overrides": [
+      {
+        "files": "**/*.{ts,tsx}",
+        "extends": [
+          "plugin:@typescript-eslint/eslint-recommended",
+          "plugin:@typescript-eslint/recommended",
+          "plugin:@typescript-eslint/recommended-requiring-type-checking"
+        ],
+        "parser": "@typescript-eslint/parser",
+        "parserOptions": {
+          "project": "./tsconfig.eslint.json"
+        },
+        "plugins": ["@typescript-eslint", "react-hooks"],
+        "rules": {
+          "@typescript-eslint/explicit-function-return-type": "off",
+          "@typescript-eslint/explicit-module-boundary-types": "off",
+          "@typescript-eslint/member-delimiter-style": [
+            "warn",
+            {
+              "multiline": {
+                "delimiter": "none"
+              },
+              "singleline": {
+                "delimiter": "semi",
+                "requireLast": false
+              }
+            }
+          ],
+          "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+              "argsIgnorePattern": "^_",
+              "varsIgnorePattern": "^_"
+            }
+          ],
+          "@typescript-eslint/no-floating-promises": "error"
+        }
+      }
+    ]
   }
 }

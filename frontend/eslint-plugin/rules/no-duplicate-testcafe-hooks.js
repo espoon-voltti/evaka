@@ -4,7 +4,9 @@
 
 function getDuplicateNodeFinder(context, name) {
   return () => {
-    const node = context.getAncestors().find(node => node.property && node.property.name === name)
+    const node = context
+      .getAncestors()
+      .find((node) => node.property && node.property.name === name)
     return context.report({
       node,
       message: `Multiple "${name}" hooks not allowed in the same fixture`
@@ -23,15 +25,11 @@ module.exports = {
     schema: []
   },
   create: (context) => {
-    return [
-      "before",
-      "beforeEach",
-      "after",
-      "afterEach"
-    ].reduce((o, hook) => {
+    return ['before', 'beforeEach', 'after', 'afterEach'].reduce((o, hook) => {
       return Object.assign(o, {
-        [`MemberExpression[property.name='${hook}'] MemberExpression[property.name='${hook}'] Identifier[name='fixture']`]: getDuplicateNodeFinder(context, hook)
+        [`MemberExpression[property.name='${hook}'] MemberExpression[property.name='${hook}'] Identifier[name='fixture']`]:
+          getDuplicateNodeFinder(context, hook)
       })
-    }, {});
+    }, {})
   }
 }

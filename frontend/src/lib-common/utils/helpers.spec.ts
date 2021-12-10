@@ -10,7 +10,7 @@ import { isProduction, getEnvironment } from './helpers'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 function defineWindowLocation(host: string) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-extra-semi
   ;(global as any).window = Object.create(window)
   Object.defineProperty(window, 'location', { value: { host }, writable: true })
 }

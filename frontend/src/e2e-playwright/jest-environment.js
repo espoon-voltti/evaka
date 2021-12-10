@@ -12,7 +12,7 @@
 const NodeEnvironment = require('jest-environment-node')
 
 class PlaywrightEnvironment extends NodeEnvironment {
-  async handleTestEvent(event, _state) {
+  async handleTestEvent(event) {
     if (!this.global.evaka) return
     const { saveTraces, promises } = this.global.evaka
 

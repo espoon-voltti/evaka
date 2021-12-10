@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const path = require('path');
+const path = require('path')
 
 module.exports = {
-  process(src, filename, config, options) {
-    return 'module.exports = ' + JSON.stringify(path.basename(filename)) + ';';
-  },
-};
+  process(src, filename) {
+    return 'module.exports = ' + JSON.stringify(path.basename(filename)) + ';'
+  }
+}

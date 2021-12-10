@@ -15,11 +15,15 @@ function isCallOfOnly(node) {
 }
 
 function isTestOnlyCall(node) {
-  return isCallExpression(node) && isMethodOf('test', node) && isCallOfOnly(node)
+  return (
+    isCallExpression(node) && isMethodOf('test', node) && isCallOfOnly(node)
+  )
 }
 
 function isFixtureOnlyCall(node) {
-  return isCallExpression(node) && isMethodOf('fixture', node) && isCallOfOnly(node)
+  return (
+    isCallExpression(node) && isMethodOf('fixture', node) && isCallOfOnly(node)
+  )
 }
 
 module.exports = {
