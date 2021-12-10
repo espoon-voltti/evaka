@@ -11,7 +11,6 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
-import fi.espoo.evaka.MessageEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.RedisEnv
 import fi.espoo.evaka.ScheduledJobsEnv
@@ -56,12 +55,6 @@ class EnvConfig {
 
     @Bean
     fun jwtEnv(env: Environment): JwtEnv = JwtEnv.fromEnvironment(env)
-
-    @Bean
-    fun messageEnv(evakaEnv: EvakaEnv, env: Environment): MessageEnv? = when (evakaEnv.messageEnabled) {
-        true -> MessageEnv.fromEnvironment(env)
-        false -> null
-    }
 
     @Bean
     fun scheduledJobsEnv(env: Environment): ScheduledJobsEnv = ScheduledJobsEnv.fromEnvironment(env)

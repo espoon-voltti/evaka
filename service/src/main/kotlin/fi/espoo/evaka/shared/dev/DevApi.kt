@@ -69,6 +69,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.sficlient.MockSfiMessagesClient
+import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -103,8 +105,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.message.MockEvakaMessageClient
-import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.vasu.CurriculumType
@@ -557,13 +557,13 @@ RETURNING id
     }
 
     @GetMapping("/messages")
-    fun getMessages(db: Database): ResponseEntity<List<SuomiFiMessage>> {
-        return ResponseEntity.ok(MockEvakaMessageClient.getMessages())
+    fun getMessages(db: Database): ResponseEntity<List<SfiMessage>> {
+        return ResponseEntity.ok(MockSfiMessagesClient.getMessages())
     }
 
     @PostMapping("/messages/clean-up")
     fun cleanUpMessages(db: Database): ResponseEntity<Unit> {
-        MockEvakaMessageClient.clearMessages()
+        MockSfiMessagesClient.clearMessages()
         return ResponseEntity.noContent().build()
     }
 

@@ -18,7 +18,6 @@ import java.util.Locale
  */
 data class EvakaEnv(
     val koskiEnabled: Boolean,
-    val messageEnabled: Boolean,
     val sfiEnabled: Boolean,
     val vtjEnabled: Boolean,
     val awsRegion: Region,
@@ -35,7 +34,6 @@ data class EvakaEnv(
         fun fromEnvironment(env: Environment): EvakaEnv {
             return EvakaEnv(
                 koskiEnabled = env.lookup("evaka.integration.koski.enabled", "fi.espoo.integration.koski.enabled") ?: false,
-                messageEnabled = env.lookup("evaka.integration.message.enabled", "fi.espoo.evaka.message.enabled") ?: true,
                 sfiEnabled = env.lookup("evaka.integration.sfi.enabled") ?: false,
                 vtjEnabled = env.lookup("evaka.integration.vtj.enabled", "fi.espoo.voltti.vtj.enabled") ?: false,
                 awsRegion = Region.of(env.lookup("evaka.aws.region", "aws.region")),
@@ -58,14 +56,6 @@ data class EvakaEnv(
                 mockClock = env.lookup("evaka.clock.mock") ?: false,
             )
         }
-    }
-}
-
-data class MessageEnv(val url: String) {
-    companion object {
-        fun fromEnvironment(env: Environment) = MessageEnv(
-            url = env.lookup("evaka.integration.message.url", "fi.espoo.evaka.message.url")
-        )
     }
 }
 

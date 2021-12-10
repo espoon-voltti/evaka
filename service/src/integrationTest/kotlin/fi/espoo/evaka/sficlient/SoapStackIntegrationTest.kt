@@ -9,6 +9,10 @@ import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.SfiMessageEnv
 import fi.espoo.evaka.SfiPrintingEnv
+import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentLocation
+import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.sficlient.soap.KyselyWS1
 import fi.espoo.evaka.sficlient.soap.KyselyWS10
 import fi.espoo.evaka.sficlient.soap.KyselyWS2
@@ -36,10 +40,10 @@ import org.springframework.ws.client.WebServiceFaultException
 import org.springframework.ws.client.WebServiceIOException
 import java.io.InputStream
 import java.net.ServerSocket
+import java.net.URL
 import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.cert.Certificate
-import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicReference
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLHandshakeException
@@ -51,35 +55,24 @@ import kotlin.test.assertTrue
 class SoapStackIntegrationTest {
     private lateinit var server: MockServer<MockViranomaisPalvelut>
 
-    private val message = ISfiClientService.MessageMetadata(
-        message = ISfiClientService.MessageDetails(
-            messageId = "id",
-            uniqueCaseIdentifier = "case",
-            header = "header",
-            content = "content",
-            sendDate = LocalDate.of(2021, 1, 1),
-            senderName = "sender",
-            recipient = ISfiClientService.Recipient(
-                ssn = "ssn",
-                name = "name",
-                email = "email",
-                phone = "phone",
-                address = ISfiClientService.RecipientAddress(
-                    streetAddress = "street",
-                    postalCode = "01234",
-                    postOffice = "Espoo",
-                )
-            ),
-            pdfDetails = ISfiClientService.PdfDetails(
-                fileDescription = "description",
-                fileName = "test.pdf",
-                content = byteArrayOf(0x00, 0x11, 0x22, 0x33)
-            ),
-            emailNotification = ISfiClientService.EmailNotification(
-                header = "header",
-                message = "message"
-            )
-        )
+    private val message = SfiMessage(
+        messageId = "message-id",
+        documentId = "document-id",
+        documentBucket = "bucket",
+        documentKey = "key",
+        documentDisplayName = "document",
+        ssn = "ssn",
+        firstName = "first",
+        lastName = "last",
+        language = "fi",
+        streetAddress = "street",
+        postalCode = "01234",
+        postOffice = "Espoo",
+        countryCode = "FI",
+        messageHeader = "header",
+        messageContent = "content",
+        emailHeader = "email-header",
+        emailContent = "email-content"
     )
     private val clientKeystore = KeystoreEnv(
         location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri.toString(),
@@ -93,6 +86,18 @@ class SoapStackIntegrationTest {
         location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri.toString(),
         password = Sensitive("untrustworthy")
     )
+    private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)
+    private val dummyDocumentService: DocumentService = object : DocumentService {
+        override fun get(bucketName: String, key: String): Document {
+            assertEquals(message.documentBucket, bucketName)
+            assertEquals(message.documentKey, key)
+            return DocumentWrapper("name", dummyContent.clone())
+        }
+        override fun presignedGetUrl(bucketName: String, key: String): URL? = throw NotImplementedError()
+        override fun stream(bucketName: String, key: String): InputStream = throw NotImplementedError()
+        override fun upload(bucketName: String, document: Document, contentType: String): DocumentLocation = throw NotImplementedError()
+        override fun delete(bucketName: String, key: String) = throw NotImplementedError()
+    }
 
     private fun defaultEnv() = SfiEnv(
         trustStore = serverKeystore,
@@ -132,29 +137,31 @@ class SoapStackIntegrationTest {
 
     @Test
     fun `an incorrectly signed message fails`() {
-        val client = SfiClientService(
+        val client = SfiMessagesSoapClient(
             defaultEnv().copy(
                 keyStore = untrustWorthyKeystore,
                 signingKeyAlias = "untrustworthy"
-            )
+            ),
+            dummyDocumentService
         )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
-        val exception = assertThrows<Exception> { client.sendMessage(message) }
+        val exception = assertThrows<Exception> { client.send(message) }
         val cause = exception.cause as WebServiceFaultException
         assertEquals(QName("http://ws.apache.org/wss4j", "SecurityError"), cause.webServiceMessage.faultCode)
     }
 
     @Test
     fun `an exception is thrown if the server is not trusted`() {
-        val client = SfiClientService(
+        val client = SfiMessagesSoapClient(
             defaultEnv().copy(
                 keyStore = clientKeystore,
                 signingKeyAlias = "client",
                 trustStore = untrustWorthyKeystore,
-            )
+            ),
+            dummyDocumentService
         )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
-        val exception = assertThrows<Exception> { client.sendMessage(message) }
+        val exception = assertThrows<Exception> { client.send(message) }
         val cause = exception.cause as WebServiceIOException
         assertTrue(cause.contains(SSLHandshakeException::class.java))
     }
@@ -165,9 +172,9 @@ class SoapStackIntegrationTest {
             keyStore = clientKeystore,
             signingKeyAlias = "client"
         )
-        val client = SfiClientService(env)
+        val client = SfiMessagesSoapClient(env, dummyDocumentService)
         server.service.implementation.set { viranomainen, request ->
-            assertEquals(message.message.messageId, viranomainen.sanomaTunniste)
+            assertEquals(message.messageId, viranomainen.sanomaTunniste)
             assertEquals(env.message.authorityIdentifier, viranomainen.viranomaisTunnus)
             assertEquals(env.message.certificateCommonName, viranomainen.sanomaVarmenneNimi)
             assertEquals(env.message.messageApiVersion, viranomainen.sanomaVersio)
@@ -185,38 +192,34 @@ class SoapStackIntegrationTest {
             assertEquals(1, request.kohteet.kohde.size)
             val kohde = request.kohteet.kohde[0]
 
-            assertEquals(message.message.uniqueCaseIdentifier, kohde.viranomaisTunniste)
-            assertEquals(message.message.senderName, kohde.lahettajaNimi)
-            assertEquals(message.message.header, kohde.nimeke)
-            assertEquals(message.message.content, kohde.kuvausTeksti)
-            assertEquals(message.message.sendDate, kohde.lahetysPvm.toGregorianCalendar().toZonedDateTime().toLocalDate())
+            assertEquals(message.documentId, kohde.viranomaisTunniste)
+            assertEquals(message.messageHeader, kohde.nimeke)
+            assertEquals(message.messageContent, kohde.kuvausTeksti)
 
-            assertEquals(message.message.emailNotification?.header, kohde.emailLisatietoOtsikko)
-            assertEquals(message.message.emailNotification?.message, kohde.emailLisatietoSisalto)
+            assertEquals(message.emailHeader, kohde.emailLisatietoOtsikko)
+            assertEquals(message.emailContent, kohde.emailLisatietoSisalto)
 
             assertEquals(1, kohde.asiakas.size)
             val asiakas = kohde.asiakas[0]
-            assertEquals(message.message.recipient.ssn, asiakas.asiakasTunnus)
+            assertEquals(message.ssn, asiakas.asiakasTunnus)
             assertEquals("SSN", asiakas.tunnusTyyppi)
 
-            assertEquals(message.message.recipient.name, asiakas.osoite.nimi)
-            assertEquals(message.message.recipient.address.streetAddress, asiakas.osoite.lahiosoite)
-            assertEquals(message.message.recipient.address.postalCode, asiakas.osoite.postinumero)
-            assertEquals(message.message.recipient.address.postOffice, asiakas.osoite.postitoimipaikka)
-            assertEquals(message.message.recipient.address.countryCode, asiakas.osoite.maa)
+            assertEquals("${message.lastName} ${message.firstName}", asiakas.osoite.nimi)
+            assertEquals(message.streetAddress, asiakas.osoite.lahiosoite)
+            assertEquals(message.postalCode, asiakas.osoite.postinumero)
+            assertEquals(message.postOffice, asiakas.osoite.postitoimipaikka)
+            assertEquals(message.countryCode, asiakas.osoite.maa)
 
             assertEquals(1, kohde.tiedostot.tiedosto.size)
             val tiedosto = kohde.tiedostot.tiedosto[0]
-            assertEquals(message.message.pdfDetails.fileDescription, tiedosto.tiedostonKuvaus)
-            assertTrue(message.message.pdfDetails.content.contentEquals(tiedosto.tiedostoSisalto))
-            assertEquals(message.message.pdfDetails.fileType, tiedosto.tiedostoMuoto)
-            assertEquals(message.message.pdfDetails.fileName, tiedosto.tiedostoNimi)
+            assertEquals(message.documentDisplayName, tiedosto.tiedostonKuvaus)
+            assertTrue(dummyContent.contentEquals(tiedosto.tiedostoSisalto))
+            assertEquals("application/pdf", tiedosto.tiedostoMuoto)
+            assertEquals(message.documentDisplayName, tiedosto.tiedostoNimi)
 
             successResponse(viranomainen)
         }
-        val response = client.sendMessage(message)
-        assertEquals(202, response.code)
-        assertTrue(response.isOkResponse())
+        client.send(message)
     }
 }
 
