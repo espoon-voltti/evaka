@@ -6,12 +6,15 @@
   "license": "LGPL-2.1-or-later",
   "scripts": {
     "clean": "rm -rf dist screenshots videos node_modules/.cache",
-    "dev": "tsc -b . && node dev-server.js",
+    "dev": "concurrently -n tsc,esbuild -c blue,green 'yarn type-check:watch' 'yarn build:serve'",
+    "dev:old": "tsc -b . && node dev-server.js",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
     "type-check": "tsc -b .",
+    "type-check:watch": "yarn type-check --watch --preserveWatchOutput",
     "build": "webpack --mode production",
-    "build:dev": "webpack",
+    "build:dev": "node build.js --dev",
+    "build:serve": "node build.js --dev --watch --serve",
     "test": "jest src/*-frontend src/lib-*",
     "test:watch": "jest --watchAll src/*-frontend src/lib-*",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
@@ -94,9 +97,12 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "babel-loader": "^8.2.3",
+    "concurrently": "^6.4.0",
     "css-loader": "^6.5.1",
     "csstype": "^3.0.9",
     "e2e-playwright": "link:src/e2e-playwright",
+    "esbuild": "^0.14.2",
+    "esbuild-plugin-alias": "^0.2.1",
     "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -128,7 +134,8 @@
     "webpack": "5.64.1",
     "webpack-cli": "^4.9.1",
     "webpack-dev-middleware": "^5.2.2",
-    "webpack-pwa-manifest": "^4.3.0"
+    "webpack-pwa-manifest": "^4.3.0",
+    "yargs": "^17.3.0"
   },
   "peerDependencies": {
     "@fortawesome/pro-light-svg-icons": "^6.0.0-beta2",
@@ -179,13 +186,8 @@
       "./src/employee-frontend",
       "./src/lib-common"
     ],
-    "reporters": [
-      "default",
-      "jest-junit"
-    ],
-    "modulePathIgnorePatterns": [
-      "<rootDir>/node_modules/"
-    ],
+    "reporters": ["default", "jest-junit"],
+    "modulePathIgnorePatterns": ["<rootDir>/node_modules/"],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js"
     }
