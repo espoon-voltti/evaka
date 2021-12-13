@@ -95,6 +95,8 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
+import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -148,6 +150,8 @@ private val fakeAdmin = AuthenticatedUser.Employee(
 class DevApi(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val vardaAsyncJobRunner: AsyncJobRunner<VardaAsyncJob>,
+    private val suomiFiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
@@ -157,6 +161,13 @@ class DevApi(
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
 
+    private fun runAllAsyncJobs() {
+        listOf(asyncJobRunner, vardaAsyncJobRunner, suomiFiAsyncJobRunner).forEach {
+            it.runPendingJobsSync()
+            it.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
+        }
+    }
+
     @GetMapping
     fun healthCheck(): ResponseEntity<Unit> {
         return ResponseEntity.noContent().build()
@@ -165,8 +176,7 @@ class DevApi(
     @PostMapping("/reset-db")
     fun resetDatabase(db: Database.DeprecatedConnection): ResponseEntity<Unit> {
         // Run async jobs before database reset to avoid database locks/deadlocks
-        asyncJobRunner.runPendingJobsSync()
-        asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
+        runAllAsyncJobs()
 
         db.transaction {
             it.resetDatabase()
@@ -180,8 +190,7 @@ class DevApi(
 
     @PostMapping("/run-jobs")
     fun runJobs(): ResponseEntity<Unit> {
-        asyncJobRunner.runPendingJobsSync()
-        asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
+        runAllAsyncJobs()
         return ResponseEntity.noContent().build()
     }
 
