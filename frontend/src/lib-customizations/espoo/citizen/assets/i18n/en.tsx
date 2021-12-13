@@ -1781,6 +1781,7 @@ const en: Translations = {
         'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
       until: (date: string) => `until ${date}`,
       choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
+      terminatedPlacements: 'Olet irtisanonut paikan',
       lastDayInfo:
         'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
       lastDayOfPresence: 'Last day of presence',

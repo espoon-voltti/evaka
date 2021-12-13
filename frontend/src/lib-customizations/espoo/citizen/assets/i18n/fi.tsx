@@ -1708,6 +1708,7 @@ export default {
       title: 'Paikan irtisanominen',
       description:
         'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
+      terminatedPlacements: 'Olet irtisanonut paikan',
       until: (date: string) => `voimassa ${date}`,
       choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
       lastDayInfo:
