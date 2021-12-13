@@ -76,7 +76,7 @@ export default React.memo(function PlacementTerminationSection({
       : 'invalid-date'
   }, [isValidDate, state.placement, state.terminationDate])
 
-  const isValid = !!terminatePlacementParams
+  const isValid = typeof terminatePlacementParams !== 'string'
   const onSubmit = useCallback(
     () =>
       typeof terminatePlacementParams !== 'string'
