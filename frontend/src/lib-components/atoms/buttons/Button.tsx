@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 export const StyledButton = styled.button`
   min-height: 45px;
@@ -24,6 +25,7 @@ export const StyledButton = styled.button`
 
   outline: none;
   cursor: pointer;
+
   &.disabled {
     cursor: not-allowed;
   }
@@ -102,14 +104,15 @@ export default React.memo(function Button({
     return undefined
   }, [ignoreClick])
 
-  const handleOnClick = (e: React.MouseEvent) => {
-    if (!ignoreClick) {
-      setIgnoreClick(true)
-      if (onClick) {
-        onClick(e)
+  const handleOnClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!ignoreClick) {
+        if (!isAutomatedTest) setIgnoreClick(true)
+        if (onClick) onClick(e)
       }
-    }
-  }
+    },
+    [ignoreClick, onClick]
+  )
   return (
     <StyledButton
       className={classNames(className, { primary, disabled })}
