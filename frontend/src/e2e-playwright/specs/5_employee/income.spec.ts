@@ -144,7 +144,7 @@ describe('Income', () => {
     await errorModal.ensureTitle('Tulotiedot puuttuvat joiltain päiviltä')
   })
 
-  it.only('Overlapping incomes error', async () => {
+  it('Overlapping incomes error', async () => {
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.3.2020')

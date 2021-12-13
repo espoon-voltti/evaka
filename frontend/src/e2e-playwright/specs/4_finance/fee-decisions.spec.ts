@@ -72,7 +72,7 @@ const insertFeeDecisionFixtureAndNavigateToIt = async (
   feeDecisionsPage = await new FinancePage(page).selectFeeDecisionsTab()
 }
 
-describe.only('Fee decisions', () => {
+describe('Fee decisions', () => {
   test('List of fee decision drafts shows at least one row', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       enduserGuardianFixture,
