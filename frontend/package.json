@@ -102,7 +102,6 @@
     "csstype": "^3.0.9",
     "e2e-playwright": "link:src/e2e-playwright",
     "esbuild": "^0.14.2",
-    "esbuild-plugin-alias": "^0.2.1",
     "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -186,8 +185,13 @@
       "./src/employee-frontend",
       "./src/lib-common"
     ],
-    "reporters": ["default", "jest-junit"],
-    "modulePathIgnorePatterns": ["<rootDir>/node_modules/"],
+    "reporters": [
+      "default",
+      "jest-junit"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/node_modules/"
+    ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js"
     }
@@ -220,7 +224,9 @@
       "plugin:react-hooks/recommended",
       "plugin:@evaka/recommended"
     ],
-    "plugins": ["react-hooks"],
+    "plugins": [
+      "react-hooks"
+    ],
     "settings": {
       "react": {
         "version": "detect"
@@ -248,7 +254,10 @@
         "parserOptions": {
           "project": "./tsconfig.eslint.json"
         },
-        "plugins": ["@typescript-eslint", "react-hooks"],
+        "plugins": [
+          "@typescript-eslint",
+          "react-hooks"
+        ],
         "rules": {
           "@typescript-eslint/explicit-function-return-type": "off",
           "@typescript-eslint/explicit-module-boundary-types": "off",
