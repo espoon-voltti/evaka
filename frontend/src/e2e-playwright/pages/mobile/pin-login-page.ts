@@ -10,11 +10,12 @@ export default class PinLoginPage {
 
   #staffSelect = new Select(this.page.find('[data-qa="select-staff"] select'))
   #pinInput = new TextInput(this.page.find('[data-qa="pin-input"]'))
+  #pinSubmit = new TextInput(this.page.find('[data-qa="pin-submit"]'))
   #pinInfo = this.page.find('[data-qa="pin-input-info"]')
 
   async submitPin(pin: string) {
     await this.#pinInput.fill(pin)
-    await this.page.keyboard.press('Enter')
+    await this.#pinSubmit.click()
   }
 
   async login(name: string, pin: string) {

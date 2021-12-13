@@ -137,6 +137,7 @@ const PinLoginForm = React.memo(function PinLoginForm() {
             disabled={!valid || submitting}
             text={i18n.pin.login}
             onClick={submit}
+            data-qa="pin-submit"
           />
         </FixedSpaceColumn>
       </form>

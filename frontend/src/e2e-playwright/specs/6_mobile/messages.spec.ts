@@ -173,9 +173,8 @@ describe('Message editor in child page', () => {
 })
 
 describe('Child message thread', () => {
-  beforeEach(async () => await initCitizenPage())
-
   test('Employee sees unread counts and pin login button', async () => {
+    await initCitizenPage()
     await citizenSendsMessageToGroup()
     await userSeesNewMessageIndicatorAndClicks()
 
@@ -184,6 +183,7 @@ describe('Child message thread', () => {
   })
 
   test('Employee navigates using login button and sees messages', async () => {
+    await initCitizenPage()
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
@@ -191,6 +191,7 @@ describe('Child message thread', () => {
   })
 
   test('Employee navigates using group link and sees messages', async () => {
+    await initCitizenPage()
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPageThroughGroup()
@@ -198,6 +199,7 @@ describe('Child message thread', () => {
   })
 
   test('Employee replies as a group to message sent to group', async () => {
+    await initCitizenPage()
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
@@ -217,6 +219,7 @@ describe('Child message thread', () => {
   })
 
   test('Employee does not see messages to personal account', async () => {
+    await initCitizenPage()
     await citizenSendsPersonalMessageToEmployee()
     await employeeLoginsToMessagesPage()
     await messagesPage.messagesDontExist()
@@ -236,6 +239,7 @@ describe('Child message thread', () => {
   })
 
   test("Staff sees citizen's message for group", async () => {
+    await initCitizenPage()
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await staffLoginsToMessagesPage()

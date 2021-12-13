@@ -51,9 +51,6 @@ export default class VasuPage {
   async inputFollowupComment(comment: string) {
     await this.#followupNewInput.type(comment)
     await this.#followupNewSaveButton.click()
-
-    // TODO: Doesn't work without some sleeping here, I have no idea why
-    await this.page.page.waitForTimeout(500)
   }
 
   get followupEntryTexts(): Promise<Array<string>> {
