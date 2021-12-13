@@ -5932,13 +5932,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-plugin-alias@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "esbuild-plugin-alias@npm:0.2.1"
-  checksum: afe2d2c8b5f09d5321cb8d9c0825e8a9f6e03c2d50df92f953a291d4620cc29eddb3da9e33b238f6d8f77738e0277bdcb831f127399449fecf78fb84c04e5da9
-  languageName: node
-  linkType: hard
-
 "esbuild-sunos-64@npm:0.14.2":
   version: 0.14.2
   resolution: "esbuild-sunos-64@npm:0.14.2"
@@ -6372,7 +6365,6 @@ __metadata:
     e2e-playwright: "link:src/e2e-playwright"
     e2e-test-common: "link:src/e2e-test-common"
     esbuild: ^0.14.2
-    esbuild-plugin-alias: ^0.2.1
     eslint: ^7.31.0
     eslint-config-prettier: ^8.3.0
     eslint-plugin-prettier: ^3.4.0

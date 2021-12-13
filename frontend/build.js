@@ -12,7 +12,6 @@
 const fs = require('fs/promises')
 const path = require('path')
 const esbuild = require('esbuild')
-const alias = require('esbuild-plugin-alias')
 const express = require('express')
 const proxy = require('express-http-proxy')
 const yargs = require('yargs')
@@ -20,11 +19,7 @@ const _ = require('lodash')
 
 function resolveCustomizations() {
   const customizations = process.env.EVAKA_CUSTOMIZATIONS || 'espoo'
-  const customizationsPath = path.resolve(
-    __dirname,
-    'src/lib-customizations',
-    customizations
-  )
+  const customizationsPath = `src/lib-customizations/${customizations}`
   console.info(`Using customizations from ${customizationsPath}`)
   return customizationsPath
 }
@@ -62,6 +57,53 @@ function resolveOutdir(project) {
   return `dist/esbuild/${project.name}`
 }
 
+function evakaAliasesPlugin(resolveExtensions, customizationsModule, icons) {
+  return {
+    name: 'evaka-aliases',
+    setup(build) {
+      build.onResolve({ filter: /Icons/ }, () => ({
+        path: path.resolve(__dirname, `src/lib-icons/${icons}-icons.ts`)
+      }))
+
+      const customizationsRe = /^@evaka\/customizations\/([^/]+)$/
+      build.onResolve({ filter: customizationsRe }, (args) => {
+        const moduleName = args.path.match(customizationsRe)[1]
+        return {
+          path: path.resolve(`${customizationsModule}/${moduleName}.tsx`)
+        }
+      })
+
+      // Preserve symlinks under the customizations module. This makes it possible to symlink a
+      // customizations module to `lib-customizations/<city-name>` and still use symlinks inside the
+      // customizations module.
+      //
+      // The `preserveSymlinks` option of esbuild doesn't seem to be enough if there's a path that has multiple
+      // symlinks along it.
+      //
+      const customizationsModuleDir = path.resolve(customizationsModule)
+      build.onResolve({ filter: /^\.\// }, async (args) => {
+        if (args.resolveDir === customizationsModuleDir) {
+          const base = path.resolve(args.resolveDir, args.path)
+          if (path.extname(args.path)) {
+            // The path already has an extension
+            return { path: base }
+          }
+          for (const ext of resolveExtensions) {
+            try {
+              const pathWithExt = `${base}${ext}`
+              await fs.access(pathWithExt)
+              return { path: pathWithExt }
+            } catch (_e) {
+              // ignore
+            }
+          }
+          // Fall through if there's no match => esbuild tries to resolve the path itself (and probably fails)
+        }
+      })
+    }
+  }
+}
+
 function findOutputFile(obj, outdir, name, suffix) {
   const re = new RegExp(`^${outdir}/(${name}-.*\\.${suffix}$)`)
   for (const key of Object.keys(obj)) {
@@ -96,13 +138,15 @@ async function buildProject(project, config) {
   const srcdir = resolveSrcdir(project)
   const outdir = resolveOutdir(project)
 
+  const resolveExtensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
+
   const buildOutput = await esbuild.build({
     entryPoints: [`${srcdir}/index.tsx`],
     entryNames: '[name]-[hash]',
     bundle: true,
     sourcemap: dev,
     minify: !dev,
-    resolveExtensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+    resolveExtensions,
     loader: {
       '.ico': 'file',
       '.png': 'file',
@@ -115,13 +159,7 @@ async function buildProject(project, config) {
       'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
     },
     plugins: [
-      alias({
-        Icons: path.resolve(__dirname, `src/lib-icons/${icons}-icons.ts`),
-        '@evaka/customizations/common': `${customizationsModule}/common.tsx`,
-        '@evaka/customizations/citizen': `${customizationsModule}/citizen.tsx`,
-        '@evaka/customizations/employee': `${customizationsModule}/employee.tsx`,
-        '@evaka/customizations/employeeMobile': `${customizationsModule}/employeeMobile.tsx`
-      })
+      evakaAliasesPlugin(resolveExtensions, customizationsModule, icons)
     ],
     metafile: true,
     logLevel: 'info',
