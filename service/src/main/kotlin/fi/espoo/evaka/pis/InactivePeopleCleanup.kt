@@ -30,8 +30,8 @@ WITH people_with_no_archive_data AS (
         WHERE voucher_value_decision.head_of_family_id = person.id OR voucher_value_decision.partner_id = person.id OR voucher_value_decision.child_id = person.id
     )
     AND NOT EXISTS (
-        SELECT 1 FROM vasu_document
-        WHERE vasu_document.child_id = person.id
+        SELECT 1 FROM curriculum_document
+        WHERE curriculum_document.child_id = person.id
     )
     AND NOT EXISTS (SELECT 1 FROM absence WHERE absence.child_id = person.id)
     AND NOT EXISTS (SELECT 1 FROM child_attendance WHERE child_attendance.child_id = person.id)
