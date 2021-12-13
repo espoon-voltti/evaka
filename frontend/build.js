@@ -74,15 +74,20 @@ function findOutputFile(obj, outdir, name, suffix) {
 }
 
 function script(publicPath, fileName) {
-  return `<script defer src="${publicPath}${fileName}"></script>`
+  return '<script defer src="' + publicPath + fileName + '"></script>'
 }
 
 function stylesheet(publicPath, fileName) {
-  return `<link rel="stylesheet" type="text/css" href="${publicPath}${fileName}">`
+  return (
+    '<link rel="stylesheet" type="text/css" href="' +
+    publicPath +
+    fileName +
+    '">'
+  )
 }
 
 function favicon(publicPath) {
-  return `<link rel="shortcut icon" href="${publicPath}favicon.ico">`
+  return '<link rel="shortcut icon" href="' + publicPath + 'favicon.ico">'
 }
 
 async function buildProject(project, config) {
