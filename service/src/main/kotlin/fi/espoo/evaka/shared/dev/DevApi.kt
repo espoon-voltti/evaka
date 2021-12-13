@@ -300,8 +300,8 @@ class DevApi(
     @PostMapping("/placement/terminate")
     fun terminatePlacement(db: Database.Connection, @RequestBody terminationRequest: DevTerminatePlacementRequest): ResponseEntity<Unit> {
         db.transaction { it.createUpdate("UPDATE placement SET end_date = :endDate, termination_requested_date = :terminationRequestedDate, terminated_by = :terminatedBy WHERE id = :placementId ") }
-                .bindKotlin(terminationRequest)
-                .execute()
+            .bindKotlin(terminationRequest)
+            .execute()
         return ResponseEntity.noContent().build()
     }
 
