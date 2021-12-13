@@ -337,7 +337,8 @@ data class SfiEnv(
     val signingKeyAlias: String,
     val wsSecurityEnabled: Boolean,
     val message: SfiMessageEnv,
-    val printing: SfiPrintingEnv
+    val printing: SfiPrintingEnv,
+    val contactPerson: SfiContactPersonEnv
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiEnv(
@@ -355,7 +356,8 @@ data class SfiEnv(
             signingKeyAlias = env.lookup("evaka.integration.sfi.signing_key_alias", "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias") ?: "signing-key",
             wsSecurityEnabled = env.lookup("evaka.integration.sfi.ws_security_enabled") ?: true,
             message = SfiMessageEnv.fromEnvironment(env),
-            printing = SfiPrintingEnv.fromEnvironment(env)
+            printing = SfiPrintingEnv.fromEnvironment(env),
+            contactPerson = SfiContactPersonEnv.fromEnvironment(env)
         )
     }
 }
@@ -382,9 +384,6 @@ data class SfiPrintingEnv(
     val printingProvider: String,
     val billingId: String?,
     val billingPassword: String?,
-    val contactPersonName: String,
-    val contactPersonPhone: String,
-    val contactPersonEmail: String,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiPrintingEnv(
@@ -393,9 +392,20 @@ data class SfiPrintingEnv(
             printingProvider = env.lookup("evaka.integration.sfi.printing.provider", "fi.espoo.evaka.msg.sfi.printing.printingProvider") ?: "Edita",
             billingId = env.lookup("evaka.integration.sfi.printing.billing.id", "fi.espoo.evaka.msg.sfi.printing.billingId"),
             billingPassword = env.lookup("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword"),
-            contactPersonName = env.lookup("evaka.integration.sfi.printing.contact_person.name", "fi.espoo.evaka.msg.sfi.printing.contactPersonName") ?: "",
-            contactPersonPhone = env.lookup("evaka.integration.sfi.printing.contact_person.phone", "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone") ?: "",
-            contactPersonEmail = env.lookup("evaka.integration.sfi.printing.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail") ?: "",
+        )
+    }
+}
+
+data class SfiContactPersonEnv(
+    val name: String?,
+    val email: String?,
+    val phone: String?,
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = SfiContactPersonEnv(
+            name = env.lookup("evaka.integration.sfi.contact_person.name", "fi.espoo.evaka.msg.sfi.printing.contactPersonName") ?: "",
+            phone = env.lookup("evaka.integration.sfi.contact_person.phone", "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone") ?: "",
+            email = env.lookup("evaka.integration.sfi.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail") ?: "",
         )
     }
 }

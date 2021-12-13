@@ -137,9 +137,9 @@ class SfiMessagesSoapClient(
                 palveluTunnus = sfiEnv.message.serviceIdentifier
                 sanomaVersio = sfiEnv.message.messageApiVersion
                 yhteyshenkilo = Yhteyshenkilo().apply {
-                    nimi = sfiEnv.printing.contactPersonName
-                    matkapuhelin = sfiEnv.printing.contactPersonPhone
-                    sahkoposti = sfiEnv.printing.contactPersonEmail
+                    nimi = sfiEnv.contactPerson.name
+                    matkapuhelin = sfiEnv.contactPerson.phone
+                    sahkoposti = sfiEnv.contactPerson.email
                 }
             }
             kysely = KyselyWS2A().apply {

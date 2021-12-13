@@ -6,6 +6,7 @@ package fi.espoo.evaka.sficlient
 
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.SfiContactPersonEnv
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.SfiMessageEnv
 import fi.espoo.evaka.SfiPrintingEnv
@@ -117,9 +118,11 @@ class SoapStackIntegrationTest {
             printingProvider = "provider",
             billingId = "billing-id",
             billingPassword = "billing-password",
-            contactPersonName = "contact-name",
-            contactPersonPhone = "contact-phone",
-            contactPersonEmail = "contact-email",
+        ),
+        contactPerson = SfiContactPersonEnv(
+            name = "contact-name",
+            phone = "contact-phone",
+            email = "contact-email",
         )
     )
 
@@ -179,9 +182,9 @@ class SoapStackIntegrationTest {
             assertEquals(env.message.certificateCommonName, viranomainen.sanomaVarmenneNimi)
             assertEquals(env.message.messageApiVersion, viranomainen.sanomaVersio)
             assertEquals(env.message.serviceIdentifier, viranomainen.palveluTunnus)
-            assertEquals(env.printing.contactPersonName, viranomainen.yhteyshenkilo.nimi)
-            assertEquals(env.printing.contactPersonEmail, viranomainen.yhteyshenkilo.sahkoposti)
-            assertEquals(env.printing.contactPersonPhone, viranomainen.yhteyshenkilo.matkapuhelin)
+            assertEquals(env.contactPerson.name, viranomainen.yhteyshenkilo.nimi)
+            assertEquals(env.contactPerson.email, viranomainen.yhteyshenkilo.sahkoposti)
+            assertEquals(env.contactPerson.phone, viranomainen.yhteyshenkilo.matkapuhelin)
 
             assertEquals(env.printing.printingProvider, request.tulostustoimittaja)
             assertTrue(request.isLahetaTulostukseen)
