@@ -122,6 +122,7 @@ interface BaseFeatureFlags {
     realtimeStaffAttendance?: boolean
     personalDetailsPage?: boolean
     mobileMessages?: boolean
+    leops?: boolean
   }
 }
 

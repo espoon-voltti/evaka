@@ -29,6 +29,7 @@ class VasuTemplateQueriesTest : PureJdbiTest() {
             val templateId = tx.insertVasuTemplate(
                 "foo",
                 dateRangeNow,
+                CurriculumType.DAYCARE,
                 VasuLanguage.FI,
                 VasuContent(sections = listOf())
             )
@@ -36,6 +37,7 @@ class VasuTemplateQueriesTest : PureJdbiTest() {
                 VasuTemplate(
                     templateId,
                     "foo",
+                    CurriculumType.DAYCARE,
                     dateRangeNow,
                     VasuLanguage.FI,
                     VasuContent(sections = listOf()),
@@ -57,6 +59,7 @@ class VasuTemplateQueriesTest : PureJdbiTest() {
                 VasuTemplate(
                     templateId,
                     "bar",
+                    CurriculumType.DAYCARE,
                     modifiedDateRange,
                     VasuLanguage.FI,
                     VasuContent(sections = listOf()),

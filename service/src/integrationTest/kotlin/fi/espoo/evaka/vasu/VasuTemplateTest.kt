@@ -21,6 +21,7 @@ class VasuTemplateTest {
             id = VasuTemplateId(UUID.randomUUID()),
             name = "foo",
             valid = FiniteDateRange(today.minusDays(5), today.plusDays(5)),
+            type = CurriculumType.DAYCARE,
             language = VasuLanguage.FI,
             documentCount = 5
         )

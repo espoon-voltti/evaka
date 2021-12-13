@@ -12,7 +12,7 @@ class VasuTest {
 
     @Test
     fun `matchesStructurally returns true for equal objects`() {
-        val content = getDefaultTemplateContent(VasuLanguage.FI)
+        val content = getDefaultTemplateContent(CurriculumType.DAYCARE, VasuLanguage.FI)
         assertTrue { content.matchesStructurally(content) }
     }
 

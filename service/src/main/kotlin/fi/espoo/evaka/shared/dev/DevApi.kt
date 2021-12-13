@@ -107,6 +107,7 @@ import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
 import fi.espoo.evaka.vasu.insertVasuDocument
@@ -848,8 +849,9 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
             tx.insertVasuTemplate(
                 name = "testipohja",
                 valid = FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
+                type = CurriculumType.DAYCARE,
                 language = VasuLanguage.FI,
-                content = getDefaultTemplateContent(VasuLanguage.FI)
+                content = getDefaultTemplateContent(CurriculumType.DAYCARE, VasuLanguage.FI)
             )
         }
     }

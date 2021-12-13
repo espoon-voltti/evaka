@@ -16,6 +16,11 @@ import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
+enum class CurriculumType {
+    DAYCARE,
+    PRESCHOOL;
+}
+
 enum class VasuDocumentEventType {
     PUBLISHED,
     MOVED_TO_READY,
@@ -62,7 +67,8 @@ data class VasuDocumentSummary(
     val modifiedAt: HelsinkiDateTime,
     val events: List<VasuDocumentEvent> = listOf(),
 ) {
-    fun getState(): VasuDocumentState = getStateFromEvents(events)
+    val documentState: VasuDocumentState
+        get() = getStateFromEvents(events)
 }
 
 data class VasuDocument(
@@ -84,7 +90,8 @@ data class VasuDocument(
     @Json
     val evaluationDiscussionContent: EvaluationDiscussionContent
 ) {
-    fun getState(): VasuDocumentState = getStateFromEvents(events)
+    val documentState: VasuDocumentState
+        get() = getStateFromEvents(events)
 }
 
 @Json

@@ -2285,6 +2285,7 @@ export const fi = {
         'backup_pickup.child_id': 'Vara- hakijoita',
         'child_attendance.child_id': 'Läsnäoloja',
         'child_images.child_id': 'Kuvia',
+        'curriculum_document.child_id': 'Opetussuunnitelemia',
         'daily_service_time.child_id': 'Varhais- kasvatus- aikoja',
         'daycare_daily_note.child_id': 'Muistiin- panoja',
         'family_contact.child_id': 'Yhteys- henkilöitä (lapsi)',
@@ -2832,6 +2833,11 @@ export const fi = {
     title: 'Vasu-pohjat',
     name: 'Nimi',
     valid: 'Käytössä aikavälillä',
+    type: 'Tyyppi',
+    types: {
+      DAYCARE: 'Varhaiskasvatussuunnitelma',
+      PRESCHOOL: 'Esiopetuksen oppimissuunnitelma'
+    },
     language: 'Kieli',
     languages: {
       FI: 'Suomenkielinen',

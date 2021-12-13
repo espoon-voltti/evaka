@@ -5,7 +5,7 @@
 import React from 'react'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import colors from 'lib-customizations/common'
-import { VasuDocumentState } from '../vasu/api'
+import { VasuDocumentState } from 'lib-common/generated/api-types/vasu'
 
 const vasuStateChip: Record<VasuDocumentState, string> = {
   DRAFT: colors.accents.emerald,

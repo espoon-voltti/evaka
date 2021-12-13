@@ -13,19 +13,21 @@ import org.jdbi.v3.core.kotlin.mapTo
 fun Database.Transaction.insertVasuTemplate(
     name: String,
     valid: FiniteDateRange,
+    type: CurriculumType,
     language: VasuLanguage,
     content: VasuContent
 ): VasuTemplateId {
     // language=sql
     val sql = """
-        INSERT INTO vasu_template (valid, language, name, content) 
-        VALUES (:valid, :language, :name, :content)
+        INSERT INTO curriculum_template (valid, type, language, name, content)
+        VALUES (:valid, :type, :language, :name, :content)
         RETURNING id
     """.trimIndent()
 
     return createQuery(sql)
         .bind("name", name)
         .bind("valid", valid)
+        .bind("type", type)
         .bind("language", language)
         .bind("content", content)
         .mapTo<VasuTemplateId>()
@@ -35,9 +37,9 @@ fun Database.Transaction.insertVasuTemplate(
 fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
     // language=sql
     val sql = """
-        SELECT vt.*, (SELECT count(*) FROM vasu_document vd WHERE vt.id = vd.template_id) AS document_count
-        FROM vasu_template vt
-        WHERE vt.id = :id
+        SELECT ct.*, (SELECT count(*) FROM curriculum_document cd WHERE ct.id = cd.template_id) AS document_count
+        FROM curriculum_template ct
+        WHERE ct.id = :id
     """.trimIndent()
 
     return createQuery(sql)
@@ -53,9 +55,10 @@ fun Database.Read.getVasuTemplates(validOnly: Boolean): List<VasuTemplateSummary
             id,
             name,
             valid,
+            type,
             language,
-            (SELECT count(*) FROM vasu_document vd WHERE vd.template_id = vt.id) AS document_count
-        FROM vasu_template vt
+            (SELECT count(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count
+        FROM curriculum_template ct
         ${if (validOnly) "WHERE valid @> NOW()::date" else ""}
     """
     )
@@ -66,7 +69,7 @@ fun Database.Read.getVasuTemplates(validOnly: Boolean): List<VasuTemplateSummary
 fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: VasuContent) {
     // language=sql
     val sql = """
-        UPDATE vasu_template
+        UPDATE curriculum_template
         SET content = :content
         WHERE id = :id
     """.trimIndent()
@@ -84,9 +87,10 @@ SELECT
     id,
     name,
     valid,
+    type,
     language,
-    (SELECT COUNT(*) FROM vasu_document vd WHERE vd.template_id = vt.id) AS document_count
-FROM vasu_template vt
+    (SELECT COUNT(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count
+FROM curriculum_template ct
 WHERE id = :id
 FOR UPDATE
     """.trimIndent()
@@ -103,7 +107,7 @@ fun Database.Transaction.updateVasuTemplate(
 ) {
     // language=sql
     val sql = """
-        UPDATE vasu_template
+        UPDATE curriculum_template
         SET name = :name, valid = :valid
         WHERE id = :id
     """.trimIndent()
@@ -118,8 +122,8 @@ fun Database.Transaction.updateVasuTemplate(
 fun Database.Transaction.deleteUnusedVasuTemplate(id: VasuTemplateId) {
     // language=sql
     val sql = """
-        DELETE FROM vasu_template vt
-        WHERE vt.id = :id AND NOT EXISTS(SELECT 1 FROM vasu_document vd WHERE vd.template_id = vt.id)
+        DELETE FROM curriculum_template ct
+        WHERE ct.id = :id AND NOT EXISTS(SELECT 1 FROM curriculum_document cd WHERE cd.template_id = ct.id)
     """.trimIndent()
 
     createUpdate(sql)

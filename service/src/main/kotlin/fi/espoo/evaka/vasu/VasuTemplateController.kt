@@ -5,7 +5,6 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-@ExcludeCodeGen
 @RestController
 @RequestMapping("/vasu/templates")
 class VasuTemplateController(
@@ -34,6 +32,7 @@ class VasuTemplateController(
     data class CreateTemplateRequest(
         val name: String,
         val valid: FiniteDateRange,
+        val type: CurriculumType,
         val language: VasuLanguage
     )
 
@@ -50,8 +49,9 @@ class VasuTemplateController(
             it.insertVasuTemplate(
                 name = body.name,
                 valid = body.valid,
+                type = body.type,
                 language = body.language,
-                content = getDefaultTemplateContent(body.language)
+                content = getDefaultTemplateContent(body.type, body.language)
             )
         }
     }
@@ -93,6 +93,7 @@ class VasuTemplateController(
             it.insertVasuTemplate(
                 name = body.name,
                 valid = body.valid,
+                type = template.type,
                 language = template.language,
                 content = copyTemplateContentWithCurrentlyValidOphSections(template)
             )

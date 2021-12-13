@@ -8,7 +8,6 @@ import React, { useContext, useState } from 'react'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
@@ -16,12 +15,18 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
   createVasuTemplate,
+  curriculumTypes,
   editVasuTemplate,
-  VasuLanguage,
-  vasuLanguages,
-  VasuTemplateParams,
-  VasuTemplateSummary
+  vasuLanguages
 } from './api'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import {
+  CreateTemplateRequest,
+  CurriculumType,
+  VasuLanguage,
+  VasuTemplateSummary
+} from 'lib-common/generated/api-types/vasu'
+import { featureFlags } from 'lib-customizations/employee'
 
 interface Props {
   onSuccess: (templateId: UUID) => void
@@ -44,19 +49,21 @@ export default React.memo(function CreateOrEditTemplateModal({
   const [endDate, setEndDate] = useState(
     templateToEdit?.valid.end ?? LocalDate.today().addYears(1)
   )
+  const [type, setType] = useState<CurriculumType>(
+    templateToEdit?.type ?? 'DAYCARE'
+  )
   const [language, setLanguage] = useState<VasuLanguage>(
     templateToEdit?.language ?? 'FI'
   )
   const [submitting, setSubmitting] = useState(false)
 
   const apiCall = templateToEdit
-    ? (params: VasuTemplateParams) =>
+    ? (params: CreateTemplateRequest) =>
         editVasuTemplate(templateToEdit.id, params)
     : createVasuTemplate
 
   const isEditableName = !templateToEdit || templateToEdit.documentCount == 0
-
-  const isEditableLang = !templateToEdit
+  const isEditableTypeAndLang = !templateToEdit
 
   return (
     <FormModal
@@ -68,6 +75,7 @@ export default React.memo(function CreateOrEditTemplateModal({
         void apiCall({
           name,
           valid: new FiniteDateRange(startDate, endDate),
+          type,
           language
         }).then((res) => {
           setSubmitting(false)
@@ -103,10 +111,28 @@ export default React.memo(function CreateOrEditTemplateModal({
           )}
         </FixedSpaceColumn>
 
+        {featureFlags.experimental?.leops && (
+          <FixedSpaceColumn spacing="xxs">
+            <Label>{t.type}</Label>
+            {isEditableTypeAndLang ? (
+              <Select
+                items={[...curriculumTypes]}
+                selectedItem={type}
+                onChange={(value) => {
+                  if (value) setType(value)
+                }}
+                getItemLabel={(option) => t.types[option]}
+              />
+            ) : (
+              <span>{t.types[type]}</span>
+            )}
+          </FixedSpaceColumn>
+        )}
+
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.language}</Label>
-          {isEditableLang ? (
-            <Combobox
+          {isEditableTypeAndLang ? (
+            <Select
               items={[...vasuLanguages]}
               selectedItem={language}
               onChange={(value) => {

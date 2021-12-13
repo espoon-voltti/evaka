@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.vasu.CurriculumType.DAYCARE
+import fi.espoo.evaka.vasu.CurriculumType.PRESCHOOL
+
 enum class OphQuestionKey {
     PEDAGOGIC_ACTIVITY_GOALS,
     PEDAGOGIC_GOALS_DESCRIPTION
@@ -19,7 +22,12 @@ data class OphQuestionOption(
     val name: Map<VasuLanguage, String>
 )
 
-fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
+fun getDefaultTemplateContent(type: CurriculumType, lang: VasuLanguage) = when (type) {
+    DAYCARE -> getDefaultVasuContent(lang)
+    PRESCHOOL -> getDefaultLeopsContent()
+}
+
+fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
     sections = listOf(
         VasuSection(
             name = when (lang) {
@@ -242,6 +250,196 @@ fun getDefaultTemplateContent(lang: VasuLanguage) = VasuContent(
     )
 )
 
+fun getDefaultLeopsContent() = VasuContent(
+    sections = listOf(
+        VasuSection(
+            name = "Lapsen ja huoltajien osallisuus suunnitelman laadinnassa",
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = "Miten lapsen näkökulma ja mielipiteet on otettu huomioon",
+                    info = "Tässä kuvataan, millaisten keskustelujen ja toiminnan kautta lapsi voi osallistua oman esiopetusvuotensa suunnitteluun ja arviointiin sekä omien oppimistavoitteidensa asettamiseen ja arviointiin.",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Miten huoltajien näkemykset otetaan huomioon ja miten yhteistyö on järjestetty",
+                    info = "Huoltajien kanssa keskustellaan lapsen esiopetusvuodesta, oppimisesta, kasvusta ja hyvinvoinnista suunnitelmallisissa keskustelutilanteissa lukuvuoden aikana sekä päivittäisissä arjen kohtaamisissa. Huoltajien on mahdollista pohtia oman lapsensa esiopetukseen liittyviä toiveita ja odotuksia etukäteen huoltajan oma osio -lomakkeen avulla. Lisäksi huoltajalla on mahdollisuus keskustella muiden huoltajien kanssa lasten oppimiseen, kasvuun ja hyvinvointiin liittyvistä asioista yhteisissä tilaisuuksissa.",
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = "Suunnitelma esiopetuksen toteuttamiselle",
+            questions = listOf(
+                // TODO: add general paragraph component
+                VasuQuestion.TextQuestion(
+                    name = "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen",
+                    info = "Tähän kohtaan kirjataan lapsen vahvuuksia, kiinnostuksen kohteita ja tarpeita, jotka otetaan huomioon esiopetusryhmän toiminnan suunnittelussa ja toteuttamisessa.",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Tavoitteet henkilöstön pedagogiselle toiminnalle lapsen oppimisen ja kehityksen tukemiseksi",
+                    info = "Tähän kohtaan kirjataan lapsen kasvun, oppimisen ja hyvinvoinnin kannalta oleelliset tavoitteet henkilöstön pedagogiselle toiminnalle. Henkilöstön toiminnalle asetetut tavoitteet voivat liittyä lapsen oppimiseen, työskentely- ja vuorovaikutustaitoihin. Tavoitteita asetettaessa otetaan huomioon lapsiryhmä ja ryhmän kokonaistilanne, tavoitteiden konkreettisuus ja arvioitavuus. Tavoitteita asetetaan enintään kolme.",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Toimenpiteet, menetelmät ja oppimisympäristöön liittyvät järjestelyt tavoitteiden saavuttamiseksi",
+                    info = "Tähän kirjataan, millä toimenpiteillä, menetelmillä ja oppimisympäristöön liittyvillä järjestelyillä edellisessä kohdassa asetettuihin tavoitteisiin pyritään arjen toiminnassa.",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Muut mahdolliset lapsen kasvun ja oppimisen tukeen liittyvät tarpeet sekä tuen toteuttamiseen liittyvät tavoitteet ja sovitut järjestelyt",
+                    info = "Jos lapsi tarvitsee kasvulleen tai oppimiselleen tukea, tähän kohtaan kirjataan tarvittaessa muut tuen näkökulmasta esiopetukseen vaikuttavat asiat. Pedagogiset ratkaisut, kuten oppimisympäristön muokkaamiseen sekä lapsen tukeen liittyvät ratkaisut: joustavat ryhmittelyt, samanaikaisopetus, opetusmenetelmät, työskentely- ja kommunikointitavat tms. Lapsen osa-aikaisen erityisopetuksen järjestäminen. Tukeen liittyvät asiat otetaan huomioon myös muita tämän osion kohtia kirjattaessa.",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Seuranta ja arviointi",
+                    info = "Sovitaan esiopetuksen henkilöstön ja huoltajien yhteisistä seurannan ja arvioinnin käytänteistä ja sovitaan, kuinka pedagogista dokumentointia hyödynnetään lapsen oppimisen, kasvun ja hyvinvoinnin seurannassa esiopetuksen pedagogisten tavoitteiden saavuttamiseksi.",
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = "Suomi toisena kielenä -opetus",
+            questions = listOf(
+                VasuQuestion.MultiSelectQuestion(
+                    name = "Lapsen kielimaailma ja suomen kielen taitotason seuranta",
+                    options = listOf(
+                        QuestionOption(
+                            key = "finnish_form2",
+                            name = "Lapselle laaditaan kielipeda-työvälineen lomake 2: monikielisen lapsen kielimaailma"
+                        ),
+                        QuestionOption(
+                            key = "finnish_form3",
+                            name = "Lapselle laaditaan kielipeda-työvälineen lomake 3: lapsen suomenkielen taitotason seuranta"
+                        )
+                    ),
+                    minSelections = 0,
+                    maxSelections = null,
+                    value = listOf()
+                ),
+                VasuQuestion.RadioGroupQuestion(
+                    name = "Suomen kielen taitotaso",
+                    options = listOf(
+                        QuestionOption(
+                            key = "pre_a1",
+                            name = "Esi A1"
+                        ),
+                        QuestionOption(
+                            key = "a1",
+                            name = "A1"
+                        ),
+                        QuestionOption(
+                            key = "a2",
+                            name = "A2"
+                        ),
+                        QuestionOption(
+                            key = "b1",
+                            name = "B1"
+                        )
+                    ),
+                    value = null
+                ),
+                // TODO: convert to a "date question"
+                VasuQuestion.TextQuestion(
+                    name = "Viimeisin seuranta",
+                    info = "Päivitä tähän viimeisin taitotason seurannan ajankohta.",
+                    multiline = false,
+                    value = ""
+                ),
+                VasuQuestion.MultiSelectQuestion(
+                    name = "Perusopetukseen valmistavan opetuksen toteuttaminen",
+                    options = listOf(
+                        QuestionOption(
+                            key = "preparatory",
+                            name = "Tätä oppimissuunnitelmaa käytetään perusopetukseen valmistavan opetuksen toteuttamiseksi esiopetuksessa"
+                        )
+                    ),
+                    minSelections = 0,
+                    maxSelections = null,
+                    value = listOf()
+                )
+            )
+        ),
+        VasuSection(
+            name = "Kasvun ja oppimisen tuki",
+            questions = listOf(
+                VasuQuestion.MultiSelectQuestion(
+                    name = "Lapsen kasvuun ja oppimiseen liittyvä tuen tarve",
+                    info = "Lapsen kasvuun ja oppimiseen liittyvä tuen tarve, asiakirjat ja käsittely. Täytä tämä kohta jos lapsi on yleisen, tehostetun tai erityisen tuen tarpeessa. Jos lapsella ilmenee vaikeuksia oppimisessaan, on hänellä oikeus saada osa-aikaista erityisopetusta muun esiopetuksen ohessa kaikilla tuen tasoilla. Vaikeudet voivat liittyä kielellisiin, matemaattisiin tai motorisiin taitoihin tai oman toiminnan ohjaukseen, tarkkaavaisuuteen tai vuorovaikutukseen. Osa-aikaisen erityisopetuksen tavoitteena on vahvistaa lapsen oppimisen edellytyksiä, ehkäistä kehityksen ja oppimisen vaikeuksia. Osa-aikaisen erityisopetuksen tarve arvioidaan ja suunnitellaan yhteistyössä esiopettajien ja varhaiskasvatuksessa toimivien erityisopettajien kanssa. Osa-aikaista erityisopetusta annetaan joustavin järjestelyin samanaikaisopetuksena, pienryhmissä tai yksilöllisesti. Tavoitteet sisällytetään lapsen saamaan muuhun opetukseen ja ne kuvataan kohdassa 4. Vaikutuksia arvioidaan opettajien yhteistyönä sekä lapsen että huoltajien kanssa. Huoltajille tiedotetaan yksikön toimintatavoista.",
+                    options = listOf(
+                        QuestionOption(
+                            key = "tuki1",
+                            name = "Lapsi saa osa-aikaista erityisopetusta"
+                        ),
+                        QuestionOption(
+                            key = "tuki2",
+                            // TODO: date input / editability ?
+                            name = "Pedagoginen arvio on tehty tehostetun tuen käynnistämiseksi, pvm:"
+                        ),
+                        QuestionOption(
+                            key = "tuki3",
+                            name = "Tätä oppimissuunnitelmaa käytetään tehostetun tuen toteuttamiseksi"
+                        ),
+                        QuestionOption(
+                            key = "tuki4",
+                            name = "Pedagoginen selvitys on tehty erityisen tuen tarpeen arvioimiseksi"
+                        )
+                    ),
+                    minSelections = 0,
+                    maxSelections = null,
+                    value = listOf()
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Tuen edellyttämä yhteistyö ja palvelut",
+                    info = "Opiskeluhuollon ammattihenkilöiden ja muiden asiantuntijoiden antama tuki ja yhdessä sovittu vastuunjako. Esiopetukseen osallistumisen edellyttämät perusopetuslain mukaiset tulkitsemis- ja avustajapalvelut, muut opetuspalvelut, erityiset apuvälineet sekä eri toimijoiden vastuunjako. Lapsen osallistuminen muuhun varhaiskasvatukseen ja kuvaus yhteistyöstä toiminnan järjestäjän kanssa.",
+                    multiline = true,
+                    value = ""
+                ),
+                // TODO: Question with multiple fields and automatic new rows on fill
+                // VasuQuestion,
+                VasuQuestion.MultiSelectQuestion(
+                    name = "Opiskeluhuolto",
+                    info = "Esiopetuksen yksilökohtainen opiskeluhuolto sisältää opiskeluhuollon psykologin ja kuraattorin palvelut sekä tapauskohtaisesti esioppilaan tueksi koottavan monialaisen asiantuntijaryhmän. Myös neuvolan terveydenhoitaja voi osallistua tarpeen mukaan. Yksilökohtainen opiskeluhuolto perustuu vapaaehtoisuuteen ja sen toteuttaminen edellyttää huoltajien suostumuksen.",
+                    options = listOf(
+                        QuestionOption(
+                            key = "opiskeluhuolto",
+                            name = "Lapsi on ohjattu yksilökohtaisen opiskeluhuollon piiriin"
+                        )
+                    ),
+                    minSelections = 0,
+                    maxSelections = null,
+                    value = listOf()
+                )
+            )
+        ),
+        VasuSection(
+            name = "Lapsen esiopetuksen oppimissuunnitelmakeskustelut",
+            questions = listOf(
+                // TODO: add general paragraph component / or a title component
+                // TODO: add date question
+                // TODO: add guardians multiselect question
+            )
+        ),
+        VasuSection(
+            name = "Lisätietoja",
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = "Lisätietoja suunnitelmaan, sen laatimiseen tai keskusteluihin liittyen",
+                    multiline = true,
+                    value = ""
+                )
+            )
+        )
+    )
+)
+
 private val ophQuestionMap = mapOf(
     OphQuestionKey.PEDAGOGIC_ACTIVITY_GOALS to OphQuestion(
         name = mapOf(
@@ -284,6 +482,6 @@ private val ophQuestionMap = mapOf(
 // TODO: this won't currently work
 fun copyTemplateContentWithCurrentlyValidOphSections(template: VasuTemplate): VasuContent {
     val copyableSections = template.content.sections.filter { section -> section.questions.all { question -> question.ophKey == null } }
-    val defaultSections = getDefaultTemplateContent(template.language).sections
+    val defaultSections = getDefaultTemplateContent(template.type, template.language).sections
     return VasuContent(sections = copyableSections + defaultSections)
 }
