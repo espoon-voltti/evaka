@@ -77,10 +77,10 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     fun `citizen can terminate own child's placement starting from tomorrow`() {
         val placementTerminationDate = today.plusDays(1)
 
-        val (_, postRes, _) = http.post("/citizen/placements/${testPlacement.id}/terminate")
+        val (_, postRes, _) = http.post("/citizen/placements/terminate")
             .jsonBody(
                 objectMapper.writeValueAsString(
-                    PlacementTerminationRequestBody(terminationDate = placementTerminationDate)
+                    PlacementTerminationRequestBody(terminationDate = placementTerminationDate, placementIds = listOf(testPlacement.id))
                 )
             )
             .asUser(authenticatedParent)
@@ -90,11 +90,12 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
 
         val (_, res, result) = http.get("/citizen/children/${child.id}/placements")
             .asUser(authenticatedParent)
-            .responseObject<Set<ChildPlacement>>(objectMapper)
+            .responseObject<ChildPlacementResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
 
-        val childPlacements = result.get().toList()
+        val response = result.get()
+        val childPlacements = response.placements
         assertEquals(1, childPlacements.size)
         assertEquals(child.id, childPlacements[0].childId.raw)
         assertEquals(placementStart, childPlacements[0].placementStartDate)
@@ -102,5 +103,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(PlacementType.DAYCARE, childPlacements[0].placementType)
         assertEquals(today, childPlacements[0].terminationRequestedDate)
         assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].terminatedBy?.name)
+
+        assertEquals(listOf(), response.terminationConstraints)
     }
 }

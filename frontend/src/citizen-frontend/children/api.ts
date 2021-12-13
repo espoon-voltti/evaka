@@ -11,6 +11,7 @@ import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import {
   ChildPlacement,
+  ChildPlacementResponse,
   PlacementTerminationRequestBody
 } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
@@ -30,43 +31,41 @@ export function getChild(childId: UUID): Promise<Result<Child>> {
     .catch((e) => Failure.fromError(e))
 }
 
+const deserializeChildPlacement = ({
+  placementEndDate,
+  placementStartDate,
+  terminationRequestedDate,
+  ...rest
+}: JsonOf<ChildPlacement>): ChildPlacement => ({
+  ...rest,
+  placementStartDate: LocalDate.parseIso(placementStartDate),
+  placementEndDate: LocalDate.parseIso(placementEndDate),
+  terminationRequestedDate: terminationRequestedDate
+    ? LocalDate.parseIso(terminationRequestedDate)
+    : null
+})
+
 export function getPlacements(
   childId: UUID
-): Promise<Result<ChildPlacement[]>> {
+): Promise<Result<ChildPlacementResponse>> {
   return client
-    .get<JsonOf<ChildPlacement[]>>(`/citizen/children/${childId}/placements`)
-    .then((res) =>
-      Success.of(
-        res.data.map(
-          ({
-            placementEndDate,
-            placementStartDate,
-            terminationRequestedDate,
-            ...rest
-          }) => ({
-            ...rest,
-            placementStartDate: LocalDate.parseIso(placementStartDate),
-            placementEndDate: LocalDate.parseIso(placementEndDate),
-            terminationRequestedDate: terminationRequestedDate
-              ? LocalDate.parseIso(terminationRequestedDate)
-              : null
-          })
-        )
-      )
+    .get<JsonOf<ChildPlacementResponse>>(
+      `/citizen/children/${childId}/placements`
+    )
+    .then(({ data: { placements, ...rest } }) =>
+      Success.of({
+        ...rest,
+        placements: placements.map(deserializeChildPlacement)
+      })
     )
     .catch((e) => Failure.fromError(e))
 }
 
-export type TerminatePlacementParams = {
-  id: UUID
-} & PlacementTerminationRequestBody
-
-export function terminatePlacement({
-  id,
-  terminationDate
-}: TerminatePlacementParams): Promise<Result<void>> {
+export function terminatePlacement(
+  body: PlacementTerminationRequestBody
+): Promise<Result<void>> {
   return client
-    .post(`/citizen/placements/${id}/terminate`, { terminationDate })
+    .post(`/citizen/placements/terminate`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

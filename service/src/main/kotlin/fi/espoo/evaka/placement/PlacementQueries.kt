@@ -355,7 +355,6 @@ data class ChildPlacement(
     val terminationRequestedDate: LocalDate?,
     @Nested("terminated_by")
     val terminatedBy: EvakaUser?,
-    val currentGroupName: String
 )
 
 fun Database.Read.getCitizenChildPlacements(today: LocalDate, childId: UUID): List<ChildPlacement> = createQuery(
@@ -368,7 +367,6 @@ SELECT
     p.end_date AS placement_end_date,
     p.termination_requested_date,
     d.name AS placement_unit_name,
-    COALESCE(dg.name, '') AS current_group_name,
     evaka_user.id as terminated_by_id,
     evaka_user.name as terminated_by_name,
     evaka_user.type as terminated_by_type
@@ -376,8 +374,6 @@ FROM placement p
 JOIN daycare d ON p.unit_id = d.id
 JOIN person child ON p.child_id = child.id
 LEFT JOIN evaka_user ON p.terminated_by = evaka_user.id
-LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = p.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today
-LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
 WHERE child.id = :childId            
     """.trimIndent()
 )

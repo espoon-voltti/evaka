@@ -29,7 +29,6 @@ export interface ChildBasics {
 */
 export interface ChildPlacement {
   childId: UUID
-  currentGroupName: string
   placementEndDate: LocalDate
   placementId: UUID
   placementStartDate: LocalDate
@@ -37,6 +36,14 @@ export interface ChildPlacement {
   placementUnitName: string
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.ChildPlacementResponse
+*/
+export interface ChildPlacementResponse {
+  placements: ChildPlacement[]
+  terminationConstraints: PlacementTerminationConstraint[]
 }
 
 /**
@@ -197,9 +204,18 @@ export type PlacementPlanRejectReason =
   | 'REASON_3'
 
 /**
+* Generated from fi.espoo.evaka.placement.PlacementTerminationConstraint
+*/
+export interface PlacementTerminationConstraint {
+  placementId: UUID
+  requiresTerminationOf: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.placement.PlacementTerminationRequestBody
 */
 export interface PlacementTerminationRequestBody {
+  placementIds: UUID[]
   terminationDate: LocalDate
 }
 

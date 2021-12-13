@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -228,24 +227,7 @@ class PlacementController(
             it.transferGroup(groupPlacementId, body.groupId, body.startDate)
         }
     }
-
-    @PostMapping("/placements/termination/{placementId}")
-    fun postPlacementTermination(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable("placementId") placementId: PlacementId,
-        @RequestBody body: PlacementTerminationRequestBody
-    ) {
-        Audit.PlacementTerminate.log(targetId = placementId)
-        accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, placementId)
-        db.transaction { it.terminatePlacementFrom(clock.today(), placementId, body.terminationDate, user.id) }
-    }
 }
-
-data class PlacementTerminationRequestBody(
-    val terminationDate: LocalDate
-)
 
 data class PlacementCreateRequestBody(
     val type: PlacementType,

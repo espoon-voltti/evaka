@@ -34,7 +34,8 @@ export default React.memo(function PlacementTerminationSection({
       startCollapsed
       fitted
     >
-      {renderResult(placementsResponse, (placements) => {
+      {renderResult(placementsResponse, (response) => {
+        const { placements, terminationConstraints } = response
         const [terminatedPlacements, nonTerminatedPlacements] = partition(
           placements,
           (p) => !!p.terminationRequestedDate
@@ -45,6 +46,7 @@ export default React.memo(function PlacementTerminationSection({
             {nonTerminatedPlacements.length > 0 && (
               <PlacementTerminationForm
                 placements={nonTerminatedPlacements}
+                constraints={terminationConstraints}
                 onSuccess={refreshPlacements}
               />
             )}

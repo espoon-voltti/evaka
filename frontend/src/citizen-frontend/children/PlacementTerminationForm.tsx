@@ -2,45 +2,64 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChildPlacement } from 'lib-common/generated/api-types/placement'
+import {
+  ChildPlacement,
+  PlacementTerminationConstraint,
+  PlacementTerminationRequestBody
+} from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
+import { uniqBy } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useLang, useTranslation } from '../localization'
-import { terminatePlacement, TerminatePlacementParams } from './api'
+import { terminatePlacement } from './api'
 
 interface UiState {
-  placement: ChildPlacement | undefined
+  placements: ChildPlacement[]
   terminationDate: string | undefined
 }
 
 const emptyState = (): UiState => ({
-  placement: undefined,
+  placements: [],
   terminationDate: undefined
 })
 
-interface Props {
-  placements: ChildPlacement[]
-  onSuccess: () => void
-}
-
 type TerminationFormState =
-  | { type: 'valid'; data: TerminatePlacementParams }
+  | { type: 'valid'; data: PlacementTerminationRequestBody }
   | { type: 'invalid-date' }
   | { type: 'invalid-missing' }
+  | { type: 'invalid-constraints' }
 
 const validateTerminationDate = (
   terminationDate: LocalDate,
-  placementEndDate: LocalDate | undefined
+  placements: ChildPlacement[]
 ): boolean =>
-  (!placementEndDate || placementEndDate.isAfter(terminationDate)) &&
-  terminationDate.isEqualOrAfter(LocalDate.today())
+  terminationDate.isEqualOrAfter(LocalDate.today()) &&
+  placements.every((p) => p.placementEndDate.isAfter(terminationDate))
+
+const checkTerminationConstraints = (
+  constraints: PlacementTerminationConstraint[],
+  placementIds: UUID[]
+): boolean =>
+  constraints.every(
+    ({ placementId, requiresTerminationOf }) =>
+      !placementIds.includes(placementId) ||
+      placementIds.includes(requiresTerminationOf)
+  )
+
+interface Props {
+  placements: ChildPlacement[]
+  constraints: PlacementTerminationConstraint[]
+  onSuccess: () => void
+}
 
 export default React.memo(function PlacementTerminationForm({
+  constraints,
   placements,
   onSuccess
 }: Props) {
@@ -58,26 +77,32 @@ export default React.memo(function PlacementTerminationForm({
 
   const isValidDate = useCallback(
     (date: LocalDate): boolean =>
-      validateTerminationDate(date, state.placement?.placementEndDate),
-    [state.placement]
+      validateTerminationDate(date, state.placements),
+    [state.placements]
   )
 
   const terminationState = useMemo<TerminationFormState>(() => {
-    if (!(state.placement && state.terminationDate)) {
+    if (!(state.placements.length > 0 && state.terminationDate)) {
       return { type: 'invalid-missing' }
     }
     const date = LocalDate.parseFiOrNull(state.terminationDate)
-    return date &&
-      validateTerminationDate(date, state.placement.placementEndDate)
-      ? {
-          type: 'valid',
-          data: {
-            id: state.placement.placementId,
-            terminationDate: date
-          }
-        }
-      : { type: 'invalid-date' }
-  }, [state.placement, state.terminationDate])
+    if (!(date && validateTerminationDate(date, state.placements))) {
+      return { type: 'invalid-date' }
+    }
+
+    const placementIds = state.placements.map((p) => p.placementId)
+    if (!checkTerminationConstraints(constraints, placementIds)) {
+      return { type: 'invalid-constraints' }
+    }
+
+    return {
+      type: 'valid',
+      data: {
+        placementIds: placementIds,
+        terminationDate: date
+      }
+    }
+  }, [constraints, state.placements, state.terminationDate])
 
   const onSubmit = useCallback(
     () =>
@@ -92,6 +117,36 @@ export default React.memo(function PlacementTerminationForm({
     onSuccess()
   }, [onSuccess])
 
+  const togglePlacement = (p: ChildPlacement, checked: boolean) => {
+    if (checked) {
+      const otherPlacementsToTerminate = placements.filter((p2) =>
+        constraints.some(
+          (c) =>
+            c.requiresTerminationOf === p2.placementId &&
+            c.placementId === p.placementId
+        )
+      )
+      setState((prev) => ({
+        ...prev,
+        placements: uniqBy(
+          [...prev.placements, p, ...otherPlacementsToTerminate],
+          ({ placementId }) => placementId
+        )
+      }))
+    } else {
+      const otherPlacementsToUncheck = constraints
+        .filter((c) => c.requiresTerminationOf === p.placementId)
+        .map(({ placementId }) => placementId)
+      const placementsToUncheck = [p.placementId, ...otherPlacementsToUncheck]
+      setState((prev) => ({
+        ...prev,
+        placements: prev.placements.filter(
+          (p2) => !placementsToUncheck.includes(p2.placementId)
+        )
+      }))
+    }
+  }
+
   return (
     <>
       <div>
@@ -100,13 +155,12 @@ export default React.memo(function PlacementTerminationForm({
           <Checkbox
             key={p.placementId}
             label={getPlacementLabel(p)}
-            checked={state.placement?.placementId === p.placementId}
-            onChange={(checked) =>
-              setState((prev) => ({
-                ...prev,
-                placement: checked ? p : undefined
-              }))
+            checked={
+              !!state.placements.find(
+                ({ placementId }) => placementId === p.placementId
+              )
             }
+            onChange={(checked) => togglePlacement(p, checked)}
           />
         ))}
       </div>
