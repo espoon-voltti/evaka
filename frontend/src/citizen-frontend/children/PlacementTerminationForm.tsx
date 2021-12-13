@@ -28,6 +28,11 @@ interface Props {
   onSuccess: () => void
 }
 
+type FormState =
+  | { type: 'valid'; data: TerminatePlacementParams }
+  | { type: 'invalid-date' }
+  | { type: 'invalid-missing' }
+
 export default React.memo(function PlacementTerminationForm({
   placements,
   onSuccess
@@ -51,26 +56,26 @@ export default React.memo(function PlacementTerminationForm({
     [state.placement]
   )
 
-  const terminatePlacementParams = useMemo<
-    TerminatePlacementParams | 'invalid-date' | 'missing'
-  >(() => {
+  const terminatePlacementParams = useMemo<FormState>(() => {
     if (!(state.placement && state.terminationDate)) {
-      return 'missing'
+      return { type: 'invalid-missing' }
     }
     const date = LocalDate.parseFiOrNull(state.terminationDate)
     return date && isValidDate(date)
       ? {
-          id: state.placement.placementId,
-          terminationDate: date
+          type: 'valid',
+          data: {
+            id: state.placement.placementId,
+            terminationDate: date
+          }
         }
-      : 'invalid-date'
+      : { type: 'invalid-date' }
   }, [isValidDate, state.placement, state.terminationDate])
 
-  const isValid = typeof terminatePlacementParams !== 'string'
   const onSubmit = useCallback(
     () =>
-      typeof terminatePlacementParams !== 'string'
-        ? terminatePlacement(terminatePlacementParams)
+      terminatePlacementParams.type === 'valid'
+        ? terminatePlacement(terminatePlacementParams.data)
         : Promise.reject('Invalid params'),
     [terminatePlacementParams]
   )
@@ -111,7 +116,7 @@ export default React.memo(function PlacementTerminationForm({
           locale={lang}
           isValidDate={isValidDate}
           info={
-            terminatePlacementParams === 'invalid-date'
+            terminatePlacementParams.type === 'invalid-date'
               ? { text: t.validationErrors.timeFormat, status: 'warning' }
               : undefined
           }
@@ -126,7 +131,7 @@ export default React.memo(function PlacementTerminationForm({
       <AsyncButton
         primary
         text={t.children.placementTermination.terminate}
-        disabled={!isValid}
+        disabled={terminatePlacementParams.type !== 'valid'}
         onClick={onSubmit}
         onSuccess={onTerminateSuccess}
       />

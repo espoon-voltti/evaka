@@ -44,6 +44,6 @@ class PlacementControllerCitizen(
     ) {
         Audit.PlacementTerminate.log(targetId = placementId)
         accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, placementId)
-        db.transaction { it.terminatePlacementFrom(clock.today(), placementId, body.placementTerminationDate, user.id) }
+        db.transaction { it.terminatePlacementFrom(clock.today(), placementId, body.terminationDate, user.id) }
     }
 }

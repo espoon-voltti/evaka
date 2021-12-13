@@ -200,7 +200,7 @@ export type PlacementPlanRejectReason =
 * Generated from fi.espoo.evaka.placement.PlacementTerminationRequestBody
 */
 export interface PlacementTerminationRequestBody {
-  placementTerminationDate: LocalDate
+  terminationDate: LocalDate
 }
 
 /**

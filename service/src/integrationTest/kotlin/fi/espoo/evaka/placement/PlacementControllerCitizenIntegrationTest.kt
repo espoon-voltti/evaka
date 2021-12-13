@@ -80,9 +80,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         val (_, postRes, _) = http.post("/citizen/placements/${testPlacement.id}/terminate")
             .jsonBody(
                 objectMapper.writeValueAsString(
-                    PlacementTerminationRequestBody(
-                        placementTerminationDate = placementTerminationDate
-                    )
+                    PlacementTerminationRequestBody(terminationDate = placementTerminationDate)
                 )
             )
             .asUser(authenticatedParent)

@@ -9,7 +9,10 @@ import {
 } from 'lib-common/generated/api-types/children'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import { ChildPlacement } from 'lib-common/generated/api-types/placement'
+import {
+  ChildPlacement,
+  PlacementTerminationRequestBody
+} from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { client } from '../api-client'
 
@@ -54,19 +57,16 @@ export function getPlacements(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface TerminatePlacementParams {
+export type TerminatePlacementParams = {
   id: UUID
-  terminationDate: LocalDate
-}
+} & PlacementTerminationRequestBody
 
 export function terminatePlacement({
   id,
   terminationDate
 }: TerminatePlacementParams): Promise<Result<void>> {
   return client
-    .post(`/citizen/placements/${id}/terminate`, {
-      placementTerminationDate: terminationDate
-    })
+    .post(`/citizen/placements/${id}/terminate`, { terminationDate })
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
