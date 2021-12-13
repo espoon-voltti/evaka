@@ -49,3 +49,11 @@ fun Database.Transaction.clearOldReservations(reservations: List<Pair<UUID, Loca
 
     batch.execute()
 }
+
+fun handleOvernightReserations(reservations: List<TimeRange>?, date: LocalDate) = reservations?.flatMap {
+    res ->
+    if (!res.endTime.isAfter(res.startTime)) listOf(
+        Pair(TimeRange(startTime = res.startTime, endTime = LocalTime.MIDNIGHT.minusMinutes(1)), date),
+        Pair(TimeRange(startTime = LocalTime.MIDNIGHT, endTime = res.endTime), date.plusDays(1))
+    ) else listOf(Pair(res, date))
+}

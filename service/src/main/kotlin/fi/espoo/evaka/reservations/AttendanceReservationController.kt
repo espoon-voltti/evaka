@@ -303,13 +303,13 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, requests:
     )
 
     requests.forEach { request ->
-        request.reservations?.forEach { res ->
+        handleOvernightReserations(request.reservations, request.date)?.forEach { (res, date) ->
             val start = HelsinkiDateTime.of(
-                date = request.date,
+                date = date,
                 time = res.startTime
             )
             val end = HelsinkiDateTime.of(
-                date = if (res.endTime.isAfter(res.startTime)) request.date else request.date.plusDays(1),
+                date = date,
                 time = res.endTime
             )
             batch
