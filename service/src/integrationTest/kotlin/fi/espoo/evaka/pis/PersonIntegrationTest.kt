@@ -129,7 +129,6 @@ class PersonIntegrationTest : PureJdbiTest() {
             PersonReference("pedagogical_document_read", "person_id"),
             PersonReference("placement", "child_id"),
             PersonReference("varda_service_need", "evaka_child_id"),
-            PersonReference("vasu_document", "child_id"),
             PersonReference("voucher_value_decision", "child_id"),
             PersonReference("voucher_value_decision", "head_of_family_id"),
             PersonReference("voucher_value_decision", "partner_id")
