@@ -9,7 +9,6 @@ import { UUID } from 'lib-common/types'
 import 'lib-components/layout/ButtonContainer'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { AuthorsSection } from './sections/AuthorsSection'
 import { DynamicSections } from './sections/DynamicSections'
 import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
 import { VasuDiscussionSection } from './sections/VasuDiscussionSection'
@@ -35,13 +34,12 @@ export default React.memo(function VasuPage({
   const {
     vasu,
     content,
-    authorsContent,
     vasuDiscussionContent,
     evaluationDiscussionContent,
     translations
   } = useVasu(id)
 
-  const dynamicSectionsOffset = 2
+  const dynamicSectionsOffset = 1
 
   return (
     <VasuContainer gapSize={'zero'} data-qa="vasu-preview">
@@ -53,11 +51,6 @@ export default React.memo(function VasuPage({
             sectionIndex={0}
             content={vasu.basics}
             templateRange={vasu.templateRange}
-            translations={translations}
-          />
-          <AuthorsSection
-            sectionIndex={1}
-            content={authorsContent}
             translations={translations}
           />
           <DynamicSections

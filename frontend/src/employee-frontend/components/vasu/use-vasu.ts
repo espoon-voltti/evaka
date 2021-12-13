@@ -22,7 +22,6 @@ import {
   PutVasuDocumentParams
 } from './api'
 import {
-  AuthorsContent,
   EvaluationDiscussionContent,
   VasuContent,
   VasuDiscussionContent,
@@ -61,8 +60,6 @@ interface Vasu {
   vasu: VasuMetadata | undefined
   content: VasuContent
   setContent: Dispatch<SetStateAction<VasuContent>>
-  authorsContent: AuthorsContent
-  setAuthorsContent: Dispatch<SetStateAction<AuthorsContent>>
   vasuDiscussionContent: VasuDiscussionContent
   setVasuDiscussionContent: Dispatch<SetStateAction<VasuDiscussionContent>>
   evaluationDiscussionContent: EvaluationDiscussionContent
@@ -81,20 +78,6 @@ export function useVasu(id: string): Vasu {
   const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
-  const [authorsContent, setAuthorsContent] = useState<AuthorsContent>({
-    primaryAuthor: {
-      name: '',
-      title: '',
-      phone: ''
-    },
-    otherAuthors: [
-      {
-        name: '',
-        title: '',
-        phone: ''
-      }
-    ]
-  })
   const [vasuDiscussionContent, setVasuDiscussionContent] =
     useState<VasuDiscussionContent>({
       discussionDate: null,
@@ -119,7 +102,6 @@ export function useVasu(id: string): Vasu {
         success: ({
           vasu: {
             content,
-            authorsContent,
             vasuDiscussionContent,
             evaluationDiscussionContent,
             ...meta
@@ -129,7 +111,6 @@ export function useVasu(id: string): Vasu {
           setStatus({ state: 'clean' })
           setVasu(meta)
           setContent(content)
-          setAuthorsContent(authorsContent)
           setVasuDiscussionContent(vasuDiscussionContent)
           setEvaluationDiscussionContent(evaluationDiscussionContent)
           setPermittedFollowupActions(permittedFollowupActions)
@@ -189,7 +170,6 @@ export function useVasu(id: string): Vasu {
         debouncedSave({
           documentId: id,
           content,
-          authorsContent,
           vasuDiscussionContent,
           evaluationDiscussionContent
         })
@@ -199,7 +179,6 @@ export function useVasu(id: string): Vasu {
       debouncedSave,
       status.state,
       content,
-      authorsContent,
       vasuDiscussionContent,
       evaluationDiscussionContent,
       id
@@ -235,14 +214,6 @@ export function useVasu(id: string): Vasu {
     []
   )
 
-  const setAuthorsContentCallback = useCallback(
-    (draft: SetStateAction<AuthorsContent>) => {
-      setAuthorsContent(draft)
-      setStatus((status) => ({ ...status, state: 'dirty' }))
-    },
-    []
-  )
-
   const setVasuDiscussionContentCallback = useCallback(
     (draft: SetStateAction<VasuDiscussionContent>) => {
       setVasuDiscussionContent(draft)
@@ -271,8 +242,6 @@ export function useVasu(id: string): Vasu {
     vasu,
     content,
     setContent: setContentCallback,
-    authorsContent,
-    setAuthorsContent: setAuthorsContentCallback,
     vasuDiscussionContent,
     setVasuDiscussionContent: setVasuDiscussionContentCallback,
     evaluationDiscussionContent,

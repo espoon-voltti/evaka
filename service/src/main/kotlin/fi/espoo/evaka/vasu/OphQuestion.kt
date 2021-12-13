@@ -31,6 +31,40 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
     sections = listOf(
         VasuSection(
             name = when (lang) {
+                VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman laatijat"
+                VasuLanguage.SV -> "Uppgörande av barnets plan för småbarnspedagogik"
+            },
+            questions = listOf(
+                VasuQuestion.MultiField(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Laatimisesta vastaava henkilö"
+                        VasuLanguage.SV -> "Person som ansvarat för uppgörande av planen"
+                    },
+                    keys = when (lang) {
+                        VasuLanguage.FI ->
+                            listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
+                        VasuLanguage.SV ->
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                    },
+                    value = listOf("", "", "", "")
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Muu laatimiseen osallistunut henkilöstö/asiantuntijat"
+                        VasuLanguage.SV -> "Övrig personal/sakkunniga som deltagit i uppgörandet av planen"
+                    },
+                    keys = when (lang) {
+                        VasuLanguage.FI ->
+                            listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
+                        VasuLanguage.SV ->
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                    },
+                    value = listOf()
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
                 VasuLanguage.FI -> "Näkemyksien huomioiminen"
                 VasuLanguage.SV -> "Barnets och vårdnadshavarnas delaktighet i uppgörandet av planen"
             },
@@ -252,6 +286,26 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
 
 fun getDefaultLeopsContent() = VasuContent(
     sections = listOf(
+        VasuSection(
+            name = "Lapsen esiopetuksen oppimissuunnitelman laatiminen",
+            questions = listOf(
+                VasuQuestion.MultiField(
+                    name = "Laatimisesta vastaava henkilö",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero")),
+                    value = listOf("", "", "", "")
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Muu laatimiseen osallistunut henkilöstö/asiantuntijat",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero")),
+                    value = listOf(listOf("", "", "", ""))
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Esiopetuksen ulkopuoliset yhteistyötahot, joista huoltajien kanssa on sovittu",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero")),
+                    value = listOf(listOf("", "", "", ""))
+                )
+            )
+        ),
         VasuSection(
             name = "Lapsen ja huoltajien osallisuus suunnitelman laadinnassa",
             questions = listOf(

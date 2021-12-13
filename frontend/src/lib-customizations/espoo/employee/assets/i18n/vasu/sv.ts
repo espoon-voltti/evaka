@@ -13,17 +13,6 @@ export const sv: typeof fi = {
       guardians: 'Vårdnadshavare eller annan laglig företrädare',
       placements: 'Enhet inom småbarnspedagogiken och grupp'
     },
-    authors: {
-      title: 'Uppgörande av barnets plan för småbarnspedagogik',
-      primaryAuthor: 'Person som ansvarat för uppgörande av planen',
-      otherAuthors:
-        'Övrig personal/sakkunniga som deltagit i uppgörandet av planen',
-      authorInfo: {
-        name: 'Namn',
-        title: 'Titel',
-        phone: 'Telefonnummer'
-      }
-    },
     vasuDiscussion: {
       title: 'Samtal om barnets plan för småbarnspedagogik',
       title2: '',

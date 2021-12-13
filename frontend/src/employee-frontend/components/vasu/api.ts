@@ -9,7 +9,6 @@ import { mapVasuContent } from './vasu-content'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  AuthorsContent,
   EvaluationDiscussionContent,
   VasuContent,
   VasuDiscussionContent,
@@ -110,7 +109,6 @@ export async function getVasuDocument(
 export interface PutVasuDocumentParams {
   documentId: UUID
   content: VasuContent
-  authorsContent: AuthorsContent
   vasuDiscussionContent: VasuDiscussionContent
   evaluationDiscussionContent: EvaluationDiscussionContent
 }
@@ -118,14 +116,12 @@ export interface PutVasuDocumentParams {
 export async function putVasuDocument({
   documentId,
   content,
-  authorsContent,
   vasuDiscussionContent,
   evaluationDiscussionContent
 }: PutVasuDocumentParams): Promise<Result<null>> {
   return client
     .put(`/vasu/${documentId}`, {
       content,
-      authorsContent,
       vasuDiscussionContent,
       evaluationDiscussionContent
     })

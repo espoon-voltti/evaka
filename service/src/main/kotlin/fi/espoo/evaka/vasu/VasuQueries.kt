@@ -47,13 +47,12 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTempl
 
     createUpdate(
         """
-        INSERT INTO curriculum_content (document_id, content, authors_content, curriculum_discussion_content, evaluation_discussion_content)
-        SELECT :documentId, ct.content, :authors, :discussion, :evaluation FROM curriculum_template ct WHERE ct.id = :templateId
+        INSERT INTO curriculum_content (document_id, content, curriculum_discussion_content, evaluation_discussion_content)
+        SELECT :documentId, ct.content, :discussion, :evaluation FROM curriculum_template ct WHERE ct.id = :templateId
         """.trimIndent()
     )
         .bind("documentId", documentId)
         .bind("templateId", templateId)
-        .bind("authors", AuthorsContent(primaryAuthor = AuthorInfo(), otherAuthors = listOf(AuthorInfo())))
         .bind("discussion", VasuDiscussionContent())
         .bind("evaluation", EvaluationDiscussionContent())
         .updateExactlyOne()
@@ -73,7 +72,6 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
             ct.valid AS template_range,
             ct.language,
             vc.content,
-            vc.authors_content,
             vc.curriculum_discussion_content AS vasu_discussion_content,
             vc.evaluation_discussion_content,
             (SELECT jsonb_agg(json_build_object(
@@ -117,7 +115,6 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
             ct.valid AS template_range,
             ct.language,
             vc.content,
-            vc.authors_content,
             vc.curriculum_discussion_content AS vasu_discussion_content,
             vc.evaluation_discussion_content,
             (SELECT jsonb_agg(json_build_object(
@@ -130,7 +127,7 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
            ) AS events
         FROM curriculum_document cd
         JOIN LATERAL (
-            SELECT vc.content, vc.authors_content, vc.curriculum_discussion_content, vc.evaluation_discussion_content
+            SELECT vc.content, vc.curriculum_discussion_content, vc.evaluation_discussion_content
             FROM curriculum_content vc
             WHERE vc.published_at IS NOT NULL AND vc.document_id = cd.id
             ORDER BY vc.published_at DESC
@@ -158,7 +155,6 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
 fun Database.Transaction.updateVasuDocumentMaster(
     id: VasuDocumentId,
     content: VasuContent,
-    authorsContent: AuthorsContent,
     vasuDiscussionContent: VasuDiscussionContent,
     evaluationDiscussionContent: EvaluationDiscussionContent
 ) {
@@ -167,7 +163,6 @@ fun Database.Transaction.updateVasuDocumentMaster(
         UPDATE curriculum_content
         SET 
             content = :content, 
-            authors_content = :authorsContent,
             curriculum_discussion_content = :vasuDiscussionContent,
             evaluation_discussion_content = :evaluationDiscussionContent
         WHERE document_id = :id AND master
@@ -176,7 +171,6 @@ fun Database.Transaction.updateVasuDocumentMaster(
     createUpdate(updateContentSql)
         .bind("id", id)
         .bind("content", content)
-        .bind("authorsContent", authorsContent)
         .bind("vasuDiscussionContent", vasuDiscussionContent)
         .bind("evaluationDiscussionContent", evaluationDiscussionContent)
         .updateExactlyOne()
@@ -189,8 +183,8 @@ fun Database.Transaction.updateVasuDocumentMaster(
 fun Database.Transaction.publishVasuDocument(id: VasuDocumentId) {
     // language=sql
     val insertContentSql = """
-        INSERT INTO curriculum_content (document_id, published_at, content, authors_content, curriculum_discussion_content, evaluation_discussion_content)
-        SELECT vc.document_id, now(), vc.content, vc.authors_content, vc.curriculum_discussion_content, vc.evaluation_discussion_content
+        INSERT INTO curriculum_content (document_id, published_at, content, curriculum_discussion_content, evaluation_discussion_content)
+        SELECT vc.document_id, now(), vc.content, vc.curriculum_discussion_content, vc.evaluation_discussion_content
         FROM curriculum_content vc
         WHERE vc.document_id = :id AND master
     """.trimIndent()

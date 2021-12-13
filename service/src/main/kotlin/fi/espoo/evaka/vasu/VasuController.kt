@@ -105,7 +105,6 @@ class VasuController(
 
     data class UpdateDocumentRequest(
         val content: VasuContent,
-        val authorsContent: AuthorsContent,
         val vasuDiscussionContent: VasuDiscussionContent,
         val evaluationDiscussionContent: EvaluationDiscussionContent
     )
@@ -126,7 +125,6 @@ class VasuController(
             tx.updateVasuDocumentMaster(
                 id,
                 body.content,
-                body.authorsContent,
                 body.vasuDiscussionContent,
                 body.evaluationDiscussionContent
             )
@@ -166,7 +164,6 @@ class VasuController(
             tx.updateVasuDocumentMaster(
                 id,
                 vasu.content.editFollowupEntry(entryId, editedBy, body.text),
-                vasu.authorsContent,
                 vasu.vasuDiscussionContent,
                 vasu.evaluationDiscussionContent
             )

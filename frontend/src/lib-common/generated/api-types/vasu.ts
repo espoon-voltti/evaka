@@ -11,23 +11,6 @@ import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
 
 /**
-* Generated from fi.espoo.evaka.vasu.AuthorInfo
-*/
-export interface AuthorInfo {
-  name: string
-  phone: string
-  title: string
-}
-
-/**
-* Generated from fi.espoo.evaka.vasu.AuthorsContent
-*/
-export interface AuthorsContent {
-  otherAuthors: AuthorInfo[]
-  primaryAuthor: AuthorInfo
-}
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuController.ChangeDocumentStateRequest
 */
 export interface ChangeDocumentStateRequest {
@@ -95,7 +78,6 @@ export interface GetVasuDocumentResponse {
 * Generated from fi.espoo.evaka.vasu.VasuController.UpdateDocumentRequest
 */
 export interface UpdateDocumentRequest {
-  authorsContent: AuthorsContent
   content: VasuContent
   evaluationDiscussionContent: EvaluationDiscussionContent
   vasuDiscussionContent: VasuDiscussionContent
@@ -140,7 +122,6 @@ export interface VasuDiscussionContent {
 * Generated from fi.espoo.evaka.vasu.VasuDocument
 */
 export interface VasuDocument {
-  authorsContent: AuthorsContent
   basics: VasuBasics
   content: VasuContent
   documentState: VasuDocumentState

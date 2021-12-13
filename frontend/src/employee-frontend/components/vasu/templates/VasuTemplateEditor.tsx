@@ -4,9 +4,10 @@
 
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H1, H2, H3 } from 'lib-components/typography'
+import { H1, H2, H3, Label } from 'lib-components/typography'
 import React, { Fragment, useEffect, useState, useMemo } from 'react'
 import { useHistory } from 'react-router'
 import { Prompt, useParams } from 'react-router-dom'
@@ -33,6 +34,8 @@ import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
   isCheckboxQuestion,
   isFollowup,
+  isMultiFieldListQuestion,
+  isMultiFieldQuestion,
   isMultiSelectQuestion,
   isRadioGroupQuestion,
   isTextQuestion
@@ -43,6 +46,8 @@ import QuestionInfo from '../QuestionInfo'
 import {
   CheckboxQuestion,
   Followup,
+  MultiFieldListQuestion,
+  MultiFieldQuestion,
   MultiSelectQuestion,
   RadioGroupQuestion,
   TextQuestion,
@@ -224,7 +229,7 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
-  const dynamicOffset = 2
+  const dynamicOffset = 1
 
   function renderTextQuestion(
     question: TextQuestion,
@@ -303,6 +308,55 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
+  function renderMultiFieldQuestion(
+    question: MultiFieldQuestion,
+    sectionIndex: number,
+    questionIndex: number
+  ) {
+    return (
+      <FixedSpaceColumn spacing="xs">
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
+        <FixedSpaceFlexWrap>
+          {question.keys.map((key) => (
+            <FixedSpaceColumn key={key.name} spacing="xxs">
+              <Label>{key.name}</Label>
+              <InputField value="" width="m" />
+            </FixedSpaceColumn>
+          ))}
+        </FixedSpaceFlexWrap>
+      </FixedSpaceColumn>
+    )
+  }
+
+  function renderMultiFieldListQuestion(
+    question: MultiFieldListQuestion,
+    sectionIndex: number,
+    questionIndex: number
+  ) {
+    return (
+      <FixedSpaceColumn spacing="xs">
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
+            questionIndex + 1
+          }. ${question.name}`}</H3>
+        </QuestionInfo>
+        <FixedSpaceFlexWrap>
+          {question.keys.map((key) => (
+            <FixedSpaceColumn key={key.name} spacing="xxs">
+              <Label>{key.name}</Label>
+              <InputField value="" width="m" />
+            </FixedSpaceColumn>
+          ))}
+        </FixedSpaceFlexWrap>
+        <QuestionDetails>{i18n.vasuTemplates.autoGrowingList}</QuestionDetails>
+      </FixedSpaceColumn>
+    )
+  }
+
   function renderFollowup(question: Followup) {
     return (
       <FixedSpaceColumn spacing="s">
@@ -328,6 +382,10 @@ export default React.memo(function VasuTemplateEditor() {
       return renderRadioGroupQuestion(question, sectionIndex, questionIndex)
     } else if (isMultiSelectQuestion(question)) {
       return renderMultiSelectQuestion(question, sectionIndex, questionIndex)
+    } else if (isMultiFieldQuestion(question)) {
+      return renderMultiFieldQuestion(question, sectionIndex, questionIndex)
+    } else if (isMultiFieldListQuestion(question)) {
+      return renderMultiFieldListQuestion(question, sectionIndex, questionIndex)
     } else if (isFollowup(question)) {
       return renderFollowup(question)
     } else {
@@ -353,17 +411,13 @@ export default React.memo(function VasuTemplateEditor() {
             <Gap />
 
             <FixedSpaceColumn>
-              <SectionContainer>
+              <ElementContainer>
                 <H2>1. {translations.staticSections.basics.title}</H2>
-              </SectionContainer>
-
-              <SectionContainer>
-                <H2>2. {translations.staticSections.authors.title}</H2>
-              </SectionContainer>
+              </ElementContainer>
 
               {template.value.content.sections.map((section, sectionIndex) => (
                 <Fragment key={`section-${sectionIndex}`}>
-                  <SectionContainer>
+                  <ElementContainer>
                     {sectionNameEdit === sectionIndex ? (
                       <InputField
                         value={section.name}
@@ -418,7 +472,7 @@ export default React.memo(function VasuTemplateEditor() {
                         <Fragment
                           key={`question-${sectionIndex}-${questionIndex}`}
                         >
-                          <QuestionContainer>
+                          <ElementContainer>
                             {!readonly && (
                               <FixedSpaceRow
                                 spacing="xs"
@@ -463,7 +517,7 @@ export default React.memo(function VasuTemplateEditor() {
                               sectionIndex,
                               questionIndex
                             )}
-                          </QuestionContainer>
+                          </ElementContainer>
                           {!readonly && (
                             <AddNewContainer
                               showOnHover={
@@ -495,7 +549,7 @@ export default React.memo(function VasuTemplateEditor() {
                         />
                       </AddNewContainer>
                     )}
-                  </SectionContainer>
+                  </ElementContainer>
                   {!readonly && (
                     <AddNewContainer
                       showOnHover={
@@ -524,19 +578,19 @@ export default React.memo(function VasuTemplateEditor() {
               </AddNewContainer>
             )}
 
-            <SectionContainer>
+            <ElementContainer>
               <H2>
                 {dynamicOffset + template.value.content.sections.length + 1}.{' '}
                 {translations.staticSections.vasuDiscussion.title}
               </H2>
-            </SectionContainer>
+            </ElementContainer>
 
-            <SectionContainer>
+            <ElementContainer>
               <H2>
                 {dynamicOffset + template.value.content.sections.length + 2}.{' '}
                 {translations.staticSections.evaluationDiscussion.title}
               </H2>
-            </SectionContainer>
+            </ElementContainer>
 
             <Gap />
 
@@ -599,11 +653,9 @@ const ElementContainer = styled.div`
   }
 `
 
-const SectionContainer = styled(ElementContainer)`
-  width: 60%;
+const QuestionDetails = styled.i`
+  color: ${({ theme }) => theme.colors.greyscale.dark};
 `
-
-const QuestionContainer = styled(ElementContainer)``
 
 const AddNewContainer = styled.div<{ showOnHover: boolean }>`
   display: flex;

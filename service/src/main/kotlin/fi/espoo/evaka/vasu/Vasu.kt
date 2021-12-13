@@ -84,8 +84,6 @@ data class VasuDocument(
     @Json
     val content: VasuContent,
     @Json
-    val authorsContent: AuthorsContent,
-    @Json
     val vasuDiscussionContent: VasuDiscussionContent,
     @Json
     val evaluationDiscussionContent: EvaluationDiscussionContent
@@ -218,6 +216,8 @@ data class VasuSection(
     JsonSubTypes.Type(value = VasuQuestion.CheckboxQuestion::class, name = "CHECKBOX"),
     JsonSubTypes.Type(value = VasuQuestion.RadioGroupQuestion::class, name = "RADIO_GROUP"),
     JsonSubTypes.Type(value = VasuQuestion.MultiSelectQuestion::class, name = "MULTISELECT"),
+    JsonSubTypes.Type(value = VasuQuestion.MultiField::class, name = "MULTI_FIELD"),
+    JsonSubTypes.Type(value = VasuQuestion.MultiFieldList::class, name = "MULTI_FIELD_LIST"),
     JsonSubTypes.Type(value = VasuQuestion.Followup::class, name = "FOLLOWUP"),
 )
 sealed class VasuQuestion(
@@ -277,6 +277,40 @@ sealed class VasuQuestion(
         }
     }
 
+    data class MultiField(
+        override val name: String,
+        override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
+        val keys: List<Field>,
+        val value: List<String>
+    ) : VasuQuestion(VasuQuestionType.MULTI_FIELD) {
+        init {
+            check(keys.size == value.size) { "MultiField keys ($keys) and value ($value) sizes do not match" }
+        }
+
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is MultiField && question.copy(value = this.value) == this
+        }
+    }
+
+    data class MultiFieldList(
+        override val name: String,
+        override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
+        val keys: List<Field>,
+        val value: List<List<String>>
+    ) : VasuQuestion(VasuQuestionType.MULTI_FIELD_LIST) {
+        init {
+            check(value.all { it.size == keys.size }) {
+                "MultiFieldList keys ($keys) and value ($value) sizes do not match"
+            }
+        }
+
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is MultiFieldList && question.copy(value = this.value) == this
+        }
+    }
+
     data class Followup(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
@@ -295,25 +329,17 @@ data class QuestionOption(
     val name: String
 )
 
+data class Field(val name: String)
+
 enum class VasuQuestionType {
     TEXT,
     CHECKBOX,
     RADIO_GROUP,
     MULTISELECT,
+    MULTI_FIELD,
+    MULTI_FIELD_LIST,
     FOLLOWUP
 }
-
-@Json
-data class AuthorsContent(
-    val primaryAuthor: AuthorInfo,
-    val otherAuthors: List<AuthorInfo>
-)
-
-data class AuthorInfo(
-    val name: String = "",
-    val title: String = "",
-    val phone: String = ""
-)
 
 @Json
 data class VasuDiscussionContent(

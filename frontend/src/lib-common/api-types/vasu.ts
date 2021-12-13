@@ -10,6 +10,8 @@ export const vasuQuestionTypes = [
   'CHECKBOX',
   'RADIO_GROUP',
   'MULTISELECT',
+  'MULTI_FIELD',
+  'MULTI_FIELD_LIST',
   'FOLLOWUP'
 ] as const
 
@@ -48,6 +50,18 @@ export interface QuestionOption {
   name: string
 }
 
+export interface MultiFieldQuestion extends VasuQuestionCommon {
+  type: 'MULTI_FIELD'
+  keys: Field[]
+  value: string[]
+}
+
+export interface MultiFieldListQuestion extends VasuQuestionCommon {
+  type: 'MULTI_FIELD_LIST'
+  keys: Field[]
+  value: string[][]
+}
+
 export interface Followup extends VasuQuestionCommon {
   title: string
   value: FollowupEntry[]
@@ -73,6 +87,8 @@ export type VasuQuestion =
   | CheckboxQuestion
   | RadioGroupQuestion
   | MultiSelectQuestion
+  | MultiFieldQuestion
+  | MultiFieldListQuestion
   | Followup
 
 export type PermittedFollowupActions = {
@@ -82,4 +98,8 @@ export type PermittedFollowupActions = {
 export interface GetVasuDocumentResponse {
   permittedFollowupActions: PermittedFollowupActions
   vasu: VasuDocument
+}
+
+interface Field {
+  name: string
 }

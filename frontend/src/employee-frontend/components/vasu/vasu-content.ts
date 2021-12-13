@@ -6,6 +6,8 @@ import {
   CheckboxQuestion,
   Followup,
   FollowupEntry,
+  MultiFieldListQuestion,
+  MultiFieldQuestion,
   MultiSelectQuestion,
   RadioGroupQuestion,
   TextQuestion,
@@ -37,6 +39,18 @@ export function isMultiSelectQuestion(
   question: VasuQuestion
 ): question is MultiSelectQuestion {
   return question.type === 'MULTISELECT'
+}
+
+export function isMultiFieldQuestion(
+  question: VasuQuestion
+): question is MultiFieldQuestion {
+  return question.type === 'MULTI_FIELD'
+}
+
+export function isMultiFieldListQuestion(
+  question: VasuQuestion
+): question is MultiFieldListQuestion {
+  return question.type === 'MULTI_FIELD_LIST'
 }
 
 export function isFollowup(question: VasuQuestion): question is Followup {

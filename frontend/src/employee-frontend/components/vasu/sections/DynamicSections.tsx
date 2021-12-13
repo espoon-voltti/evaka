@@ -10,6 +10,8 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
+import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
+import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
@@ -18,6 +20,7 @@ import {
   CheckboxQuestion,
   Followup,
   FollowupEntry,
+  MultiFieldQuestion,
   MultiSelectQuestion,
   QuestionOption,
   RadioGroupQuestion,
@@ -31,6 +34,8 @@ import {
 import {
   isCheckboxQuestion,
   isFollowup,
+  isMultiFieldListQuestion,
+  isMultiFieldQuestion,
   isMultiSelectQuestion,
   isRadioGroupQuestion,
   isTextQuestion
@@ -182,6 +187,47 @@ export function DynamicSections({
                           : undefined
                       }
                       translations={translations}
+                    />
+                  ) : isMultiFieldQuestion(question) ? (
+                    <MultiFieldQuestionElem
+                      question={question}
+                      questionNumber={questionNumber}
+                      translations={translations}
+                      onChange={
+                        setContent
+                          ? (index, value) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                const question1 = clone.sections[sectionIndex]
+                                  .questions[
+                                  questionIndex
+                                ] as MultiFieldQuestion
+                                question1.value[index] = value
+                                return clone
+                              })
+                          : undefined
+                      }
+                    />
+                  ) : isMultiFieldListQuestion(question) ? (
+                    <MultiFieldListQuestionElem
+                      question={question}
+                      questionNumber={questionNumber}
+                      translations={translations}
+                      onChange={
+                        setContent
+                          ? (value) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                clone.sections[sectionIndex].questions[
+                                  questionIndex
+                                ] = {
+                                  ...question,
+                                  value
+                                }
+                                return clone
+                              })
+                          : undefined
+                      }
                     />
                   ) : isFollowup(question) && state !== 'DRAFT' ? (
                     <FollowupQuestionElem

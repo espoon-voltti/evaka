@@ -125,13 +125,6 @@ class VasuIntegrationTest : FullApplicationTest() {
             )
             assertEquals(0, doc.events.size)
             assertEquals(template.content, doc.content)
-            assertEquals(
-                AuthorsContent(
-                    primaryAuthor = AuthorInfo(),
-                    otherAuthors = listOf(AuthorInfo())
-                ),
-                doc.authorsContent
-            )
             assertEquals(VasuDiscussionContent(), doc.vasuDiscussionContent)
             assertEquals(EvaluationDiscussionContent(), doc.evaluationDiscussionContent)
         }
@@ -141,16 +134,16 @@ class VasuIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updating daycare document content and authors`() {
-        updateDocumentContentAndAuthors(CurriculumType.DAYCARE)
+    fun `updating daycare document content`() {
+        updateDocumentContent(CurriculumType.DAYCARE)
     }
 
     @Test
-    fun `updating preschool document content and authors`() {
-        updateDocumentContentAndAuthors(CurriculumType.PRESCHOOL)
+    fun `updating preschool document content`() {
+        updateDocumentContent(CurriculumType.PRESCHOOL)
     }
 
-    private fun updateDocumentContentAndAuthors(type: CurriculumType) {
+    private fun updateDocumentContent(type: CurriculumType) {
         val template = getTemplate(type)
 
         val documentId = postVasuDocument(
@@ -174,16 +167,10 @@ class VasuIntegrationTest : FullApplicationTest() {
         )
         assertNotEquals(content, updatedContent)
 
-        val updatedAuthors = AuthorsContent(
-            primaryAuthor = AuthorInfo(name = "foo"),
-            otherAuthors = listOf(AuthorInfo(name = "bar", phone = "555"))
-        )
-
         putVasuDocument(
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = updatedContent,
-                authorsContent = updatedAuthors,
                 vasuDiscussionContent = VasuDiscussionContent(),
                 evaluationDiscussionContent = EvaluationDiscussionContent()
             )
@@ -191,7 +178,6 @@ class VasuIntegrationTest : FullApplicationTest() {
 
         getVasuDocument(documentId).let {
             assertEquals(updatedContent, it.content)
-            assertEquals(updatedAuthors, it.authorsContent)
         }
     }
 
@@ -217,15 +203,21 @@ class VasuIntegrationTest : FullApplicationTest() {
         val content = getVasuDocument(documentId).content
 
         // first update and publish
-        val updatedAuthors = AuthorsContent(
-            primaryAuthor = AuthorInfo(name = "foo"),
-            otherAuthors = listOf(AuthorInfo(name = "bar", phone = "555"))
+        val updatedContent = content.copy(
+            sections = listOf(
+                content.sections.first().copy(
+                    questions = content.sections.first().questions.map { q ->
+                        if (q is VasuQuestion.MultiField) {
+                            q.copy(value = q.value.map { "primary author" })
+                        } else q
+                    }
+                )
+            ) + content.sections.drop(1)
         )
         putVasuDocument(
             documentId,
             VasuController.UpdateDocumentRequest(
-                content = content,
-                authorsContent = updatedAuthors,
+                content = updatedContent,
                 vasuDiscussionContent = VasuDiscussionContent(),
                 evaluationDiscussionContent = EvaluationDiscussionContent()
             )
@@ -239,7 +231,6 @@ class VasuIntegrationTest : FullApplicationTest() {
         )
         assertNotNull(db.read { it.getLatestPublishedVasuDocument(documentId) })
         getVasuDocument(documentId).let { doc ->
-            assertEquals(updatedAuthors, doc.authorsContent)
             assertEquals(
                 listOf(PUBLISHED),
                 doc.events.map { it.eventType }
@@ -256,7 +247,6 @@ class VasuIntegrationTest : FullApplicationTest() {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = content,
-                authorsContent = updatedAuthors,
                 vasuDiscussionContent = vasuDiscussionContent,
                 evaluationDiscussionContent = EvaluationDiscussionContent()
             )
@@ -286,7 +276,6 @@ class VasuIntegrationTest : FullApplicationTest() {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = content,
-                authorsContent = updatedAuthors,
                 vasuDiscussionContent = vasuDiscussionContent,
                 evaluationDiscussionContent = evaluationDiscussionContent
             )
@@ -329,26 +318,18 @@ class VasuIntegrationTest : FullApplicationTest() {
             getVasuDocument(documentId).events.map { it.eventType }
         )
 
-        // verify the last published version
-        val authorsAfterLastPublish = AuthorsContent(
-            primaryAuthor = AuthorInfo(name = "new author"),
-            otherAuthors = emptyList()
-        )
         putVasuDocument(
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = content,
-                authorsContent = authorsAfterLastPublish,
                 vasuDiscussionContent = vasuDiscussionContent,
                 evaluationDiscussionContent = evaluationDiscussionContent
             )
         )
-        assertEquals(authorsAfterLastPublish, getVasuDocument(documentId).authorsContent)
         db.read {
             it.getLatestPublishedVasuDocument(documentId).let { doc ->
                 assertNotNull(doc)
                 assertEquals(content, doc.content)
-                assertEquals(updatedAuthors, doc.authorsContent)
                 assertEquals(vasuDiscussionContent, doc.vasuDiscussionContent)
                 assertEquals(evaluationDiscussionContent, doc.evaluationDiscussionContent)
             }

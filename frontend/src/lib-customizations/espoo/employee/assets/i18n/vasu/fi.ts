@@ -11,16 +11,6 @@ export const fi = {
       guardians: 'Huoltaja(t) tai muu laillinen edustaja',
       placements: 'Varhaiskasvatusyksikkö ja ryhmä'
     },
-    authors: {
-      title: 'Lapsen varhaiskasvatussuunnitelman laatijat',
-      primaryAuthor: 'Laatimisesta vastaava henkilö',
-      otherAuthors: 'Muu laatimiseen osallistunut henkilöstö/asiantuntijat',
-      authorInfo: {
-        name: 'Nimi',
-        title: 'Nimike',
-        phone: 'Puhelinnumero'
-      }
-    },
     vasuDiscussion: {
       title: 'Lapsen varhaiskasvatussuunnitelmakeskustelu',
       title2:
