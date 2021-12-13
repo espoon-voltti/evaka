@@ -377,10 +377,10 @@ class VasuIntegrationTest : FullApplicationTest() {
     private fun getVasuDocument(id: VasuDocumentId): VasuDocument {
         val (_, res, result) = http.get("/vasu/$id")
             .asUser(adminUser)
-            .responseObject<VasuDocument>(objectMapper)
+            .responseObject<VasuController.GetVasuDocumentResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get()
+        return result.get().vasu
     }
 
     private fun putVasuDocument(id: VasuDocumentId, request: VasuController.UpdateDocumentRequest) {

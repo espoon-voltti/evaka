@@ -65,7 +65,6 @@ export default React.memo(function VasuPage({
             sectionIndex={dynamicSectionsOffset}
             state={vasu.documentState}
             translations={translations}
-            documentId={vasu.id}
           />
           <VasuDiscussionSection
             sectionIndex={content.sections.length + dynamicSectionsOffset}

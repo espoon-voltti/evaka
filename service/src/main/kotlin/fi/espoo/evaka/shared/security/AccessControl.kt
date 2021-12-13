@@ -60,6 +60,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
+import fi.espoo.evaka.vasu.getVasuFollowupEntries
 import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
@@ -735,14 +736,8 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
-        if (!this.hasPermissionFor(user, action, id)) {
+        if (action != Action.VasuDocumentFollowup.UPDATE) {
             throw Forbidden()
-        }
-    }
-
-    fun hasPermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId): Boolean {
-        if (action != Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY) {
-            return false
         }
         val mapping = permittedRoleActions::vasuDocumentFollowupActions
 
@@ -751,18 +746,47 @@ WHERE employee_id = :userId
             else -> user.roles
         }
         if (globalRoles.any { it == UserRole.ADMIN }) {
-            return true
+            return
         }
 
         val roles = acl.getRolesForVasuDocument(user, id.first).roles
         if (roles.any { mapping(it).contains(action) }) {
-            return true
+            return
         }
 
-        return Database(jdbi).connect { db ->
+        Database(jdbi).connect { db ->
             db.read { tx ->
                 val entry = tx.getVasuFollowupEntry(id)
-                entry.authorId == user.id
+                if (entry.authorId != user.id) {
+                    throw Forbidden()
+                }
+            }
+        }
+    }
+
+    fun getPermittedVasuFollowupActions(user: AuthenticatedUser, id: VasuDocumentId): Map<UUID, Set<Action.VasuDocumentFollowup>> {
+        val action = Action.VasuDocumentFollowup.UPDATE
+        val mapping = permittedRoleActions::vasuDocumentFollowupActions
+
+        val globalRoles = when (user) {
+            is AuthenticatedUser.Employee -> user.globalRoles
+            else -> user.roles
+        }
+        val roles = acl.getRolesForVasuDocument(user, id).roles
+        val hasPermissionThroughRole = globalRoles.any { it == UserRole.ADMIN } ||
+            roles.any { mapping(it).contains(action) }
+
+        val entries = Database(jdbi).connect { db ->
+            db.read { tx ->
+                tx.getVasuFollowupEntries(id)
+            }
+        }
+
+        return entries.associate { entry ->
+            entry.id to if (hasPermissionThroughRole || entry.authorId == user.id) {
+                setOf(Action.VasuDocumentFollowup.UPDATE)
+            } else {
+                setOf()
             }
         }
     }

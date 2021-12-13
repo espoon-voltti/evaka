@@ -84,18 +84,23 @@ class VasuController(
         val eventType: VasuDocumentEventType
     )
 
+    data class GetVasuDocumentResponse(
+        val vasu: VasuDocument,
+        val permittedFollowupActions: Map<UUID, Set<Action.VasuDocumentFollowup>>
+    )
     @GetMapping("/vasu/{id}")
     fun getDocument(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId
-    ): VasuDocument {
+    ): GetVasuDocumentResponse {
         Audit.VasuDocumentRead.log(id)
         accessControl.requirePermissionFor(user, Action.VasuDocument.READ, id)
 
-        return db.read { tx ->
+        val doc = db.read { tx ->
             tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
         }
+        return GetVasuDocumentResponse(doc, accessControl.getPermittedVasuFollowupActions(user, id))
     }
 
     data class UpdateDocumentRequest(
@@ -139,16 +144,6 @@ class VasuController(
             throw Forbidden("Permission denied", "CANNOT_EDIT_FOLLOWUP_COMMENTS")
     }
 
-    @GetMapping("/vasu/{id}/edit-followup-allowed/{entryId}")
-    fun isEditFollowupEntryAllowed(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable id: VasuDocumentId,
-        @PathVariable entryId: UUID
-    ): Boolean {
-        return accessControl.hasPermissionFor(user, Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY, VasuDocumentFollowupEntryId(id, entryId))
-    }
-
     data class EditFollowupEntryRequest(
         val text: String
     )
@@ -162,7 +157,7 @@ class VasuController(
         @RequestBody body: EditFollowupEntryRequest
     ) {
         Audit.VasuDocumentEditFollowupEntry.log(id, entryId)
-        accessControl.requirePermissionFor(user, Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY, VasuDocumentFollowupEntryId(id, entryId))
+        accessControl.requirePermissionFor(user, Action.VasuDocumentFollowup.UPDATE, VasuDocumentFollowupEntryId(id, entryId))
         db.transaction { tx ->
             val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
 

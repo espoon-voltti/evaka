@@ -20,28 +20,25 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { blueColors } from 'lib-customizations/common'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faPen } from 'lib-icons'
-import { getEditFollowupEntryAllowed } from '../api'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { UUID } from 'lib-common/types'
-import { renderResult } from 'employee-frontend/components/async-rendering'
+import { PermittedFollowupActions } from 'lib-common/api-types/vasu'
 
 const FollowupEntryElement = React.memo(function FollowupEntryElement({
   entry,
   onEdited,
-  documentId
+  permittedFollowupActions
 }: {
   entry: FollowupEntry
   onEdited?: (entry: FollowupEntry) => void
-  documentId: UUID
+  permittedFollowupActions?: PermittedFollowupActions
 }) {
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [editedEntry, setEditedEntry] = useState<FollowupEntry>()
 
-  const [editAllowed] = useApiState(
-    () => getEditFollowupEntryAllowed({ documentId, entryId: entry.id }),
-    [documentId, entry.id]
-  )
+  const editAllowed =
+    permittedFollowupActions && entry.id
+      ? permittedFollowupActions[entry.id]?.includes('UPDATE')
+      : false
 
   const onCommitEdited = useCallback(
     (editedEntry: FollowupEntry) => {
@@ -79,16 +76,13 @@ const FollowupEntryElement = React.memo(function FollowupEntryElement({
               getEntry().edited?.editedAt.format() ?? ''
             } ${getEntry().edited?.editorName ?? ''}`}
         </Dimmed>
-        {onEdited &&
-          renderResult(editAllowed, (allowed) =>
-            allowed ? (
-              <IconButton
-                icon={faPen}
-                onClick={() => setEditing(true)}
-                data-qa="vasu-followup-entry-edit-btn"
-              />
-            ) : null
-          )}
+        {onEdited && editAllowed ? (
+          <IconButton
+            icon={faPen}
+            onClick={() => setEditing(true)}
+            data-qa="vasu-followup-entry-edit-btn"
+          />
+        ) : null}
       </FixedSpaceRow>
     </Entry>
   )
@@ -170,7 +164,7 @@ interface FollowupQuestionProps extends QuestionProps<Followup> {
   onChange?: (value: FollowupEntry) => void
   onEdited?: (value: FollowupEntry) => void
   translations: VasuTranslations
-  documentId: UUID
+  permittedFollowupActions?: PermittedFollowupActions
 }
 
 export default React.memo(function FollowupQuestion({
@@ -178,7 +172,7 @@ export default React.memo(function FollowupQuestion({
   onEdited,
   question: { title, name, value, info },
   translations,
-  documentId
+  permittedFollowupActions
 }: FollowupQuestionProps) {
   const { i18n } = useTranslation()
 
@@ -197,7 +191,7 @@ export default React.memo(function FollowupQuestion({
             key={ix}
             entry={entry}
             onEdited={onEdited}
-            documentId={documentId}
+            permittedFollowupActions={permittedFollowupActions}
           />
         ))
       ) : (
