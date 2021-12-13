@@ -257,16 +257,26 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
 fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: UUID) {
     createUpdate(
         //language=SQL
-        """DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id""".trimIndent()
+        """
+UPDATE daycare_group_placement 
+SET end_date = :placementTerminationDate 
+WHERE daycare_placement_id = :placementId
+        """.trimIndent()
     )
-        .bind("id", placementId)
+        .bind("placementId", placementId)
+        .bind("placementTerminationDate", placementTerminationDate)
         .execute()
 
     createUpdate(
         //language=SQL
-        """DELETE FROM service_need WHERE placement_id = :id""".trimIndent()
+        """
+UPDATE service_need 
+SET end_date = :placementTerminationDate 
+WHERE placement_id = :placementId
+        """.trimIndent()
     )
-        .bind("id", placementId)
+        .bind("placementId", placementId)
+        .bind("placementTerminationDate", placementTerminationDate)
         .execute()
 
     createUpdate(
