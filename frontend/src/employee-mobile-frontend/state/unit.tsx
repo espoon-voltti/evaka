@@ -9,15 +9,21 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import React, { createContext, useEffect, useMemo } from 'react'
 import { client } from '../api/client'
 import { getMobileUnitInfo } from '../api/unit'
+import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
+import { getUnreadCountsByUnit } from '../api/messages'
 
 interface UnitState {
   unitInfoResponse: Result<UnitInfo>
   reloadUnitInfo: () => void
+  unreadCountsResponse: Result<UnreadCountByAccountAndGroup[]>
+  reloadUnreadCounts: () => void
 }
 
 const defaultState: UnitState = {
   unitInfoResponse: Loading.of(),
-  reloadUnitInfo: () => undefined
+  reloadUnitInfo: () => undefined,
+  unreadCountsResponse: Loading.of(),
+  reloadUnreadCounts: () => undefined
 }
 
 export const UnitContext = createContext<UnitState>(defaultState)
@@ -34,6 +40,11 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     [unitId]
   )
 
+  const [unreadCountsResponse, reloadUnreadCounts] = useApiState(
+    () => getUnreadCountsByUnit(unitId),
+    [unitId]
+  )
+
   useEffect(
     () => idleTracker(client, reloadUnitInfo, { thresholdInMinutes: 5 }),
     [reloadUnitInfo]
@@ -42,9 +53,11 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   const value = useMemo(
     () => ({
       unitInfoResponse,
-      reloadUnitInfo
+      reloadUnitInfo,
+      unreadCountsResponse,
+      reloadUnreadCounts
     }),
-    [unitInfoResponse, reloadUnitInfo]
+    [unitInfoResponse, reloadUnitInfo, unreadCountsResponse, reloadUnreadCounts]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>

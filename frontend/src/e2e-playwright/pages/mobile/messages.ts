@@ -7,6 +7,8 @@ import { Page } from '../../utils/page'
 export default class MobileMessagesPage {
   constructor(private readonly page: Page) {}
 
+  messagesContainer = this.page.find(`[data-qa="messages-page-content-area"]`)
+
   async messagesExist() {
     return (await this.page.findAll('[data-qa^="message-preview"]').count()) > 0
   }
@@ -17,7 +19,7 @@ export default class MobileMessagesPage {
     return (await els.count()) === 0
   }
 
-  async openThread() {
+  async openFirstThread() {
     await this.page.find(`[data-qa^="message-preview"]`).click()
   }
 }

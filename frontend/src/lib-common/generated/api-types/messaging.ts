@@ -196,6 +196,15 @@ export interface UnreadCountByAccount {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.UnreadCountByAccountAndGroup
+*/
+export interface UnreadCountByAccountAndGroup {
+  accountId: UUID
+  groupId: UUID
+  unreadCount: number
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.UpsertableDraftContent
 */
 export interface UpsertableDraftContent {

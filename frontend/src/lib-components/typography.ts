@@ -16,6 +16,14 @@ export const fontWeights = {
   bold: 700
 }
 
+export const fontSizesMobile = {
+  h1: '24px',
+  h2: '22px',
+  h3: '18px',
+  h4: '16px',
+  h5: '14px'
+}
+
 type HeadingProps = BaseProps & {
   fitted?: boolean
   'data-qa'?: string
@@ -31,7 +39,7 @@ export const H1 = styled.h1<HeadingProps>`
     p.primary || p.primary === undefined
       ? colors.main.dark
       : colors.greyscale.dark};
-  font-size: ${(p) => (p.smaller ? '24px' : '36px')};
+  font-size: ${(p) => (p.smaller ? fontSizesMobile.h1 : '36px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${({ theme: { typography }, ...p }) =>
     p.bold ? typography.h1.bold : typography.h1.weight};
@@ -52,7 +60,7 @@ export const H1 = styled.h1<HeadingProps>`
 export const H2 = styled.h2<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
     p.primary ? colors.main.dark : colors.greyscale.dark};
-  font-size: ${(p) => (p.smaller ? '20px' : '24px')};
+  font-size: ${(p) => (p.smaller ? fontSizesMobile.h2 : '24px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${({ theme: { typography }, ...p }) =>
     p.bold ? typography.h2.bold : typography.h2.weight};
@@ -72,7 +80,7 @@ export const H2 = styled.h2<HeadingProps>`
 export const H3 = styled.h3<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
     p.primary ? colors.main.dark : colors.greyscale.dark};
-  font-size: ${(p) => (p.smaller ? '18px' : '20px')};
+  font-size: ${(p) => (p.smaller ? fontSizesMobile.h3 : '20px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${({ theme: { typography }, ...p }) =>
     p.bold ? typography.h3.bold : typography.h3.weight};
@@ -90,7 +98,7 @@ export const H3 = styled.h3<HeadingProps>`
 export const H4 = styled.h4<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
     p.primary ? colors.main.dark : colors.greyscale.dark};
-  font-size: ${(p) => (p.smaller ? '16px' : '18px')};
+  font-size: ${(p) => (p.smaller ? fontSizesMobile.h4 : '18px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${({ theme: { typography }, ...p }) =>
     p.bold ? typography.h4.bold : typography.h4.weight};
@@ -108,7 +116,7 @@ export const H4 = styled.h4<HeadingProps>`
 export const H5 = styled.h4<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
     p.primary ? colors.main.dark : colors.greyscale.dark};
-  font-size: ${(p) => (p.smaller ? '14px' : '16px')};
+  font-size: ${(p) => (p.smaller ? fontSizesMobile.h5 : '16px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${({ theme: { typography }, ...p }) =>
     p.bold ? typography.h5.bold : typography.h5.weight};

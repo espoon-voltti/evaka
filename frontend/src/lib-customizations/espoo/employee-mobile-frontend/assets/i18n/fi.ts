@@ -310,7 +310,11 @@ export const fi = {
       send: 'Lähetä',
       sending: 'Lähetetään'
     },
-    emptyInbox: 'Viestilaatikkosi on tyhjä'
+    emptyInbox: 'Viestilaatikkosi on tyhjä',
+    unreadMessages: 'Uudet viestit',
+    openPinLock: 'Avaa lukitus',
+    pinLockInfo:
+      'Lukeaksesi viestit sinun tulee avata lukitus PIN-koodilla. Voit lukea vain oman ryhmäsi viestit.'
   },
   mobile: {
     landerText1:
