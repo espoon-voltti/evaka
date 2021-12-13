@@ -202,6 +202,7 @@
     }
   },
   "eslintConfig": {
+    "ignorePatterns": ["/dist"],
     "parserOptions": {
       "ecmaVersion": "latest",
       "ecmaFeatures": {
