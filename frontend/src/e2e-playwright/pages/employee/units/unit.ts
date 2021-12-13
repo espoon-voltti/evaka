@@ -380,6 +380,27 @@ class GroupsSection {
       )
       .find('[data-qa="group-name"]')
 
+  readonly #missingPlacementRow = this.page.find(
+    '[data-qa="missing-placement-row"]'
+  )
+  readonly #terminatedPlacementRow = this.page.find(
+    '[data-qa="terminated-placement-row"]'
+  )
+
+  async assertMissingPlacementRowCount(expectedCount: number) {
+    await waitUntilEqual(
+      () => this.#missingPlacementRow.locator.count(),
+      expectedCount
+    )
+  }
+
+  async assertTerminatedPlacementRowCount(expectedCount: number) {
+    await waitUntilEqual(
+      () => this.#terminatedPlacementRow.locator.count(),
+      expectedCount
+    )
+  }
+
   async assertGroupCollapsibleIsClosed(groupId: string) {
     await this.#groupCollapsible(groupId, true).waitUntilVisible()
   }

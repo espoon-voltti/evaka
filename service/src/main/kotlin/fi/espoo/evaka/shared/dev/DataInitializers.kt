@@ -387,8 +387,8 @@ RETURNING id
 fun Database.Transaction.insertTestPlacement(placement: DevPlacement) = insertTestDataRow(
     placement,
     """
-INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
-VALUES (:id, :type, :childId, :unitId, :startDate, :endDate)
+INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by)
+VALUES (:id, :type, :childId, :unitId, :startDate, :endDate, :terminationRequestedDate, :terminatedBy)
 RETURNING id
 """
 ).let(::PlacementId)

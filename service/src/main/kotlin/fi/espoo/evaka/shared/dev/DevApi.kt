@@ -290,6 +290,21 @@ class DevApi(
         return ResponseEntity.noContent().build()
     }
 
+    data class DevTerminatePlacementRequest(
+        val placementId: PlacementId,
+        val endDate: LocalDate,
+        val terminationRequestedDate: LocalDate?,
+        val terminatedBy: UUID?
+    )
+
+    @PostMapping("/placement/terminate")
+    fun terminatePlacement(db: Database.Connection, @RequestBody terminationRequest: DevTerminatePlacementRequest): ResponseEntity<Unit> {
+        db.transaction { it.createUpdate("UPDATE placement SET end_date = :endDate, termination_requested_date = :terminationRequestedDate, terminated_by = :terminatedBy WHERE id = :placementId ") }
+                .bindKotlin(terminationRequest)
+                .execute()
+        return ResponseEntity.noContent().build()
+    }
+
     data class DecisionRequest(
         val id: DecisionId,
         val employeeId: UUID,
@@ -1126,7 +1141,9 @@ data class DevPlacement(
     val childId: UUID,
     val unitId: DaycareId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    val endDate: LocalDate = LocalDate.of(2019, 12, 31)
+    val endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    val terminationRequestedDate: LocalDate? = null,
+    val terminatedBy: UUID? = null
 )
 
 data class DevPerson(

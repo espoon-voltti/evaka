@@ -1479,6 +1479,11 @@ export const fi = {
         }
       }
     },
+    termination: {
+      title: 'Irtisanotut paikat',
+      endDate: 'Päättymispäivämäärä',
+      groupName: 'Ryhmä'
+    },
     calendar: {
       title: 'Varaukset ja läsnäolot',
       noGroup: 'Ei ryhmää',

@@ -271,7 +271,10 @@ function mapPlacementJson(data: JsonOf<DaycarePlacement>): DaycarePlacement {
       startDate: LocalDate.parseIso(groupPlacement.startDate),
       endDate: LocalDate.parseIso(groupPlacement.endDate),
       type: data.type
-    }))
+    })),
+    terminationRequestedDate: LocalDate.parseNullableIso(
+      data.terminationRequestedDate
+    )
   }
 }
 

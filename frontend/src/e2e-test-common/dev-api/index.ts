@@ -53,6 +53,7 @@ import {
   ChildDailyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
@@ -877,6 +878,24 @@ export async function insertVasuDocument(
       templateId
     })
     return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function terminatePlacement(
+  placementId: string,
+  endDate: LocalDate,
+  terminationRequestedDate: LocalDate | null,
+  terminatedBy: string | null
+): Promise<void> {
+  try {
+    await devClient.post('/placement/terminate', {
+      placementId,
+      endDate,
+      terminationRequestedDate,
+      terminatedBy
+    })
   } catch (e) {
     throw new DevApiError(e)
   }
