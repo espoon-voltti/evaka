@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useState } from 'react'
 import { ChildPlacement } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -10,15 +9,16 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useLang, useTranslation } from '../localization'
 import { terminatePlacement, TerminatePlacementParams } from './api'
 
-interface TerminationState {
+interface UiState {
   placement: ChildPlacement | undefined
   terminationDate: string | undefined
 }
 
-const emptyState = (): TerminationState => ({
+const emptyState = (): UiState => ({
   placement: undefined,
   terminationDate: undefined
 })
@@ -28,10 +28,17 @@ interface Props {
   onSuccess: () => void
 }
 
-type FormState =
+type TerminationFormState =
   | { type: 'valid'; data: TerminatePlacementParams }
   | { type: 'invalid-date' }
   | { type: 'invalid-missing' }
+
+const validateTerminationDate = (
+  terminationDate: LocalDate,
+  placementEndDate: LocalDate | undefined
+): boolean =>
+  (!placementEndDate || placementEndDate.isAfter(terminationDate)) &&
+  terminationDate.isEqualOrAfter(LocalDate.today())
 
 export default React.memo(function PlacementTerminationForm({
   placements,
@@ -47,21 +54,21 @@ export default React.memo(function PlacementTerminationForm({
       t.children.placementTermination.until(p.placementEndDate.format())
     ].join(', ')
 
-  const [state, setState] = useState<TerminationState>(emptyState())
+  const [state, setState] = useState<UiState>(emptyState())
 
   const isValidDate = useCallback(
     (date: LocalDate): boolean =>
-      date.isEqualOrAfter(LocalDate.today()) &&
-      (!state.placement || state.placement.placementEndDate.isAfter(date)),
+      validateTerminationDate(date, state.placement?.placementEndDate),
     [state.placement]
   )
 
-  const terminatePlacementParams = useMemo<FormState>(() => {
+  const terminationState = useMemo<TerminationFormState>(() => {
     if (!(state.placement && state.terminationDate)) {
       return { type: 'invalid-missing' }
     }
     const date = LocalDate.parseFiOrNull(state.terminationDate)
-    return date && isValidDate(date)
+    return date &&
+      validateTerminationDate(date, state.placement.placementEndDate)
       ? {
           type: 'valid',
           data: {
@@ -70,14 +77,14 @@ export default React.memo(function PlacementTerminationForm({
           }
         }
       : { type: 'invalid-date' }
-  }, [isValidDate, state.placement, state.terminationDate])
+  }, [state.placement, state.terminationDate])
 
   const onSubmit = useCallback(
     () =>
-      terminatePlacementParams.type === 'valid'
-        ? terminatePlacement(terminatePlacementParams.data)
+      terminationState.type === 'valid'
+        ? terminatePlacement(terminationState.data)
         : Promise.reject('Invalid params'),
-    [terminatePlacementParams]
+    [terminationState]
   )
 
   const onTerminateSuccess = useCallback(() => {
@@ -116,7 +123,7 @@ export default React.memo(function PlacementTerminationForm({
           locale={lang}
           isValidDate={isValidDate}
           info={
-            terminatePlacementParams.type === 'invalid-date'
+            terminationState.type === 'invalid-date'
               ? { text: t.validationErrors.timeFormat, status: 'warning' }
               : undefined
           }
@@ -131,7 +138,7 @@ export default React.memo(function PlacementTerminationForm({
       <AsyncButton
         primary
         text={t.children.placementTermination.terminate}
-        disabled={terminatePlacementParams.type !== 'valid'}
+        disabled={terminationState.type !== 'valid'}
         onClick={onSubmit}
         onSuccess={onTerminateSuccess}
       />
