@@ -1703,24 +1703,26 @@ const sv: Translations = {
     toggleExpandText: 'Visa eller göm texten'
   },
   placement: {
-    // TODO i18n
     type: {
-      CLUB: 'Kerho',
-      DAYCARE: 'Varhaiskasvatus',
-      FIVE_YEARS_OLD_DAYCARE: '5-vuotiaiden varhaiskasvatus',
-      PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
-      PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
-      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      CLUB: 'Klubb',
+      DAYCARE: 'Småbarnspedagogik',
+      FIVE_YEARS_OLD_DAYCARE: '5-åringars småbarnspedagogik',
+      PRESCHOOL_WITH_DAYCARE: 'Förskola och tillhörande småbarnspedagogik',
+      PREPARATORY_WITH_DAYCARE:
+        'Förberedande undervisning och tillhörande småbarnspedagogik',
+      DAYCARE_PART_TIME: 'Småbarnspedagogik på deltid',
+      DAYCARE_FIVE_YEAR_OLDS: '5-åringars småbarnspedagogik',
       DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
-        '5-vuotiaiden osapäiväinen varhaiskasvatus',
-      PRESCHOOL: 'Esiopetus',
-      PREPARATORY: 'Valmistava opetus',
-      PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
-      TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
-      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
-      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+        '5-åringars småbarnspedagogik på deltid',
+      PRESCHOOL: 'Förskola',
+      PREPARATORY: 'Förberedande undervisning',
+      PREPARATORY_DAYCARE:
+        'Förberedande undervisning och tillhörande småbarnspedagogik',
+      PRESCHOOL_DAYCARE:
+        'Förskoleundervisning och tillhörande småbarnspedagogik',
+      TEMPORARY_DAYCARE: 'Tillfällig småbarnspedagogik på heltid',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig småbarnspedagogik på deltid',
+      SCHOOL_SHIFT_CARE: 'Skiftvård för skolbarn'
     }
   },
   reloadNotification: {
@@ -1728,22 +1730,21 @@ const sv: Translations = {
     buttonText: 'Ladda om sidan'
   },
   children: {
-    // TODO copy
-    title: 'Barn',
+    title: 'Barnen',
     pageDescription:
-      'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
+      'På denna sida ser du allmänna uppgifter angående dina barns småbarnspedagogik eller förskoleundervisning.',
     noChildren: 'Inga barn',
     placementTermination: {
-      title: 'Paikan irtisanominen',
+      title: 'Uppsägning av plats',
       description:
-        'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
-      until: (date: string) => `voimassa ${date}`,
-      choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
-      terminatedPlacements: 'Olet irtisanonut paikan',
+        'Observera att möjliga ansökningar om överföring raderas efter den sista närvarodagen om du säger upp platsen. Om ditt barn behöver platsen senare, måste du lämna in en ny ansökan.',
+      terminatedPlacements: 'Du har sagt upp platsen',
+      until: (date: string) => `giltig till ${date}`,
+      choosePlacement: 'Välj platsen du vill säga upp',
       lastDayInfo:
-        'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
-      lastDayOfPresence: 'Viimeinen läsnäolopäivä',
-      terminate: 'Irtisano paikka'
+        'Sista dagen då ditt barn behöver platsen. Platsen sägs upp efter detta datum.',
+      lastDayOfPresence: 'Sista närvarodagen',
+      terminate: 'Säg upp platsen'
     }
   }
 }

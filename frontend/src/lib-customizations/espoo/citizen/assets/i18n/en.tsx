@@ -1772,20 +1772,21 @@ const en: Translations = {
   },
   children: {
     // TODO copy
-    title: 'Children',
-    pageDescription: 'Your children are listed on this page.',
-    noChildren: 'No children',
+    title: 'Lapset',
+    pageDescription:
+      'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
+    noChildren: 'Ei lapsia',
     placementTermination: {
-      title: 'Placement termination',
+      title: 'Paikan irtisanominen',
       description:
         'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
-      until: (date: string) => `until ${date}`,
-      choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
       terminatedPlacements: 'Olet irtisanonut paikan',
+      until: (date: string) => `voimassa ${date}`,
+      choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
       lastDayInfo:
         'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
-      lastDayOfPresence: 'Last day of presence',
-      terminate: 'Terminate placement'
+      lastDayOfPresence: 'Viimeinen läsnäolopäivä',
+      terminate: 'Irtisano paikka'
     }
   }
 }
