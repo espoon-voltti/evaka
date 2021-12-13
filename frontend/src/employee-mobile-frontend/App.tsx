@@ -45,7 +45,7 @@ import MessagesPage from './components/messages/MessagesPage'
 import { MessageContextProvider } from './state/messages'
 import MessageEditorPage from './components/messages/MessageEditorPage'
 import UnitList from './components/UnitList'
-import UnreadMessagesPage from './components/messages/UnreadMessagesPage'
+import { UnreadMessagesPage } from './components/messages/UnreadMessagesPage'
 
 export default function App() {
   const { i18n } = useTranslation()

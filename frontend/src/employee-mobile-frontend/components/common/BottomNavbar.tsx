@@ -159,9 +159,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                 )}
               </BottomText>
             </Button>
-          ) : (
-            <></>
-          )}
+          ) : null}
         </Root>
       </>
     )

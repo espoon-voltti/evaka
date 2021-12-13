@@ -21,7 +21,7 @@ import { UUID } from 'lib-common/types'
 import { WideLinkButton } from '../mobile/components'
 import { UserContext } from '../../state/user'
 
-export default function UnreadMessagesPage() {
+export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
   const { unitId, groupId } = useParams<{
     unitId: UUID
     groupId: UUID
@@ -79,9 +79,9 @@ export default function UnreadMessagesPage() {
       </ContentArea>
     )
   )
-}
+})
 
-function UnreadCountNumber({
+const UnreadCountNumber = React.memo(function UnreadCountNumber({
   maybeNumber,
   dataQa
 }: {
@@ -95,7 +95,7 @@ function UnreadCountNumber({
   ) : (
     <AllReadIndicator data-qa={dataQa}>&ndash;</AllReadIndicator>
   )
-}
+})
 
 const LinkToGroupMessages = styled(Link)`
   font-size: ${fontSizesMobile.h2};
