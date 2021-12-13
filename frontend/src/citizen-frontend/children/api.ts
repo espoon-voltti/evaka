@@ -53,3 +53,20 @@ export function getPlacements(
     )
     .catch((e) => Failure.fromError(e))
 }
+
+export interface TerminatePlacementParams {
+  id: UUID
+  terminationDate: LocalDate
+}
+
+export function terminatePlacement({
+  id,
+  terminationDate
+}: TerminatePlacementParams): Promise<Result<void>> {
+  return client
+    .post(`/citizen/placements/${id}/terminate`, {
+      placementTerminationDate: terminationDate
+    })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}

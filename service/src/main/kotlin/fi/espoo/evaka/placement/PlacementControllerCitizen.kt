@@ -34,12 +34,12 @@ class PlacementControllerCitizen(
         return db.read { it.getCitizenChildPlacements(evakaClock.today(), childId) }
     }
 
-    @PostMapping("/citizen/placements/termination/{placementId}")
+    @PostMapping("/citizen/placements/{placementId}/terminate")
     fun postPlacementTermination(
         db: Database.Connection,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("placementId") placementId: PlacementId,
+        @PathVariable placementId: PlacementId,
         @RequestBody body: PlacementTerminationRequestBody
     ) {
         Audit.PlacementTerminate.log(targetId = placementId)

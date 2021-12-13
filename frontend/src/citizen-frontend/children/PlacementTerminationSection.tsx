@@ -13,10 +13,23 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label, P } from 'lib-components/typography'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { renderResult } from '../async-rendering'
 import { useLang, useTranslation } from '../localization'
-import { getPlacements } from './api'
+import {
+  getPlacements,
+  terminatePlacement,
+  TerminatePlacementParams
+} from './api'
+
+interface TerminationState {
+  placement: ChildPlacement | undefined
+  terminationDate: string | undefined
+}
+const emptyState = (): TerminationState => ({
+  placement: undefined,
+  terminationDate: undefined
+})
 
 interface PlacementTerminationProps {
   childId: UUID
@@ -39,27 +52,43 @@ export default React.memo(function PlacementTerminationSection({
       t.children.placementTermination.until(p.placementEndDate.format())
     ].join(', ')
 
-  const [terminationDate, setTerminationDate] = useState('')
-  const [selectedPlacements, setSelectedPlacements] = useState<
-    ChildPlacement[]
-  >([])
+  const [state, setState] = useState<TerminationState>(emptyState())
 
   const isValidDate = useCallback(
     (date: LocalDate): boolean =>
       date.isEqualOrAfter(LocalDate.today()) &&
-      selectedPlacements.every((p) => p.placementEndDate.isAfter(date)),
-    [selectedPlacements]
+      (!state.placement || state.placement.placementEndDate.isAfter(date)),
+    [state.placement]
   )
 
-  // TODO terminate api call
-  const onSubmit = useCallback(() => Promise.reject(), [])
+  const terminatePlacementParams = useMemo<
+    TerminatePlacementParams | 'invalid-date' | 'missing'
+  >(() => {
+    if (!(state.placement && state.terminationDate)) {
+      return 'missing'
+    }
+    const date = LocalDate.parseFiOrNull(state.terminationDate)
+    return date && isValidDate(date)
+      ? {
+          id: state.placement.placementId,
+          terminationDate: date
+        }
+      : 'invalid-date'
+  }, [isValidDate, state.placement, state.terminationDate])
+
+  const isValid = !!terminatePlacementParams
+  const onSubmit = useCallback(
+    () =>
+      typeof terminatePlacementParams !== 'string'
+        ? terminatePlacement(terminatePlacementParams)
+        : Promise.reject('Invalid params'),
+    [terminatePlacementParams]
+  )
 
   const onSuccess = useCallback(() => {
-    setSelectedPlacements([])
+    setState(emptyState())
     refreshPlacements()
   }, [refreshPlacements])
-
-  const isValid = true // TODO validate form
 
   return (
     <CollapsibleSection
@@ -76,17 +105,12 @@ export default React.memo(function PlacementTerminationSection({
               <Checkbox
                 key={p.placementId}
                 label={getPlacementLabel(p)}
-                checked={
-                  !!selectedPlacements.find(
-                    (p2) => p2.placementId === p.placementId
-                  )
-                }
+                checked={state.placement?.placementId === p.placementId}
                 onChange={(checked) =>
-                  setSelectedPlacements((prev) =>
-                    checked
-                      ? [...prev, p]
-                      : prev.filter((p2) => p2.placementId !== p.placementId)
-                  )
+                  setState((prev) => ({
+                    ...prev,
+                    placement: checked ? p : undefined
+                  }))
                 }
               />
             ))}
@@ -103,8 +127,15 @@ export default React.memo(function PlacementTerminationSection({
               required
               locale={lang}
               isValidDate={isValidDate}
-              date={terminationDate}
-              onChange={setTerminationDate}
+              info={
+                terminatePlacementParams === 'invalid-date'
+                  ? { text: t.validationErrors.timeFormat, status: 'warning' }
+                  : undefined
+              }
+              date={state.terminationDate ?? ''}
+              onChange={(terminationDate) =>
+                setState((prev) => ({ ...prev, terminationDate }))
+              }
               openAbove
             />
           </div>

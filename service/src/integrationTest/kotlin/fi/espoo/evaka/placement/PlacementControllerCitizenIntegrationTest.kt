@@ -77,7 +77,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     fun `citizen can terminate own child's placement starting from tomorrow`() {
         val placementTerminationDate = today.plusDays(1)
 
-        val (_, postRes, _) = http.post("/citizen/placements/termination/${testPlacement.id}")
+        val (_, postRes, _) = http.post("/citizen/placements/${testPlacement.id}/terminate")
             .jsonBody(
                 objectMapper.writeValueAsString(
                     PlacementTerminationRequestBody(
