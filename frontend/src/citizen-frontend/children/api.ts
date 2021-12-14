@@ -12,7 +12,8 @@ import { UUID } from 'lib-common/types'
 import {
   ChildPlacement,
   ChildPlacementResponse,
-  PlacementTerminationRequestBody
+  PlacementTerminationRequestBody,
+  TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { client } from '../api-client'
@@ -32,17 +33,29 @@ export function getChild(childId: UUID): Promise<Result<Child>> {
 }
 
 const deserializeChildPlacement = ({
-  placementEndDate,
-  placementStartDate,
+  startDate,
+  endDate,
   terminationRequestedDate,
   ...rest
 }: JsonOf<ChildPlacement>): ChildPlacement => ({
   ...rest,
-  placementStartDate: LocalDate.parseIso(placementStartDate),
-  placementEndDate: LocalDate.parseIso(placementEndDate),
+  startDate: LocalDate.parseIso(startDate),
+  endDate: LocalDate.parseIso(endDate),
   terminationRequestedDate: terminationRequestedDate
     ? LocalDate.parseIso(terminationRequestedDate)
     : null
+})
+
+const deserializeTerminatablePlacementGroup = ({
+  startDate,
+  endDate,
+  placements,
+  ...rest
+}: JsonOf<TerminatablePlacementGroup>): TerminatablePlacementGroup => ({
+  ...rest,
+  startDate: LocalDate.parseIso(startDate),
+  endDate: LocalDate.parseIso(endDate),
+  placements: placements.map(deserializeChildPlacement)
 })
 
 export function getPlacements(
@@ -55,17 +68,18 @@ export function getPlacements(
     .then(({ data: { placements, ...rest } }) =>
       Success.of({
         ...rest,
-        placements: placements.map(deserializeChildPlacement)
+        placements: placements.map(deserializeTerminatablePlacementGroup)
       })
     )
     .catch((e) => Failure.fromError(e))
 }
 
 export function terminatePlacement(
+  childId: UUID,
   body: PlacementTerminationRequestBody
 ): Promise<Result<void>> {
   return client
-    .post(`/citizen/placements/terminate`, body)
+    .post(`/citizen/children/${childId}/placements/terminate`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

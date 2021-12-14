@@ -59,28 +59,34 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     fun `child placements are returned`() {
         val (_, res, result) = http.get("/citizen/children/${child.id}/placements")
             .asUser(authenticatedParent)
-            .responseObject<Set<ChildPlacement>>(objectMapper)
+            .responseObject<PlacementControllerCitizen.ChildPlacementResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
 
-        val childPlacements = result.get().toList()
+        val childPlacements = result.get().placements
         assertEquals(1, childPlacements.size)
-        assertEquals(child.id, childPlacements[0].childId.raw)
-        assertEquals(placementStart, childPlacements[0].placementStartDate)
-        assertEquals(placementEnd, childPlacements[0].placementEndDate)
-        assertEquals(PlacementType.DAYCARE, childPlacements[0].placementType)
-        assertEquals(null, childPlacements[0].terminationRequestedDate)
-        assertEquals(null, childPlacements[0].terminatedBy)
+        assertEquals(placementStart, childPlacements[0].startDate)
+        assertEquals(placementEnd, childPlacements[0].endDate)
+        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
+        assertEquals(1, childPlacements[0].placements.size)
+        assertEquals(PlacementType.DAYCARE, childPlacements[0].placements[0].type)
+        assertEquals(null, childPlacements[0].placements[0].terminationRequestedDate)
+        assertEquals(null, childPlacements[0].placements[0].terminatedBy)
     }
 
     @Test
     fun `citizen can terminate own child's placement starting from tomorrow`() {
         val placementTerminationDate = today.plusDays(1)
 
-        val (_, postRes, _) = http.post("/citizen/placements/terminate")
+        val (_, postRes, _) = http.post("/citizen/children/${child.id}/placements/terminate")
             .jsonBody(
                 objectMapper.writeValueAsString(
-                    PlacementTerminationRequestBody(terminationDate = placementTerminationDate, placementIds = listOf(testPlacement.id))
+                    PlacementControllerCitizen.PlacementTerminationRequestBody(
+                        type = PlacementControllerCitizen.TerminatablePlacementType.DAYCARE,
+                        terminationDate = placementTerminationDate,
+                        unitId = daycareId,
+                        terminateDaycareOnly = false,
+                    )
                 )
             )
             .asUser(authenticatedParent)
@@ -90,20 +96,18 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
 
         val (_, res, result) = http.get("/citizen/children/${child.id}/placements")
             .asUser(authenticatedParent)
-            .responseObject<ChildPlacementResponse>(objectMapper)
+            .responseObject<PlacementControllerCitizen.ChildPlacementResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
 
         val response = result.get()
         val childPlacements = response.placements
         assertEquals(1, childPlacements.size)
-        assertEquals(child.id, childPlacements[0].childId.raw)
-        assertEquals(placementStart, childPlacements[0].placementStartDate)
-        assertEquals(placementTerminationDate, childPlacements[0].placementEndDate)
-        assertEquals(PlacementType.DAYCARE, childPlacements[0].placementType)
-        assertEquals(today, childPlacements[0].terminationRequestedDate)
-        assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].terminatedBy?.name)
-
-        assertEquals(listOf(), response.terminationConstraints)
+        assertEquals(placementStart, childPlacements[0].startDate)
+        assertEquals(placementTerminationDate, childPlacements[0].endDate)
+        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
+        assertEquals(1, childPlacements[0].placements.size)
+        assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
+        assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
     }
 }

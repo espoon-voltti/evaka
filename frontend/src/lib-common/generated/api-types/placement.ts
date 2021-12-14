@@ -29,21 +29,21 @@ export interface ChildBasics {
 */
 export interface ChildPlacement {
   childId: UUID
-  placementEndDate: LocalDate
-  placementId: UUID
-  placementStartDate: LocalDate
-  placementType: PlacementType
-  placementUnitName: string
+  endDate: LocalDate
+  id: UUID
+  startDate: LocalDate
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
+  type: PlacementType
+  unitId: UUID
+  unitName: string
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.ChildPlacementResponse
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.ChildPlacementResponse
 */
 export interface ChildPlacementResponse {
-  placements: ChildPlacement[]
-  terminationConstraints: PlacementTerminationConstraint[]
+  placements: TerminatablePlacementGroup[]
 }
 
 /**
@@ -204,19 +204,13 @@ export type PlacementPlanRejectReason =
   | 'REASON_3'
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementTerminationConstraint
-*/
-export interface PlacementTerminationConstraint {
-  placementId: UUID
-  requiresTerminationOf: UUID
-}
-
-/**
-* Generated from fi.espoo.evaka.placement.PlacementTerminationRequestBody
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.PlacementTerminationRequestBody
 */
 export interface PlacementTerminationRequestBody {
-  placementIds: UUID[]
+  terminateDaycareOnly: boolean | null
   terminationDate: LocalDate
+  type: TerminatablePlacementType
+  unitId: UUID
 }
 
 /**
@@ -243,3 +237,24 @@ export interface PlacementUpdateRequestBody {
   endDate: LocalDate
   startDate: LocalDate
 }
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.TerminatablePlacementGroup
+*/
+export interface TerminatablePlacementGroup {
+  endDate: LocalDate
+  placements: ChildPlacement[]
+  startDate: LocalDate
+  type: TerminatablePlacementType
+  unitId: UUID
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.TerminatablePlacementType
+*/
+export type TerminatablePlacementType = 
+  | 'CLUB'
+  | 'PREPARATORY'
+  | 'DAYCARE'
+  | 'PRESCHOOL'

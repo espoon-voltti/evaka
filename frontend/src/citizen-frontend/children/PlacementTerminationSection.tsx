@@ -7,7 +7,6 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { P } from 'lib-components/typography'
-import { partition } from 'lodash'
 import React from 'react'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
@@ -34,19 +33,17 @@ export default React.memo(function PlacementTerminationSection({
       startCollapsed
       fitted
     >
-      {renderResult(placementsResponse, (response) => {
-        const { placements, terminationConstraints } = response
-        const [terminatedPlacements, nonTerminatedPlacements] = partition(
-          placements,
-          (p) => !!p.terminationRequestedDate
+      {renderResult(placementsResponse, ({ placements }) => {
+        const terminatedPlacements = placements.filter(
+          (p) => !!p.placements.find((p2) => !!p2.terminationRequestedDate)
         )
         return (
           <FixedSpaceColumn>
             <P>{t.children.placementTermination.description}</P>
-            {nonTerminatedPlacements.length > 0 && (
+            {placements.length > 0 && (
               <PlacementTerminationForm
-                placements={nonTerminatedPlacements}
-                constraints={terminationConstraints}
+                childId={childId}
+                placementGroups={placements}
                 onSuccess={refreshPlacements}
               />
             )}

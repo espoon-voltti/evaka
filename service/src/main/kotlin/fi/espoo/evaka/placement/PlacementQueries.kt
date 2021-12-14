@@ -347,11 +347,12 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
 
 data class ChildPlacement(
     val childId: ChildId,
-    val placementId: PlacementId,
-    val placementType: PlacementType,
-    val placementStartDate: LocalDate,
-    val placementEndDate: LocalDate,
-    val placementUnitName: String,
+    val id: PlacementId,
+    val type: PlacementType,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val unitId: DaycareId,
+    val unitName: String,
     val terminationRequestedDate: LocalDate?,
     @Nested("terminated_by")
     val terminatedBy: EvakaUser?,
@@ -361,12 +362,13 @@ fun Database.Read.getCitizenChildPlacements(today: LocalDate, childId: UUID): Li
     """
 SELECT
     child.id AS child_id,
-    p.id AS placement_id,
-    p.type AS placement_type,
-    p.start_date AS placement_start_date,
-    p.end_date AS placement_end_date,
+    p.id,
+    p.type,
+    p.start_date,
+    p.end_date,
     p.termination_requested_date,
-    d.name AS placement_unit_name,
+    d.id AS unit_id,
+    d.name AS unit_name,
     evaka_user.id as terminated_by_id,
     evaka_user.name as terminated_by_name,
     evaka_user.type as terminated_by_type
@@ -374,7 +376,9 @@ FROM placement p
 JOIN daycare d ON p.unit_id = d.id
 JOIN person child ON p.child_id = child.id
 LEFT JOIN evaka_user ON p.terminated_by = evaka_user.id
-WHERE child.id = :childId            
+WHERE
+    p.child_id = :childId
+    AND p.end_date > now()::date
     """.trimIndent()
 )
     .bind("childId", childId)
