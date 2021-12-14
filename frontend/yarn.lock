@@ -2633,6 +2633,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@miherlosev/esm@npm:3.2.26":
+  version: 3.2.26
+  resolution: "@miherlosev/esm@npm:3.2.26"
+  checksum: 838745262ab4500ea8a1f808b090c1842bd4d76971d6a6ba6a12c91c0678ef897dfec4ea1272037366bb7f1ec31d8674119698e867da706f265beb6504ebc8f2
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.4":
   version: 2.1.4
   resolution: "@nodelib/fs.scandir@npm:2.1.4"
@@ -6236,13 +6243,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esm@npm:^3.2.25":
-  version: 3.2.25
-  resolution: "esm@npm:3.2.25"
-  checksum: 978aabe2de83541c105605a6d60a26ed8e627ef6bb0a7605fe15a95bbdea6b8348bd045255cb22219c054dd09a81a94823df00843d9e97f42419c92015ce3a64
-  languageName: node
-  linkType: hard
-
 "esotope-hammerhead@npm:0.6.1":
   version: 0.6.1
   resolution: "esotope-hammerhead@npm:0.6.1"
@@ -6410,7 +6410,7 @@ __metadata:
     seamless-scroll-polyfill: 2.1.5
     style-loader: ^3.3.1
     styled-components: 5.3.3
-    testcafe: ~1.16.1
+    testcafe: ~1.17.1
     testcafe-reporter-junit: 3.0.2
     ts-jest: ^27.0.7
     ts-loader: ^9.2.6
@@ -12374,7 +12374,40 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"testcafe-hammerhead@npm:24.5.4, testcafe-hammerhead@npm:>=19.4.0":
+"testcafe-hammerhead@npm:24.5.7":
+  version: 24.5.7
+  resolution: "testcafe-hammerhead@npm:24.5.7"
+  dependencies:
+    acorn-hammerhead: 0.5.0
+    asar: ^2.0.1
+    bowser: 1.6.0
+    brotli: ^1.3.1
+    crypto-md5: ^1.0.0
+    css: 2.2.3
+    debug: 4.3.1
+    esotope-hammerhead: 0.6.1
+    http-cache-semantics: ^4.1.0
+    iconv-lite: 0.5.1
+    lodash: ^4.17.20
+    lru-cache: 2.6.3
+    match-url-wildcard: 0.0.4
+    merge-stream: ^1.0.1
+    mime: ~1.4.1
+    mustache: ^2.1.1
+    nanoid: ^3.1.12
+    os-family: ^1.0.0
+    parse5: 2.2.3
+    pinkie: 2.0.4
+    read-file-relative: ^1.2.0
+    semver: 5.5.0
+    tough-cookie: 2.3.3
+    tunnel-agent: 0.6.0
+    webauth: ^1.1.0
+  checksum: 6e548ced327bed42223d182f5f8d4442c7c0d1931229965fc79ff8c9052937f612db754e62fe6161c429fb7f6385b500a02719dbe57e6ef172cf4f634782990e
+  languageName: node
+  linkType: hard
+
+"testcafe-hammerhead@npm:>=19.4.0":
   version: 24.5.4
   resolution: "testcafe-hammerhead@npm:24.5.4"
   dependencies:
@@ -12407,9 +12440,9 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"testcafe-legacy-api@npm:5.1.1":
-  version: 5.1.1
-  resolution: "testcafe-legacy-api@npm:5.1.1"
+"testcafe-legacy-api@npm:5.1.2":
+  version: 5.1.2
+  resolution: "testcafe-legacy-api@npm:5.1.2"
   dependencies:
     async: 0.2.6
     dedent: ^0.6.0
@@ -12425,7 +12458,7 @@ resolve@^2.0.0-next.3:
     read-file-relative: ^1.2.0
     strip-bom: ^2.0.0
     testcafe-hammerhead: ">=19.4.0"
-  checksum: 568db320bbf139bd706a74b8d3dd15a73b89172026ff02762e434dba85b1eac393dadc82602c06fae8d0ac96c29c1ed053b08d899d759b97d9d1038093e86b2b
+  checksum: 8d8d1e7e3a345d66f7847a4a9a9e3c296aa850f03afb0722ddbc8da698aee18ea6e43496eb85dfae766874593557009f5fe12ee7fe35af396273e6a251f74bc2
   languageName: node
   linkType: hard
 
@@ -12471,9 +12504,9 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"testcafe@npm:~1.16.1":
-  version: 1.16.1
-  resolution: "testcafe@npm:1.16.1"
+"testcafe@npm:~1.17.1":
+  version: 1.17.1
+  resolution: "testcafe@npm:1.17.1"
   dependencies:
     "@babel/core": ^7.12.1
     "@babel/plugin-proposal-async-generator-functions": ^7.12.1
@@ -12491,6 +12524,7 @@ resolve@^2.0.0-next.3:
     "@babel/preset-flow": ^7.12.1
     "@babel/preset-react": ^7.12.1
     "@babel/runtime": ^7.12.5
+    "@miherlosev/esm": 3.2.26
     "@types/node": ^12.20.10
     async-exit-hook: ^1.1.2
     babel-plugin-module-resolver: ^4.0.0
@@ -12513,7 +12547,6 @@ resolve@^2.0.0-next.3:
     emittery: ^0.4.1
     endpoint-utils: ^1.0.2
     error-stack-parser: ^1.3.6
-    esm: ^3.2.25
     execa: ^4.0.3
     globby: ^11.0.4
     graceful-fs: ^4.1.11
@@ -12551,8 +12584,8 @@ resolve@^2.0.0-next.3:
     source-map-support: ^0.5.16
     strip-bom: ^2.0.0
     testcafe-browser-tools: 2.0.16
-    testcafe-hammerhead: 24.5.4
-    testcafe-legacy-api: 5.1.1
+    testcafe-hammerhead: 24.5.7
+    testcafe-legacy-api: 5.1.2
     testcafe-reporter-json: ^2.1.0
     testcafe-reporter-list: ^2.1.0
     testcafe-reporter-minimal: ^2.1.0
@@ -12565,7 +12598,7 @@ resolve@^2.0.0-next.3:
     unquote: ^1.1.1
   bin:
     testcafe: bin/testcafe-with-v8-flag-filter.js
-  checksum: 1d64de91b2405ab0a03ad4d1d135eb7aa4f44c0faccf03773c7e0514d0d90b9a7fbfabb563b450ca12b000df386e84cc1740314e9a9e12287a60a8c226ed675b
+  checksum: 30cc92a94a93b84d681c0607c2a413ce6d4efec86fadd690e45513a70ff8a6d2e75bb6e6cd277f63ba9d0257abeb81075609657d2d5b266a83b7f2e10e4e05c2
   languageName: node
   linkType: hard
 
