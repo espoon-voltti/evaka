@@ -15,7 +15,9 @@ import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
+import DateQuestionElem from '../components/DateQuestion'
 import FollowupQuestionElem from '../components/FollowupQuestion'
+import ParagraphElem from '../components/Paragraph'
 import {
   CheckboxQuestion,
   Followup,
@@ -32,21 +34,18 @@ import {
   VasuDocumentState
 } from 'lib-common/generated/api-types/vasu'
 import {
+  getQuestionNumber,
   isCheckboxQuestion,
+  isDateQuestion,
   isFollowup,
   isMultiFieldListQuestion,
   isMultiFieldQuestion,
   isMultiSelectQuestion,
+  isParagraph,
   isRadioGroupQuestion,
   isTextQuestion
 } from '../vasu-content'
 import { VasuTranslations } from 'lib-customizations/employee'
-
-const getDynamicQuestionNumber = (
-  sectionOffset: number,
-  sectionIndex: number,
-  questionIndex: number
-) => `${sectionOffset + sectionIndex + 1}.${questionIndex + 1}`
 
 interface Props {
   sections: VasuSection[]
@@ -83,10 +82,10 @@ export function DynamicSections({
           </H2>
           <Questions>
             {section.questions.map((question, questionIndex) => {
-              const questionNumber = getDynamicQuestionNumber(
-                sectionOffset,
-                sectionIndex,
-                questionIndex
+              const questionNumber = getQuestionNumber(
+                sectionOffset + sectionIndex,
+                section.questions,
+                question
               )
               return (
                 <Fragment key={question.name}>
@@ -229,6 +228,27 @@ export function DynamicSections({
                           : undefined
                       }
                     />
+                  ) : isDateQuestion(question) ? (
+                    <DateQuestionElem
+                      question={question}
+                      questionNumber={questionNumber}
+                      translations={translations}
+                      onChange={
+                        setContent
+                          ? (value) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                clone.sections[sectionIndex].questions[
+                                  questionIndex
+                                ] = {
+                                  ...question,
+                                  value
+                                }
+                                return clone
+                              })
+                          : undefined
+                      }
+                    />
                   ) : isFollowup(question) && state !== 'DRAFT' ? (
                     <FollowupQuestionElem
                       question={question}
@@ -249,6 +269,8 @@ export function DynamicSections({
                       }
                       onEdited={editFollowupEntry}
                     />
+                  ) : isParagraph(question) ? (
+                    <ParagraphElem question={question} />
                   ) : undefined}
                 </Fragment>
               )

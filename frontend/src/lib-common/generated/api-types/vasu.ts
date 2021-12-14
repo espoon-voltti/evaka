@@ -80,7 +80,6 @@ export interface GetVasuDocumentResponse {
 export interface UpdateDocumentRequest {
   content: VasuContent
   evaluationDiscussionContent: EvaluationDiscussionContent
-  vasuDiscussionContent: VasuDiscussionContent
 }
 
 /**
@@ -110,15 +109,6 @@ export interface VasuContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.vasu.VasuDiscussionContent
-*/
-export interface VasuDiscussionContent {
-  discussionDate: LocalDate | null
-  guardianViewsAndCollaboration: string
-  participants: string
-}
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuDocument
 */
 export interface VasuDocument {
@@ -132,7 +122,6 @@ export interface VasuDocument {
   modifiedAt: Date
   templateName: string
   templateRange: FiniteDateRange
-  vasuDiscussionContent: VasuDiscussionContent
 }
 
 /**

@@ -280,6 +280,45 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                     value = ""
                 )
             )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelmakeskustelu"
+                VasuLanguage.SV -> "Samtal om barnets plan för småbarnspedagogik"
+            },
+            questions = listOfNotNull(
+                VasuQuestion.Paragraph(
+                    title = when (lang) {
+                        VasuLanguage.FI -> "Varhaiskasvatussuunnitelma on käyty läpi yhteistyössä huoltajien kanssa"
+                        VasuLanguage.SV -> ""
+                    },
+                    paragraph = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Varhaiskasvatuskeskustelun päivämäärä"
+                        VasuLanguage.SV -> "Datum för samtalet om barnets plan för småbarnspedagogik"
+                    },
+                    tracked = true,
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Keskusteluun osallistuneet huoltajat"
+                        VasuLanguage.SV -> "Vårdnadshavare som deltog i samtalet"
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä"
+                        VasuLanguage.SV -> "Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
         )
     )
 )
@@ -476,9 +515,20 @@ fun getDefaultLeopsContent() = VasuContent(
         VasuSection(
             name = "Lapsen esiopetuksen oppimissuunnitelmakeskustelut",
             questions = listOf(
-                // TODO: add general paragraph component / or a title component
-                // TODO: add date question
-                // TODO: add guardians multiselect question
+                VasuQuestion.Paragraph(
+                    title = "Oppimissuunnitelma on laadittu yhteistyössä huoltajien kanssa",
+                    paragraph = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = "Keskustelun päivämäärä",
+                    tracked = true,
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Keskusteluun osallistuneet huoltajat",
+                    multiline = true,
+                    value = ""
+                )
             )
         ),
         VasuSection(

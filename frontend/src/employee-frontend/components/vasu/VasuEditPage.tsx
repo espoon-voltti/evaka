@@ -17,7 +17,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { DynamicSections } from './sections/DynamicSections'
 import { EditableEvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
-import { EditableVasuDiscussionSection } from './sections/VasuDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
@@ -56,8 +55,6 @@ export default React.memo(function VasuEditPage({
     vasu,
     content,
     setContent,
-    vasuDiscussionContent,
-    setVasuDiscussionContent,
     evaluationDiscussionContent,
     setEvaluationDiscussionContent,
     status,
@@ -116,12 +113,6 @@ export default React.memo(function VasuEditPage({
             permittedFollowupActions={permittedFollowupActions}
             translations={translations}
           />
-          <EditableVasuDiscussionSection
-            sectionIndex={content.sections.length + dynamicSectionsOffset}
-            content={vasuDiscussionContent}
-            setContent={setVasuDiscussionContent}
-            translations={translations}
-          />
           {vasu.documentState !== 'DRAFT' && (
             <EditableEvaluationDiscussionSection
               sectionIndex={content.sections.length + dynamicSectionsOffset + 1}
@@ -132,7 +123,7 @@ export default React.memo(function VasuEditPage({
           )}
           <VasuEvents
             document={vasu}
-            vasuDiscussionDate={vasuDiscussionContent.discussionDate}
+            content={content}
             evaluationDiscussionDate={
               evaluationDiscussionContent.discussionDate
             }

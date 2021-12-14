@@ -11,7 +11,6 @@ import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { DynamicSections } from './sections/DynamicSections'
 import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
-import { VasuDiscussionSection } from './sections/VasuDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu } from './use-vasu'
@@ -31,13 +30,8 @@ export default React.memo(function VasuPage({
 }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
 
-  const {
-    vasu,
-    content,
-    vasuDiscussionContent,
-    evaluationDiscussionContent,
-    translations
-  } = useVasu(id)
+  const { vasu, content, evaluationDiscussionContent, translations } =
+    useVasu(id)
 
   const dynamicSectionsOffset = 1
 
@@ -59,11 +53,6 @@ export default React.memo(function VasuPage({
             state={vasu.documentState}
             translations={translations}
           />
-          <VasuDiscussionSection
-            sectionIndex={content.sections.length + dynamicSectionsOffset}
-            content={vasuDiscussionContent}
-            translations={translations}
-          />
           {vasu.documentState !== 'DRAFT' && (
             <EvaluationDiscussionSection
               sectionIndex={content.sections.length + dynamicSectionsOffset + 1}
@@ -74,7 +63,7 @@ export default React.memo(function VasuPage({
           <Gap size={'s'} />
           <VasuEvents
             document={vasu}
-            vasuDiscussionDate={vasuDiscussionContent.discussionDate}
+            content={content}
             evaluationDiscussionDate={
               evaluationDiscussionContent.discussionDate
             }

@@ -13,15 +13,6 @@ export const sv: typeof fi = {
       guardians: 'Vårdnadshavare eller annan laglig företrädare',
       placements: 'Enhet inom småbarnspedagogiken och grupp'
     },
-    vasuDiscussion: {
-      title: 'Samtal om barnets plan för småbarnspedagogik',
-      title2: '',
-      discussionDate:
-        'Datum för samtalet om barnets plan för småbarnspedagogik',
-      participants: 'Vårdnadshavare som deltog i samtalet',
-      guardianViewsAndCollaboration:
-        'Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan'
-    },
     evaluationDiscussion: {
       title: 'Utvärdering av genomförandet',
       title2: '',

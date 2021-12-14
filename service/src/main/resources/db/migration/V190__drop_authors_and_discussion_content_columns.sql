@@ -148,3 +148,150 @@ JOIN curriculum_template ON curriculum_template.id = curriculum_document.templat
 WHERE curriculum_content.document_id = curriculum_document.id;
 
 ALTER TABLE curriculum_content DROP COLUMN authors_content;
+
+UPDATE curriculum_template SET content = jsonb_build_object(
+    'sections', (content->'sections')::jsonb || jsonb_build_array(CASE
+        WHEN language = 'SV' THEN jsonb_build_object(
+            'name', 'Samtal om barnets plan för småbarnspedagogik',
+            'questions', jsonb_build_array(
+                jsonb_build_object(
+                    'type', 'DATE',
+                    'ophKey', NULL,
+                    'name', 'Datum för samtalet om barnets plan för småbarnspedagogik',
+                    'info', '',
+                    'tracked', TRUE,
+                    'value', NULL
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Vårdnadshavare som deltog i samtalet',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', ''
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', ''
+                )
+            )
+        )
+        ELSE jsonb_build_object(
+            'name', 'Lapsen varhaiskasvatussuunnitelmakeskustelu',
+            'questions', jsonb_build_array(
+                jsonb_build_object(
+                    'type', 'PARAGRAPH',
+                    'ophKey', NULL,
+                    'name', '',
+                    'info', '',
+                    'title', 'Varhaiskasvatussuunnitelma on käyty läpi yhteistyössä huoltajien kanssa',
+                    'paragraph', ''
+                ),
+                jsonb_build_object(
+                    'type', 'DATE',
+                    'ophKey', NULL,
+                    'name', 'Varhaiskasvatuskeskustelun päivämäärä',
+                    'info', '',
+                    'tracked', TRUE,
+                    'value', NULL
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Keskusteluun osallistuneet huoltajat',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', ''
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', ''
+                )
+            )
+        )
+    END)
+);
+
+UPDATE curriculum_content SET content = jsonb_build_object(
+    'sections', (curriculum_content.content->'sections')::jsonb || jsonb_build_array(CASE
+        WHEN language = 'SV' THEN jsonb_build_object(
+            'name', 'Samtal om barnets plan för småbarnspedagogik',
+            'questions', jsonb_build_array(
+                jsonb_build_object(
+                    'type', 'DATE',
+                    'ophKey', NULL,
+                    'name', 'Datum för samtalet om barnets plan för småbarnspedagogik',
+                    'info', '',
+                    'tracked', TRUE,
+                    'value', curriculum_content.curriculum_discussion_content->'discussionDate'
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Vårdnadshavare som deltog i samtalet',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', curriculum_content.curriculum_discussion_content->'participants'
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', curriculum_content.curriculum_discussion_content->'guardianViewsAndCollaboration'
+                )
+            )
+        )
+        ELSE jsonb_build_object(
+            'name', 'Lapsen varhaiskasvatussuunnitelmakeskustelu',
+            'questions', jsonb_build_array(
+                jsonb_build_object(
+                    'type', 'PARAGRAPH',
+                    'ophKey', NULL,
+                    'name', '',
+                    'info', '',
+                    'title', 'Varhaiskasvatussuunnitelma on käyty läpi yhteistyössä huoltajien kanssa',
+                    'paragraph', ''
+                ),
+                jsonb_build_object(
+                    'type', 'DATE',
+                    'ophKey', NULL,
+                    'name', 'Varhaiskasvatuskeskustelun päivämäärä',
+                    'info', '',
+                    'tracked', TRUE,
+                    'value', curriculum_content.curriculum_discussion_content->'discussionDate'
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Keskusteluun osallistuneet huoltajat',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', curriculum_content.curriculum_discussion_content->'participants'
+                ),
+                jsonb_build_object(
+                    'type', 'TEXT',
+                    'ophKey', NULL,
+                    'name', 'Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä',
+                    'info', '',
+                    'multiline', TRUE,
+                    'value', curriculum_content.curriculum_discussion_content->'guardianViewsAndCollaboration'
+                )
+            )
+        )
+    END)
+)
+FROM curriculum_document
+JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
+WHERE curriculum_content.document_id = curriculum_document.id;
+
+ALTER TABLE curriculum_content DROP COLUMN curriculum_discussion_content;

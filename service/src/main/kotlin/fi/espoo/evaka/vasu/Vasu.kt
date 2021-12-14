@@ -84,8 +84,6 @@ data class VasuDocument(
     @Json
     val content: VasuContent,
     @Json
-    val vasuDiscussionContent: VasuDiscussionContent,
-    @Json
     val evaluationDiscussionContent: EvaluationDiscussionContent
 ) {
     val documentState: VasuDocumentState
@@ -218,7 +216,9 @@ data class VasuSection(
     JsonSubTypes.Type(value = VasuQuestion.MultiSelectQuestion::class, name = "MULTISELECT"),
     JsonSubTypes.Type(value = VasuQuestion.MultiField::class, name = "MULTI_FIELD"),
     JsonSubTypes.Type(value = VasuQuestion.MultiFieldList::class, name = "MULTI_FIELD_LIST"),
+    JsonSubTypes.Type(value = VasuQuestion.DateQuestion::class, name = "DATE"),
     JsonSubTypes.Type(value = VasuQuestion.Followup::class, name = "FOLLOWUP"),
+    JsonSubTypes.Type(value = VasuQuestion.Paragraph::class, name = "PARAGRAPH")
 )
 sealed class VasuQuestion(
     val type: VasuQuestionType
@@ -311,6 +311,18 @@ sealed class VasuQuestion(
         }
     }
 
+    data class DateQuestion(
+        override val name: String,
+        override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
+        val tracked: Boolean = false,
+        val value: LocalDate?,
+    ) : VasuQuestion(VasuQuestionType.DATE) {
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is DateQuestion && question.copy(value = this.value) == this
+        }
+    }
+
     data class Followup(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
@@ -320,6 +332,19 @@ sealed class VasuQuestion(
     ) : VasuQuestion(VasuQuestionType.FOLLOWUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is Followup && question.copy(value = this.value) == this
+        }
+    }
+
+    data class Paragraph(
+        val title: String,
+        val paragraph: String
+    ) : VasuQuestion(VasuQuestionType.PARAGRAPH) {
+        override val name = ""
+        override val info = ""
+        override val ophKey: OphQuestionKey? = null
+
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question == this
         }
     }
 }
@@ -338,15 +363,10 @@ enum class VasuQuestionType {
     MULTISELECT,
     MULTI_FIELD,
     MULTI_FIELD_LIST,
-    FOLLOWUP
+    DATE,
+    FOLLOWUP,
+    PARAGRAPH
 }
-
-@Json
-data class VasuDiscussionContent(
-    val discussionDate: LocalDate? = null,
-    val participants: String = "",
-    val guardianViewsAndCollaboration: String = ""
-)
 
 @Json
 data class EvaluationDiscussionContent(

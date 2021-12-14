@@ -12,10 +12,11 @@ export const vasuQuestionTypes = [
   'MULTISELECT',
   'MULTI_FIELD',
   'MULTI_FIELD_LIST',
+  'DATE',
   'FOLLOWUP'
 ] as const
 
-export type VasuQuestionType = typeof vasuQuestionTypes[number]
+export type VasuQuestionType = typeof vasuQuestionTypes[number] | 'PARAGRAPH'
 
 interface VasuQuestionCommon {
   type: VasuQuestionType
@@ -62,6 +63,12 @@ export interface MultiFieldListQuestion extends VasuQuestionCommon {
   value: string[][]
 }
 
+export interface DateQuestion extends VasuQuestionCommon {
+  type: 'DATE'
+  tracked: boolean
+  value: LocalDate | null
+}
+
 export interface Followup extends VasuQuestionCommon {
   title: string
   value: FollowupEntry[]
@@ -82,6 +89,12 @@ export interface FollowupEntryEditDetails {
   editorId?: string
 }
 
+export interface Paragraph extends VasuQuestionCommon {
+  type: 'PARAGRAPH'
+  title: string
+  paragraph: string
+}
+
 export type VasuQuestion =
   | TextQuestion
   | CheckboxQuestion
@@ -89,7 +102,9 @@ export type VasuQuestion =
   | MultiSelectQuestion
   | MultiFieldQuestion
   | MultiFieldListQuestion
+  | DateQuestion
   | Followup
+  | Paragraph
 
 export type PermittedFollowupActions = {
   [key: string]: string[]

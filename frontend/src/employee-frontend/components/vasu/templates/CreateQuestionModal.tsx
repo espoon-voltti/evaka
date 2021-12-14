@@ -33,13 +33,15 @@ export default React.memo(function CreateQuestionModal({
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.vasuTemplates.questionModal
-  const [type, setType] = useState<VasuQuestionType>('TEXT')
+  const [type, setType] =
+    useState<Exclude<VasuQuestionType, 'PARAGRAPH'>>('TEXT')
   const [name, setName] = useState('')
   const [options, setOptions] = useState([''])
   const [multiline, setMultiline] = useState(false)
   const [minSelections, setMinSelections] = useState(0)
   const [keys, setKeys] = useState([''])
   const [info, setInfo] = useState('')
+  const [tracked, setTracked] = useState(false)
 
   function createQuestion(): VasuQuestion {
     switch (type) {
@@ -103,6 +105,15 @@ export default React.memo(function CreateQuestionModal({
           info,
           keys: keys.map((key) => ({ name: key })),
           value: []
+        }
+      case 'DATE':
+        return {
+          type: 'DATE',
+          ophKey: null,
+          name,
+          info,
+          tracked,
+          value: null
         }
       case 'FOLLOWUP':
         return {
@@ -227,6 +238,16 @@ export default React.memo(function CreateQuestionModal({
             <InlineButton
               onClick={() => setKeys([...keys, ''])}
               text={t.addNewKey}
+            />
+          </FixedSpaceColumn>
+        )}
+
+        {type === 'DATE' && (
+          <FixedSpaceColumn spacing="xxs">
+            <Checkbox
+              label={t.tracked}
+              checked={tracked}
+              onChange={setTracked}
             />
           </FixedSpaceColumn>
         )}

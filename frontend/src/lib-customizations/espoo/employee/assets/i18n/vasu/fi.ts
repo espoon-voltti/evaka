@@ -11,15 +11,6 @@ export const fi = {
       guardians: 'Huoltaja(t) tai muu laillinen edustaja',
       placements: 'Varhaiskasvatusyksikkö ja ryhmä'
     },
-    vasuDiscussion: {
-      title: 'Lapsen varhaiskasvatussuunnitelmakeskustelu',
-      title2:
-        'Varhaiskasvatussuunnitelma on käyty läpi yhteistyössä huoltajien kanssa',
-      discussionDate: 'Varhaiskasvatuskeskustelun päivämäärä',
-      participants: 'Keskusteluun osallistuneet huoltajat',
-      guardianViewsAndCollaboration:
-        'Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä'
-    },
     evaluationDiscussion: {
       title: 'Toteutumisen arviointi',
       title2:

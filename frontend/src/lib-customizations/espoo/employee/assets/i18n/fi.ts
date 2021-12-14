@@ -2855,6 +2855,7 @@ export const fi = {
     unsavedWarning: 'Haluatko varmasti poistua tallentamatta?',
     addNewSection: 'Lisää uusi osio',
     addNewQuestion: 'Lisää uusi kysymys',
+    addNewParagraph: 'Lisää uusi tekstikappale',
     autoGrowingList: 'Automaattisesti kasvava lista',
     questionModal: {
       title: 'Uusi kysymys',
@@ -2866,7 +2867,10 @@ export const fi = {
       multiline: 'Monirivinen',
       minSelections: 'Valittava vähintään',
       keys: 'Tekstikenttien nimet',
-      addNewKey: 'Lisää nimetty tekstikenttä'
+      addNewKey: 'Lisää nimetty tekstikenttä',
+      tracked: 'Päivämäärä näytetään suunnitelman tapahtumissa',
+      paragraphTitle: 'Kappaleen otsikko',
+      paragraphText: 'Kappaleen leipäteksti'
     },
     questionTypes: {
       TEXT: 'Tekstimuotoinen',
@@ -2875,6 +2879,7 @@ export const fi = {
       MULTISELECT: 'Monivalinta',
       MULTI_FIELD: 'Nimettyjä tekstikenttiä',
       MULTI_FIELD_LIST: 'Kasvava lista nimettyjä tekstikenttiä',
+      DATE: 'Päivämäärä',
       FOLLOWUP: 'Seuranta'
     },
     errorCodes: {

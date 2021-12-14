@@ -125,7 +125,6 @@ class VasuIntegrationTest : FullApplicationTest() {
             )
             assertEquals(0, doc.events.size)
             assertEquals(template.content, doc.content)
-            assertEquals(VasuDiscussionContent(), doc.vasuDiscussionContent)
             assertEquals(EvaluationDiscussionContent(), doc.evaluationDiscussionContent)
         }
 
@@ -171,7 +170,6 @@ class VasuIntegrationTest : FullApplicationTest() {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = updatedContent,
-                vasuDiscussionContent = VasuDiscussionContent(),
                 evaluationDiscussionContent = EvaluationDiscussionContent()
             )
         )
@@ -218,7 +216,6 @@ class VasuIntegrationTest : FullApplicationTest() {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = updatedContent,
-                vasuDiscussionContent = VasuDiscussionContent(),
                 evaluationDiscussionContent = EvaluationDiscussionContent()
             )
         )
@@ -238,16 +235,28 @@ class VasuIntegrationTest : FullApplicationTest() {
         }
 
         // vasu discussion and move to ready
-        val vasuDiscussionContent = VasuDiscussionContent(
-            discussionDate = LocalDate.now(),
-            participants = "matti ja teppo",
-            guardianViewsAndCollaboration = "evvk"
+        val contentWithUpdatedDiscussion = updatedContent.copy(
+            sections = updatedContent.sections.map { section ->
+                if (
+                    section.name == "Lapsen varhaiskasvatussuunnitelmakeskustelu" ||
+                    section.name == "Lapsen esiopetuksen oppimissuunnitelmakeskustelut"
+                ) {
+                    section.copy(
+                        questions = section.questions.map { question ->
+                            when (question) {
+                                is VasuQuestion.DateQuestion -> question.copy(value = LocalDate.now())
+                                is VasuQuestion.TextQuestion -> question.copy(value = "evvk")
+                                else -> question
+                            }
+                        }
+                    )
+                } else section
+            }
         )
         putVasuDocument(
             documentId,
             VasuController.UpdateDocumentRequest(
-                content = content,
-                vasuDiscussionContent = vasuDiscussionContent,
+                content = contentWithUpdatedDiscussion,
                 evaluationDiscussionContent = EvaluationDiscussionContent()
             )
         )
@@ -258,7 +267,8 @@ class VasuIntegrationTest : FullApplicationTest() {
             )
         )
         getVasuDocument(documentId).let { doc ->
-            assertEquals(vasuDiscussionContent, doc.vasuDiscussionContent)
+            assertNotEquals(updatedContent, doc.content)
+            assertEquals(contentWithUpdatedDiscussion, doc.content)
             assertEquals(
                 listOf(PUBLISHED, PUBLISHED, MOVED_TO_READY),
                 doc.events.map { it.eventType }
@@ -275,8 +285,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         putVasuDocument(
             documentId,
             VasuController.UpdateDocumentRequest(
-                content = content,
-                vasuDiscussionContent = vasuDiscussionContent,
+                content = contentWithUpdatedDiscussion,
                 evaluationDiscussionContent = evaluationDiscussionContent
             )
         )
@@ -321,16 +330,14 @@ class VasuIntegrationTest : FullApplicationTest() {
         putVasuDocument(
             documentId,
             VasuController.UpdateDocumentRequest(
-                content = content,
-                vasuDiscussionContent = vasuDiscussionContent,
+                content = contentWithUpdatedDiscussion,
                 evaluationDiscussionContent = evaluationDiscussionContent
             )
         )
         db.read {
             it.getLatestPublishedVasuDocument(documentId).let { doc ->
                 assertNotNull(doc)
-                assertEquals(content, doc.content)
-                assertEquals(vasuDiscussionContent, doc.vasuDiscussionContent)
+                assertEquals(contentWithUpdatedDiscussion, doc.content)
                 assertEquals(evaluationDiscussionContent, doc.evaluationDiscussionContent)
             }
         }

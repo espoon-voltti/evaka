@@ -11,7 +11,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   EvaluationDiscussionContent,
   VasuContent,
-  VasuDiscussionContent,
   VasuDocument,
   VasuDocumentEvent,
   VasuDocumentEventType,
@@ -30,7 +29,6 @@ const mapVasuDocumentResponse = ({
   templateRange,
   basics,
   content,
-  vasuDiscussionContent,
   evaluationDiscussionContent,
   ...rest
 }: JsonOf<VasuDocument>): VasuDocument => ({
@@ -50,12 +48,6 @@ const mapVasuDocumentResponse = ({
         ...pl,
         range: FiniteDateRange.parseJson(pl.range)
       })) ?? null
-  },
-  vasuDiscussionContent: {
-    ...vasuDiscussionContent,
-    discussionDate: LocalDate.parseNullableIso(
-      vasuDiscussionContent.discussionDate
-    )
   },
   evaluationDiscussionContent: {
     ...evaluationDiscussionContent,
@@ -109,20 +101,17 @@ export async function getVasuDocument(
 export interface PutVasuDocumentParams {
   documentId: UUID
   content: VasuContent
-  vasuDiscussionContent: VasuDiscussionContent
   evaluationDiscussionContent: EvaluationDiscussionContent
 }
 
 export async function putVasuDocument({
   documentId,
   content,
-  vasuDiscussionContent,
   evaluationDiscussionContent
 }: PutVasuDocumentParams): Promise<Result<null>> {
   return client
     .put(`/vasu/${documentId}`, {
       content,
-      vasuDiscussionContent,
       evaluationDiscussionContent
     })
     .then(() => Success.of(null))

@@ -7,7 +7,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H1, H2, H3, Label } from 'lib-components/typography'
+import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import React, { Fragment, useEffect, useState, useMemo } from 'react'
 import { useHistory } from 'react-router'
 import { Prompt, useParams } from 'react-router-dom'
@@ -32,11 +32,14 @@ import { useTranslation } from '../../../state/i18n'
 import { vasuTranslations } from 'lib-customizations/employee'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import {
+  getQuestionNumber,
   isCheckboxQuestion,
+  isDateQuestion,
   isFollowup,
   isMultiFieldListQuestion,
   isMultiFieldQuestion,
   isMultiSelectQuestion,
+  isParagraph,
   isRadioGroupQuestion,
   isTextQuestion
 } from '../vasu-content'
@@ -45,26 +48,33 @@ import CreateQuestionModal from './CreateQuestionModal'
 import QuestionInfo from '../QuestionInfo'
 import {
   CheckboxQuestion,
+  DateQuestion,
   Followup,
   MultiFieldListQuestion,
   MultiFieldQuestion,
   MultiSelectQuestion,
+  Paragraph,
   RadioGroupQuestion,
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
 import { VasuTemplate } from 'lib-common/generated/api-types/vasu'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import CreateParagraphModal from './CreateParagraphModal'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const h = useHistory()
 
   const [template, setTemplate] = useState<Result<VasuTemplate>>(Loading.of())
   const [dirty, setDirty] = useState(false)
 
   const [sectionNameEdit, setSectionNameEdit] = useState<number | null>(null)
-  const [addingQuestion, setAddingQuestion] = useState<number[] | null>(null) // [section, question]
+  const [addingQuestion, setAddingQuestion] = useState<[number, number] | null>(
+    null
+  ) // [section, question]
+  const [addingParagraph, setAddingParagraph] = useState<[number, number]>() // [section, question]
 
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
   useEffect(() => loadTemplate(id), [id, loadTemplate])
@@ -231,17 +241,11 @@ export default React.memo(function VasuTemplateEditor() {
 
   const dynamicOffset = 1
 
-  function renderTextQuestion(
-    question: TextQuestion,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
+  function renderTextQuestion(question: TextQuestion, questionNumber: string) {
     return (
       <React.Fragment>
         <QuestionInfo info={question.info}>
-          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
-            questionIndex + 1
-          }. ${question.name}`}</H3>
+          <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
 
         {question.multiline ? (
@@ -255,16 +259,13 @@ export default React.memo(function VasuTemplateEditor() {
 
   function renderCheckboxQuestion(
     question: CheckboxQuestion,
-    sectionIndex: number,
-    questionIndex: number
+    questionNumber: string
   ) {
     return (
       <QuestionInfo info={question.info}>
         <Checkbox
           checked={question.value}
-          label={`${sectionIndex + dynamicOffset + 1}.${questionIndex + 1}. ${
-            question.name
-          }`}
+          label={`${questionNumber}. ${question.name}`}
         />
       </QuestionInfo>
     )
@@ -272,15 +273,12 @@ export default React.memo(function VasuTemplateEditor() {
 
   function renderRadioGroupQuestion(
     question: RadioGroupQuestion,
-    sectionIndex: number,
-    questionIndex: number
+    questionNumber: string
   ) {
     return (
       <FixedSpaceColumn spacing="s">
         <QuestionInfo info={question.info}>
-          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
-            questionIndex + 1
-          }. ${question.name}`}</H3>
+          <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
         {question.options.map((opt) => (
           <Radio checked={false} label={opt.name} key={opt.key} />
@@ -291,15 +289,12 @@ export default React.memo(function VasuTemplateEditor() {
 
   function renderMultiSelectQuestion(
     question: MultiSelectQuestion,
-    sectionIndex: number,
-    questionIndex: number
+    questionNumber: string
   ) {
     return (
       <FixedSpaceColumn spacing="s">
         <QuestionInfo info={question.info}>
-          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
-            questionIndex + 1
-          }. ${question.name}`}</H3>
+          <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
         {question.options.map((opt) => (
           <Checkbox checked={false} label={opt.name} key={opt.key} />
@@ -310,15 +305,12 @@ export default React.memo(function VasuTemplateEditor() {
 
   function renderMultiFieldQuestion(
     question: MultiFieldQuestion,
-    sectionIndex: number,
-    questionIndex: number
+    questionNumber: string
   ) {
     return (
       <FixedSpaceColumn spacing="xs">
         <QuestionInfo info={question.info}>
-          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
-            questionIndex + 1
-          }. ${question.name}`}</H3>
+          <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
         <FixedSpaceFlexWrap>
           {question.keys.map((key) => (
@@ -334,15 +326,12 @@ export default React.memo(function VasuTemplateEditor() {
 
   function renderMultiFieldListQuestion(
     question: MultiFieldListQuestion,
-    sectionIndex: number,
-    questionIndex: number
+    questionNumber: string
   ) {
     return (
       <FixedSpaceColumn spacing="xs">
         <QuestionInfo info={question.info}>
-          <H3 noMargin>{`${sectionIndex + dynamicOffset + 1}.${
-            questionIndex + 1
-          }. ${question.name}`}</H3>
+          <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
         <FixedSpaceFlexWrap>
           {question.keys.map((key) => (
@@ -353,6 +342,22 @@ export default React.memo(function VasuTemplateEditor() {
           ))}
         </FixedSpaceFlexWrap>
         <QuestionDetails>{i18n.vasuTemplates.autoGrowingList}</QuestionDetails>
+      </FixedSpaceColumn>
+    )
+  }
+
+  function renderDateQuestion(question: DateQuestion, questionNumber: string) {
+    return (
+      <FixedSpaceColumn spacing="xs">
+        <QuestionInfo info={question.info}>
+          <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
+        </QuestionInfo>
+        <DatePicker date="" onChange={() => undefined} locale={lang} />
+        {question.tracked && (
+          <QuestionDetails>
+            {i18n.vasuTemplates.questionModal.tracked}
+          </QuestionDetails>
+        )}
       </FixedSpaceColumn>
     )
   }
@@ -369,25 +374,43 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
+  function renderParagraph(question: Paragraph) {
+    return (
+      <FixedSpaceColumn spacing="s">
+        {question.title ? <H3 noMargin>{question.title}</H3> : null}
+        {question.paragraph ? <P noMargin>{question.paragraph}</P> : null}
+      </FixedSpaceColumn>
+    )
+  }
+
   function renderQuestion(
+    sectionQuestions: VasuQuestion[],
     question: VasuQuestion,
-    sectionIndex: number,
-    questionIndex: number
+    sectionIndex: number
   ) {
+    const questionNumber = getQuestionNumber(
+      sectionIndex,
+      sectionQuestions,
+      question
+    )
     if (isTextQuestion(question)) {
-      return renderTextQuestion(question, sectionIndex, questionIndex)
+      return renderTextQuestion(question, questionNumber)
     } else if (isCheckboxQuestion(question)) {
-      return renderCheckboxQuestion(question, sectionIndex, questionIndex)
+      return renderCheckboxQuestion(question, questionNumber)
     } else if (isRadioGroupQuestion(question)) {
-      return renderRadioGroupQuestion(question, sectionIndex, questionIndex)
+      return renderRadioGroupQuestion(question, questionNumber)
     } else if (isMultiSelectQuestion(question)) {
-      return renderMultiSelectQuestion(question, sectionIndex, questionIndex)
+      return renderMultiSelectQuestion(question, questionNumber)
     } else if (isMultiFieldQuestion(question)) {
-      return renderMultiFieldQuestion(question, sectionIndex, questionIndex)
+      return renderMultiFieldQuestion(question, questionNumber)
     } else if (isMultiFieldListQuestion(question)) {
-      return renderMultiFieldListQuestion(question, sectionIndex, questionIndex)
+      return renderMultiFieldListQuestion(question, questionNumber)
+    } else if (isDateQuestion(question)) {
+      return renderDateQuestion(question, questionNumber)
     } else if (isFollowup(question)) {
       return renderFollowup(question)
+    } else if (isParagraph(question)) {
+      return renderParagraph(question)
     } else {
       return null
     }
@@ -513,9 +536,9 @@ export default React.memo(function VasuTemplateEditor() {
                               </FixedSpaceRow>
                             )}
                             {renderQuestion(
+                              section.questions,
                               question,
-                              sectionIndex,
-                              questionIndex
+                              sectionIndex + dynamicOffset
                             )}
                           </ElementContainer>
                           {!readonly && (
@@ -532,6 +555,18 @@ export default React.memo(function VasuTemplateEditor() {
                                   ])
                                 }
                                 text={i18n.vasuTemplates.addNewQuestion}
+                                icon={faPlus}
+                                disabled={readonly}
+                              />
+                              <Gap size="L" horizontal />
+                              <InlineButton
+                                onClick={() =>
+                                  setAddingParagraph([
+                                    sectionIndex,
+                                    questionIndex + 1
+                                  ])
+                                }
+                                text={i18n.vasuTemplates.addNewParagraph}
                                 icon={faPlus}
                                 disabled={readonly}
                               />
@@ -581,13 +616,6 @@ export default React.memo(function VasuTemplateEditor() {
             <ElementContainer>
               <H2>
                 {dynamicOffset + template.value.content.sections.length + 1}.{' '}
-                {translations.staticSections.vasuDiscussion.title}
-              </H2>
-            </ElementContainer>
-
-            <ElementContainer>
-              <H2>
-                {dynamicOffset + template.value.content.sections.length + 2}.{' '}
                 {translations.staticSections.evaluationDiscussion.title}
               </H2>
             </ElementContainer>
@@ -620,6 +648,18 @@ export default React.memo(function VasuTemplateEditor() {
                   setAddingQuestion(null)
                 }}
                 onCancel={() => setAddingQuestion(null)}
+              />
+            )}
+
+            {addingParagraph && !readonly && (
+              <CreateParagraphModal
+                onSave={(question) => {
+                  if (!addingParagraph) return
+                  const [sectionIndex, questionIndex] = addingParagraph
+                  addQuestion(question, sectionIndex, questionIndex)
+                  setAddingParagraph(undefined)
+                }}
+                onCancel={() => setAddingParagraph(undefined)}
               />
             )}
           </>
