@@ -4,7 +4,6 @@
 
 import React, { useCallback, useContext, useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { UnitContext } from '../../state/unit'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -28,18 +27,9 @@ export default function MessagesPage() {
     groupId: UUID | 'all'
   }>()
 
-  const { unitInfoResponse } = useContext(UnitContext)
-
   function changeGroup(group: GroupInfo | undefined) {
     if (group) history.push(`/units/${unitId}/groups/${group.id}/messages`)
   }
-
-  const selectedGroup =
-    groupId === 'all'
-      ? undefined
-      : unitInfoResponse
-          .map((res) => res.groups.find((g) => g.id === groupId))
-          .getOrElse(undefined)
 
   const {
     loadNestedAccounts,
@@ -51,11 +41,16 @@ export default function MessagesPage() {
     selectedAccount
   } = useContext(MessageContext)
 
+  const selectedGroup2 =
+    groupAccounts.find(({ daycareGroup }) => daycareGroup?.id === groupId) ??
+    groupAccounts[0]
+
   useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
 
   useEffect(() => {
-    const maybeAccount = groupAccounts.find(
-      ({ daycareGroup }) => daycareGroup?.id === groupId
+    const maybeAccount = (
+      groupAccounts.find(({ daycareGroup }) => daycareGroup?.id === groupId) ??
+      groupAccounts[0]
     )?.account
     if (maybeAccount) {
       setSelectedAccount(maybeAccount)
@@ -79,10 +74,17 @@ export default function MessagesPage() {
         senderAccountId={selectedAccount.id}
       />
     </ContentArea>
-  ) : (
+  ) : !selectedThread && selectedAccount ? (
     <>
       <TopBarWithGroupSelector
-        selectedGroup={selectedGroup}
+        selectedGroup={
+          selectedGroup2?.daycareGroup
+            ? {
+                id: selectedGroup2.daycareGroup.id,
+                name: selectedGroup2.daycareGroup.name
+              }
+            : undefined
+        }
         onChangeGroup={changeGroup}
         allowedGroupIds={groupAccounts.flatMap(
           (ga) => ga.daycareGroup?.id || []
@@ -128,7 +130,7 @@ export default function MessagesPage() {
         </ContentArea>
       ))}
     </>
-  )
+  ) : null
 }
 
 export const HeaderContainer = styled.div`

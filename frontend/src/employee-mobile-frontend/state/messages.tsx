@@ -8,8 +8,7 @@ import {
   MessageAccount,
   MessageThread,
   NestedMessageAccount,
-  ThreadReply,
-  UnreadCountByAccount
+  ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import React, {
   createContext,
@@ -23,13 +22,11 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
   getMessagingAccounts,
   getReceivedMessages,
-  getUnreadCounts,
   markThreadRead,
   replyToThread,
   ReplyToThreadParams
 } from '../api/messages'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import { UserContext } from './user'
 import { UUID } from 'lib-common/types'
 import { UnitContext } from './unit'
 import { SelectOption } from 'lib-components/molecules/Select'
@@ -69,7 +66,6 @@ export interface MessagesState {
   replyState: Result<void> | undefined
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
-  unreadCountsByAccount: Result<UnreadCountByAccount[]>
 }
 
 const defaultState: MessagesState = {
@@ -90,39 +86,15 @@ const defaultState: MessagesState = {
   sendReply: () => undefined,
   replyState: undefined,
   getReplyContent: () => '',
-  setReplyContent: () => undefined,
-  unreadCountsByAccount: Loading.of()
+  setReplyContent: () => undefined
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
-
-function getThreadUnreadCount(thread: MessageThread, accountId: string) {
-  return thread.messages.reduce(
-    (sum, m) => (!m.readAt && m.sender.id !== accountId ? sum + 1 : sum),
-    0
-  )
-}
-
-function adjustUnreadCounts(
-  counts: UnreadCountByAccount[],
-  accountId: string,
-  threadUnreadCount: number
-) {
-  return counts.map(({ accountId: acc, unreadCount }) =>
-    acc === accountId
-      ? {
-          accountId: acc,
-          unreadCount: unreadCount - threadUnreadCount
-        }
-      : { accountId: acc, unreadCount }
-  )
-}
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const [page, setPage] = useState<number>(1)
     const [pages, setPages] = useState<number>()
-    const { user, loggedIn } = useContext(UserContext)
     const { unitInfoResponse, reloadUnreadCounts } = useContext(UnitContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
@@ -167,31 +139,6 @@ export const MessageContextProvider = React.memo(
       setSelectedAccount
     ])
 
-    const [unreadCountsByAccount, setUnreadCountsByAccount] = useState<
-      Result<UnreadCountByAccount[]>
-    >(Loading.of())
-
-    const loadUnreadCounts = useRestApi(
-      getUnreadCounts,
-      setUnreadCountsByAccount
-    )
-
-    const userHasActivePinLogin = user
-      .map((item) => item?.pinLoginActive)
-      .getOrElse(false)
-
-    useEffect(() => {
-      loggedIn && userHasActivePinLogin && unitInfoResponse.isSuccess
-        ? loadUnreadCounts()
-        : null
-    }, [
-      loadUnreadCounts,
-      user,
-      userHasActivePinLogin,
-      loggedIn,
-      unitInfoResponse
-    ])
-
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>
     >(Loading.of())
@@ -232,19 +179,9 @@ export const MessageContextProvider = React.memo(
         if (!thread) return
         if (!selectedAccount) throw new Error('Should never happen')
         const { id: accountId } = selectedAccount || selectedSender
-
-        const threadUnreadCount = getThreadUnreadCount(thread, accountId)
-        if (threadUnreadCount > 0) {
-          setUnreadCountsByAccount((request) =>
-            request.map((result) =>
-              adjustUnreadCounts(result, accountId, threadUnreadCount)
-            )
-          )
-        }
-
         void markThreadRead(accountId, thread.id)
       },
-      [selectedAccount, selectedSender, setUnreadCountsByAccount]
+      [selectedAccount, selectedSender]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
@@ -292,7 +229,6 @@ export const MessageContextProvider = React.memo(
         selectedUnit,
         selectThread,
         selectedThread,
-        unreadCountsByAccount,
         getReplyContent,
         sendReply,
         setReplyContent,
@@ -310,7 +246,6 @@ export const MessageContextProvider = React.memo(
         selectedUnit,
         selectedThread,
         selectThread,
-        unreadCountsByAccount,
         getReplyContent,
         sendReply,
         setReplyContent,

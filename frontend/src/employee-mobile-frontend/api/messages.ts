@@ -13,7 +13,6 @@ import {
   PostMessageBody,
   ReplyToMessageBody,
   ThreadReply,
-  UnreadCountByAccount,
   UnreadCountByAccountAndGroup
 } from 'lib-common/generated/api-types/messaging'
 import {
@@ -32,15 +31,6 @@ export async function getMessagingAccounts(
     .get<JsonOf<NestedMessageAccount[]>>(
       `/messages/mobile/my-accounts/${unitId}`
     )
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function getUnreadCounts(): Promise<
-  Result<UnreadCountByAccount[]>
-> {
-  return client
-    .get<JsonOf<UnreadCountByAccount[]>>(`/messages/unread`)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
