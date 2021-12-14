@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { MutableRefObject } from 'react'
+import { isAutomatedTest } from './helpers'
 
 export function scrollToPos(options: ScrollToOptions, timeout = 0) {
   scrollWithTimeout(() => options, timeout)
@@ -34,6 +35,8 @@ function scrollWithTimeout(
   getOptions: () => ScrollToOptions | undefined,
   timeout = 0
 ) {
+  if (isAutomatedTest) return
+
   withTimeout(() => {
     const opts = getOptions()
     if (opts) window.scrollTo({ behavior: 'smooth', ...opts })
@@ -44,6 +47,8 @@ function scrollIntoViewWithTimeout(
   getElement: () => HTMLElement | undefined,
   timeout = 0
 ) {
+  if (isAutomatedTest) return
+
   withTimeout(() => {
     const elem = getElement()
     if (elem) elem.scrollIntoView({ behavior: 'smooth' })
