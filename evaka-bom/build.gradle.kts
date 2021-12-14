@@ -59,6 +59,8 @@ dependencies {
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
         api("redis.clients:jedis:3.7.0")
+        api("org.apache.logging.log4j:log4j-api:2.16.0")
+        api("org.apache.logging.log4j:log4j-to-slf4j:2.16.0")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
