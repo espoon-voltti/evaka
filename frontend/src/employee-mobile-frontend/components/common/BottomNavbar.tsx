@@ -20,6 +20,7 @@ import { renderResult } from '../async-rendering'
 import { combine } from 'lib-common/api'
 import { defaultMargins } from 'lib-components/white-space'
 import { UserContext } from '../../state/user'
+import { MessageContext } from '../../state/messages'
 
 export type NavItem = 'child' | 'staff' | 'messages'
 
@@ -96,6 +97,9 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
 
   const { unitInfoResponse, unreadCountsResponse } = useContext(UnitContext)
   const { user } = useContext(UserContext)
+  const { groupAccounts } = useContext(MessageContext)
+
+  const groupAccountIds = groupAccounts.map(({ account }) => account.id)
 
   return renderResult(
     combine(unitInfoResponse, unreadCountsResponse, user),
@@ -152,7 +156,12 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                   icon={faComments}
                   selected={selected === 'messages'}
                 />
-                {unreadCounts.some(({ unreadCount }) => unreadCount > 0) && (
+                {(user?.pinLoginActive && groupAccountIds.length > 0
+                  ? unreadCounts.filter(({ accountId }) =>
+                      groupAccountIds.includes(accountId)
+                    )
+                  : unreadCounts
+                ).some(({ unreadCount }) => unreadCount > 0) && (
                   <UnreadMessagesIndicator
                     data-qa={'unread-messages-indicator'}
                   />
