@@ -17,7 +17,7 @@ import { DailyReservationData } from 'lib-common/generated/api-types/reservation
 import { Reservations } from './calendar-elements'
 import { WeeklyData } from './CalendarListView'
 import { headerHeightMobile } from 'citizen-frontend/header/const'
-import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { scrollToPos } from 'lib-common/utils/scrolling'
 
 interface Props extends WeeklyData {
   selectDate: (date: LocalDate) => void
@@ -82,12 +82,7 @@ const DayElem = React.memo(function DayElem({
 
       if (pos) {
         const offset = headerHeightMobile + 16
-
-        window.scrollTo({
-          left: 0,
-          top: pos - offset,
-          behavior: !isAutomatedTest ? 'smooth' : undefined
-        })
+        scrollToPos({ left: 0, top: pos - offset })
       }
     }
   }, [])

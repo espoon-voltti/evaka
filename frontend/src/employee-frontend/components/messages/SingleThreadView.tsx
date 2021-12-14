@@ -36,6 +36,7 @@ import { MessageType } from 'lib-common/generated/enums'
 import { View } from './types-view'
 import { UUID } from 'lib-common/types'
 import { faReply } from '@fortawesome/free-solid-svg-icons'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 
 const MessageContainer = styled.div`
   background-color: white;
@@ -185,11 +186,8 @@ export function SingleThreadView({
   const { recipients, onToggleRecipient } = useRecipients(messages, accountId)
 
   const autoScrollRef = useRef<HTMLSpanElement>(null)
-  const scrollToBottom = () => {
-    autoScrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
   useEffect(() => {
-    scrollToBottom()
+    scrollRefIntoView(autoScrollRef)
   }, [messages, replyEditorVisible])
 
   const onSubmitReply = () =>

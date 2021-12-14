@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Translations } from 'lib-customizations/employee'
-import { MutableRefObject } from 'react'
 
 export const formatName = (
   maybeFirstName: string | null,
@@ -51,30 +50,4 @@ export function formatPercent(amount?: number): string | undefined {
   }
 
   return amount.toString().replace('.', ',')
-}
-
-export function scrollToRef(ref: MutableRefObject<HTMLElement | null>) {
-  window.setTimeout(() => {
-    let offset = 0
-    if (ref.current) {
-      offset = getDocumentOffsetPosition(ref.current)
-    }
-    if (offset > 0) {
-      window.scrollTo({
-        top: offset,
-        behavior: 'smooth'
-      })
-    }
-  }, 100)
-}
-
-function getDocumentOffsetPosition(elem: HTMLElement): number {
-  let elemTop = elem.offsetTop
-  if (elem.offsetParent) {
-    const parentOffsetTop = getDocumentOffsetPosition(
-      elem.offsetParent as HTMLElement
-    )
-    elemTop = elemTop + parentOffsetTop
-  }
-  return elemTop
 }

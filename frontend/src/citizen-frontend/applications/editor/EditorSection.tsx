@@ -9,6 +9,7 @@ import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { scrollToRef } from 'lib-common/utils/scrolling'
 
 type Props = {
   title: string
@@ -23,15 +24,7 @@ export default React.memo(function EditorSection(props: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const toggleOpen = useCallback(() => {
     setOpen((previous) => !previous)
-    setTimeout(() => {
-      if (ref.current) {
-        window.scrollTo({
-          left: 0,
-          top: ref.current.offsetTop,
-          behavior: 'smooth'
-        })
-      }
-    }, 50)
+    scrollToRef(ref, 50)
   }, [])
 
   return (

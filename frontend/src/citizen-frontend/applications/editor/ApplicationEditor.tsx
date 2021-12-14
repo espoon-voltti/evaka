@@ -46,6 +46,7 @@ import Footer from '../../Footer'
 import useTitle from '../../useTitle'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../../async-rendering'
+import { scrollToTop } from 'lib-common/utils/scrolling'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails
@@ -119,10 +120,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       setVerifying(true)
     }
 
-    setTimeout(
-      () => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' }),
-      50
-    )
+    scrollToTop(50)
   }
 
   const onSaveDraft = () => {

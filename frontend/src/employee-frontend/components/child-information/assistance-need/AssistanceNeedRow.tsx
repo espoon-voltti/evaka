@@ -14,9 +14,9 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { formatDecimal } from 'lib-common/utils/number'
 import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
-import { scrollToRef } from '../../../utils'
 import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { scrollToRef } from 'lib-common/utils/scrolling'
 
 export interface Props {
   assistanceNeed: AssistanceNeed

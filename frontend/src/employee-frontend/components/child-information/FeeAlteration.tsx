@@ -19,12 +19,12 @@ import {
   updateFeeAlteration
 } from '../../api/child/fee-alteration'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { scrollToRef } from '../../utils'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { renderResult } from '../async-rendering'
+import { scrollToRef } from 'lib-common/utils/scrolling'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`
