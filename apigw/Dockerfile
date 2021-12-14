@@ -1,38 +1,37 @@
 # SPDX-FileCopyrightText: 2017-2020 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
-FROM evaka-base:latest
-
-ARG DEBIAN_FRONTEND=noninteractive
+ARG BASE_IMAGE=evaka-yarn:latest
+FROM "${BASE_IMAGE}" AS builder
 
 USER root
-RUN set -euxo pipefail \
-    && apt-get update && apt-get -y --no-install-recommends install \
-       curl=7.68.* \
-       gnupg2=2.2.* \
-    && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-    && apt-get update && apt-get -y --no-install-recommends install \
-       nodejs \
-       yarn \
-    && rm -rf /var/lib/apt/lists/*
 
-USER evaka
+WORKDIR /project
+
+COPY ./.yarn ./.yarn
+COPY ./package.json ./yarn.lock ./.yarnrc.yml ./xmldom-0.7.0.tgz ./
+
+RUN yarn install --immutable
+
+COPY . .
+
+RUN yarn build
+
+FROM "${BASE_IMAGE}"
+
 WORKDIR /home/evaka
 
-ENV NODE_ENV production
-COPY --chown=evaka:evaka . .
-RUN yarn workspaces focus --production && \
-    yarn cache clean --all
+COPY --from=builder --chown=evaka:evaka /project .
 
-# Add build and commit environment variables and labels
-# for tracing the image to the commit and build from which the image has been built.
+ENV NODE_ENV production
+RUN yarn workspaces focus --production \
+ && yarn cache clean --all
+
 ARG build=none
 ARG commit=none
-ENV APP_BUILD "$build"
-ENV APP_COMMIT "$commit"
+ENV APP_BUILD "$build" \
+    APP_COMMIT "$commit"
+
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
 

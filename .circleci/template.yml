@@ -33,9 +33,12 @@ parameters:
   nodejs_image:
     type: string
     default: cimg/node:16.13
-  ecr:
+  registry:
     type: string
     default: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
+  is_pull:
+    type: boolean
+    default: <% if is_pull %>true<% else %>false<% end %>
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
@@ -61,36 +64,23 @@ aliases:
   - &ubuntu_machine_image ubuntu-2004:202107-02
 
 <%- if not is_pull -%>
-  - &builder_aws_core_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-core-<< pipeline.parameters.builder_aws_type >>
-  - &builder_aws_docker_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-docker-<< pipeline.parameters.builder_aws_type >>
-  - &builder_aws_terraform_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-terraform-<< pipeline.parameters.builder_aws_type >>
+  - &builder_aws_core_image << pipeline.parameters.registry >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-core-<< pipeline.parameters.builder_aws_type >>
+  - &builder_aws_docker_image << pipeline.parameters.registry >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-docker-<< pipeline.parameters.builder_aws_type >>
+  - &builder_aws_terraform_image << pipeline.parameters.registry >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-terraform-<< pipeline.parameters.builder_aws_type >>
 <% else %>
   - &builder_aws_core_image << pipeline.parameters.nodejs_image >>
   - &builder_aws_docker_image << pipeline.parameters.nodejs_image >>
   - &builder_aws_terraform_image << pipeline.parameters.nodejs_image >>
 <% end %>
 
-
 <% if is_pull %>
   - &default_contexts
-    context: []
-  - &aws_contexts
-    context: []
-  - &aws_docker_contexts
     context: []
 <% else %>
   - &default_contexts
     context:
       - voltti-slack
       - voltti-dockerhub
-  - &aws_contexts
-    context:
-      - voltti-slack
-      - org-global
-  - &aws_docker_contexts
-    context:
-      - voltti-dockerhub
-      - voltti-slack
       - org-global
 <% end %>
 
@@ -139,7 +129,11 @@ executors:
   nodejs_executor:
     <<: *nodejs_executor
   apigw_executor:
-    <<: *nodejs_executor
+    <<: *node_config
+    machine:
+      image: *ubuntu_machine_image
+    resource_class: medium
+
   frontend_executor:
     <<: *nodejs_executor
 
@@ -262,20 +256,6 @@ commands:
           name: Restore build artifacts
           key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
 
-  store_apigw_deps:
-    steps:
-      - save_cache:
-          key: yarn-cache-apigw-v1-{{ checksum ".circleci/template.yml" }}-{{ checksum "apigw/yarn.lock" }}
-          paths:
-            - apigw/.yarn/cache
-  restore_apigw_deps:
-    steps:
-      - restore_cache:
-          keys:
-            - yarn-cache-apigw-v1-{{ checksum ".circleci/template.yml" }}-{{ checksum "apigw/yarn.lock" }}
-            - yarn-cache-apigw-v1-
-            - yarn-cache-apigw-
-
   store_frontend_deps:
     steps:
       - save_cache:
@@ -361,11 +341,15 @@ commands:
           fi
 
   setup_authenticated_remote_docker:
-    description: Setup remote Docker execution environment with Docker Hub authentication
+    parameters:
+      docker_layer_caching:
+        type: boolean
+        default: true
+        description: Setup remote Docker execution environment with Docker Hub authentication
     steps:
       - setup_remote_docker:
           version: *remote_docker_version
-          docker_layer_caching: true
+          docker_layer_caching: << parameters.docker_layer_caching >>
       - login_docker_hub
 
   prepare_frontend_build:
@@ -421,7 +405,7 @@ commands:
       - run:
           name: "Setup E2E_IMAGE and store date"
           command: |
-            echo 'export E2E_IMAGE="<< pipeline.parameters.ecr >>/evaka/e2e-<< parameters.test_runner >>:latest"' >> $BASH_ENV
+            echo 'export E2E_IMAGE="<< pipeline.parameters.registry >>/evaka/e2e-<< parameters.test_runner >>:latest"' >> $BASH_ENV
             date +%F > date
       - restore_cache:
           name: Restore Docker image from cache
@@ -462,8 +446,8 @@ commands:
     steps:
       - restore_repo
       - attach_root_workspace
-      - restore_docker_image:
-          dir: apigw
+      - pull_docker_image:
+          image: evaka/api-gateway
       - restore_docker_image:
           dir: service
       - login_docker_hub
@@ -637,27 +621,110 @@ commands:
               --exclude "*index.html" \
               --profile voltti-<< parameters.target_env >>
 
-  load_base_image:
+  pull_docker_image:
+    parameters:
+      image:
+        type: string
+      tag:
+        type: string
+        default: ""
+      previous:
+        type: boolean
+        default: false
     steps:
-      - run:
-          name: Load base image
-          working_directory: << pipeline.parameters.workspace_root >>
-          command: docker load -i evaka-base.tar
+      - when:
+          condition: not << pipeline.parameters.is_pull >>
+          steps:
+            - run:
+                name: Pull docker image
+                working_directory: << pipeline.parameters.workspace_root >>
+                command: |
+                  ecr-login
+
+                  IMAGE="<< pipeline.parameters.registry >>/<< parameters.image >>"
+
+                  if test -n "<< parameters.tag >>"; then # use sha by default and check if already exists
+                    TAG="<< parameters.tag >>"
+                    docker pull "${IMAGE}:<< parameters.tag >>" || true # used only for caching
+                  else
+                    if [ "<< parameters.previous >>" = "true" ]; then
+                      git_hash="$(git rev-parse HEAD~1)"
+                    else
+                      git_hash="${CIRCLE_SHA1}"
+                    fi
+                    IMAGE="${IMAGE}:${git_hash}"
+                    if test -z "$(docker images -q "$IMAGE" 2> /dev/null)"; then
+                      if [ "<< parameters.previous >>" = "true" ]; then
+                        docker pull "$IMAGE" || true # cache
+                      else
+                        docker pull "$IMAGE"
+                        docker tag "$IMAGE" "< parameters.image >>:latest"
+                      fi
+                    fi
+                  fi
+      - when:
+          condition: << pipeline.parameters.is_pull >>
+          steps:
+            - restore_cache:
+                name: Restore Docker image from cache
+                key: << parameters.image >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+            - run:
+                name: Load docker image
+                working_directory: << pipeline.parameters.workspace_root >>
+                command: |
+                  docker load -i "<< pipeline.parameters.workspace_root >>/<< parameters.image >>.tar"
 
   push_docker_image:
     parameters:
       image:
         type: string
+      tag:
+        type: string
+        default: ""
     steps:
-      - run:
-          name: Push docker image
-          command: |
-            if test -z "$CIRCLE_PR_NUMBER"; then
-              ecr-login
-              ecr-push << parameters.image >>
-            else
-              echo "Forked - not pushing image"
-            fi
+      - when:
+          condition: not << pipeline.parameters.is_pull >>
+          steps:
+            - run:
+                name: Push docker image
+                command: |
+                  ecr-login
+
+                  if test -z "<< parameters.tag >>"; then
+                    IMAGE_TAG="${CIRCLE_SHA1}"
+                  else
+                    IMAGE_TAG="<< parameters.tag >>"
+                  fi
+
+                  IMAGE_NAME="<< parameters.image >>"
+                  REGISTRY="<< pipeline.parameters.registry >>"
+                  REGISTRY_URI="${REGISTRY}/${IMAGE_NAME}"
+
+                  if [ "${CIRCLE_BRANCH}" = "master" ]; then
+                    BRANCH_TAG="master"
+                  else
+                    BRANCH_TAG=$(echo -n branch-"${CIRCLE_BRANCH}" | sed 's/\W/-/g' | tr -c '[[:alnum:]]-' _)
+                  fi
+
+                  docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${REGISTRY_URI}:${IMAGE_TAG}"
+                  docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${REGISTRY_URI}:${BRANCH_TAG}"
+
+                  docker push "${REGISTRY_URI}:${IMAGE_TAG}"
+                  docker push "${REGISTRY_URI}:${BRANCH_TAG}"
+      - when:
+          condition: << pipeline.parameters.is_pull >>
+          steps:
+            - run:
+                name: Save docker image
+                working_directory: << pipeline.parameters.workspace_root >>
+                command: |
+                  mkdirs -p "$(dirname "<< parameters.image >>")"
+                  docker save "<< parameters.image >>" > "<< parameters.image >>.tar"
+            - save_cache:
+                name: Store Docker image in cache
+                key: << parameters.image >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+                paths:
+                  - "<< pipeline.parameters.workspace_root >>/<< parameters.image >>.tar"
 
   build_docker_image:
     parameters:
@@ -668,25 +735,55 @@ commands:
       push:
         type: boolean
         default: true
+      save:
+        type: boolean
+        default: true
+      dockerfile:
+        type: string
+        default: Dockerfile
+      base_image:
+        type: string
+        default: ""
+      extra_arguments:
+        type: string
+        default: ""
     steps:
       - run:
           name: Build docker image
           working_directory: << parameters.dir >>
           command: |
-            docker build \
-              -t << parameters.image >> \
-              --build-arg "build=${CIRCLE_BUILD_NUM}" \
-              --build-arg "commit=${CIRCLE_SHA1}" \
-              .
+            base_image_arguments=""
+
+            command=(docker build
+              -t "<< parameters.image >>:${CIRCLE_SHA1}"
+              --build-arg "build=${CIRCLE_BUILD_NUM}"
+              --build-arg "commit=${CIRCLE_SHA1}"
+              << parameters.extra_arguments >>
+              -f "<< parameters.dockerfile >>"
+            )
+
+            if test -n "<< parameters.base_image >>"; then
+              command+=(--build-arg "BASE_IMAGE=<< parameters.base_image >>:${CIRCLE_SHA1}")
+            fi
+            command+=(.)
+
+            echo "Executing: " "${command[@]}"
+
+            "${command[@]}"
+
+            docker tag "<< parameters.image >>:${CIRCLE_SHA1}" "<< parameters.image >>:latest"
       - when:
           condition: << parameters.push >>
           steps:
             - push_docker_image:
                 image: << parameters.image >>
-      - run:
-          name: Save docker image
-          working_directory: << parameters.dir >>
-          command: docker save << parameters.image >> > image.tar
+      - when:
+          condition: << parameters.save >>
+          steps:
+            - run:
+                name: Save docker image
+                working_directory: << parameters.dir >>
+                command: docker save "<< parameters.image >>:latest" > image.tar
 
   deploy_services:
     parameters:
@@ -789,23 +886,24 @@ jobs:
     executor: aws_core_executor
     steps:
       - checkout
-  <% if not is_pull %>
-      - restore_repo
-      - restore_frontend_comm_deps
-      - run: . replace-credentials
-      - run:
-          name: Fetch Espoo-specific build customizations
-          working_directory: << pipeline.parameters.workspace_root >>
-          command: |
-            ./bin/fetch-espoo-build-customizations.sh
-      - run:
-          name: Fetch commercial frontend dependencies
-          working_directory: *workspace_frontend
-          command: |
-            ./init-pro-icons.sh
-      - store_frontend_comm_deps
-      - notify_slack
-  <% end %>
+      - when:
+          condition: not << pipeline.parameters.is_pull >>
+          steps:
+            - restore_repo
+            - restore_frontend_comm_deps
+            - run: . replace-credentials
+            - run:
+                name: Fetch Espoo-specific build customizations
+                working_directory: << pipeline.parameters.workspace_root >>
+                command: |
+                  ./bin/fetch-espoo-build-customizations.sh
+            - run:
+                name: Fetch commercial frontend dependencies
+                working_directory: *workspace_frontend
+                command: |
+                  ./init-pro-icons.sh
+            - store_frontend_comm_deps
+            - notify_slack
       - store_repo
 
   clone_infra_repo:
@@ -858,64 +956,78 @@ jobs:
   # BUILD JOBS
 
   build_base_image:
-    executor: apigw_executor
-    steps:
-      - restore_repo
-      - setup_authenticated_remote_docker
-      - run:
-          name: Build base image
-          working_directory: << pipeline.parameters.workspace_root >>/evaka-base
-          command: ./build.sh
-      - run:
-          name: Save base image
-          working_directory: << pipeline.parameters.workspace_root >>
-          command: docker save evaka-base > evaka-base.tar
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - evaka-base.tar
-      - notify_slack
-
-  apigw_build_and_test:
-    executor: apigw_executor
-    steps:
-      - restore_repo
-      - restore_apigw_deps
-      - run:
-          working_directory: *workspace_apigw
-          command: yarn install --immutable
-      - store_apigw_deps
-      - run:
-          working_directory: *workspace_apigw
-          command: yarn build
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - apigw/dist
-      - run:
-          working_directory: *workspace_apigw
-          command: yarn lint
-      - run:
-          working_directory: *workspace_apigw
-          command: yarn test-ci
-      - store_test_results:
-          path: << pipeline.parameters.workspace_root >>/apigw/build/test-reports
-      - notify_slack
-
-  apigw_build_and_push_image:
     executor: aws_docker_executor
     steps:
       - restore_repo
-      - attach_root_workspace
-      - setup_remote_docker:
-          version: *remote_docker_version
+      - setup_authenticated_remote_docker:
           docker_layer_caching: true
-      - load_base_image
+      - run:
+          name: Pull base image
+          command: docker pull ubuntu:20.04
+      - pull_docker_image:
+          image: evaka/base
+          previous: true
+      - build_docker_image:
+          image: evaka/base
+          dir: *workspace_evaka_base
+          push: true
+          save: false
+      - build_docker_image:
+          image: evaka/yarn
+          dir: *workspace_evaka_base
+          push: true
+          save: false
+          dockerfile: yarn.Dockerfile
+          base_image: "evaka/base"
+      - notify_slack
+
+  apigw_build_test_push:
+    executor: aws_docker_executor
+    steps:
+      - restore_repo
+      - setup_authenticated_remote_docker:
+          docker_layer_caching: true
+      - pull_docker_image:
+          image: evaka/yarn
+      - pull_docker_image:
+          image: evaka/api-gateway-build
+          tag: master # get for cache
+      - pull_docker_image:
+          image: evaka/api-gateway
+          tag: master # get for cache
+
+      - build_docker_image:
+          image: evaka/api-gateway-build
+          dir: *workspace_apigw
+          push: false
+          save: false
+          base_image: "evaka/yarn"
+          extra_arguments: "--target=builder"
+
+      - run:
+          name: Lint
+          working_directory: *workspace_apigw
+          command: docker run --rm -t "evaka/api-gateway-build:${CIRCLE_SHA1}" yarn lint
+      - run:
+          name: Test
+          working_directory: *workspace_apigw
+          command: |
+            docker rm -f "test_apigw_${CIRCLE_SHA1}" || true
+            docker run --name "test_apigw_${CIRCLE_SHA1}" -t "$BUILD_IMAGE" yarn test-ci
+            trap "docker rm -f test_apigw_${CIRCLE_SHA1}" EXIT
+            docker cp "test_apigw_${CIRCLE_SHA1}":/project/build/test-reports "$(pwd)/build/test-reports"
+      - store_test_results:
+          path: << pipeline.parameters.workspace_root >>/apigw/build/test-reports
+
       - build_docker_image:
           image: evaka/api-gateway
           dir: *workspace_apigw
-      - store_docker_image:
-          dir: apigw
+          push: true
+          save: false
+          base_image: "evaka/yarn"
+
+      - push_docker_image:
+          image: evaka/api-gateway-build
       - notify_slack
 
   frontend_build_core:
@@ -1089,7 +1201,8 @@ jobs:
           name: Unzip executable
           working_directory: *workspace_service
           command: unzip -q build/libs/evaka-service-boot.jar -d target
-      - load_base_image
+      - pull_docker_image:
+          image: evaka/base
       - build_docker_image:
           image: evaka/service
           dir: << pipeline.parameters.workspace_root >>/service
@@ -1182,7 +1295,7 @@ workflows:
   build_test_and_deploy:
     jobs:
       - checkout_repo:
-          <<: *aws_docker_contexts
+          <<: *default_contexts
 
       - check_licenses:
           <<: *default_contexts
@@ -1199,18 +1312,14 @@ workflows:
           requires:
             - checkout_repo
 
-      - apigw_build_and_test:
+      - apigw_build_test_push:
           <<: *default_contexts
           requires:
             - checkout_repo
-      - apigw_build_and_push_image:
-          <<: *aws_contexts
-          requires:
             - build_base_image
-            - apigw_build_and_test
 
       - frontend_build_core:
-          <<: *aws_docker_contexts
+          <<: *default_contexts
           requires:
             - checkout_repo
 
@@ -1220,11 +1329,11 @@ workflows:
             - checkout_repo
 
       - e2e-build-testcafe:
-          <<: *aws_docker_contexts
+          <<: *default_contexts
           requires:
             - checkout_repo
       - e2e-build-playwright:
-          <<: *aws_docker_contexts
+          <<: *default_contexts
           requires:
             - checkout_repo
       - e2e-test-testcafe:
@@ -1232,14 +1341,14 @@ workflows:
           requires:
             - e2e-build-testcafe
             - frontend_build_core
-            - apigw_build_and_push_image
+            - apigw_build_test_push
             - service_build_and_push_image
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
             - e2e-build-playwright
             - frontend_build_core
-            - apigw_build_and_push_image
+            - apigw_build_test_push
             - service_build_and_push_image
 
       - proxy_build_and_push_image:
@@ -1255,7 +1364,7 @@ workflows:
           requires:
             - checkout_repo
       - service_build_and_push_image:
-          <<: *aws_contexts
+          <<: *default_contexts
           requires:
             - build_base_image
             - service_build
@@ -1270,7 +1379,7 @@ workflows:
             - service_build
 
       - clone_infra_repo:
-          <<: *aws_contexts
+          <<: *default_contexts
           requires:
             - frontend_install
           filters:
@@ -1278,7 +1387,7 @@ workflows:
               only: master
 
       - services_deploy:
-          <<: *aws_contexts
+          <<: *default_contexts
           name: services_deploy_<< matrix.target_env >>
           requires:
             - clone_infra_repo
@@ -1290,7 +1399,7 @@ workflows:
               target_env: [dev, test]
 
       - frontend_install:
-          <<: *aws_contexts
+          <<: *default_contexts
           name: frontend_install_<< matrix.target_env >>
           requires:
             - check_licenses
@@ -1298,7 +1407,7 @@ workflows:
             - frontend_build_misc_and_test
             - e2e-test-testcafe
             - e2e-test-playwright
-            - apigw_build_and_push_image
+            - apigw_build_test_push
             - proxy_build_and_push_image
             - service_build_and_push_image
           matrix:
@@ -1306,7 +1415,7 @@ workflows:
               target_env: [dev, test, staging, prod]
 
       - frontend_deploy:
-          <<: *aws_contexts
+          <<: *default_contexts
           name: frontend_deploy_<< matrix.target_env >>
           requires:
             - clone_infra_repo
@@ -1327,7 +1436,7 @@ workflows:
                - master
     jobs:
       - cleanup_frontends:
-          <<: *aws_contexts
+          <<: *default_contexts
           name: cleanup_frontends_<< matrix.target_env >>
           matrix:
             parameters:
