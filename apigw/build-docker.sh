@@ -6,11 +6,11 @@
 
 set -euo pipefail
 
+cd "$( dirname "${BASH_SOURCE[0]}")"
+
 DOCKER_IMAGE=${DOCKER_IMAGE:-evaka/api-gateway}
 DOCKER_TAG=${DOCKER_TAG:-local}
 GIT_SHA=$(git rev-parse HEAD)
-
-yarn build
 
 docker build --build-arg commit="${GIT_SHA}" --build-arg build=local -t "${DOCKER_IMAGE}" .
 docker tag "${DOCKER_IMAGE}" "${DOCKER_IMAGE}:${DOCKER_TAG}"

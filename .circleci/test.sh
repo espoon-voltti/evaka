@@ -12,7 +12,7 @@ set -eu
 
 cd "$( dirname "${BASH_SOURCE[0]}")"
 
-TEST_IMAGE="evaka/test:local"
+TEST_IMAGE="evaka/ruby-test:local"
 CIRCLECI_CLI_VERSION="0.1.16535"
 docker build -t "$TEST_IMAGE" - <<EOF
 FROM cimg/ruby:3.0.2
@@ -25,12 +25,12 @@ RUN cd /tmp \
 WORKDIR /ci
 EOF
 
-CHECK_COMMAND="erb -T- /ci/template.yml | tee /dev/tty | circleci --skip-update-check config validate -"
+CHECK_COMMAND="erb -T- /ci/template.yml > /tmp/config.yml && cat --number /tmp/config.yml && circleci --skip-update-check config validate /tmp/config.yml"
 
 action="${1:-}"
 
 if test -z "$action" || [ "$action" = "fail" ]; then
-    if docker run -v "$(pwd):/ci" \
+    if docker run --rm -v "$(pwd):/ci" \
            -it "$TEST_IMAGE" erb -T- /ci/template.yml; then
         echo "Unexpected success"
         exit 1
@@ -39,13 +39,13 @@ if test -z "$action" || [ "$action" = "fail" ]; then
 fi
 
 if test -z "$action" || [ "$action" = "master" ]; then
-    docker run -v "$(pwd):/ci" \
+    docker run --rm  -v "$(pwd):/ci" \
         -e CIRCLE_BRANCH=master \
         -it "$TEST_IMAGE" bash -c "$CHECK_COMMAND"
 fi
 
 if test -z "$action" || [ "$action" = "pull" ]; then
-    docker run -v "$(pwd):/ci" \
+    docker run --rm -v "$(pwd):/ci" \
         -e CIRCLE_BRANCH=pull/1234 \
         -it "$TEST_IMAGE" bash -c "$CHECK_COMMAND"
 fi
