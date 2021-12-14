@@ -80,7 +80,11 @@ const ReplyToThreadButton = styled(InlineButton)`
   padding-left: 28px;
 `
 
-function SingleMessage({ message }: { message: Message }) {
+const SingleMessage = React.memo(function SingleMessage({
+  message
+}: {
+  message: Message
+}) {
   const i18n = useTranslation()
   const { setErrorMessage } = useContext(OverlayContext)
 
@@ -124,7 +128,7 @@ function SingleMessage({ message }: { message: Message }) {
       )}
     </MessageContainer>
   )
-}
+})
 
 const AutoScrollPositionSpan = styled.span<{ top: string }>`
   position: absolute;
