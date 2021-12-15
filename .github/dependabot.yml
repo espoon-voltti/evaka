@@ -17,3 +17,11 @@ updates:
   directory: "/proxy"
   schedule:
     interval: weekly
+- package-ecosystem: npm
+  directory: "/frontend"
+  schedule:
+    interval: daily
+- package-ecosystem: npm
+  directory: "/apigw"
+  schedule:
+    interval: daily
