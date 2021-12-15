@@ -152,7 +152,6 @@ dependencies {
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
     integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security")
-    integrationTestImplementation("org.testcontainers:postgresql")
 
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
