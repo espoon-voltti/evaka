@@ -2,8 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Element, Page, Select, TextInput } from 'e2e-playwright/utils/page'
-import { waitUntilNotEqual } from '../../utils'
+import {
+  DatePickerDeprecated,
+  Element,
+  Page,
+  Select,
+  TextInput
+} from 'e2e-playwright/utils/page'
 
 export default class FridgeHeadInformationPage {
   constructor(private readonly page: Page) {}
@@ -37,21 +42,19 @@ export class IncomesSection {
   }
 
   #incomeDateRange = this.page.find('[data-qa="income-date-range"]')
-  #incomeStartDateInput = new TextInput(
-    this.#incomeDateRange.find('[data-qa="date-range-input-start-date"] input')
+  #incomeStartDateInput = new DatePickerDeprecated(
+    this.#incomeDateRange.find('[data-qa="date-range-input-start-date"]')
   )
-  #incomeEndDateInput = new TextInput(
-    this.#incomeDateRange.find('[data-qa="date-range-input-end-date"] input')
+  #incomeEndDateInput = new DatePickerDeprecated(
+    this.#incomeDateRange.find('[data-qa="date-range-input-end-date"]')
   )
 
   async fillIncomeStartDate(value: string) {
     await this.#incomeStartDateInput.fill(value)
-    await waitUntilNotEqual(() => this.#incomeStartDateInput.inputValue, '')
   }
 
   async fillIncomeEndDate(value: string) {
     await this.#incomeEndDateInput.fill(value)
-    await waitUntilNotEqual(() => this.#incomeEndDateInput.inputValue, '')
   }
 
   #incomeInput = (type: string) =>
