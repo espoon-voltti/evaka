@@ -291,9 +291,9 @@ WHERE dav.employee_id = :userId AND d.id = :deviceId
                     // language=SQL
                     """
 SELECT role
-FROM vasu_document
-JOIN child_acl_view ON vasu_document.child_id = child_acl_view.child_id
-WHERE employee_id = :userId AND vasu_document.id = :documentId
+FROM curriculum_document
+JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
+WHERE employee_id = :userId AND curriculum_document.id = :documentId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("documentId", documentId).mapTo<UserRole>().toSet()
             }
