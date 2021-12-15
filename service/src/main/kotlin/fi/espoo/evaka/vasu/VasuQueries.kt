@@ -331,7 +331,7 @@ fun Database.Read.getVasuFollowupEntries(id: VasuDocumentId): List<FollowupEntry
         """
         WITH followup_entries AS (
             SELECT jsonb_path_query(content, '$.sections[*].questions ? (@.type=="FOLLOWUP").value[*]') AS entry 
-            FROM vasu_content
+            FROM curriculum_content
             WHERE document_id = :docId AND master = true
         )
         SELECT entry FROM followup_entries 
