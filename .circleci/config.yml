@@ -519,6 +519,9 @@ commands:
           path: /tmp/docker-compose-logs.txt
           destination: docker-compose-logs.txt
       - store_artifacts:
+          path: frontend/screenshots
+          destination: screenshots
+      - store_artifacts:
           path: frontend/traces
           destination: traces
       - store_test_results:

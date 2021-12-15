@@ -17,6 +17,7 @@ declare global {
   namespace NodeJS {
     interface Global {
       evaka?: {
+        captureScreenshots: (namePrefix: string) => Promise<void>
         saveTraces: (namePrefix: string) => Promise<void>
         promises: Promise<void>[]
       }
@@ -44,6 +45,7 @@ beforeAll(async () => {
     tracesDir: '/tmp/playwright-traces'
   })
   global.evaka = {
+    captureScreenshots,
     saveTraces,
     promises: []
   }
@@ -77,6 +79,36 @@ async function forEachContext(
   for (const [ctx, ctxIndex] of contexts) {
     await fn({ ctx, ctxIndex })
   }
+}
+
+async function forEachPage(
+  fn: (pageInfo: {
+    ctx: BrowserContext
+    ctxIndex: number
+    page: Page
+    pageIndex: number
+  }) => Promise<void>
+): Promise<void> {
+  await forEachContext(async ({ ctx, ctxIndex }) => {
+    const pages = ctx.pages().map((page, i) => [page, i] as const)
+    for (const [page, pageIndex] of pages) {
+      await fn({ ctx, ctxIndex, page, pageIndex })
+    }
+  })
+}
+
+async function captureScreenshots(namePrefix: string): Promise<void> {
+  await forEachPage(async ({ ctxIndex, pageIndex, page }) => {
+    await page.screenshot({
+      type: 'png',
+      path: `screenshots/${namePrefix}.${ctxIndex}.${pageIndex}.png`
+    })
+    await page.screenshot({
+      type: 'png',
+      path: `screenshots/${namePrefix}.${ctxIndex}.full.${pageIndex}.png`,
+      fullPage: true
+    })
+  })
 }
 
 async function saveTraces(namePrefix: string): Promise<void> {
