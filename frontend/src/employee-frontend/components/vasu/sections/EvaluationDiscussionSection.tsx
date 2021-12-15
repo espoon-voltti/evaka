@@ -29,7 +29,7 @@ export function EditableEvaluationDiscussionSection({
 }: Props) {
   const t = translations.staticSections.evaluationDiscussion
   return (
-    <HighlightedContentArea opaque>
+    <HighlightedContentArea opaque paddingVertical="L" paddingHorizontal="L">
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>
@@ -115,7 +115,7 @@ export function EvaluationDiscussionSection({
 }: Pick<Props, 'sectionIndex' | 'content' | 'translations'>) {
   const t = translations.staticSections.evaluationDiscussion
   return (
-    <ContentArea opaque>
+    <ContentArea opaque paddingVertical="L" paddingHorizontal="L">
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>

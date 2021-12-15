@@ -68,6 +68,8 @@ export function DynamicSections({
       <Fragment key={section.name}>
         <SectionContent
           opaque
+          paddingVertical="L"
+          paddingHorizontal="L"
           padBottom={!isLastQuestionFollowup}
           data-qa="vasu-document-section"
         >

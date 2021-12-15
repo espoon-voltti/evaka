@@ -26,7 +26,7 @@ export function BasicsSection({
   const t = translations.staticSections.basics
 
   return (
-    <ContentArea opaque>
+    <ContentArea opaque paddingVertical="L" paddingHorizontal="L">
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>

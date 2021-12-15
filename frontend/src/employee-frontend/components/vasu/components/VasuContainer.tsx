@@ -18,5 +18,9 @@ export const VasuContainer = styled(Container)<VasuContainerProps>`
 
   & > section {
     padding-bottom: ${defaultMargins.L};
+
+    h2 {
+      margin-top: 0px;
+    }
   }
 `

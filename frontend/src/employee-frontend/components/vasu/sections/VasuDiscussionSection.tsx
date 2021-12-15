@@ -27,7 +27,7 @@ export function EditableVasuDiscussionSection({
 }: Props) {
   const t = translations.staticSections.vasuDiscussion
   return (
-    <ContentArea opaque>
+    <ContentArea opaque paddingVertical="L" paddingHorizontal="L">
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>
@@ -91,7 +91,7 @@ export function VasuDiscussionSection({
 }: Pick<Props, 'sectionIndex' | 'content' | 'translations'>) {
   const t = translations.staticSections.vasuDiscussion
   return (
-    <ContentArea opaque>
+    <ContentArea opaque paddingVertical="L" paddingHorizontal="L">
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>
