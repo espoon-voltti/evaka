@@ -205,11 +205,11 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         SELECT
             jsonb_agg(
                 jsonb_build_object(
-                    'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
-                    'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+                    'startTime', to_char((GREATEST(ar.start_time, t) AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
+                    'endTime', to_char((LEAST(ar.end_time, t + INTERVAL '1 day') AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
                 ) ORDER BY ar.start_time ASC
             ) AS reservations
-        FROM attendance_reservation ar WHERE ar.child_id = p.id AND ar.start_date = t::date
+        FROM attendance_reservation ar WHERE ar.child_id = p.id AND (ar.start_date = t::date OR DATE_TRUNC('day', ar.end_time, 'Europe/Helsinki') = t)
     ) res ON true
     LEFT JOIN LATERAL (
         SELECT absence_type
