@@ -10,7 +10,6 @@ import 'lib-components/layout/ButtonContainer'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { DynamicSections } from './sections/DynamicSections'
-import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu } from './use-vasu'
@@ -30,8 +29,7 @@ export default React.memo(function VasuPage({
 }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
 
-  const { vasu, content, evaluationDiscussionContent, translations } =
-    useVasu(id)
+  const { vasu, content, translations } = useVasu(id)
 
   const dynamicSectionsOffset = 1
 
@@ -53,21 +51,8 @@ export default React.memo(function VasuPage({
             state={vasu.documentState}
             translations={translations}
           />
-          {vasu.documentState !== 'DRAFT' && (
-            <EvaluationDiscussionSection
-              sectionIndex={content.sections.length + dynamicSectionsOffset + 1}
-              content={evaluationDiscussionContent}
-              translations={translations}
-            />
-          )}
           <Gap size={'s'} />
-          <VasuEvents
-            document={vasu}
-            content={content}
-            evaluationDiscussionDate={
-              evaluationDiscussionContent.discussionDate
-            }
-          />
+          <VasuEvents document={vasu} content={content} />
         </>
       )}
       <StickyFooter>

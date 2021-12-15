@@ -9,7 +9,6 @@ import { mapVasuContent } from './vasu-content'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  EvaluationDiscussionContent,
   VasuContent,
   VasuDocument,
   VasuDocumentEvent,
@@ -29,7 +28,6 @@ const mapVasuDocumentResponse = ({
   templateRange,
   basics,
   content,
-  evaluationDiscussionContent,
   ...rest
 }: JsonOf<VasuDocument>): VasuDocument => ({
   ...rest,
@@ -48,12 +46,6 @@ const mapVasuDocumentResponse = ({
         ...pl,
         range: FiniteDateRange.parseJson(pl.range)
       })) ?? null
-  },
-  evaluationDiscussionContent: {
-    ...evaluationDiscussionContent,
-    discussionDate: LocalDate.parseNullableIso(
-      evaluationDiscussionContent.discussionDate
-    )
   }
 })
 
@@ -101,19 +93,14 @@ export async function getVasuDocument(
 export interface PutVasuDocumentParams {
   documentId: UUID
   content: VasuContent
-  evaluationDiscussionContent: EvaluationDiscussionContent
 }
 
 export async function putVasuDocument({
   documentId,
-  content,
-  evaluationDiscussionContent
+  content
 }: PutVasuDocumentParams): Promise<Result<null>> {
   return client
-    .put(`/vasu/${documentId}`, {
-      content,
-      evaluationDiscussionContent
-    })
+    .put(`/vasu/${documentId}`, { content })
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }

@@ -10,16 +10,6 @@ export const fi = {
       dateOfBirth: 'Lapsen syntymäaika',
       guardians: 'Huoltaja(t) tai muu laillinen edustaja',
       placements: 'Varhaiskasvatusyksikkö ja ryhmä'
-    },
-    evaluationDiscussion: {
-      title: 'Toteutumisen arviointi',
-      title2:
-        'Lapsen varhaiskasvatussuunnitelman arviointikeskustelu huoltajien kanssa',
-      discussionDate: 'Arviointikeskustelun päivämäärä',
-      participants: 'Arviointikeskusteluun osallistuneet huoltajat',
-      guardianViewsAndCollaboration:
-        'Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä',
-      evaluation: 'Tavoitteiden ja toimenpiteiden toteutumisen arviointi'
     }
   },
   confidential: 'Salassapidettävä',

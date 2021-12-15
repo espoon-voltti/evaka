@@ -21,11 +21,7 @@ import {
   putVasuDocument,
   PutVasuDocumentParams
 } from './api'
-import {
-  EvaluationDiscussionContent,
-  VasuContent,
-  VasuDocument
-} from 'lib-common/generated/api-types/vasu'
+import { VasuContent, VasuDocument } from 'lib-common/generated/api-types/vasu'
 import {
   Followup,
   FollowupEntry,
@@ -59,10 +55,6 @@ interface Vasu {
   vasu: VasuMetadata | undefined
   content: VasuContent
   setContent: Dispatch<SetStateAction<VasuContent>>
-  evaluationDiscussionContent: EvaluationDiscussionContent
-  setEvaluationDiscussionContent: Dispatch<
-    SetStateAction<EvaluationDiscussionContent>
-  >
   status: VasuStatus
   translations: VasuTranslations
   editFollowupEntry: (params: EditFollowupEntryParams) => void
@@ -75,13 +67,6 @@ export function useVasu(id: string): Vasu {
   const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
-  const [evaluationDiscussionContent, setEvaluationDiscussionContent] =
-    useState<EvaluationDiscussionContent>({
-      discussionDate: null,
-      participants: '',
-      guardianViewsAndCollaboration: '',
-      evaluation: ''
-    })
   const [permittedFollowupActions, setPermittedFollowupActions] =
     useState<PermittedFollowupActions>({})
 
@@ -90,14 +75,10 @@ export function useVasu(id: string): Vasu {
       res.mapAll({
         loading: () => null,
         failure: () => setStatus({ state: 'loading-error' }),
-        success: ({
-          vasu: { content, evaluationDiscussionContent, ...meta },
-          permittedFollowupActions
-        }) => {
+        success: ({ vasu: { content, ...meta }, permittedFollowupActions }) => {
           setStatus({ state: 'clean' })
           setVasu(meta)
           setContent(content)
-          setEvaluationDiscussionContent(evaluationDiscussionContent)
           setPermittedFollowupActions(permittedFollowupActions)
         }
       })
@@ -152,14 +133,10 @@ export function useVasu(id: string): Vasu {
   useEffect(
     function saveDirtyContent() {
       if (status.state === 'dirty') {
-        debouncedSave({
-          documentId: id,
-          content,
-          evaluationDiscussionContent
-        })
+        debouncedSave({ documentId: id, content })
       }
     },
-    [debouncedSave, status.state, content, evaluationDiscussionContent, id]
+    [debouncedSave, status.state, content, id]
   )
 
   useEffect(
@@ -191,14 +168,6 @@ export function useVasu(id: string): Vasu {
     []
   )
 
-  const setEvaluationDiscussionContentCallback = useCallback(
-    (draft: SetStateAction<EvaluationDiscussionContent>) => {
-      setEvaluationDiscussionContent(draft)
-      setStatus((status) => ({ ...status, state: 'dirty' }))
-    },
-    []
-  )
-
   const translations = useMemo(
     () =>
       vasu !== undefined
@@ -211,8 +180,6 @@ export function useVasu(id: string): Vasu {
     vasu,
     content,
     setContent: setContentCallback,
-    evaluationDiscussionContent,
-    setEvaluationDiscussionContent: setEvaluationDiscussionContentCallback,
     status,
     translations,
     editFollowupEntry: editFollowup,

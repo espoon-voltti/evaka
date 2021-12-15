@@ -319,6 +319,53 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                     value = ""
                 )
             )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Toteutumisen arviointi"
+                VasuLanguage.SV -> "Utvärdering av genomförandet"
+            },
+            questions = listOfNotNull(
+                VasuQuestion.Paragraph(
+                    title = when (lang) {
+                        VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman arviointikeskustelu huoltajien kanssa"
+                        VasuLanguage.SV -> ""
+                    },
+                    paragraph = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Arviointikeskustelun päivämäärä"
+                        VasuLanguage.SV -> "Datum för utvärderingssamtalet"
+                    },
+                    tracked = true,
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Arviointikeskusteluun osallistuneet huoltajat"
+                        VasuLanguage.SV -> "Vårdnadshavare som deltog i utvärderingssamtalet"
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä"
+                        VasuLanguage.SV -> "Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan"
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutumisen arviointi"
+                        VasuLanguage.SV -> "Utvärdering av hur målen och åtgärderna har genomförts"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
         )
     )
 )
@@ -542,7 +589,45 @@ fun getDefaultLeopsContent() = VasuContent(
                     value = ""
                 )
             )
-        )
+        ),
+        VasuSection(
+            name = "Perusopetukseen siirtyminen",
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = "Tavoitteiden ja toimenpiteiden toteutumisen arviointi",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = "Huoltajien kanssa käydyn keskustelun päivämäärä",
+                    tracked = true,
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Keskusteluun osallistuneet huoltajat",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.Paragraph(
+                    title = "Lapsen esiopetuksen oppimissuunnitelman tiedonsiirtokeskustelu koulun kanssa",
+                    paragraph = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Lapsen kasvun ja oppimisen kannalta oleellisimmat huomiot tiedoksi tulevalle koululle",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = "Tiedonsiirtokeskustelun päivämäärä",
+                    value = null
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Tiedonsiirtokeskustelun osallistujat",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike")),
+                    value = listOf()
+                )
+            )
+        ),
     )
 )
 

@@ -12,15 +12,6 @@ export const sv: typeof fi = {
       dateOfBirth: 'Barnets födelsedatum',
       guardians: 'Vårdnadshavare eller annan laglig företrädare',
       placements: 'Enhet inom småbarnspedagogiken och grupp'
-    },
-    evaluationDiscussion: {
-      title: 'Utvärdering av genomförandet',
-      title2: '',
-      discussionDate: 'Datum för utvärderingssamtalet',
-      participants: 'Vårdnadshavare som deltog i utvärderingssamtalet',
-      guardianViewsAndCollaboration:
-        'Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan',
-      evaluation: 'Utvärdering av hur målen och åtgärderna har genomförts'
     }
   },
   confidential: 'Sekretessbelagd',

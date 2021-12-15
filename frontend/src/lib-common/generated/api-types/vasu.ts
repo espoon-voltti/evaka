@@ -57,16 +57,6 @@ export interface EditFollowupEntryRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.vasu.EvaluationDiscussionContent
-*/
-export interface EvaluationDiscussionContent {
-  discussionDate: LocalDate | null
-  evaluation: string
-  guardianViewsAndCollaboration: string
-  participants: string
-}
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuController.GetVasuDocumentResponse
 */
 export interface GetVasuDocumentResponse {
@@ -79,7 +69,6 @@ export interface GetVasuDocumentResponse {
 */
 export interface UpdateDocumentRequest {
   content: VasuContent
-  evaluationDiscussionContent: EvaluationDiscussionContent
 }
 
 /**
@@ -115,7 +104,6 @@ export interface VasuDocument {
   basics: VasuBasics
   content: VasuContent
   documentState: VasuDocumentState
-  evaluationDiscussionContent: EvaluationDiscussionContent
   events: VasuDocumentEvent[]
   id: UUID
   language: VasuLanguage

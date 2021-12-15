@@ -613,13 +613,6 @@ export default React.memo(function VasuTemplateEditor() {
               </AddNewContainer>
             )}
 
-            <ElementContainer>
-              <H2>
-                {dynamicOffset + template.value.content.sections.length + 1}.{' '}
-                {translations.staticSections.evaluationDiscussion.title}
-              </H2>
-            </ElementContainer>
-
             <Gap />
 
             <Button

@@ -16,7 +16,6 @@ import { Dimmed } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { DynamicSections } from './sections/DynamicSections'
-import { EditableEvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
@@ -55,8 +54,6 @@ export default React.memo(function VasuEditPage({
     vasu,
     content,
     setContent,
-    evaluationDiscussionContent,
-    setEvaluationDiscussionContent,
     status,
     translations,
     editFollowupEntry,
@@ -113,21 +110,7 @@ export default React.memo(function VasuEditPage({
             permittedFollowupActions={permittedFollowupActions}
             translations={translations}
           />
-          {vasu.documentState !== 'DRAFT' && (
-            <EditableEvaluationDiscussionSection
-              sectionIndex={content.sections.length + dynamicSectionsOffset + 1}
-              content={evaluationDiscussionContent}
-              setContent={setEvaluationDiscussionContent}
-              translations={translations}
-            />
-          )}
-          <VasuEvents
-            document={vasu}
-            content={content}
-            evaluationDiscussionDate={
-              evaluationDiscussionContent.discussionDate
-            }
-          />
+          <VasuEvents document={vasu} content={content} />
         </>
       )}
       <StickyFooter>

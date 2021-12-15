@@ -47,13 +47,11 @@ function EventRow({ label, date }: { label: string; date: LocalDate | null }) {
 interface Props {
   document: Pick<VasuDocument, 'documentState' | 'events' | 'modifiedAt'>
   content: VasuDocument['content']
-  evaluationDiscussionDate: LocalDate | null
 }
 
 export function VasuEvents({
   document: { documentState, events, modifiedAt },
-  content,
-  evaluationDiscussionDate
+  content
 }: Props) {
   const { i18n } = useTranslation()
   const lastPublished = getLastPublished(events)
@@ -91,10 +89,6 @@ export function VasuEvents({
         {trackedDates.map(([label, date]) => (
           <EventRow key={label} label={label} date={date} />
         ))}
-        <EventRow
-          label={i18n.vasu.evaluationDiscussion}
-          date={evaluationDiscussionDate}
-        />
       </ListGrid>
       {events.length > 0 && (
         <>

@@ -125,7 +125,6 @@ class VasuIntegrationTest : FullApplicationTest() {
             )
             assertEquals(0, doc.events.size)
             assertEquals(template.content, doc.content)
-            assertEquals(EvaluationDiscussionContent(), doc.evaluationDiscussionContent)
         }
 
         // vasu template cannot be deleted if it has been used
@@ -168,10 +167,7 @@ class VasuIntegrationTest : FullApplicationTest() {
 
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(
-                content = updatedContent,
-                evaluationDiscussionContent = EvaluationDiscussionContent()
-            )
+            VasuController.UpdateDocumentRequest(content = updatedContent)
         )
 
         getVasuDocument(documentId).let {
@@ -214,10 +210,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         )
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(
-                content = updatedContent,
-                evaluationDiscussionContent = EvaluationDiscussionContent()
-            )
+            VasuController.UpdateDocumentRequest(content = updatedContent)
         )
         assertNull(db.read { it.getLatestPublishedVasuDocument(documentId) })
         postVasuDocumentState(
@@ -255,10 +248,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         )
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(
-                content = contentWithUpdatedDiscussion,
-                evaluationDiscussionContent = EvaluationDiscussionContent()
-            )
+            VasuController.UpdateDocumentRequest(content = contentWithUpdatedDiscussion)
         )
         postVasuDocumentState(
             documentId,
@@ -276,18 +266,24 @@ class VasuIntegrationTest : FullApplicationTest() {
         }
 
         // evaluation discussion and move to reviewed
-        val evaluationDiscussionContent = EvaluationDiscussionContent(
-            discussionDate = LocalDate.now(),
-            participants = "matti ja teppo",
-            guardianViewsAndCollaboration = "evvk",
-            evaluation = "wow such great"
+        val contentWithUpdatedEvaluation = updatedContent.copy(
+            sections = updatedContent.sections.map { section ->
+                if (section.name == "Toteutumisen arviointi" || section.name == "Perusopetukseen siirtyminen") {
+                    section.copy(
+                        questions = section.questions.map { question ->
+                            when (question) {
+                                is VasuQuestion.DateQuestion -> question.copy(value = LocalDate.now())
+                                is VasuQuestion.TextQuestion -> question.copy(value = "evvk")
+                                else -> question
+                            }
+                        }
+                    )
+                } else section
+            }
         )
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(
-                content = contentWithUpdatedDiscussion,
-                evaluationDiscussionContent = evaluationDiscussionContent
-            )
+            VasuController.UpdateDocumentRequest(content = contentWithUpdatedEvaluation)
         )
         postVasuDocumentState(
             documentId,
@@ -296,7 +292,8 @@ class VasuIntegrationTest : FullApplicationTest() {
             )
         )
         getVasuDocument(documentId).let { doc ->
-            assertEquals(evaluationDiscussionContent, doc.evaluationDiscussionContent)
+            assertNotEquals(contentWithUpdatedDiscussion, doc.content)
+            assertEquals(contentWithUpdatedEvaluation, doc.content)
             assertEquals(
                 listOf(PUBLISHED, PUBLISHED, MOVED_TO_READY, PUBLISHED, MOVED_TO_REVIEWED),
                 doc.events.map { it.eventType }
@@ -329,16 +326,12 @@ class VasuIntegrationTest : FullApplicationTest() {
 
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(
-                content = contentWithUpdatedDiscussion,
-                evaluationDiscussionContent = evaluationDiscussionContent
-            )
+            VasuController.UpdateDocumentRequest(content = contentWithUpdatedEvaluation)
         )
         db.read {
             it.getLatestPublishedVasuDocument(documentId).let { doc ->
                 assertNotNull(doc)
-                assertEquals(contentWithUpdatedDiscussion, doc.content)
-                assertEquals(evaluationDiscussionContent, doc.evaluationDiscussionContent)
+                assertEquals(contentWithUpdatedEvaluation, doc.content)
             }
         }
     }

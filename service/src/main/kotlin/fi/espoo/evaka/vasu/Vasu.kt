@@ -82,9 +82,7 @@ data class VasuDocument(
     @Json
     val basics: VasuBasics,
     @Json
-    val content: VasuContent,
-    @Json
-    val evaluationDiscussionContent: EvaluationDiscussionContent
+    val content: VasuContent
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)
@@ -367,14 +365,6 @@ enum class VasuQuestionType {
     FOLLOWUP,
     PARAGRAPH
 }
-
-@Json
-data class EvaluationDiscussionContent(
-    val discussionDate: LocalDate? = null,
-    val participants: String = "",
-    val guardianViewsAndCollaboration: String = "",
-    val evaluation: String = ""
-)
 
 @Json
 data class FollowupEntry(
