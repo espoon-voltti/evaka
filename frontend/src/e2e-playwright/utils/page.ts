@@ -177,6 +177,10 @@ export class TextInput extends Element {
     await this.locator.fill('')
   }
 
+  async press(key: string): Promise<void> {
+    await this.locator.press(key)
+  }
+
   get inputValue(): Promise<string> {
     return this.locator.inputValue()
   }
@@ -184,24 +188,10 @@ export class TextInput extends Element {
 
 export class DatePickerDeprecated extends Element {
   #input = new TextInput(this.find('input'))
-  #datepicker = this.locator.locator('.react-datepicker-popper')
 
   async fill(text: string) {
     await this.#input.fill(text)
-    await this.closeDatePicker()
-  }
-
-  async closeDatePicker() {
-    await this.#datepicker.waitFor()
-    const placement = await this.#datepicker.getAttribute('data-placement')
-    const box = await this.#datepicker.boundingBox()
-    if (!placement || !box) throw new Error('Datepicker not open')
-
-    const clickAt = {
-      x: box.width / 2,
-      y: placement === 'bottom' ? 0 : box.height - 1
-    }
-    await this.#datepicker.click({ position: clickAt })
+    await this.#input.press('Enter')
   }
 }
 
