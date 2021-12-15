@@ -13,6 +13,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
+import { sortBy } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useLang, useTranslation } from '../localization'
 import { terminatePlacement } from './api'
@@ -113,7 +114,7 @@ export default React.memo(function PlacementTerminationForm({
     <>
       <div>
         <Label>{t.children.placementTermination.choosePlacement}</Label>
-        {placementGroups.map((p) => (
+        {sortBy(placementGroups, (p) => p.startDate).map((p) => (
           <Checkbox
             key={`${p.type} ${p.unitId}`}
             label={getPlacementLabel(p)}
