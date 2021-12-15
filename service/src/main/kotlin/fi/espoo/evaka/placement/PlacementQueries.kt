@@ -345,6 +345,53 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
         .firstOrNull()
 }
 
+fun Database.Read.getTerminatedPlacements(
+    today: LocalDate,
+    daycareId: DaycareId,
+    terminationRequestedMinDate: LocalDate?,
+    terminationRequestedMaxDate: LocalDate?
+): List<TerminatedPlacements> = createQuery(
+    """
+SELECT
+    pl.id, pl.end_date, pl.type, pl.termination_requested_date, 
+    ch.id AS child_id,
+    ch.first_name AS child_first_name,
+    ch.last_name AS child_last_name,
+    ch.social_security_number AS child_social_security_number,
+    ch.date_of_birth AS child_date_of_birth,
+    terminated_by.id AS terminated_by_id,
+    terminated_by.name AS terminated_by_name,
+    terminated_by.type AS terminated_by_type,
+    dg.name AS current_daycare_group_name
+    FROM placement pl
+    JOIN daycare d on pl.unit_id = d.id
+    JOIN person ch on pl.child_id = ch.id
+    LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
+    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
+    LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
+    WHERE (pl.unit_id = :daycareId)
+    AND daterange(:terminationRequestedMinDate, :terminationRequestedMaxDate, '[]') @> pl.termination_requested_date 
+    """.trimIndent()
+)
+    .bind("today", today)
+    .bind("daycareId", daycareId)
+    .bind("terminationRequestedMinDate", terminationRequestedMinDate)
+    .bind("terminationRequestedMaxDate", terminationRequestedMaxDate)
+    .mapTo<TerminatedPlacements>()
+    .list()
+
+data class TerminatedPlacements(
+    val id: PlacementId,
+    val endDate: LocalDate,
+    val type: PlacementType,
+    val terminationRequestedDate: LocalDate?,
+    @Nested("child")
+    val child: ChildBasics,
+    @Nested("terminated_by")
+    val terminatedBy: EvakaUser?,
+    var currentDaycareGroupName: String?
+)
+
 data class ChildPlacement(
     val childId: ChildId,
     val id: PlacementId,

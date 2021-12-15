@@ -14,7 +14,7 @@ import {
   MailingAddress,
   Occupancy,
   OccupancyType,
-  Stats,
+  Stats, TerminatedPlacement,
   Unit,
   UnitLanguage,
   UnitManager,
@@ -175,6 +175,7 @@ export type UnitData = {
   unitOccupancies?: UnitOccupancies
   groupOccupancies?: GroupOccupancies
   missingGroupPlacements: MissingGroupPlacement[]
+  recentlyTerminatedPlacements: TerminatedPlacement[]
   placementProposals?: DaycarePlacementPlan[]
   placementPlans?: DaycarePlacementPlan[]
   applications?: ApplicationUnitSummary[]
@@ -203,6 +204,9 @@ export async function getUnitData(
       backupCares: response.data.backupCares.map(mapBackupCareJson),
       missingGroupPlacements: response.data.missingGroupPlacements.map(
         mapMissingGroupPlacementJson
+      ),
+      recentlyTerminatedPlacements: response.data.recentlyTerminatedPlacements.map(
+        mapRecentlyTerminatedPlacementJson
       ),
       unitOccupancies:
         response.data.unitOccupancies &&
@@ -299,6 +303,20 @@ function mapMissingGroupPlacementJson(
     placementPeriod: FiniteDateRange.parseJson(data.placementPeriod),
     serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     gap: FiniteDateRange.parseJson(data.gap)
+  }
+}
+
+function mapRecentlyTerminatedPlacementJson(
+  data: JsonOf<TerminatedPlacement>
+): TerminatedPlacement {
+  return {
+    ...data,
+    endDate: LocalDate.parseIso(data.endDate),
+    terminationRequestedDate: LocalDate.parseIso(data.terminationRequestedDate),
+    child: {
+      ...data.child,
+      dateOfBirth: LocalDate.parseIso(data.child.dateOfBirth)
+    }
   }
 }
 

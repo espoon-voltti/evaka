@@ -118,6 +118,8 @@ describe('Employee - unit view', () => {
     await unitPage.openUnitInformation()
     await unitPage.openGroups()
     await groupsSection.assertTerminatedPlacementRowCount(1)
+
+    await page.pause()
   })
 
   test('Open groups stay open when reloading page', async () => {

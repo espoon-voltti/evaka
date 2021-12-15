@@ -28,9 +28,11 @@ import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
+import fi.espoo.evaka.placement.TerminatedPlacements
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
+import fi.espoo.evaka.placement.getTerminatedPlacements
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -54,6 +56,8 @@ import java.time.LocalDate
 @Controller
 @RequestMapping("/views/units")
 class UnitsView(private val accessControl: AccessControl) {
+    private val terminatedPlacementsViewWeeks = 2L
+
     @GetMapping("/{unitId}")
     fun getUnitViewData(
         db: Database.DeprecatedConnection,
@@ -75,6 +79,7 @@ class UnitsView(private val accessControl: AccessControl) {
             val placements = tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
             val backupCares = tx.getBackupCaresForDaycare(unitId, period)
             val missingGroupPlacements = getMissingGroupPlacements(tx, unitId)
+            val recentlyTerminatedPlacements = tx.getTerminatedPlacements(evakaClock.today(), unitId, evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks), evakaClock.today())
             val caretakers = Caretakers(
                 unitCaretakers = tx.getUnitStats(unitId, from, to),
                 groupCaretakers = tx.getGroupStats(unitId, from, to)
@@ -89,6 +94,7 @@ class UnitsView(private val accessControl: AccessControl) {
                 placements = placements,
                 backupCares = backupCares,
                 missingGroupPlacements = missingGroupPlacements,
+                recentlyTerminatedPlacements = recentlyTerminatedPlacements,
                 caretakers = caretakers,
                 permittedBackupCareActions = accessControl.getPermittedBackupCareActions(user, backupCareIds),
                 permittedPlacementActions = accessControl.getPermittedPlacementActions(user, placementIds),
@@ -140,6 +146,7 @@ data class UnitDataResponse(
     val placements: List<DaycarePlacementWithDetails>,
     val backupCares: List<UnitBackupCare>,
     val missingGroupPlacements: List<MissingGroupPlacement>,
+    val recentlyTerminatedPlacements: List<TerminatedPlacements>,
     val caretakers: Caretakers,
     val unitOccupancies: UnitOccupancies? = null,
     val groupOccupancies: GroupOccupancies? = null,

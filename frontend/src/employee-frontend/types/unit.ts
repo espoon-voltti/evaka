@@ -135,6 +135,16 @@ export interface ChildBasics {
   dateOfBirth: LocalDate
 }
 
+export interface TerminatedPlacement {
+  id: UUID
+  endDate: LocalDate
+  type: PlacementType
+  terminationRequestedDate: LocalDate
+  child: ChildBasics
+  terminatedBy: EvakaUser
+  currentDaycareGroupName: string | null
+}
+
 export type PlacementPlanConfirmationStatus =
   | 'PENDING'
   | 'ACCEPTED'

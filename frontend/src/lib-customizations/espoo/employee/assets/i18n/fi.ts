@@ -1481,6 +1481,7 @@ export const fi = {
     },
     termination: {
       title: 'Irtisanotut paikat',
+      terminationRequestedDate: 'Irtisanomispäivä',
       endDate: 'Päättymispäivämäärä',
       groupName: 'Ryhmä'
     },
