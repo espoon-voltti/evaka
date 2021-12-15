@@ -7,6 +7,7 @@ package fi.espoo.evaka
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
+import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import software.amazon.awssdk.regions.Region
 import java.net.URI
@@ -382,8 +383,8 @@ data class Sensitive<T>(val value: T) {
     override fun toString(): String = "**REDACTED**"
 }
 
-inline fun <reified T> Environment.lookup(key: String, vararg legacyKeys: String): T {
-    val value = lookup(key, legacyKeys, T::class.java)
+inline fun <reified T> Environment.lookup(key: String, vararg deprecatedKeys: String): T {
+    val value = lookup(key, deprecatedKeys, T::class.java)
     if (value == null && null !is T) {
         error("Missing required configuration: $key (environment variable ${key.toSystemEnvKey()})")
     } else {
@@ -391,8 +392,16 @@ inline fun <reified T> Environment.lookup(key: String, vararg legacyKeys: String
     }
 }
 
-fun <T> Environment.lookup(key: String, legacyKeys: Array<out String>, clazz: Class<T>): T? =
-    sequenceOf(*legacyKeys, key).mapNotNull { getProperty(it, clazz) }.firstOrNull()
+private val logger = KotlinLogging.logger {}
+
+fun <T> Environment.lookup(key: String, deprecatedKeys: Array<out String>, clazz: Class<T>): T? =
+    deprecatedKeys.asSequence().mapNotNull { legacyKey ->
+        getProperty(legacyKey, clazz)?.also {
+            logger.warn {
+                "Using deprecated configuration key $legacyKey instead of $key (environment variable ${key.toSystemEnvKey()})"
+            }
+        }
+    }.firstOrNull() ?: getProperty(key, clazz)
 
 // Reference: Spring SystemEnvironmentPropertySource
 fun String.toSystemEnvKey() = uppercase(Locale.ENGLISH)
