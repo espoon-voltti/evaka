@@ -102,9 +102,9 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
         val reqBody =
             PartnershipsController.PartnershipRequest(PersonId(person.id), PersonId(partner.id), startDate, endDate)
-        controller.createPartnership(db, user, reqBody)
+        controller.createPartnership(deprecatedDb, user, reqBody)
 
-        val getResponse = controller.getPartnerships(db, user, PersonId(person.id))
+        val getResponse = controller.getPartnerships(deprecatedDb, user, PersonId(person.id))
         assertEquals(1, getResponse.size)
         with(getResponse.first()) {
             assertNotNull(this.id)
@@ -142,7 +142,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
             }
         }
 
-        controller.deletePartnership(db, user, partnership1.id)
+        controller.deletePartnership(deprecatedDb, user, partnership1.id)
         db.read { r ->
             assertEquals(1, r.getPartnershipsForPerson(person.id).size)
         }
@@ -178,10 +178,10 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
         val requestBody = PartnershipsController.PartnershipUpdateRequest(newStartDate, newEndDate)
-        controller.updatePartnership(db, user, partnership1.id, requestBody)
+        controller.updatePartnership(deprecatedDb, user, partnership1.id, requestBody)
 
         // partnership1 should have new dates
-        val fetched1 = controller.getPartnership(db, user, partnership1.id)
+        val fetched1 = controller.getPartnership(deprecatedDb, user, partnership1.id)
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
@@ -204,7 +204,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val newEndDate = LocalDate.now().plusDays(600)
         val requestBody = PartnershipsController.PartnershipUpdateRequest(newStartDate, newEndDate)
         assertThrows<Conflict> {
-            controller.updatePartnership(db, user, partnership1.id, requestBody)
+            controller.updatePartnership(deprecatedDb, user, partnership1.id, requestBody)
         }
     }
 
@@ -216,7 +216,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         }
 
         assertThrows<Forbidden> {
-            controller.getPartnerships(db, user, PersonId(person.id))
+            controller.getPartnerships(deprecatedDb, user, PersonId(person.id))
         }
     }
 
@@ -229,7 +229,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
             PartnershipsController.PartnershipRequest(PersonId(person.id), PersonId(partner.id), startDate, endDate)
 
         assertThrows<Forbidden> {
-            controller.createPartnership(db, user, reqBody)
+            controller.createPartnership(deprecatedDb, user, reqBody)
         }
     }
 
@@ -243,7 +243,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val requestBody =
             PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
         assertThrows<Forbidden> {
-            controller.updatePartnership(db, user, partnership.id, requestBody)
+            controller.updatePartnership(deprecatedDb, user, partnership.id, requestBody)
         }
     }
 
@@ -255,7 +255,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         }
 
         assertThrows<Forbidden> {
-            controller.deletePartnership(db, user, partnership.id)
+            controller.deletePartnership(deprecatedDb, user, partnership.id)
         }
     }
 }

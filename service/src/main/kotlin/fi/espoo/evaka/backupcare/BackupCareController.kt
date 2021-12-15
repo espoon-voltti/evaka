@@ -31,7 +31,7 @@ import java.util.UUID
 class BackupCareController(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}/backup-cares")
     fun getForChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<ChildBackupCaresResponse> {
@@ -43,7 +43,7 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @PostMapping("/children/{childId}/backup-cares")
     fun createForChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID,
         @RequestBody body: NewBackupCare
@@ -60,7 +60,7 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @PostMapping("/backup-cares/{id}")
     fun update(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
@@ -77,7 +77,7 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @DeleteMapping("/backup-cares/{id}")
     fun delete(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") backupCareId: BackupCareId
     ): ResponseEntity<Unit> {
@@ -89,7 +89,7 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
     fun getForDaycare(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,

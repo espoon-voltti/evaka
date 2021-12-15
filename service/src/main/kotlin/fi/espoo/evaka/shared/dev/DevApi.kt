@@ -163,7 +163,7 @@ class DevApi(
     }
 
     @PostMapping("/reset-db")
-    fun resetDatabase(db: Database.Connection): ResponseEntity<Unit> {
+    fun resetDatabase(db: Database.DeprecatedConnection): ResponseEntity<Unit> {
         // Run async jobs before database reset to avoid database locks/deadlocks
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
@@ -186,20 +186,20 @@ class DevApi(
     }
 
     @PostMapping("/care-areas")
-    fun createCareAreas(db: Database.Connection, @RequestBody careAreas: List<DevCareArea>): ResponseEntity<Unit> {
+    fun createCareAreas(db: Database.DeprecatedConnection, @RequestBody careAreas: List<DevCareArea>): ResponseEntity<Unit> {
         db.transaction { careAreas.forEach { careArea -> it.insertTestCareArea(careArea) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/daycares")
-    fun createDaycares(db: Database.Connection, @RequestBody daycares: List<DevDaycare>): ResponseEntity<Unit> {
+    fun createDaycares(db: Database.DeprecatedConnection, @RequestBody daycares: List<DevDaycare>): ResponseEntity<Unit> {
         db.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/acl")
     fun addAclRoleForDaycare(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable daycareId: DaycareId,
         @RequestBody body: DaycareAclInsert
     ): ResponseEntity<Unit> {
@@ -210,12 +210,12 @@ class DevApi(
     }
 
     @PostMapping("/daycare-group-acl")
-    fun createDaycareGroupAclRows(db: Database.Connection, @RequestBody rows: List<DevDaycareGroupAcl>) {
+    fun createDaycareGroupAclRows(db: Database.DeprecatedConnection, @RequestBody rows: List<DevDaycareGroupAcl>) {
         db.transaction { tx -> rows.forEach { tx.insertTestDaycareGroupAcl(it) } }
     }
 
     @PostMapping("/daycare-groups")
-    fun createDaycareGroups(db: Database.Connection, @RequestBody groups: List<DevDaycareGroup>): ResponseEntity<Unit> {
+    fun createDaycareGroups(db: Database.DeprecatedConnection, @RequestBody groups: List<DevDaycareGroup>): ResponseEntity<Unit> {
         db.transaction {
             groups.forEach { group -> it.insertTestDaycareGroup(group) }
         }
@@ -224,7 +224,7 @@ class DevApi(
 
     @PostMapping("/daycare-group-placements")
     fun createDaycareGroupPlacement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody placements: List<DevDaycareGroupPlacement>
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -249,7 +249,7 @@ class DevApi(
     )
 
     @PostMapping("/daycare-caretakers")
-    fun createDaycareCaretakers(db: Database.Connection, @RequestBody caretakers: List<Caretaker>): ResponseEntity<Unit> {
+    fun createDaycareCaretakers(db: Database.DeprecatedConnection, @RequestBody caretakers: List<Caretaker>): ResponseEntity<Unit> {
         db.transaction { tx ->
             caretakers.forEach { caretaker ->
                 tx.insertTestCaretakers(
@@ -264,7 +264,7 @@ class DevApi(
     }
 
     @PostMapping("/children")
-    fun createChildren(db: Database.Connection, @RequestBody children: List<DevChild>): ResponseEntity<Unit> {
+    fun createChildren(db: Database.DeprecatedConnection, @RequestBody children: List<DevChild>): ResponseEntity<Unit> {
         db.transaction { tx ->
             children.forEach {
                 tx.insertTestChild(it)
@@ -274,7 +274,7 @@ class DevApi(
     }
 
     @PostMapping("/daycare-placements")
-    fun createDaycarePlacements(db: Database.Connection, @RequestBody placements: List<DevPlacement>): ResponseEntity<Unit> {
+    fun createDaycarePlacements(db: Database.DeprecatedConnection, @RequestBody placements: List<DevPlacement>): ResponseEntity<Unit> {
         db.transaction { placements.forEach { placement -> it.insertTestPlacement(placement) } }
         return ResponseEntity.noContent().build()
     }
@@ -290,7 +290,7 @@ class DevApi(
     )
 
     @PostMapping("/decisions")
-    fun createDecisions(db: Database.Connection, @RequestBody decisions: List<DecisionRequest>): ResponseEntity<Unit> {
+    fun createDecisions(db: Database.DeprecatedConnection, @RequestBody decisions: List<DecisionRequest>): ResponseEntity<Unit> {
         db.transaction { tx ->
             decisions.forEach { decision ->
                 tx.insertDecision(
@@ -309,14 +309,14 @@ class DevApi(
     }
 
     @PostMapping("/decisions/{id}/actions/create-pdf")
-    fun createDecisionPdf(db: Database.Connection, @PathVariable id: DecisionId): ResponseEntity<Unit> {
+    fun createDecisionPdf(db: Database.DeprecatedConnection, @PathVariable id: DecisionId): ResponseEntity<Unit> {
         db.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/applications/{applicationId}")
     fun getApplication(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<ApplicationDetails> {
         return db.read { tx ->
@@ -326,7 +326,7 @@ class DevApi(
 
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<Decision>> {
         return db.read { tx ->
@@ -335,7 +335,7 @@ class DevApi(
     }
 
     @PostMapping("/fee-decisions")
-    fun createFeeDecisions(db: Database.Connection, @RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
+    fun createFeeDecisions(db: Database.DeprecatedConnection, @RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
         db.transaction { tx ->
             tx.upsertFeeDecisions(decisions)
             decisions.forEach { fd ->
@@ -349,7 +349,7 @@ class DevApi(
 
     @PostMapping("/value-decisions")
     fun createVoucherValueDecisions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody decisions: List<VoucherValueDecision>
     ): ResponseEntity<Unit> {
         db.transaction { tx -> tx.upsertValueDecisions(decisions) }
@@ -357,13 +357,13 @@ class DevApi(
     }
 
     @PostMapping("/invoices")
-    fun createInvoices(db: Database.Connection, @RequestBody invoices: List<Invoice>): ResponseEntity<Unit> {
+    fun createInvoices(db: Database.DeprecatedConnection, @RequestBody invoices: List<Invoice>): ResponseEntity<Unit> {
         db.transaction { tx -> tx.upsertInvoices(invoices) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/fee-thresholds")
-    fun createFeeThresholds(db: Database.Connection, @RequestBody feeThresholds: FeeThresholds): ResponseEntity<UUID> =
+    fun createFeeThresholds(db: Database.DeprecatedConnection, @RequestBody feeThresholds: FeeThresholds): ResponseEntity<UUID> =
         db.transaction {
             ResponseEntity.ok(
                 it.insertTestFeeThresholds(feeThresholds)
@@ -373,11 +373,11 @@ class DevApi(
     data class DevCreateIncomeStatements(val personId: UUID, val data: List<IncomeStatementBody>)
 
     @PostMapping("/income-statements")
-    fun createIncomeStatements(db: Database.Connection, @RequestBody body: DevCreateIncomeStatements) =
+    fun createIncomeStatements(db: Database.DeprecatedConnection, @RequestBody body: DevCreateIncomeStatements) =
         db.transaction { tx -> body.data.forEach { tx.createIncomeStatement(body.personId, it) } }
 
     @PostMapping("/person")
-    fun upsertPerson(db: Database.Connection, @RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
+    fun upsertPerson(db: Database.DeprecatedConnection, @RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
         return db.transaction { tx ->
             val person = tx.getPersonBySSN(body.ssn)
@@ -392,7 +392,7 @@ class DevApi(
     }
 
     @PostMapping("/person/create")
-    fun createPerson(db: Database.Connection, @RequestBody body: DevPerson): ResponseEntity<UUID> {
+    fun createPerson(db: Database.DeprecatedConnection, @RequestBody body: DevPerson): ResponseEntity<UUID> {
         return db.transaction { tx ->
             val personId = tx.insertTestPerson(body)
             tx.createPersonMessageAccount(personId)
@@ -406,7 +406,7 @@ class DevApi(
 
     @PostMapping("/parentship")
     fun createParentships(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody parentships: List<DevParentship>
     ): ResponseEntity<List<DevParentship>> {
         return db.transaction { tx -> parentships.map { tx.insertTestParentship(it) } }
@@ -414,24 +414,24 @@ class DevApi(
     }
 
     @GetMapping("/employee")
-    fun getEmployees(db: Database.Connection): ResponseEntity<List<Employee>> {
+    fun getEmployees(db: Database.DeprecatedConnection): ResponseEntity<List<Employee>> {
         return ResponseEntity.ok(db.read { it.getEmployees() })
     }
 
     @PostMapping("/employee")
-    fun createEmployee(db: Database.Connection, @RequestBody body: DevEmployee): ResponseEntity<UUID> {
+    fun createEmployee(db: Database.DeprecatedConnection, @RequestBody body: DevEmployee): ResponseEntity<UUID> {
         return ResponseEntity.ok(db.transaction { it.insertTestEmployee(body) })
     }
 
     @DeleteMapping("/employee/external-id/{externalId}")
-    fun deleteEmployeeByExternalId(db: Database.Connection, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
+    fun deleteEmployeeByExternalId(db: Database.DeprecatedConnection, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
         db.transaction { it.deleteAndCascadeEmployeeByExternalId(externalId) }
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/employee/external-id/{externalId}")
     fun upsertEmployeeByExternalId(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable externalId: ExternalId,
         @RequestBody employee: DevEmployee
     ): ResponseEntity<UUID> = db.transaction {
@@ -457,7 +457,7 @@ RETURNING id
     )
 
     @PostMapping("/guardian")
-    fun insertGuardians(db: Database.Connection, @RequestBody guardians: List<DevGuardian>): ResponseEntity<Unit> {
+    fun insertGuardians(db: Database.DeprecatedConnection, @RequestBody guardians: List<DevGuardian>): ResponseEntity<Unit> {
         db.transaction {
             guardians.forEach { guardian ->
                 it.insertGuardian(guardian.guardianId, guardian.childId)
@@ -467,7 +467,7 @@ RETURNING id
     }
 
     @PostMapping("/child")
-    fun insertChild(db: Database.Connection, @RequestBody body: DevPerson): ResponseEntity<UUID> = db.transaction {
+    fun insertChild(db: Database.DeprecatedConnection, @RequestBody body: DevPerson): ResponseEntity<UUID> = db.transaction {
         val id = it.insertTestPerson(
             DevPerson(
                 id = body.id,
@@ -486,7 +486,7 @@ RETURNING id
     }
 
     @PostMapping("/message-account/upsert-all")
-    fun createMessageAccounts(db: Database.Connection) {
+    fun createMessageAccounts(db: Database.DeprecatedConnection) {
         db.transaction { tx ->
             tx.execute("INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING")
             tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
@@ -495,14 +495,14 @@ RETURNING id
     }
 
     @PostMapping("/backup-cares")
-    fun createBackupCares(db: Database.Connection, @RequestBody backupCares: List<DevBackupCare>): ResponseEntity<Unit> {
+    fun createBackupCares(db: Database.DeprecatedConnection, @RequestBody backupCares: List<DevBackupCare>): ResponseEntity<Unit> {
         db.transaction { tx -> backupCares.forEach { tx.insertTestBackupCare(it) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/applications")
     fun createApplications(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody applications: List<ApplicationWithForm>
     ): ResponseEntity<List<ApplicationId>> {
         val uuids =
@@ -531,7 +531,7 @@ RETURNING id
 
     @PostMapping("/placement-plan/{application-id}")
     fun createPlacementPlan(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable("application-id") applicationId: ApplicationId,
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
@@ -568,7 +568,7 @@ RETURNING id
     }
 
     @PostMapping("/vtj-persons")
-    fun upsertPerson(db: Database.Connection, @RequestBody person: VtjPerson): ResponseEntity<Unit> {
+    fun upsertPerson(db: Database.DeprecatedConnection, @RequestBody person: VtjPerson): ResponseEntity<Unit> {
         MockPersonDetailsService.upsertPerson(person)
         db.transaction { tx ->
             val uuid = tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
@@ -586,7 +586,7 @@ RETURNING id
     }
 
     @GetMapping("/vtj-persons/{ssn}")
-    fun getVtjPerson(db: Database.Connection, @PathVariable ssn: String): ResponseEntity<VtjPerson> {
+    fun getVtjPerson(db: Database.DeprecatedConnection, @PathVariable ssn: String): ResponseEntity<VtjPerson> {
         return MockPersonDetailsService.getPerson(ssn)?.let { person -> ResponseEntity.ok(person) }
             ?: throw NotFound("vtj person $ssn was not found")
     }
@@ -598,7 +598,7 @@ RETURNING id
 
     @PostMapping("/applications/{applicationId}/actions/{action}")
     fun simpleAction(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ): ResponseEntity<Unit> {
@@ -622,7 +622,7 @@ RETURNING id
 
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
@@ -635,7 +635,7 @@ RETURNING id
 
     @PostMapping("/applications/{applicationId}/actions/create-default-placement-plan")
     fun createDefaultPlacementPlan(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -656,7 +656,7 @@ RETURNING id
 
     @PostMapping("/mobile/pairings/challenge")
     fun postPairingChallenge(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody body: PairingsController.PostPairingChallengeReq
     ): ResponseEntity<Pairing> {
         return db
@@ -666,7 +666,7 @@ RETURNING id
 
     @PostMapping("/mobile/pairings/{id}/response")
     fun postPairingResponse(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable id: PairingId,
         @RequestBody body: PairingsController.PostPairingResponseReq
     ): ResponseEntity<Pairing> {
@@ -681,7 +681,7 @@ RETURNING id
 
     @PostMapping("/mobile/pairings")
     fun postPairing(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody body: PairingsController.PostPairingReq
     ): ResponseEntity<Pairing> {
         return db.transaction {
@@ -702,7 +702,7 @@ RETURNING id
 
     @PostMapping("/mobile/devices")
     fun postMobileDevice(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody body: MobileDeviceReq
     ): ResponseEntity<Unit> {
         return db.transaction {
@@ -719,7 +719,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @PostMapping("/children/{childId}/child-daily-notes")
     fun postChildDailyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable childId: UUID,
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNoteId {
@@ -733,7 +733,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @PostMapping("/children/{childId}/child-sticky-notes")
     fun postChildStickyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable childId: UUID,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
@@ -747,7 +747,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @PostMapping("/daycare-groups/{groupId}/group-notes")
     fun postGroupNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupNoteBody
     ): GroupNoteId {
@@ -767,31 +767,31 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         digitransit.setAutocomplete(mockResponse)
 
     @PostMapping("/family-contact")
-    fun createFamilyContact(db: Database.Connection, @RequestBody contacts: List<DevFamilyContact>): ResponseEntity<Unit> {
+    fun createFamilyContact(db: Database.DeprecatedConnection, @RequestBody contacts: List<DevFamilyContact>): ResponseEntity<Unit> {
         db.transaction { contacts.forEach { contact -> it.insertFamilyContact(contact) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/backup-pickup")
-    fun createBackupPickup(db: Database.Connection, @RequestBody backupPickups: List<DevBackupPickup>): ResponseEntity<Unit> {
+    fun createBackupPickup(db: Database.DeprecatedConnection, @RequestBody backupPickups: List<DevBackupPickup>): ResponseEntity<Unit> {
         db.transaction { backupPickups.forEach { backupPickup -> it.insertBackupPickup(backupPickup) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/fridge-child")
-    fun createFridgeChild(db: Database.Connection, @RequestBody fridgeChildren: List<DevFridgeChild>): ResponseEntity<Unit> {
+    fun createFridgeChild(db: Database.DeprecatedConnection, @RequestBody fridgeChildren: List<DevFridgeChild>): ResponseEntity<Unit> {
         db.transaction { fridgeChildren.forEach { child -> it.insertFridgeChild(child) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/fridge-partner")
-    fun createFridgePartner(db: Database.Connection, @RequestBody fridgePartners: List<DevFridgePartner>): ResponseEntity<Unit> {
+    fun createFridgePartner(db: Database.DeprecatedConnection, @RequestBody fridgePartners: List<DevFridgePartner>): ResponseEntity<Unit> {
         db.transaction { fridgePartners.forEach { partner -> it.insertFridgePartner(partner) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/employee-pin")
-    fun createEmployeePins(db: Database.Connection, @RequestBody employeePins: List<DevEmployeePin>): ResponseEntity<Unit> {
+    fun createEmployeePins(db: Database.DeprecatedConnection, @RequestBody employeePins: List<DevEmployeePin>): ResponseEntity<Unit> {
         db.transaction {
             employeePins.forEach { employeePin ->
                 val userId =
@@ -806,7 +806,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     }
 
     @PostMapping("/pedagogical-document")
-    fun createPedagogicalDocuments(db: Database.Connection, @RequestBody pedagogicalDocuments: List<DevPedagogicalDocument>): ResponseEntity<Unit> {
+    fun createPedagogicalDocuments(db: Database.DeprecatedConnection, @RequestBody pedagogicalDocuments: List<DevPedagogicalDocument>): ResponseEntity<Unit> {
         db.transaction {
             pedagogicalDocuments.forEach { pedagogicalDocument ->
                 it.insertPedagogicalDocument(pedagogicalDocument)
@@ -817,7 +817,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @PostMapping("/pedagogical-document-attachment/{pedagogicalDocumentId}")
     fun createPedagogicalDocumentAttachment(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable pedagogicalDocumentId: PedagogicalDocumentId,
         @RequestParam employeeId: UUID,
         @RequestPart("file") file: MultipartFile
@@ -844,7 +844,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     }
 
     @PostMapping("/vasu/template")
-    fun createVasuTemplate(db: Database.Connection): VasuTemplateId {
+    fun createVasuTemplate(db: Database.DeprecatedConnection): VasuTemplateId {
         return db.transaction { tx ->
             tx.insertVasuTemplate(
                 name = "testipohja",
@@ -857,14 +857,14 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     }
 
     @PostMapping("/vasu/doc")
-    fun createVasuDocument(db: Database.Connection, @RequestBody body: PostVasuDocBody): VasuDocumentId {
+    fun createVasuDocument(db: Database.DeprecatedConnection, @RequestBody body: PostVasuDocBody): VasuDocumentId {
         return db.transaction { tx ->
             tx.insertVasuDocument(body.childId, body.templateId)
         }
     }
 
     @PostMapping("/service-need")
-    fun createServiceNeeds(db: Database.Connection, @RequestBody serviceNeeds: List<DevServiceNeed>): ResponseEntity<Unit> {
+    fun createServiceNeeds(db: Database.DeprecatedConnection, @RequestBody serviceNeeds: List<DevServiceNeed>): ResponseEntity<Unit> {
         db.transaction {
             serviceNeeds.forEach { sn ->
                 it.insertTestServiceNeed(
@@ -881,7 +881,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     }
 
     @PostMapping("/service-need-option")
-    fun createServiceNeedOption(db: Database.Connection, @RequestBody serviceNeedOptions: List<ServiceNeedOption>): ResponseEntity<Unit> {
+    fun createServiceNeedOption(db: Database.DeprecatedConnection, @RequestBody serviceNeedOptions: List<ServiceNeedOption>): ResponseEntity<Unit> {
         db.transaction {
             serviceNeedOptions.forEach { option -> it.insertServiceNeedOption(option) }
         }
@@ -889,19 +889,19 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     }
 
     @PostMapping("/service-need-options")
-    fun createDefaultServiceNeedOptions(db: Database.Connection): ResponseEntity<Unit> {
+    fun createDefaultServiceNeedOptions(db: Database.DeprecatedConnection): ResponseEntity<Unit> {
         db.transaction { it.insertServiceNeedOptions() }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/voucher-values")
-    fun createVoucherValues(db: Database.Connection): ResponseEntity<Unit> {
+    fun createVoucherValues(db: Database.DeprecatedConnection): ResponseEntity<Unit> {
         db.transaction { it.insertVoucherValues() }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/assistance-needs")
-    fun createAssistanceNeeds(db: Database.Connection, @RequestBody assistanceNeeds: List<DevAssistanceNeed>): ResponseEntity<Unit> {
+    fun createAssistanceNeeds(db: Database.DeprecatedConnection, @RequestBody assistanceNeeds: List<DevAssistanceNeed>): ResponseEntity<Unit> {
         db.transaction { tx ->
             assistanceNeeds.forEach {
                 tx.insertTestAssistanceNeed(it)

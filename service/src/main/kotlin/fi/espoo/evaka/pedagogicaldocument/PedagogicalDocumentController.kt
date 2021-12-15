@@ -33,7 +33,7 @@ class PedagogicalDocumentController(
 ) {
     @PostMapping
     fun createPedagogicalDocument(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
@@ -48,7 +48,7 @@ class PedagogicalDocumentController(
 
     @PutMapping("/{documentId}")
     fun updatePedagogicalDocument(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
@@ -64,7 +64,7 @@ class PedagogicalDocumentController(
 
     @GetMapping("/child/{childId}")
     fun getChildPedagogicalDocuments(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
@@ -75,7 +75,7 @@ class PedagogicalDocumentController(
 
     @DeleteMapping("/{documentId}")
     fun deletePedagogicalDocument(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ) {

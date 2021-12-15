@@ -65,8 +65,8 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
         registry.addConverter(convertFrom<String, Id<*>> { Id<DatabaseTable>(UUID.fromString(it)) })
     }
 
-    private fun WebRequest.getOrOpenConnection(): Database.Connection = getConnection()
-        ?: getDatabaseInstance().connectWithManualLifecycle().also(::setConnection)
+    private fun WebRequest.getOrOpenConnection(): Database.DeprecatedConnection = getConnection()
+        ?: getDatabaseInstance().deprecatedConnection().also(::setConnection)
 
     private fun WebRequest.getDatabaseInstance(): Database = getDatabase()
         ?: Database(jdbi).also(::setDatabase)
@@ -96,5 +96,5 @@ private fun WebRequest.setDatabase(db: Database) = setAttribute(ATTR_DB, db, SCO
 
 private const val ATTR_DB_CONNECTION = "evaka.database.connection"
 
-private fun WebRequest.getConnection() = getAttribute(ATTR_DB_CONNECTION, SCOPE_REQUEST) as Database.Connection?
-private fun WebRequest.setConnection(db: Database.Connection) = setAttribute(ATTR_DB_CONNECTION, db, SCOPE_REQUEST)
+private fun WebRequest.getConnection() = getAttribute(ATTR_DB_CONNECTION, SCOPE_REQUEST) as Database.DeprecatedConnection?
+private fun WebRequest.setConnection(db: Database.DeprecatedConnection) = setAttribute(ATTR_DB_CONNECTION, db, SCOPE_REQUEST)

@@ -31,7 +31,7 @@ class AssistanceNeedController(
 ) {
     @PostMapping("/children/{childId}/assistance-needs")
     fun createAssistanceNeed(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: AssistanceNeedRequest
@@ -48,7 +48,7 @@ class AssistanceNeedController(
 
     @GetMapping("/children/{childId}/assistance-needs")
     fun getAssistanceNeeds(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<AssistanceNeed> {
@@ -61,7 +61,7 @@ class AssistanceNeedController(
 
     @PutMapping("/assistance-needs/{id}")
     fun updateAssistanceNeed(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId,
         @RequestBody body: AssistanceNeedRequest
@@ -78,7 +78,7 @@ class AssistanceNeedController(
 
     @DeleteMapping("/assistance-needs/{id}")
     fun deleteAssistanceNeed(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId
     ): ResponseEntity<Unit> {
@@ -89,7 +89,7 @@ class AssistanceNeedController(
     }
 
     @GetMapping("/assistance-basis-options")
-    fun getAssistanceBasisOptions(db: Database.Connection, user: AuthenticatedUser): List<AssistanceBasisOption> {
+    fun getAssistanceBasisOptions(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<AssistanceBasisOption> {
         accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
         return assistanceNeedService.getAssistanceBasisOptions(db)
     }

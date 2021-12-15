@@ -36,7 +36,7 @@ class RealtimeStaffAttendanceController(
 ) {
     @GetMapping
     fun getAttendancesByUnit(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): StaffAttendanceResponse {
@@ -64,7 +64,7 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/arrival")
     fun markArrival(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: StaffArrivalRequest
     ) {
@@ -95,7 +95,7 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/{attendanceId}/departure")
     fun markDeparture(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable attendanceId: StaffAttendanceId,
         @RequestBody body: StaffDepartureRequest
@@ -125,7 +125,7 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/arrival-external")
     fun markExternalArrival(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
@@ -149,7 +149,7 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/departure-external")
     fun markExternalDeparture(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: ExternalStaffDepartureRequest
     ) {

@@ -27,7 +27,7 @@ class ChildStickyNoteController(
 ) {
     @PostMapping("/children/{childId}/child-sticky-notes")
     fun createChildStickyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: ChildStickyNoteBody
@@ -42,7 +42,7 @@ class ChildStickyNoteController(
 
     @PutMapping("/child-sticky-notes/{noteId}")
     fun updateChildStickyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable noteId: ChildStickyNoteId,
         @RequestBody body: ChildStickyNoteBody
@@ -57,7 +57,7 @@ class ChildStickyNoteController(
 
     @DeleteMapping("/child-sticky-notes/{noteId}")
     fun deleteChildStickyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable noteId: ChildStickyNoteId
     ) {

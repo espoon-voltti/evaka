@@ -35,7 +35,7 @@ import java.util.UUID
 @RequestMapping("/fee-alterations")
 class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
     @GetMapping
-    fun getFeeAlterations(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: UUID): ResponseEntity<Wrapper<List<FeeAlteration>>> {
+    fun getFeeAlterations(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestParam personId: UUID): ResponseEntity<Wrapper<List<FeeAlteration>>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FEE_ALTERATIONS, personId)
 
@@ -44,7 +44,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     }
 
     @PostMapping
-    fun createFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun createFeeAlteration(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -65,7 +65,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     }
 
     @PutMapping("/{feeAlterationId}")
-    fun updateFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun updateFeeAlteration(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -85,7 +85,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     }
 
     @DeleteMapping("/{feeAlterationId}")
-    fun deleteFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
+    fun deleteFeeAlteration(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)

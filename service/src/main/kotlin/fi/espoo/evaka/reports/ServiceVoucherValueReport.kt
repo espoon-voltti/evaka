@@ -45,7 +45,7 @@ class ServiceVoucherValueReportController(
 
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Employee,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -87,7 +87,7 @@ class ServiceVoucherValueReportController(
 
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
         @RequestParam year: Int,

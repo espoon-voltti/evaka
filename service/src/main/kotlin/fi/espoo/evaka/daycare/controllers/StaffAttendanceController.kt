@@ -35,7 +35,7 @@ class StaffAttendanceController(
 ) {
     @GetMapping("/unit/{unitId}")
     fun getAttendancesByUnit(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): ResponseEntity<UnitStaffAttendance> {
@@ -48,7 +48,7 @@ class StaffAttendanceController(
 
     @GetMapping("/group/{groupId}")
     fun getAttendancesByGroup(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -64,7 +64,7 @@ class StaffAttendanceController(
 
     @PostMapping("/group/{groupId}")
     fun upsertStaffAttendance(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: GroupId

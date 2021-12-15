@@ -31,7 +31,7 @@ import java.time.LocalDate
 class IncomeStatementControllerCitizen {
     @GetMapping
     fun getIncomeStatements(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
@@ -46,7 +46,7 @@ class IncomeStatementControllerCitizen {
 
     @GetMapping("/start-dates")
     fun getIncomeStatementStartDates(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen
     ): List<LocalDate> {
         Audit.IncomeStatementStartDates.log()
@@ -57,7 +57,7 @@ class IncomeStatementControllerCitizen {
 
     @GetMapping("/{incomeStatementId}")
     fun getIncomeStatement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
@@ -72,7 +72,7 @@ class IncomeStatementControllerCitizen {
 
     @PostMapping
     fun createIncomeStatement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen,
         @RequestBody body: IncomeStatementBody
     ) {
@@ -97,7 +97,7 @@ class IncomeStatementControllerCitizen {
 
     @PutMapping("/{incomeStatementId}")
     fun updateIncomeStatement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
@@ -124,7 +124,7 @@ class IncomeStatementControllerCitizen {
 
     @DeleteMapping("/{id}")
     fun removeIncomeStatement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen,
         @PathVariable id: IncomeStatementId
     ) {

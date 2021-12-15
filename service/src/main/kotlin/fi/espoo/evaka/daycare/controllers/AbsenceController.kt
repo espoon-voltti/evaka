@@ -33,7 +33,7 @@ import java.util.UUID
 class AbsenceController(private val absenceService: AbsenceService, private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/{groupId}")
     fun getAbsencesByGroupAndMonth(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -47,7 +47,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
 
     @PostMapping("/{groupId}")
     fun upsertAbsences(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody absences: Wrapper<List<Absence>>,
         @PathVariable groupId: GroupId
@@ -64,7 +64,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
 
     @PostMapping("/{groupId}/delete")
     fun deleteAbsences(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody deletions: List<AbsenceDelete>,
         @PathVariable groupId: GroupId
@@ -81,7 +81,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
 
     @GetMapping("/by-child/{childId}")
     fun getAbsencesByChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestParam year: Int,
@@ -95,7 +95,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
 
     @GetMapping("/by-child/{childId}/future")
     fun getFutureAbsencesByChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<List<Absence>> {

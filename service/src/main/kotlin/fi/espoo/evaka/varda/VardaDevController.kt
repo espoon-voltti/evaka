@@ -20,7 +20,7 @@ class VardaDevController(
 ) {
     @PostMapping("/run-update-all")
     fun runFullVardaUpdate(
-        db: Database.Connection
+        db: Database.DeprecatedConnection
     ): ResponseEntity<Unit> {
         vardaUpdateService.startVardaUpdate(db)
         return ResponseEntity.noContent().build()
@@ -28,7 +28,7 @@ class VardaDevController(
 
     @PostMapping("/reset-children")
     fun resetChildren(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestParam(defaultValue = "true") addNewChildren: Boolean,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
@@ -37,7 +37,7 @@ class VardaDevController(
 
     @PostMapping("/reset-by-report/{organizerId}")
     fun resetChildrenByReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {

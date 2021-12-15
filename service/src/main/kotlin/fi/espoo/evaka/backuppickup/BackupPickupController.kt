@@ -30,7 +30,7 @@ class BackupPickupController(
 ) {
     @PostMapping("/children/{childId}/backup-pickups")
     fun createForChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID,
         @RequestBody body: ChildBackupPickupContent
@@ -46,7 +46,7 @@ class BackupPickupController(
 
     @GetMapping("/children/{childId}/backup-pickups")
     fun getForChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<List<ChildBackupPickup>> {
@@ -60,7 +60,7 @@ class BackupPickupController(
 
     @PutMapping("/backup-pickups/{id}")
     fun update(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") id: BackupPickupId,
         @RequestBody body: ChildBackupPickupContent
@@ -76,7 +76,7 @@ class BackupPickupController(
 
     @DeleteMapping("/backup-pickups/{id}")
     fun delete(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") id: BackupPickupId
     ): ResponseEntity<Unit> {

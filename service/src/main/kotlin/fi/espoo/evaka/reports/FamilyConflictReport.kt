@@ -21,7 +21,7 @@ import java.util.UUID
 @RestController
 class FamilyConflictReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/family-conflicts")
-    fun getFamilyConflictsReport(db: Database.Connection, user: AuthenticatedUser): List<FamilyConflictReportRow> {
+    fun getFamilyConflictsReport(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<FamilyConflictReportRow> {
         Audit.FamilyConflictReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_FAMILY_CONFLICT_REPORT)
         return db.read { it.getFamilyConflicts(acl.getAuthorizedUnits(user)) }

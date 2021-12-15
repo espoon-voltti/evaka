@@ -40,7 +40,7 @@ import java.util.UUID
 class EmployeeController {
 
     @GetMapping
-    fun getEmployees(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getEmployees(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
@@ -48,7 +48,7 @@ class EmployeeController {
     }
 
     @GetMapping("/finance-decision-handler")
-    fun getFinanceDecisionHandlers(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getFinanceDecisionHandlers(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
@@ -56,7 +56,7 @@ class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Employee> {
+    fun getEmployee(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Employee> {
         Audit.EmployeeRead.log(targetId = id)
         if (user.id != id.raw) {
             @Suppress("DEPRECATION")
@@ -79,7 +79,7 @@ class EmployeeController {
     )
     @PutMapping("/{id}")
     fun updateEmployee(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: UUID,
         @RequestBody body: EmployeeUpdate
@@ -100,7 +100,7 @@ class EmployeeController {
 
     @GetMapping("/{id}/details")
     fun getEmployeeDetails(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: UUID
     ): ResponseEntity<EmployeeWithDaycareRoles> {
@@ -114,7 +114,7 @@ class EmployeeController {
     }
 
     @PostMapping("")
-    fun createEmployee(db: Database.Connection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
+    fun createEmployee(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
@@ -122,7 +122,7 @@ class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Unit> {
+    fun deleteEmployee(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
@@ -132,7 +132,7 @@ class EmployeeController {
 
     @PostMapping("/pin-code")
     fun upsertPinCode(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: PinCode
     ): ResponseEntity<Unit> {
@@ -148,7 +148,7 @@ class EmployeeController {
 
     @GetMapping("/pin-code/is-pin-locked")
     fun isPinLocked(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): Boolean {
         Audit.PinCodeLockedRead.log(targetId = user.id)
@@ -159,7 +159,7 @@ class EmployeeController {
 
     @PostMapping("/search")
     fun searchEmployees(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: SearchEmployeeRequest
     ): ResponseEntity<Paged<EmployeeWithDaycareRoles>> {

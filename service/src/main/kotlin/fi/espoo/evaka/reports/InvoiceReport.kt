@@ -31,7 +31,7 @@ internal fun getMonthPeriod(date: LocalDate): DateRange {
 class InvoiceReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/invoices")
     fun getInvoiceReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): InvoiceReport {

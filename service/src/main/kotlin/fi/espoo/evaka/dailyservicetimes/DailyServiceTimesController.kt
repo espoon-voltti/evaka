@@ -29,7 +29,7 @@ class DailyServiceTimesController(
 
     @GetMapping("/children/{childId}/daily-service-times")
     fun getDailyServiceTimes(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<DailyServiceTimesResponse> {
@@ -45,7 +45,7 @@ class DailyServiceTimesController(
 
     @PutMapping("/children/{childId}/daily-service-times")
     fun putDailyServiceTimes(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: DailyServiceTimes
@@ -60,7 +60,7 @@ class DailyServiceTimesController(
 
     @DeleteMapping("/children/{childId}/daily-service-times")
     fun deleteDailyServiceTimes(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {

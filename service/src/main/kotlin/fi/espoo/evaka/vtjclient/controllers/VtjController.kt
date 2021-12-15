@@ -29,7 +29,7 @@ import java.util.UUID
 class VtjController(private val personService: PersonService, private val accessControlCitizen: AccessControlCitizen) {
     @GetMapping("/uuid/{personId}")
     internal fun getDetails(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): CitizenUserDetails {

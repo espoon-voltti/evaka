@@ -37,7 +37,7 @@ class MessageControllerCitizen(
 
     @GetMapping("/my-account")
     fun getMyAccount(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): MessageAccountId {
         Audit.MessagingMyAccountsRead.log()
@@ -45,7 +45,7 @@ class MessageControllerCitizen(
     }
     @GetMapping("/unread-count")
     fun getUnreadMessages(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
@@ -55,7 +55,7 @@ class MessageControllerCitizen(
 
     @PutMapping("/threads/{threadId}/read")
     fun markThreadRead(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("threadId") threadId: MessageThreadId
     ) {
@@ -66,7 +66,7 @@ class MessageControllerCitizen(
 
     @GetMapping("/received")
     fun getReceivedMessages(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
@@ -78,7 +78,7 @@ class MessageControllerCitizen(
 
     @GetMapping("/sent")
     fun getSentMessages(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
@@ -90,7 +90,7 @@ class MessageControllerCitizen(
 
     @GetMapping("/receivers")
     fun getReceivers(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
     ): List<MessageAccount> {
         Audit.MessagingCitizenFetchReceiversForAccount.log()
@@ -100,7 +100,7 @@ class MessageControllerCitizen(
 
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
@@ -119,7 +119,7 @@ class MessageControllerCitizen(
 
     @PostMapping
     fun newMessage(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: CitizenMessageBody,
     ): List<MessageThreadId> {
@@ -149,7 +149,7 @@ class MessageControllerCitizen(
     }
 
     private fun requireMessageAccountAccess(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): MessageAccountId {
         @Suppress("DEPRECATION")

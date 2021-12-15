@@ -29,7 +29,7 @@ class ChildDailyNoteController(
 ) {
     @PostMapping("/children/{childId}/child-daily-notes")
     fun createChildDailyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: ChildDailyNoteBody
@@ -49,7 +49,7 @@ class ChildDailyNoteController(
 
     @PutMapping("/child-daily-notes/{noteId}")
     fun updateChildDailyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable noteId: ChildDailyNoteId,
         @RequestBody body: ChildDailyNoteBody
@@ -62,7 +62,7 @@ class ChildDailyNoteController(
 
     @DeleteMapping("/child-daily-notes/{noteId}")
     fun deleteChildDailyNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable noteId: ChildDailyNoteId
     ) {

@@ -69,7 +69,7 @@ class ChildAttendanceController(
 
     @GetMapping("/units/{unitId}")
     fun getAttendances(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): AttendanceResponse {
@@ -86,7 +86,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/arrival")
     fun postArrival(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -115,7 +115,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
     fun returnToComing(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
@@ -145,7 +145,7 @@ class ChildAttendanceController(
 
     @GetMapping("/units/{unitId}/children/{childId}/departure")
     fun getChildDeparture(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
@@ -183,7 +183,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -240,7 +240,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
     fun returnToPresent(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
@@ -273,7 +273,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/full-day-absence")
     fun postFullDayAbsence(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -310,7 +310,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
     fun postAbsenceRange(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -338,7 +338,7 @@ class ChildAttendanceController(
 
     @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")
     fun deleteAbsenceRange(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,

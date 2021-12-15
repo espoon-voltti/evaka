@@ -36,7 +36,7 @@ class NotesController(
     @GetMapping("/children/{childId}/notes")
     fun getNotesByChild(
         user: AuthenticatedUser,
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable childId: UUID
     ): NotesByChildResponse {
         Audit.NotesByChildRead.log(childId)
@@ -59,7 +59,7 @@ class NotesController(
     @GetMapping("/daycare-groups/{groupId}/notes")
     fun getNotesByGroup(
         user: AuthenticatedUser,
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable groupId: GroupId
     ): NotesByGroupResponse {
         Audit.NotesByGroupRead.log(groupId)

@@ -34,7 +34,7 @@ class DecisionController(
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("id") guardianId: UUID
     ): ResponseEntity<DecisionListResponse> {
@@ -48,7 +48,7 @@ class DecisionController(
 
     @GetMapping("/by-child")
     fun getDecisionsByChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("id") childId: UUID
     ): ResponseEntity<DecisionListResponse> {
@@ -62,7 +62,7 @@ class DecisionController(
 
     @GetMapping("/by-application")
     fun getDecisionsByApplication(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("id") applicationId: ApplicationId
     ): ResponseEntity<DecisionListResponse> {
@@ -75,7 +75,7 @@ class DecisionController(
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
+    fun getDecisionUnits(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
@@ -85,7 +85,7 @@ class DecisionController(
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") decisionId: DecisionId
     ): ResponseEntity<ByteArray> {

@@ -20,7 +20,7 @@ import java.util.UUID
 class EndedPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/ended-placements")
     fun getEndedPlacementsReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int

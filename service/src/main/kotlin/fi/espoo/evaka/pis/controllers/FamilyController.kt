@@ -35,7 +35,7 @@ class FamilyController(
 ) {
     @GetMapping("/by-adult/{id}")
     fun getFamilyByPerson(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: PersonId
     ): FamilyOverview {
@@ -56,7 +56,7 @@ class FamilyController(
 
     @GetMapping("/contacts")
     fun getFamilyContactSummary(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam(value = "childId", required = true) childId: UUID
     ): ResponseEntity<List<FamilyContact>> {
@@ -69,7 +69,7 @@ class FamilyController(
 
     @PostMapping("/contacts")
     fun updateFamilyContactPriority(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: FamilyContactUpdate
     ): ResponseEntity<Unit> {

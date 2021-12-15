@@ -21,7 +21,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
 
     @GetMapping("/child/{childId}/recipients")
     fun getRecipients(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<Recipient> {
@@ -36,7 +36,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     )
     @PutMapping("/child/{childId}/recipients/{personId}")
     fun editRecipient(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @PathVariable personId: UUID,

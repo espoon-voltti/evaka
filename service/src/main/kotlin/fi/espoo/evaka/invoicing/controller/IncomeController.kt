@@ -49,7 +49,7 @@ class IncomeController(
     private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<Income>> {
+    fun getIncome(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<Income>> {
         Audit.PersonIncomeRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME, personId)
 
@@ -58,7 +58,7 @@ class IncomeController(
     }
 
     @PostMapping
-    fun createIncome(db: Database.Connection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
+    fun createIncome(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -85,7 +85,7 @@ class IncomeController(
 
     @PutMapping("/{incomeId}")
     fun updateIncome(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable incomeId: IncomeId,
         @RequestBody income: Income
@@ -111,7 +111,7 @@ class IncomeController(
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(db: Database.Connection, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
+    fun deleteIncome(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)

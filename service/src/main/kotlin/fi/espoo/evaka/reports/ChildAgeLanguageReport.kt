@@ -23,7 +23,7 @@ import java.time.LocalDate
 class ChildAgeLanguageReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ChildAgeLanguageReportRow> {

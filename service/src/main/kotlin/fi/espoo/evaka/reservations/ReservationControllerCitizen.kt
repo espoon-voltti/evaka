@@ -33,7 +33,7 @@ class ReservationControllerCitizen(
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
@@ -73,7 +73,7 @@ class ReservationControllerCitizen(
 
     @PostMapping("/citizen/reservations")
     fun postReservations(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: List<DailyReservationRequest>
     ) {
@@ -93,7 +93,7 @@ class ReservationControllerCitizen(
 
     @PostMapping("/citizen/absences")
     fun postAbsences(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: AbsenceRequest
     ) {

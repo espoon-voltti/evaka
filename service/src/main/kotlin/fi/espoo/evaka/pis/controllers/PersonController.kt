@@ -53,7 +53,7 @@ class PersonController(
     private val accessControl: AccessControl
 ) {
     @PostMapping
-    fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
+    fun createEmpty(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
@@ -63,7 +63,7 @@ class PersonController(
 
     @GetMapping("/{personId}")
     fun getPerson(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId
     ): PersonResponse {
@@ -81,7 +81,7 @@ class PersonController(
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
     fun getPersonIdentity(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<PersonJSON> {
@@ -102,7 +102,7 @@ class PersonController(
 
     @GetMapping("/dependants/{personId}")
     fun getPersonDependants(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
@@ -116,7 +116,7 @@ class PersonController(
 
     @GetMapping("/guardians/{personId}")
     fun getPersonGuardians(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") childId: UUID
     ): ResponseEntity<List<PersonJSON>> {
@@ -128,7 +128,7 @@ class PersonController(
 
     @PostMapping("/search")
     fun findBySearchTerms(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: SearchPersonBody
     ): List<PersonSummary> {
@@ -146,7 +146,7 @@ class PersonController(
 
     @PutMapping(value = ["/{personId}/contact-info"])
     fun updateContactInfo(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID,
         @RequestBody contactInfo: ContactInfo
@@ -163,7 +163,7 @@ class PersonController(
 
     @PatchMapping("/{personId}")
     fun updatePersonDetails(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID,
         @RequestBody data: PersonPatch
@@ -194,7 +194,7 @@ class PersonController(
 
     @DeleteMapping("/{personId}")
     fun safeDeletePerson(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<Unit> {
@@ -207,7 +207,7 @@ class PersonController(
 
     @PutMapping("/{personId}/ssn")
     fun addSsn(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @RequestBody body: AddSsnRequest
@@ -226,7 +226,7 @@ class PersonController(
 
     @PutMapping("/{personId}/ssn/disable")
     fun disableSsn(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @RequestBody body: DisableSsnRequest
@@ -239,7 +239,7 @@ class PersonController(
 
     @PostMapping("/details/ssn")
     fun getOrCreatePersonBySsn(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: GetOrCreatePersonBySsnRequest
     ): ResponseEntity<PersonJSON> {
@@ -265,7 +265,7 @@ class PersonController(
 
     @GetMapping("/get-deceased/")
     fun getDeceased(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
     ): ResponseEntity<List<PersonJSON>> {
@@ -281,7 +281,7 @@ class PersonController(
 
     @PostMapping("/merge")
     fun mergePeople(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: MergeRequest
     ): ResponseEntity<Unit> {
@@ -296,7 +296,7 @@ class PersonController(
 
     @PostMapping("/create")
     fun createPerson(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: CreatePersonBody
     ): ResponseEntity<UUID> {

@@ -23,7 +23,7 @@ import java.time.LocalDate
 class DecisionsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/decisions")
     fun getDecisionsReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

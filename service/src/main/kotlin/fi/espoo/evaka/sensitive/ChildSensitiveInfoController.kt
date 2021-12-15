@@ -22,7 +22,7 @@ class ChildSensitiveInfoController(
 
     @GetMapping("/children/{childId}/sensitive-info")
     fun getSensitiveInfo(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId,
     ): ChildSensitiveInformation {
