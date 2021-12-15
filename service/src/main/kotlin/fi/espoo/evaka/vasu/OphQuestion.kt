@@ -325,6 +325,7 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                 VasuLanguage.FI -> "Toteutumisen arviointi"
                 VasuLanguage.SV -> "Utvärdering av genomförandet"
             },
+            hideBeforeReady = true,
             questions = listOfNotNull(
                 VasuQuestion.Paragraph(
                     title = when (lang) {
@@ -592,6 +593,7 @@ fun getDefaultLeopsContent() = VasuContent(
         ),
         VasuSection(
             name = "Perusopetukseen siirtyminen",
+            hideBeforeReady = true,
             questions = listOf(
                 VasuQuestion.TextQuestion(
                     name = "Tavoitteiden ja toimenpiteiden toteutumisen arviointi",

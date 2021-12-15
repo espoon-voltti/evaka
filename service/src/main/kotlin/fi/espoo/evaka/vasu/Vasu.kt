@@ -194,7 +194,8 @@ data class VasuContent(
 
 data class VasuSection(
     val name: String,
-    val questions: List<VasuQuestion>
+    val questions: List<VasuQuestion>,
+    val hideBeforeReady: Boolean = false
 ) {
     fun matchesStructurally(section: VasuSection?): Boolean =
         section != null && section.name == this.name && section.questions.size == this.questions.size &&

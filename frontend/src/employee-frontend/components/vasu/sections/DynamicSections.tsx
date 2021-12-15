@@ -5,10 +5,10 @@
 import { cloneDeep } from 'lodash'
 import React, { Dispatch, Fragment, SetStateAction } from 'react'
 import { last } from 'lodash'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
 import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
 import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
@@ -67,19 +67,24 @@ export function DynamicSections({
   editFollowupEntry
 }: Props) {
   const content = sections.map((section, sectionIndex) => {
+    if (section.hideBeforeReady && state === 'DRAFT') {
+      return null
+    }
+
+    const highlightSection = !!setContent && section.hideBeforeReady
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
       <Fragment key={section.name}>
         <SectionContent
           opaque
-          paddingVertical="L"
-          paddingHorizontal="L"
+          highlighted={highlightSection}
           padBottom={!isLastQuestionFollowup}
           data-qa="vasu-document-section"
         >
-          <H2>
+          <H2 noMargin>
             {sectionIndex + 1 + sectionOffset}. {section.name}
           </H2>
+          <Gap size="m" />
           <Questions>
             {section.questions.map((question, questionIndex) => {
               const questionNumber = getQuestionNumber(
@@ -283,11 +288,21 @@ export function DynamicSections({
   return <>{content}</>
 }
 
-const SectionContent = styled(ContentArea)<{ padBottom: boolean }>`
-  /* make selector specific enough */
-  && {
-    padding-bottom: ${(p) => (p.padBottom ? defaultMargins.L : '0px')};
-  }
+export const SectionContent = styled(ContentArea)<{
+  highlighted: boolean
+  padBottom: boolean
+}>`
+  border-left: 5px solid
+    ${({ highlighted, theme }) =>
+      highlighted ? theme.colors.main.medium : 'transparent'};
+  padding: ${defaultMargins.L};
+  padding-left: calc(${defaultMargins.L} - 5px);
+  ${({ padBottom }) =>
+    !padBottom
+      ? css`
+          padding-bottom: 0;
+        `
+      : ''}
 `
 
 const Questions = styled.div`

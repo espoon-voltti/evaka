@@ -183,6 +183,7 @@ export interface VasuPlacement {
 * Generated from fi.espoo.evaka.vasu.VasuSection
 */
 export interface VasuSection {
+  hideBeforeReady: boolean
   name: string
   questions: VasuQuestion[]
 }

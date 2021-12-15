@@ -143,7 +143,8 @@ export default React.memo(function VasuTemplateEditor() {
             ...tmp.content.sections.slice(0, sectionIndex),
             {
               name: 'Uusi osio',
-              questions: []
+              questions: [],
+              hideBeforeReady: false
             },
             ...tmp.content.sections.slice(sectionIndex)
           ]
@@ -192,6 +193,26 @@ export default React.memo(function VasuTemplateEditor() {
               ? {
                   ...s,
                   name: value
+                }
+              : s
+          )
+        }
+      }))
+    )
+  }
+
+  function toggleSectionHideBeforeReady(sectionIndex: number, value: boolean) {
+    setDirty(true)
+    setTemplate((res) =>
+      res.map((tmp) => ({
+        ...tmp,
+        content: {
+          ...tmp.content,
+          sections: tmp.content.sections.map((s, si) =>
+            si === sectionIndex
+              ? {
+                  ...s,
+                  hideBeforeReady: value
                 }
               : s
           )
@@ -442,16 +463,28 @@ export default React.memo(function VasuTemplateEditor() {
                 <Fragment key={`section-${sectionIndex}`}>
                   <ElementContainer>
                     {sectionNameEdit === sectionIndex ? (
-                      <InputField
-                        value={section.name}
-                        onBlur={() => setSectionNameEdit(null)}
-                        onChange={(value) => renameSection(sectionIndex, value)}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') setSectionNameEdit(null)
-                        }}
-                        readonly={readonly}
-                        width={'L'}
-                      />
+                      <>
+                        <InputField
+                          value={section.name}
+                          onBlur={() => setSectionNameEdit(null)}
+                          onChange={(value) =>
+                            renameSection(sectionIndex, value)
+                          }
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') setSectionNameEdit(null)
+                          }}
+                          readonly={readonly}
+                          width={'L'}
+                        />
+                        <Gap size="xs" />
+                        <Checkbox
+                          label={i18n.vasuTemplates.hideSectionBeforeReady}
+                          checked={section.hideBeforeReady}
+                          onChange={(value) =>
+                            toggleSectionHideBeforeReady(sectionIndex, value)
+                          }
+                        />
+                      </>
                     ) : (
                       <H2
                         noMargin
@@ -489,6 +522,15 @@ export default React.memo(function VasuTemplateEditor() {
                         </FixedSpaceRow>
                       </div>
                     )}
+                    {(sectionNameEdit !== sectionIndex || readonly) &&
+                      section.hideBeforeReady && (
+                        <>
+                          <Gap size="xs" />
+                          <QuestionDetails>
+                            {i18n.vasuTemplates.hideSectionBeforeReady}
+                          </QuestionDetails>
+                        </>
+                      )}
                     <Gap />
                     <FixedSpaceColumn>
                       {section.questions.map((question, questionIndex) => (

@@ -2856,6 +2856,7 @@ export const fi = {
     addNewSection: 'Lisää uusi osio',
     addNewQuestion: 'Lisää uusi kysymys',
     addNewParagraph: 'Lisää uusi tekstikappale',
+    hideSectionBeforeReady: 'Osio näytetään vasta laatimisen jälkeen',
     autoGrowingList: 'Automaattisesti kasvava lista',
     questionModal: {
       title: 'Uusi kysymys',

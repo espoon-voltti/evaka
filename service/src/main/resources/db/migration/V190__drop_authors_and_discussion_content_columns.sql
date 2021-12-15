@@ -300,6 +300,7 @@ UPDATE curriculum_template SET content = jsonb_build_object(
     'sections', (content->'sections')::jsonb || jsonb_build_array(CASE
         WHEN language = 'SV' THEN jsonb_build_object(
             'name', 'Utvärdering av genomförandet',
+            'hideBeforeReady', TRUE,
             'questions', jsonb_build_array(
                 jsonb_build_object(
                     'type', 'DATE',
@@ -337,6 +338,7 @@ UPDATE curriculum_template SET content = jsonb_build_object(
         )
         ELSE jsonb_build_object(
             'name', 'Toteutumisen arviointi',
+            'hideBeforeReady', TRUE,
             'questions', jsonb_build_array(
                 jsonb_build_object(
                     'type', 'PARAGRAPH',
@@ -387,6 +389,7 @@ UPDATE curriculum_content SET content = jsonb_build_object(
     'sections', (curriculum_content.content->'sections')::jsonb || jsonb_build_array(CASE
         WHEN language = 'SV' THEN jsonb_build_object(
             'name', 'Utvärdering av genomförandet',
+            'hideBeforeReady', TRUE,
             'questions', jsonb_build_array(
                 jsonb_build_object(
                     'type', 'DATE',
@@ -424,6 +427,7 @@ UPDATE curriculum_content SET content = jsonb_build_object(
         )
         ELSE jsonb_build_object(
             'name', 'Toteutumisen arviointi',
+            'hideBeforeReady', TRUE,
             'questions', jsonb_build_array(
                 jsonb_build_object(
                     'type', 'PARAGRAPH',
