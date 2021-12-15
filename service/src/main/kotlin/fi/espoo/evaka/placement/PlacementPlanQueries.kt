@@ -270,9 +270,22 @@ WHERE daycare_placement_id = :placementId
     createUpdate(
         //language=SQL
         """
+DELETE FROM service_need 
+WHERE placement_id = :placementId
+    AND start_date > :placementTerminationDate
+        """.trimIndent()
+    )
+        .bind("placementId", placementId)
+        .bind("placementTerminationDate", placementTerminationDate)
+        .execute()
+
+    createUpdate(
+        //language=SQL
+        """
 UPDATE service_need 
 SET end_date = :placementTerminationDate 
 WHERE placement_id = :placementId
+    AND daterange(start_date, end_date, '[]') @> :placementTerminationDate::date
         """.trimIndent()
     )
         .bind("placementId", placementId)
