@@ -35,4 +35,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <cpe>cpe:/a:pivotal_software:spring_security</cpe>
         <cpe>cpe:/a:vmware:spring_security</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Workaround for netty-tcnative misidentification
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty-tcnative-classes@.*</packageUrl>
+        <cpe>cpe:/a:netty:netty</cpe>
+    </suppress>
 </suppressions>
