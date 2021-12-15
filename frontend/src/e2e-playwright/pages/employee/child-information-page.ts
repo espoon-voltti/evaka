@@ -106,3 +106,17 @@ export class ChildAssistanceNeed {
     await waitUntilEqual(() => this.#assistanceNeedRow.count(), expectedCount)
   }
 }
+
+export class ChildPlacements {
+  constructor(private page: Page) {}
+
+  #terminatedByGuardian = this.page.find('[data-qa="placement-terminated"]')
+
+  async assertTerminatedByGuardianIsShown() {
+    await this.#terminatedByGuardian.waitUntilVisible()
+  }
+
+  async assertTerminatedByGuardianIsNotShown() {
+    await this.#terminatedByGuardian.waitUntilHidden()
+  }
+}
