@@ -31,6 +31,7 @@ import { UUID } from 'lib-common/types'
 import { UnitContext } from './unit'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { useParams } from 'react-router-dom'
+import { UserContext } from './user'
 
 const PAGE_SIZE = 20
 
@@ -93,6 +94,7 @@ export const MessageContextProvider = React.memo(
     const [page, setPage] = useState<number>(1)
     const [pages, setPages] = useState<number>()
     const { unitInfoResponse, reloadUnreadCounts } = useContext(UnitContext)
+    const { user } = useContext(UserContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
     const selectedUnit = useMemo(
@@ -119,8 +121,9 @@ export const MessageContextProvider = React.memo(
     }>()
 
     useEffect(() => {
-      if (unitId) loadNestedAccounts(unitId)
-    }, [loadNestedAccounts, unitId])
+      const hasPinLogin = user.map((u) => u?.pinLoginActive).getOrElse(false)
+      if (unitId && hasPinLogin) loadNestedAccounts(unitId)
+    }, [loadNestedAccounts, unitId, user])
 
     const groupAccounts: NestedMessageAccount[] = useMemo(() => {
       return nestedAccounts
