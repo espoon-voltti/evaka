@@ -30,6 +30,7 @@ import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { UUID } from 'lib-common/types'
 import { UnitContext } from './unit'
 import { SelectOption } from 'lib-components/molecules/Select'
+import { useParams } from 'react-router-dom'
 
 const PAGE_SIZE = 20
 
@@ -55,9 +56,7 @@ export interface MessagesState {
   pages: number | undefined
   setPages: (pages: number) => void
   groupAccounts: NestedMessageAccount[]
-  selectedSender: MessageAccount | undefined
   selectedAccount: MessageAccount | undefined
-  setSelectedAccount: (account: MessageAccount | undefined) => void
   receivedMessages: Result<MessageThread[]>
   selectedUnit: SelectOption | undefined
   selectedThread: MessageThread | undefined
@@ -75,10 +74,8 @@ const defaultState: MessagesState = {
   setPage: () => undefined,
   pages: undefined,
   setPages: () => undefined,
-  selectedSender: undefined,
   selectedAccount: undefined,
   groupAccounts: [],
-  setSelectedAccount: () => undefined,
   receivedMessages: Loading.of(),
   selectedUnit: undefined,
   selectedThread: undefined,
@@ -117,27 +114,32 @@ export const MessageContextProvider = React.memo(
 
     const loadNestedAccounts = useDebouncedCallback(getNestedAccounts, 100)
 
-    const [selectedAccount, setSelectedAccount] = useState<MessageAccount>()
-    const [selectedSender, setSelectedSender] = useState<MessageAccount>()
-    const [groupAccounts, setGroupAccounts] = useState<NestedMessageAccount[]>(
-      []
-    )
+    const { groupId } = useParams<{
+      groupId: UUID | 'all'
+    }>()
 
     useEffect(() => {
-      if (nestedAccounts.isSuccess) {
-        const groupAccounts = nestedAccounts.value.filter(
-          ({ account, daycareGroup }) =>
-            account.type === 'GROUP' && daycareGroup?.unitId === unitId
+      if (unitId) loadNestedAccounts(unitId)
+    }, [loadNestedAccounts, unitId])
+
+    const groupAccounts: NestedMessageAccount[] = useMemo(() => {
+      return nestedAccounts
+        .map((nested) =>
+          nested.filter(
+            ({ account, daycareGroup }) =>
+              account.type === 'GROUP' && daycareGroup?.unitId === unitId
+          )
         )
-        setGroupAccounts(groupAccounts)
-      }
-    }, [
-      nestedAccounts,
-      unitId,
-      setGroupAccounts,
-      setSelectedSender,
-      setSelectedAccount
-    ])
+        .getOrElse([])
+    }, [nestedAccounts, unitId])
+
+    const selectedAccount: MessageAccount = useMemo(() => {
+      return (
+        groupAccounts.find(
+          ({ daycareGroup }) => daycareGroup?.id === groupId
+        ) ?? groupAccounts[0]
+      )?.account
+    }, [groupAccounts, groupId])
 
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>
@@ -178,10 +180,10 @@ export const MessageContextProvider = React.memo(
         setSelectedThread(thread)
         if (!thread) return
         if (!selectedAccount) throw new Error('Should never happen')
-        const { id: accountId } = selectedAccount || selectedSender
+        const { id: accountId } = selectedAccount
         void markThreadRead(accountId, thread.id)
       },
-      [selectedAccount, selectedSender]
+      [selectedAccount]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
@@ -217,9 +219,7 @@ export const MessageContextProvider = React.memo(
       () => ({
         nestedAccounts,
         loadNestedAccounts,
-        selectedSender,
         selectedAccount,
-        setSelectedAccount,
         groupAccounts,
         page,
         setPage,
@@ -239,7 +239,6 @@ export const MessageContextProvider = React.memo(
         loadNestedAccounts,
         groupAccounts,
         selectedAccount,
-        selectedSender,
         page,
         pages,
         receivedMessages,

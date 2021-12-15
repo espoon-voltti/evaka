@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
@@ -32,8 +32,6 @@ export default function MessagesPage() {
   }
 
   const {
-    loadNestedAccounts,
-    setSelectedAccount,
     groupAccounts,
     receivedMessages,
     selectedThread,
@@ -41,21 +39,9 @@ export default function MessagesPage() {
     selectedAccount
   } = useContext(MessageContext)
 
-  const selectedGroup2 =
+  const selectedGroup =
     groupAccounts.find(({ daycareGroup }) => daycareGroup?.id === groupId) ??
     groupAccounts[0]
-
-  useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
-
-  useEffect(() => {
-    const maybeAccount = (
-      groupAccounts.find(({ daycareGroup }) => daycareGroup?.id === groupId) ??
-      groupAccounts[0]
-    )?.account
-    if (maybeAccount) {
-      setSelectedAccount(maybeAccount)
-    }
-  }, [groupAccounts, setSelectedAccount, groupId])
 
   const { i18n } = useTranslation()
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
@@ -78,10 +64,10 @@ export default function MessagesPage() {
     <>
       <TopBarWithGroupSelector
         selectedGroup={
-          selectedGroup2?.daycareGroup
+          selectedGroup?.daycareGroup
             ? {
-                id: selectedGroup2.daycareGroup.id,
-                name: selectedGroup2.daycareGroup.name
+                id: selectedGroup.daycareGroup.id,
+                name: selectedGroup.daycareGroup.name
               }
             : undefined
         }
