@@ -776,6 +776,7 @@ WHERE employee_id = :userId
             is AuthenticatedUser.Employee -> user.globalRoles
             else -> user.roles
         }
+        @Suppress("DEPRECATION")
         val roles = acl.getRolesForVasuDocument(user, id).roles
         val hasPermissionThroughRole = globalRoles.any { it == UserRole.ADMIN } ||
             roles.any { mapping(it).contains(action) }
