@@ -365,7 +365,10 @@ fun getDefaultLeopsContent() = VasuContent(
         VasuSection(
             name = "Suunnitelma esiopetuksen toteuttamiselle",
             questions = listOf(
-                // TODO: add general paragraph component
+                VasuQuestion.Paragraph(
+                    title = "",
+                    paragraph = "Täytetään yhdessä huoltajien kanssa ja sisällytetään sekä huoltajien että ryhmän henkilöstön näkökulmat. Sisältää myös mahdollisen lapsen tarvitseman kasvun ja oppimisen tuen toteuttamisen suunnitelman."
+                ),
                 VasuQuestion.TextQuestion(
                     name = "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen",
                     info = "Tähän kohtaan kirjataan lapsen vahvuuksia, kiinnostuksen kohteita ja tarpeita, jotka otetaan huomioon esiopetusryhmän toiminnan suunnittelussa ja toteuttamisessa.",
@@ -439,12 +442,11 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     value = null
                 ),
-                // TODO: convert to a "date question"
-                VasuQuestion.TextQuestion(
+                VasuQuestion.DateQuestion(
                     name = "Viimeisin seuranta",
                     info = "Päivitä tähän viimeisin taitotason seurannan ajankohta.",
-                    multiline = false,
-                    value = ""
+                    tracked = false,
+                    value = null
                 ),
                 VasuQuestion.MultiSelectQuestion(
                     name = "Perusopetukseen valmistavan opetuksen toteuttaminen",
