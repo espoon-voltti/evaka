@@ -343,8 +343,9 @@ const sv: Translations = {
               <P>
                 Barn deltar i förskoleundervisning året innan läroplikten
                 börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden
-                till förskoleundervisningen 2021–2022 är 8.–20.1.2021. Förskolan
-                börjar i <strong>11.8.2021</strong>. Beslutet delges inom mars i{' '}
+                till förskoleundervisningen 2022–2023 är 10.–21.1.2022.
+                Förskolan börjar i <strong>11.8.2022</strong>. Beslutet delges
+                inom mars i{' '}
                 <a
                   href="https://www.suomi.fi/meddelanden"
                   target="_blank"
@@ -598,7 +599,7 @@ const sv: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Förskolan börjar i 11.8.2021. Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2021 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.'
+              'Förskolan börjar i 11.8.2022. Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2022 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.'
             ],
             CLUB: [
               'Klubbar följer förskolans arbetstid och semester. Klubbens verksamhetsperiod är från augusti till slutet av maj och ansökas om separat för varje operationsperiod. Olika klubbar möts olika veckodagar.'
@@ -732,12 +733,12 @@ const sv: Translations = {
             'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
           CLUB: 'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
           PRESCHOOL:
-            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.'
+            'Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom  förskoleundervisning.'
         },
         preparatory:
           'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen.',
         preparatoryInfo:
-          'Den förberedande undervisningen för förskoleelever är avsedd för barn med invandrarbakgrund, återinvandrare, barn i tvåspråkiga familjer (med undantag av finska-svenska) och adoptivbarn som behöver stöd i det finska språket innan de inleder den grundläggande utbildningen. Barnet har rätt att delta i undervisning som förbereder för den grundläggande utbildningen under ett läsårs tid.  Förberedande undervisning ordnas utöver förskoleundervisning i genomsnitt ½–1 timme per dag. Undervisningen är avgiftsfri.'
+          'Den förberedande undervisningen för förskoleelever är avsedd för barn med invandrarbakgrund, återinvandrare, barn i tvåspråkiga familjer (med undantag av finska-svenska) och adoptivbarn som behöver stöd i det finska språket innan de inleder den grundläggande utbildningen. Barnet har rätt att delta i undervisning som förbereder för den grundläggande utbildningen under ett läsårs tid. Förberedande undervisning ordnas 5 timmar per dag. Undervisningen är avgiftsfri.'
       },
       unitPreference: {
         title: 'Ansökningsönskemål',

@@ -344,9 +344,9 @@ const en: Translations = {
               <P>
                 Pre-primary education is attended one year before the start of
                 compulsory education. Pre-primary education is free of charge.
-                Enrolment for pre-primary education in the 2021–2022 school year
-                takes place on 8–20 January 2021. Finnish and swedish
-                pre-primary education begins on <strong>11 August 2021</strong>.
+                Enrolment for pre-primary education in the 2022–2023 school year
+                takes place on 10–21 January 2022. Finnish and swedish
+                pre-primary education begins on <strong>11 August 2022</strong>.
                 The decisions will be sent to the{' '}
                 <a
                   href="https://www.suomi.fi/messages"
@@ -614,7 +614,7 @@ const en: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Finnish and Swedish pre-primary education begins on 11 August 2021. If you need early childhood education starting from 1 August 2021 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.'
+              'Finnish and Swedish pre-primary education begins on 11 August 2022. If you need early childhood education starting from 1 August 2022 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.'
             ],
             CLUB: [
               'Clubs follow pre-primary education work and vacation times.'
@@ -768,12 +768,12 @@ const en: Translations = {
             'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           PRESCHOOL:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.'
+            'If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in pre-primary education.'
         },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
         preparatoryInfo:
-          'The preparatory education for children in the pre-primary education age is intended for children with an immigrant background, Finnish returnee children, children of bilingual families (excl. Finnish/Swedish) and adopted children who need support with the Finnish language before their transition to basic education. Preparatory education is provided, in addition to pre-primary education, on average for 1 hour per day. Education is free of charge.'
+          'The preparatory education for children in the pre-primary education age is intended for children with an immigrant background, Finnish returnee children, children of bilingual families (excl. Finnish/Swedish) and adopted children who need support with the Finnish language before their transition to basic education. Preparatory education is provided for 5 hours per day. Education is free of charge.'
       },
       unitPreference: {
         title: 'Preferred units',
