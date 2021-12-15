@@ -34,6 +34,7 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { getAttachmentBlob } from '../attachments'
 import { OverlayContext } from '../overlay/state'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 
 const TitleRow = styled.div`
   display: flex;
@@ -80,7 +81,11 @@ const ReplyToThreadButton = styled(InlineButton)`
   padding-left: 28px;
 `
 
-function SingleMessage({ message }: { message: Message }) {
+const SingleMessage = React.memo(function SingleMessage({
+  message
+}: {
+  message: Message
+}) {
   const i18n = useTranslation()
   const { setErrorMessage } = useContext(OverlayContext)
 
@@ -124,7 +129,7 @@ function SingleMessage({ message }: { message: Message }) {
       )}
     </MessageContainer>
   )
-}
+})
 
 const AutoScrollPositionSpan = styled.span<{ top: string }>`
   position: absolute;
@@ -156,11 +161,8 @@ export default React.memo(function ThreadView({
   useEffect(() => setReplyEditorVisible(false), [threadId])
 
   const autoScrollRef = useRef<HTMLSpanElement>(null)
-  const scrollToBottom = () => {
-    autoScrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
   useEffect(() => {
-    scrollToBottom()
+    scrollRefIntoView(autoScrollRef)
   }, [messages, replyEditorVisible])
 
   const onUpdateContent = useCallback(

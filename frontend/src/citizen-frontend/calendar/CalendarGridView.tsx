@@ -16,6 +16,7 @@ import { DailyReservationData } from 'lib-common/generated/api-types/reservation
 import { Reservations } from './calendar-elements'
 import { asWeeklyData, WeeklyData } from './CalendarListView'
 import { headerHeightDesktop } from 'citizen-frontend/header/const'
+import { scrollToPos } from 'lib-common/utils/scrolling'
 
 export interface Props {
   dailyData: DailyReservationData[]
@@ -48,11 +49,7 @@ export default React.memo(function CalendarGridView({
       const offset =
         headerHeightDesktop + (headerRef.current?.clientHeight ?? 0) + 16
 
-      window.scrollTo({
-        left: 0,
-        top: pos - offset,
-        behavior: 'smooth'
-      })
+      scrollToPos({ left: 0, top: pos - offset })
     }
   }, [])
 

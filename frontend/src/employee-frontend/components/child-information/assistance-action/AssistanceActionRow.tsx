@@ -14,10 +14,10 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
-import { scrollToRef } from '../../../utils'
 import { removeAssistanceAction } from '../../../api/child/assistance-actions'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import { scrollToRef } from 'lib-common/utils/scrolling'
 
 export interface Props {
   assistanceAction: AssistanceAction

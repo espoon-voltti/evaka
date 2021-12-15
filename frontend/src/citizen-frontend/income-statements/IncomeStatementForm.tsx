@@ -59,6 +59,7 @@ import LocalDate from 'lib-common/local-date'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import { errorToInputInfo } from '../input-info-helper'
 import { OtherIncome } from 'lib-common/generated/enums'
+import { scrollToRef } from 'lib-common/utils/scrolling'
 
 const ActionContainer = styled.div`
   display: flex;
@@ -215,14 +216,7 @@ export default React.memo(
 
     useImperativeHandle(ref, () => ({
       scrollToErrors() {
-        // Use requestAnimationFrame to make sure that the scroll target has been
-        // added to the DOM
-        requestAnimationFrame(() => {
-          if (!scrollTarget.current) return
-          const top =
-            window.scrollY + scrollTarget.current.getBoundingClientRect().top
-          window.scrollTo({ top, left: 0, behavior: 'smooth' })
-        })
+        scrollToRef(scrollTarget)
       }
     }))
 

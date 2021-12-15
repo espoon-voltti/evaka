@@ -11,7 +11,6 @@ import AssistanceNeedForm from '../../components/child-information/assistance-ne
 import { UIContext } from '../../state/ui'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import styled from 'styled-components'
-import { scrollToRef } from '../../utils'
 import {
   getAssistanceBasisOptions,
   getAssistanceNeeds
@@ -19,6 +18,7 @@ import {
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
+import { scrollToRef } from 'lib-common/utils/scrolling'
 
 const TitleRow = styled.div`
   display: flex;

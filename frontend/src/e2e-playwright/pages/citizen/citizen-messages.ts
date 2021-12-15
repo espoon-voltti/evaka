@@ -15,6 +15,7 @@ export default class CitizenMessagesPage {
   )
   #threadListItem = this.page.find('[data-qa="thread-list-item"]')
   #threadTitle = this.page.find('[data-qa="thread-reader-title"]')
+  #inboxEmpty = this.page.find('[data-qa="inbox-empty"]')
   #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
   #openReplyEditorButton = this.page.find(`[data-qa="${this.replyButtonTag}"]`)
   #sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
@@ -26,6 +27,10 @@ export default class CitizenMessagesPage {
 
   async getMessageCount() {
     return this.#threadContent.count()
+  }
+
+  async assertInboxIsEmpty() {
+    await this.#inboxEmpty.waitUntilVisible()
   }
 
   async assertThreadContent(title: string, content: string) {

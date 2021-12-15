@@ -13,6 +13,7 @@ test-results
 junit.xml
 .DS_Store
 .vscode
+screenshots/
 traces/
 .yalc
 yalc.lock

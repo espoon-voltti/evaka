@@ -7,8 +7,9 @@ import Title from 'lib-components/atoms/Title'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp, faPen, faTrash } from 'lib-icons'
-import React, { createRef, RefObject, useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 
 const Container = styled.div`
   display: flex;
@@ -54,15 +55,13 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
   startEditing,
   startDeleting
 }: Props) {
-  const elRef: RefObject<HTMLDivElement> = createRef()
+  const elRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (isOpen && elRef.current) {
-      elRef.current.scrollIntoView({
-        behavior: 'smooth'
-      })
+    if (isOpen) {
+      scrollRefIntoView(elRef)
     }
-  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   return (
     <Container ref={elRef}>

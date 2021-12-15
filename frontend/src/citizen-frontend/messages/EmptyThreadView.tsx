@@ -18,7 +18,7 @@ interface Props {
 export default React.memo(function EmptyThreadView({ inboxEmpty }: Props) {
   const i18n = useTranslation()
   return inboxEmpty ? (
-    <EmptyThreadViewContainer>
+    <EmptyThreadViewContainer data-qa="inbox-empty">
       <FontAwesomeIcon
         icon={faInbox}
         size={'7x'}

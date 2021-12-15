@@ -150,7 +150,7 @@ describe('Sending and receiving messages', () => {
 
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 0)
+      await citizenMessagesPage.assertInboxIsEmpty()
     })
 
     test('Citizen sends a message to the unit supervisor', async () => {
