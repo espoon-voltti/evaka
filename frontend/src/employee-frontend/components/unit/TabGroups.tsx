@@ -47,7 +47,9 @@ export default React.memo(function TabGroups({
     ([unitInformation, unitData, groupPermittedActions]) => (
       <FixedSpaceColumn>
         <ContentArea opaque>
-          <TerminatedPlacements recentlyTerminatedPlacements={unitData.recentlyTerminatedPlacements} />
+          <TerminatedPlacements
+            recentlyTerminatedPlacements={unitData.recentlyTerminatedPlacements}
+          />
         </ContentArea>
 
         <ContentArea opaque>

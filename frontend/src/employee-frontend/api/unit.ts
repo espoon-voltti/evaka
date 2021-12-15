@@ -14,7 +14,8 @@ import {
   MailingAddress,
   Occupancy,
   OccupancyType,
-  Stats, TerminatedPlacement,
+  Stats,
+  TerminatedPlacement,
   Unit,
   UnitLanguage,
   UnitManager,
@@ -205,9 +206,10 @@ export async function getUnitData(
       missingGroupPlacements: response.data.missingGroupPlacements.map(
         mapMissingGroupPlacementJson
       ),
-      recentlyTerminatedPlacements: response.data.recentlyTerminatedPlacements.map(
-        mapRecentlyTerminatedPlacementJson
-      ),
+      recentlyTerminatedPlacements:
+        response.data.recentlyTerminatedPlacements.map(
+          mapRecentlyTerminatedPlacementJson
+        ),
       unitOccupancies:
         response.data.unitOccupancies &&
         mapUnitOccupancyJson(response.data.unitOccupancies),

@@ -11,7 +11,7 @@ import CareTypeLabel, {
   careTypesFromPlacementType
 } from '../../../components/common/CareTypeLabel'
 import { Translations, useTranslation } from '../../../state/i18n'
-import {TerminatedPlacement} from '../../../types/unit'
+import { TerminatedPlacement } from '../../../types/unit'
 import { formatName } from '../../../utils'
 
 function renderTerminatedPlacementRow(
@@ -49,7 +49,9 @@ type Props = {
   recentlyTerminatedPlacements: TerminatedPlacement[]
 }
 
-export default React.memo(function TerminatedPlacements({ recentlyTerminatedPlacements }: Props) {
+export default React.memo(function TerminatedPlacements({
+  recentlyTerminatedPlacements
+}: Props) {
   const { i18n } = useTranslation()
 
   const sortedRows = _.sortBy(recentlyTerminatedPlacements, [
