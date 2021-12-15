@@ -78,7 +78,7 @@ export function EditableAuthorsSection({
       }))
 
   return (
-    <ContentArea opaque>
+    <ContentArea opaque paddingVertical="L" paddingHorizontal="L">
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>
@@ -173,7 +173,7 @@ export function AuthorsSection({
   const t = translations.staticSections.authors
 
   return (
-    <ContentArea opaque>
+    <ContentArea opaque paddingVertical="L" paddingHorizontal="L">
       <H2>
         {sectionIndex + 1}. {t.title}
       </H2>
