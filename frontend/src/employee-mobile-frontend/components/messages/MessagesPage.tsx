@@ -116,7 +116,24 @@ export default function MessagesPage() {
         </ContentArea>
       ))}
     </>
-  ) : null
+  ) : (
+    <ContentArea
+      opaque
+      paddingVertical={'zero'}
+      paddingHorizontal={'zero'}
+      data-qa={`messages-page-content-area`}
+    >
+      <HeaderContainer>
+        <H1 noMargin={true}>{i18n.messages.title}</H1>
+      </HeaderContainer>
+      <EmptyMessageFolder
+        loading={receivedMessages.isLoading}
+        iconColor={colors.greyscale.medium}
+        text={i18n.messages.emptyInbox}
+      />
+      <BottomNavBar selected="messages" />
+    </ContentArea>
+  )
 }
 
 export const HeaderContainer = styled.div`
