@@ -169,6 +169,7 @@ describe('Message editor in child page', () => {
     await pinLoginPage.login(employeeName, pin)
     await messageEditorPage.draftNewMessage('Foo', 'Bar')
     await messageEditorPage.sendEditedMessage()
+    await childPage.waitUntilLoaded()
   })
 })
 
