@@ -62,6 +62,7 @@ class MessageController(
         @PathVariable unitId: DaycareId
     ): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
         return if (user is AuthenticatedUser.MobileDevice && user.employeeId != null) {
             db.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) }
@@ -111,6 +112,7 @@ class MessageController(
         @PathVariable unitId: DaycareId
     ): Set<UnreadCountByAccountAndGroup> {
         Audit.MessagingUnreadMessagesRead.log()
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
         return db.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) }
     }
@@ -240,6 +242,7 @@ class MessageController(
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(
             UserRole.ADMIN,
             UserRole.UNIT_SUPERVISOR,
@@ -254,7 +257,9 @@ class MessageController(
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
         when (user) {
             is AuthenticatedUser.MobileDevice -> if (user.employeeId == null) throw Forbidden()
-            else -> user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+            else ->
+                @Suppress("DEPRECATION")
+                user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         }
     }
 

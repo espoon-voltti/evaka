@@ -227,6 +227,7 @@ WHERE employee_id = :userId
     )
 
     fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
+        @Suppress("DEPRECATION")
         EmployeeFeatures(
             applications = user.hasOneOfRoles(
                 UserRole.ADMIN,
@@ -268,6 +269,7 @@ WHERE employee_id = :userId
         )
 
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
+        @Suppress("DEPRECATION")
         return acl.getRolesForPilotFeature(user, PilotFeature.MESSAGING)
             .hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
@@ -352,16 +354,18 @@ WHERE employee_id = :userId
     private fun hasPermissionFor(user: AuthenticatedUser, action: Action.ApplicationNote, id: ApplicationNoteId) =
         user is AuthenticatedUser.Employee && when (action) {
             Action.ApplicationNote.UPDATE,
-            Action.ApplicationNote.DELETE -> user.hasOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.SERVICE_WORKER
-            ) || Database(jdbi).connect { db -> db.read { it.getApplicationNoteCreatedBy(id) == user.id } }
+            Action.ApplicationNote.DELETE ->
+                @Suppress("DEPRECATION")
+                user.hasOneOfRoles(
+                    UserRole.ADMIN,
+                    UserRole.SERVICE_WORKER
+                ) || Database(jdbi).connect { db -> db.read { it.getApplicationNoteCreatedBy(id) == user.id } }
         }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForAssistanceAction(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForAssistanceAction(user, id).roles },
             action = action,
             mapping = permittedRoleActions::assistanceActionActions
         )
@@ -370,7 +374,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceNeed, id: AssistanceNeedId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForAssistanceNeed(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForAssistanceNeed(user, id).roles },
             action = action,
             mapping = permittedRoleActions::assistanceNeedActions
         )
@@ -539,7 +543,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupPickup, id: BackupPickupId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForBackupPickup(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForBackupPickup(user, id).roles },
             action = action,
             mapping = permittedRoleActions::backupPickupActions
         )
@@ -559,7 +563,7 @@ WHERE employee_id = :userId
         }
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForChild(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForChild(user, id).roles },
             action = action,
             mapping = permittedRoleActions::childActions
         )
@@ -580,7 +584,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Decision, id: DecisionId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForDecision(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForDecision(user, id).roles },
             action = action,
             mapping = permittedRoleActions::decisionActions
         )
@@ -609,7 +613,7 @@ WHERE employee_id = :userId
                 Action.PedagogicalDocument.UPDATE ->
                     assertPermission(
                         user = user,
-                        getAclRoles = { acl.getRolesForPedagogicalDocument(user, id).roles },
+                        getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForPedagogicalDocument(user, id).roles },
                         action = action,
                         mapping = permittedRoleActions::pedagogicalDocumentActions
                     )
@@ -692,7 +696,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForMobileDevice(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForMobileDevice(user, id).roles },
             action = action,
             mapping = permittedRoleActions::mobileDeviceActions
         )
@@ -701,7 +705,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Pairing, id: PairingId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForPairing(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForPairing(user, id).roles },
             action = action,
             mapping = permittedRoleActions::pairingActions
         )
@@ -715,7 +719,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.ServiceNeed, id: ServiceNeedId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForServiceNeed(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForServiceNeed(user, id).roles },
             action = action,
             mapping = permittedRoleActions::serviceNeedActions
         )
@@ -729,7 +733,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: VasuDocumentId) {
         assertPermission(
             user = user,
-            getAclRoles = { acl.getRolesForVasuDocument(user, id).roles },
+            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForVasuDocument(user, id).roles },
             action = action,
             mapping = permittedRoleActions::vasuDocumentActions
         )
@@ -749,7 +753,7 @@ WHERE employee_id = :userId
             return
         }
 
-        val roles = acl.getRolesForVasuDocument(user, id.first).roles
+        val roles = @Suppress("DEPRECATION") acl.getRolesForVasuDocument(user, id.first).roles
         if (roles.any { mapping(it).contains(action) }) {
             return
         }

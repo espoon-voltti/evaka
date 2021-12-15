@@ -32,6 +32,7 @@ class OccupancyController(private val acl: AccessControlList) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): RealtimeOccupancy {
         Audit.OccupancyRead.log(targetId = unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
@@ -53,6 +54,7 @@ class OccupancyController(private val acl: AccessControlList) {
         @RequestParam type: OccupancyType
     ): OccupancyResponse {
         Audit.OccupancyRead.log(targetId = unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
@@ -77,6 +79,7 @@ class OccupancyController(private val acl: AccessControlList) {
         @RequestParam type: OccupancyType
     ): List<OccupancyResponseGroupLevel> {
         Audit.OccupancyRead.log(targetId = unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 

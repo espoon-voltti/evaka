@@ -119,6 +119,7 @@ class VasuTemplateController(
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
         Audit.VasuTemplateRead.log(id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         accessControl.requirePermissionFor(user, Action.VasuTemplate.READ, id)
 

@@ -74,6 +74,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId
     ): AttendanceResponse {
         Audit.ChildAttendancesRead.log(targetId = unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { it.getAttendancesResponse(unitId, HelsinkiDateTime.now()) }
@@ -92,6 +93,7 @@ class ChildAttendanceController(
         @RequestBody body: ArrivalRequest
     ) {
         Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         db.transaction { tx ->
@@ -119,6 +121,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID
     ) {
         Audit.ChildAttendancesReturnToComing.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         db.transaction { tx ->
@@ -148,6 +151,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID
     ): List<AbsenceThreshold> {
         Audit.ChildAttendancesDepartureRead.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { tx ->
@@ -186,6 +190,7 @@ class ChildAttendanceController(
         @RequestBody body: DepartureRequest
     ) {
         Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         db.transaction { tx ->
@@ -241,6 +246,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID
     ) {
         Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         db.transaction { tx ->
@@ -274,6 +280,7 @@ class ChildAttendanceController(
         @RequestBody body: FullDayAbsenceRequest
     ) {
         Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         db.transaction { tx ->
@@ -310,6 +317,7 @@ class ChildAttendanceController(
         @RequestBody body: AbsenceRangeRequest
     ) {
         Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         db.transaction { tx ->
@@ -337,6 +345,7 @@ class ChildAttendanceController(
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
         Audit.AbsenceDeleteRange.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
         return db.transaction { tx -> tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)) }
     }

@@ -42,6 +42,7 @@ class EmployeeController {
     @GetMapping
     fun getEmployees(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         return ResponseEntity.ok(db.read { it.getEmployees() }.sortedBy { it.email })
     }
@@ -49,6 +50,7 @@ class EmployeeController {
     @GetMapping("/finance-decision-handler")
     fun getFinanceDecisionHandlers(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
         return ResponseEntity.ok(db.read { it.getFinanceDecisionHandlers() }.sortedBy { it.email })
     }
@@ -57,6 +59,7 @@ class EmployeeController {
     fun getEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Employee> {
         Audit.EmployeeRead.log(targetId = id)
         if (user.id != id.raw) {
+            @Suppress("DEPRECATION")
             user.requireOneOfRoles(
                 UserRole.ADMIN,
                 UserRole.SERVICE_WORKER,
@@ -82,6 +85,7 @@ class EmployeeController {
         @RequestBody body: EmployeeUpdate
     ): ResponseEntity<Unit> {
         Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
         db.transaction {
@@ -101,6 +105,7 @@ class EmployeeController {
         @PathVariable(value = "id") id: UUID
     ): ResponseEntity<EmployeeWithDaycareRoles> {
         Audit.EmployeeRead.log(targetId = id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.read { it.getEmployeeWithRoles(id) }
@@ -111,6 +116,7 @@ class EmployeeController {
     @PostMapping("")
     fun createEmployee(db: Database.Connection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         return ResponseEntity.ok().body(db.transaction { it.createEmployee(employee) })
     }
@@ -118,6 +124,7 @@ class EmployeeController {
     @DeleteMapping("/{id}")
     fun deleteEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { it.deleteEmployee(id) }
         return ResponseEntity.ok().build()
@@ -157,6 +164,7 @@ class EmployeeController {
         @RequestBody body: SearchEmployeeRequest
     ): ResponseEntity<Paged<EmployeeWithDaycareRoles>> {
         Audit.EmployeesRead.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         return db.read { tx ->
             getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")

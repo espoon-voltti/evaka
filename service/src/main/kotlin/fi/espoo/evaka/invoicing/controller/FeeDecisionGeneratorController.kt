@@ -32,6 +32,7 @@ class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner<
     @PostMapping("/generate")
     fun generateDecisions(db: Database.Connection, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         generateAllStartingFrom(
             db,

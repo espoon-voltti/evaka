@@ -269,7 +269,9 @@ class ApplicationControllerV2(
                 personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
 
             // todo: can this be refactored under Action model?
+            @Suppress("DEPRECATION")
             val roles = acl.getRolesForApplication(user, applicationId)
+            @Suppress("DEPRECATION")
             val attachments: List<ApplicationAttachment> = when {
                 roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
                     tx.getApplicationAttachments(applicationId)

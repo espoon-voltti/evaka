@@ -41,6 +41,7 @@ class ChildImageController(
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<Unit> {
         Audit.ChildImageUpload.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 
@@ -56,6 +57,7 @@ class ChildImageController(
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildImageDelete.log(targetId = childId)
+        @Suppress("DEPRECATION")
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 
@@ -73,6 +75,7 @@ class ChildImageController(
         Audit.ChildImageDownload.log(targetId = imageId)
 
         val image = db.connect { dbc -> dbc.read { it.getChildImage(imageId) } }
+        @Suppress("DEPRECATION")
         acl.getRolesForChild(user, image.childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 

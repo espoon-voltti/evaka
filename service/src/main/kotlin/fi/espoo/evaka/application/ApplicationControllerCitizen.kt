@@ -55,6 +55,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser
     ): ResponseEntity<List<ApplicationsOfChild>> {
         Audit.ApplicationRead.log(targetId = user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         return ResponseEntity.ok(
             db.read { tx ->
@@ -83,6 +84,7 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<ApplicationDetails> {
         Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         val application = db.transaction { tx ->
@@ -103,6 +105,7 @@ class ApplicationControllerCitizen(
         @RequestBody body: CreateApplicationBody
     ): ResponseEntity<ApplicationId> {
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.transaction { tx ->
@@ -141,6 +144,7 @@ class ApplicationControllerCitizen(
         @PathVariable childId: UUID
     ): ResponseEntity<Map<ApplicationType, Boolean>> {
         Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.read { tx ->
@@ -163,6 +167,7 @@ class ApplicationControllerCitizen(
         @PathVariable childId: UUID
     ): ResponseEntity<Map<ApplicationType, Boolean>> {
         Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.read { tx ->
@@ -184,6 +189,7 @@ class ApplicationControllerCitizen(
         @RequestBody applicationForm: ApplicationFormUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         db.transaction {
@@ -207,6 +213,7 @@ class ApplicationControllerCitizen(
         @RequestBody applicationForm: ApplicationFormUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         db.transaction {
@@ -229,6 +236,7 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         Audit.ApplicationDelete.log(targetId = applicationId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         db.transaction { tx ->
@@ -258,6 +266,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/decisions")
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         return ResponseEntity.ok(db.read { it.getOwnDecisions(user.id) })
     }
@@ -269,6 +278,7 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<Decision>> {
         Audit.DecisionReadByApplication.log(targetId = applicationId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.read { tx ->
@@ -322,6 +332,7 @@ class ApplicationControllerCitizen(
         @PathVariable id: DecisionId
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.transaction { tx ->

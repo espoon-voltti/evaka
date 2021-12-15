@@ -34,6 +34,7 @@ class VtjController(private val personService: PersonService, private val access
         @PathVariable(value = "personId") personId: UUID
     ): CitizenUserDetails {
         Audit.VtjRequest.log(targetId = personId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {

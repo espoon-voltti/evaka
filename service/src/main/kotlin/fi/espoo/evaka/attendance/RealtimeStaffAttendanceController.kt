@@ -43,6 +43,7 @@ class RealtimeStaffAttendanceController(
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
 
         // todo: convert to action auth
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
 
         return db.read {
@@ -70,6 +71,7 @@ class RealtimeStaffAttendanceController(
         Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
 
         // todo: convert to action auth
+        @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
@@ -101,8 +103,10 @@ class RealtimeStaffAttendanceController(
         Audit.StaffAttendanceDepartureCreate.log()
 
         // todo: convert to action auth
+        @Suppress("DEPRECATION")
         val attendance = db.read { it.getStaffAttendance(attendanceId) }
             ?: throw NotFound("attendance not found")
+        @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
         ac.verifyPinCode(attendance.employeeId, body.pinCode)
 
@@ -127,6 +131,7 @@ class RealtimeStaffAttendanceController(
     ): StaffAttendanceExternalId {
         Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
         // todo: convert to action auth
+        @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
         return db.transaction {
             it.markExternalStaffArrival(
@@ -153,6 +158,7 @@ class RealtimeStaffAttendanceController(
         // todo: convert to action auth
         val attendance = db.read { it.getExternalStaffAttendance(body.attendanceId) }
             ?: throw NotFound("attendance not found")
+        @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
 
         db.transaction {

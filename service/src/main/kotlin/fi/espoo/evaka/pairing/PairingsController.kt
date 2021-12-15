@@ -50,6 +50,8 @@ class PairingsController(
         @RequestBody body: PostPairingReq
     ): ResponseEntity<Pairing> {
         Audit.PairingInit.log(targetId = body.id)
+        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION")
         when (body) {
             is PostPairingReq.Unit ->
                 acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
@@ -118,6 +120,7 @@ class PairingsController(
         Audit.PairingResponse.log(targetId = id)
         val (unitId, employeeId) = db.read { it.fetchPairingReferenceIds(id) }
         try {
+            @Suppress("DEPRECATION")
             when {
                 unitId != null -> acl.getRolesForPairing(user, id)
                     .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)

@@ -65,6 +65,7 @@ class InvoiceController(
         @RequestBody body: SearchInvoicesRequest
     ): ResponseEntity<Paged<InvoiceSummary>> {
         Audit.InvoicesSearch.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -90,6 +91,7 @@ class InvoiceController(
     @PostMapping("/create-drafts")
     fun createDraftInvoices(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { it.createAllDraftInvoices() }
         return ResponseEntity.noContent().build()
@@ -98,6 +100,7 @@ class InvoiceController(
     @PostMapping("/delete-drafts")
     fun deleteDraftInvoices(db: Database.Connection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { it.deleteDraftInvoices(invoiceIds) }
         return ResponseEntity.noContent().build()
@@ -114,6 +117,7 @@ class InvoiceController(
         @RequestBody invoiceIds: List<UUID>
     ): ResponseEntity<Unit> {
         Audit.InvoicesSend.log(targetId = invoiceIds)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction {
             service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
@@ -128,6 +132,7 @@ class InvoiceController(
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
             val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
@@ -139,6 +144,7 @@ class InvoiceController(
     @PostMapping("/mark-sent")
     fun markInvoicesSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { it.markManuallySent(user, invoiceIds) }
         return ResponseEntity.noContent().build()
@@ -147,6 +153,7 @@ class InvoiceController(
     @GetMapping("/{uuid}")
     fun getInvoice(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
         Audit.InvoicesRead.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         val res = db.read { it.getDetailedInvoice(parsedUuid) }
@@ -161,6 +168,7 @@ class InvoiceController(
         @PathVariable uuid: String
     ): ResponseEntity<Wrapper<List<Invoice>>> {
         Audit.InvoicesRead.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         val res = db.read { it.getHeadOfFamilyInvoices(parsedUuid) }
@@ -175,6 +183,7 @@ class InvoiceController(
         @RequestBody invoice: Invoice
     ): ResponseEntity<Unit> {
         Audit.InvoicesUpdate.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         db.transaction { service.updateInvoice(it, parsedUuid, invoice) }
@@ -183,6 +192,7 @@ class InvoiceController(
 
     @GetMapping("/codes")
     fun getInvoiceCodes(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val codes = db.read { it.getInvoiceCodes() }
         return ResponseEntity.ok(Wrapper(codes))

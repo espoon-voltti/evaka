@@ -40,6 +40,7 @@ class StaffAttendanceController(
         @PathVariable unitId: DaycareId
     ): ResponseEntity<UnitStaffAttendance> {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
         val result = staffAttendanceService.getUnitAttendancesForDate(db, unitId, LocalDate.now())
         return ResponseEntity.ok(result)
@@ -54,6 +55,7 @@ class StaffAttendanceController(
         @PathVariable groupId: GroupId
     ): ResponseEntity<Wrapper<StaffAttendanceForDates>> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE, UserRole.SPECIAL_EDUCATION_TEACHER)
         val result = staffAttendanceService.getGroupAttendancesByMonth(db, year, month, groupId)
@@ -68,6 +70,7 @@ class StaffAttendanceController(
         @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
         if (staffAttendance.count == null) {

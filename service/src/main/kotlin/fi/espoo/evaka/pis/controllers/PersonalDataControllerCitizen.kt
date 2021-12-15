@@ -24,6 +24,7 @@ class PersonalDataControllerCitizen {
     @PutMapping
     fun updatePersonalData(db: Database.Connection, user: AuthenticatedUser.Citizen, @RequestBody body: PersonalDataUpdate) {
         Audit.PersonalDataUpdate.log(targetId = user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         db.transaction {
