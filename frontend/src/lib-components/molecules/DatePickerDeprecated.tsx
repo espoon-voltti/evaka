@@ -56,32 +56,6 @@ const StyledInput = styled.input`
   }
 `
 
-interface CustomProps extends ReactDatePickerProps {
-  onClick: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => void
-  placeholder?: string
-}
-
-// onChange is typed as any because there is conflict between ReactDatePickers types and the type that input wants
-function CustomInput(
-  { value, onChange, onFocus, placeholder }: Partial<CustomProps>,
-  ref: React.Ref<HTMLInputElement>
-) {
-  return (
-    <StyledInput
-      ref={ref}
-      value={value}
-      onChange={
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
-        onChange as any
-      }
-      onFocus={onFocus}
-      placeholder={placeholder}
-    />
-  )
-}
-
-const CustomInputRef = React.forwardRef(CustomInput)
-
 const DatePickerContainer = styled.div`
   &.full-width {
     width: 100%;
@@ -167,7 +141,6 @@ export function DatePickerDeprecated({
   className,
   'data-qa': dataQa
 }: DatePickerProps) {
-  const ref = React.createRef<HTMLInputElement>()
   return (
     <DatePickerContainer
       className={`${type} ${className ? className : ''}`}
@@ -176,7 +149,7 @@ export function DatePickerDeprecated({
       <ReactDatePicker
         {...defaultProps}
         locale={fi}
-        customInput={<CustomInputRef ref={ref} />}
+        customInput={<StyledInput />}
         selected={date?.toSystemTzDate()}
         isClearable={false}
         dateFormat={dateFormat}
@@ -212,7 +185,6 @@ export function DatePickerClearableDeprecated({
   className,
   'data-qa': dataQa
 }: DatePickerClearableProps) {
-  const ref = React.createRef<HTMLInputElement>()
   return (
     <DatePickerContainer
       className={`${type} ${className ? className : ''}`}
@@ -221,7 +193,7 @@ export function DatePickerClearableDeprecated({
       <ReactDatePicker
         {...defaultProps}
         locale={fi}
-        customInput={<CustomInputRef ref={ref} />}
+        customInput={<StyledInput />}
         selected={date?.toSystemTzDate()}
         isClearable={true}
         dateFormat={dateFormat}
