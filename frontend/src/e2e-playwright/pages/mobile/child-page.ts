@@ -9,6 +9,7 @@ import { Child } from 'e2e-test-common/dev-api/types'
 export default class MobileChildPage {
   constructor(private readonly page: Page) {}
 
+  #childName = this.page.find('[data-qa="child-name"]')
   #markPresentLink = this.page.find('[data-qa="mark-present-link"]')
   #markAbsentBeforehandLink = this.page.find(
     '[data-qa="mark-absent-beforehand"]'
@@ -41,6 +42,10 @@ export default class MobileChildPage {
       this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-name"]`),
     backupPickupPhone: (n: number) =>
       this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-phone"]`)
+  }
+
+  async waitUntilLoaded() {
+    await this.#childName.waitUntilVisible()
   }
 
   async markFutureAbsences() {
