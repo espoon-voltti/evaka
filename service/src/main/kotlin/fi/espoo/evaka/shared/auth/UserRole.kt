@@ -31,9 +31,12 @@ enum class UserRole {
 interface RoleContainer {
     val roles: Set<UserRole>
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun hasOneOfRoles(vararg requiredRoles: UserRole) = requiredRoles.any { roles.contains(it) }
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun requireOneOfRoles(vararg roles: UserRole) {
+        @Suppress("DEPRECATION")
         if (!hasOneOfRoles(*roles)) throw Forbidden()
     }
 }

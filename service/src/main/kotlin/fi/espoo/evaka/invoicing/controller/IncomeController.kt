@@ -60,6 +60,7 @@ class IncomeController(
     @PostMapping
     fun createIncome(db: Database.Connection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val period = try {
             DateRange(income.validFrom, income.validTo)
@@ -90,6 +91,7 @@ class IncomeController(
         @RequestBody income: Income
     ): ResponseEntity<Unit> {
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
@@ -111,6 +113,7 @@ class IncomeController(
     @DeleteMapping("/{incomeId}")
     fun deleteIncome(db: Database.Connection, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
@@ -128,6 +131,7 @@ class IncomeController(
 
     @GetMapping("/types")
     fun getTypes(user: AuthenticatedUser): ResponseEntity<Map<String, IncomeType>> {
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         return incomeTypesProvider.get().let { ResponseEntity.ok(it) }
     }

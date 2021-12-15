@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     @GetMapping(produces = ["text/html"])
     fun form(user: AuthenticatedUser): String {
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
         // language=html
@@ -62,6 +63,7 @@ class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<A
 
     @PostMapping
     fun trigger(user: AuthenticatedUser, db: Database.Connection, @RequestBody body: TriggerBody) {
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
         db.transaction { tx ->

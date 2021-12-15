@@ -55,6 +55,7 @@ class PersonController(
     @PostMapping
     fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.transaction { createEmptyPerson(it) }
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
@@ -106,6 +107,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.transaction { personService.getPersonWithChildren(it, user, personId) }
             ?.let { ResponseEntity.ok().body(it.children) }
@@ -150,6 +152,7 @@ class PersonController(
         @RequestBody contactInfo: ContactInfo
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
         return if (db.transaction { it.updatePersonContactInfo(personId, contactInfo) }) {
             ResponseEntity.ok().body(contactInfo)
@@ -166,6 +169,7 @@ class PersonController(
         @RequestBody data: PersonPatch
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
 
         val userEditablePersonData = data
@@ -195,6 +199,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<Unit> {
         Audit.PersonDelete.log(targetId = personId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { mergeService.deleteEmptyPerson(it, personId) }
         return ResponseEntity.noContent().build()
@@ -239,6 +244,7 @@ class PersonController(
         @RequestBody body: GetOrCreatePersonBySsnRequest
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
@@ -264,6 +270,7 @@ class PersonController(
         @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonDetailsRead.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         return ResponseEntity.ok()
@@ -279,6 +286,7 @@ class PersonController(
         @RequestBody body: MergeRequest
     ): ResponseEntity<Unit> {
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { tx ->
             mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
@@ -293,6 +301,7 @@ class PersonController(
         @RequestBody body: CreatePersonBody
     ): ResponseEntity<UUID> {
         Audit.PersonCreate.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
         return db.transaction { createPerson(it, body) }
             .let { ResponseEntity.ok(it) }

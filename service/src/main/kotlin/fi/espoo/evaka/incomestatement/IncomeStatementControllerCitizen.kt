@@ -37,6 +37,7 @@ class IncomeStatementControllerCitizen {
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
             tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
@@ -49,6 +50,7 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser.Citizen
     ): List<LocalDate> {
         Audit.IncomeStatementStartDates.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { it.readIncomeStatementStartDates(user) }
     }
@@ -60,6 +62,7 @@ class IncomeStatementControllerCitizen {
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { tx ->
             tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
@@ -74,6 +77,7 @@ class IncomeStatementControllerCitizen {
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementCreate.log(user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
@@ -99,6 +103,7 @@ class IncomeStatementControllerCitizen {
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementUpdate.log(incomeStatementId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.transaction { tx ->
@@ -124,6 +129,7 @@ class IncomeStatementControllerCitizen {
         @PathVariable id: IncomeStatementId
     ) {
         Audit.IncomeStatementDelete.log(id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         return db.transaction { tx ->
             verifyIncomeStatementModificationsAllowed(tx, user, id)

@@ -36,6 +36,7 @@ class MobileUnitController(
         @PathVariable unitId: DaycareId
     ): UnitInfo {
         Audit.UnitRead.log(targetId = unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
         return db.read { tx -> tx.fetchUnitInfo(unitId, evakaClock.today()) }
     }
@@ -49,6 +50,7 @@ class MobileUnitController(
         @RequestParam useRealtimeStaffAttendance: Boolean
     ): List<UnitStats> {
         Audit.UnitRead.log(targetId = unitIds)
+        @Suppress("DEPRECATION")
         unitIds.forEach { unitId -> acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE) }
         return db.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today(), useRealtimeStaffAttendance) }
     }

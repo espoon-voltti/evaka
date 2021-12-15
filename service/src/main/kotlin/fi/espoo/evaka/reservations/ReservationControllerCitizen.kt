@@ -39,6 +39,7 @@ class ReservationControllerCitizen(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
 
         val range = try {
@@ -77,6 +78,7 @@ class ReservationControllerCitizen(
         @RequestBody body: List<DailyReservationRequest>
     ) {
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.map { it.childId }.toSet())
 
@@ -96,6 +98,7 @@ class ReservationControllerCitizen(
         @RequestBody body: AbsenceRequest
     ) {
         Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.childIds)
 

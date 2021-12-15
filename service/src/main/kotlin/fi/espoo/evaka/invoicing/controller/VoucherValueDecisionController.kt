@@ -68,6 +68,7 @@ class VoucherValueDecisionController(
         @RequestBody body: SearchVoucherValueDecisionRequest
     ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionSearch.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -99,6 +100,7 @@ class VoucherValueDecisionController(
         @PathVariable id: VoucherValueDecisionId
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read { it.getVoucherValueDecision(id) }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
@@ -112,6 +114,7 @@ class VoucherValueDecisionController(
         @PathVariable headOfFamilyId: UUID
     ): ResponseEntity<List<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val res = db.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) }
         return ResponseEntity.ok(res)
@@ -120,6 +123,7 @@ class VoucherValueDecisionController(
     @PostMapping("/send")
     fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction {
             sendVoucherValueDecisions(
@@ -136,6 +140,7 @@ class VoucherValueDecisionController(
     @PostMapping("/mark-sent")
     fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
             val decisions = tx.getValueDecisionsByIds(ids)
@@ -149,6 +154,7 @@ class VoucherValueDecisionController(
     @GetMapping("/pdf/{id}")
     fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it, id) }
         val headers = HttpHeaders().apply {
@@ -166,6 +172,7 @@ class VoucherValueDecisionController(
         @RequestBody request: VoucherValueDecisionTypeRequest
     ): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { valueDecisionService.setType(it, uuid, request.type) }
         return ResponseEntity.noContent().build()
@@ -179,6 +186,7 @@ class VoucherValueDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { generator.createRetroactiveValueDecisions(it, id, body.from) }
     }

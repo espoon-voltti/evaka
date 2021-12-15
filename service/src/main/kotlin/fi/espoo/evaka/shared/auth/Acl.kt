@@ -50,12 +50,14 @@ class AccessControlList(private val jdbi: Jdbi) {
     fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization = getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
 
     fun getAuthorizedUnits(user: AuthenticatedUser, roles: Set<UserRole>): AclAuthorization =
+        @Suppress("DEPRECATION")
         if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.REPORT_VIEWER)) {
             AclAuthorization.All
         } else {
             AclAuthorization.Subset(Database(jdbi).connect { db -> db.read { it.selectAuthorizedDaycares(user, roles) } })
         }
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForUnit(user: AuthenticatedUser, daycareId: DaycareId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -71,6 +73,7 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForApplication(user: AuthenticatedUser, applicationId: ApplicationId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -90,6 +93,7 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForUnitGroup(user: AuthenticatedUser, groupId: GroupId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -105,6 +109,7 @@ WHERE employee_id = :userId AND daycare_group_id = :groupId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForPlacement(user: AuthenticatedUser, placementId: PlacementId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -121,6 +126,7 @@ WHERE employee_id = :userId AND placement.id = :placementId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForChild(user: AuthenticatedUser, childId: UUID): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -136,6 +142,7 @@ WHERE employee_id = :userId AND child_id = :childId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForDecision(user: AuthenticatedUser, decisionId: DecisionId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -152,6 +159,7 @@ WHERE employee_id = :userId AND decision.id = :decisionId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForAssistanceNeed(user: AuthenticatedUser, assistanceNeedId: AssistanceNeedId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -168,6 +176,7 @@ WHERE an.id = :assistanceNeedId AND acl.employee_id = :userId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: AssistanceActionId): AclAppliedRoles =
         AclAppliedRoles(
             (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
@@ -185,6 +194,7 @@ WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
             }
         )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForBackupPickup(user: AuthenticatedUser, backupPickupId: BackupPickupId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -201,6 +211,7 @@ WHERE bp.id = :backupPickupId AND acl.employee_id = :userId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForServiceNeed(user: AuthenticatedUser, serviceNeedId: ServiceNeedId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -218,6 +229,7 @@ WHERE employee_id = :userId AND service_need.id = :serviceNeedId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForPairing(user: AuthenticatedUser, pairingId: PairingId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -234,6 +246,7 @@ WHERE dav.employee_id = :userId AND p.id = :pairingId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForPedagogicalDocument(user: AuthenticatedUser, documentId: PedagogicalDocumentId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -253,6 +266,7 @@ WHERE child_acl_view.employee_id = :userId AND pd.id = :documentId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForMobileDevice(user: AuthenticatedUser, deviceId: MobileDeviceId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -269,6 +283,7 @@ WHERE dav.employee_id = :userId AND d.id = :deviceId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForVasuDocument(user: AuthenticatedUser, documentId: VasuDocumentId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -285,6 +300,7 @@ WHERE employee_id = :userId AND vasu_document.id = :documentId
         }
     )
 
+    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForPilotFeature(user: AuthenticatedUser, feature: PilotFeature): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {

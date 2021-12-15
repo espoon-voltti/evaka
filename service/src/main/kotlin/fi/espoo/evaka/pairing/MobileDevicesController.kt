@@ -38,6 +38,7 @@ class MobileDevicesController(
         @RequestParam unitId: DaycareId
     ): ResponseEntity<List<MobileDevice>> {
         Audit.MobileDevicesList.log(targetId = unitId)
+        @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         return db
             .read { it.listSharedDevices(unitId) }
@@ -50,6 +51,7 @@ class MobileDevicesController(
         user: AuthenticatedUser.Employee,
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = user.id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
         return db.read { it.listPersonalDevices(EmployeeId(user.id)) }
     }
@@ -79,6 +81,7 @@ class MobileDevicesController(
         @RequestBody body: RenameRequest
     ): ResponseEntity<Unit> {
         Audit.MobileDevicesRename.log(targetId = id)
+        @Suppress("DEPRECATION")
         acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { it.renameDevice(id, body.name) }
@@ -92,6 +95,7 @@ class MobileDevicesController(
         @PathVariable id: MobileDeviceId
     ): ResponseEntity<Unit> {
         Audit.MobileDevicesDelete.log(targetId = id)
+        @Suppress("DEPRECATION")
         acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { it.softDeleteDevice(id) }

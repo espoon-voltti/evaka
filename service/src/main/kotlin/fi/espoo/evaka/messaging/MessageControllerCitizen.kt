@@ -152,6 +152,7 @@ class MessageControllerCitizen(
         db: Database.Connection,
         user: AuthenticatedUser
     ): MessageAccountId {
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
         return db.read { it.getCitizenMessageAccount(user.id) }
     }

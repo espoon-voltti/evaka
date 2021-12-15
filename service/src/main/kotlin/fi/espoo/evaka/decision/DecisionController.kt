@@ -39,6 +39,7 @@ class DecisionController(
         @RequestParam("id") guardianId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) }
 
@@ -52,6 +53,7 @@ class DecisionController(
         @RequestParam("id") childId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) }
 
@@ -65,6 +67,7 @@ class DecisionController(
         @RequestParam("id") applicationId: ApplicationId
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) }
 
@@ -74,6 +77,7 @@ class DecisionController(
     @GetMapping("/units")
     fun getDecisionUnits(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val units = db.read { decisionDraftService.getDecisionUnits(it) }
         return ResponseEntity.ok(units)
@@ -87,7 +91,9 @@ class DecisionController(
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
 
+        @Suppress("DEPRECATION")
         val roles = acl.getRolesForDecision(user, decisionId)
+        @Suppress("DEPRECATION")
         roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { tx ->

@@ -74,6 +74,7 @@ class FeeDecisionController(
         @RequestBody body: SearchFeeDecisionRequest
     ): ResponseEntity<Paged<FeeDecisionSummary>> {
         Audit.FeeDecisionSearch.log()
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -103,6 +104,7 @@ class FeeDecisionController(
     @PostMapping("/confirm")
     fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
             val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
@@ -114,6 +116,7 @@ class FeeDecisionController(
     @PostMapping("/mark-sent")
     fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { service.setSent(it, feeDecisionIds) }
         return ResponseEntity.noContent().build()
@@ -122,6 +125,7 @@ class FeeDecisionController(
     @GetMapping("/pdf/{uuid}")
     fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val headers = HttpHeaders()
         val (filename, pdf) = db.read { service.getFeeDecisionPdf(it, uuid) }
@@ -133,6 +137,7 @@ class FeeDecisionController(
     @GetMapping("/{uuid}")
     fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read { it.getFeeDecision(uuid) }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
@@ -146,6 +151,7 @@ class FeeDecisionController(
         @PathVariable uuid: UUID
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read {
             it.findFeeDecisionsForHeadOfFamily(
@@ -165,6 +171,7 @@ class FeeDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) }
         return ResponseEntity.noContent().build()
@@ -178,6 +185,7 @@ class FeeDecisionController(
         @RequestBody request: FeeDecisionTypeRequest
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionSetType.log(targetId = uuid)
+        @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { service.setType(it, uuid, request.type) }
         return ResponseEntity.noContent().build()

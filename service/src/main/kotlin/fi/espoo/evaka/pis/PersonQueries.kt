@@ -128,6 +128,7 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
     }
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("person"), searchTerms)
+    @Suppress("DEPRECATION")
     val scopedRole = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
 
     // language=SQL
