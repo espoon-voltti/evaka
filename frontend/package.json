@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.15.8",
-    "@babel/preset-env": "^7.15.8",
+    "@babel/preset-env": "^7.16.5",
     "@playwright/test": "^1.17.1",
     "@sentry/webpack-plugin": "^1.18.3",
     "@types/form-data": "^2.5.0",
