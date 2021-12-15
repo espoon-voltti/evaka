@@ -325,3 +325,19 @@ fun Database.Read.getVasuFollowupEntry(id: VasuDocumentFollowupEntryId): Followu
         .map { row -> row.mapJsonColumn<FollowupEntry>("entry") }
         .one()
 }
+
+fun Database.Read.getVasuFollowupEntries(id: VasuDocumentId): List<FollowupEntry> {
+    return createQuery(
+        """
+        WITH followup_entries AS (
+            SELECT jsonb_path_query(content, '$.sections[*].questions ? (@.type=="FOLLOWUP").value[*]') AS entry 
+            FROM vasu_content
+            WHERE document_id = :docId AND master = true
+        )
+        SELECT entry FROM followup_entries 
+        """
+    )
+        .bind("docId", id)
+        .map { row -> row.mapJsonColumn<FollowupEntry>("entry") }
+        .list()
+}

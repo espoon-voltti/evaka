@@ -18,6 +18,7 @@ import {
   VasuDocumentEventType,
   VasuDocumentSummary
 } from 'lib-common/generated/api-types/vasu'
+import { GetVasuDocumentResponse } from 'lib-common/api-types/vasu'
 import { UUID } from 'lib-common/types'
 
 const mapVasuDocumentEvent = (
@@ -92,10 +93,17 @@ export async function getVasuDocumentSummaries(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getVasuDocument(id: UUID): Promise<Result<VasuDocument>> {
+export async function getVasuDocument(
+  id: UUID
+): Promise<Result<GetVasuDocumentResponse>> {
   return client
-    .get<JsonOf<VasuDocument>>(`/vasu/${id}`)
-    .then((res) => Success.of(mapVasuDocumentResponse(res.data)))
+    .get<JsonOf<GetVasuDocumentResponse>>(`/vasu/${id}`)
+    .then((res) =>
+      Success.of({
+        vasu: mapVasuDocumentResponse(res.data.vasu),
+        permittedFollowupActions: res.data.permittedFollowupActions
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }
 

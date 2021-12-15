@@ -84,6 +84,14 @@ export interface EvaluationDiscussionContent {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuController.GetVasuDocumentResponse
+*/
+export interface GetVasuDocumentResponse {
+  permittedFollowupActions: UUID[]
+  vasu: VasuDocument
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.VasuController.UpdateDocumentRequest
 */
 export interface UpdateDocumentRequest {

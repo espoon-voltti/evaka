@@ -60,6 +60,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
+import fi.espoo.evaka.vasu.getVasuFollowupEntries
 import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
@@ -735,7 +736,7 @@ WHERE employee_id = :userId
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
-        if (action != Action.VasuDocumentFollowup.UPDATE_FOLLOWUP_ENTRY) {
+        if (action != Action.VasuDocumentFollowup.UPDATE) {
             throw Forbidden()
         }
         val mapping = permittedRoleActions::vasuDocumentFollowupActions
@@ -759,6 +760,33 @@ WHERE employee_id = :userId
                 if (entry.authorId != user.id) {
                     throw Forbidden()
                 }
+            }
+        }
+    }
+
+    fun getPermittedVasuFollowupActions(user: AuthenticatedUser, id: VasuDocumentId): Map<UUID, Set<Action.VasuDocumentFollowup>> {
+        val action = Action.VasuDocumentFollowup.UPDATE
+        val mapping = permittedRoleActions::vasuDocumentFollowupActions
+
+        val globalRoles = when (user) {
+            is AuthenticatedUser.Employee -> user.globalRoles
+            else -> user.roles
+        }
+        val roles = acl.getRolesForVasuDocument(user, id).roles
+        val hasPermissionThroughRole = globalRoles.any { it == UserRole.ADMIN } ||
+            roles.any { mapping(it).contains(action) }
+
+        val entries = Database(jdbi).connect { db ->
+            db.read { tx ->
+                tx.getVasuFollowupEntries(id)
+            }
+        }
+
+        return entries.associate { entry ->
+            entry.id to if (hasPermissionThroughRole || entry.authorId == user.id) {
+                setOf(Action.VasuDocumentFollowup.UPDATE)
+            } else {
+                setOf()
             }
         }
     }

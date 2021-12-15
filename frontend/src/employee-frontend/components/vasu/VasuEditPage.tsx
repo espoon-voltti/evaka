@@ -65,7 +65,8 @@ export default React.memo(function VasuEditPage({
     setEvaluationDiscussionContent,
     status,
     translations,
-    editFollowupEntry
+    editFollowupEntry,
+    permittedFollowupActions
   } = useVasu(id)
 
   function formatVasuStatus(status: VasuStatus): string | null {
@@ -121,6 +122,7 @@ export default React.memo(function VasuEditPage({
               })
             }
             state={vasu.documentState}
+            permittedFollowupActions={permittedFollowupActions}
             translations={translations}
           />
           <EditableVasuDiscussionSection

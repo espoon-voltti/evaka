@@ -493,7 +493,7 @@ sealed interface Action {
     }
 
     enum class VasuDocumentFollowup(private val roles: EnumSet<UserRole>) : Action {
-        UPDATE_FOLLOWUP_ENTRY(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
+        UPDATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

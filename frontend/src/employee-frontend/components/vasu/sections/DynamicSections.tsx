@@ -48,6 +48,7 @@ interface Props {
   sectionIndex: number
   setContent?: Dispatch<SetStateAction<VasuContent>>
   state: VasuDocumentState
+  permittedFollowupActions?: { [key: string]: string[] }
   translations: VasuTranslations
   editFollowupEntry?: (entry: FollowupEntry) => void
 }
@@ -57,6 +58,7 @@ export function DynamicSections({
   sectionIndex: sectionOffset,
   setContent,
   state,
+  permittedFollowupActions,
   translations,
   editFollowupEntry
 }: Props) {
@@ -184,6 +186,7 @@ export function DynamicSections({
                       question={question}
                       questionNumber={questionNumber}
                       translations={translations}
+                      permittedFollowupActions={permittedFollowupActions}
                       onChange={
                         setContent
                           ? (value: FollowupEntry) =>

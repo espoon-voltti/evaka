@@ -28,6 +28,12 @@ import {
   VasuDiscussionContent,
   VasuDocument
 } from 'lib-common/generated/api-types/vasu'
+import {
+  Followup,
+  FollowupEntry,
+  PermittedFollowupActions,
+  GetVasuDocumentResponse
+} from 'lib-common/api-types/vasu'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
 type State =
@@ -66,6 +72,7 @@ interface Vasu {
   status: VasuStatus
   translations: VasuTranslations
   editFollowupEntry: (params: EditFollowupEntryParams) => void
+  permittedFollowupActions: PermittedFollowupActions
 }
 
 const debounceInterval = isAutomatedTest ? 200 : 2000
@@ -101,27 +108,36 @@ export function useVasu(id: string): Vasu {
       guardianViewsAndCollaboration: '',
       evaluation: ''
     })
+  const [permittedFollowupActions, setPermittedFollowupActions] =
+    useState<PermittedFollowupActions>({})
 
-  const handleVasuDocLoaded = useCallback((res: Result<VasuDocument>) => {
-    res.mapAll({
-      loading: () => null,
-      failure: () => setStatus({ state: 'loading-error' }),
-      success: ({
-        content,
-        authorsContent,
-        vasuDiscussionContent,
-        evaluationDiscussionContent,
-        ...meta
-      }) => {
-        setStatus({ state: 'clean' })
-        setVasu(meta)
-        setContent(content)
-        setAuthorsContent(authorsContent)
-        setVasuDiscussionContent(vasuDiscussionContent)
-        setEvaluationDiscussionContent(evaluationDiscussionContent)
-      }
-    })
-  }, [])
+  const handleVasuDocLoaded = useCallback(
+    (res: Result<GetVasuDocumentResponse>) => {
+      res.mapAll({
+        loading: () => null,
+        failure: () => setStatus({ state: 'loading-error' }),
+        success: ({
+          vasu: {
+            content,
+            authorsContent,
+            vasuDiscussionContent,
+            evaluationDiscussionContent,
+            ...meta
+          },
+          permittedFollowupActions
+        }) => {
+          setStatus({ state: 'clean' })
+          setVasu(meta)
+          setContent(content)
+          setAuthorsContent(authorsContent)
+          setVasuDiscussionContent(vasuDiscussionContent)
+          setEvaluationDiscussionContent(evaluationDiscussionContent)
+          setPermittedFollowupActions(permittedFollowupActions)
+        }
+      })
+    },
+    []
+  )
 
   useEffect(
     function loadVasuDocument() {
@@ -190,6 +206,27 @@ export function useVasu(id: string): Vasu {
     ]
   )
 
+  useEffect(
+    function addNewToPermittedFollowupActions() {
+      content.sections.forEach((section) => {
+        section.questions.forEach((question) => {
+          if (question.type === 'FOLLOWUP') {
+            const followup = question as Followup
+            followup.value.forEach((entry: FollowupEntry) => {
+              if (entry.id && !permittedFollowupActions[entry.id]) {
+                setPermittedFollowupActions({
+                  ...permittedFollowupActions,
+                  [entry.id]: ['UPDATE']
+                })
+              }
+            })
+          }
+        })
+      })
+    },
+    [content, permittedFollowupActions]
+  )
+
   const setContentCallback = useCallback(
     (draft: SetStateAction<VasuContent>) => {
       setContent(draft)
@@ -242,6 +279,7 @@ export function useVasu(id: string): Vasu {
     setEvaluationDiscussionContent: setEvaluationDiscussionContentCallback,
     status,
     translations,
-    editFollowupEntry: editFollowup
+    editFollowupEntry: editFollowup,
+    permittedFollowupActions
   }
 }

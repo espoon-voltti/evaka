@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '../local-date'
+import { VasuDocument } from 'lib-common/generated/api-types/vasu'
 
 export const vasuQuestionTypes = [
   'TEXT',
@@ -73,3 +74,12 @@ export type VasuQuestion =
   | RadioGroupQuestion
   | MultiSelectQuestion
   | Followup
+
+export type PermittedFollowupActions = {
+  [key: string]: string[]
+}
+
+export interface GetVasuDocumentResponse {
+  permittedFollowupActions: PermittedFollowupActions
+  vasu: VasuDocument
+}
