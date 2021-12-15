@@ -31,7 +31,7 @@ class AssistanceActionController(
 ) {
     @PostMapping("/children/{childId}/assistance-actions")
     fun createAssistanceAction(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: AssistanceActionRequest
@@ -48,7 +48,7 @@ class AssistanceActionController(
 
     @GetMapping("/children/{childId}/assistance-actions")
     fun getAssistanceActions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<AssistanceAction> {
@@ -61,7 +61,7 @@ class AssistanceActionController(
 
     @PutMapping("/assistance-actions/{id}")
     fun updateAssistanceAction(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceActionId: AssistanceActionId,
         @RequestBody body: AssistanceActionRequest
@@ -78,7 +78,7 @@ class AssistanceActionController(
 
     @DeleteMapping("/assistance-actions/{id}")
     fun deleteAssistanceAction(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceActionId: AssistanceActionId
     ): ResponseEntity<Unit> {
@@ -89,7 +89,7 @@ class AssistanceActionController(
     }
 
     @GetMapping("/assistance-action-options")
-    fun getAssistanceActionOptions(db: Database.Connection, user: AuthenticatedUser): List<AssistanceActionOption> {
+    fun getAssistanceActionOptions(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<AssistanceActionOption> {
         accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
         return assistanceActionService.getAssistanceActionOptions(db)
     }

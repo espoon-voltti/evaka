@@ -33,7 +33,7 @@ class MobileDevicesController(
 ) {
     @GetMapping("/mobile-devices")
     fun getMobileDevices(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): ResponseEntity<List<MobileDevice>> {
@@ -47,7 +47,7 @@ class MobileDevicesController(
 
     @GetMapping("/mobile-devices/personal")
     fun getMobileDevices(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Employee,
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = user.id)
@@ -58,7 +58,7 @@ class MobileDevicesController(
 
     @GetMapping("/system/mobile-devices/{id}")
     fun getMobileDevice(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId
     ): ResponseEntity<MobileDeviceDetails> {
@@ -75,7 +75,7 @@ class MobileDevicesController(
     )
     @PutMapping("/mobile-devices/{id}/name")
     fun putMobileDeviceName(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest
@@ -90,7 +90,7 @@ class MobileDevicesController(
 
     @DeleteMapping("/mobile-devices/{id}")
     fun deleteMobileDevice(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId
     ): ResponseEntity<Unit> {
@@ -104,7 +104,7 @@ class MobileDevicesController(
 
     @PostMapping("/mobile-devices/pin-login")
     fun pinLogin(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.MobileDevice,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse {

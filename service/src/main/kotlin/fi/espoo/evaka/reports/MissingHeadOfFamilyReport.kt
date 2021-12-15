@@ -24,7 +24,7 @@ import java.util.UUID
 class MissingHeadOfFamilyReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/missing-head-of-family")
     fun getMissingHeadOfFamilyReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?

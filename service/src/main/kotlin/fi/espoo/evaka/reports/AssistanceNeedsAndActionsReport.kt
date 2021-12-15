@@ -31,7 +31,7 @@ import java.time.LocalDate
 class AssistanceNeedsAndActionsReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-needs-and-actions")
     fun getAssistanceNeedReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {

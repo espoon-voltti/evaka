@@ -38,7 +38,7 @@ class VasuTemplateController(
 
     @PostMapping
     fun postTemplate(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: CreateTemplateRequest
     ): VasuTemplateId {
@@ -58,7 +58,7 @@ class VasuTemplateController(
 
     @PutMapping("/{id}")
     fun editTemplate(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: VasuTemplateUpdate
@@ -80,7 +80,7 @@ class VasuTemplateController(
 
     @PostMapping("/{id}/copy")
     fun copyTemplate(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: CopyTemplateRequest
@@ -102,7 +102,7 @@ class VasuTemplateController(
 
     @GetMapping
     fun getTemplates(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
@@ -114,7 +114,7 @@ class VasuTemplateController(
 
     @GetMapping("/{id}")
     fun getTemplate(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
@@ -128,7 +128,7 @@ class VasuTemplateController(
 
     @DeleteMapping("/{id}")
     fun deleteTemplate(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId
     ) {
@@ -140,7 +140,7 @@ class VasuTemplateController(
 
     @PutMapping("/{id}/content")
     fun putTemplateContent(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId,
         @RequestBody content: VasuContent

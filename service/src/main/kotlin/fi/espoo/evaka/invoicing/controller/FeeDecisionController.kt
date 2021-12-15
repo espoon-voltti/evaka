@@ -69,7 +69,7 @@ class FeeDecisionController(
 ) {
     @PostMapping("/search")
     fun search(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: SearchFeeDecisionRequest
     ): ResponseEntity<Paged<FeeDecisionSummary>> {
@@ -102,7 +102,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/confirm")
-    fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
+    fun confirmDrafts(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -114,7 +114,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
+    fun setSent(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -123,7 +123,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/pdf/{uuid}")
-    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -135,7 +135,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
+    fun getDecision(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -146,7 +146,7 @@ class FeeDecisionController(
 
     @GetMapping("/head-of-family/{uuid}")
     fun getHeadOfFamilyFeeDecisions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable uuid: UUID
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
@@ -165,7 +165,7 @@ class FeeDecisionController(
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveDecisions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
@@ -179,7 +179,7 @@ class FeeDecisionController(
 
     @PostMapping("/set-type/{uuid}")
     fun setType(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable uuid: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest

@@ -62,7 +62,7 @@ class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<A
     }
 
     @PostMapping
-    fun trigger(user: AuthenticatedUser, db: Database.Connection, @RequestBody body: TriggerBody) {
+    fun trigger(user: AuthenticatedUser, db: Database.DeprecatedConnection, @RequestBody body: TriggerBody) {
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 

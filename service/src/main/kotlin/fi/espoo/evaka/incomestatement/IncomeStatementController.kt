@@ -29,7 +29,7 @@ class IncomeStatementController(
 ) {
     @GetMapping("/person/{personId}")
     fun getIncomeStatements(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
@@ -49,7 +49,7 @@ class IncomeStatementController(
 
     @GetMapping("/person/{personId}/{incomeStatementId}")
     fun getIncomeStatement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
@@ -69,7 +69,7 @@ class IncomeStatementController(
 
     @PostMapping("/{incomeStatementId}/handled")
     fun setHandled(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody
@@ -87,7 +87,7 @@ class IncomeStatementController(
 
     @GetMapping("/awaiting-handler")
     fun getIncomeStatementsAwaitingHandler(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam areas: String,
         @RequestParam page: Int,

@@ -63,7 +63,7 @@ class VoucherValueDecisionController(
 ) {
     @PostMapping("/search")
     fun search(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: SearchVoucherValueDecisionRequest
     ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
@@ -95,7 +95,7 @@ class VoucherValueDecisionController(
 
     @GetMapping("/{id}")
     fun getDecision(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VoucherValueDecisionId
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
@@ -109,7 +109,7 @@ class VoucherValueDecisionController(
 
     @GetMapping("/head-of-family/{headOfFamilyId}")
     fun getHeadOfFamilyDecisions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable headOfFamilyId: UUID
     ): ResponseEntity<List<VoucherValueDecisionSummary>> {
@@ -121,7 +121,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/send")
-    fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
+    fun sendDrafts(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -138,7 +138,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
+    fun markSent(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -152,7 +152,7 @@ class VoucherValueDecisionController(
     }
 
     @GetMapping("/pdf/{id}")
-    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -166,7 +166,7 @@ class VoucherValueDecisionController(
 
     @PostMapping("/set-type/{uuid}")
     fun setType(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable uuid: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest
@@ -180,7 +180,7 @@ class VoucherValueDecisionController(
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveDecisions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody

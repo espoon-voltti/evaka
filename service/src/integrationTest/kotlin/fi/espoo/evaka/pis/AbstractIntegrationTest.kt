@@ -40,15 +40,18 @@ abstract class AbstractIntegrationTest {
     lateinit var jdbi: Jdbi
 
     lateinit var db: Database.Connection
+    lateinit var deprecatedDb: Database.DeprecatedConnection
 
     @BeforeAll
     protected fun beforeAll() {
         db = Database(jdbi).connectWithManualLifecycle()
+        deprecatedDb = Database(jdbi).deprecatedConnection()
     }
 
     @AfterAll
     protected fun afterAll() {
         db.close()
+        deprecatedDb.close()
     }
 
     @BeforeEach

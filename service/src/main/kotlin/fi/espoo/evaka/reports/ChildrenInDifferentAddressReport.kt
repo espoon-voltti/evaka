@@ -25,7 +25,7 @@ class ChildrenInDifferentAddressReportController(
 ) {
     @GetMapping("/reports/children-in-different-address")
     fun getChildrenInDifferentAddressReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): List<ChildrenInDifferentAddressReportRow> {
         Audit.ChildrenInDifferentAddressReportRead.log()

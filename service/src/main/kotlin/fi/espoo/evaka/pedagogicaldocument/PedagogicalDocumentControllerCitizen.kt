@@ -31,7 +31,7 @@ class PedagogicalDocumentControllerCitizen(
 ) {
     @GetMapping
     fun getPedagogicalDocumentsByGuardian(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): List<PedagogicalDocumentCitizen> {
         Audit.PedagogicalDocumentReadByGuardian.log(user.id)
@@ -40,7 +40,7 @@ class PedagogicalDocumentControllerCitizen(
 
     @PostMapping("/{documentId}/mark-read")
     fun markPedagogicalDocumentRead(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
@@ -51,7 +51,7 @@ class PedagogicalDocumentControllerCitizen(
 
     @GetMapping("/unread-count")
     fun getUnreadPedagogicalDocumentCount(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): Number {
         Audit.PedagogicalDocumentCountUnread.log(user.id)

@@ -24,7 +24,7 @@ class GroupNoteController(
 ) {
     @PostMapping("/daycare-groups/{groupId}/group-notes")
     fun createGroupNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupNoteBody
@@ -37,7 +37,7 @@ class GroupNoteController(
 
     @PutMapping("/group-notes/{noteId}")
     fun updateGroupNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable noteId: GroupNoteId,
         @RequestBody body: GroupNoteBody
@@ -50,7 +50,7 @@ class GroupNoteController(
 
     @DeleteMapping("/group-notes/{noteId}")
     fun deleteGroupNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable noteId: GroupNoteId
     ) {

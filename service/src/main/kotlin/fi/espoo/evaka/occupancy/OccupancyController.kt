@@ -26,7 +26,7 @@ import java.time.LocalDate
 class OccupancyController(private val acl: AccessControlList) {
     @GetMapping("/by-unit/{unitId}/realtime")
     fun getRealtimeOccupancy(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
@@ -46,7 +46,7 @@ class OccupancyController(private val acl: AccessControlList) {
 
     @GetMapping("/by-unit/{unitId}")
     fun getOccupancyPeriods(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -71,7 +71,7 @@ class OccupancyController(private val acl: AccessControlList) {
 
     @GetMapping("/by-unit/{unitId}/groups")
     fun getOccupancyPeriodsOnGroups(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,

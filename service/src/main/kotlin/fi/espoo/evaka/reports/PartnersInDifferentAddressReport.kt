@@ -25,7 +25,7 @@ class PartnersInDifferentAddressReportController(
 ) {
     @GetMapping("/reports/partners-in-different-address")
     fun getPartnersInDifferentAddressReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): List<PartnersInDifferentAddressReportRow> {
         Audit.PartnersInDifferentAddressReportRead.log()

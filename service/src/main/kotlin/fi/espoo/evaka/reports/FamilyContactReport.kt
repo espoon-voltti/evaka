@@ -22,7 +22,7 @@ import java.util.UUID
 class FamilyContactReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/family-contacts")
     fun getFamilyContactsReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): List<FamilyContactReportRow> {

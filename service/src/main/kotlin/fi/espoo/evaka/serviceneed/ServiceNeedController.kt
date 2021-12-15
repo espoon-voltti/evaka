@@ -43,7 +43,7 @@ class ServiceNeedController(
 
     @PostMapping("/service-needs")
     fun postServiceNeed(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: ServiceNeedCreateRequest
     ) {
@@ -75,7 +75,7 @@ class ServiceNeedController(
 
     @PutMapping("/service-needs/{id}")
     fun putServiceNeed(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
@@ -111,7 +111,7 @@ class ServiceNeedController(
 
     @DeleteMapping("/service-needs/{id}")
     fun deleteServiceNeed(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: ServiceNeedId
     ) {
@@ -127,7 +127,7 @@ class ServiceNeedController(
 
     @GetMapping("/service-needs/options")
     fun getServiceNeedOptions(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): List<ServiceNeedOption> {
         Audit.ServiceNeedOptionsRead.log()
@@ -138,7 +138,7 @@ class ServiceNeedController(
 
     @GetMapping("/public/service-needs/options")
     fun getServiceNeedOptionPublicInfos(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestParam(required = true) placementTypes: List<PlacementType>
     ): List<ServiceNeedOptionPublicInfo> {
         return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }

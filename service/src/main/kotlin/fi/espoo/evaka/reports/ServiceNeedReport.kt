@@ -21,7 +21,7 @@ import java.time.LocalDate
 class ServiceNeedReport(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/service-need")
     fun getServiceNeedReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ServiceNeedReportRow> {

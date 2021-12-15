@@ -20,7 +20,7 @@ import java.util.UUID
 @RestController
 class DuplicatePeopleReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/duplicate-people")
-    fun getDuplicatePeopleReport(db: Database.Connection, user: AuthenticatedUser): List<DuplicatePeopleReportRow> {
+    fun getDuplicatePeopleReport(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<DuplicatePeopleReportRow> {
         Audit.DuplicatePeopleReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
         return db.read { it.getDuplicatePeople() }

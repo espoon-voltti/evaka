@@ -45,7 +45,7 @@ class PairingsController(
     }
     @PostMapping("/pairings")
     fun postPairing(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Employee,
         @RequestBody body: PostPairingReq
     ): ResponseEntity<Pairing> {
@@ -90,7 +90,7 @@ class PairingsController(
     )
     @PostMapping("/public/pairings/challenge")
     fun postPairingChallenge(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @RequestBody body: PostPairingChallengeReq
     ): ResponseEntity<Pairing> {
         Audit.PairingChallenge.log(targetId = body.challengeKey)
@@ -112,7 +112,7 @@ class PairingsController(
     )
     @PostMapping("/pairings/{id}/response")
     fun postPairingResponse(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
@@ -153,7 +153,7 @@ class PairingsController(
     )
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingValidationReq
     ): MobileDeviceIdentity {
@@ -178,7 +178,7 @@ class PairingsController(
     )
     @GetMapping("/public/pairings/{id}/status")
     fun getPairingStatus(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable id: PairingId
     ): ResponseEntity<PairingStatusRes> {
         Audit.PairingStatusRead.log(targetId = id)

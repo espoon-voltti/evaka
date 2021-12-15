@@ -45,7 +45,7 @@ class VasuController(
 
     @PostMapping("/children/{childId}/vasu")
     fun createDocument(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: CreateDocumentRequest
@@ -70,7 +70,7 @@ class VasuController(
 
     @GetMapping("/children/{childId}/vasu-summaries")
     fun getVasuSummariesByChild(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<VasuDocumentSummary> {
@@ -90,7 +90,7 @@ class VasuController(
     )
     @GetMapping("/vasu/{id}")
     fun getDocument(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId
     ): GetVasuDocumentResponse {
@@ -112,7 +112,7 @@ class VasuController(
 
     @PutMapping("/vasu/{id}")
     fun putDocument(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
@@ -150,7 +150,7 @@ class VasuController(
 
     @PostMapping("/vasu/{id}/edit-followup/{entryId}")
     fun editFollowupEntry(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId,
         @PathVariable entryId: UUID,
@@ -175,7 +175,7 @@ class VasuController(
 
     @PostMapping("/vasu/{id}/update-state")
     fun updateDocumentState(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest

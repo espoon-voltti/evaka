@@ -39,7 +39,7 @@ class PartnershipsController(
 ) {
     @PostMapping
     fun createPartnership(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: PartnershipRequest
     ) {
@@ -69,7 +69,7 @@ class PartnershipsController(
 
     @GetMapping
     fun getPartnerships(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam personId: PersonId
     ): List<Partnership> {
@@ -81,7 +81,7 @@ class PartnershipsController(
 
     @GetMapping("/{partnershipId}")
     fun getPartnership(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId
     ): Partnership {
@@ -94,7 +94,7 @@ class PartnershipsController(
 
     @PutMapping("/{partnershipId}")
     fun updatePartnership(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
@@ -120,7 +120,7 @@ class PartnershipsController(
 
     @PutMapping("/{partnershipId}/retry")
     fun retryPartnership(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId
     ) {
@@ -144,7 +144,7 @@ class PartnershipsController(
 
     @DeleteMapping("/{partnershipId}")
     fun deletePartnership(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId
     ) {

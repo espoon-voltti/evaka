@@ -39,7 +39,7 @@ class FinanceBasicsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping("/fee-thresholds")
-    fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithId> {
+    fun getFeeThresholds(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_FEE_THRESHOLDS)
 
@@ -48,7 +48,7 @@ class FinanceBasicsController(
 
     @PostMapping("/fee-thresholds")
     fun createFeeThresholds(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: FeeThresholds
     ) {
@@ -77,7 +77,7 @@ class FinanceBasicsController(
 
     @PutMapping("/fee-thresholds/{id}")
     fun updateFeeThresholds(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds

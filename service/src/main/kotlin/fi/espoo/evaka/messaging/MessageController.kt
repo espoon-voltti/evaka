@@ -49,7 +49,7 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<NestedMessageAccount> {
+    fun getAccountsByUser(db: Database.DeprecatedConnection, user: AuthenticatedUser): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
         return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
@@ -57,7 +57,7 @@ class MessageController(
 
     @GetMapping("/mobile/my-accounts/{unitId}")
     fun getAccountsByDevice(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): Set<NestedMessageAccount> {
@@ -71,7 +71,7 @@ class MessageController(
 
     @GetMapping("/{accountId}/received")
     fun getReceivedMessages(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
@@ -84,7 +84,7 @@ class MessageController(
 
     @GetMapping("/{accountId}/sent")
     fun getSentMessages(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
@@ -97,7 +97,7 @@ class MessageController(
 
     @GetMapping("/unread")
     fun getUnreadMessages(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
@@ -107,7 +107,7 @@ class MessageController(
 
     @GetMapping("/unread/{unitId}")
     fun getUnreadMessagesByUnit(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): Set<UnreadCountByAccountAndGroup> {
@@ -129,7 +129,7 @@ class MessageController(
 
     @PostMapping("/{accountId}")
     fun createMessage(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody,
@@ -158,7 +158,7 @@ class MessageController(
 
     @GetMapping("/{accountId}/drafts")
     fun getDrafts(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
     ): List<DraftContent> {
@@ -169,7 +169,7 @@ class MessageController(
 
     @PostMapping("/{accountId}/drafts")
     fun initDraft(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
     ): MessageDraftId {
@@ -180,7 +180,7 @@ class MessageController(
 
     @PutMapping("/{accountId}/drafts/{draftId}")
     fun upsertDraft(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
@@ -193,7 +193,7 @@ class MessageController(
 
     @DeleteMapping("/{accountId}/drafts/{draftId}")
     fun deleteDraft(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
@@ -205,7 +205,7 @@ class MessageController(
 
     @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable messageId: MessageId,
@@ -225,7 +225,7 @@ class MessageController(
 
     @PutMapping("/{accountId}/threads/{threadId}/read")
     fun markThreadRead(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable threadId: MessageThreadId,
@@ -237,7 +237,7 @@ class MessageController(
 
     @GetMapping("/receivers")
     fun getReceiversForNewMessage(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
@@ -264,7 +264,7 @@ class MessageController(
     }
 
     private fun requireMessageAccountAccess(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         accountId: MessageAccountId
     ) {
@@ -274,7 +274,7 @@ class MessageController(
     }
 
     private fun checkAuthorizedRecipients(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         recipientAccountIds: Set<MessageAccountId>
     ) {

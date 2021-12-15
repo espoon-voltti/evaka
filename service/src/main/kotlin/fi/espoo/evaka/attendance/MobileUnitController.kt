@@ -30,7 +30,7 @@ class MobileUnitController(
 ) {
     @GetMapping("/{unitId}")
     fun getUnitInfo(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId
@@ -43,7 +43,7 @@ class MobileUnitController(
 
     @GetMapping("/stats")
     fun getUnitStats(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestParam unitIds: List<DaycareId>,

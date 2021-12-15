@@ -56,7 +56,7 @@ class DaycareController(
     private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getDaycares(db: Database.Connection, user: AuthenticatedUser): List<Daycare> {
+    fun getDaycares(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<Daycare> {
         Audit.UnitSearch.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_UNITS)
         return db.read { it.getDaycares(acl.getAuthorizedDaycares(user)) }
@@ -64,7 +64,7 @@ class DaycareController(
 
     @GetMapping("/features")
     fun getFeatures(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): List<UnitFeatures> {
         Audit.UnitFeaturesRead.log()
@@ -74,7 +74,7 @@ class DaycareController(
 
     @PutMapping("/{daycareId}/features")
     fun putFeatures(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @RequestBody features: Set<PilotFeature>
@@ -86,7 +86,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}")
     fun getDaycare(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId
     ): DaycareResponse {
@@ -109,7 +109,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}/groups")
     fun getGroups(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
@@ -122,7 +122,7 @@ class DaycareController(
 
     @PostMapping("/{daycareId}/groups")
     fun createGroup(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest
@@ -140,7 +140,7 @@ class DaycareController(
     )
     @PutMapping("/{daycareId}/groups/{groupId}")
     fun updateGroup(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -154,7 +154,7 @@ class DaycareController(
 
     @DeleteMapping("/{daycareId}/groups/{groupId}")
     fun deleteGroup(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
@@ -167,7 +167,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun getCaretakers(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
@@ -186,7 +186,7 @@ class DaycareController(
 
     @PostMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun createCaretakers(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -208,7 +208,7 @@ class DaycareController(
 
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun updateCaretakers(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -232,7 +232,7 @@ class DaycareController(
 
     @DeleteMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun removeCaretakers(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -252,7 +252,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}/stats")
     fun getStats(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -265,7 +265,7 @@ class DaycareController(
 
     @PutMapping("/{daycareId}")
     fun updateDaycare(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @RequestBody fields: DaycareFields
@@ -282,7 +282,7 @@ class DaycareController(
 
     @PostMapping
     fun createDaycare(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody fields: DaycareFields
     ): CreateDaycareResponse {

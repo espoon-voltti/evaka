@@ -19,7 +19,7 @@ import java.util.UUID
 class VardaErrorReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/varda-errors")
     fun getVardaErrors(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser
     ): List<VardaErrorReportRow> {
         Audit.VardaReportRead.log()

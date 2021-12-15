@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController
 class UnitAclController(private val accessControl: AccessControl) {
     @GetMapping("/daycares/{daycareId}/acl")
     fun getAcl(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId
     ): ResponseEntity<DaycareAclResponse> {
@@ -46,7 +46,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     @PutMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun insertUnitSupervisor(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
@@ -59,7 +59,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun deleteUnitSupervisor(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
@@ -72,7 +72,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     @PutMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
     fun insertSpecialEducationTeacher(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
@@ -85,7 +85,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     @DeleteMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
     fun deleteSpecialEducationTeacher(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
@@ -98,7 +98,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun insertStaff(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
@@ -111,7 +111,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     @DeleteMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun deleteStaff(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
@@ -124,7 +124,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}/groups")
     fun updateStaffGroupAcl(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,

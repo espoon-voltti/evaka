@@ -34,7 +34,7 @@ import java.util.UUID
 class LocationController {
     @GetMapping("/units")
     fun getApplicationUnits(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
@@ -46,7 +46,7 @@ class LocationController {
 
     @GetMapping("/public/units/{applicationType}")
     fun getAllApplicableUnits(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         @PathVariable applicationType: ApplicationType
     ): ResponseEntity<List<PublicUnit>> {
         return db
@@ -55,7 +55,7 @@ class LocationController {
     }
 
     @GetMapping("/areas")
-    fun getAreas(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
+    fun getAreas(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
         return db
             .read {
                 it.createQuery("SELECT id, name, short_name FROM care_area")
@@ -66,7 +66,7 @@ class LocationController {
     }
 
     @GetMapping("/filters/units")
-    fun getUnits(db: Database.Connection, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
+    fun getUnits(db: Database.DeprecatedConnection, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
         val units = db.read { it.getUnits(areas, type) }
         return ResponseEntity.ok(units)

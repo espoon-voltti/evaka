@@ -33,7 +33,7 @@ import java.util.UUID
 @RestController
 class ChildController(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}")
-    fun getChild(db: Database.Connection, user: AuthenticatedUser, @PathVariable childId: UUID): ChildResponse {
+    fun getChild(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable childId: UUID): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ, childId)
         val child = db.read { it.getPersonById(childId) }
@@ -55,7 +55,7 @@ class ChildController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(db: Database.Connection, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
+    fun getAdditionalInfo(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ADDITIONAL_INFO, childId)
         return db.read { it.getAdditionalInformation(childId) }.let(::ok)
@@ -63,7 +63,7 @@ class ChildController(private val accessControl: AccessControl) {
 
     @PutMapping("/children/{childId}/additional-information")
     fun updateAdditionalInfo(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody data: AdditionalInformation

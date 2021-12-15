@@ -32,7 +32,7 @@ import java.util.UUID
 class NoteController(private val accessControl: AccessControl) {
     @GetMapping("/application/{applicationId}")
     fun getNotes(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<NoteJSON>> {
@@ -47,7 +47,7 @@ class NoteController(private val accessControl: AccessControl) {
 
     @PostMapping("/application/{id}")
     fun createNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("id") applicationId: ApplicationId,
         @RequestBody note: NoteRequest
@@ -63,7 +63,7 @@ class NoteController(private val accessControl: AccessControl) {
 
     @PutMapping("/{noteId}")
     fun updateNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest
@@ -79,7 +79,7 @@ class NoteController(private val accessControl: AccessControl) {
 
     @DeleteMapping("/{noteId}")
     fun deleteNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: ApplicationNoteId
     ): ResponseEntity<Unit> {
@@ -93,7 +93,7 @@ class NoteController(private val accessControl: AccessControl) {
 
     @PutMapping("/service-worker/application/{applicationId}")
     fun updateServiceWorkerNote(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest

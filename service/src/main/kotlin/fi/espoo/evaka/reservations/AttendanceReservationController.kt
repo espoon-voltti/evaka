@@ -39,7 +39,7 @@ import java.util.UUID
 class AttendanceReservationController(private val ac: AccessControl) {
     @GetMapping
     fun getAttendanceReservations(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -79,7 +79,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
 
     @PostMapping
     fun postReservations(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: List<DailyReservationRequest>
     ) {

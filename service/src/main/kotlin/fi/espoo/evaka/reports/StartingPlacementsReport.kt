@@ -24,7 +24,7 @@ import java.util.UUID
 class StartingPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/starting-placements")
     fun getStartingPlacementsReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int

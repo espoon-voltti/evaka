@@ -57,7 +57,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     fun `End user cannot end update end user's contact info`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         assertThrows<Forbidden> {
-            controller.updateContactInfo(db, user, UUID.randomUUID(), contactInfo)
+            controller.updateContactInfo(deprecatedDb, user, UUID.randomUUID(), contactInfo)
         }
     }
 
@@ -67,7 +67,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
-            db,
+            deprecatedDb,
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName} ${person.lastName}",
@@ -85,7 +85,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
-            db,
+            deprecatedDb,
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\t${person.lastName}",
@@ -103,7 +103,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
-            db,
+            deprecatedDb,
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u00A0${person.lastName}",
@@ -123,7 +123,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         // IDEOGRAPHIC SPACE, not supported by default in regexes
         // unless Java's Pattern.UNICODE_CHARACTER_CLASS-like functionality is enabled.
         val response = controller.findBySearchTerms(
-            db,
+            deprecatedDb,
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u3000${person.lastName}",
@@ -137,7 +137,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     private fun updateContactInfo(user: AuthenticatedUser) {
         val person = createPerson()
-        val actual = controller.updateContactInfo(db, user, person.id, contactInfo)
+        val actual = controller.updateContactInfo(deprecatedDb, user, person.id, contactInfo)
 
         assertEquals(HttpStatus.OK, actual.statusCode)
 

@@ -55,7 +55,7 @@ import java.time.LocalDate
 class UnitsView(private val accessControl: AccessControl) {
     @GetMapping("/{unitId}")
     fun getUnitViewData(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,

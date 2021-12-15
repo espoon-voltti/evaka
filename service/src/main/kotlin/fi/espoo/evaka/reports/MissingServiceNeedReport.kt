@@ -25,7 +25,7 @@ import java.util.UUID
 class MissingServiceNeedReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/missing-service-need")
     fun getMissingServiceNeedReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?

@@ -33,7 +33,7 @@ import java.time.LocalDate
 class ParentshipController(private val parentshipService: ParentshipService, private val accessControl: AccessControl) {
     @PostMapping
     fun createParentship(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: ParentshipRequest
     ) {
@@ -53,7 +53,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
     @GetMapping
     fun getParentships(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
         @RequestParam(value = "childId", required = false) childId: PersonId? = null
@@ -80,7 +80,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
     @GetMapping("/{id}")
     fun getParentship(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId
     ): Parentship {
@@ -93,7 +93,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
     @PutMapping("/{id}")
     fun updateParentship(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
@@ -108,7 +108,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
     @PutMapping("/{id}/retry")
     fun retryPartnership(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") parentshipId: ParentshipId
     ) {
@@ -120,7 +120,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
     @DeleteMapping("/{id}")
     fun deleteParentship(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId
     ) {

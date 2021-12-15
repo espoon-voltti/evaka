@@ -24,7 +24,7 @@ const val MAX_NUMBER_OF_DAYS = 14
 class PresenceReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/presences")
     fun getPresenceReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

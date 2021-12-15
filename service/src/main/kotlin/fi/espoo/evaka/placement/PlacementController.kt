@@ -47,7 +47,7 @@ class PlacementController(
 
     @GetMapping("/placements")
     fun getPlacements(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = false) daycareId: DaycareId? = null,
         @RequestParam(value = "childId", required = false) childId: UUID? = null,
@@ -82,7 +82,7 @@ class PlacementController(
 
     @GetMapping("/placements/plans")
     fun getPlacementPlans(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = true) daycareId: DaycareId,
         @RequestParam(
@@ -99,7 +99,7 @@ class PlacementController(
 
     @PostMapping("/placements")
     fun createPlacement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestBody body: PlacementCreateRequestBody
     ) {
@@ -136,7 +136,7 @@ class PlacementController(
 
     @PutMapping("/placements/{placementId}")
     fun updatePlacementById(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
@@ -164,7 +164,7 @@ class PlacementController(
 
     @DeleteMapping("/placements/{placementId}")
     fun deletePlacement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId
     ) {
@@ -182,7 +182,7 @@ class PlacementController(
 
     @PostMapping("/placements/{placementId}/group-placements")
     fun createGroupPlacement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
@@ -202,7 +202,7 @@ class PlacementController(
 
     @DeleteMapping("/group-placements/{groupPlacementId}")
     fun deleteGroupPlacement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
     ) {
@@ -214,7 +214,7 @@ class PlacementController(
 
     @PostMapping("/group-placements/{groupPlacementId}/transfer")
     fun transferGroupPlacement(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody

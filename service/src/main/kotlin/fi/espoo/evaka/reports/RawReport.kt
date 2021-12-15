@@ -28,7 +28,7 @@ import java.util.UUID
 class RawReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/raw")
     fun getRawReport(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

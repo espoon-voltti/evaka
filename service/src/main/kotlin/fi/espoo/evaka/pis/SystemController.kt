@@ -35,7 +35,7 @@ import java.util.UUID
 class SystemController(private val personService: PersonService, private val accessControl: AccessControl) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.SystemInternalUser,
         @RequestBody request: CitizenLoginRequest
     ): CitizenUser {
@@ -57,7 +57,7 @@ class SystemController(private val personService: PersonService, private val acc
 
     @PostMapping("/system/employee-login")
     fun employeeLogin(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.SystemInternalUser,
         @RequestBody request: EmployeeLoginRequest
     ): EmployeeUser {
@@ -80,7 +80,7 @@ class SystemController(private val personService: PersonService, private val acc
 
     @GetMapping("/system/employee/{id}")
     fun employeeUser(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable
         id: EmployeeId
@@ -102,7 +102,7 @@ class SystemController(private val personService: PersonService, private val acc
 
     @GetMapping("/system/mobile-identity/{token}")
     fun mobileIdentity(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable
         token: UUID
