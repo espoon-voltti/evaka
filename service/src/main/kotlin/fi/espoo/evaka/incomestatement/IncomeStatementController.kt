@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -96,6 +97,13 @@ class IncomeStatementController(
         Audit.IncomeStatementsAwaitingHandler.log()
         accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
         val areasList = areas.split(",").filter { it.isNotEmpty() }
-        return db.read { it.fetchIncomeStatementsAwaitingHandler(areasList, page, pageSize) }
+        return db.read {
+            it.fetchIncomeStatementsAwaitingHandler(
+                HelsinkiDateTime.now().toLocalDate(),
+                areasList,
+                page,
+                pageSize
+            )
+        }
     }
 }
