@@ -8,7 +8,10 @@ import {
   insertDaycarePlacementFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
@@ -17,7 +20,11 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import ChildInformationPage, {
-  DailyServiceTimeSection
+  AdditionalInformationSection,
+  BackupCaresSection,
+  DailyServiceTimeSection,
+  FamilyContactsSection,
+  GuardiansSection
 } from 'e2e-playwright/pages/employee/child-information'
 import {
   waitUntilEqual,
@@ -30,12 +37,13 @@ import { Page } from '../../utils/page'
 
 let page: Page
 let childInformationPage: ChildInformationPage
+let fixtures: AreaAndPersonFixtures
 let childId: UUID
 
 beforeEach(async () => {
   await resetDatabase()
 
-  const fixtures = await initializeAreaAndPersonData()
+  fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   const unitId = fixtures.daycareFixture.id
@@ -52,6 +60,7 @@ beforeEach(async () => {
   await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
+  await childInformationPage.waitUntilLoaded()
 })
 
 describe('Child Information - edit child information', () => {
@@ -66,6 +75,29 @@ describe('Child Information - edit child information', () => {
   })
 })
 
+describe('Child Information - edit additional information', () => {
+  let section: AdditionalInformationSection
+  beforeEach(() => {
+    section = childInformationPage.additionalInformationSection()
+  })
+
+  test('medication info and be added and removed', async () => {
+    const medication = 'Epipen'
+
+    await section.assertMedication('')
+
+    await section.edit()
+    await section.fillMedication(medication)
+    await section.save()
+    await section.assertMedication(medication)
+
+    await section.edit()
+    await section.fillMedication('')
+    await section.save()
+    await section.assertMedication('')
+  })
+})
+
 describe('Child Information - deceased child', () => {
   test('Deceased child indicator is shown', async () => {
     await page.goto(
@@ -73,6 +105,7 @@ describe('Child Information - deceased child', () => {
         '/child-information/' +
         enduserDeceasedChildFixture.id
     )
+    await childInformationPage.waitUntilLoaded()
     await childInformationPage.deceasedIconIsShown()
   })
 })
@@ -153,5 +186,65 @@ describe('Child Information - daily service times', () => {
     await waitUntilFalse(() => editor.dayIsSelected('saturday'))
     await waitUntilTrue(() => editor.dayIsSelected('sunday'))
     await waitUntilTrue(() => editor.hasTimeRange('sunday', '13:50', '09:20'))
+  })
+})
+
+describe('Chind information - backup care', () => {
+  let section: BackupCaresSection
+  beforeEach(async () => {
+    section = await childInformationPage.openCollapsible('backupCares')
+  })
+
+  test('backup care for a child can be added and removed', async () => {
+    await section.createBackupCare(
+      fixtures.daycareFixture,
+      '01.02.2020',
+      '03.02.2020'
+    )
+    await waitUntilEqual(
+      () => section.getBackupCares(),
+      [
+        {
+          unit: fixtures.daycareFixture.name,
+          period: '01.02.2020 - 03.02.2020'
+        }
+      ]
+    )
+    await section.deleteBackupCare(0)
+    await waitUntilEqual(() => section.getBackupCares(), [])
+  })
+})
+
+describe('Child information - backup pickups', () => {
+  let section: FamilyContactsSection
+  beforeEach(async () => {
+    section = await childInformationPage.openCollapsible('familyContacts')
+  })
+
+  test('backup pickups can be added and deleted', async () => {
+    const name1 = 'Mikko Mallikas'
+    const phone1 = '123456'
+    const name2 = 'Jaana Mallikas'
+    const phone2 = '987235'
+    await section.addBackupPickup(name1, phone1)
+    await section.addBackupPickup(name2, phone2)
+    await section.assertBackupPickupExists(name1)
+    await section.assertBackupPickupExists(name2)
+    await section.deleteBackupPickup(name2)
+    await section.assertBackupPickupExists(name1)
+    await section.assertBackupPickupDoesNotExist(name2)
+  })
+})
+
+describe('Child information - guardian information', () => {
+  let section: GuardiansSection
+  beforeEach(async () => {
+    section = await childInformationPage.openCollapsible('guardians')
+  })
+
+  test('guardian information is shown', async () => {
+    await section.assertGuardianExists(
+      fixtures.familyWithTwoGuardians.guardian.ssn
+    )
   })
 })
