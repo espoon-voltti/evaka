@@ -23,4 +23,18 @@ export const VasuContainer = styled(Container)<VasuContainerProps>`
       margin-top: 0px;
     }
   }
+
+  @media print {
+    display: block;
+    * {
+      overflow: visible;
+      text-overflow: visible;
+    }
+
+    section {
+      display: block;
+      break-inside: avoid-page;
+      break-before: auto;
+    }
+  }
 `
