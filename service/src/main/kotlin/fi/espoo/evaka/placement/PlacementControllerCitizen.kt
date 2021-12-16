@@ -47,9 +47,9 @@ class PlacementControllerCitizen(
             val placementsByType = placements.groupBy {
                 when (it.type) {
                     PlacementType.CLUB -> TerminatablePlacementType.CLUB
-                    PlacementType.TEMPORARY_DAYCARE, // TODO is this correct?
-                    PlacementType.TEMPORARY_DAYCARE_PART_DAY, // TODO is this correct?
-                    PlacementType.SCHOOL_SHIFT_CARE, // TODO is this correct?
+                    PlacementType.TEMPORARY_DAYCARE,
+                    PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+                    PlacementType.SCHOOL_SHIFT_CARE,
                     PlacementType.DAYCARE,
                     PlacementType.DAYCARE_PART_TIME,
                     PlacementType.DAYCARE_FIVE_YEAR_OLDS,
@@ -115,31 +115,32 @@ class PlacementControllerCitizen(
     ) {
         Audit.PlacementTerminate.log(body.unitId, body.type)
 
-        val placements = db.read { it.getCitizenChildPlacements(clock.today(), childId) }.also {
-            // TODO list support for accessControl
-            it
-                .map { p -> p.id }
-                .forEach { id -> accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, id) }
-        }
-        val terminatable = mapToTerminatablePlacements(placements)
-            .find { it.unitId == body.unitId && it.type == body.type }
-            ?: throw NotFound("Matching placement type not found")
+        val terminatablePlacements = db.read { it.getCitizenChildPlacements(clock.today(), childId) }
+            .also {
+                // TODO list support for accessControl
+                it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, id) }
+            }
+            .let { mapToTerminatablePlacements(it) }
+            .filter {
+                it.unitId == body.unitId &&
+                    (
+                        it.type == body.type ||
+                            (body.type == TerminatablePlacementType.PRESCHOOL && it.type === TerminatablePlacementType.DAYCARE)
+                        )
+            }
+            .flatMap { it.placements }
+            .also { if (it.isEmpty()) throw NotFound("Matching placement type not found") }
 
         db.transaction { tx ->
-            // TODO validate termination
-            terminatable.placements.forEach {
+            terminatablePlacements.forEach {
                 if (body.terminateDaycareOnly == true) {
                     if (listOf(PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE).contains(it.type)) {
                         // TODO change placement type to PRESCHOOL / PREPARATORY and remove service needs, split placement if current placement
                     }
-                } else if (it.startDate.isAfter(body.terminationDate)) { // TODO check off by one
+                } else if (it.startDate.isAfter(body.terminationDate)) {
                     tx.cancelPlacement(it.id)
-                } else if (body.terminationDate.isAfter(it.startDate) &&
-                    // TODO check off by one
-                    // TODO what is a valid termination date?
-                    body.terminationDate.isBefore(it.endDate)
+                } else if (body.terminationDate.isAfter(it.startDate) && body.terminationDate.isBefore(it.endDate)
                 ) {
-
                     tx.terminatePlacementFrom(clock.today(), it.id, body.terminationDate, user.id)
                 }
             }
