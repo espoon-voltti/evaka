@@ -81,7 +81,10 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
   }
 
   return (
-    <div className="additional-information-section">
+    <div
+      data-qa="additional-information-section"
+      data-isloading={additionalInformation.isLoading}
+    >
       <FlexRow justifyContent="space-between">
         <H4>{i18n.childInformation.additionalInformation.title}</H4>
         <RequireRole

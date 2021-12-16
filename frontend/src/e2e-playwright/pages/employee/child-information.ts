@@ -8,9 +8,12 @@ import {
   FileInput,
   TextInput,
   Checkbox,
-  Radio
+  Radio,
+  Combobox,
+  DatePickerDeprecated
 } from 'e2e-playwright/utils/page'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { Daycare } from '../../../e2e-test-common/dev-api/types'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
@@ -27,6 +30,17 @@ export default class ChildInformationPage {
   readonly #confirmButton = this.page.find(
     '[data-qa="confirm-edited-person-button"]'
   )
+
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="person-details-section"][data-isloading="false"]')
+      .waitUntilVisible()
+    await this.page
+      .find(
+        '[data-qa="additional-information-section"][data-isloading="false"]'
+      )
+      .waitUntilVisible()
+  }
 
   async clickEdit() {
     await this.#editButton.click()
@@ -53,6 +67,39 @@ export default class ChildInformationPage {
     const element = this.page.find(selector)
     await element.click()
     return new section(element) as SectionFor<C>
+  }
+
+  additionalInformationSection() {
+    return new AdditionalInformationSection(
+      this.page.find('[data-qa="additional-information-section"]')
+    )
+  }
+}
+
+export class AdditionalInformationSection {
+  constructor(private section: Element) {}
+
+  #medication = this.section.find('[data-qa="medication"]')
+  #editBtn = this.section.find('[data-qa="edit-child-settings-button"]')
+  #medicationInput = new TextInput(
+    this.section.find('[data-qa="medication-input"]')
+  )
+  #confirmBtn = this.section.find('[data-qa="confirm-edited-child-button"]')
+
+  async assertMedication(text: string) {
+    await waitUntilEqual(() => this.#medication.textContent, text)
+  }
+
+  async fillMedication(text: string) {
+    await this.#medicationInput.fill(text)
+  }
+
+  async edit() {
+    await this.#editBtn.click()
+  }
+
+  async save() {
+    await this.#confirmBtn.click()
   }
 }
 
@@ -245,6 +292,111 @@ export class VasuAndLeopsSection {
   }
 }
 
+export class BackupCaresSection {
+  constructor(private section: Element) {}
+
+  #createBackupCareButton = this.section.find(
+    '[data-qa="backup-care-create-btn"]'
+  )
+  #backupCareSelectUnit = new Combobox(
+    this.section.find('[data-qa="backup-care-select-unit"]')
+  )
+
+  #dates = this.section.findAll('[data-qa="dates"] > *')
+  #startDate = new DatePickerDeprecated(this.#dates.nth(0))
+  #endDate = new DatePickerDeprecated(this.#dates.nth(1))
+
+  // #backupCareForm = this.section.find('[data-qa="backup-care-form"]')
+  #submit = this.section.find('[data-qa="submit-backup-care-form"]')
+
+  #backupCares = this.section.find('[data-qa="backup-cares"]')
+
+  async createBackupCare(daycare: Daycare, startDate: string, endDate: string) {
+    await this.#createBackupCareButton.click()
+    await this.#backupCareSelectUnit.fillAndSelectFirst(daycare.name)
+
+    await this.#startDate.fill(startDate)
+    await this.#endDate.fill(endDate)
+
+    await this.#submit.click()
+    await this.#backupCares.waitUntilVisible()
+  }
+
+  async getBackupCares(): Promise<Array<{ unit: string; period: string }>> {
+    await this.#backupCares.waitUntilVisible()
+    return this.section.evaluate((el) => {
+      return Array.from(el.querySelectorAll('[data-qa="backup-care-row"]')).map(
+        (row) => ({
+          unit: row.querySelector('[data-qa="unit"]')?.textContent ?? '',
+          period: row.querySelector('[data-qa="period"]')?.textContent ?? ''
+        })
+      )
+    })
+  }
+
+  async deleteBackupCare(index: number) {
+    await this.#backupCares
+      .findAll('[data-qa="backup-care-row"]')
+      .nth(index)
+      .find('[data-qa="btn-remove-backup-care"]')
+      .click()
+
+    const modal = this.#backupCares.find('[data-qa="modal"]')
+    await modal.waitUntilVisible()
+    await this.#backupCares.find('[data-qa="modal-okBtn"]').click()
+    await modal.waitUntilHidden()
+  }
+}
+
+export class FamilyContactsSection {
+  constructor(private section: Element) {}
+
+  #row(name: string) {
+    return this.section.find(`[data-qa="table-backup-pickup-row-${name}"]`)
+  }
+
+  #createBtn = this.section.find('[data-qa="create-backup-pickup-btn"]')
+  #nameInput = new TextInput(
+    this.section.find('[data-qa="backup-pickup-name-input"]')
+  )
+  #phoneInput = new TextInput(
+    this.section.find('[data-qa="backup-pickup-phone-input"]')
+  )
+  #modalOk = this.section.find('[data-qa="modal-okBtn"]')
+
+  async addBackupPickup(name: string, phone: string) {
+    await this.#createBtn.click()
+    await this.#nameInput.fill(name)
+    await this.#phoneInput.type(phone)
+    await this.#modalOk.click()
+  }
+
+  async assertBackupPickupExists(name: string) {
+    await this.#row(name).waitUntilVisible()
+  }
+
+  async assertBackupPickupDoesNotExist(name: string) {
+    await this.#row(name).waitUntilHidden()
+  }
+
+  async deleteBackupPickup(name: string) {
+    await this.#row(name).find('[data-qa="delete-backup-pickup"]').click()
+    await this.#modalOk.click()
+  }
+}
+
+export class GuardiansSection {
+  constructor(private section: Element) {}
+
+  #guardianRows = this.section.find('[data-qa="table-guardian-row"]')
+
+  async assertGuardianExists(ssn: string) {
+    await this.#guardianRows
+      .find(`[data-qa="guardian-ssn"] >> text=${ssn}`)
+      .waitUntilVisible()
+  }
+}
+
 const collapsibles = {
   dailyServiceTimes: {
     selector: '[data-qa="child-daily-service-times-collapsible"]',
@@ -257,6 +409,18 @@ const collapsibles = {
   vasuAndLeops: {
     selector: '[data-qa="vasu-and-leops-collapsible"]',
     section: VasuAndLeopsSection
+  },
+  backupCares: {
+    selector: '[data-qa="backup-cares-collapsible"]',
+    section: BackupCaresSection
+  },
+  familyContacts: {
+    selector: '[data-qa="family-contacts-collapsible"]',
+    section: FamilyContactsSection
+  },
+  guardians: {
+    selector: '[data-qa="person-guardians-collapsible"]',
+    section: GuardiansSection
   }
 }
 

@@ -24,7 +24,7 @@ export default React.memo(function ChildDetails({ id }: Props) {
   const [open, setOpen] = useState(true)
 
   return (
-    <div className="person-details-section">
+    <div data-qa="person-details-section" data-isloading={person.isLoading}>
       <CollapsibleContentArea
         title={<H2 noMargin>{i18n.childInformation.personDetails.title}</H2>}
         open={open}
