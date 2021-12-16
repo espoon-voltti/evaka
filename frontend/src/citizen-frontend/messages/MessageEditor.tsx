@@ -72,7 +72,7 @@ export default React.memo(function MessageEditor({
           </>
         )}
         <div>
-          <Bold>{i18n.messages.messageEditor.receivers}</Bold>
+          <Bold>{i18n.messages.messageEditor.recipients}</Bold>
           <Gap size={'xs'} />
         </div>
         <MultiSelect
@@ -91,7 +91,7 @@ export default React.memo(function MessageEditor({
           data-qa="select-receiver"
         />
         <Gap size={'s'} />
-        <Bold>{i18n.messages.messageEditor.title}</Bold>
+        <Bold>{i18n.messages.messageEditor.subject}</Bold>
         <InputField
           value={message.title ?? ''}
           onChange={(updated) =>

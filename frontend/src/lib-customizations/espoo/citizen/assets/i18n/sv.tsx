@@ -246,8 +246,8 @@ const sv: Translations = {
     replyToThread: 'Svar',
     messageEditor: {
       newMessage: 'Nytt Meddelande',
-      receivers: 'Mottagare',
-      title: 'Titel',
+      recipients: 'Mottagare',
+      subject: 'Titel',
       message: 'Meddelande',
       deleteDraft: 'Ta bort utkast',
       send: 'Skicka',

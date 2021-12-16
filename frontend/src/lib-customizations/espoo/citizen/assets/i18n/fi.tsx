@@ -245,8 +245,8 @@ export default {
     staffAnnotation: 'Henkilökunta',
     messageEditor: {
       newMessage: 'Uusi viesti',
-      receivers: 'Vastaanottajat',
-      title: 'Otsikko',
+      recipients: 'Vastaanottajat',
+      subject: 'Otsikko',
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
