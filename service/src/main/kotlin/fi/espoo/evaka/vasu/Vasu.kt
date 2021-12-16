@@ -314,7 +314,8 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
-        val tracked: Boolean = false,
+        val trackedInEvents: Boolean,
+        val nameInEvents: String = "",
         val value: LocalDate?,
     ) : VasuQuestion(VasuQuestionType.DATE) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {

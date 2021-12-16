@@ -299,7 +299,8 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Varhaiskasvatuskeskustelun päivämäärä"
                         VasuLanguage.SV -> "Datum för samtalet om barnets plan för småbarnspedagogik"
                     },
-                    tracked = true,
+                    trackedInEvents = true,
+                    nameInEvents = "Varhaiskasvatussuunnitelmakeskustelu",
                     value = null
                 ),
                 VasuQuestion.TextQuestion(
@@ -339,7 +340,8 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Arviointikeskustelun päivämäärä"
                         VasuLanguage.SV -> "Datum för utvärderingssamtalet"
                     },
-                    tracked = true,
+                    trackedInEvents = true,
+                    nameInEvents = "Arviointikeskustelu",
                     value = null
                 ),
                 VasuQuestion.TextQuestion(
@@ -493,7 +495,7 @@ fun getDefaultLeopsContent() = VasuContent(
                 VasuQuestion.DateQuestion(
                     name = "Viimeisin seuranta",
                     info = "Päivitä tähän viimeisin taitotason seurannan ajankohta.",
-                    tracked = false,
+                    trackedInEvents = false,
                     value = null
                 ),
                 VasuQuestion.MultiSelectQuestion(
@@ -571,7 +573,8 @@ fun getDefaultLeopsContent() = VasuContent(
                 ),
                 VasuQuestion.DateQuestion(
                     name = "Keskustelun päivämäärä",
-                    tracked = true,
+                    trackedInEvents = true,
+                    nameInEvents = "Oppimissuunnitelmakeskustelu",
                     value = null
                 ),
                 VasuQuestion.TextQuestion(
@@ -602,7 +605,8 @@ fun getDefaultLeopsContent() = VasuContent(
                 ),
                 VasuQuestion.DateQuestion(
                     name = "Huoltajien kanssa käydyn keskustelun päivämäärä",
-                    tracked = true,
+                    trackedInEvents = true,
+                    nameInEvents = "Perusopetukseen siirtymiskeskustelu",
                     value = null
                 ),
                 VasuQuestion.TextQuestion(
@@ -621,6 +625,7 @@ fun getDefaultLeopsContent() = VasuContent(
                 ),
                 VasuQuestion.DateQuestion(
                     name = "Tiedonsiirtokeskustelun päivämäärä",
+                    trackedInEvents = false,
                     value = null
                 ),
                 VasuQuestion.MultiFieldList(

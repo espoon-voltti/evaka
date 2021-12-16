@@ -61,8 +61,11 @@ export function VasuEvents({
       content.sections.flatMap((section) =>
         section.questions
           .filter(isDateQuestion)
-          .filter((question) => question.tracked)
-          .map(({ name, value }): [string, LocalDate | null] => [name, value])
+          .filter((question) => question.trackedInEvents)
+          .map(({ name, nameInEvents, value }): [string, LocalDate | null] => [
+            nameInEvents || name,
+            value
+          ])
           .filter((pair): pair is [string, LocalDate] => pair[1] !== null)
       ),
     [content]

@@ -65,7 +65,8 @@ export interface MultiFieldListQuestion extends VasuQuestionCommon {
 
 export interface DateQuestion extends VasuQuestionCommon {
   type: 'DATE'
-  tracked: boolean
+  trackedInEvents: boolean
+  nameInEvents: string
   value: LocalDate | null
 }
 

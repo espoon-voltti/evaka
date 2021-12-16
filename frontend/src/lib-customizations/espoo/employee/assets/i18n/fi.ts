@@ -2869,7 +2869,8 @@ export const fi = {
       minSelections: 'Valittava vähintään',
       keys: 'Tekstikenttien nimet',
       addNewKey: 'Lisää nimetty tekstikenttä',
-      tracked: 'Päivämäärä näytetään suunnitelman tapahtumissa',
+      dateIsTrackedInEvents:
+        'Päivämäärä näytetään suunnitelman tapahtumissa nimellä',
       paragraphTitle: 'Kappaleen otsikko',
       paragraphText: 'Kappaleen leipäteksti'
     },

@@ -41,7 +41,8 @@ export default React.memo(function CreateQuestionModal({
   const [minSelections, setMinSelections] = useState(0)
   const [keys, setKeys] = useState([''])
   const [info, setInfo] = useState('')
-  const [tracked, setTracked] = useState(false)
+  const [trackedInEvents, setTrackedInEvents] = useState(false)
+  const [nameInEvents, setNameInEvents] = useState('')
 
   function createQuestion(): VasuQuestion {
     switch (type) {
@@ -112,7 +113,8 @@ export default React.memo(function CreateQuestionModal({
           ophKey: null,
           name,
           info,
-          tracked,
+          trackedInEvents,
+          nameInEvents: trackedInEvents ? nameInEvents : '',
           value: null
         }
       case 'FOLLOWUP':
@@ -245,10 +247,17 @@ export default React.memo(function CreateQuestionModal({
         {type === 'DATE' && (
           <FixedSpaceColumn spacing="xxs">
             <Checkbox
-              label={t.tracked}
-              checked={tracked}
-              onChange={setTracked}
+              label={t.dateIsTrackedInEvents}
+              checked={trackedInEvents}
+              onChange={setTrackedInEvents}
             />
+            {trackedInEvents && (
+              <InputField
+                value={nameInEvents}
+                onChange={setNameInEvents}
+                width="m"
+              />
+            )}
           </FixedSpaceColumn>
         )}
 

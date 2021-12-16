@@ -159,7 +159,8 @@ UPDATE curriculum_template SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Datum för samtalet om barnets plan för småbarnspedagogik',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Varhaiskasvatussuunnitelmakeskustelu',
                     'value', NULL
                 ),
                 jsonb_build_object(
@@ -196,7 +197,8 @@ UPDATE curriculum_template SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Varhaiskasvatuskeskustelun päivämäärä',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Varhaiskasvatussuunnitelmakeskustelu',
                     'value', NULL
                 ),
                 jsonb_build_object(
@@ -230,7 +232,8 @@ UPDATE curriculum_content SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Datum för samtalet om barnets plan för småbarnspedagogik',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Varhaiskasvatussuunnitelmakeskustelu',
                     'value', curriculum_content.curriculum_discussion_content->'discussionDate'
                 ),
                 jsonb_build_object(
@@ -267,7 +270,8 @@ UPDATE curriculum_content SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Varhaiskasvatuskeskustelun päivämäärä',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Varhaiskasvatussuunnitelmakeskustelu',
                     'value', curriculum_content.curriculum_discussion_content->'discussionDate'
                 ),
                 jsonb_build_object(
@@ -307,7 +311,8 @@ UPDATE curriculum_template SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Datum för utvärderingssamtalet',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Arviointikeskustelu',
                     'value', NULL
                 ),
                 jsonb_build_object(
@@ -353,7 +358,8 @@ UPDATE curriculum_template SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Arviointikeskustelun päivämäärä',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Arviointikeskustelu',
                     'value', NULL
                 ),
                 jsonb_build_object(
@@ -396,7 +402,8 @@ UPDATE curriculum_content SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Datum för utvärderingssamtalet',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Arviointikeskustelu',
                     'value', curriculum_content.evaluation_discussion_content->'discussionDate'
                 ),
                 jsonb_build_object(
@@ -442,7 +449,8 @@ UPDATE curriculum_content SET content = jsonb_build_object(
                     'ophKey', NULL,
                     'name', 'Arviointikeskustelun päivämäärä',
                     'info', '',
-                    'tracked', TRUE,
+                    'trackedInEvents', TRUE,
+                    'nameInEvents', 'Arviointikeskustelu',
                     'value', curriculum_content.evaluation_discussion_content->'discussionDate'
                 ),
                 jsonb_build_object(
