@@ -90,7 +90,7 @@ describe('Child Information placement info', () => {
     await setupUser(config.unitSupervisorAad)
     await logUserIn('UNIT_SUPERVISOR')
 
-    await childPlacementsPage.assertTerminatedByGuardianIsNotShown()
+    await childPlacementsPage.assertTerminatedByGuardianIsNotShown(placementId)
 
     await terminatePlacement(
       placementId,
@@ -99,7 +99,6 @@ describe('Child Information placement info', () => {
       familyWithTwoGuardians.guardian.id
     )
     await logUserIn('UNIT_SUPERVISOR')
-
-    await childPlacementsPage.assertTerminatedByGuardianIsShown()
+    await childPlacementsPage.assertTerminatedByGuardianIsShown(placementId)
   })
 })

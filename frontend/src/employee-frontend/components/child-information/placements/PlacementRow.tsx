@@ -171,7 +171,7 @@ export default React.memo(function PlacementRow({
       statusLabel={getStatusLabelByDateRange(placement)}
     />
   ) : (
-    <>
+    <div data-qa={`placement-${placement.id}`}>
       <ToolbarAccordion
         title={placement.daycare.name}
         subtitle={`${placement.startDate.format()} - ${placement.endDate.format()}`}
@@ -365,7 +365,7 @@ export default React.memo(function PlacementRow({
           }}
         />
       )}
-    </>
+    </div>
   )
 })
 

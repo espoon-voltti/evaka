@@ -110,13 +110,19 @@ export class ChildAssistanceNeed {
 export class ChildPlacements {
   constructor(private page: Page) {}
 
-  #terminatedByGuardian = this.page.find('[data-qa="placement-terminated"]')
+  #placement = (placementId: string) =>
+    this.page.find(`[data-qa="placement-${placementId}"]`)
+  #terminatedByGuardian = (placementId: string) =>
+    this.#placement(placementId).find('[data-qa="placement-terminated"]')
 
-  async assertTerminatedByGuardianIsShown() {
-    await this.#terminatedByGuardian.waitUntilVisible()
+  async assertTerminatedByGuardianIsShown(placementId: string) {
+    await this.#terminatedByGuardian(placementId).waitUntilVisible()
   }
 
-  async assertTerminatedByGuardianIsNotShown() {
-    await this.#terminatedByGuardian.waitUntilHidden()
+  async assertTerminatedByGuardianIsNotShown(placementId: string) {
+    await this.#placement(placementId)
+      .find('[data-qa="placement-details-start-date"]')
+      .waitUntilVisible()
+    await this.#terminatedByGuardian(placementId).waitUntilHidden()
   }
 }
