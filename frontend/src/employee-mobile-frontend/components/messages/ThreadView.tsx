@@ -150,6 +150,7 @@ const RoundIconButton = styled.button`
 
 const MessageContainer = styled.div`
   border-radius: ${defaultMargins.s};
+  max-width: 90%;
   ${(p: { ours: boolean }) =>
     p.ours
       ? `
@@ -192,6 +193,8 @@ const SenderName = styled.div`
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
   white-space: pre-line;
+  word-break: normal;
+  overflow-wrap: anywhere;
 `
 
 const ThreadViewMobile = styled(ThreadContainer)`
