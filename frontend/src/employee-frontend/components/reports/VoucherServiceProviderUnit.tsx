@@ -127,7 +127,9 @@ function VoucherServiceProviderUnit() {
   }
 
   const sortedReport = report.map((rs) =>
-    sort === 'group' ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') } : rs
+    sort === 'group'
+      ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') }
+      : { ...rs, rows: sortBy(rs.rows, ['childFirstName', 'childLastName']) }
   )
 
   const [unitName, setUnitName] = useState<string>('')
