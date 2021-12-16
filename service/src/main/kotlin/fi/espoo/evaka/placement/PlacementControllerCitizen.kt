@@ -5,7 +5,9 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -43,7 +45,7 @@ class PlacementControllerCitizen(
     private fun mapToTerminatablePlacements(placements: List<ChildPlacement>): List<TerminatablePlacementGroup> = placements
         .groupBy { it.unitName }
         .entries
-        .fold(listOf()) { acc, (_, placements) ->
+        .fold(listOf<TerminatablePlacementGroup>()) { acc, (_, placements) ->
             val placementsByType = placements.groupBy {
                 when (it.type) {
                     PlacementType.CLUB -> TerminatablePlacementType.CLUB
@@ -54,9 +56,9 @@ class PlacementControllerCitizen(
                     PlacementType.DAYCARE_PART_TIME,
                     PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                     PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> TerminatablePlacementType.DAYCARE
-                    PlacementType.PRESCHOOL,
+                    PRESCHOOL,
                     PRESCHOOL_DAYCARE -> TerminatablePlacementType.PRESCHOOL
-                    PlacementType.PREPARATORY,
+                    PREPARATORY,
                     PREPARATORY_DAYCARE -> TerminatablePlacementType.PREPARATORY
                 }
             }
@@ -71,6 +73,7 @@ class PlacementControllerCitizen(
                 )
             }
         }
+        .sortedBy { it.startDate }
 
     data class ChildPlacementResponse(
         val placements: List<TerminatablePlacementGroup>,
@@ -125,25 +128,40 @@ class PlacementControllerCitizen(
                 it.unitId == body.unitId &&
                     (
                         it.type == body.type ||
-                            (body.type == TerminatablePlacementType.PRESCHOOL && it.type === TerminatablePlacementType.DAYCARE)
+                            // if terminating preschool/preparatory, all future daycare placements must be terminated too
+                            (it.type === TerminatablePlacementType.DAYCARE && listOf(TerminatablePlacementType.PRESCHOOL, TerminatablePlacementType.PREPARATORY).contains(body.type))
                         )
             }
             .flatMap { it.placements }
+            .filter { it.startsAfter(body.terminationDate) || it.containsExclusively(body.terminationDate) }
             .also { if (it.isEmpty()) throw NotFound("Matching placement type not found") }
 
         db.transaction { tx ->
-            terminatablePlacements.forEach {
-                if (body.terminateDaycareOnly == true) {
-                    if (listOf(PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE).contains(it.type)) {
-                        // TODO change placement type to PRESCHOOL / PREPARATORY and remove service needs, split placement if current placement
+            terminatablePlacements
+                .sortedByDescending { it.startDate }
+                .forEach { placement ->
+                    if (placement.startsAfter(body.terminationDate)) {
+                        tx.cancelPlacement(placement.id)
+                    } else if (placement.containsExclusively(body.terminationDate)) {
+                        tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, user.id)
+
+                        if (body.terminateDaycareOnly == true && (placement.type == PRESCHOOL_DAYCARE || placement.type == PREPARATORY_DAYCARE)) {
+                            // create new placement without daycare for the remaining period
+                            // with placement type to PRESCHOOL / PREPARATORY
+                            val typeForRemainingPeriod = if (placement.type === PRESCHOOL_DAYCARE) PRESCHOOL else PREPARATORY
+                            tx.insertPlacement(
+                                type = typeForRemainingPeriod,
+                                childId = childId,
+                                unitId = body.unitId,
+                                startDate = body.terminationDate.plusDays(1),
+                                endDate = placement.endDate
+                            )
+                        }
                     }
-                } else if (it.startDate.isAfter(body.terminationDate)) {
-                    tx.cancelPlacement(it.id)
-                } else if (body.terminationDate.isAfter(it.startDate) && body.terminationDate.isBefore(it.endDate)
-                ) {
-                    tx.terminatePlacementFrom(clock.today(), it.id, body.terminationDate, user.id)
                 }
-            }
         }
     }
 }
+
+private fun ChildPlacement.startsAfter(date: LocalDate): Boolean = this.startDate.isAfter(date)
+private fun ChildPlacement.containsExclusively(date: LocalDate): Boolean = date.isAfter(this.startDate) && date.isBefore(this.endDate)
