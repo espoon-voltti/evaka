@@ -19,15 +19,16 @@ import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
@@ -39,7 +40,7 @@ class VoucherValueDecisionService(
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
     private val messageProvider: IMessageProvider,
-    private val messageClient: IEvakaMessageClient,
+    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     env: BucketEnv
 ) {
     private val bucket = env.voucherValueDecisions
@@ -80,22 +81,27 @@ class VoucherValueDecisionService(
         val documentDisplayName = suomiFiDocumentFileName(lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(langWithDefault(lang))
         val messageContent = messageProvider.getVoucherValueDecisionContent(langWithDefault(lang))
-        messageClient.send(
-            SuomiFiMessage(
-                messageId = decision.id.toString(),
-                documentId = decision.id.toString(),
-                documentDisplayName = documentDisplayName,
-                documentBucket = bucket,
-                documentKey = decision.documentKey,
-                language = lang,
-                firstName = decision.headOfFamily.firstName,
-                lastName = decision.headOfFamily.lastName,
-                streetAddress = decision.headOfFamily.streetAddress,
-                postalCode = decision.headOfFamily.postalCode,
-                postOffice = decision.headOfFamily.postOffice,
-                ssn = decision.headOfFamily.ssn!!,
-                messageHeader = messageHeader,
-                messageContent = messageContent
+        sfiAsyncJobRunner.plan(
+            tx,
+            listOf(
+                SuomiFiAsyncJob.SendMessage(
+                    SfiMessage(
+                        messageId = decision.id.toString(),
+                        documentId = decision.id.toString(),
+                        documentDisplayName = documentDisplayName,
+                        documentBucket = bucket,
+                        documentKey = decision.documentKey,
+                        language = lang,
+                        firstName = decision.headOfFamily.firstName,
+                        lastName = decision.headOfFamily.lastName,
+                        streetAddress = decision.headOfFamily.streetAddress,
+                        postalCode = decision.headOfFamily.postalCode,
+                        postOffice = decision.headOfFamily.postOffice,
+                        ssn = decision.headOfFamily.ssn!!,
+                        messageHeader = messageHeader,
+                        messageContent = messageContent
+                    )
+                )
             )
         )
 

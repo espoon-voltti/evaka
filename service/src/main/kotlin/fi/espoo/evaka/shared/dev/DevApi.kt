@@ -69,6 +69,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.sficlient.MockSfiMessagesClient
+import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -93,6 +95,8 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
+import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -103,8 +107,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.message.MockEvakaMessageClient
-import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.vasu.CurriculumType
@@ -148,6 +150,8 @@ private val fakeAdmin = AuthenticatedUser.Employee(
 class DevApi(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val vardaAsyncJobRunner: AsyncJobRunner<VardaAsyncJob>,
+    private val suomiFiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
@@ -157,6 +161,13 @@ class DevApi(
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
 
+    private fun runAllAsyncJobs() {
+        listOf(asyncJobRunner, vardaAsyncJobRunner, suomiFiAsyncJobRunner).forEach {
+            it.runPendingJobsSync()
+            it.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
+        }
+    }
+
     @GetMapping
     fun healthCheck(): ResponseEntity<Unit> {
         return ResponseEntity.noContent().build()
@@ -165,8 +176,7 @@ class DevApi(
     @PostMapping("/reset-db")
     fun resetDatabase(db: Database.DeprecatedConnection): ResponseEntity<Unit> {
         // Run async jobs before database reset to avoid database locks/deadlocks
-        asyncJobRunner.runPendingJobsSync()
-        asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
+        runAllAsyncJobs()
 
         db.transaction {
             it.resetDatabase()
@@ -180,8 +190,7 @@ class DevApi(
 
     @PostMapping("/run-jobs")
     fun runJobs(): ResponseEntity<Unit> {
-        asyncJobRunner.runPendingJobsSync()
-        asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
+        runAllAsyncJobs()
         return ResponseEntity.noContent().build()
     }
 
@@ -557,13 +566,13 @@ RETURNING id
     }
 
     @GetMapping("/messages")
-    fun getMessages(db: Database): ResponseEntity<List<SuomiFiMessage>> {
-        return ResponseEntity.ok(MockEvakaMessageClient.getMessages())
+    fun getMessages(db: Database): ResponseEntity<List<SfiMessage>> {
+        return ResponseEntity.ok(MockSfiMessagesClient.getMessages())
     }
 
     @PostMapping("/messages/clean-up")
     fun cleanUpMessages(db: Database): ResponseEntity<Unit> {
-        MockEvakaMessageClient.clearMessages()
+        MockSfiMessagesClient.clearMessages()
         return ResponseEntity.noContent().build()
     }
 

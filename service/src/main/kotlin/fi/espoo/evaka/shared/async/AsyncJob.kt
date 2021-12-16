@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
+import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -54,6 +55,12 @@ sealed interface VardaAsyncJob : AsyncJobPayload {
     data class DeleteVardaChild(
         val vardaChildId: Long
     ) : VardaAsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+}
+
+sealed interface SuomiFiAsyncJob : AsyncJobPayload {
+    data class SendMessage(val message: SfiMessage) : SuomiFiAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 }

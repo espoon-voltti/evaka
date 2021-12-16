@@ -9,6 +9,5 @@ set -euo pipefail
 (cd ../evaka-base && ./build.sh)
 (cd ../apigw && ./build-docker.sh)
 (cd ../service && ./build-docker.sh)
-(cd ../message-service && ./build-docker.sh)
 (cd ../frontend && yarn install --immutable)
 (cd ../frontend && yarn build:dev)

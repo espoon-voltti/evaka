@@ -129,6 +129,7 @@ dependencies {
     implementation("com.auth0:java-jwt")
     implementation("javax.annotation:javax.annotation-api")
     implementation("org.apache.commons:commons-pool2")
+    implementation("org.apache.commons:commons-text")
     implementation("org.glassfish.jaxb:jaxb-runtime")
     implementation("org.bouncycastle:bcprov-jdk15on")
     implementation("org.bouncycastle:bcpkix-jdk15on")
@@ -147,8 +148,13 @@ dependencies {
     testImplementation("org.springframework.ws:spring-ws-test")
 
     integrationTestImplementation("io.javalin:javalin")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security")
     integrationTestImplementation("org.testcontainers:postgresql")
 
+    implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
 
     ktlint("com.pinterest:ktlint:${Version.ktlint}")

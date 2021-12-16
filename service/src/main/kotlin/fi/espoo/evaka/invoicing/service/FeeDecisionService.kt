@@ -30,17 +30,18 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
+import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
-import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -54,7 +55,7 @@ class FeeDecisionService(
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
     private val messageProvider: IMessageProvider,
-    private val evakaMessageClient: IEvakaMessageClient
+    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 ) {
     fun confirmDrafts(
         tx: Database.Transaction,
@@ -172,7 +173,7 @@ class FeeDecisionService(
         val feeDecisionDisplayName =
             if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
 
-        val message = SuomiFiMessage(
+        val message = SfiMessage(
             messageId = decision.id.toString(),
             documentId = decision.id.toString(),
             documentDisplayName = feeDecisionDisplayName,
@@ -191,7 +192,7 @@ class FeeDecisionService(
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
 
-        evakaMessageClient.send(message)
+        sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)))
         tx.setFeeDecisionSent(listOf(decision.id))
 
         return true

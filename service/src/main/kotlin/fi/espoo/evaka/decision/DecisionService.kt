@@ -21,16 +21,16 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
+import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.pdfgen.PDFService
@@ -50,8 +50,8 @@ class DecisionService(
     private val templateProvider: ITemplateProvider,
     private val pdfService: PDFService,
     private val messageProvider: IMessageProvider,
-    private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     env: BucketEnv,
 ) {
     private val decisionBucket = env.decisions
@@ -231,7 +231,7 @@ class DecisionService(
         val sendAddress = getSendAddress(messageProvider, guardian, lang)
         // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
-        val message = SuomiFiMessage(
+        val message = SfiMessage(
             messageId = uniqueId,
             documentId = uniqueId,
             documentDisplayName = calculateDecisionFileName(tx, decision, lang),
@@ -248,7 +248,7 @@ class DecisionService(
             messageContent = messageProvider.getDecisionContent(langWithDefault(lang))
         )
 
-        evakaMessageClient.send(message)
+        sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)))
     }
 
     fun getDecisionPdf(tx: Database.Read, decisionId: DecisionId): Document {

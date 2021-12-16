@@ -23,8 +23,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
-
-private val logger = KotlinLogging.logger { }
+import kotlin.reflect.KClass
 
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
@@ -35,8 +34,15 @@ private data class Registration<T : AsyncJobPayload>(val handler: (db: Database,
         handler(db, msg as T)
 }
 
-class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi, threadPoolSize: Int = 4) : AutoCloseable {
-    private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(threadPoolSize)
+data class AsyncJobRunnerConfig(
+    val threadPoolSize: Int = 4,
+    val throttleInterval: Duration? = null,
+)
+
+class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {
+    private val logger = KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
+
+    private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(config.threadPoolSize)
     private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
@@ -121,6 +127,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi, threadPoolSize
                     runPendingJob(db, job)
                 }
                 remaining -= 1
+                config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
             } while (job != null && remaining > 0)
         }
     }

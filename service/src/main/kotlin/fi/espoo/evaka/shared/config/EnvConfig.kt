@@ -11,10 +11,10 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
-import fi.espoo.evaka.MessageEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.RedisEnv
 import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.VtjXroadEnv
@@ -57,12 +57,6 @@ class EnvConfig {
     fun jwtEnv(env: Environment): JwtEnv = JwtEnv.fromEnvironment(env)
 
     @Bean
-    fun messageEnv(evakaEnv: EvakaEnv, env: Environment): MessageEnv? = when (evakaEnv.messageEnabled) {
-        true -> MessageEnv.fromEnvironment(env)
-        false -> null
-    }
-
-    @Bean
     fun scheduledJobsEnv(env: Environment): ScheduledJobsEnv = ScheduledJobsEnv.fromEnvironment(env)
 
     @Bean
@@ -73,4 +67,10 @@ class EnvConfig {
 
     @Bean
     fun ophEnv(env: Environment): OphEnv? = OphEnv.fromEnvironment(env)
+
+    @Bean
+    fun sfiEnv(evakaEnv: EvakaEnv, env: Environment): SfiEnv? = when (evakaEnv.sfiEnabled) {
+        true -> SfiEnv.fromEnvironment(env)
+        false -> null
+    }
 }

@@ -31,11 +31,13 @@ import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
+import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -46,7 +48,6 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
@@ -93,6 +94,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired
+    private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
+
+    @Autowired
     lateinit var mapper: ObjectMapper
 
     @Autowired
@@ -109,7 +113,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        MockEvakaMessageClient.clearMessages()
+        MockSfiMessagesClient.clearMessages()
         db.transaction { tx ->
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
@@ -960,6 +964,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()
+        sfiAsyncJobRunner.runPendingJobsSync()
 
         // then
         db.read {
@@ -983,7 +988,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             }
         }
 
-        val messages = MockEvakaMessageClient.getMessages()
+        val messages = MockSfiMessagesClient.getMessages()
         if (manualMailing) {
             assertEquals(0, messages.size)
         } else {
@@ -1105,6 +1110,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()
+        sfiAsyncJobRunner.runPendingJobsSync()
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
@@ -1117,7 +1123,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertNotNull(decision.documentKey)
                 assertNull(decision.otherGuardianDocumentKey)
             }
-            val messages = MockEvakaMessageClient.getMessages()
+            val messages = MockSfiMessagesClient.getMessages()
             assertEquals(2, messages.size)
             assertEquals(2, messages.filter { it.ssn == testAdult_1.ssn }.size)
         }
@@ -1168,6 +1174,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()
+        sfiAsyncJobRunner.runPendingJobsSync()
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
@@ -1179,7 +1186,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisionsByApplication.size)
 
-            val messages = MockEvakaMessageClient.getMessages()
+            val messages = MockSfiMessagesClient.getMessages()
             assertEquals(0, messages.size)
 
             val placementPlan = tx.getPlacementPlan(applicationId)

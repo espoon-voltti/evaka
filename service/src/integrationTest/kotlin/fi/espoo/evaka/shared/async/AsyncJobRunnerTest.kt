@@ -56,7 +56,7 @@ class AsyncJobRunnerTest {
 
     @BeforeEach
     fun clean() {
-        asyncJobRunner = AsyncJobRunner(jdbi)
+        asyncJobRunner = AsyncJobRunner(TestJob::class, jdbi, AsyncJobRunnerConfig())
         asyncJobRunner.registerHandler { _, msg: TestJob ->
             currentCallback.get()(msg)
         }

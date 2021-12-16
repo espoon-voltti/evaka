@@ -43,7 +43,6 @@ aliases:
   - &workspace_frontend << pipeline.parameters.workspace_root >>/frontend
   - &workspace_proxy << pipeline.parameters.workspace_root >>/proxy
   - &workspace_service << pipeline.parameters.workspace_root >>/service
-  - &workspace_message_service << pipeline.parameters.workspace_root >>/message-service
   - &workspace_compose << pipeline.parameters.workspace_root >>/compose
 
   # SSH key fingerprint for checking out other eVaka repositories
@@ -246,18 +245,6 @@ commands:
       - restore_cache:
           name: Restore build artifacts
           key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
-  store_message_service_artifacts:
-    steps:
-      - save_cache:
-          name: Store build artifacts
-          key: message-service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
-          paths:
-            - << pipeline.parameters.workspace_root >>/message-service/build/libs/
-  restore_message_service_artifacts:
-    steps:
-      - restore_cache:
-          name: Restore build artifacts
-          key: message-service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
 
   store_apigw_deps:
     steps:
@@ -324,24 +311,6 @@ commands:
           keys:
             - gradle-home-service-v5-{{ checksum ".circleci/template.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
             - gradle-home-service-v5-
-  store_message_service_gradle:
-    steps:
-      - save_cache:
-          name: Store Gradle cache
-          key: gradle-home-message-service-v5-{{ checksum ".circleci/template.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
-          paths:
-            - message-service/buildSrc/.gradle
-            - message-service/.gradle
-            - .gradle-user-home/wrapper
-            - .gradle-user-home/caches
-            - .gradle-user-home/notifications
-  restore_message_service_gradle:
-    steps:
-      - restore_cache:
-          name: Restore Gradle cache
-          keys:
-            - gradle-home-message-service-v5-{{ checksum ".circleci/template.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
-            - gradle-home-message-service-v5-
 
   store_service_build_cache:
     steps:
@@ -361,22 +330,6 @@ commands:
           keys:
             - gradle-service-build-cache-v2-{{ .Branch }}-{{ .Revision }}-{{ checksum ".circleci/template.yml" }}
             - gradle-service-build-cache-v2-
-  store_message_service_build_cache:
-    steps:
-      - save_cache:
-          name: Store build cache
-          key: gradle-message-service-build-cache-v2-{{ .Branch }}-{{ .Revision }}-{{ checksum ".circleci/template.yml" }}
-          paths:
-            - message-service/build
-            - message-service/buildSrc/build
-            - message-service-lib/build
-  restore_message_service_build_cache:
-    steps:
-      - restore_cache:
-          name: Restore build cache
-          keys:
-            - gradle-message-service-build-cache-v2-{{ .Branch }}-{{ .Revision }}-{{ checksum ".circleci/template.yml" }}
-            - gradle-message-service-build-cache-v2-
 
   # Misc commands
 
@@ -752,7 +705,6 @@ commands:
               -var enduser-api-gw_version="${CIRCLE_SHA1}" \
               -var internal-api-gw_version="${CIRCLE_SHA1}" \
               -var evaka-srv_version="${CIRCLE_SHA1}" \
-              -var message-srv_version="${CIRCLE_SHA1}" \
               -var proxy_version="${CIRCLE_SHA1}" \
               -var ses-notification-processor_version="${CIRCLE_SHA1}"
       - run:
@@ -768,7 +720,6 @@ commands:
                   evaka-enduser-gw \
                   evaka-internal-gw \
                   evaka-srv \
-                  evaka-message-srv \
                   evaka-proxy || {
               echo 'ERROR: Deployment failed! At least one of the ECS tasks failed to stabilize in 10 minutes with the new versions.' &&
               echo 'INFO: See output above for previous versions' &&
@@ -1196,98 +1147,6 @@ jobs:
           path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
       - notify_slack
 
-  message_service_build:
-    executor: service_executor
-    steps:
-      - restore_repo
-      - restore_message_service_gradle
-      - run:
-          working_directory: *workspace_message_service
-          command: ./gradlew assemble compileIntegrationTestKotlin
-      - store_message_service_artifacts
-      - store_message_service_gradle
-      - store_message_service_build_cache
-      - run:
-          working_directory: *workspace_message_service
-          command: ./gradlew lintKotlin
-      - owasp/generate_cache_keys:
-          cache_key: gradle-v1-cache-key
-      - owasp/restore_owasp_cache:
-          cache_key: gradle-v1-cache-key
-      - run:
-          name: Update OWASP Dependency-Check Database
-          working_directory: *workspace_message_service
-          command: ./gradlew dependencyCheckUpdate
-      - owasp/store_owasp_cache:
-          cve_data_directory: << pipeline.parameters.workspace_root >>/.gradle-user-home/dependency-check-data
-          cache_key: gradle-v1-cache-key
-      - run:
-          name: Run OWASP Dependency-Check Analyzer
-          working_directory: *workspace_message_service
-          command: ./gradlew dependencyCheckAnalyze
-      - store_artifacts:
-          path: << pipeline.parameters.workspace_root >>/message-service/build/reports/
-      - notify_slack
-
-  message_service_test:
-    executor: service_executor
-    steps:
-      - restore_repo
-      - restore_message_service_gradle
-      - restore_message_service_build_cache
-      - run:
-          working_directory: *workspace_message_service
-          command: ./gradlew test
-      - store_test_results:
-          path: << pipeline.parameters.workspace_root >>/message-service/build/test-results/test/
-      - store_test_results:
-          path: << pipeline.parameters.workspace_root >>/service-lib/build/test-results/test/
-      - notify_slack
-
-  message_service_integration_test:
-    executor: service_test_executor
-    steps:
-      - restore_repo
-      - restore_message_service_gradle
-      - restore_message_service_build_cache
-      - login_docker_hub
-      - run:
-          name: Install Java 17
-          command: |
-            sudo apt-get update && sudo apt-get install openjdk-17-jdk
-            sudo update-java-alternatives --set java-1.17.0-openjdk-amd64
-            java -version
-      - run:
-          name: gradle integrationTest
-          working_directory: *workspace_message_service
-          command: ./gradlew integrationTest
-      - store_test_results:
-          path: << pipeline.parameters.workspace_root >>/message-service/build/test-results/integrationTest/
-      - store_artifacts:
-          path: << pipeline.parameters.workspace_root >>/message-service/build/reports/
-      - store_artifacts:
-          path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
-      - notify_slack
-
-  message_service_build_and_push_image:
-    executor: aws_docker_executor
-    steps:
-      - restore_repo
-      - attach_root_workspace
-      - restore_message_service_artifacts
-      - setup_remote_docker:
-          version: *remote_docker_version
-          docker_layer_caching: true
-      - run:
-          name: Unzip executable
-          working_directory: *workspace_message_service
-          command: unzip -q build/libs/evaka-message-service.jar -d target
-      - load_base_image
-      - build_docker_image:
-          image: evaka/message-service
-          dir: *workspace_message_service
-      - notify_slack
-
   cleanup_frontends:
     executor: aws_docker_executor
     parameters:
@@ -1397,25 +1256,6 @@ workflows:
           requires:
             - service_build
 
-      - message_service_build:
-          <<: *default_contexts
-          requires:
-            - checkout_repo
-      - message_service_test:
-          <<: *default_contexts
-          requires:
-            - message_service_build
-      - message_service_integration_test:
-          <<: *default_contexts
-          requires:
-            - message_service_build
-      - message_service_build_and_push_image:
-          <<: *aws_contexts
-          requires:
-            - build_base_image
-            - message_service_test
-            - message_service_integration_test
-
       - clone_infra_repo:
           <<: *aws_contexts
           requires:
@@ -1448,7 +1288,6 @@ workflows:
             - apigw_build_and_push_image
             - proxy_build_and_push_image
             - service_build_and_push_image
-            - message_service_build_and_push_image
           matrix:
             parameters:
               target_env: [dev, test, staging, prod]
