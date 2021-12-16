@@ -193,6 +193,8 @@ const SenderName = styled.div`
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
   white-space: pre-line;
+  word-break: normal;
+  overflow-wrap: anywhere;
 `
 
 const ThreadViewMobile = styled(ThreadContainer)`
