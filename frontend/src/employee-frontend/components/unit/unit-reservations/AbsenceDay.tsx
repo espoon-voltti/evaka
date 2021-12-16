@@ -9,12 +9,14 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { faThermometer } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import { AbsenceType } from 'lib-common/generated/enums'
+import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   type: AbsenceType
 }
 
 export default React.memo(function AbsenceDay({ type }: Props) {
+  const { i18n } = useTranslation()
   if (type === 'SICKLEAVE')
     return (
       <AbsenceCell>
@@ -24,7 +26,7 @@ export default React.memo(function AbsenceDay({ type }: Props) {
             color={colors.accents.violet}
             size="m"
           />
-          <div>Sairaus</div>
+          <div>{i18n.absences.absenceTypes.SICKLEAVE}</div>
         </FixedSpaceRow>
       </AbsenceCell>
     )
@@ -33,7 +35,10 @@ export default React.memo(function AbsenceDay({ type }: Props) {
     <AbsenceCell>
       <FixedSpaceRow spacing="xs" alignItems="center">
         <RoundIcon content="–" color={colors.primary} size="m" />
-        <div>Muu syy</div>
+        <div>
+          {i18n.absences.absenceTypes[type] ??
+            i18n.absences.absenceTypes.OTHER_ABSENCE}
+        </div>
       </FixedSpaceRow>
     </AbsenceCell>
   )
