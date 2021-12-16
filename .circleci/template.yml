@@ -337,6 +337,7 @@ commands:
             - service/build
             - service/buildSrc/build
             - service/custom-ktlint-rules/build
+            - service/sficlient/build
             - service/vtjclient/build
             - service-lib/build
   restore_service_build_cache:
