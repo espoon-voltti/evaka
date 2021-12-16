@@ -25,8 +25,6 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.reflect.KClass
 
-private val logger = KotlinLogging.logger { }
-
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
@@ -42,6 +40,8 @@ data class AsyncJobRunnerConfig(
 )
 
 class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {
+    private val logger = KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
+
     private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(config.threadPoolSize)
     private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
     private val runningCount: AtomicInteger = AtomicInteger(0)
