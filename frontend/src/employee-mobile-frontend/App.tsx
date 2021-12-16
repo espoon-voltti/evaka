@@ -90,10 +90,12 @@ function UnitRouter() {
 
   return (
     <UnitContextProvider unitId={unitId}>
-      <Switch>
-        <Route path={`${path}/groups/:groupId`} component={GroupRouter} />
-        <Redirect to={`${path}/groups/all`} />
-      </Switch>
+      <MessageContextProvider>
+        <Switch>
+          <Route path={`${path}/groups/:groupId`} component={GroupRouter} />
+          <Redirect to={`${path}/groups/all`} />
+        </Switch>
+      </MessageContextProvider>
     </UnitContextProvider>
   )
 }
@@ -216,22 +218,20 @@ function MessagesRouter() {
   const { path } = useRouteMatch()
 
   return (
-    <MessageContextProvider>
-      <Switch>
-        <Route exact path={path} component={requirePinAuth(MessagesPage)} />
-        <Route
-          exact
-          path={`${path}/unread-messages`}
-          component={UnreadMessagesPage}
-        />
-        <Route
-          exact
-          path={`${path}/:childId/new-message`}
-          component={requirePinAuth(MessageEditorPage)}
-        />
-        <Redirect to={path} />
-      </Switch>
-    </MessageContextProvider>
+    <Switch>
+      <Route exact path={path} component={requirePinAuth(MessagesPage)} />
+      <Route
+        exact
+        path={`${path}/unread-messages`}
+        component={UnreadMessagesPage}
+      />
+      <Route
+        exact
+        path={`${path}/:childId/new-message`}
+        component={requirePinAuth(MessageEditorPage)}
+      />
+      <Redirect to={path} />
+    </Switch>
   )
 }
 

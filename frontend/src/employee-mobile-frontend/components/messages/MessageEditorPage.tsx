@@ -30,33 +30,17 @@ import { featureFlags } from 'lib-customizations/employee'
 import { useTranslation } from '../../state/i18n'
 import { useParams } from 'react-router-dom'
 import { Result } from 'lib-common/api'
+import { renderResult } from '../async-rendering'
 
 export default function MessageEditorPage() {
   const { i18n } = useTranslation()
-  const { childId, groupId, unitId } = useParams<{
+  const { childId, unitId } = useParams<{
     unitId: UUID
     groupId: UUID
     childId: UUID
   }>()
-  const {
-    nestedAccounts,
-    selectedAccount,
-    selectedUnit,
-    loadNestedAccounts,
-    groupAccounts,
-    setSelectedAccount
-  } = useContext(MessageContext)
-
-  useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
-
-  useEffect(() => {
-    const maybeAccount = groupAccounts.find(
-      ({ daycareGroup }) => daycareGroup?.id === groupId
-    )?.account
-    if (maybeAccount) {
-      setSelectedAccount(maybeAccount)
-    }
-  }, [groupAccounts, setSelectedAccount, groupId])
+  const { nestedAccounts, selectedAccount, selectedUnit } =
+    useContext(MessageContext)
 
   const [sending, setSending] = useState(false)
 
@@ -102,41 +86,36 @@ export default function MessageEditorPage() {
     history.back()
   }, [])
 
-  return (
-    <>
-      {nestedAccounts.isSuccess &&
-        selectedReceivers &&
-        selectedAccount &&
-        selectedUnit && (
-          <MessageEditor
-            availableReceivers={selectedReceivers}
-            attachmentsEnabled={
-              featureFlags.experimental?.messageAttachments ?? false
-            }
-            defaultSender={{
-              value: selectedAccount.id,
-              label: selectedAccount.name
-            }}
-            deleteAttachment={deleteAttachment}
-            draftContent={undefined}
-            getAttachmentBlob={getAttachmentBlob}
-            i18n={{
-              ...i18n.messages.messageEditor,
-              ...i18n.fileUpload,
-              ...i18n.common
-            }}
-            initDraftRaw={initDraft}
-            mobileVersion={true}
-            nestedAccounts={nestedAccounts.value}
-            onClose={onHide}
-            onDiscard={onDiscard}
-            onSend={onSend}
-            saveDraftRaw={saveDraft}
-            saveMessageAttachment={saveMessageAttachment}
-            selectedUnit={selectedUnit}
-            sending={sending}
-          />
-        )}
-    </>
+  return renderResult(nestedAccounts, (accounts) =>
+    selectedReceivers && selectedAccount && selectedUnit ? (
+      <MessageEditor
+        availableReceivers={selectedReceivers}
+        attachmentsEnabled={
+          featureFlags.experimental?.messageAttachments ?? false
+        }
+        defaultSender={{
+          value: selectedAccount.id,
+          label: selectedAccount.name
+        }}
+        deleteAttachment={deleteAttachment}
+        draftContent={undefined}
+        getAttachmentBlob={getAttachmentBlob}
+        i18n={{
+          ...i18n.messages.messageEditor,
+          ...i18n.fileUpload,
+          ...i18n.common
+        }}
+        initDraftRaw={initDraft}
+        mobileVersion={true}
+        nestedAccounts={accounts}
+        onClose={onHide}
+        onDiscard={onDiscard}
+        onSend={onSend}
+        saveDraftRaw={saveDraft}
+        saveMessageAttachment={saveMessageAttachment}
+        selectedUnit={selectedUnit}
+        sending={sending}
+      />
+    ) : null
   )
 }

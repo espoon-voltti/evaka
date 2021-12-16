@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { UnitContext } from '../../state/unit'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -28,22 +27,11 @@ export default function MessagesPage() {
     groupId: UUID | 'all'
   }>()
 
-  const { unitInfoResponse } = useContext(UnitContext)
-
   function changeGroup(group: GroupInfo | undefined) {
     if (group) history.push(`/units/${unitId}/groups/${group.id}/messages`)
   }
 
-  const selectedGroup =
-    groupId === 'all'
-      ? undefined
-      : unitInfoResponse
-          .map((res) => res.groups.find((g) => g.id === groupId))
-          .getOrElse(undefined)
-
   const {
-    loadNestedAccounts,
-    setSelectedAccount,
     groupAccounts,
     receivedMessages,
     selectedThread,
@@ -51,16 +39,9 @@ export default function MessagesPage() {
     selectedAccount
   } = useContext(MessageContext)
 
-  useEffect(() => loadNestedAccounts(unitId), [loadNestedAccounts, unitId])
-
-  useEffect(() => {
-    const maybeAccount = groupAccounts.find(
-      ({ daycareGroup }) => daycareGroup?.id === groupId
-    )?.account
-    if (maybeAccount) {
-      setSelectedAccount(maybeAccount)
-    }
-  }, [groupAccounts, setSelectedAccount, groupId])
+  const selectedGroup =
+    groupAccounts.find(({ daycareGroup }) => daycareGroup?.id === groupId) ??
+    groupAccounts[0]
 
   const { i18n } = useTranslation()
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
@@ -79,10 +60,17 @@ export default function MessagesPage() {
         senderAccountId={selectedAccount.id}
       />
     </ContentArea>
-  ) : (
+  ) : !selectedThread && selectedAccount ? (
     <>
       <TopBarWithGroupSelector
-        selectedGroup={selectedGroup}
+        selectedGroup={
+          selectedGroup?.daycareGroup
+            ? {
+                id: selectedGroup.daycareGroup.id,
+                name: selectedGroup.daycareGroup.name
+              }
+            : undefined
+        }
         onChangeGroup={changeGroup}
         allowedGroupIds={groupAccounts.flatMap(
           (ga) => ga.daycareGroup?.id || []
@@ -128,6 +116,23 @@ export default function MessagesPage() {
         </ContentArea>
       ))}
     </>
+  ) : (
+    <ContentArea
+      opaque
+      paddingVertical={'zero'}
+      paddingHorizontal={'zero'}
+      data-qa={`messages-page-content-area`}
+    >
+      <HeaderContainer>
+        <H1 noMargin={true}>{i18n.messages.title}</H1>
+      </HeaderContainer>
+      <EmptyMessageFolder
+        loading={receivedMessages.isLoading}
+        iconColor={colors.greyscale.medium}
+        text={i18n.messages.emptyInbox}
+      />
+      <BottomNavBar selected="messages" />
+    </ContentArea>
   )
 }
 
