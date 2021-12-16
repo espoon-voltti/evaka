@@ -576,7 +576,7 @@ export default {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Suomen ja ruotsin kielinen esiopetus alkaa 11.8.2022. Jos tarvitsette varhaiskasvatusta 1.8.2022 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
+              'Suomen- ja ruotsinkielinen esiopetus alkaa 11.8.2022. Jos tarvitsette varhaiskasvatusta 1.8.2022 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
             ],
             CLUB: [
               'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
@@ -649,7 +649,7 @@ export default {
                 Voit hakea lapselle tarvittaessa{' '}
                 <strong>
                   esiopetukseen liittyvää varhaiskasvatusta, joka on
-                  maksullista, ja jota annetaan esiopetuksen (4 tuntia/Päivä)
+                  maksullista, ja jota annetaan esiopetuksen (4 tuntia/päivä)
                   lisäksi
                 </strong>{' '}
                 aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus.
