@@ -22,13 +22,14 @@ import java.time.Duration
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi): AsyncJobRunner<AsyncJob> = AsyncJobRunner(jdbi, AsyncJobRunnerConfig())
+    fun asyncJobRunner(jdbi: Jdbi): AsyncJobRunner<AsyncJob> = AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig())
 
     @Bean
-    fun vardaAsyncJobRunner(jdbi: Jdbi): AsyncJobRunner<VardaAsyncJob> = AsyncJobRunner(jdbi, AsyncJobRunnerConfig(threadPoolSize = 1))
+    fun vardaAsyncJobRunner(jdbi: Jdbi): AsyncJobRunner<VardaAsyncJob> = AsyncJobRunner(VardaAsyncJob::class, jdbi, AsyncJobRunnerConfig(threadPoolSize = 1))
 
     @Bean
     fun sfiAsyncJobRunner(jdbi: Jdbi, env: Environment): AsyncJobRunner<SuomiFiAsyncJob> = AsyncJobRunner(
+        SuomiFiAsyncJob::class,
         jdbi,
         AsyncJobRunnerConfig(
             threadPoolSize = 1,
@@ -37,15 +38,16 @@ class AsyncJobConfig {
     )
 
     @Bean
-    fun asyncJobRunnerStarter(asyncJobRunner: AsyncJobRunner<AsyncJob>, vardaAsyncJobRunner: AsyncJobRunner<VardaAsyncJob>, evakaEnv: EvakaEnv) =
+    fun asyncJobRunnerStarter(asyncJobRunners: List<AsyncJobRunner<*>>, evakaEnv: EvakaEnv) =
         ApplicationListener<ApplicationReadyEvent> {
             val logger = KotlinLogging.logger { }
             if (evakaEnv.asyncJobRunnerDisabled) {
-                logger.info("Async job runner disabled")
+                logger.info("Async job runners disabled")
             } else {
-                asyncJobRunner.start(Duration.ofMinutes(1))
-                vardaAsyncJobRunner.start(Duration.ofMinutes(1))
-                logger.info("Async job runner started")
+                asyncJobRunners.forEach {
+                    it.start(pollingInterval = Duration.ofMinutes(1))
+                    logger.info("Async job runner AsyncJobRunner<${it.payloadType.simpleName}> started")
+                }
             }
         }
 }

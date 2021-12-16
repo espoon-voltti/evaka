@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger { }
 
@@ -40,7 +41,7 @@ data class AsyncJobRunnerConfig(
     val throttleInterval: Duration? = null,
 )
 
-class AsyncJobRunner<T : AsyncJobPayload>(private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {
+class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {
     private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(config.threadPoolSize)
     private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
     private val runningCount: AtomicInteger = AtomicInteger(0)
