@@ -150,6 +150,7 @@ const RoundIconButton = styled.button`
 
 const MessageContainer = styled.div`
   border-radius: ${defaultMargins.s};
+  max-width: 90%;
   ${(p: { ours: boolean }) =>
     p.ours
       ? `
