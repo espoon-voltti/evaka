@@ -2,24 +2,41 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { Dispatch } from 'react'
 import { Gap } from 'lib-components/white-space'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, Label } from 'lib-components/typography'
-import { VasuBasics } from 'lib-common/generated/api-types/vasu'
+import {
+  ChildLanguage,
+  CurriculumType,
+  VasuBasics
+} from 'lib-common/generated/api-types/vasu'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { VasuTranslations } from 'lib-customizations/employee'
+import QuestionInfo from '../QuestionInfo'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import InputField from 'lib-components/atoms/form/InputField'
+import { ValueOrNoRecord } from '../components/ValueOrNoRecord'
 
 interface Props {
   sectionIndex: number
-  content: VasuBasics
+  type: CurriculumType
+  basics: VasuBasics
+  childLanguage: ChildLanguage | null
+  setChildLanguage?: Dispatch<ChildLanguage>
   templateRange: FiniteDateRange
   translations: VasuTranslations
 }
 
 export function BasicsSection({
   sectionIndex,
-  content,
+  type,
+  basics,
+  childLanguage,
+  setChildLanguage,
   templateRange,
   translations
 }: Props) {
@@ -35,18 +52,18 @@ export function BasicsSection({
 
       <Label>{t.name}</Label>
       <div>
-        {content.child.firstName} {content.child.lastName}
+        {basics.child.firstName} {basics.child.lastName}
       </div>
 
       <Gap size="s" />
 
       <Label>{t.dateOfBirth}</Label>
-      <div>{content.child.dateOfBirth.format()}</div>
+      <div>{basics.child.dateOfBirth.format()}</div>
 
       <Gap size="s" />
 
-      <Label>{t.placements}</Label>
-      {content.placements?.map((p) => (
+      <Label>{t.placements[type]}</Label>
+      {basics.placements?.map((p) => (
         <div key={p.range.start.formatIso()}>
           {p.unitName} ({p.groupName}) {p.range.start.format()} -{' '}
           {p.range.end.isAfter(templateRange.end) ? '' : p.range.end.format()}
@@ -56,11 +73,116 @@ export function BasicsSection({
       <Gap size="s" />
 
       <Label>{t.guardians}</Label>
-      {content.guardians.map((g) => (
+      {basics.guardians.map((g) => (
         <div key={g.id}>
           {g.firstName} {g.lastName}
         </div>
       ))}
+
+      {childLanguage && (
+        <>
+          <Gap size="s" />
+          <QuestionInfo
+            info={translations.staticSections.basics.childLanguage.info}
+          >
+            <Label>
+              {`${sectionIndex + 1}.1 ${
+                translations.staticSections.basics.childLanguage.label
+              }`}
+            </Label>
+          </QuestionInfo>
+          <Gap size="xs" />
+          {setChildLanguage ? (
+            <EditableChildLanguage
+              sectionIndex={sectionIndex}
+              childLanguage={childLanguage}
+              translations={translations}
+              setChildLanguage={setChildLanguage}
+            />
+          ) : (
+            <ChildLanguage
+              sectionIndex={sectionIndex}
+              childLanguage={childLanguage}
+              translations={translations}
+            />
+          )}
+        </>
+      )}
     </ContentArea>
   )
 }
+
+interface ChildLanguageProps {
+  sectionIndex: number
+  childLanguage: ChildLanguage
+  translations: VasuTranslations
+}
+
+const ChildLanguage = React.memo(function ChildLanguage({
+  childLanguage,
+  translations
+}: ChildLanguageProps) {
+  return (
+    <FixedSpaceRow>
+      <div>
+        <Label>
+          {translations.staticSections.basics.childLanguage.nativeLanguage}
+        </Label>
+        <ValueOrNoRecord
+          text={childLanguage.nativeLanguage}
+          translations={translations}
+        />
+      </div>
+      <div>
+        <Label>
+          {
+            translations.staticSections.basics.childLanguage
+              .languageSpokenAtHome
+          }
+        </Label>
+        <ValueOrNoRecord
+          text={childLanguage.languageSpokenAtHome}
+          translations={translations}
+        />
+      </div>
+    </FixedSpaceRow>
+  )
+})
+
+const EditableChildLanguage = React.memo(function EditableChildLanguage({
+  childLanguage,
+  translations,
+  setChildLanguage
+}: ChildLanguageProps & { setChildLanguage: Dispatch<ChildLanguage> }) {
+  return (
+    <FixedSpaceRow>
+      <FixedSpaceColumn spacing="xxs">
+        <Label>
+          {translations.staticSections.basics.childLanguage.nativeLanguage}
+        </Label>
+        <InputField
+          value={childLanguage.nativeLanguage}
+          onChange={(nativeLanguage) =>
+            setChildLanguage({ ...childLanguage, nativeLanguage })
+          }
+          width="m"
+        />
+      </FixedSpaceColumn>
+      <FixedSpaceColumn spacing="xxs">
+        <Label>
+          {
+            translations.staticSections.basics.childLanguage
+              .languageSpokenAtHome
+          }
+        </Label>
+        <InputField
+          value={childLanguage.languageSpokenAtHome}
+          onChange={(languageSpokenAtHome) =>
+            setChildLanguage({ ...childLanguage, languageSpokenAtHome })
+          }
+          width="m"
+        />
+      </FixedSpaceColumn>
+    </FixedSpaceRow>
+  )
+})

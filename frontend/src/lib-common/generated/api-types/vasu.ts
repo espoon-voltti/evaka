@@ -18,6 +18,14 @@ export interface ChangeDocumentStateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.ChildLanguage
+*/
+export interface ChildLanguage {
+  languageSpokenAtHome: string
+  nativeLanguage: string
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.VasuTemplateController.CopyTemplateRequest
 */
 export interface CopyTemplateRequest {
@@ -68,6 +76,7 @@ export interface GetVasuDocumentResponse {
 * Generated from fi.espoo.evaka.vasu.VasuController.UpdateDocumentRequest
 */
 export interface UpdateDocumentRequest {
+  childLanguage: ChildLanguage | null
   content: VasuContent
 }
 
@@ -76,6 +85,7 @@ export interface UpdateDocumentRequest {
 */
 export interface VasuBasics {
   child: VasuChild
+  childLanguage: ChildLanguage | null
   guardians: VasuGuardian[]
   placements: VasuPlacement[] | null
 }
@@ -110,6 +120,7 @@ export interface VasuDocument {
   modifiedAt: Date
   templateName: string
   templateRange: FiniteDateRange
+  type: CurriculumType
 }
 
 /**

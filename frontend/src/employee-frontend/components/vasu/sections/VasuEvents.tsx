@@ -45,12 +45,15 @@ function EventRow({ label, date }: { label: string; date: LocalDate | null }) {
 }
 
 interface Props {
-  document: Pick<VasuDocument, 'documentState' | 'events' | 'modifiedAt'>
+  document: Pick<
+    VasuDocument,
+    'documentState' | 'events' | 'modifiedAt' | 'type'
+  >
   content: VasuDocument['content']
 }
 
 export function VasuEvents({
-  document: { documentState, events, modifiedAt },
+  document: { documentState, events, modifiedAt, type },
   content
 }: Props) {
   const { i18n } = useTranslation()
@@ -73,7 +76,7 @@ export function VasuEvents({
 
   return (
     <Container opaque>
-      <H2>{i18n.vasu.events}</H2>
+      <H2>{i18n.vasu.events[type]}</H2>
       <ListGrid labelWidth={labelWidth}>
         <Label>{i18n.vasu.state}</Label>
         <ChipContainer>

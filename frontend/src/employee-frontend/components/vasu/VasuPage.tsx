@@ -41,7 +41,9 @@ export default React.memo(function VasuPage({
           <VasuHeader document={vasu} />
           <BasicsSection
             sectionIndex={0}
-            content={vasu.basics}
+            type={vasu.type}
+            basics={vasu.basics}
+            childLanguage={vasu.basics.childLanguage}
             templateRange={vasu.templateRange}
             translations={translations}
           />

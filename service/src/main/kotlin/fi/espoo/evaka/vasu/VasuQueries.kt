@@ -6,7 +6,6 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
-import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
@@ -14,7 +13,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTemplateId): VasuDocumentId {
+fun Database.Transaction.insertVasuDocument(childId: UUID, template: VasuTemplate): VasuDocumentId {
     val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
         .bind("id", childId)
         .mapTo<VasuChild>()
@@ -32,6 +31,16 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTempl
         .mapTo<VasuGuardian>()
         .list()
 
+    val basics = VasuBasics(
+        child = child,
+        guardians = guardians,
+        placements = null,
+        childLanguage = when (template.type) {
+            CurriculumType.DAYCARE -> null
+            CurriculumType.PRESCHOOL -> ChildLanguage("", "")
+        }
+    )
+
     val documentId = createQuery(
         """
         INSERT INTO curriculum_document (child_id, basics, template_id, modified_at)
@@ -40,8 +49,8 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTempl
         """.trimIndent()
     )
         .bind("childId", childId)
-        .bind("basics", VasuBasics(child = child, guardians = guardians, placements = null))
-        .bind("templateId", templateId)
+        .bind("basics", basics)
+        .bind("templateId", template.id)
         .mapTo<VasuDocumentId>()
         .one()
 
@@ -52,7 +61,7 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: VasuTempl
         """.trimIndent()
     )
         .bind("documentId", documentId)
-        .bind("templateId", templateId)
+        .bind("templateId", template.id)
         .updateExactlyOne()
 
     return documentId
@@ -68,6 +77,7 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
             cd.basics,
             ct.name AS template_name,
             ct.valid AS template_range,
+            ct.type,
             ct.language,
             vc.content,
             (SELECT jsonb_agg(json_build_object(
@@ -109,6 +119,7 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
             cd.modified_at,
             ct.name AS template_name,
             ct.valid AS template_range,
+            ct.type,
             ct.language,
             vc.content,
             (SELECT jsonb_agg(json_build_object(
@@ -146,7 +157,11 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
         }
 }
 
-fun Database.Transaction.updateVasuDocumentMaster(id: VasuDocumentId, content: VasuContent) {
+fun Database.Transaction.updateVasuDocumentMaster(
+    id: VasuDocumentId,
+    content: VasuContent,
+    childLanguage: ChildLanguage?
+) {
     // language=sql
     val updateContentSql = "UPDATE curriculum_content SET content = :content WHERE document_id = :id AND master"
 
@@ -155,8 +170,16 @@ fun Database.Transaction.updateVasuDocumentMaster(id: VasuDocumentId, content: V
         .bind("content", content)
         .updateExactlyOne()
 
-    createUpdate("UPDATE curriculum_document SET modified_at = now() WHERE id = :id")
+    createUpdate(
+        """
+        UPDATE curriculum_document SET
+            modified_at = now(),
+            basics = basics || jsonb_build_object('childLanguage', :childLanguage::jsonb)
+        WHERE id = :id
+        """.trimIndent()
+    )
         .bind("id", id)
+        .bind("childLanguage", childLanguage)
         .updateExactlyOne()
 }
 
@@ -225,7 +248,11 @@ fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSumm
         }
 }
 
-fun Database.Transaction.insertVasuDocumentEvent(documentId: VasuDocumentId, eventType: VasuDocumentEventType, employeeId: UUID): VasuDocumentEvent {
+fun Database.Transaction.insertVasuDocumentEvent(
+    documentId: VasuDocumentId,
+    eventType: VasuDocumentEventType,
+    employeeId: UUID
+): VasuDocumentEvent {
     val sql = """
         INSERT INTO curriculum_document_event (curriculum_document_id, employee_id, event_type)
         VALUES (:documentId, :employeeId, :eventType)

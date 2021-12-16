@@ -54,6 +54,8 @@ export default React.memo(function VasuEditPage({
     vasu,
     content,
     setContent,
+    childLanguage,
+    setChildLanguage,
     status,
     translations,
     editFollowupEntry,
@@ -91,7 +93,10 @@ export default React.memo(function VasuEditPage({
           <VasuHeader document={vasu} />
           <BasicsSection
             sectionIndex={0}
-            content={vasu.basics}
+            type={vasu.type}
+            basics={vasu.basics}
+            childLanguage={childLanguage}
+            setChildLanguage={setChildLanguage}
             templateRange={vasu.templateRange}
             translations={translations}
           />

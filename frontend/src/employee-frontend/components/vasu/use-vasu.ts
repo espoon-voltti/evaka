@@ -21,7 +21,11 @@ import {
   putVasuDocument,
   PutVasuDocumentParams
 } from './api'
-import { VasuContent, VasuDocument } from 'lib-common/generated/api-types/vasu'
+import {
+  ChildLanguage,
+  VasuContent,
+  VasuDocument
+} from 'lib-common/generated/api-types/vasu'
 import {
   Followup,
   FollowupEntry,
@@ -55,6 +59,8 @@ interface Vasu {
   vasu: VasuMetadata | undefined
   content: VasuContent
   setContent: Dispatch<SetStateAction<VasuContent>>
+  childLanguage: ChildLanguage | null
+  setChildLanguage: Dispatch<ChildLanguage>
   status: VasuStatus
   translations: VasuTranslations
   editFollowupEntry: (params: EditFollowupEntryParams) => void
@@ -67,6 +73,7 @@ export function useVasu(id: string): Vasu {
   const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
+  const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
   const [permittedFollowupActions, setPermittedFollowupActions] =
     useState<PermittedFollowupActions>({})
 
@@ -79,6 +86,7 @@ export function useVasu(id: string): Vasu {
           setStatus({ state: 'clean' })
           setVasu(meta)
           setContent(content)
+          setChildLanguage(meta.basics.childLanguage)
           setPermittedFollowupActions(permittedFollowupActions)
         }
       })
@@ -133,10 +141,10 @@ export function useVasu(id: string): Vasu {
   useEffect(
     function saveDirtyContent() {
       if (status.state === 'dirty') {
-        debouncedSave({ documentId: id, content })
+        debouncedSave({ documentId: id, content, childLanguage })
       }
     },
-    [debouncedSave, status.state, content, id]
+    [debouncedSave, status.state, content, childLanguage, id]
   )
 
   useEffect(
@@ -168,6 +176,14 @@ export function useVasu(id: string): Vasu {
     []
   )
 
+  const setChildLanguageCallback = useCallback(
+    (childLanguage: ChildLanguage) => {
+      setChildLanguage(childLanguage)
+      setStatus((status) => ({ ...status, state: 'dirty' }))
+    },
+    []
+  )
+
   const translations = useMemo(
     () =>
       vasu !== undefined
@@ -180,6 +196,8 @@ export function useVasu(id: string): Vasu {
     vasu,
     content,
     setContent: setContentCallback,
+    childLanguage,
+    setChildLanguage: setChildLanguageCallback,
     status,
     translations,
     editFollowupEntry: editFollowup,

@@ -864,8 +864,6 @@ export const fi = {
   vasu: {
     lastModified: 'Viimeisin muokkauspäivämäärä',
     lastPublished: 'Viimeksi julkaistu huoltajalle',
-    vasuDiscussion: 'Vasukeskustelu',
-    evaluationDiscussion: 'Arviointikeskustelu',
     leavePage: 'Poistu',
     edited: 'muokattu',
     eventTypes: {
@@ -933,7 +931,10 @@ export const fi = {
       }
     },
     state: 'Suunnitelman tila',
-    events: 'Varhaiskasvatussuunnitelman tapahtumat',
+    events: {
+      DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
+      PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
+    },
     noRecord: 'Ei merkintää',
     checkInPreview: 'Tarkista esikatselussa'
   },

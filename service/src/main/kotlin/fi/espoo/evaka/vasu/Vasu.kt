@@ -76,6 +76,7 @@ data class VasuDocument(
     val modifiedAt: HelsinkiDateTime,
     val templateName: String,
     val templateRange: FiniteDateRange,
+    val type: CurriculumType,
     val language: VasuLanguage,
     @Json
     val events: List<VasuDocumentEvent> = listOf(),
@@ -92,7 +93,8 @@ data class VasuDocument(
 data class VasuBasics(
     val child: VasuChild,
     val guardians: List<VasuGuardian>,
-    val placements: List<VasuPlacement>?
+    val placements: List<VasuPlacement>?,
+    val childLanguage: ChildLanguage?
 )
 
 @Json
@@ -117,6 +119,12 @@ data class VasuPlacement(
     val groupId: GroupId,
     val groupName: String,
     val range: FiniteDateRange
+)
+
+@Json
+data class ChildLanguage(
+    val nativeLanguage: String,
+    val languageSpokenAtHome: String
 )
 
 @Json
