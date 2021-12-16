@@ -216,6 +216,7 @@ const FollowupQuestionContainer = styled.div<{ editable: boolean }>`
       box-shadow: 0px -4px 4px rgba(15, 15, 15, 0.1);
       width: calc(100% + 2 * ${defaultMargins.L});
       padding: ${defaultMargins.L};
+      padding-left: calc(${defaultMargins.L} - 5px);
       position: relative;
       left: -${defaultMargins.L};
     `}

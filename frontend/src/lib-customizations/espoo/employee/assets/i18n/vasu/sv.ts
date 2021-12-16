@@ -12,35 +12,6 @@ export const sv: typeof fi = {
       dateOfBirth: 'Barnets födelsedatum',
       guardians: 'Vårdnadshavare eller annan laglig företrädare',
       placements: 'Enhet inom småbarnspedagogiken och grupp'
-    },
-    authors: {
-      title: 'Uppgörande av barnets plan för småbarnspedagogik',
-      primaryAuthor: 'Person som ansvarat för uppgörande av planen',
-      otherAuthors:
-        'Övrig personal/sakkunniga som deltagit i uppgörandet av planen',
-      authorInfo: {
-        name: 'Namn',
-        title: 'Titel',
-        phone: 'Telefonnummer'
-      }
-    },
-    vasuDiscussion: {
-      title: 'Samtal om barnets plan för småbarnspedagogik',
-      title2: '',
-      discussionDate:
-        'Datum för samtalet om barnets plan för småbarnspedagogik',
-      participants: 'Vårdnadshavare som deltog i samtalet',
-      guardianViewsAndCollaboration:
-        'Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan'
-    },
-    evaluationDiscussion: {
-      title: 'Utvärdering av genomförandet',
-      title2: '',
-      discussionDate: 'Datum för utvärderingssamtalet',
-      participants: 'Vårdnadshavare som deltog i utvärderingssamtalet',
-      guardianViewsAndCollaboration:
-        'Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan',
-      evaluation: 'Utvärdering av hur målen och åtgärderna har genomförts'
     }
   },
   confidential: 'Sekretessbelagd',

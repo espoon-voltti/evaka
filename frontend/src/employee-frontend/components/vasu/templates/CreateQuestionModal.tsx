@@ -33,12 +33,16 @@ export default React.memo(function CreateQuestionModal({
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.vasuTemplates.questionModal
-  const [type, setType] = useState<VasuQuestionType>('TEXT')
+  const [type, setType] =
+    useState<Exclude<VasuQuestionType, 'PARAGRAPH'>>('TEXT')
   const [name, setName] = useState('')
   const [options, setOptions] = useState([''])
   const [multiline, setMultiline] = useState(false)
   const [minSelections, setMinSelections] = useState(0)
+  const [keys, setKeys] = useState([''])
   const [info, setInfo] = useState('')
+  const [trackedInEvents, setTrackedInEvents] = useState(false)
+  const [nameInEvents, setNameInEvents] = useState('')
 
   function createQuestion(): VasuQuestion {
     switch (type) {
@@ -85,6 +89,34 @@ export default React.memo(function CreateQuestionModal({
           maxSelections: null,
           value: []
         }
+      case 'MULTI_FIELD':
+        return {
+          type: 'MULTI_FIELD',
+          ophKey: null,
+          name,
+          info,
+          keys: keys.map((key) => ({ name: key })),
+          value: keys.map(() => '')
+        }
+      case 'MULTI_FIELD_LIST':
+        return {
+          type: 'MULTI_FIELD_LIST',
+          ophKey: null,
+          name,
+          info,
+          keys: keys.map((key) => ({ name: key })),
+          value: []
+        }
+      case 'DATE':
+        return {
+          type: 'DATE',
+          ophKey: null,
+          name,
+          info,
+          trackedInEvents,
+          nameInEvents: trackedInEvents ? nameInEvents : '',
+          value: null
+        }
       case 'FOLLOWUP':
         return {
           type: 'FOLLOWUP',
@@ -120,7 +152,7 @@ export default React.memo(function CreateQuestionModal({
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.name}</Label>
-          <InputField value={name} onChange={setName} width={'L'} />
+          <InputField value={name} onChange={setName} width="full" />
         </FixedSpaceColumn>
 
         {type === 'TEXT' && (
@@ -183,9 +215,55 @@ export default React.memo(function CreateQuestionModal({
           </FixedSpaceColumn>
         )}
 
+        {(type === 'MULTI_FIELD' || type === 'MULTI_FIELD_LIST') && (
+          <FixedSpaceColumn spacing="xxs">
+            <Label>{t.keys}</Label>
+            {keys.map((key, i) => (
+              <FixedSpaceRow spacing="xs" key={`key-${i}`}>
+                <InputField
+                  value={key}
+                  onChange={(val) =>
+                    setKeys([...keys.slice(0, i), val, ...keys.slice(i + 1)])
+                  }
+                  width="m"
+                />
+                <IconButton
+                  icon={faTrash}
+                  disabled={keys.length < 2}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setOptions([...keys.slice(0, i), ...keys.slice(i + 1)])
+                  }}
+                />
+              </FixedSpaceRow>
+            ))}
+            <InlineButton
+              onClick={() => setKeys([...keys, ''])}
+              text={t.addNewKey}
+            />
+          </FixedSpaceColumn>
+        )}
+
+        {type === 'DATE' && (
+          <FixedSpaceColumn spacing="xxs">
+            <Checkbox
+              label={t.dateIsTrackedInEvents}
+              checked={trackedInEvents}
+              onChange={setTrackedInEvents}
+            />
+            {trackedInEvents && (
+              <InputField
+                value={nameInEvents}
+                onChange={setNameInEvents}
+                width="m"
+              />
+            )}
+          </FixedSpaceColumn>
+        )}
+
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.info}</Label>
-          <InputField value={info} onChange={setInfo} width={'L'} />
+          <InputField value={info} onChange={setInfo} width="full" />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>

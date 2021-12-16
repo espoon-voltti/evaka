@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -14,6 +14,7 @@ import { VasuStateChip } from '../../common/VasuStateChip'
 import { VasuDocument } from 'lib-common/generated/api-types/vasu'
 import { getLastPublished } from '../vasu-events'
 import LocalDate from 'lib-common/local-date'
+import { isDateQuestion } from '../vasu-content'
 
 const labelWidth = '320px'
 
@@ -45,17 +46,30 @@ function EventRow({ label, date }: { label: string; date: LocalDate | null }) {
 
 interface Props {
   document: Pick<VasuDocument, 'documentState' | 'events' | 'modifiedAt'>
-  vasuDiscussionDate: LocalDate | null
-  evaluationDiscussionDate: LocalDate | null
+  content: VasuDocument['content']
 }
 
 export function VasuEvents({
   document: { documentState, events, modifiedAt },
-  vasuDiscussionDate,
-  evaluationDiscussionDate
+  content
 }: Props) {
   const { i18n } = useTranslation()
   const lastPublished = getLastPublished(events)
+
+  const trackedDates: [string, LocalDate][] = useMemo(
+    () =>
+      content.sections.flatMap((section) =>
+        section.questions
+          .filter(isDateQuestion)
+          .filter((question) => question.trackedInEvents)
+          .map(({ name, nameInEvents, value }): [string, LocalDate | null] => [
+            nameInEvents || name,
+            value
+          ])
+          .filter((pair): pair is [string, LocalDate] => pair[1] !== null)
+      ),
+    [content]
+  )
 
   return (
     <Container opaque>
@@ -75,11 +89,9 @@ export function VasuEvents({
             lastPublished ? LocalDate.fromSystemTzDate(lastPublished) : null
           }
         />
-        <EventRow label={i18n.vasu.vasuDiscussion} date={vasuDiscussionDate} />
-        <EventRow
-          label={i18n.vasu.evaluationDiscussion}
-          date={evaluationDiscussionDate}
-        />
+        {trackedDates.map(([label, date]) => (
+          <EventRow key={label} label={label} date={date} />
+        ))}
       </ListGrid>
       {events.length > 0 && (
         <>

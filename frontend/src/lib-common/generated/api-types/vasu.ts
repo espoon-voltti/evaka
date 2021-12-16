@@ -11,23 +11,6 @@ import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
 
 /**
-* Generated from fi.espoo.evaka.vasu.AuthorInfo
-*/
-export interface AuthorInfo {
-  name: string
-  phone: string
-  title: string
-}
-
-/**
-* Generated from fi.espoo.evaka.vasu.AuthorsContent
-*/
-export interface AuthorsContent {
-  otherAuthors: AuthorInfo[]
-  primaryAuthor: AuthorInfo
-}
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuController.ChangeDocumentStateRequest
 */
 export interface ChangeDocumentStateRequest {
@@ -74,16 +57,6 @@ export interface EditFollowupEntryRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.vasu.EvaluationDiscussionContent
-*/
-export interface EvaluationDiscussionContent {
-  discussionDate: LocalDate | null
-  evaluation: string
-  guardianViewsAndCollaboration: string
-  participants: string
-}
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuController.GetVasuDocumentResponse
 */
 export interface GetVasuDocumentResponse {
@@ -95,10 +68,7 @@ export interface GetVasuDocumentResponse {
 * Generated from fi.espoo.evaka.vasu.VasuController.UpdateDocumentRequest
 */
 export interface UpdateDocumentRequest {
-  authorsContent: AuthorsContent
   content: VasuContent
-  evaluationDiscussionContent: EvaluationDiscussionContent
-  vasuDiscussionContent: VasuDiscussionContent
 }
 
 /**
@@ -128,30 +98,18 @@ export interface VasuContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.vasu.VasuDiscussionContent
-*/
-export interface VasuDiscussionContent {
-  discussionDate: LocalDate | null
-  guardianViewsAndCollaboration: string
-  participants: string
-}
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuDocument
 */
 export interface VasuDocument {
-  authorsContent: AuthorsContent
   basics: VasuBasics
   content: VasuContent
   documentState: VasuDocumentState
-  evaluationDiscussionContent: EvaluationDiscussionContent
   events: VasuDocumentEvent[]
   id: UUID
   language: VasuLanguage
   modifiedAt: Date
   templateName: string
   templateRange: FiniteDateRange
-  vasuDiscussionContent: VasuDiscussionContent
 }
 
 /**
@@ -225,6 +183,7 @@ export interface VasuPlacement {
 * Generated from fi.espoo.evaka.vasu.VasuSection
 */
 export interface VasuSection {
+  hideBeforeReady: boolean
   name: string
   questions: VasuQuestion[]
 }

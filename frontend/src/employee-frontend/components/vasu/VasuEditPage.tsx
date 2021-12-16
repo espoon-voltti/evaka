@@ -15,10 +15,7 @@ import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Dimmed } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
-import { EditableAuthorsSection } from './sections/AuthorsSection'
 import { DynamicSections } from './sections/DynamicSections'
-import { EditableEvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
-import { EditableVasuDiscussionSection } from './sections/VasuDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
@@ -57,12 +54,6 @@ export default React.memo(function VasuEditPage({
     vasu,
     content,
     setContent,
-    authorsContent,
-    setAuthorsContent,
-    vasuDiscussionContent,
-    setVasuDiscussionContent,
-    evaluationDiscussionContent,
-    setEvaluationDiscussionContent,
     status,
     translations,
     editFollowupEntry,
@@ -90,7 +81,7 @@ export default React.memo(function VasuEditPage({
   const textualVasuStatus = formatVasuStatus(status)
   const showSpinner = status.state === 'saving'
 
-  const dynamicSectionsOffset = 2
+  const dynamicSectionsOffset = 1
 
   return (
     <VasuContainer gapSize={'s'}>
@@ -102,12 +93,6 @@ export default React.memo(function VasuEditPage({
             sectionIndex={0}
             content={vasu.basics}
             templateRange={vasu.templateRange}
-            translations={translations}
-          />
-          <EditableAuthorsSection
-            sectionIndex={1}
-            content={authorsContent}
-            setContent={setAuthorsContent}
             translations={translations}
           />
           <DynamicSections
@@ -125,27 +110,7 @@ export default React.memo(function VasuEditPage({
             permittedFollowupActions={permittedFollowupActions}
             translations={translations}
           />
-          <EditableVasuDiscussionSection
-            sectionIndex={content.sections.length + dynamicSectionsOffset}
-            content={vasuDiscussionContent}
-            setContent={setVasuDiscussionContent}
-            translations={translations}
-          />
-          {vasu.documentState !== 'DRAFT' && (
-            <EditableEvaluationDiscussionSection
-              sectionIndex={content.sections.length + dynamicSectionsOffset + 1}
-              content={evaluationDiscussionContent}
-              setContent={setEvaluationDiscussionContent}
-              translations={translations}
-            />
-          )}
-          <VasuEvents
-            document={vasu}
-            vasuDiscussionDate={vasuDiscussionContent.discussionDate}
-            evaluationDiscussionDate={
-              evaluationDiscussionContent.discussionDate
-            }
-          />
+          <VasuEvents document={vasu} content={content} />
         </>
       )}
       <StickyFooter>

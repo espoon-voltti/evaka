@@ -27,9 +27,11 @@ export function BasicsSection({
 
   return (
     <ContentArea opaque paddingVertical="L" paddingHorizontal="L">
-      <H2>
+      <H2 noMargin>
         {sectionIndex + 1}. {t.title}
       </H2>
+
+      <Gap size="m" />
 
       <Label>{t.name}</Label>
       <div>

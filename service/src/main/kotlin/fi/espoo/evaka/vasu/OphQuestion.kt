@@ -31,6 +31,40 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
     sections = listOf(
         VasuSection(
             name = when (lang) {
+                VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman laatijat"
+                VasuLanguage.SV -> "Uppgörande av barnets plan för småbarnspedagogik"
+            },
+            questions = listOf(
+                VasuQuestion.MultiField(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Laatimisesta vastaava henkilö"
+                        VasuLanguage.SV -> "Person som ansvarat för uppgörande av planen"
+                    },
+                    keys = when (lang) {
+                        VasuLanguage.FI ->
+                            listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
+                        VasuLanguage.SV ->
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                    },
+                    value = listOf("", "", "", "")
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Muu laatimiseen osallistunut henkilöstö/asiantuntijat"
+                        VasuLanguage.SV -> "Övrig personal/sakkunniga som deltagit i uppgörandet av planen"
+                    },
+                    keys = when (lang) {
+                        VasuLanguage.FI ->
+                            listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
+                        VasuLanguage.SV ->
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                    },
+                    value = listOf()
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
                 VasuLanguage.FI -> "Näkemyksien huomioiminen"
                 VasuLanguage.SV -> "Barnets och vårdnadshavarnas delaktighet i uppgörandet av planen"
             },
@@ -246,12 +280,121 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                     value = ""
                 )
             )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelmakeskustelu"
+                VasuLanguage.SV -> "Samtal om barnets plan för småbarnspedagogik"
+            },
+            questions = listOfNotNull(
+                VasuQuestion.Paragraph(
+                    title = when (lang) {
+                        VasuLanguage.FI -> "Varhaiskasvatussuunnitelma on käyty läpi yhteistyössä huoltajien kanssa"
+                        VasuLanguage.SV -> ""
+                    },
+                    paragraph = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Varhaiskasvatuskeskustelun päivämäärä"
+                        VasuLanguage.SV -> "Datum för samtalet om barnets plan för småbarnspedagogik"
+                    },
+                    trackedInEvents = true,
+                    nameInEvents = "Varhaiskasvatussuunnitelmakeskustelu",
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Keskusteluun osallistuneet huoltajat"
+                        VasuLanguage.SV -> "Vårdnadshavare som deltog i samtalet"
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä"
+                        VasuLanguage.SV -> "Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Toteutumisen arviointi"
+                VasuLanguage.SV -> "Utvärdering av genomförandet"
+            },
+            hideBeforeReady = true,
+            questions = listOfNotNull(
+                VasuQuestion.Paragraph(
+                    title = when (lang) {
+                        VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman arviointikeskustelu huoltajien kanssa"
+                        VasuLanguage.SV -> ""
+                    },
+                    paragraph = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Arviointikeskustelun päivämäärä"
+                        VasuLanguage.SV -> "Datum för utvärderingssamtalet"
+                    },
+                    trackedInEvents = true,
+                    nameInEvents = "Arviointikeskustelu",
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Arviointikeskusteluun osallistuneet huoltajat"
+                        VasuLanguage.SV -> "Vårdnadshavare som deltog i utvärderingssamtalet"
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä"
+                        VasuLanguage.SV -> "Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan"
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutumisen arviointi"
+                        VasuLanguage.SV -> "Utvärdering av hur målen och åtgärderna har genomförts"
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
         )
     )
 )
 
 fun getDefaultLeopsContent() = VasuContent(
     sections = listOf(
+        VasuSection(
+            name = "Lapsen esiopetuksen oppimissuunnitelman laatiminen",
+            questions = listOf(
+                VasuQuestion.MultiField(
+                    name = "Laatimisesta vastaava henkilö",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero")),
+                    value = listOf("", "", "", "")
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Muu laatimiseen osallistunut henkilöstö/asiantuntijat",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero")),
+                    value = listOf(listOf("", "", "", ""))
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Esiopetuksen ulkopuoliset yhteistyötahot, joista huoltajien kanssa on sovittu",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero")),
+                    value = listOf(listOf("", "", "", ""))
+                )
+            )
+        ),
         VasuSection(
             name = "Lapsen ja huoltajien osallisuus suunnitelman laadinnassa",
             questions = listOf(
@@ -272,7 +415,10 @@ fun getDefaultLeopsContent() = VasuContent(
         VasuSection(
             name = "Suunnitelma esiopetuksen toteuttamiselle",
             questions = listOf(
-                // TODO: add general paragraph component
+                VasuQuestion.Paragraph(
+                    title = "",
+                    paragraph = "Täytetään yhdessä huoltajien kanssa ja sisällytetään sekä huoltajien että ryhmän henkilöstön näkökulmat. Sisältää myös mahdollisen lapsen tarvitseman kasvun ja oppimisen tuen toteuttamisen suunnitelman."
+                ),
                 VasuQuestion.TextQuestion(
                     name = "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen",
                     info = "Tähän kohtaan kirjataan lapsen vahvuuksia, kiinnostuksen kohteita ja tarpeita, jotka otetaan huomioon esiopetusryhmän toiminnan suunnittelussa ja toteuttamisessa.",
@@ -346,12 +492,11 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     value = null
                 ),
-                // TODO: convert to a "date question"
-                VasuQuestion.TextQuestion(
+                VasuQuestion.DateQuestion(
                     name = "Viimeisin seuranta",
                     info = "Päivitä tähän viimeisin taitotason seurannan ajankohta.",
-                    multiline = false,
-                    value = ""
+                    trackedInEvents = false,
+                    value = null
                 ),
                 VasuQuestion.MultiSelectQuestion(
                     name = "Perusopetukseen valmistavan opetuksen toteuttaminen",
@@ -422,9 +567,21 @@ fun getDefaultLeopsContent() = VasuContent(
         VasuSection(
             name = "Lapsen esiopetuksen oppimissuunnitelmakeskustelut",
             questions = listOf(
-                // TODO: add general paragraph component / or a title component
-                // TODO: add date question
-                // TODO: add guardians multiselect question
+                VasuQuestion.Paragraph(
+                    title = "Oppimissuunnitelma on laadittu yhteistyössä huoltajien kanssa",
+                    paragraph = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = "Keskustelun päivämäärä",
+                    trackedInEvents = true,
+                    nameInEvents = "Oppimissuunnitelmakeskustelu",
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Keskusteluun osallistuneet huoltajat",
+                    multiline = true,
+                    value = ""
+                )
             )
         ),
         VasuSection(
@@ -436,7 +593,48 @@ fun getDefaultLeopsContent() = VasuContent(
                     value = ""
                 )
             )
-        )
+        ),
+        VasuSection(
+            name = "Perusopetukseen siirtyminen",
+            hideBeforeReady = true,
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = "Tavoitteiden ja toimenpiteiden toteutumisen arviointi",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = "Huoltajien kanssa käydyn keskustelun päivämäärä",
+                    trackedInEvents = true,
+                    nameInEvents = "Perusopetukseen siirtymiskeskustelu",
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Keskusteluun osallistuneet huoltajat",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.Paragraph(
+                    title = "Lapsen esiopetuksen oppimissuunnitelman tiedonsiirtokeskustelu koulun kanssa",
+                    paragraph = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Lapsen kasvun ja oppimisen kannalta oleellisimmat huomiot tiedoksi tulevalle koululle",
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.DateQuestion(
+                    name = "Tiedonsiirtokeskustelun päivämäärä",
+                    trackedInEvents = false,
+                    value = null
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Tiedonsiirtokeskustelun osallistujat",
+                    keys = listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike")),
+                    value = listOf()
+                )
+            )
+        ),
     )
 )
 

@@ -2855,6 +2855,9 @@ export const fi = {
     unsavedWarning: 'Haluatko varmasti poistua tallentamatta?',
     addNewSection: 'Lisää uusi osio',
     addNewQuestion: 'Lisää uusi kysymys',
+    addNewParagraph: 'Lisää uusi tekstikappale',
+    hideSectionBeforeReady: 'Osio näytetään vasta laatimisen jälkeen',
+    autoGrowingList: 'Automaattisesti kasvava lista',
     questionModal: {
       title: 'Uusi kysymys',
       type: 'Kysymyksen tyyppi',
@@ -2863,13 +2866,22 @@ export const fi = {
       options: 'Vaihtoehdot',
       addNewOption: 'Lisää vaihtoehto',
       multiline: 'Monirivinen',
-      minSelections: 'Valittava vähintään'
+      minSelections: 'Valittava vähintään',
+      keys: 'Tekstikenttien nimet',
+      addNewKey: 'Lisää nimetty tekstikenttä',
+      dateIsTrackedInEvents:
+        'Päivämäärä näytetään suunnitelman tapahtumissa nimellä',
+      paragraphTitle: 'Kappaleen otsikko',
+      paragraphText: 'Kappaleen leipäteksti'
     },
     questionTypes: {
       TEXT: 'Tekstimuotoinen',
       CHECKBOX: 'Rasti',
       RADIO_GROUP: 'Valitse yksi',
       MULTISELECT: 'Monivalinta',
+      MULTI_FIELD: 'Nimettyjä tekstikenttiä',
+      MULTI_FIELD_LIST: 'Kasvava lista nimettyjä tekstikenttiä',
+      DATE: 'Päivämäärä',
       FOLLOWUP: 'Seuranta'
     },
     errorCodes: {

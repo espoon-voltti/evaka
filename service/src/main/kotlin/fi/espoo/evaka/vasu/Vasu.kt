@@ -82,13 +82,7 @@ data class VasuDocument(
     @Json
     val basics: VasuBasics,
     @Json
-    val content: VasuContent,
-    @Json
-    val authorsContent: AuthorsContent,
-    @Json
-    val vasuDiscussionContent: VasuDiscussionContent,
-    @Json
-    val evaluationDiscussionContent: EvaluationDiscussionContent
+    val content: VasuContent
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)
@@ -200,7 +194,8 @@ data class VasuContent(
 
 data class VasuSection(
     val name: String,
-    val questions: List<VasuQuestion>
+    val questions: List<VasuQuestion>,
+    val hideBeforeReady: Boolean = false
 ) {
     fun matchesStructurally(section: VasuSection?): Boolean =
         section != null && section.name == this.name && section.questions.size == this.questions.size &&
@@ -218,7 +213,11 @@ data class VasuSection(
     JsonSubTypes.Type(value = VasuQuestion.CheckboxQuestion::class, name = "CHECKBOX"),
     JsonSubTypes.Type(value = VasuQuestion.RadioGroupQuestion::class, name = "RADIO_GROUP"),
     JsonSubTypes.Type(value = VasuQuestion.MultiSelectQuestion::class, name = "MULTISELECT"),
+    JsonSubTypes.Type(value = VasuQuestion.MultiField::class, name = "MULTI_FIELD"),
+    JsonSubTypes.Type(value = VasuQuestion.MultiFieldList::class, name = "MULTI_FIELD_LIST"),
+    JsonSubTypes.Type(value = VasuQuestion.DateQuestion::class, name = "DATE"),
     JsonSubTypes.Type(value = VasuQuestion.Followup::class, name = "FOLLOWUP"),
+    JsonSubTypes.Type(value = VasuQuestion.Paragraph::class, name = "PARAGRAPH")
 )
 sealed class VasuQuestion(
     val type: VasuQuestionType
@@ -277,6 +276,53 @@ sealed class VasuQuestion(
         }
     }
 
+    data class MultiField(
+        override val name: String,
+        override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
+        val keys: List<Field>,
+        val value: List<String>
+    ) : VasuQuestion(VasuQuestionType.MULTI_FIELD) {
+        init {
+            check(keys.size == value.size) { "MultiField keys ($keys) and value ($value) sizes do not match" }
+        }
+
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is MultiField && question.copy(value = this.value) == this
+        }
+    }
+
+    data class MultiFieldList(
+        override val name: String,
+        override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
+        val keys: List<Field>,
+        val value: List<List<String>>
+    ) : VasuQuestion(VasuQuestionType.MULTI_FIELD_LIST) {
+        init {
+            check(value.all { it.size == keys.size }) {
+                "MultiFieldList keys ($keys) and value ($value) sizes do not match"
+            }
+        }
+
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is MultiFieldList && question.copy(value = this.value) == this
+        }
+    }
+
+    data class DateQuestion(
+        override val name: String,
+        override val ophKey: OphQuestionKey? = null,
+        override val info: String = "",
+        val trackedInEvents: Boolean,
+        val nameInEvents: String = "",
+        val value: LocalDate?,
+    ) : VasuQuestion(VasuQuestionType.DATE) {
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question is DateQuestion && question.copy(value = this.value) == this
+        }
+    }
+
     data class Followup(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
@@ -288,6 +334,19 @@ sealed class VasuQuestion(
             return question is Followup && question.copy(value = this.value) == this
         }
     }
+
+    data class Paragraph(
+        val title: String,
+        val paragraph: String
+    ) : VasuQuestion(VasuQuestionType.PARAGRAPH) {
+        override val name = ""
+        override val info = ""
+        override val ophKey: OphQuestionKey? = null
+
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
+            return question == this
+        }
+    }
 }
 
 data class QuestionOption(
@@ -295,40 +354,19 @@ data class QuestionOption(
     val name: String
 )
 
+data class Field(val name: String)
+
 enum class VasuQuestionType {
     TEXT,
     CHECKBOX,
     RADIO_GROUP,
     MULTISELECT,
-    FOLLOWUP
+    MULTI_FIELD,
+    MULTI_FIELD_LIST,
+    DATE,
+    FOLLOWUP,
+    PARAGRAPH
 }
-
-@Json
-data class AuthorsContent(
-    val primaryAuthor: AuthorInfo,
-    val otherAuthors: List<AuthorInfo>
-)
-
-data class AuthorInfo(
-    val name: String = "",
-    val title: String = "",
-    val phone: String = ""
-)
-
-@Json
-data class VasuDiscussionContent(
-    val discussionDate: LocalDate? = null,
-    val participants: String = "",
-    val guardianViewsAndCollaboration: String = ""
-)
-
-@Json
-data class EvaluationDiscussionContent(
-    val discussionDate: LocalDate? = null,
-    val participants: String = "",
-    val guardianViewsAndCollaboration: String = "",
-    val evaluation: String = ""
-)
 
 @Json
 data class FollowupEntry(

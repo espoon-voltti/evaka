@@ -16,14 +16,6 @@ export const VasuContainer = styled(Container)<VasuContainerProps>`
   justify-content: space-between;
   gap: ${(p) => defaultMargins[p.gapSize]};
 
-  & > section {
-    padding-bottom: ${defaultMargins.L};
-
-    h2 {
-      margin-top: 0px;
-    }
-  }
-
   @media print {
     display: block;
     * {

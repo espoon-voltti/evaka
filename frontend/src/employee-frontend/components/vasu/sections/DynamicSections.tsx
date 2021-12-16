@@ -5,19 +5,24 @@
 import { cloneDeep } from 'lodash'
 import React, { Dispatch, Fragment, SetStateAction } from 'react'
 import { last } from 'lodash'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
+import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
+import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
+import DateQuestionElem from '../components/DateQuestion'
 import FollowupQuestionElem from '../components/FollowupQuestion'
+import ParagraphElem from '../components/Paragraph'
 import {
   CheckboxQuestion,
   Followup,
   FollowupEntry,
+  MultiFieldQuestion,
   MultiSelectQuestion,
   QuestionOption,
   RadioGroupQuestion,
@@ -29,19 +34,18 @@ import {
   VasuDocumentState
 } from 'lib-common/generated/api-types/vasu'
 import {
+  getQuestionNumber,
   isCheckboxQuestion,
+  isDateQuestion,
   isFollowup,
+  isMultiFieldListQuestion,
+  isMultiFieldQuestion,
   isMultiSelectQuestion,
+  isParagraph,
   isRadioGroupQuestion,
   isTextQuestion
 } from '../vasu-content'
 import { VasuTranslations } from 'lib-customizations/employee'
-
-const getDynamicQuestionNumber = (
-  sectionOffset: number,
-  sectionIndex: number,
-  questionIndex: number
-) => `${sectionOffset + sectionIndex + 1}.${questionIndex + 1}`
 
 interface Props {
   sections: VasuSection[]
@@ -63,25 +67,30 @@ export function DynamicSections({
   editFollowupEntry
 }: Props) {
   const content = sections.map((section, sectionIndex) => {
+    if (section.hideBeforeReady && state === 'DRAFT') {
+      return null
+    }
+
+    const highlightSection = !!setContent && section.hideBeforeReady
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
       <Fragment key={section.name}>
         <SectionContent
           opaque
-          paddingVertical="L"
-          paddingHorizontal="L"
+          highlighted={highlightSection}
           padBottom={!isLastQuestionFollowup}
           data-qa="vasu-document-section"
         >
-          <H2>
+          <H2 noMargin>
             {sectionIndex + 1 + sectionOffset}. {section.name}
           </H2>
+          <Gap size="m" />
           <Questions>
             {section.questions.map((question, questionIndex) => {
-              const questionNumber = getDynamicQuestionNumber(
-                sectionOffset,
-                sectionIndex,
-                questionIndex
+              const questionNumber = getQuestionNumber(
+                sectionOffset + sectionIndex,
+                section.questions,
+                question
               )
               return (
                 <Fragment key={question.name}>
@@ -183,6 +192,68 @@ export function DynamicSections({
                       }
                       translations={translations}
                     />
+                  ) : isMultiFieldQuestion(question) ? (
+                    <MultiFieldQuestionElem
+                      question={question}
+                      questionNumber={questionNumber}
+                      translations={translations}
+                      onChange={
+                        setContent
+                          ? (index, value) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                const question1 = clone.sections[sectionIndex]
+                                  .questions[
+                                  questionIndex
+                                ] as MultiFieldQuestion
+                                question1.value[index] = value
+                                return clone
+                              })
+                          : undefined
+                      }
+                    />
+                  ) : isMultiFieldListQuestion(question) ? (
+                    <MultiFieldListQuestionElem
+                      question={question}
+                      questionNumber={questionNumber}
+                      translations={translations}
+                      onChange={
+                        setContent
+                          ? (value) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                clone.sections[sectionIndex].questions[
+                                  questionIndex
+                                ] = {
+                                  ...question,
+                                  value
+                                }
+                                return clone
+                              })
+                          : undefined
+                      }
+                    />
+                  ) : isDateQuestion(question) ? (
+                    <DateQuestionElem
+                      question={question}
+                      questionNumber={questionNumber}
+                      translations={translations}
+                      onChange={
+                        setContent
+                          ? (value) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                clone.sections[sectionIndex].questions[
+                                  questionIndex
+                                ] = {
+                                  ...question,
+                                  value
+                                }
+                                return clone
+                              })
+                          : undefined
+                      }
+                    />
                   ) : isFollowup(question) && state !== 'DRAFT' ? (
                     <FollowupQuestionElem
                       question={question}
@@ -203,6 +274,8 @@ export function DynamicSections({
                       }
                       onEdited={editFollowupEntry}
                     />
+                  ) : isParagraph(question) ? (
+                    <ParagraphElem question={question} />
                   ) : undefined}
                 </Fragment>
               )
@@ -215,11 +288,21 @@ export function DynamicSections({
   return <>{content}</>
 }
 
-const SectionContent = styled(ContentArea)<{ padBottom: boolean }>`
-  /* make selector specific enough */
-  && {
-    padding-bottom: ${(p) => (p.padBottom ? defaultMargins.L : '0px')};
-  }
+export const SectionContent = styled(ContentArea)<{
+  highlighted: boolean
+  padBottom: boolean
+}>`
+  border-left: 5px solid
+    ${({ highlighted, theme }) =>
+      highlighted ? theme.colors.main.medium : 'transparent'};
+  padding: ${defaultMargins.L};
+  padding-left: calc(${defaultMargins.L} - 5px);
+  ${({ padBottom }) =>
+    !padBottom
+      ? css`
+          padding-bottom: 0;
+        `
+      : ''}
 `
 
 const Questions = styled.div`

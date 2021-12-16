@@ -21,13 +21,7 @@ import {
   putVasuDocument,
   PutVasuDocumentParams
 } from './api'
-import {
-  AuthorsContent,
-  EvaluationDiscussionContent,
-  VasuContent,
-  VasuDiscussionContent,
-  VasuDocument
-} from 'lib-common/generated/api-types/vasu'
+import { VasuContent, VasuDocument } from 'lib-common/generated/api-types/vasu'
 import {
   Followup,
   FollowupEntry,
@@ -61,14 +55,6 @@ interface Vasu {
   vasu: VasuMetadata | undefined
   content: VasuContent
   setContent: Dispatch<SetStateAction<VasuContent>>
-  authorsContent: AuthorsContent
-  setAuthorsContent: Dispatch<SetStateAction<AuthorsContent>>
-  vasuDiscussionContent: VasuDiscussionContent
-  setVasuDiscussionContent: Dispatch<SetStateAction<VasuDiscussionContent>>
-  evaluationDiscussionContent: EvaluationDiscussionContent
-  setEvaluationDiscussionContent: Dispatch<
-    SetStateAction<EvaluationDiscussionContent>
-  >
   status: VasuStatus
   translations: VasuTranslations
   editFollowupEntry: (params: EditFollowupEntryParams) => void
@@ -81,33 +67,6 @@ export function useVasu(id: string): Vasu {
   const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
-  const [authorsContent, setAuthorsContent] = useState<AuthorsContent>({
-    primaryAuthor: {
-      name: '',
-      title: '',
-      phone: ''
-    },
-    otherAuthors: [
-      {
-        name: '',
-        title: '',
-        phone: ''
-      }
-    ]
-  })
-  const [vasuDiscussionContent, setVasuDiscussionContent] =
-    useState<VasuDiscussionContent>({
-      discussionDate: null,
-      participants: '',
-      guardianViewsAndCollaboration: ''
-    })
-  const [evaluationDiscussionContent, setEvaluationDiscussionContent] =
-    useState<EvaluationDiscussionContent>({
-      discussionDate: null,
-      participants: '',
-      guardianViewsAndCollaboration: '',
-      evaluation: ''
-    })
   const [permittedFollowupActions, setPermittedFollowupActions] =
     useState<PermittedFollowupActions>({})
 
@@ -116,22 +75,10 @@ export function useVasu(id: string): Vasu {
       res.mapAll({
         loading: () => null,
         failure: () => setStatus({ state: 'loading-error' }),
-        success: ({
-          vasu: {
-            content,
-            authorsContent,
-            vasuDiscussionContent,
-            evaluationDiscussionContent,
-            ...meta
-          },
-          permittedFollowupActions
-        }) => {
+        success: ({ vasu: { content, ...meta }, permittedFollowupActions }) => {
           setStatus({ state: 'clean' })
           setVasu(meta)
           setContent(content)
-          setAuthorsContent(authorsContent)
-          setVasuDiscussionContent(vasuDiscussionContent)
-          setEvaluationDiscussionContent(evaluationDiscussionContent)
           setPermittedFollowupActions(permittedFollowupActions)
         }
       })
@@ -186,24 +133,10 @@ export function useVasu(id: string): Vasu {
   useEffect(
     function saveDirtyContent() {
       if (status.state === 'dirty') {
-        debouncedSave({
-          documentId: id,
-          content,
-          authorsContent,
-          vasuDiscussionContent,
-          evaluationDiscussionContent
-        })
+        debouncedSave({ documentId: id, content })
       }
     },
-    [
-      debouncedSave,
-      status.state,
-      content,
-      authorsContent,
-      vasuDiscussionContent,
-      evaluationDiscussionContent,
-      id
-    ]
+    [debouncedSave, status.state, content, id]
   )
 
   useEffect(
@@ -235,30 +168,6 @@ export function useVasu(id: string): Vasu {
     []
   )
 
-  const setAuthorsContentCallback = useCallback(
-    (draft: SetStateAction<AuthorsContent>) => {
-      setAuthorsContent(draft)
-      setStatus((status) => ({ ...status, state: 'dirty' }))
-    },
-    []
-  )
-
-  const setVasuDiscussionContentCallback = useCallback(
-    (draft: SetStateAction<VasuDiscussionContent>) => {
-      setVasuDiscussionContent(draft)
-      setStatus((status) => ({ ...status, state: 'dirty' }))
-    },
-    []
-  )
-
-  const setEvaluationDiscussionContentCallback = useCallback(
-    (draft: SetStateAction<EvaluationDiscussionContent>) => {
-      setEvaluationDiscussionContent(draft)
-      setStatus((status) => ({ ...status, state: 'dirty' }))
-    },
-    []
-  )
-
   const translations = useMemo(
     () =>
       vasu !== undefined
@@ -271,12 +180,6 @@ export function useVasu(id: string): Vasu {
     vasu,
     content,
     setContent: setContentCallback,
-    authorsContent,
-    setAuthorsContent: setAuthorsContentCallback,
-    vasuDiscussionContent,
-    setVasuDiscussionContent: setVasuDiscussionContentCallback,
-    evaluationDiscussionContent,
-    setEvaluationDiscussionContent: setEvaluationDiscussionContentCallback,
     status,
     translations,
     editFollowupEntry: editFollowup,

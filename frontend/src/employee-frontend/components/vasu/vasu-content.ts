@@ -4,9 +4,13 @@
 
 import {
   CheckboxQuestion,
+  DateQuestion,
   Followup,
   FollowupEntry,
+  MultiFieldListQuestion,
+  MultiFieldQuestion,
   MultiSelectQuestion,
+  Paragraph,
   RadioGroupQuestion,
   TextQuestion,
   VasuQuestion
@@ -39,8 +43,36 @@ export function isMultiSelectQuestion(
   return question.type === 'MULTISELECT'
 }
 
+export function isMultiFieldQuestion(
+  question: VasuQuestion
+): question is MultiFieldQuestion {
+  return question.type === 'MULTI_FIELD'
+}
+
+export function isMultiFieldListQuestion(
+  question: VasuQuestion
+): question is MultiFieldListQuestion {
+  return question.type === 'MULTI_FIELD_LIST'
+}
+
+export function isDateQuestion(
+  question: VasuQuestion
+): question is DateQuestion {
+  return question.type === 'DATE'
+}
+
 export function isFollowup(question: VasuQuestion): question is Followup {
   return question.type === 'FOLLOWUP'
+}
+
+export function isParagraph(question: VasuQuestion): question is Paragraph {
+  return question.type === 'PARAGRAPH'
+}
+
+function isDateQuestionJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<DateQuestion> {
+  return question.type === 'DATE'
 }
 
 function isFollowupJson(
@@ -53,7 +85,12 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
   sections: content.sections.map((section: JsonOf<VasuSection>) => ({
     ...section,
     questions: section.questions.map((question: JsonOf<VasuQuestion>) =>
-      isFollowupJson(question)
+      isDateQuestionJson(question)
+        ? {
+            ...question,
+            value: LocalDate.parseNullableIso(question.value)
+          }
+        : isFollowupJson(question)
         ? {
             ...question,
             value: question.value.map((entry: JsonOf<FollowupEntry>) => ({
@@ -69,3 +106,22 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
     )
   }))
 })
+
+export function getQuestionNumber(
+  sectionIndex: number,
+  sectionQuestions: VasuQuestion[],
+  question: VasuQuestion
+) {
+  let questionIndex = 0
+  for (const q of sectionQuestions) {
+    if (q === question) {
+      break
+    }
+
+    if (!isParagraph(q) && !isFollowup(q)) {
+      questionIndex += 1
+    }
+  }
+
+  return `${sectionIndex + 1}.${questionIndex + 1}`
+}

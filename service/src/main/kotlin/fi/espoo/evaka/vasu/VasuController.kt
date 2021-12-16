@@ -103,12 +103,7 @@ class VasuController(
         return GetVasuDocumentResponse(doc, accessControl.getPermittedVasuFollowupActions(user, id))
     }
 
-    data class UpdateDocumentRequest(
-        val content: VasuContent,
-        val authorsContent: AuthorsContent,
-        val vasuDiscussionContent: VasuDiscussionContent,
-        val evaluationDiscussionContent: EvaluationDiscussionContent
-    )
+    data class UpdateDocumentRequest(val content: VasuContent)
 
     @PutMapping("/vasu/{id}")
     fun putDocument(
@@ -123,13 +118,7 @@ class VasuController(
         db.transaction { tx ->
             val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
             validateVasuDocumentUpdate(vasu, body)
-            tx.updateVasuDocumentMaster(
-                id,
-                body.content,
-                body.authorsContent,
-                body.vasuDiscussionContent,
-                body.evaluationDiscussionContent
-            )
+            tx.updateVasuDocumentMaster(id, body.content)
         }
     }
 
@@ -163,13 +152,7 @@ class VasuController(
 
             val editedBy = tx.getEmployee(EmployeeId(user.id))
 
-            tx.updateVasuDocumentMaster(
-                id,
-                vasu.content.editFollowupEntry(entryId, editedBy, body.text),
-                vasu.authorsContent,
-                vasu.vasuDiscussionContent,
-                vasu.evaluationDiscussionContent
-            )
+            tx.updateVasuDocumentMaster(id, vasu.content.editFollowupEntry(entryId, editedBy, body.text))
         }
     }
 
