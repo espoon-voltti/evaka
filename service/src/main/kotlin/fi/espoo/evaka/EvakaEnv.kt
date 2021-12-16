@@ -35,7 +35,7 @@ data class EvakaEnv(
         fun fromEnvironment(env: Environment): EvakaEnv {
             return EvakaEnv(
                 koskiEnabled = env.lookup("evaka.integration.koski.enabled", "fi.espoo.integration.koski.enabled") ?: false,
-                sfiEnabled = env.lookup("evaka.integration.sfi.enabled") ?: false,
+                sfiEnabled = env.lookup("evaka.integration.sfi.enabled", "fi.espoo.evaka.message.enabled") ?: false,
                 vtjEnabled = env.lookup("evaka.integration.vtj.enabled", "fi.espoo.voltti.vtj.enabled") ?: false,
                 awsRegion = Region.of(env.lookup("evaka.aws.region", "aws.region")),
                 asyncJobRunnerDisabled = env.lookup("evaka.async_job_runner.disable_runner") ?: false,
