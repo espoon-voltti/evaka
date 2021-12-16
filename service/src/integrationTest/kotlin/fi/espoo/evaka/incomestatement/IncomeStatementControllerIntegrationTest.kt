@@ -20,12 +20,15 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
+import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.BeforeEach
@@ -214,6 +217,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     fun `list income statements awaiting handler - has area`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
+        val placementId3 = PlacementId(UUID.randomUUID())
         val placementStart = LocalDate.now().minusDays(30)
         val placementEnd = LocalDate.now().plusDays(30)
         db.transaction { tx ->
@@ -228,9 +232,19 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             )
 
             tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestParentship(testAdult_2.id, testChild_3.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPartnership(testAdult_2.id, testAdult_3.id, startDate = placementStart, endDate = placementEnd)
             tx.insertTestPlacement(
                 id = placementId2,
                 childId = testChild_2.id,
+                unitId = testDaycare2.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+            tx.insertTestPlacement(
+                id = placementId3,
+                childId = testChild_3.id,
                 unitId = testDaycare2.id,
                 startDate = placementStart,
                 endDate = placementEnd,
@@ -240,6 +254,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
 
         val incomeStatement1 = createTestIncomeStatement(citizenId)
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+        val incomeStatement3 = createTestIncomeStatement(testAdult_3.id)
 
         assertEquals(
             Paged(
@@ -261,9 +276,18 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                         personId = testAdult_2.id,
                         personName = "Joan Doe",
                         primaryCareArea = "Lwiz Foo",
+                    ),
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement3.id.raw,
+                        created = incomeStatement3.created,
+                        startDate = incomeStatement3.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_3.id,
+                        personName = "Mark Foo",
+                        primaryCareArea = "Lwiz Foo",
                     )
                 ),
-                2, 1
+                3, 1
             ),
             getIncomeStatementsAwaitingHandler(listOf())
         )
@@ -332,7 +356,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             .responseObject<Paged<IncomeStatement>>(objectMapper)
             .let { (_, _, body) -> body.get() }
 
-    private fun setIncomeStatementHandled(id: IncomeStatementId, body: IncomeStatementController.SetIncomeStatementHandledBody) {
+    private fun setIncomeStatementHandled(
+        id: IncomeStatementId,
+        body: IncomeStatementController.SetIncomeStatementHandledBody
+    ) {
         http.post("/income-statements/$id/handled")
             .asUser(employee)
             .objectBody(body, mapper = objectMapper)

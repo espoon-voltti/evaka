@@ -388,7 +388,11 @@ WHERE id = :id
     return rowCount == 1
 }
 
-fun Database.Transaction.updateIncomeStatementHandled(incomeStatementId: IncomeStatementId, note: String, handlerId: EmployeeId?) {
+fun Database.Transaction.updateIncomeStatementHandled(
+    incomeStatementId: IncomeStatementId,
+    note: String,
+    handlerId: EmployeeId?
+) {
     createUpdate("UPDATE income_statement SET handler_id = :handlerId, handler_note = :note WHERE id = :id")
         .bind("id", incomeStatementId)
         .bind("note", note)
@@ -416,36 +420,62 @@ data class IncomeStatementAwaitingHandler(
 )
 
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
+    today: LocalDate,
     areas: List<String>,
     page: Int,
     pageSize: Int
 ): Paged<IncomeStatementAwaitingHandler> =
     createQuery(
         """
-WITH areas AS (
-    SELECT area.name, area.short_name, puv.head_of_child
-    FROM care_area area
-        JOIN daycare daycare ON area.id = daycare.care_area_id
-        JOIN primary_units_view puv ON puv.unit_id = daycare.id
+WITH head_of_child_areas AS (
+    SELECT puv.head_of_child as person_id, d.care_area_id
+    FROM primary_units_view puv
+    JOIN daycare d ON d.id = puv.unit_id
+),
+partnerships_areas AS (
+    SELECT
+        fp.partnership_id,
+        d.care_area_id,
+        row_number() OVER (PARTITION BY (fp.partnership_id) ORDER BY child.date_of_birth DESC) AS rownum
+    FROM fridge_partner fp
+    JOIN primary_units_view puv ON puv.head_of_child = fp.person_id
+    JOIN daycare d ON puv.unit_id = d.id
+    JOIN person child ON child.id = puv.child_id
+    WHERE daterange(start_date, end_date, '[]') @> :today
+),
+family_areas AS (
+    SELECT fp.person_id, pa.care_area_id
+    FROM fridge_partner fp
+    JOIN partnerships_areas pa ON pa.partnership_id = fp.partnership_id
+    WHERE pa.rownum = 1  -- youngest child
+),
+person_areas AS (
+    SELECT DISTINCT ON (pa.person_id) pa.person_id, ca.short_name, ca.name
+    FROM (
+        SELECT person_id, care_area_id FROM family_areas
+        UNION ALL
+        SELECT person_id, care_area_id FROM head_of_child_areas
+    ) pa
+    JOIN care_area ca ON ca.id = pa.care_area_id
 )
-
 SELECT i.id,
        i.type,
        i.created,
        i.start_date,
        p.id AS personId,
        p.first_name || ' ' || p.last_name AS personName,
-       a.name AS primaryCareArea,
+       pa.name AS primaryCareArea,
        COUNT(*) OVER () AS count
 FROM income_statement i
     JOIN person p ON i.person_id = p.id
-    LEFT JOIN areas a ON a.head_of_child = p.id
+    LEFT JOIN person_areas pa ON pa.person_id = i.person_id
 WHERE handler_id IS NULL
-AND (cardinality(:areas) = 0 OR a.short_name = ANY(:areas))
+AND (cardinality(:areas) = 0 OR pa.short_name = ANY(:areas))
 ORDER BY created, start_date
 LIMIT :pageSize OFFSET :offset
         """.trimIndent()
     )
+        .bind("today", today)
         .bind("areas", areas.toTypedArray())
         .bind("pageSize", pageSize)
         .bind("offset", (page - 1) * pageSize)
