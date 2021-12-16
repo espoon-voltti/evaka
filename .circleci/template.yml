@@ -55,6 +55,9 @@ aliases:
   - &reuse_image fsfe/reuse:0.13.0 # NOTE: Update bin/add-license-headers.sh to match
   - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:17.0
+  - &postgres_image cimg/postgres:13.4
+  - &redis_image cimg/redis:5.0
+  - &s3mock_image adobe/s3mock
   - &ubuntu_machine_image ubuntu-2004:202107-02
 
 <%- if not is_pull -%>
@@ -155,16 +158,29 @@ executors:
 
   service_test_executor:
     <<: *jvm_config
-    machine:
-      image: *ubuntu_machine_image
-    resource_class: large
-    environment:
-      # YAML anchors don't merge nested keys, so re-referencing is required
-      <<: *jvm_env
-      # Leave more memory for testcontainers than the default 20%.
-      # With large instances, this will still be 7.5GB for Gradle/services.
-      GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-XX:MaxRAMPercentage=50"'
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50"
+    docker:
+      - image: *openjdk_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+      - image: *postgres_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          PGPORT: 15432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+      - image: *redis_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+      - image: *s3mock_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          HTTP_PORT: 9876
   shellcheck:
     parameters:
       shellcheck_image_version:
@@ -1115,13 +1131,9 @@ jobs:
       - restore_repo
       - restore_service_gradle
       - restore_service_build_cache
-      - login_docker_hub
       - run:
-          name: Install Java 17
-          command: |
-            sudo apt-get update && sudo apt-get install openjdk-17-jdk
-            sudo update-java-alternatives --set java-1.17.0-openjdk-amd64
-            java -version
+          command: PGPASSWORD=postgres psql -U postgres -h localhost -p 15432 -f "db-integration-test/init-evaka-it.sql"
+          working_directory: *workspace_compose
       - run:
           name: gradle integrationTest
           working_directory: *workspace_service

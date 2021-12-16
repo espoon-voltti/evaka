@@ -40,8 +40,6 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import java.net.URI
 import javax.sql.DataSource
 
-fun isCiEnvironment() = System.getenv("CI") == "true"
-
 // Hides Closeable interface from Spring, which would close the shared instance otherwise
 class TestDataSource(pool: HikariDataSource) : DataSource by pool
 
@@ -50,24 +48,10 @@ private var testDataSource: TestDataSource? = null
 fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
     testDataSource ?: TestDataSource(
         HikariDataSource(
-            when (isCiEnvironment()) {
-                true -> {
-                    PostgresContainer.getInstance().let {
-                        HikariConfig().apply {
-                            jdbcUrl = it.jdbcUrl
-                            username = it.username
-                            password = it.password
-                            maximumPoolSize = 32
-                        }
-                    }
-                }
-                false -> {
-                    HikariConfig().apply {
-                        jdbcUrl = "jdbc:postgresql://localhost:15432/evaka_it"
-                        username = "evaka_it"
-                        password = "evaka_it"
-                    }
-                }
+            HikariConfig().apply {
+                jdbcUrl = "jdbc:postgresql://localhost:15432/evaka_it"
+                username = "evaka_it"
+                password = "evaka_it"
             }
         ).also {
             Flyway.configure()
@@ -98,36 +82,27 @@ class SharedIntegrationTestConfig {
     fun dataSource(): DataSource = getTestDataSource()
 
     @Bean
-    fun redisPool(): JedisPool =
-        when (isCiEnvironment()) {
-            true -> RedisContainer.getInstance().let {
-                JedisPool(it.containerIpAddress, it.getMappedPort(6379))
-            }
-            false -> {
-                // Use database 1 to avoid conflicts with normal development setup in database 0
-                val database = 1
-                JedisPool(
-                    GenericObjectPoolConfig(),
-                    "localhost",
-                    6379,
-                    redis.clients.jedis.Protocol.DEFAULT_TIMEOUT,
-                    null,
-                    database
-                ).also { pool ->
-                    pool.resource.use {
-                        // Clear all data from database 1
-                        it.flushDB()
-                    }
-                }
+    fun redisPool(): JedisPool {
+        // Use database 1 to avoid conflicts with normal development setup in database 0
+        val database = 1
+        return JedisPool(
+            GenericObjectPoolConfig(),
+            "localhost",
+            6379,
+            redis.clients.jedis.Protocol.DEFAULT_TIMEOUT,
+            null,
+            database
+        ).also { pool ->
+            pool.resource.use {
+                // Clear all data from database 1
+                it.flushDB()
             }
         }
+    }
 
     @Bean
     fun s3Client(env: BucketEnv): S3Client {
-        val port = when (isCiEnvironment()) {
-            true -> S3Container.getInstance().getMappedPort(9090)
-            false -> 9876
-        }
+        val port = 9876
         val client = S3Client.builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
