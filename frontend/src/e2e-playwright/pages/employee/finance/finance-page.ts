@@ -5,9 +5,10 @@
 import LocalDate from 'lib-common/local-date'
 import { runPendingAsyncJobs } from 'e2e-test-common/dev-api'
 import {
-  Page,
   AsyncButton,
   Checkbox,
+  DatePickerDeprecated,
+  Page,
   TextInput
 } from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
@@ -87,8 +88,7 @@ export class FeeDecisionsPage {
   }
 
   async assertSentDecisionsCount(count: number) {
-    await this.#statusFilter.sent.click()
-    await this.#statusFilter.sent.waitUntilChecked()
+    await this.#statusFilter.sent.check()
     await waitUntilEqual(
       () => this.page.findAll('[data-qa="table-fee-decision-row"]').count(),
       count
@@ -121,14 +121,14 @@ export class ValueDecisionsPage {
   #valueDecisionDetailsPage = this.page.find(
     '[data-qa="voucher-value-decision-page"]'
   )
-  readonly #fromDateInput = new TextInput(
-    this.page.find('[data-qa="value-decisions-start-date"] input')
+  readonly #fromDateInput = new DatePickerDeprecated(
+    this.page.find('[data-qa="value-decisions-start-date"]')
   )
-  readonly #toDateInput = new TextInput(
-    this.page.find('[data-qa="value-decisions-end-date"] input')
+  readonly #toDateInput = new DatePickerDeprecated(
+    this.page.find('[data-qa="value-decisions-end-date"]')
   )
-  readonly #dateCheckbox = this.page.find(
-    '[data-qa="value-decision-search-by-start-date"]'
+  readonly #dateCheckbox = new Checkbox(
+    this.page.find('[data-qa="value-decision-search-by-start-date"]')
   )
   #allValueDecisionsToggle = new Checkbox(
     this.page.find('[data-qa="toggle-all-decisions"]')
@@ -166,13 +166,11 @@ export class ValueDecisionsPage {
   }
 
   async startDateWithinRange() {
-    await this.#dateCheckbox.click()
+    await this.#dateCheckbox.check()
   }
 
-  async toggleAllValueDecisions(toggledOn: boolean) {
-    await this.#allValueDecisionsToggle.waitUntilChecked(!toggledOn)
-    await this.#allValueDecisionsToggle.click()
-    await this.#allValueDecisionsToggle.waitUntilChecked(toggledOn)
+  async toggleAllValueDecisions() {
+    await this.#allValueDecisionsToggle.check()
   }
 
   async sendValueDecisions() {
