@@ -217,7 +217,7 @@ const sv: Translations = {
       title: 'Anmäl frånvaro',
       selectedChildren: 'Utvalda barn',
       selectChildrenInfo:
-        'Anmäl endast heldagsfrånvaro. Deldagsfrånvaro kan anmälas vid reservering.',
+        'Anmäl endast heldagsfrånvaro. Kortare frånvaro kan anmälas genom reservationer.',
       dateRange: 'Frånvaromeddelande för ',
       absenceType: 'Anledning till frånvaro',
       absenceTypes: {
