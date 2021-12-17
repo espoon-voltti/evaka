@@ -460,9 +460,9 @@ data class SfiContactPersonEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiContactPersonEnv(
-            name = env.lookup("evaka.integration.sfi.contact_person.name", "fi.espoo.evaka.msg.sfi.printing.contactPersonName") ?: "",
-            phone = env.lookup("evaka.integration.sfi.contact_person.phone", "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone") ?: "",
-            email = env.lookup("evaka.integration.sfi.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail") ?: "",
+            name = env.lookup("evaka.integration.sfi.contact_person.name", "fi.espoo.evaka.msg.sfi.printing.contactPersonName"),
+            phone = env.lookup("evaka.integration.sfi.contact_person.phone", "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone"),
+            email = env.lookup("evaka.integration.sfi.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail"),
         )
     }
 }
