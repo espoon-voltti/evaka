@@ -79,7 +79,7 @@ class UnitsView(private val accessControl: AccessControl) {
             val placements = tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
             val backupCares = tx.getBackupCaresForDaycare(unitId, period)
             val missingGroupPlacements = getMissingGroupPlacements(tx, unitId)
-            val recentlyTerminatedPlacements = tx.getTerminatedPlacements(evakaClock.today(), unitId, evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks), evakaClock.today())
+            val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(user, Action.Unit.READ_TERMINATED_PLACEMENTS, unitId)) tx.getTerminatedPlacements(evakaClock.today(), unitId, evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks), evakaClock.today()) else emptyList()
             val caretakers = Caretakers(
                 unitCaretakers = tx.getUnitStats(unitId, from, to),
                 groupCaretakers = tx.getGroupStats(unitId, from, to)

@@ -487,7 +487,9 @@ sealed interface Action {
         READ_FAMILY_CONTACT_REPORT(UNIT_SUPERVISOR),
         READ_SERVICE_VOUCHER_VALUES_REPORT(FINANCE_ADMIN, UNIT_SUPERVISOR),
 
-        UPDATE_FEATURES();
+        UPDATE_FEATURES(),
+
+        READ_TERMINATED_PLACEMENTS(UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
