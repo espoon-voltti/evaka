@@ -35,14 +35,12 @@ The applications consists of several sub-projects:
   employees
 - [`service`](service/) – All the business logic, e.g. handling early
   childhood education application process and daily work in daycare
-- [`message-service`](message-service/) – Service for sending messages
-  via [Suomi.fi Messages](https://www.suomi.fi/messages) service
 - [`compose`](compose/) – Tooling for running application in local
   development environment, using e.g. [Docker](https://www.docker.com)
 - [`proxy`](proxy/) – [Nginx](https://www.nginx.com) image for proxying
   fronetend requests to services
-- [`service-lib`](service-lib/) – A common library shared with `service` and
-  `message-service` projects
+- [`service-lib`](service-lib/) – Old common library for service projects,
+  but today only used by `service`.
 
 and a few other important directories:
 
