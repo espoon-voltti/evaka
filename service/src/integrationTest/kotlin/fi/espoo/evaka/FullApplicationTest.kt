@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.core.env.Environment
 import java.io.File
@@ -59,7 +60,7 @@ abstract class FullApplicationTest {
 
     @Autowired
     protected lateinit var env: Environment
-    @Autowired
+    @SpyBean
     protected lateinit var evakaEnv: EvakaEnv
     @Autowired
     protected lateinit var vardaEnv: VardaEnv

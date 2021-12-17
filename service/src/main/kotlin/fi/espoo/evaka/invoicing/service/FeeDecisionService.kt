@@ -48,6 +48,7 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -62,21 +63,27 @@ class FeeDecisionService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         ids: List<FeeDecisionId>,
-        now: Instant
+        lastPossibleDecisionValidFrom: Instant
     ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
         val decisions = tx.getFeeDecisionsByIds(ids)
         if (decisions.isEmpty()) return listOf()
-
+        val now = Instant.now()
         val notDrafts = decisions.filterNot { it.status == DRAFT }
         if (notDrafts.isNotEmpty()) {
             throw BadRequest("Some fee decisions were not drafts")
         }
 
-        val nowDate = LocalDate.from(now.atZone(helsinkiZone))
-        val notYetValidDecisions = decisions.filter { it.validFrom > nowDate }
-        if (notYetValidDecisions.isNotEmpty()) {
-            throw BadRequest("Some of the fee decisions are not valid yet")
+        val lastPossibleDecisionValidFromDate = LocalDate.from(lastPossibleDecisionValidFrom
+            .atZone(helsinkiZone))
+        val decisionsNotValidForConfirmation = decisions.filter {
+            it.validFrom.atStartOfDay() > lastPossibleDecisionValidFromDate.atStartOfDay()
+        }
+        if (decisionsNotValidForConfirmation.isNotEmpty()) {
+            throw BadRequest(
+                "Some of the fee decisions are not valid yet",
+                "feeDecisions.confirmation.tooFarInFuture"
+            )
         }
 
         val conflicts = decisions
@@ -107,7 +114,7 @@ class FeeDecisionService(
         tx.deleteFeeDecisions(emptyDecisions.map { it.id })
 
         val (retroactiveDecisions, otherValidDecisions) = validDecisions.partition {
-            isRetroactive(it.validFrom, nowDate)
+            isRetroactive(it.validFrom, LocalDate.from(now.atZone(helsinkiZone)))
         }
 
         tx.approveFeeDecisionDraftsForSending(

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.searchFeeDecisions
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
@@ -68,7 +70,8 @@ class FeeDecisionController(
     private val service: FeeDecisionService,
     private val generator: FinanceDecisionGenerator,
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val env: EvakaEnv
 ) {
     @PostMapping("/search")
     fun search(
@@ -111,7 +114,12 @@ class FeeDecisionController(
         accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
+                val confirmedDecisions = service.confirmDrafts(
+                    tx,
+                    user,
+                    feeDecisionIds,
+                    Instant.now().plus(Period.ofDays(env.nrOfDaysFeeDecisionCanBeSentInAdvance))
+                )
                 asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
             }
         }
