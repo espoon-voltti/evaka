@@ -54,8 +54,8 @@ export default React.memo(function TabGroups({
                   unitData.recentlyTerminatedPlacements
                 }
               />
-          </ContentArea>
-        )}
+            </ContentArea>
+          )}
 
         <ContentArea opaque>
           <MissingGroupPlacements
