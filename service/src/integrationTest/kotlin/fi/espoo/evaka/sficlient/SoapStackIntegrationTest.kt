@@ -82,15 +82,15 @@ class SoapStackIntegrationTest {
         emailContent = "email-content"
     )
     private val clientKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri.toString(),
+        location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri,
         password = Sensitive("client")
     )
     private val serverKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/server.p12").uri.toString(),
+        location = ClassPathResource("evaka-integration-test/sficlient/server.p12").uri,
         password = Sensitive("localhost")
     )
     private val untrustWorthyKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri.toString(),
+        location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri,
         password = Sensitive("untrustworthy")
     )
     private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)

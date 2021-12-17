@@ -279,14 +279,14 @@ data class VtjXroadEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = VtjXroadEnv(
-            trustStore = env.lookup<String?>("evaka.integration.vtj.xroad.trust_store.location", "fi.espoo.voltti.vtj.xroad.trustStore.location")?.let { location ->
+            trustStore = env.lookup<URI?>("evaka.integration.vtj.xroad.trust_store.location", "fi.espoo.voltti.vtj.xroad.trustStore.location")?.let { location ->
                 KeystoreEnv(
                     location = location,
                     type = env.lookup("evaka.integration.vtj.xroad.trust_store.type", "fi.espoo.voltti.vtj.xroad.trustStore.type") ?: "pkcs12",
                     password = Sensitive(env.lookup("evaka.integration.vtj.xroad.trust_store.password", "fi.espoo.voltti.vtj.xroad.trustStore.password") ?: "")
                 )
             },
-            keyStore = env.lookup<String?>("evaka.integration.vtj.xroad.key_store.location", "fi.espoo.voltti.vtj.xroad.keyStore.location")?.let { location ->
+            keyStore = env.lookup<URI?>("evaka.integration.vtj.xroad.key_store.location", "fi.espoo.voltti.vtj.xroad.keyStore.location")?.let { location ->
                 KeystoreEnv(
                     location = location,
                     type = env.lookup("evaka.integration.vtj.xroad.key_store.type", "fi.espoo.voltti.vtj.xroad.keyStore.type") ?: "pkcs12",
@@ -404,7 +404,7 @@ data class SfiEnv(
                 type = env.lookup("evaka.integration.sfi.trust_store.type", "fi.espoo.evaka.msg.sfi.ws.trustStore.type") ?: "pkcs12",
                 password = env.lookup<String?>("evaka.integration.sfi.trust_store.password", "fi.espoo.evaka.msg.sfi.ws.trustStore.password")?.let(::Sensitive)
             ),
-            keyStore = env.lookup<String?>("evaka.integration.sfi.key_store.location", "fi.espoo.evaka.msg.sfi.ws.keyStore.location")?.let { location ->
+            keyStore = env.lookup<URI?>("evaka.integration.sfi.key_store.location", "fi.espoo.evaka.msg.sfi.ws.keyStore.location")?.let { location ->
                 KeystoreEnv(
                     location = location,
                     type = env.lookup("evaka.integration.sfi.key_store.type", "fi.espoo.evaka.msg.sfi.ws.keyStore.type") ?: "pkcs12",
@@ -468,7 +468,7 @@ data class SfiContactPersonEnv(
 }
 
 data class KeystoreEnv(
-    val location: String,
+    val location: URI,
     val type: String = "pkcs12",
     val password: Sensitive<String>? = null,
 ) {
