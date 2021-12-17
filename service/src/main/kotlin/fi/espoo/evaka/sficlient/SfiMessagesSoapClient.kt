@@ -138,7 +138,7 @@ class SfiMessagesSoapClient(
                     isPaperi = sfiEnv.printing.forcePrintForElectronicUser
                     laskutus = KyselyWS2A.Laskutus().apply {
                         tunniste = sfiEnv.printing.billingId
-                        salasana = sfiEnv.printing.billingPassword?.takeIf { it.isNotBlank() }
+                        salasana = sfiEnv.printing.billingPassword?.value?.takeIf { it.isNotBlank() }
                     }
                 } else {
                     isLahetaTulostukseen = false

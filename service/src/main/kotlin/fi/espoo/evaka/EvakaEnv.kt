@@ -441,14 +441,14 @@ data class SfiPrintingEnv(
     /**
      * Billing password, if required by the printing provider
      */
-    val billingPassword: String?,
+    val billingPassword: Sensitive<String>?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiPrintingEnv(
             forcePrintForElectronicUser = env.lookup("evaka.integration.sfi.printing.force_print_for_electronic_user", "fi.espoo.evaka.msg.sfi.printing.forcePrintForElectronicUser") ?: false,
             printingProvider = env.lookup("evaka.integration.sfi.printing.provider", "fi.espoo.evaka.msg.sfi.printing.printingProvider"),
             billingId = env.lookup("evaka.integration.sfi.printing.billing.id", "fi.espoo.evaka.msg.sfi.printing.billingId"),
-            billingPassword = env.lookup("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword"),
+            billingPassword = env.lookup<String?>("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword")?.let(::Sensitive),
         )
     }
 }

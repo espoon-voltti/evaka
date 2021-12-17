@@ -118,7 +118,7 @@ class SoapStackIntegrationTest {
             forcePrintForElectronicUser = false,
             printingProvider = "provider",
             billingId = "billing-id",
-            billingPassword = "billing-password",
+            billingPassword = Sensitive("billing-password"),
         ),
         contactPerson = SfiContactPersonEnv(
             name = "contact-name",
@@ -196,7 +196,7 @@ class SoapStackIntegrationTest {
             assertEquals(env.printing?.printingProvider, request.tulostustoimittaja)
 
             assertEquals(env.printing?.billingId, request.laskutus.tunniste)
-            assertEquals(env.printing?.billingPassword, request.laskutus.salasana)
+            assertEquals(env.printing?.billingPassword?.value, request.laskutus.salasana)
 
             assertEquals(1, request.kohteet.kohde.size)
             val kohde = request.kohteet.kohde[0]
