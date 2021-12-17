@@ -9,7 +9,7 @@ import { mapVasuContent } from './vasu-content'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  VasuContent,
+  UpdateDocumentRequest,
   VasuDocument,
   VasuDocumentEvent,
   VasuDocumentEventType,
@@ -90,17 +90,20 @@ export async function getVasuDocument(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface PutVasuDocumentParams {
+export interface PutVasuDocumentParams extends UpdateDocumentRequest {
   documentId: UUID
-  content: VasuContent
 }
 
 export async function putVasuDocument({
   documentId,
-  content
+  content,
+  childLanguage
 }: PutVasuDocumentParams): Promise<Result<null>> {
   return client
-    .put(`/vasu/${documentId}`, { content })
+    .put<UpdateDocumentRequest>(`/vasu/${documentId}`, {
+      content,
+      childLanguage
+    })
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }

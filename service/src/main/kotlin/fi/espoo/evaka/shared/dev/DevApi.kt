@@ -112,6 +112,7 @@ import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
+import fi.espoo.evaka.vasu.getVasuTemplate
 import fi.espoo.evaka.vasu.insertVasuDocument
 import fi.espoo.evaka.vasu.insertVasuTemplate
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
@@ -868,7 +869,9 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     @PostMapping("/vasu/doc")
     fun createVasuDocument(db: Database.DeprecatedConnection, @RequestBody body: PostVasuDocBody): VasuDocumentId {
         return db.transaction { tx ->
-            tx.insertVasuDocument(body.childId, body.templateId)
+            val template = tx.getVasuTemplate(body.templateId)
+                ?: throw NotFound("Template with id ${body.templateId} not found")
+            tx.insertVasuDocument(body.childId, template)
         }
     }
 

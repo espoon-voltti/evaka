@@ -143,6 +143,10 @@ class VasuIntegrationTest : FullApplicationTest() {
 
     private fun updateDocumentContent(type: CurriculumType) {
         val template = getTemplate(type)
+        val childLanguage = when (type) {
+            CurriculumType.DAYCARE -> null
+            CurriculumType.PRESCHOOL -> ChildLanguage("kiina", "kiina")
+        }
 
         val documentId = postVasuDocument(
             testChild_1.id,
@@ -167,7 +171,7 @@ class VasuIntegrationTest : FullApplicationTest() {
 
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(content = updatedContent)
+            VasuController.UpdateDocumentRequest(content = updatedContent, childLanguage = childLanguage)
         )
 
         getVasuDocument(documentId).let {
@@ -187,6 +191,10 @@ class VasuIntegrationTest : FullApplicationTest() {
 
     private fun documentPublishingAndStateTransitions(type: CurriculumType) {
         val template = getTemplate(type)
+        val childLanguage = when (type) {
+            CurriculumType.DAYCARE -> null
+            CurriculumType.PRESCHOOL -> ChildLanguage("kiina", "kiina")
+        }
 
         val documentId = postVasuDocument(
             testChild_1.id,
@@ -210,7 +218,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         )
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(content = updatedContent)
+            VasuController.UpdateDocumentRequest(content = updatedContent, childLanguage = childLanguage)
         )
         assertNull(db.read { it.getLatestPublishedVasuDocument(documentId) })
         postVasuDocumentState(
@@ -248,7 +256,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         )
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(content = contentWithUpdatedDiscussion)
+            VasuController.UpdateDocumentRequest(content = contentWithUpdatedDiscussion, childLanguage = childLanguage)
         )
         postVasuDocumentState(
             documentId,
@@ -283,7 +291,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         )
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(content = contentWithUpdatedEvaluation)
+            VasuController.UpdateDocumentRequest(content = contentWithUpdatedEvaluation, childLanguage = childLanguage)
         )
         postVasuDocumentState(
             documentId,
@@ -326,7 +334,7 @@ class VasuIntegrationTest : FullApplicationTest() {
 
         putVasuDocument(
             documentId,
-            VasuController.UpdateDocumentRequest(content = contentWithUpdatedEvaluation)
+            VasuController.UpdateDocumentRequest(content = contentWithUpdatedEvaluation, childLanguage = childLanguage)
         )
         db.read {
             it.getLatestPublishedVasuDocument(documentId).let { doc ->

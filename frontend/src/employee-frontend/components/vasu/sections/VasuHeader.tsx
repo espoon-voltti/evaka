@@ -39,7 +39,7 @@ const Confidential = styled.div`
 interface Props {
   document: Pick<
     VasuDocument,
-    'basics' | 'documentState' | 'templateName' | 'language'
+    'basics' | 'documentState' | 'templateName' | 'language' | 'type'
   >
 }
 export function VasuHeader({
@@ -49,7 +49,8 @@ export function VasuHeader({
     },
     documentState,
     templateName,
-    language
+    language,
+    type
   }
 }: Props) {
   const { i18n } = useTranslation()
@@ -66,7 +67,7 @@ export function VasuHeader({
       <StateAndConfidentiality>
         <VasuStateChip state={documentState} labels={i18n.vasu.states} />
         <Confidential>{translations.confidential}</Confidential>
-        <div>{translations.confidentialSectionOfLaw}</div>
+        <div>{translations.law[type]}</div>
       </StateAndConfidentiality>
     </HeaderSection>
   )

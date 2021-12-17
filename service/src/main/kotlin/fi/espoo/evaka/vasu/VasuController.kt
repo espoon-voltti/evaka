@@ -58,13 +58,14 @@ class VasuController(
                 throw Conflict("Cannot open a new vasu document while another is still active")
             }
 
-            tx.getVasuTemplate(body.templateId)?.let { template ->
-                if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
-                    throw BadRequest("Template is not currently valid")
-                }
-            } ?: throw NotFound("template ${body.templateId} not found")
+            val template = tx.getVasuTemplate(body.templateId)
+                ?: throw NotFound("template ${body.templateId} not found")
 
-            tx.insertVasuDocument(childId, body.templateId)
+            if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
+                throw BadRequest("Template is not currently valid")
+            }
+
+            tx.insertVasuDocument(childId, template)
         }
     }
 
@@ -103,7 +104,7 @@ class VasuController(
         return GetVasuDocumentResponse(doc, accessControl.getPermittedVasuFollowupActions(user, id))
     }
 
-    data class UpdateDocumentRequest(val content: VasuContent)
+    data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
 
     @PutMapping("/vasu/{id}")
     fun putDocument(
@@ -118,7 +119,7 @@ class VasuController(
         db.transaction { tx ->
             val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
             validateVasuDocumentUpdate(vasu, body)
-            tx.updateVasuDocumentMaster(id, body.content)
+            tx.updateVasuDocumentMaster(id, body.content, body.childLanguage)
         }
     }
 
@@ -152,7 +153,11 @@ class VasuController(
 
             val editedBy = tx.getEmployee(EmployeeId(user.id))
 
-            tx.updateVasuDocumentMaster(id, vasu.content.editFollowupEntry(entryId, editedBy, body.text))
+            tx.updateVasuDocumentMaster(
+                id,
+                vasu.content.editFollowupEntry(entryId, editedBy, body.text),
+                vasu.basics.childLanguage
+            )
         }
     }
 
