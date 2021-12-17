@@ -88,7 +88,7 @@ function joinNonEmptyValues(values: string[][]) {
       fields.map((value) => value.trim()).some((value) => value)
     )
     .map((fields) => fields.map((value) => value.trim()).join(' '))
-    .join(', ')
+    .join(',\n')
 }
 
 export function useAutoExpandList(
