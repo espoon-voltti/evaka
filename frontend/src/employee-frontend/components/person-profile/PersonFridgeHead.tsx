@@ -28,7 +28,7 @@ export default React.memo(function PersonFridgeHead() {
   }, [formatTitleName, i18n.titles.customers, person, setTitle])
 
   return (
-    <div className="person-fridge-head-wrapper">
+    <div data-qa="person-fridge-head-section" data-isloading={person.isLoading}>
       <CollapsibleSection
         icon={faUser}
         title={i18n.personProfile.personDetails}

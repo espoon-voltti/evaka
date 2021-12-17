@@ -19,6 +19,15 @@ export class PersonProfilePage {
     await this.page.goto(config.employeeUrl + '/profile/' + personId)
   }
 
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="person-fridge-head-section"][data-isloading="false"]')
+      .waitUntilVisible()
+    await this.page
+      .find('[data-qa="family-overview-section"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
   async openCollapsible(selector: ProfilePageCollapsible) {
     const find = this.page.find(`[data-qa="${selector}-collapsible"]`)
     if ((await find.getAttribute('data-status')) === 'closed') {

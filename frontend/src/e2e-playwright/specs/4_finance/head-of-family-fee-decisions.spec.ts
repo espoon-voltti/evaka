@@ -71,6 +71,7 @@ describe('Head of family fee decisions', () => {
     await createFeeDecisionFixture(sentAtSecond)
 
     await personProfilePage.openPersonPage(enduserGuardianFixture.id)
+    await personProfilePage.waitUntilLoaded()
     await personProfilePage.openCollapsible('person-fee-decisions')
 
     await personProfilePage.checkFeeDecisionSentAt(0, sentAtThird)

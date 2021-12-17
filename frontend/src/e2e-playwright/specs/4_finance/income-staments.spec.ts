@@ -79,6 +79,7 @@ describe('Income statements', () => {
     await navigateToIncomeStatements()
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 2)
     await incomeStatementsPage.openNthIncomeStatement(1)
+    await personProfilePage.waitUntilLoaded()
     await personProfilePage.openCollapsible('person-income')
 
     await waitUntilFalse(() => personProfilePage.isIncomeStatementHandled(0))
