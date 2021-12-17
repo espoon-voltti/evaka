@@ -90,7 +90,11 @@ class SfiMessagesSoapClient(
                     setSecurementPassword(sfiEnv.keyStore.password?.value)
                     setSecurementSignatureCrypto(
                         Merlin().apply {
-                            keyStore = sfiEnv.keyStore.load()
+                            this.keyStore = sfiEnv.keyStore.load().also {
+                                check(it.containsAlias(sfiEnv.signingKeyAlias)) {
+                                    "Suomi.fi Messages API key store is configured but doesn't contain a key with alias \"${sfiEnv.signingKeyAlias}\""
+                                }
+                            }
                         }
                     )
                 } else {
