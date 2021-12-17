@@ -338,16 +338,19 @@ data class VtjXroadServiceEnv(
 }
 
 data class SfiEnv(
+    val address: String,
     val trustStore: KeystoreEnv,
     val keyStore: KeystoreEnv?,
-    val address: String,
     val signingKeyAlias: String,
-    val message: SfiMessageEnv,
+    val authorityIdentifier: String,
+    val serviceIdentifier: String,
+    val certificateCommonName: String,
     val printing: SfiPrintingEnv,
     val contactPerson: SfiContactPersonEnv
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiEnv(
+            address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address"),
             trustStore = KeystoreEnv(
                 location = env.lookup("evaka.integration.sfi.trust_store.location", "fi.espoo.evaka.msg.sfi.ws.trustStore.location"),
                 type = env.lookup("evaka.integration.sfi.trust_store.type", "fi.espoo.evaka.msg.sfi.ws.trustStore.type") ?: "pkcs12",
@@ -360,25 +363,12 @@ data class SfiEnv(
                     password = env.lookup<String?>("evaka.integration.sfi.key_store.password", "fi.espoo.evaka.msg.sfi.ws.keyStore.password")?.let(::Sensitive)
                 )
             },
-            address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address"),
             signingKeyAlias = env.lookup("evaka.integration.sfi.signing_key_alias", "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias") ?: "signing-key",
-            message = SfiMessageEnv.fromEnvironment(env),
+            authorityIdentifier = env.lookup("evaka.integration.sfi.authority_identifier", "evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier"),
+            serviceIdentifier = env.lookup("evaka.integration.sfi.service_identifier", "evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier"),
+            certificateCommonName = env.lookup("evaka.integration.sfi.certificate_common_name", "evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName"),
             printing = SfiPrintingEnv.fromEnvironment(env),
             contactPerson = SfiContactPersonEnv.fromEnvironment(env)
-        )
-    }
-}
-
-data class SfiMessageEnv(
-    val authorityIdentifier: String,
-    val serviceIdentifier: String,
-    val certificateCommonName: String
-) {
-    companion object {
-        fun fromEnvironment(env: Environment) = SfiMessageEnv(
-            authorityIdentifier = env.lookup("evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier"),
-            serviceIdentifier = env.lookup("evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier"),
-            certificateCommonName = env.lookup("evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName"),
         )
     }
 }

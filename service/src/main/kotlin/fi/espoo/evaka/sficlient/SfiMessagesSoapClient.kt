@@ -121,9 +121,9 @@ class SfiMessagesSoapClient(
         val request = LahetaViesti().apply {
             viranomainen = Viranomainen().apply {
                 sanomaTunniste = msg.messageId
-                sanomaVarmenneNimi = sfiEnv.message.certificateCommonName
-                viranomaisTunnus = sfiEnv.message.authorityIdentifier
-                palveluTunnus = sfiEnv.message.serviceIdentifier
+                sanomaVarmenneNimi = sfiEnv.certificateCommonName
+                viranomaisTunnus = sfiEnv.authorityIdentifier
+                palveluTunnus = sfiEnv.serviceIdentifier
                 sanomaVersio = MESSAGE_API_VERSION
                 yhteyshenkilo = Yhteyshenkilo().apply {
                     nimi = sfiEnv.contactPerson.name

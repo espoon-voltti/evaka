@@ -8,7 +8,6 @@ import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.SfiContactPersonEnv
 import fi.espoo.evaka.SfiEnv
-import fi.espoo.evaka.SfiMessageEnv
 import fi.espoo.evaka.SfiPrintingEnv
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
@@ -101,15 +100,13 @@ class SoapStackIntegrationTest {
     }
 
     private fun defaultEnv() = SfiEnv(
+        address = "https://localhost:${server.port}",
         trustStore = serverKeystore,
         keyStore = null,
-        address = "https://localhost:${server.port}",
         signingKeyAlias = "",
-        message = SfiMessageEnv(
-            authorityIdentifier = "authority",
-            serviceIdentifier = "service",
-            certificateCommonName = "common-name"
-        ),
+        authorityIdentifier = "authority",
+        serviceIdentifier = "service",
+        certificateCommonName = "common-name",
         printing = SfiPrintingEnv(
             enabled = true,
             forcePrintForElectronicUser = false,
@@ -176,9 +173,9 @@ class SoapStackIntegrationTest {
         val client = SfiMessagesSoapClient(env, dummyDocumentService)
         server.service.implementation.set { viranomainen, request ->
             assertEquals(message.messageId, viranomainen.sanomaTunniste)
-            assertEquals(env.message.authorityIdentifier, viranomainen.viranomaisTunnus)
-            assertEquals(env.message.certificateCommonName, viranomainen.sanomaVarmenneNimi)
-            assertEquals(env.message.serviceIdentifier, viranomainen.palveluTunnus)
+            assertEquals(env.authorityIdentifier, viranomainen.viranomaisTunnus)
+            assertEquals(env.certificateCommonName, viranomainen.sanomaVarmenneNimi)
+            assertEquals(env.serviceIdentifier, viranomainen.palveluTunnus)
             assertEquals(env.contactPerson.name, viranomainen.yhteyshenkilo.nimi)
             assertEquals(env.contactPerson.email, viranomainen.yhteyshenkilo.sahkoposti)
             assertEquals(env.contactPerson.phone, viranomainen.yhteyshenkilo.matkapuhelin)
