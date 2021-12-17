@@ -34,7 +34,7 @@ evaka:
       url: ""
       user_id: ""
       xroad_client_id: ""
-    message:
+    sfi:
       enabled: false
     varda:
       basic_auth: ""
