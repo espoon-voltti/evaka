@@ -216,6 +216,8 @@ const en: Translations = {
     absenceModal: {
       title: 'Report absence',
       selectedChildren: 'Selected children',
+      selectChildrenInfo:
+        'Only report full day absences. Part-day absences can be reported when making a reservation.',
       dateRange: 'Absent during',
       absenceType: 'Reason for absence',
       absenceTypes: {

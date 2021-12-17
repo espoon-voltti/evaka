@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { AbsenceType } from 'lib-common/generated/enums'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { Label } from 'lib-components/typography'
+import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -92,6 +92,7 @@ export default React.memo(function AbsenceModal({
       rejectLabel={i18n.common.cancel}
     >
       <Label>{i18n.calendar.absenceModal.selectedChildren}</Label>
+      <P>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
       <Gap size="xs" />
       <FixedSpaceFlexWrap>
         {availableChildren.map((child) => (

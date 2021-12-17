@@ -215,6 +215,8 @@ export default {
     absenceModal: {
       title: 'Ilmoita poissaolo',
       selectedChildren: 'Valitse lapset, joille ilmoitat poissaolon',
+      selectChildrenInfo:
+        'Ilmoita tässä vain koko päivän poissaolot. Osan päivän poissaolon voit ilmoittaa läsnäoloilmoituksella.',
       dateRange: 'Poissaoloilmoitus ajalle',
       absenceType: 'Poissaolon syy',
       absenceTypes: {
