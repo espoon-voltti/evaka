@@ -353,7 +353,7 @@ data class SfiEnv(
                 location = env.lookup("evaka.integration.sfi.key_store.location", "fi.espoo.evaka.msg.sfi.ws.keyStore.location"),
                 password = Sensitive(env.lookup("evaka.integration.sfi.key_store.password", "fi.espoo.evaka.msg.sfi.ws.keyStore.password") ?: "")
             ),
-            address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address") ?: "",
+            address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address"),
             signingKeyAlias = env.lookup("evaka.integration.sfi.signing_key_alias", "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias") ?: "signing-key",
             wsSecurityEnabled = env.lookup("evaka.integration.sfi.ws_security_enabled") ?: true,
             message = SfiMessageEnv.fromEnvironment(env),
@@ -370,9 +370,9 @@ data class SfiMessageEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiMessageEnv(
-            authorityIdentifier = env.lookup("evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier") ?: "",
-            serviceIdentifier = env.lookup("evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier") ?: "",
-            certificateCommonName = env.lookup("evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName") ?: "",
+            authorityIdentifier = env.lookup("evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier"),
+            serviceIdentifier = env.lookup("evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier"),
+            certificateCommonName = env.lookup("evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName"),
         )
     }
 }
