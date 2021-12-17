@@ -42,6 +42,8 @@ import javax.net.ssl.TrustManagerFactory
 import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 
+private const val MESSAGE_API_VERSION = "1.1"
+
 class SfiMessagesSoapClient(
     private val sfiEnv: SfiEnv,
     private val docService: DocumentService,
@@ -135,7 +137,7 @@ class SfiMessagesSoapClient(
                 sanomaVarmenneNimi = sfiEnv.message.certificateCommonName
                 viranomaisTunnus = sfiEnv.message.authorityIdentifier
                 palveluTunnus = sfiEnv.message.serviceIdentifier
-                sanomaVersio = sfiEnv.message.messageApiVersion
+                sanomaVersio = MESSAGE_API_VERSION
                 yhteyshenkilo = Yhteyshenkilo().apply {
                     nimi = sfiEnv.contactPerson.name
                     matkapuhelin = sfiEnv.contactPerson.phone

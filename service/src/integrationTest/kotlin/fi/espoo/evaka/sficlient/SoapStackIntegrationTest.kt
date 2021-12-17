@@ -109,7 +109,6 @@ class SoapStackIntegrationTest {
         message = SfiMessageEnv(
             authorityIdentifier = "authority",
             serviceIdentifier = "service",
-            messageApiVersion = "1.1",
             certificateCommonName = "common-name"
         ),
         printing = SfiPrintingEnv(
@@ -180,7 +179,6 @@ class SoapStackIntegrationTest {
             assertEquals(message.messageId, viranomainen.sanomaTunniste)
             assertEquals(env.message.authorityIdentifier, viranomainen.viranomaisTunnus)
             assertEquals(env.message.certificateCommonName, viranomainen.sanomaVarmenneNimi)
-            assertEquals(env.message.messageApiVersion, viranomainen.sanomaVersio)
             assertEquals(env.message.serviceIdentifier, viranomainen.palveluTunnus)
             assertEquals(env.contactPerson.name, viranomainen.yhteyshenkilo.nimi)
             assertEquals(env.contactPerson.email, viranomainen.yhteyshenkilo.sahkoposti)

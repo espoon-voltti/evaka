@@ -366,14 +366,12 @@ data class SfiEnv(
 data class SfiMessageEnv(
     val authorityIdentifier: String,
     val serviceIdentifier: String,
-    val messageApiVersion: String,
     val certificateCommonName: String
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiMessageEnv(
             authorityIdentifier = env.lookup("evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier") ?: "",
             serviceIdentifier = env.lookup("evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier") ?: "",
-            messageApiVersion = env.lookup("evaka.integration.sfi.message.message_api_version", "fi.espoo.evaka.msg.sfi.message.messageApiVersion") ?: "1.1",
             certificateCommonName = env.lookup("evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName") ?: "",
         )
     }
