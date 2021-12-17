@@ -5,7 +5,6 @@
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { enduserLogin } from 'e2e-playwright/utils/user'
-import { waitUntilEqual } from '../../utils'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 
@@ -26,19 +25,12 @@ describe('Citizen page', () => {
     await header.waitUntilLoggedIn()
 
     await header.selectLanguage('fi')
-    await waitUntilEqual(
-      async () => (await header.applyingTab.innerText).toLowerCase(),
-      'hakeminen'
-    )
+    await header.assertApplyingTabHasText('Hakeminen')
+
     await header.selectLanguage('sv')
-    await waitUntilEqual(
-      async () => (await header.applyingTab.innerText).toLowerCase(),
-      'ansöker'
-    )
+    await header.assertApplyingTabHasText('Ansökningar')
+
     await header.selectLanguage('en')
-    await waitUntilEqual(
-      async () => (await header.applyingTab.innerText).toLowerCase(),
-      'applying'
-    )
+    await header.assertApplyingTabHasText('Applications')
   })
 })

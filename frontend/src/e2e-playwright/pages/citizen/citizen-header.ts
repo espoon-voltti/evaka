@@ -17,7 +17,7 @@ export default class CitizenHeader {
   #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
   #userMenu = this.page.find(`[data-qa="user-menu-title-${this.type}"]`)
-  applyingTab = this.page.find('[data-qa="nav-applying"]')
+  #applyingTab = this.page.find('[data-qa="nav-applying"]')
 
   async logIn() {
     if (this.type === 'mobile') {
@@ -71,6 +71,10 @@ export default class CitizenHeader {
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
     await this.#languageMenuToggle.click()
     await this.#languageOptionList.find(`[data-qa="lang-${lang}"]`).click()
+  }
+
+  async assertApplyingTabHasText(text: string) {
+    await this.#applyingTab.find(`text=${text}`).waitUntilVisible()
   }
 
   async checkPersonalDetailsAttentionIndicatorsAreShown() {

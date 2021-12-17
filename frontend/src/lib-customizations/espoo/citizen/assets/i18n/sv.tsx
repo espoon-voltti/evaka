@@ -98,7 +98,7 @@ const sv: Translations = {
       income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender',
-      applying: 'Ansöker',
+      applying: 'Ansökningar',
       pedagogicalDocuments: 'Tillväxt och inlärning'
     },
     lang: {
