@@ -132,12 +132,16 @@ class SfiMessagesSoapClient(
                 }
             }
             kysely = KyselyWS2A().apply {
-                isLahetaTulostukseen = sfiEnv.printing.enabled
-                tulostustoimittaja = sfiEnv.printing.printingProvider
-                isPaperi = sfiEnv.printing.forcePrintForElectronicUser
-                laskutus = KyselyWS2A.Laskutus().apply {
-                    tunniste = sfiEnv.printing.billingId
-                    salasana = sfiEnv.printing.billingPassword?.takeIf { it.isNotBlank() }
+                if (sfiEnv.printing != null) {
+                    isLahetaTulostukseen = true
+                    tulostustoimittaja = sfiEnv.printing.printingProvider
+                    isPaperi = sfiEnv.printing.forcePrintForElectronicUser
+                    laskutus = KyselyWS2A.Laskutus().apply {
+                        tunniste = sfiEnv.printing.billingId
+                        salasana = sfiEnv.printing.billingPassword?.takeIf { it.isNotBlank() }
+                    }
+                } else {
+                    isLahetaTulostukseen = false
                 }
                 kohteet = ArrayOfKohdeWS2A().apply {
                     kohde += KohdeWS2A().apply {

@@ -383,9 +383,12 @@ data class SfiEnv(
      */
     val certificateCommonName: String,
     /**
-     * Configuration for sending messages on real paper (vs digital messages)
+     * Configuration for sending messages on real paper (vs digital messages).
+     *
+     * If not configured, real paper messages are never sent.
+     * If configured, real paper messages may be sent.
      */
-    val printing: SfiPrintingEnv,
+    val printing: SfiPrintingEnv?,
     /**
      * Contact details for a person in the organization making API requests.
      *
@@ -412,17 +415,15 @@ data class SfiEnv(
             authorityIdentifier = env.lookup("evaka.integration.sfi.authority_identifier", "evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier"),
             serviceIdentifier = env.lookup("evaka.integration.sfi.service_identifier", "evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier"),
             certificateCommonName = env.lookup("evaka.integration.sfi.certificate_common_name", "evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName"),
-            printing = SfiPrintingEnv.fromEnvironment(env),
+            printing = if (env.lookup<Boolean?>("evaka.integration.sfi.printing.enabled", "fi.espoo.evaka.msg.sfi.printing.enablePrinting") == true) {
+                SfiPrintingEnv.fromEnvironment(env)
+            } else null,
             contactPerson = SfiContactPersonEnv.fromEnvironment(env)
         )
     }
 }
 
 data class SfiPrintingEnv(
-    /**
-     * Allow sending messages on real paper.
-     */
-    val enabled: Boolean,
     /**
      * Force messages to be sent on paper, even if the recipient has a digital mailbox.
      */
@@ -436,7 +437,7 @@ data class SfiPrintingEnv(
     /**
      * Billing ID sent to the printing provider
      */
-    val billingId: String?,
+    val billingId: String,
     /**
      * Billing password, if required by the printing provider
      */
@@ -444,9 +445,8 @@ data class SfiPrintingEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiPrintingEnv(
-            enabled = env.lookup("evaka.integration.sfi.printing.enabled", "fi.espoo.evaka.msg.sfi.printing.enablePrinting") ?: false,
             forcePrintForElectronicUser = env.lookup("evaka.integration.sfi.printing.force_print_for_electronic_user", "fi.espoo.evaka.msg.sfi.printing.forcePrintForElectronicUser") ?: false,
-            printingProvider = env.lookup("evaka.integration.sfi.printing.provider", "fi.espoo.evaka.msg.sfi.printing.printingProvider") ?: "Edita",
+            printingProvider = env.lookup("evaka.integration.sfi.printing.provider", "fi.espoo.evaka.msg.sfi.printing.printingProvider"),
             billingId = env.lookup("evaka.integration.sfi.printing.billing.id", "fi.espoo.evaka.msg.sfi.printing.billingId"),
             billingPassword = env.lookup("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword"),
         )
