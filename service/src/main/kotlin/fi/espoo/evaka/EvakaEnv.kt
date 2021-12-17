@@ -528,12 +528,22 @@ private val logger = KotlinLogging.logger {}
 
 fun <T> Environment.lookup(key: String, deprecatedKeys: Array<out String>, clazz: Class<T>): T? =
     deprecatedKeys.asSequence().mapNotNull { legacyKey ->
-        getProperty(legacyKey, clazz)?.also {
-            logger.warn {
-                "Using deprecated configuration key $legacyKey instead of $key (environment variable ${key.toSystemEnvKey()})"
+        try {
+            getProperty(legacyKey, clazz)?.also {
+                logger.warn {
+                    "Using deprecated configuration key $legacyKey instead of $key (environment variable ${key.toSystemEnvKey()})"
+                }
             }
+        } catch (e: Exception) {
+            throw EnvLookupException(legacyKey, e)
         }
-    }.firstOrNull() ?: getProperty(key, clazz)
+    }.firstOrNull() ?: try {
+        getProperty(key, clazz)
+    } catch (e: Exception) {
+        throw EnvLookupException(key, e)
+    }
+
+class EnvLookupException(key: String, cause: Throwable) : RuntimeException("Failed to lookup configuration key $key (environment variable ${key.toSystemEnvKey()})", cause)
 
 // Reference: Spring SystemEnvironmentPropertySource
 fun String.toSystemEnvKey() = uppercase(Locale.ENGLISH)
