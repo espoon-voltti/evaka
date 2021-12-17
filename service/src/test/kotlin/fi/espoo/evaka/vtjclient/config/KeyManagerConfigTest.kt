@@ -92,6 +92,6 @@ class KeyManagerConfigTest {
     @Import(KeyManagerConfig::class)
     class KeyManagerTestConfig {
         @Bean
-        fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env).also { it.copy(keyStore = it.keyStore.copy(location = "file://fake")) }
+        fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env).also { it.copy(keyStore = it.keyStore?.copy(location = "file://fake")) }
     }
 }

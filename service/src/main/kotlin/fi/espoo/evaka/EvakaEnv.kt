@@ -9,8 +9,10 @@ import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
+import org.springframework.core.io.UrlResource
 import software.amazon.awssdk.regions.Region
 import java.net.URI
+import java.security.KeyStore
 import java.time.LocalDate
 import java.util.Locale
 
@@ -268,8 +270,8 @@ data class VtjEnv(
 }
 
 data class VtjXroadEnv(
-    val trustStore: KeystoreEnv,
-    val keyStore: KeystoreEnv,
+    val trustStore: KeystoreEnv?,
+    val keyStore: KeystoreEnv?,
     val address: String,
     val client: VtjXroadClientEnv,
     val service: VtjXroadServiceEnv,
@@ -277,16 +279,20 @@ data class VtjXroadEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = VtjXroadEnv(
-            trustStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.vtj.xroad.trust_store.type", "fi.espoo.voltti.vtj.xroad.trustStore.type") ?: "pkcs12",
-                location = env.lookup("evaka.integration.vtj.xroad.trust_store.location", "fi.espoo.voltti.vtj.xroad.trustStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.vtj.xroad.trust_store.password", "fi.espoo.voltti.vtj.xroad.trustStore.password") ?: "")
-            ),
-            keyStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.vtj.xroad.key_store.type", "fi.espoo.voltti.vtj.xroad.keyStore.type") ?: "pkcs12",
-                location = env.lookup("evaka.integration.vtj.xroad.key_store.location", "fi.espoo.voltti.vtj.xroad.keyStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.vtj.xroad.key_store.password", "fi.espoo.voltti.vtj.xroad.keyStore.password") ?: "")
-            ),
+            trustStore = env.lookup<String?>("evaka.integration.vtj.xroad.trust_store.location", "fi.espoo.voltti.vtj.xroad.trustStore.location")?.let { location ->
+                KeystoreEnv(
+                    location = location,
+                    type = env.lookup("evaka.integration.vtj.xroad.trust_store.type", "fi.espoo.voltti.vtj.xroad.trustStore.type") ?: "pkcs12",
+                    password = Sensitive(env.lookup("evaka.integration.vtj.xroad.trust_store.password", "fi.espoo.voltti.vtj.xroad.trustStore.password") ?: "")
+                )
+            },
+            keyStore = env.lookup<String?>("evaka.integration.vtj.xroad.key_store.location", "fi.espoo.voltti.vtj.xroad.keyStore.location")?.let { location ->
+                KeystoreEnv(
+                    location = location,
+                    type = env.lookup("evaka.integration.vtj.xroad.key_store.type", "fi.espoo.voltti.vtj.xroad.keyStore.type") ?: "pkcs12",
+                    password = Sensitive(env.lookup("evaka.integration.vtj.xroad.key_store.password", "fi.espoo.voltti.vtj.xroad.keyStore.password") ?: "")
+                )
+            },
             address = env.lookup("evaka.integration.vtj.xroad.address", "fi.espoo.voltti.vtj.xroad.address") ?: "",
             client = VtjXroadClientEnv.fromEnvironment(env),
             service = VtjXroadServiceEnv.fromEnvironment(env),
@@ -333,10 +339,9 @@ data class VtjXroadServiceEnv(
 
 data class SfiEnv(
     val trustStore: KeystoreEnv,
-    val keyStore: KeystoreEnv,
+    val keyStore: KeystoreEnv?,
     val address: String,
     val signingKeyAlias: String,
-    val wsSecurityEnabled: Boolean,
     val message: SfiMessageEnv,
     val printing: SfiPrintingEnv,
     val contactPerson: SfiContactPersonEnv
@@ -344,18 +349,19 @@ data class SfiEnv(
     companion object {
         fun fromEnvironment(env: Environment) = SfiEnv(
             trustStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.sfi.trust_store.type", "fi.espoo.evaka.msg.sfi.ws.trustStore.type") ?: "pkcs12",
                 location = env.lookup("evaka.integration.sfi.trust_store.location", "fi.espoo.evaka.msg.sfi.ws.trustStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.sfi.trust_store.password", "fi.espoo.evaka.msg.sfi.ws.trustStore.password") ?: "")
+                type = env.lookup("evaka.integration.sfi.trust_store.type", "fi.espoo.evaka.msg.sfi.ws.trustStore.type") ?: "pkcs12",
+                password = env.lookup<String?>("evaka.integration.sfi.trust_store.password", "fi.espoo.evaka.msg.sfi.ws.trustStore.password")?.let(::Sensitive)
             ),
-            keyStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.sfi.key_store.type", "fi.espoo.evaka.msg.sfi.ws.keyStore.type") ?: "pkcs12",
-                location = env.lookup("evaka.integration.sfi.key_store.location", "fi.espoo.evaka.msg.sfi.ws.keyStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.sfi.key_store.password", "fi.espoo.evaka.msg.sfi.ws.keyStore.password") ?: "")
-            ),
+            keyStore = env.lookup<String?>("evaka.integration.sfi.key_store.location", "fi.espoo.evaka.msg.sfi.ws.keyStore.location")?.let { location ->
+                KeystoreEnv(
+                    location = location,
+                    type = env.lookup("evaka.integration.sfi.key_store.type", "fi.espoo.evaka.msg.sfi.ws.keyStore.type") ?: "pkcs12",
+                    password = env.lookup<String?>("evaka.integration.sfi.key_store.password", "fi.espoo.evaka.msg.sfi.ws.keyStore.password")?.let(::Sensitive)
+                )
+            },
             address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address"),
             signingKeyAlias = env.lookup("evaka.integration.sfi.signing_key_alias", "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias") ?: "signing-key",
-            wsSecurityEnabled = env.lookup("evaka.integration.sfi.ws_security_enabled") ?: true,
             message = SfiMessageEnv.fromEnvironment(env),
             printing = SfiPrintingEnv.fromEnvironment(env),
             contactPerson = SfiContactPersonEnv.fromEnvironment(env)
@@ -410,10 +416,14 @@ data class SfiContactPersonEnv(
 }
 
 data class KeystoreEnv(
+    val location: String,
     val type: String = "pkcs12",
-    val location: String? = null,
-    val password: Sensitive<String> = Sensitive(""),
-)
+    val password: Sensitive<String>? = null,
+) {
+    fun load(): KeyStore = KeyStore.getInstance(type).apply {
+        UrlResource(location).inputStream.use { load(it, password?.value?.toCharArray()) }
+    }
+}
 
 data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
     companion object {

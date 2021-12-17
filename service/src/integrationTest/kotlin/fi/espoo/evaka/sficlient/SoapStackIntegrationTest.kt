@@ -102,10 +102,9 @@ class SoapStackIntegrationTest {
 
     private fun defaultEnv() = SfiEnv(
         trustStore = serverKeystore,
-        keyStore = KeystoreEnv(),
+        keyStore = null,
         address = "https://localhost:${server.port}",
         signingKeyAlias = "",
-        wsSecurityEnabled = true,
         message = SfiMessageEnv(
             authorityIdentifier = "authority",
             serviceIdentifier = "service",

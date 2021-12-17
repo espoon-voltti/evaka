@@ -25,7 +25,6 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.apache.wss4j.common.crypto.Merlin
 import org.apache.wss4j.dom.WSConstants
 import org.apache.wss4j.dom.handler.WSHandlerConstants
-import org.springframework.core.io.UrlResource
 import org.springframework.oxm.jaxb.Jaxb2Marshaller
 import org.springframework.ws.FaultAwareWebServiceMessage
 import org.springframework.ws.WebServiceMessage
@@ -34,7 +33,6 @@ import org.springframework.ws.client.core.FaultMessageResolver
 import org.springframework.ws.client.core.WebServiceTemplate
 import org.springframework.ws.soap.security.wss4j2.Wss4jSecurityInterceptor
 import org.springframework.ws.transport.http.HttpsUrlConnectionMessageSender
-import java.security.KeyStore
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.GregorianCalendar
@@ -61,16 +59,9 @@ class SfiMessagesSoapClient(
         // is not trusted. So leaving setCheckConnectionForFault() to the default
         setMessageSender(
             HttpsUrlConnectionMessageSender().apply {
-                val keyStore = KeyStore.getInstance(sfiEnv.trustStore.type).apply {
-                    val location = checkNotNull(sfiEnv.trustStore.location) {
-                        "SFI messages API " +
-                            "trust store location is not set"
-                    }
-                    UrlResource(location).inputStream.use { load(it, sfiEnv.trustStore.password.value.toCharArray()) }
-                }
                 setTrustManagers(
                     TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
-                        init(keyStore)
+                        init(sfiEnv.trustStore.load())
                     }.trustManagers
                 )
 
@@ -84,37 +75,33 @@ class SfiMessagesSoapClient(
 
         faultMessageResolver = SfiFaultMessageResolver()
 
-        if (sfiEnv.wsSecurityEnabled) {
-            interceptors = arrayOf(
-                Wss4jSecurityInterceptor().apply {
+        interceptors = arrayOf(
+            Wss4jSecurityInterceptor().apply {
+                if (sfiEnv.keyStore != null) {
                     setSecurementActions("${WSHandlerConstants.SIGNATURE} ${WSHandlerConstants.TIMESTAMP}")
-                    setSecurementUsername(sfiEnv.signingKeyAlias)
-                    setSecurementMustUnderstand(false)
-
                     // The security token reference in the example https://esuomi.fi/palveluntarjoajille/viestit/tekninen-aineisto/
                     // is a BinarySecurityToken instead of the default IssuerSerial
                     // http://docs.oasis-open.org/wss-m/wss/v1.1.1/os/wss-x509TokenProfile-v1.1.1-os.html#_Toc118727693
                     setSecurementSignatureKeyIdentifier(SignatureKeyIdentifier.DIRECT_REFERENCE.value)
-
-                    // the above example sets TTL at 60s
-                    setSecurementTimeToLive(500)
                     // sign body (the default) and the timestamp
                     setSecurementSignatureParts(listOf(SignatureParts.SOAP_BODY, SignatureParts.TIMESTAMP).toPartsExpression())
 
-                    setSecurementPassword(sfiEnv.keyStore.password.value)
+                    setSecurementUsername(sfiEnv.signingKeyAlias)
+                    setSecurementPassword(sfiEnv.keyStore.password?.value)
                     setSecurementSignatureCrypto(
                         Merlin().apply {
-                            keyStore = KeyStore.getInstance(sfiEnv.keyStore.type).apply {
-                                val location = checkNotNull(sfiEnv.keyStore.location) {
-                                    "SFI client authentication key store location is not set"
-                                }
-                                UrlResource(location).inputStream.use { load(it, sfiEnv.keyStore.password.value.toCharArray()) }
-                            }
+                            keyStore = sfiEnv.keyStore.load()
                         }
                     )
+                } else {
+                    setSecurementActions(WSHandlerConstants.TIMESTAMP)
                 }
-            )
-        }
+
+                setSecurementMustUnderstand(false)
+                // the above example sets TTL at 60s
+                setSecurementTimeToLive(500)
+            }
+        )
     }
 
     private val logger = KotlinLogging.logger {}

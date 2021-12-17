@@ -24,12 +24,12 @@ class TrustManagerConfig {
         }
 
     @Bean("trustStore")
-    fun trustStore(xroadEnv: VtjXroadEnv): KeyStoreFactoryBean? = xroadEnv.trustStore.location?.let { location ->
+    fun trustStore(xroadEnv: VtjXroadEnv): KeyStoreFactoryBean? = xroadEnv.trustStore?.let { store ->
         KeyStoreFactoryBean()
             .apply {
-                setLocation(UrlResource(location))
-                setPassword(xroadEnv.trustStore.password.value)
-                setType(xroadEnv.trustStore.type)
+                setLocation(UrlResource(store.location))
+                setPassword(store.password?.value)
+                setType(store.type)
             }
     }
 }

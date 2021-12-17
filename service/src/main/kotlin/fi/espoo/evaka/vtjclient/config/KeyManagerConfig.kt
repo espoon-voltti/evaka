@@ -28,17 +28,17 @@ class KeyManagerConfig {
             KeyManagersFactoryBean()
                 .apply {
                     setKeyStore(it.`object`)
-                    setPassword(xroadEnv.keyStore.password.value)
+                    setPassword(xroadEnv.keyStore?.password?.value)
                 }
         }
 
     @Bean("keyStore")
     @ConditionalOnExpression("'\${voltti.env}' == 'prod' || '\${voltti.env}' == 'staging'")
-    fun keyStore(xroadEnv: VtjXroadEnv): KeyStoreFactoryBean? = xroadEnv.keyStore.location?.let { location ->
+    fun keyStore(xroadEnv: VtjXroadEnv): KeyStoreFactoryBean? = xroadEnv.keyStore?.let { store ->
         KeyStoreFactoryBean()
             .apply {
-                setLocation(UrlResource(location))
-                setPassword(xroadEnv.keyStore.password.value)
+                setLocation(UrlResource(store.location))
+                setPassword(xroadEnv.keyStore.password?.value)
                 setType(xroadEnv.keyStore.type)
             }
     }

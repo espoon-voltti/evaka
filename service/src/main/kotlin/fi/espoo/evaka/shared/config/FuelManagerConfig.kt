@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ResourceLoader
-import java.security.KeyStore
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.KeyManager
@@ -34,17 +33,17 @@ class FuelManagerConfig {
 
     fun certCheckFuelManager(xroadEnv: VtjXroadEnv, resourceLoader: ResourceLoader): FuelManager = FuelManager().apply {
         var keyManagers = arrayOf<KeyManager>()
-        if (xroadEnv.keyStore.location != null) {
+        if (xroadEnv.keyStore != null) {
             val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-            keystore = KeyStore.getInstance(resourceLoader.getResource(xroadEnv.keyStore.location).file, xroadEnv.keyStore.password.value.toCharArray())
-            keyManagerFactory.init(keystore, xroadEnv.keyStore.password.value.toCharArray())
+            keystore = xroadEnv.keyStore.load()
+            keyManagerFactory.init(keystore, xroadEnv.keyStore.password?.value?.toCharArray())
             keyManagers = keyManagerFactory.keyManagers
         }
 
         var trustManagers = arrayOf<TrustManager>()
-        if (xroadEnv.trustStore.location != null) {
+        if (xroadEnv.trustStore != null) {
             val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-            val trustKeyStore = KeyStore.getInstance(resourceLoader.getResource(xroadEnv.trustStore.location).file, xroadEnv.trustStore.password.value.toCharArray())
+            val trustKeyStore = xroadEnv.trustStore.load()
             trustManagerFactory.init(trustKeyStore)
             trustManagers = trustManagerFactory.trustManagers
         }
