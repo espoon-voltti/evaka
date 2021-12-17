@@ -44,7 +44,7 @@ let child1DaycarePlacementFixture: DaycarePlacement
 let child2DaycarePlacementFixture: DaycarePlacement
 
 let daycare: Daycare
-const employeeId: UUID = uuidv4()
+const employeeId: UUID = config.unitSupervisorAad
 const placementStartDate = LocalDate.today().subWeeks(4)
 const placementEndDate = LocalDate.today().addWeeks(4)
 
@@ -187,5 +187,21 @@ describe('Employee - unit view', () => {
     await unitPage.openUnitInformation()
     await unitPage.openGroups()
     await groupsSection.assertGroupCollapsibleIsOpen(groupId)
+  })
+
+  test('Service worker will not see terminated placements', async () => {
+    await terminatePlacement(
+      child1DaycarePlacementFixture.id,
+      LocalDate.today(),
+      LocalDate.today(),
+      employeeId
+    )
+
+    await employeeLogin(page, 'SERVICE_WORKER')
+    await page.goto(`${config.employeeUrl}/units/${daycare.id}`)
+    const groupsSection = await reloadUnitGroupsView()
+
+    await groupsSection.assertMissingGroupPlacementRowCount(2)
+    await groupsSection.assertTerminatedPlacementRowCount(0)
   })
 })
