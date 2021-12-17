@@ -337,15 +337,60 @@ data class VtjXroadServiceEnv(
     }
 }
 
+/**
+ * Configuration for Suomi.fi Messages API integration
+ */
 data class SfiEnv(
+    /**
+     * URI of Messages API
+     */
     val address: String,
+    /**
+     * URI of a key store containing public certificate(s) for the Messages API server.
+     *
+     * Used to verify server identity at TLS protocol level during API requests.
+     */
     val trustStore: KeystoreEnv,
+    /**
+     * URI of key store containing private key + public certificate used for WS-Security request payload signing.
+     *
+     * If not configured, WS-Security signatures are not used.
+     * If configured, WS-Security signatures are included in requests.
+     */
     val keyStore: KeystoreEnv?,
+    /**
+     * Alias of the signing key used for WS-Security signatures.
+     *
+     * If `keyStore` is set, this property must contain the alias of a valid key inside the key store.
+     */
     val signingKeyAlias: String,
+    /**
+     * Identifier of the organization making requests to the Messages API.
+     *
+     * Given by VIA.
+     */
     val authorityIdentifier: String,
+    /**
+     * Identifier of the service making requests to the Messages API.
+     *
+     * Given by VIA.
+     */
     val serviceIdentifier: String,
+    /**
+     * Common name of the certificate used to sign Suomi.fi requests.
+     *
+     * Must match the public certificate that has been sent to VIA.
+     */
     val certificateCommonName: String,
+    /**
+     * Configuration for sending messages on real paper (vs digital messages)
+     */
     val printing: SfiPrintingEnv,
+    /**
+     * Contact details for a person in the organization making API requests.
+     *
+     * Not mandatory, but used e.g. to communicate about errors
+     */
     val contactPerson: SfiContactPersonEnv
 ) {
     companion object {
@@ -374,10 +419,27 @@ data class SfiEnv(
 }
 
 data class SfiPrintingEnv(
+    /**
+     * Allow sending messages on real paper.
+     */
     val enabled: Boolean,
+    /**
+     * Force messages to be sent on paper, even if the recipient has a digital mailbox.
+     */
     val forcePrintForElectronicUser: Boolean,
+    /**
+     * Name of printing provider.
+     *
+     * The organization sending requests to the Messages API must have a printing agreement with the provider.
+     */
     val printingProvider: String,
+    /**
+     * Billing ID sent to the printing provider
+     */
     val billingId: String?,
+    /**
+     * Billing password, if required by the printing provider
+     */
     val billingPassword: String?,
 ) {
     companion object {
