@@ -36,7 +36,11 @@ export default React.memo(function MultiFieldListQuestion({
     onChange
       ? onChange([
           ...question.value.slice(0, questionIndex),
-          { ...question.value[questionIndex], [keyIndex]: value },
+          [
+            ...question.value[questionIndex].slice(0, keyIndex),
+            value,
+            ...question.value[questionIndex].slice(keyIndex + 1)
+          ],
           ...question.value.slice(questionIndex + 1)
         ])
       : undefined
