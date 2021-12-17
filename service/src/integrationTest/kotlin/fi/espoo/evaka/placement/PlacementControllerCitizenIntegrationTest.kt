@@ -36,6 +36,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     final val authenticatedParent = AuthenticatedUser.Citizen(parent.id)
 
     final val daycareId = testDaycare.id
+    final val daycareName = testDaycare.name
     final val testDaycareGroup = DevDaycareGroup(daycareId = daycareId)
     final val groupId = testDaycareGroup.id
 
@@ -225,13 +226,15 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
             )
         }
 
-        assertEquals(
-            listOf(
-                PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL,
-                PlacementControllerCitizen.TerminatablePlacementType.DAYCARE
-            ),
-            getChildPlacements(childId).map { it.type }
-        )
+        val placementsBefore = getChildPlacements(childId)
+        assertEquals(1, placementsBefore.size)
+        val placementBefore = placementsBefore[0]
+        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL, placementBefore.type)
+        assertEquals(startPreschool, placementBefore.startDate)
+        assertEquals(endPreschool, placementBefore.endDate)
+
+        assertEquals(listOf(PlacementType.PRESCHOOL_DAYCARE), placementBefore.placements.map { it.type })
+        assertEquals(listOf(PlacementType.DAYCARE), placementBefore.additionalPlacements.map { it.type })
 
         terminatePlacements(
             childId,
@@ -251,13 +254,14 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(startPreschool, first.startDate)
         assertEquals(endPreschool, first.endDate)
         assertEquals(2, first.placements.size)
+        assertEquals(0, first.additionalPlacements.size)
 
         val currentPlacement = first.placements[0]
         assertEquals(startPreschool, currentPlacement.startDate)
         assertEquals(placementTerminationDate, currentPlacement.endDate)
         assertEquals(PlacementType.PRESCHOOL_DAYCARE, currentPlacement.type)
-        assertEquals(today, currentPlacement.terminationRequestedDate)
-        assertEquals("${parent.firstName} ${parent.lastName}", currentPlacement.terminatedBy?.name)
+        assertNull(currentPlacement.terminationRequestedDate)
+        assertNull(currentPlacement.terminatedBy)
 
         val remainderOfPreschool = first.placements[1]
         assertNull(remainderOfPreschool.terminationRequestedDate)

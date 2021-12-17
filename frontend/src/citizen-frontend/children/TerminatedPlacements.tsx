@@ -19,14 +19,24 @@ export default React.memo(function TerminatedPlacements({ placements }: Props) {
       <HorizontalLine slim />
       <Label>{t.children.placementTermination.terminatedPlacements}</Label>
       <ul>
-        {placements.map((p) => (
-          <li key={`${p.unitId}-${p.type}`}>
-            {t.placement.type[p.type]}, {p.unitName}
-            {', '}
-            {t.children.placementTermination.lastDayOfPresence.toLowerCase()}:{' '}
-            {p.endDate.format()}
-          </li>
-        ))}
+        {placements.map((p) => {
+          const terminatedAdditional = p.additionalPlacements.find(
+            (p) => !!p.terminationRequestedDate
+          )
+          const type = terminatedAdditional
+            ? t.children.placementTermination.invoicedDaycare
+            : t.placement.type[p.type]
+          const lastDay = terminatedAdditional
+            ? terminatedAdditional.endDate
+            : p.endDate
+          return (
+            <li key={`${p.unitId}-${p.type}`}>
+              {type}, {p.unitName},{' '}
+              {t.children.placementTermination.lastDayOfPresence.toLowerCase()}:{' '}
+              {lastDay.format()}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

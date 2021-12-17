@@ -242,6 +242,7 @@ export interface PlacementUpdateRequestBody {
 * Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.TerminatablePlacementGroup
 */
 export interface TerminatablePlacementGroup {
+  additionalPlacements: ChildPlacement[]
   endDate: LocalDate
   placements: ChildPlacement[]
   startDate: LocalDate

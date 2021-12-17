@@ -34,19 +34,22 @@ export default React.memo(function PlacementTerminationSection({
       fitted
     >
       {renderResult(placementsResponse, ({ placements }) => {
-        const terminatedPlacements = placements.filter(
-          (p) => !!p.placements.find((p2) => !!p2.terminationRequestedDate)
+        const terminatedPlacements = placements.filter((p) =>
+          p.placements
+            .concat(p.additionalPlacements)
+            .find((p2) => !!p2.terminationRequestedDate)
         )
         return (
           <FixedSpaceColumn>
             <P>{t.children.placementTermination.description}</P>
-            {placements.length > 0 && (
+            {placements.map((grp) => (
               <PlacementTerminationForm
+                key={`${grp.type}-${grp.unitId}`}
                 childId={childId}
-                placementGroups={placements}
+                placementGroup={grp}
                 onSuccess={refreshPlacements}
               />
-            )}
+            ))}
             {terminatedPlacements.length > 0 && (
               <TerminatedPlacements placements={terminatedPlacements} />
             )}

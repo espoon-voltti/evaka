@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -39,37 +40,53 @@ class PlacementControllerCitizen(
         val endDate: LocalDate,
         val unitId: DaycareId,
         val unitName: String,
-        val placements: List<ChildPlacement>
+        val placements: List<ChildPlacement>,
+        val additionalPlacements: List<ChildPlacement>
     )
+
+    private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacementType =
+        when (type) {
+            PlacementType.CLUB -> TerminatablePlacementType.CLUB
+            PlacementType.TEMPORARY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+            PlacementType.SCHOOL_SHIFT_CARE,
+            PlacementType.DAYCARE,
+            PlacementType.DAYCARE_PART_TIME,
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> TerminatablePlacementType.DAYCARE
+            PRESCHOOL,
+            PRESCHOOL_DAYCARE -> TerminatablePlacementType.PRESCHOOL
+            PREPARATORY,
+            PREPARATORY_DAYCARE -> TerminatablePlacementType.PREPARATORY
+        }
 
     private fun mapToTerminatablePlacements(placements: List<ChildPlacement>): List<TerminatablePlacementGroup> = placements
         .groupBy { it.unitName }
         .entries
-        .fold(listOf<TerminatablePlacementGroup>()) { acc, (_, placements) ->
-            val placementsByType = placements.groupBy {
-                when (it.type) {
-                    PlacementType.CLUB -> TerminatablePlacementType.CLUB
-                    PlacementType.TEMPORARY_DAYCARE,
-                    PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                    PlacementType.SCHOOL_SHIFT_CARE,
-                    PlacementType.DAYCARE,
-                    PlacementType.DAYCARE_PART_TIME,
-                    PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> TerminatablePlacementType.DAYCARE
-                    PRESCHOOL,
-                    PRESCHOOL_DAYCARE -> TerminatablePlacementType.PRESCHOOL
-                    PREPARATORY,
-                    PREPARATORY_DAYCARE -> TerminatablePlacementType.PREPARATORY
-                }
+        .fold(listOf<TerminatablePlacementGroup>()) { acc, (_, childPlacements) ->
+            val sorted = childPlacements.sortedBy { it.startDate }
+            // all daycare placements after preschool/preparatory are grouped under preschool/preparatory
+            val maybePreschoolOrPreparatoryPlacement =
+                sorted.find { listOf(PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE).contains(it.type) }
+            val placementsByType = sorted.groupBy {
+                toTerminatablePlacementType(
+                    if (maybePreschoolOrPreparatoryPlacement?.startDate?.isBefore(it.startDate) == true) {
+                        maybePreschoolOrPreparatoryPlacement.type
+                    } else {
+                        it.type
+                    }
+                )
             }
-            acc + placementsByType.map {
+            acc + placementsByType.map { (type, placements) ->
+                val (placementsOfSameType, additional) = placements.partition { toTerminatablePlacementType(it.type) == type }
                 TerminatablePlacementGroup(
-                    type = it.key,
-                    placements = it.value,
-                    startDate = it.value.minOf { placement -> placement.startDate },
-                    endDate = it.value.maxOf { placement -> placement.endDate },
-                    unitId = it.value[0].unitId,
-                    unitName = it.value[0].unitName,
+                    type = type,
+                    placements = placementsOfSameType,
+                    additionalPlacements = additional,
+                    startDate = placementsOfSameType.minOf { placement -> placement.startDate },
+                    endDate = placementsOfSameType.maxOf { placement -> placement.endDate },
+                    unitId = placementsOfSameType[0].unitId,
+                    unitName = placementsOfSameType[0].unitName,
                 )
             }
         }
@@ -124,15 +141,8 @@ class PlacementControllerCitizen(
                 it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, id) }
             }
             .let { mapToTerminatablePlacements(it) }
-            .filter {
-                it.unitId == body.unitId &&
-                    (
-                        it.type == body.type ||
-                            // if terminating preschool/preparatory, all future daycare placements must be terminated too
-                            (it.type === TerminatablePlacementType.DAYCARE && listOf(TerminatablePlacementType.PRESCHOOL, TerminatablePlacementType.PREPARATORY).contains(body.type))
-                        )
-            }
-            .flatMap { it.placements }
+            .filter { it.unitId == body.unitId && it.type == body.type }
+            .flatMap { it.placements + it.additionalPlacements }
             .filter { it.startsAfter(body.terminationDate) || it.containsExclusively(body.terminationDate) }
             .also { if (it.isEmpty()) throw NotFound("Matching placement type not found") }
 
@@ -143,9 +153,8 @@ class PlacementControllerCitizen(
                     if (placement.startsAfter(body.terminationDate)) {
                         tx.cancelPlacement(placement.id)
                     } else if (placement.containsExclusively(body.terminationDate)) {
-                        tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, user.id)
-
                         if (body.terminateDaycareOnly == true && (placement.type == PRESCHOOL_DAYCARE || placement.type == PREPARATORY_DAYCARE)) {
+                            tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, null)
                             // create new placement without daycare for the remaining period
                             // with placement type to PRESCHOOL / PREPARATORY
                             val typeForRemainingPeriod = if (placement.type === PRESCHOOL_DAYCARE) PRESCHOOL else PREPARATORY
@@ -156,6 +165,8 @@ class PlacementControllerCitizen(
                                 startDate = body.terminationDate.plusDays(1),
                                 endDate = placement.endDate
                             )
+                        } else {
+                            tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, user.id)
                         }
                     }
                 }
@@ -165,3 +176,4 @@ class PlacementControllerCitizen(
 
 private fun ChildPlacement.startsAfter(date: LocalDate): Boolean = this.startDate.isAfter(date)
 private fun ChildPlacement.containsExclusively(date: LocalDate): Boolean = date.isAfter(this.startDate) && date.isBefore(this.endDate)
+private fun ChildPlacement.isActiveAt(date: LocalDate): Boolean = FiniteDateRange(this.startDate, this.endDate).includes(date)

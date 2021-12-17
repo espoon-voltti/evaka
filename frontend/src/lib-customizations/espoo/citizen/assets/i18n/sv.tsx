@@ -1741,6 +1741,7 @@ const sv: Translations = {
       terminatedPlacements: 'Du har sagt upp platsen',
       until: (date: string) => `giltig till ${date}`,
       choosePlacement: 'Välj platsen du vill säga upp',
+      invoicedDaycare: 'Maksullinen varhaiskasvatus', // TODO i18n
       lastDayInfo:
         'Sista dagen då ditt barn behöver platsen. Platsen sägs upp efter detta datum.',
       lastDayOfPresence: 'Sista närvarodagen',

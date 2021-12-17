@@ -50,12 +50,14 @@ const deserializeTerminatablePlacementGroup = ({
   startDate,
   endDate,
   placements,
+  additionalPlacements,
   ...rest
 }: JsonOf<TerminatablePlacementGroup>): TerminatablePlacementGroup => ({
   ...rest,
   startDate: LocalDate.parseIso(startDate),
   endDate: LocalDate.parseIso(endDate),
-  placements: placements.map(deserializeChildPlacement)
+  placements: placements.map(deserializeChildPlacement),
+  additionalPlacements: additionalPlacements.map(deserializeChildPlacement)
 })
 
 export function getPlacements(

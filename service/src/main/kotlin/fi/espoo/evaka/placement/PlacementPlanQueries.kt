@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
@@ -254,7 +255,7 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
         .singleOrNull()
 }
 
-fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: UUID) {
+fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: UUID?) {
     createUpdate(
         //language=SQL
         """
@@ -301,9 +302,9 @@ SET termination_requested_date = :terminationRequestedDate,
 WHERE id = :placementId
         """.trimIndent()
     )
-        .bind("terminationRequestedDate", terminationRequestedDate)
+        .bindNullable("terminationRequestedDate", if (terminatedBy == null) null else terminationRequestedDate)
+        .bindNullable("terminationRequestedBy", terminatedBy)
         .bind("placementTerminationDate", placementTerminationDate)
-        .bind("terminationRequestedBy", terminatedBy)
         .bind("placementId", placementId)
         .execute()
 }

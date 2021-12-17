@@ -12,7 +12,7 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { Label } from 'lib-components/typography'
+import { H3, Label } from 'lib-components/typography'
 import { sortBy } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useLang, useTranslation } from '../localization'
@@ -23,75 +23,97 @@ type TerminationFormState =
   | { type: 'invalid-date' }
   | { type: 'invalid-missing' }
 
+type CheckboxOption = TerminatablePlacementGroup & {
+  pseudoId: string // unit+type+terminateDayCareOnly
+  terminateDaycareOnly: boolean
+}
+
 interface UiState {
-  placement:
-    | (TerminatablePlacementGroup & { terminateDayCareOnly?: boolean })
-    | undefined
+  placements: CheckboxOption[]
   terminationDate: string | undefined
 }
 
 const emptyState = (): UiState => ({
-  placement: undefined,
+  placements: [],
   terminationDate: undefined
 })
 
 const validateTerminationDate = (
   terminationDate: LocalDate,
-  group: TerminatablePlacementGroup | undefined
+  options: CheckboxOption[]
 ): boolean =>
   terminationDate.isEqualOrAfter(LocalDate.today()) &&
-  (!group ||
-    (terminationDate.isAfter(group.startDate) &&
-      terminationDate.isBefore(group.endDate)))
+  options.every((o) => terminationDate.isBefore(o.endDate))
+
+const toCheckboxOption = (
+  grp: TerminatablePlacementGroup,
+  terminateDayCareOnly = false
+): CheckboxOption => ({
+  ...grp,
+  terminateDaycareOnly: terminateDayCareOnly,
+  pseudoId: `${grp.unitId}-${grp.type}-${String(terminateDayCareOnly)}`
+})
+
+const toDaycareOnlyTerminatable = (
+  grp: TerminatablePlacementGroup
+): CheckboxOption => ({
+  ...toCheckboxOption(grp, true),
+  startDate: grp.additionalPlacements[0].startDate,
+  endDate: grp.additionalPlacements[grp.additionalPlacements.length - 1].endDate
+})
 
 interface Props {
   childId: UUID
-  placementGroups: TerminatablePlacementGroup[]
+  placementGroup: TerminatablePlacementGroup
   onSuccess: () => void
 }
 
 export default React.memo(function PlacementTerminationForm({
   childId,
-  placementGroups,
+  placementGroup,
   onSuccess
 }: Props) {
   const t = useTranslation()
   const [lang] = useLang()
 
-  const getPlacementLabel = (p: TerminatablePlacementGroup) =>
-    [
-      t.placement.type[p.type],
+  const getPlacementLabel = (p: CheckboxOption) => {
+    const type = p.terminateDaycareOnly
+      ? t.children.placementTermination.invoicedDaycare
+      : t.placement.type[p.type]
+    return [
+      type,
       p.unitName,
-      t.children.placementTermination.until(p.endDate.format())
+      p.startDate.format() + ' – ' + p.endDate.format()
     ].join(', ')
+  }
 
   const [state, setState] = useState<UiState>(emptyState())
 
   const isValidDate = useCallback(
     (date: LocalDate): boolean =>
-      validateTerminationDate(date, state.placement),
-    [state.placement]
+      validateTerminationDate(date, state.placements),
+    [state.placements]
   )
 
   const terminationState = useMemo<TerminationFormState>(() => {
-    if (!(state.placement && state.terminationDate)) {
+    if (!(state.placements.length > 0 && state.terminationDate)) {
       return { type: 'invalid-missing' }
     }
     const date = LocalDate.parseFiOrNull(state.terminationDate)
-    if (!(date && validateTerminationDate(date, state.placement))) {
+    if (!(date && validateTerminationDate(date, state.placements))) {
       return { type: 'invalid-date' }
     }
 
     return {
       type: 'valid',
       data: {
-        type: state.placement.type,
-        unitId: state.placement.unitId,
-        terminateDaycareOnly: state.placement.terminateDayCareOnly ?? false,
+        type: state.placements[0].type,
+        unitId: state.placements[0].unitId,
+        terminateDaycareOnly: state.placements[0].terminateDaycareOnly ?? false,
         terminationDate: date
       }
     }
-  }, [state.placement, state.terminationDate])
+  }, [state.placements, state.terminationDate])
 
   const onSubmit = useCallback(
     () =>
@@ -106,23 +128,45 @@ export default React.memo(function PlacementTerminationForm({
     onSuccess()
   }, [onSuccess])
 
-  const togglePlacement = (p: TerminatablePlacementGroup, checked: boolean) => {
-    setState((prev) => ({ ...prev, placement: checked ? p : undefined }))
-  }
+  // Add option for terminating only the invoiced placements if in preschool or preparatory placement
+  const options: CheckboxOption[] = useMemo(
+    () =>
+      placementGroup.additionalPlacements.length > 0
+        ? [
+            toCheckboxOption(placementGroup),
+            toDaycareOnlyTerminatable(placementGroup)
+          ]
+        : [toCheckboxOption(placementGroup)],
+    [placementGroup]
+  )
 
   return (
     <>
       <div>
+        <H3>{t.placement.type[placementGroup.type]}</H3>
         <Label>{t.children.placementTermination.choosePlacement}</Label>
-        {sortBy(placementGroups, (p) => p.startDate).map((p) => (
+        {sortBy(options, (p) => p.startDate).map((p) => (
           <Checkbox
-            key={`${p.type} ${p.unitId}`}
+            key={p.pseudoId}
             label={getPlacementLabel(p)}
             checked={
-              state.placement?.unitId === p.unitId &&
-              state.placement.type === p.type
+              !!state.placements.find((p2) => p2.pseudoId === p.pseudoId)
             }
-            onChange={(checked) => togglePlacement(p, checked)}
+            onChange={(checked) => {
+              if (checked) {
+                setState((prev) => ({
+                  ...prev,
+                  placements: p.terminateDaycareOnly ? [p] : options
+                }))
+              } else {
+                setState((prev) => ({
+                  ...prev,
+                  placements: p.terminateDaycareOnly
+                    ? []
+                    : prev.placements.filter((p2) => p2.pseudoId !== p.pseudoId)
+                }))
+              }
+            }}
           />
         ))}
       </div>

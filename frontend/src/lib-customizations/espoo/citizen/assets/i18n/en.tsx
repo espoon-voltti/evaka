@@ -1783,6 +1783,7 @@ const en: Translations = {
       terminatedPlacements: 'Olet irtisanonut paikan',
       until: (date: string) => `voimassa ${date}`,
       choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
+      invoicedDaycare: 'Maksullinen varhaiskasvatus',
       lastDayInfo:
         'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
       lastDayOfPresence: 'Viimeinen läsnäolopäivä',

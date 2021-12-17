@@ -1709,6 +1709,7 @@ export default {
       description:
         'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
       terminatedPlacements: 'Olet irtisanonut paikan',
+      invoicedDaycare: 'Maksullinen varhaiskasvatus',
       until: (date: string) => `voimassa ${date}`,
       choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
       lastDayInfo:
