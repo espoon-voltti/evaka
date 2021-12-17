@@ -25,27 +25,4 @@ RUN cd /tmp \
 WORKDIR /ci
 EOF
 
-CHECK_COMMAND="erb -T- /ci/template.yml > /tmp/config.yml && cat --number /tmp/config.yml && circleci --skip-update-check config validate /tmp/config.yml"
-
-action="${1:-}"
-
-if test -z "$action" || [ "$action" = "fail" ]; then
-    if docker run --rm -v "$(pwd):/ci" \
-           -it "$TEST_IMAGE" erb -T- /ci/template.yml; then
-        echo "Unexpected success"
-        exit 1
-    fi
-    echo "Failure is expected"
-fi
-
-if test -z "$action" || [ "$action" = "master" ]; then
-    docker run --rm  -v "$(pwd):/ci" \
-        -e CIRCLE_BRANCH=master \
-        -it "$TEST_IMAGE" bash -c "$CHECK_COMMAND"
-fi
-
-if test -z "$action" || [ "$action" = "pull" ]; then
-    docker run --rm -v "$(pwd):/ci" \
-        -e CIRCLE_BRANCH=pull/1234 \
-        -it "$TEST_IMAGE" bash -c "$CHECK_COMMAND"
-fi
+docker run --rm -v "$(pwd):/ci" -it "$TEST_IMAGE" circleci --skip-update-check config validate config.yml
