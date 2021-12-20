@@ -103,3 +103,13 @@ export class AdditionalInfoSection extends SimpleTextAreaSection {
   infoInput = new TextInput(this.textareas.nth(0))
   info = this.values.nth(0).innerText
 }
+
+export class DiscussionSection extends SimpleTextAreaSection {
+  dateInput = new TextInput(this.find('[data-qa="date-question-picker"]'))
+  presentInput = new TextInput(this.textareas.nth(0))
+  collaborationAndOpinionInput = new TextInput(this.textareas.nth(1))
+
+  date = this.values.nth(0).innerText
+  present = this.values.nth(1).innerText
+  collaborationAndOpinion = this.values.nth(2).innerText
+}

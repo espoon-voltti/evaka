@@ -254,6 +254,29 @@ describe('Vasu document page', () => {
         'I love icecream'
       )
     })
+
+    test('Fill the discussion section', async () => {
+      const vasuEditPage = await editDocument()
+      const discussion = vasuEditPage.discussionSection
+
+      await discussion.dateInput.fill('1.12.2021')
+      await discussion.presentInput.fill('Mom, dad, and teacher')
+      await discussion.collaborationAndOpinionInput.fill(
+        'Everything is awesome'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(() => vasuPage.discussionSection.date, '01.12.2021')
+      await waitUntilEqual(
+        () => vasuPage.discussionSection.present,
+        'Mom, dad, and teacher'
+      )
+      await waitUntilEqual(
+        () => vasuPage.discussionSection.collaborationAndOpinion,
+        'Everything is awesome'
+      )
+    })
   })
 
   describe('Followup questions', () => {
