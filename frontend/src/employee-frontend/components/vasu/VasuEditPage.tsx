@@ -126,6 +126,7 @@ export default React.memo(function VasuEditPage({
                   text={i18n.vasu.checkInPreview}
                   disabled={status.state != 'clean'}
                   onClick={() => history.push(`/vasu/${vasu.id}`)}
+                  data-qa="vasu-preview-btn"
                   primary
                 />
                 <LeaveVasuPageButton

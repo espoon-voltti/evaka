@@ -18,7 +18,7 @@ interface Props {
 
 export function ValueOrNoRecord({ text, translations }: Props): JSX.Element {
   return (
-    <PreFormattedText>
+    <PreFormattedText data-qa="value-or-no-record">
       {text || <Dimmed>{translations.noRecord}</Dimmed>}
     </PreFormattedText>
   )

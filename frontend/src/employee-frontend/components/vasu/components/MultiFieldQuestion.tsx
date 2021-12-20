@@ -28,7 +28,7 @@ export default React.memo(function MultiFieldQuestion({
   translations
 }: Props) {
   return (
-    <div>
+    <div data-qa="multi-field-question">
       <QuestionInfo info={question.info}>
         <Label>
           {questionNumber} {question.name}

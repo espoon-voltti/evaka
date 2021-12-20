@@ -21,7 +21,7 @@ import ChildInformationPage, {
 } from 'e2e-playwright/pages/employee/child-information'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
-import VasuPage from '../../pages/employee/vasu/vasu'
+import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
 import { waitUntilEqual } from '../../utils'
@@ -66,7 +66,6 @@ describe('Child Information - Vasu documents section', () => {
 })
 
 describe('Vasu document page', () => {
-  let vasuPage: VasuPage
   let vasuDocId: UUID
 
   const openDocument = async () => {
@@ -76,7 +75,7 @@ describe('Vasu document page', () => {
 
   const editDocument = async () => {
     await page.goto(`${config.employeeUrl}/vasu/${vasuDocId}/edit`)
-    return new VasuPage(page)
+    return new VasuEditPage(page)
   }
 
   beforeAll(async () => {
@@ -86,70 +85,115 @@ describe('Vasu document page', () => {
   beforeEach(async () => {
     page = await Page.open()
     await employeeLogin(page, 'ADMIN')
-    vasuPage = await openDocument()
   })
 
-  test('An unpublished vasu document has no followup questions', async () => {
-    await waitUntilEqual(() => vasuPage.followupQuestionCount, 0)
+  describe('Fill out document', () => {
+    test('Fill the authors section', async () => {
+      const vasuEditPage = await editDocument()
+      const authors = vasuEditPage.authorsSection
+      await authors.primaryFirstNameInput.fill('Leena')
+      await authors.primaryLastNameInput.fill('Virtanen')
+      await authors.primaryTitleInput.fill('Johtaja')
+      await authors.primaryPhoneNumberInput.fill('1234565')
+
+      await waitUntilEqual(() => authors.otherFieldsCount, 1)
+      await authors.otherFirstNameInput(0).fill('Veena')
+      await authors.otherLastNameInput(0).fill('Lirtanen')
+      await authors.otherTitleInput(0).fill('Hoitaja')
+      await authors.otherPhoneNumberInput(0).fill('1234565')
+
+      await waitUntilEqual(() => authors.otherFieldsCount, 2)
+      await authors.otherFirstNameInput(1).fill('Aneev')
+      await authors.otherLastNameInput(1).fill('Nenatril')
+      await authors.otherTitleInput(1).fill('Hoitaja')
+      await authors.otherPhoneNumberInput(1).fill('5654321')
+
+      await waitUntilEqual(() => authors.otherFieldsCount, 3)
+      await vasuEditPage.waitUntilSaved()
+
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.authorsSection.primaryValue,
+        'Leena Virtanen Johtaja 1234565'
+      )
+      await waitUntilEqual(
+        () => vasuPage.authorsSection.otherValues,
+        'Veena Lirtanen Hoitaja 1234565,\nAneev Nenatril Hoitaja 5654321'
+      )
+    })
   })
 
-  describe('With a finalized document', () => {
-    const finalizeDocument = async () => {
-      await vasuPage.finalizeButton.click()
-      await vasuPage.modalOkButton.click()
-      await vasuPage.modalOkButton.click()
-      vasuPage = await openDocument()
-      await vasuPage.assertDocumentVisible()
-    }
-
-    beforeAll(async () => {
-      page = await Page.open()
-      await employeeLogin(page, 'ADMIN')
-      vasuPage = await openDocument()
-      await finalizeDocument()
+  describe('Followup questions', () => {
+    test('An unpublished vasu document has no followup questions', async () => {
+      const vasuPage = await openDocument()
+      await waitUntilEqual(() => vasuPage.followupQuestionCount, 0)
     })
 
-    test('A published vasu document has one followup question', async () => {
-      await waitUntilEqual(() => vasuPage.followupQuestionCount, 1)
-    })
+    describe('With a finalized document', () => {
+      const finalizeDocument = async () => {
+        let vasuPage = await openDocument()
+        await vasuPage.finalizeButton.click()
+        await vasuPage.modalOkButton.click()
+        await vasuPage.modalOkButton.click()
+        vasuPage = await openDocument()
+        await vasuPage.assertDocumentVisible()
+      }
 
-    test('Adding a followup comment renders it on the page', async () => {
-      vasuPage = await editDocument()
-      await vasuPage.inputFollowupComment('This is a followup')
-      await waitUntilEqual(
-        () => vasuPage.followupEntryTexts,
-        ['This is a followup']
-      )
-      await vasuPage.inputFollowupComment('A second one')
-      await waitUntilEqual(
-        () => vasuPage.followupEntryTexts,
-        ['This is a followup', 'A second one']
-      )
+      beforeAll(async () => {
+        page = await Page.open()
+        await employeeLogin(page, 'ADMIN')
+        await finalizeDocument()
+      })
 
-      const expectedMetadataStr = `${LocalDate.today().format()} Seppo Sorsa`
-      await waitUntilEqual(
-        () => vasuPage.followupEntryMetadata,
-        [expectedMetadataStr, expectedMetadataStr]
-      )
-    })
+      test('A published vasu document has one followup question', async () => {
+        const vasuPage = await openDocument()
+        await waitUntilEqual(() => vasuPage.followupQuestionCount, 1)
+      })
 
-    const lastElement = <T>(arr: Array<T>): T => arr[arr.length - 1]
+      test('Adding a followup comment renders it on the page', async () => {
+        const vasuEditPage = await editDocument()
+        await vasuEditPage.inputFollowupComment('This is a followup')
+        await waitUntilEqual(
+          () => vasuEditPage.followupEntryTexts,
+          ['This is a followup']
+        )
+        await vasuEditPage.inputFollowupComment('A second one')
+        await waitUntilEqual(
+          () => vasuEditPage.followupEntryTexts,
+          ['This is a followup', 'A second one']
+        )
 
-    test('A user can edit his own followup comment', async () => {
-      vasuPage = await editDocument()
-      await vasuPage.inputFollowupComment('This will be edited')
-      let entryTexts = await vasuPage.followupEntryTexts
-      expect(lastElement(entryTexts)).toEqual('This will be edited')
+        const expectedMetadataStr = `${LocalDate.today().format()} Seppo Sorsa`
+        await waitUntilEqual(
+          () => vasuEditPage.followupEntryMetadata,
+          [expectedMetadataStr, expectedMetadataStr]
+        )
+      })
 
-      await vasuPage.editFollowupComment(entryTexts.length - 1, 'now edited: ')
+      const lastElement = <T>(arr: Array<T>): T => arr[arr.length - 1]
 
-      entryTexts = await vasuPage.followupEntryTexts
-      expect(lastElement(entryTexts)).toEqual('now edited: This will be edited')
+      test('A user can edit his own followup comment', async () => {
+        const vasuEditPage = await editDocument()
+        await vasuEditPage.inputFollowupComment('This will be edited')
+        await waitUntilEqual(
+          () => vasuEditPage.followupEntryTexts.then(lastElement),
+          'This will be edited'
+        )
 
-      const entryMetadata = await vasuPage.followupEntryMetadata
-      const date = LocalDate.today().format()
-      const expectedMetadataStr = `${date} Seppo Sorsa, muokattu ${date} Seppo Sorsa`
-      expect(lastElement(entryMetadata)).toEqual(expectedMetadataStr)
+        const entryCount = (await vasuEditPage.followupEntryTexts).length
+        await vasuEditPage.editFollowupComment(entryCount - 1, 'now edited: ')
+
+        await waitUntilEqual(
+          () => vasuEditPage.followupEntryTexts.then(lastElement),
+          'now edited: This will be edited'
+        )
+
+        const date = LocalDate.today().format()
+        await waitUntilEqual(
+          () => vasuEditPage.followupEntryMetadata.then(lastElement),
+          `${date} Seppo Sorsa, muokattu ${date} Seppo Sorsa`
+        )
+      })
     })
   })
 })
