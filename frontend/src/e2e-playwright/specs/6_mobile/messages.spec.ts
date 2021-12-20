@@ -57,13 +57,20 @@ let nav: MobileNav
 const employeeId = uuidv4()
 const staffId = uuidv4()
 const daycareGroupPlacementId = uuidv4()
+const daycareGroupPlacement2Id = uuidv4()
 const daycareGroupId = uuidv4()
+const daycareGroup2Id = uuidv4()
+const daycareGroup3Id = uuidv4()
 
 let daycarePlacementFixture: DaycarePlacement
+let daycarePlacement2Fixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
+let daycareGroup2: DaycareGroupBuilder
+let daycareGroup3: DaycareGroupBuilder
 let employee: EmployeeBuilder
 let staff: EmployeeBuilder
 let child: PersonDetail
+let child2: PersonDetail
 
 let unit: Daycare
 
@@ -81,6 +88,7 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   child = fixtures.enduserChildFixtureJari
+  child2 = fixtures.enduserChildFixtureKaarina
   unit = fixtures.daycareFixture
 
   employee = await Fixture.employee()
@@ -112,9 +120,23 @@ beforeEach(async () => {
     .with({ id: daycareGroupId, daycareId: unit.id })
     .save()
 
+  daycareGroup2 = await Fixture.daycareGroup()
+    .with({ id: daycareGroup2Id, daycareId: unit.id })
+    .save()
+
+  daycareGroup3 = await Fixture.daycareGroup()
+    .with({ id: daycareGroup3Id, daycareId: unit.id })
+    .save()
+
   daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     child.id,
+    unit.id
+  )
+
+  daycarePlacement2Fixture = createDaycarePlacementFixture(
+    uuidv4(),
+    child2.id,
     unit.id
   )
 
@@ -123,9 +145,16 @@ beforeEach(async () => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   await setAclForDaycares(staff.data.externalId!, unit.id, 'STAFF')
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await setAclForDaycareGroups(staff.data.id!, unit.id, [daycareGroup.data.id])
+  await setAclForDaycareGroups(staff.data.id!, unit.id, [
+    daycareGroup.data.id,
+    daycareGroup2.data.id,
+    daycareGroup3.data.id
+  ])
 
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await insertDaycarePlacementFixtures([
+    daycarePlacementFixture,
+    daycarePlacement2Fixture
+  ])
   await insertDaycareGroupPlacementFixtures([
     {
       id: daycareGroupPlacementId,
@@ -133,12 +162,23 @@ beforeEach(async () => {
       daycarePlacementId: daycarePlacementFixture.id,
       startDate: daycarePlacementFixture.startDate,
       endDate: daycarePlacementFixture.endDate
+    },
+    {
+      id: daycareGroupPlacement2Id,
+      daycareGroupId: daycareGroup2.data.id,
+      daycarePlacementId: daycarePlacement2Fixture.id,
+      startDate: daycarePlacement2Fixture.startDate,
+      endDate: daycarePlacement2Fixture.endDate
     }
   ])
   await upsertMessageAccounts()
   await insertGuardianFixtures([
     {
       childId: child.id,
+      guardianId: fixtures.enduserGuardianFixture.id
+    },
+    {
+      childId: child2.id,
       guardianId: fixtures.enduserGuardianFixture.id
     }
   ])
@@ -254,6 +294,25 @@ describe('Child message thread', () => {
       'Testiviestin sisältö'
     )
   })
+
+  test('Supervisor navigates through group message boxes', async () => {
+    await initCitizenPage()
+    await citizenSendsMessageToGroup()
+    await citizenSendsMessageToGroup2()
+    await userSeesNewMessagesIndicator()
+    await employeeLoginsToMessagesPage()
+
+    await nav.selectGroup(daycareGroup2.data.id)
+    await messagesPage.messagesExist()
+    await waitUntilEqual(() => messagesPage.getThreadTitle(0), 'Hei ryhmä 2')
+
+    await nav.selectGroup(daycareGroup.data.id)
+    await messagesPage.messagesExist()
+    await waitUntilEqual(() => messagesPage.getThreadTitle(0), 'Otsikko')
+
+    await nav.selectGroup(daycareGroup3.data.id)
+    await messagesPage.messagesDontExist()
+  })
 })
 
 async function citizenSendsMessageToGroup() {
@@ -263,7 +322,15 @@ async function citizenSendsMessageToGroup() {
   const content = 'Testiviestin sisältö'
   const receivers = [daycareGroup.data.name + ' (Henkilökunta)']
   await citizenMessagesPage.sendNewMessage(title, content, receivers)
-  await citizenPage.close()
+}
+
+async function citizenSendsMessageToGroup2() {
+  await citizenPage.goto(config.enduserMessagesUrl)
+  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  const title = 'Hei ryhmä 2'
+  const content = 'Testiviestin sisältö'
+  const receivers = [daycareGroup2.data.name + ' (Henkilökunta)']
+  await citizenMessagesPage.sendNewMessage(title, content, receivers)
 }
 
 async function userSeesNewMessagesIndicator() {

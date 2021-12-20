@@ -9,17 +9,22 @@ export default class MobileMessagesPage {
 
   messagesContainer = this.page.find(`[data-qa="messages-page-content-area"]`)
 
+  async getThreadTitle(index: number) {
+    const titles = this.page.findAll('[data-qa="message-preview-title"]')
+    return titles.nth(index).innerText
+  }
+
   async messagesExist() {
-    return (await this.page.findAll('[data-qa^="message-preview"]').count()) > 0
+    return (await this.page.findAll('[data-qa="message-preview"]').count()) > 0
   }
 
   async messagesDontExist() {
-    const els = this.page.findAll('[data-qa^="message-preview"]')
+    const els = this.page.findAll('[data-qa="message-preview"]')
 
     return (await els.count()) === 0
   }
 
   async openFirstThread() {
-    await this.page.find(`[data-qa^="message-preview"]`).click()
+    await this.page.find(`[data-qa="message-preview"]`).click()
   }
 }
