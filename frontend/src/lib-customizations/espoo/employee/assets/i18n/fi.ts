@@ -840,14 +840,14 @@ export const fi = {
       removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
     },
     vasu: {
-      title: 'Vasu ja Leops',
-      createNew: 'Luo uusi vasu',
+      title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+      createNew: 'Luo uusi suunnitelma',
       modified: 'Muokattu',
       published: 'Julkaistu',
       init: {
-        chooseTemplate: 'Valitse vasupohja',
-        noTemplates: 'Yhtään vasupohjaa ei löytynyt',
-        error: 'Vasun luonti epäonnistui'
+        chooseTemplate: 'Valitse pohja',
+        noTemplates: 'Yhtään pohjaa ei löytynyt',
+        error: 'Suunnitelman luonti epäonnistui'
       }
     },
     pedagogicalDocument: {
@@ -2831,7 +2831,7 @@ export const fi = {
     }
   },
   vasuTemplates: {
-    title: 'Vasu-pohjat',
+    title: 'Opetussuunnitelmapohjat',
     name: 'Nimi',
     valid: 'Käytössä aikavälillä',
     type: 'Tyyppi',
@@ -2844,12 +2844,12 @@ export const fi = {
       FI: 'Suomenkielinen',
       SV: 'Ruotsinkielinen'
     },
-    documentCount: 'Vasu-dokumentteja',
-    addNewTemplate: 'Lisää uusi vasu-pohja',
+    documentCount: 'Dokumentteja',
+    addNewTemplate: 'Lisää uusi pohja',
     templateModal: {
-      createTitle: 'Uusi vasu-pohja',
-      editTitle: 'Muokkaa vasu-pohjaa',
-      copyTitle: 'Kopioi vasu-pohja',
+      createTitle: 'Uusi pohja',
+      editTitle: 'Muokkaa pohjaa',
+      copyTitle: 'Kopioi pohja',
       validStart: 'Toimintavuosi alkaa',
       validEnd: 'Toimintavuosi päättyy'
     },
