@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
@@ -70,10 +71,23 @@ class PlacementControllerCitizen(
                 sorted.find { listOf(PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE).contains(it.type) }
             val placementsByType = sorted.groupBy {
                 toTerminatablePlacementType(
-                    if (maybePreschoolOrPreparatoryPlacement?.startDate?.isBefore(it.startDate) == true) {
-                        maybePreschoolOrPreparatoryPlacement.type
-                    } else {
-                        it.type
+                    when (it.type) {
+                        CLUB,
+                        PRESCHOOL,
+                        PRESCHOOL_DAYCARE,
+                        PREPARATORY,
+                        PREPARATORY_DAYCARE -> it.type
+                        PlacementType.DAYCARE,
+                        PlacementType.DAYCARE_PART_TIME,
+                        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+                        PlacementType.TEMPORARY_DAYCARE,
+                        PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+                        PlacementType.SCHOOL_SHIFT_CARE -> if (maybePreschoolOrPreparatoryPlacement?.startDate?.isBefore(it.startDate) == true) {
+                            maybePreschoolOrPreparatoryPlacement.type
+                        } else {
+                            it.type
+                        }
                     }
                 )
             }
