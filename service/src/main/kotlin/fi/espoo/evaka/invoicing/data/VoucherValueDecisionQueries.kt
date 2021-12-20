@@ -14,7 +14,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
@@ -347,7 +346,7 @@ LIMIT :pageSize OFFSET :pageSize * :page
 """
     return this.createQuery(sql)
         .bindMap(params + freeTextParams)
-        .mapToPaged(pageSize) { row -> WithCount(row.mapColumn("count"), toVoucherValueDecisionSummary(row)) }
+        .mapToPaged(pageSize, toVoucherValueDecisionSummary)
 }
 
 fun Database.Read.getVoucherValueDecision(id: VoucherValueDecisionId): VoucherValueDecisionDetailed? {

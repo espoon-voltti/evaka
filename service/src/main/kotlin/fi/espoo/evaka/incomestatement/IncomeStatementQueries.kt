@@ -7,7 +7,6 @@ package fi.espoo.evaka.incomestatement
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -178,7 +177,7 @@ fun Database.Read.readIncomeStatementsForPerson(
         .bind("personId", personId)
         .bind("offset", (page - 1) * pageSize)
         .bind("limit", pageSize)
-        .mapToPaged(pageSize) { row -> WithCount(row.mapColumn("count"), mapIncomeStatement(row, includeEmployeeContent)) }
+        .mapToPaged(pageSize) { row -> mapIncomeStatement(row, includeEmployeeContent) }
 
 fun Database.Read.readIncomeStatementForPerson(
     personId: UUID,

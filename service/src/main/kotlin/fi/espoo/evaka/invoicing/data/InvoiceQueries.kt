@@ -17,7 +17,6 @@ import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
@@ -265,7 +264,7 @@ fun Database.Read.paginatedSearch(
 
     return createQuery(sql)
         .bindMap(params + freeTextParams)
-        .mapToPaged(pageSize) { row -> WithCount(row.mapColumn("count"), toInvoiceSummary(row)) }
+        .mapToPaged(pageSize, toInvoiceSummary)
         .let { it.copy(data = flattenSummary(it.data)) }
 }
 
