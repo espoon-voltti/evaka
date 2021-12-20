@@ -1,0 +1,66 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import { TextInput, Element } from '../../../utils/page'
+
+export class AuthorsSection extends Element {
+  readonly #primaryInputs = this.findAll(
+    '[data-qa="multi-field-question"] input'
+  )
+  primaryFirstNameInput = new TextInput(this.#primaryInputs.nth(0))
+  primaryLastNameInput = new TextInput(this.#primaryInputs.nth(1))
+  primaryTitleInput = new TextInput(this.#primaryInputs.nth(2))
+  primaryPhoneNumberInput = new TextInput(this.#primaryInputs.nth(3))
+
+  readonly #otherFieldsRows = this.findAll(
+    '[data-qa="multi-field-list-question"] [data-qa="field-row"]'
+  )
+  readonly otherFieldsInputs = (ix: number) =>
+    this.#otherFieldsRows.nth(ix).findAll('input')
+  otherFirstNameInput = (ix: number) =>
+    new TextInput(this.otherFieldsInputs(ix).nth(0))
+  otherLastNameInput = (ix: number) =>
+    new TextInput(this.otherFieldsInputs(ix).nth(1))
+  otherTitleInput = (ix: number) =>
+    new TextInput(this.otherFieldsInputs(ix).nth(2))
+  otherPhoneNumberInput = (ix: number) =>
+    new TextInput(this.otherFieldsInputs(ix).nth(3))
+
+  readonly #primaryValue = this.findAll(
+    '[data-qa="multi-field-question"] [data-qa="value-or-no-record"]'
+  ).first()
+
+  readonly #otherFieldsValues = this.findAll(
+    '[data-qa="value-or-no-record"]'
+  ).nth(1)
+
+  get primaryValue(): Promise<string> {
+    return this.#primaryValue.innerText
+  }
+
+  get otherFieldsCount(): Promise<number> {
+    return this.#otherFieldsRows.count()
+  }
+
+  get otherValues(): Promise<string> {
+    return this.#otherFieldsValues.innerText
+  }
+}
+
+export class ConsiderationsSection extends Element {
+  readonly #textareas = this.findAll('textarea')
+
+  childsViewInput = new TextInput(this.#textareas.nth(0))
+  guardiansViewInput = new TextInput(this.#textareas.nth(1))
+
+  readonly #values = this.findAll('[data-qa="value-or-no-record"]')
+
+  get childsView(): Promise<string> {
+    return this.#values.nth(0).innerText
+  }
+
+  get guardiansView(): Promise<string> {
+    return this.#values.nth(1).innerText
+  }
+}
