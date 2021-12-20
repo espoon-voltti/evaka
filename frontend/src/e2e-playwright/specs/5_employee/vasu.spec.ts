@@ -121,6 +121,27 @@ describe('Vasu document page', () => {
         'Veena Lirtanen Hoitaja 1234565,\nAneev Nenatril Hoitaja 5654321'
       )
     })
+
+    test('Fill the consideration of views section', async () => {
+      const vasuEditPage = await editDocument()
+      const considerations = vasuEditPage.considerationsSection
+
+      await considerations.childsViewInput.fill("This is the child's view")
+      await considerations.guardiansViewInput.fill(
+        "This is the guardian's view"
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.considerationsSection.childsView,
+        "This is the child's view"
+      )
+      await waitUntilEqual(
+        () => vasuPage.considerationsSection.guardiansView,
+        "This is the guardian's view"
+      )
+    })
   })
 
   describe('Followup questions', () => {
