@@ -8,6 +8,7 @@ import {
   AuthorsSection,
   ConsiderationsSection,
   GoalsSection,
+  OtherDocsAndPlansSection,
   PreviousVasuGoalsSection,
   WellnessSupportSection
 } from './pageSections'
@@ -49,6 +50,10 @@ class VasuPageCommon {
 
   get wellnessSupportSection(): WellnessSupportSection {
     return new WellnessSupportSection(this.getDocumentSection(4))
+  }
+
+  get otherDocsAndPlansSection(): OtherDocsAndPlansSection {
+    return new OtherDocsAndPlansSection(this.getDocumentSection(5))
   }
 
   get followupQuestionCount(): Promise<number> {

@@ -83,3 +83,8 @@ export class WellnessSupportSection extends SimpleTextAreaSection {
   wellnessInput = new TextInput(this.textareas.nth(0))
   wellness = this.values.nth(0).innerText
 }
+
+export class OtherDocsAndPlansSection extends SimpleTextAreaSection {
+  otherDocsInput = new TextInput(this.textareas.nth(0))
+  otherDocs = this.values.nth(0).innerText
+}

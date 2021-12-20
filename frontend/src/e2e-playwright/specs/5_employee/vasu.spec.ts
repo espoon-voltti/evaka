@@ -207,6 +207,22 @@ describe('Vasu document page', () => {
         'Only sleeps for 0.2 seconds at a time'
       )
     })
+
+    test('Fill the other documents and plans section', async () => {
+      const vasuEditPage = await editDocument()
+      const otherDocsAndPlans = vasuEditPage.otherDocsAndPlansSection
+
+      await otherDocsAndPlans.otherDocsInput.fill(
+        'Drawings made by child and parents'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.otherDocsAndPlansSection.otherDocs,
+        'Drawings made by child and parents'
+      )
+    })
   })
 
   describe('Followup questions', () => {
