@@ -51,7 +51,7 @@ const features: Features = {
       realtimeStaffAttendance: true,
       personalDetailsPage: true,
       mobileMessages: true,
-      leops: false
+      leops: true
     }
   },
   prod: {
