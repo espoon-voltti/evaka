@@ -97,6 +97,29 @@ WHERE employee_id = :userId
         "attachment.id",
         permittedRoleActions::attachmentActions,
     )
+
+    private val assistanceAction = ActionConfig(
+        """
+SELECT ac.id, role
+FROM child_acl_view acl
+JOIN assistance_action ac ON acl.child_id = ac.child_id
+WHERE acl.employee_id = :userId
+        """.trimIndent(),
+        "ac.id",
+        permittedRoleActions::assistanceActionActions
+    )
+
+    private val assistanceNeed = ActionConfig(
+        """
+SELECT an.id, role
+FROM child_acl_view acl
+JOIN assistance_need an ON acl.child_id = an.child_id
+WHERE acl.employee_id = :userId
+        """.trimIndent(),
+        "an.id",
+        permittedRoleActions::assistanceNeedActions
+    )
+
     private val backupCare = ActionConfig(
         """
 SELECT bc.id, role
@@ -388,8 +411,8 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Employee -> when (action) {
                 Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION ->
-                    // If child is or has been in preschool, do not show pre preschool daycare assistance actions for non admin
-                    if (user.isAdmin) true
+                    // If child is or has been in preschool, do not show pre preschool daycare assistance actions for non admin or SEO
+                    if (this.assistanceAction.hasPermission(user, action, id)) true
                     else {
                         Database(jdbi).connect { db ->
                             db.read {
@@ -418,8 +441,8 @@ WHERE employee_id = :userId
         when (user) {
             is AuthenticatedUser.Employee -> when (action) {
                 Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED ->
-                    // If child is or has been in preschool, do not show pre preschool daycare assistance needs for non admin
-                    if (user.isAdmin) true
+                    // If child is or has been in preschool, do not show pre preschool daycare assistance actions for non admin or SEO
+                    if (this.assistanceNeed.hasPermission(user, action, id)) true
                     else {
                         Database(jdbi).connect { db ->
                             db.read {

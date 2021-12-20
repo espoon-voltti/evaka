@@ -55,6 +55,7 @@ interface ToolbarProps {
   dataQaDelete?: string
   dataQaRetry?: string
   dataQaCopy?: string
+  dataQa?: string
 }
 function Toolbar({
   dateRange,
@@ -70,7 +71,8 @@ function Toolbar({
   dataQaEdit,
   dataQaDelete,
   dataQaRetry,
-  dataQaCopy
+  dataQaCopy,
+  dataQa
 }: ToolbarProps) {
   const { roles } = useContext(UserContext)
 
@@ -80,7 +82,7 @@ function Toolbar({
     deletableFor === undefined || requireRole(roles, ...deletableFor)
 
   return (
-    <ToolbarWrapper>
+    <ToolbarWrapper data-qa={dataQa}>
       {warning && (
         <Tooltip
           tooltipId={warning?.tooltipId}

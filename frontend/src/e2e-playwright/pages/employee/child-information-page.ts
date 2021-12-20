@@ -81,6 +81,7 @@ export class ChildAssistanceNeed {
   #assistanceNeedMultiplier = this.page.findAll(
     '[data-qa="assistance-need-multiplier"]'
   )
+  #assistanceNeedRow = this.page.findAll('[data-qa="assistance-need-row"]')
 
   async createNewAssistanceNeed() {
     await this.#createAssistanceNeedButton.click()
@@ -102,9 +103,6 @@ export class ChildAssistanceNeed {
   }
 
   async assertAssistanceNeedCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#assistanceNeedMultiplier.count(),
-      expectedCount
-    )
+    await waitUntilEqual(() => this.#assistanceNeedRow.count(), expectedCount)
   }
 }
