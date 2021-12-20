@@ -5,11 +5,13 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.cancelAllActiveTransferApplicationsAfterDate
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -183,6 +185,8 @@ class PlacementControllerCitizen(
                         }
                     }
                 }
+
+            tx.cancelAllActiveTransferApplicationsAfterDate(ChildId(childId), body.terminationDate)
         }
     }
 }

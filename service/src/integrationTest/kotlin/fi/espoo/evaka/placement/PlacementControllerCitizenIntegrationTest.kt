@@ -7,9 +7,12 @@ package fi.espoo.evaka.placement
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.insertServiceNeed
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -18,6 +21,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
+import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -268,6 +272,54 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(PlacementType.PRESCHOOL, remainderOfPreschool.type)
         assertEquals(placementTerminationDate.plusDays(1), remainderOfPreschool.startDate)
         assertEquals(endPreschool, remainderOfPreschool.endDate)
+    }
+
+    @Test
+    fun `Transfer application with preferred date after requested termination date is cancelled`() {
+        val placementTerminationDate = today.plusDays(1)
+
+        val applicationBeforeTermination = db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                guardian = parent,
+                child = child,
+                applicationId = ApplicationId(UUID.randomUUID()),
+                preferredStartDate = placementTerminationDate.plusDays(-1),
+                transferApplication = true
+            )
+        }
+
+        val applicationAfterTermination = db.transaction { tx ->
+            tx.insertApplication(
+                guardian = parent,
+                child = child,
+                applicationId = ApplicationId(UUID.randomUUID()),
+                preferredStartDate = placementTerminationDate.plusDays(1),
+                transferApplication = true
+            )
+        }
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = PlacementControllerCitizen.TerminatablePlacementType.DAYCARE,
+                terminationDate = placementTerminationDate,
+                unitId = daycareId,
+                terminateDaycareOnly = false,
+            )
+        )
+
+        assertEquals(ApplicationStatus.CREATED, db.read { it.getApplicationStatus(applicationBeforeTermination.id) })
+        assertEquals(ApplicationStatus.CANCELLED, db.read { it.getApplicationStatus(applicationAfterTermination.id) })
+
+        val childPlacements = getChildPlacements(child.id)
+        assertEquals(1, childPlacements.size)
+        assertEquals(placementStart, childPlacements[0].startDate)
+        assertEquals(placementTerminationDate, childPlacements[0].endDate)
+        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
+        assertEquals(1, childPlacements[0].placements.size)
+        assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
+        assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
     }
 
     private fun terminatePlacements(
