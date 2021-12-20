@@ -240,6 +240,20 @@ describe('Vasu document page', () => {
       )
       await waitUntilEqual(() => vasuPage.infoSharedToSection.other, 'Police')
     })
+
+    test('Fill the additional info section', async () => {
+      const vasuEditPage = await editDocument()
+      const additionalInfo = vasuEditPage.additionalInfoSection
+
+      await additionalInfo.infoInput.fill('I love icecream')
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.additionalInfoSection.info,
+        'I love icecream'
+      )
+    })
   })
 
   describe('Followup questions', () => {

@@ -98,3 +98,8 @@ export class InfoSharedToSection extends Element {
   recipients = this.#values.nth(0).innerText
   other = this.#values.nth(1).innerText
 }
+
+export class AdditionalInfoSection extends SimpleTextAreaSection {
+  infoInput = new TextInput(this.textareas.nth(0))
+  info = this.values.nth(0).innerText
+}

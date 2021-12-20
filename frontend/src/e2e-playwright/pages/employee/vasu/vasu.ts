@@ -5,6 +5,7 @@
 import { waitUntilFalse } from 'e2e-playwright/utils'
 import { Page, TextInput, Element } from '../../../utils/page'
 import {
+  AdditionalInfoSection,
   AuthorsSection,
   ConsiderationsSection,
   GoalsSection,
@@ -59,6 +60,10 @@ class VasuPageCommon {
 
   get infoSharedToSection(): InfoSharedToSection {
     return new InfoSharedToSection(this.getDocumentSection(6))
+  }
+
+  get additionalInfoSection(): AdditionalInfoSection {
+    return new AdditionalInfoSection(this.getDocumentSection(7))
   }
 
   get followupQuestionCount(): Promise<number> {
