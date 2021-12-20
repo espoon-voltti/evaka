@@ -86,16 +86,26 @@ executors:
     resource_class: small
     docker:
       - image: *builder_aws_core_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+
   aws_docker_executor:
     <<: *default_config
+    resource_class: medium
     docker:
       - image: *builder_aws_docker_image
-    resource_class: medium
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
   aws_terraform_executor:
     <<: *default_config
+    resource_class: small
     docker:
       - image: *builder_aws_terraform_image
-    resource_class: small
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
 
   nodejs_executor:
     <<: *nodejs_executor
@@ -415,6 +425,10 @@ commands:
       - setup_aws
       - pull_docker_image:
           image: evaka/api-gateway
+      - run:
+          command: |
+            docker inspect --format='{{index .RepoDigests 0}}' evaka/api-gateway
+            docker inspect --format='{{index .RepoDigests 0}}' evaka/api-gateway:latest
       - restore_docker_image:
           dir: service
       - run:
@@ -698,7 +712,7 @@ commands:
                 name: Save docker image
                 working_directory: << pipeline.parameters.workspace_root >>
                 command: |
-                  mkdirs -p "$(dirname "<< parameters.image >>")"
+                  mkdir -p "$(dirname "<< parameters.image >>")"
                   docker save "<< parameters.image >>" > "<< parameters.image >>.tar"
             - save_cache:
                 name: Store Docker image in cache
@@ -732,8 +746,6 @@ commands:
           name: Build docker image
           working_directory: << parameters.dir >>
           command: |
-            base_image_arguments=""
-
             command=(docker build
               -t "<< parameters.image >>:${CIRCLE_SHA1}"
               --build-arg "build=${CIRCLE_BUILD_NUM}"
@@ -743,7 +755,7 @@ commands:
             )
 
             if test -n "<< parameters.base_image >>"; then
-              command+=(--build-arg "BASE_IMAGE=<< parameters.base_image >>:${CIRCLE_SHA1}")
+              command+=(--build-arg "BASE_IMAGE=<< parameters.base_image >>")
             fi
             command+=(.)
 
@@ -969,7 +981,7 @@ jobs:
           push: true
           save: false
           dockerfile: yarn.Dockerfile
-          base_image: "evaka/base"
+          base_image: "evaka/base:latest"
       - notify_slack
 
   apigw_build_test_push:
@@ -990,7 +1002,7 @@ jobs:
           dir: *workspace_apigw
           push: false
           save: false
-          base_image: "<< pipeline.parameters.registry >>/evaka/yarn"
+          base_image: "evaka/yarn:latest"
           extra_arguments: "--target=builder"
 
       - build_docker_image:
@@ -998,7 +1010,7 @@ jobs:
           dir: *workspace_apigw
           push: false
           save: false
-          base_image: "<< pipeline.parameters.registry >>/evaka/yarn"
+          base_image: "evaka/yarn:latest"
           extra_arguments: "--target=test"
 
       - run:
@@ -1020,7 +1032,13 @@ jobs:
           dir: *workspace_apigw
           push: true
           save: false
-          base_image: "<< pipeline.parameters.registry >>/evaka/yarn"
+          base_image: "evaka/yarn:latest"
+
+      - run:
+          command: |
+            docker inspect --format='{{index .RepoDigests 0}}' evaka/api-gateway
+            docker inspect --format='{{index .RepoDigests 0}}' evaka/api-gateway:${CIRCLE_SHA1}
+            docker inspect --format='{{index .RepoDigests 0}}' evaka/api-gateway:latest
 
       - push_docker_image:
           image: evaka/api-gateway-build

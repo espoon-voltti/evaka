@@ -16,6 +16,7 @@ services:
       - ..:/repo
     ipc: host
     environment:
+      HEADLESS: "${HEADLESS:-true}"
       CI: ${CI:-false}
       DEBUG: ${DEBUG:-}
 

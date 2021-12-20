@@ -22,5 +22,9 @@ cd /repo/frontend
 echo 'INFO: Waiting for compose stack to be up...'
 ./wait-for-dev-api.sh "$PROXY_URL"
 
-mapfile -t FILENAMES < playwright-filenames.txt
-yarn e2e-ci-playwright "${FILENAMES[@]}"
+if test -f playwright-filenames.txt; then
+    mapfile -t FILENAMES < playwright-filenames.txt
+    yarn e2e-ci-playwright "${FILENAMES[@]}"
+else
+    yarn e2e-ci-playwright src/e2e-playwright/specs
+fi
