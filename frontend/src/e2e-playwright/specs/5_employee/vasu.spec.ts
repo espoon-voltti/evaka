@@ -142,6 +142,29 @@ describe('Vasu document page', () => {
         "This is the guardian's view"
       )
     })
+
+    test('Fill the previous vasu goals section', async () => {
+      const vasuEditPage = await editDocument()
+      const previousGoals = vasuEditPage.previousVasuGoalsSection
+
+      await previousGoals.goalsRealizedInput.fill(
+        'The goals were realized by ...'
+      )
+      await previousGoals.otherObservationsInput.fill(
+        'Other observations include ...'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.previousVasuGoalsSection.goalsRealized,
+        'The goals were realized by ...'
+      )
+      await waitUntilEqual(
+        () => vasuPage.previousVasuGoalsSection.otherObservations,
+        'Other observations include ...'
+      )
+    })
   })
 
   describe('Followup questions', () => {

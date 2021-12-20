@@ -48,19 +48,23 @@ export class AuthorsSection extends Element {
   }
 }
 
-export class ConsiderationsSection extends Element {
-  readonly #textareas = this.findAll('textarea')
+class SimpleTextAreaSection extends Element {
+  protected readonly textareas = this.findAll('textarea')
+  protected readonly values = this.findAll('[data-qa="value-or-no-record"]')
+}
 
-  childsViewInput = new TextInput(this.#textareas.nth(0))
-  guardiansViewInput = new TextInput(this.#textareas.nth(1))
+export class ConsiderationsSection extends SimpleTextAreaSection {
+  childsViewInput = new TextInput(this.textareas.nth(0))
+  guardiansViewInput = new TextInput(this.textareas.nth(1))
 
-  readonly #values = this.findAll('[data-qa="value-or-no-record"]')
+  childsView = this.values.nth(0).innerText
+  guardiansView = this.values.nth(1).innerText
+}
 
-  get childsView(): Promise<string> {
-    return this.#values.nth(0).innerText
-  }
+export class PreviousVasuGoalsSection extends SimpleTextAreaSection {
+  goalsRealizedInput = new TextInput(this.textareas.nth(0))
+  otherObservationsInput = new TextInput(this.textareas.nth(1))
 
-  get guardiansView(): Promise<string> {
-    return this.#values.nth(1).innerText
-  }
+  goalsRealized = this.values.nth(0).innerText
+  otherObservations = this.values.nth(1).innerText
 }

@@ -4,7 +4,11 @@
 
 import { waitUntilFalse } from 'e2e-playwright/utils'
 import { Page, TextInput, Element } from '../../../utils/page'
-import { AuthorsSection, ConsiderationsSection } from './pageSections'
+import {
+  AuthorsSection,
+  ConsiderationsSection,
+  PreviousVasuGoalsSection
+} from './pageSections'
 
 class VasuPageCommon {
   constructor(readonly page: Page) {}
@@ -31,6 +35,10 @@ class VasuPageCommon {
 
   get considerationsSection(): ConsiderationsSection {
     return new ConsiderationsSection(this.getDocumentSection(1))
+  }
+
+  get previousVasuGoalsSection(): PreviousVasuGoalsSection {
+    return new PreviousVasuGoalsSection(this.getDocumentSection(2))
   }
 
   get followupQuestionCount(): Promise<number> {
