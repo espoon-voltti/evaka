@@ -191,6 +191,22 @@ describe('Vasu document page', () => {
         'Child snores heavily, waking all the other kids up'
       )
     })
+
+    test('Fill the wellness support section', async () => {
+      const vasuEditPage = await editDocument()
+      const wellnessSupport = vasuEditPage.wellnessSupportSection
+
+      await wellnessSupport.wellnessInput.fill(
+        'Only sleeps for 0.2 seconds at a time'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.wellnessSupportSection.wellness,
+        'Only sleeps for 0.2 seconds at a time'
+      )
+    })
   })
 
   describe('Followup questions', () => {

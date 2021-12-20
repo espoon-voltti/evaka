@@ -8,7 +8,8 @@ import {
   AuthorsSection,
   ConsiderationsSection,
   GoalsSection,
-  PreviousVasuGoalsSection
+  PreviousVasuGoalsSection,
+  WellnessSupportSection
 } from './pageSections'
 
 class VasuPageCommon {
@@ -44,6 +45,10 @@ class VasuPageCommon {
 
   get goalsSection(): GoalsSection {
     return new GoalsSection(this.getDocumentSection(3))
+  }
+
+  get wellnessSupportSection(): WellnessSupportSection {
+    return new WellnessSupportSection(this.getDocumentSection(4))
   }
 
   get followupQuestionCount(): Promise<number> {
