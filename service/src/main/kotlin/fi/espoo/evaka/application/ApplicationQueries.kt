@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -353,61 +352,58 @@ fun Database.Read.fetchApplicationSummaries(
 
     val applicationSummaries = createQuery(paginatedSql)
         .bindMap(params + freeTextParams)
-        .mapToPaged(pageSize) { row ->
-            WithCount(
-                row.mapColumn<Int>("total"),
-                ApplicationSummary(
-                    id = row.mapColumn("id"),
-                    firstName = row.mapColumn("first_name"),
-                    lastName = row.mapColumn("last_name"),
-                    socialSecurityNumber = row.mapColumn("social_security_number"),
-                    dateOfBirth = row.mapColumn<String?>("date_of_birth")?.let { LocalDate.parse(it) },
-                    type = row.mapColumn("type"),
-                    placementType = mapRequestedPlacementType(row, "document"),
-                    serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
-                        ServiceNeedOption(
-                            UUID.fromString(it),
-                            row.mapColumn("serviceNeedNameFi"),
-                            row.mapColumn("serviceNeedNameSv"),
-                            row.mapColumn("serviceNeedNameEn")
+        .mapToPaged(pageSize, "total") { row ->
+            ApplicationSummary(
+                id = row.mapColumn("id"),
+                firstName = row.mapColumn("first_name"),
+                lastName = row.mapColumn("last_name"),
+                socialSecurityNumber = row.mapColumn("social_security_number"),
+                dateOfBirth = row.mapColumn<String?>("date_of_birth")?.let { LocalDate.parse(it) },
+                type = row.mapColumn("type"),
+                placementType = mapRequestedPlacementType(row, "document"),
+                serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
+                    ServiceNeedOption(
+                        UUID.fromString(it),
+                        row.mapColumn("serviceNeedNameFi"),
+                        row.mapColumn("serviceNeedNameSv"),
+                        row.mapColumn("serviceNeedNameEn")
+                    )
+                },
+                dueDate = row.mapColumn<String?>("duedate")?.let { LocalDate.parse(it) },
+                startDate = row.mapColumn<String?>("preferredStartDate")?.let { LocalDate.parse(it) },
+                preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
+                    PreferredUnit(
+                        id = DaycareId(UUID.fromString(it)),
+                        name = "" // filled afterwards
+                    )
+                },
+                origin = row.mapColumn("origin"),
+                checkedByAdmin = row.mapColumn("checkedbyadmin"),
+                status = row.mapColumn("application_status"),
+                additionalInfo = row.mapColumn("additionalInfo"),
+                serviceWorkerNote = if (canReadServiceWorkerNotes) row.mapColumn("service_worker_note") else "",
+                siblingBasis = row.mapColumn("siblingBasis"),
+                assistanceNeed = row.mapColumn("assistanceNeed"),
+                wasOnClubCare = row.mapColumn("wasOnClubCare"),
+                wasOnDaycare = row.mapColumn("wasOnDaycare"),
+                extendedCare = row.mapColumn("extendedCare"),
+                duplicateApplication = row.mapColumn("has_duplicates"),
+                transferApplication = row.mapColumn("transferapplication"),
+                urgent = row.mapColumn("urgent"),
+                attachmentCount = row.mapColumn("attachmentCount"),
+                additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
+                placementProposalStatus = row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
+                    ?.let {
+                        PlacementProposalStatus(
+                            unitConfirmationStatus = it,
+                            unitRejectReason = row.mapColumn("unit_reject_reason"),
+                            unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
                         )
                     },
-                    dueDate = row.mapColumn<String?>("duedate")?.let { LocalDate.parse(it) },
-                    startDate = row.mapColumn<String?>("preferredStartDate")?.let { LocalDate.parse(it) },
-                    preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
-                        PreferredUnit(
-                            id = DaycareId(UUID.fromString(it)),
-                            name = "" // filled afterwards
-                        )
-                    },
-                    origin = row.mapColumn("origin"),
-                    checkedByAdmin = row.mapColumn("checkedbyadmin"),
-                    status = row.mapColumn("application_status"),
-                    additionalInfo = row.mapColumn("additionalInfo"),
-                    serviceWorkerNote = if (canReadServiceWorkerNotes) row.mapColumn("service_worker_note") else "",
-                    siblingBasis = row.mapColumn("siblingBasis"),
-                    assistanceNeed = row.mapColumn("assistanceNeed"),
-                    wasOnClubCare = row.mapColumn("wasOnClubCare"),
-                    wasOnDaycare = row.mapColumn("wasOnDaycare"),
-                    extendedCare = row.mapColumn("extendedCare"),
-                    duplicateApplication = row.mapColumn("has_duplicates"),
-                    transferApplication = row.mapColumn("transferapplication"),
-                    urgent = row.mapColumn("urgent"),
-                    attachmentCount = row.mapColumn("attachmentCount"),
-                    additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
-                    placementProposalStatus = row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
-                        ?.let {
-                            PlacementProposalStatus(
-                                unitConfirmationStatus = it,
-                                unitRejectReason = row.mapColumn("unit_reject_reason"),
-                                unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
-                            )
-                        },
-                    placementProposalUnitName = row.mapColumn("unit_name"),
-                    currentPlacementUnit = row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
-                        PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
-                    }
-                )
+                placementProposalUnitName = row.mapColumn("unit_name"),
+                currentPlacementUnit = row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
+                    PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
+                }
             )
         }
 

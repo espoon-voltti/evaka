@@ -23,8 +23,11 @@ fun <T> List<WithCount<T>>.mapToPaged(pageSize: Int): Paged<T> =
         )
     }
 
-fun <T> ResultBearing.mapToPaged(pageSize: Int, mapper: (row: RowView) -> WithCount<T>): Paged<T> =
-    this.map(mapper).list().mapToPaged(pageSize)
+fun <T> ResultBearing.mapToPaged(pageSize: Int, countColumn: String, mapper: (row: RowView) -> T): Paged<T> =
+    this.map { row -> WithCount(row.mapColumn(countColumn), mapper(row)) }.list().mapToPaged(pageSize)
+
+fun <T> ResultBearing.mapToPaged(pageSize: Int, mapper: (row: RowView) -> T): Paged<T> =
+    this.mapToPaged(pageSize, "count", mapper)
 
 inline fun <reified T> ResultBearing.mapToPaged(pageSize: Int): Paged<T> =
     this.map(withCountMapper<T>()).list().mapToPaged(pageSize)
