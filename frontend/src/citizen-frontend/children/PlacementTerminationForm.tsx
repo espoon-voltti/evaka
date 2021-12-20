@@ -76,16 +76,17 @@ export default React.memo(function PlacementTerminationForm({
   const t = useTranslation()
   const [lang] = useLang()
 
-  const getPlacementLabel = (p: CheckboxOption) => {
-    const type = p.terminateDaycareOnly
-      ? t.children.placementTermination.invoicedDaycare
-      : t.placement.type[p.type]
-    return [
-      type,
-      p.unitName,
-      p.startDate.format() + ' – ' + p.endDate.format()
-    ].join(', ')
-  }
+  const getPlacementLabel = useCallback(
+    (p: CheckboxOption) =>
+      [
+        p.terminateDaycareOnly
+          ? t.children.placementTermination.invoicedDaycare
+          : t.placement.type[p.type],
+        p.unitName,
+        t.children.placementTermination.until(p.endDate.format())
+      ].join(', '),
+    [t]
+  )
 
   const [state, setState] = useState<UiState>(emptyState())
 
@@ -104,12 +105,16 @@ export default React.memo(function PlacementTerminationForm({
       return { type: 'invalid-date' }
     }
 
+    const terminateDaycareOnly =
+      (state.placements.length === 0 &&
+        state.placements[0].terminateDaycareOnly) ??
+      false
     return {
       type: 'valid',
       data: {
         type: state.placements[0].type,
         unitId: state.placements[0].unitId,
-        terminateDaycareOnly: state.placements[0].terminateDaycareOnly ?? false,
+        terminateDaycareOnly,
         terminationDate: date
       }
     }
@@ -128,7 +133,7 @@ export default React.memo(function PlacementTerminationForm({
     onSuccess()
   }, [onSuccess])
 
-  // Add option for terminating only the invoiced placements if in preschool or preparatory placement
+  // Add option for terminating only the invoiced placements if in preschool or preparatory placement (has additionalPlacements)
   const options: CheckboxOption[] = useMemo(
     () =>
       placementGroup.additionalPlacements.length > 0
@@ -140,6 +145,22 @@ export default React.memo(function PlacementTerminationForm({
     [placementGroup]
   )
 
+  const onTogglePlacement = (opt: CheckboxOption) => (checked: boolean) => {
+    if (checked) {
+      setState((prev) => ({
+        ...prev,
+        placements: opt.terminateDaycareOnly ? [opt] : options
+      }))
+    } else {
+      setState((prev) => ({
+        ...prev,
+        placements: opt.terminateDaycareOnly
+          ? []
+          : prev.placements.filter(({ pseudoId }) => pseudoId !== opt.pseudoId)
+      }))
+    }
+  }
+
   return (
     <>
       <div>
@@ -150,23 +171,9 @@ export default React.memo(function PlacementTerminationForm({
             key={p.pseudoId}
             label={getPlacementLabel(p)}
             checked={
-              !!state.placements.find((p2) => p2.pseudoId === p.pseudoId)
+              !!state.placements.find(({ pseudoId }) => pseudoId === p.pseudoId)
             }
-            onChange={(checked) => {
-              if (checked) {
-                setState((prev) => ({
-                  ...prev,
-                  placements: p.terminateDaycareOnly ? [p] : options
-                }))
-              } else {
-                setState((prev) => ({
-                  ...prev,
-                  placements: p.terminateDaycareOnly
-                    ? []
-                    : prev.placements.filter((p2) => p2.pseudoId !== p.pseudoId)
-                }))
-              }
-            }}
+            onChange={onTogglePlacement(p)}
           />
         ))}
       </div>
