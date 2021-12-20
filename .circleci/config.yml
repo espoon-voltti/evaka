@@ -1077,7 +1077,7 @@ jobs:
 
   e2e-test-testcafe:
     executor: e2e_executor
-    parallelism: 1 # TODO: change back to 8?
+    parallelism: 8
     steps:
       - e2e_test:
           test_runner: testcafe
@@ -1085,7 +1085,7 @@ jobs:
 
   e2e-test-playwright:
     executor: e2e_executor
-    parallelism: 1 # TODO: change back to 4?
+    parallelism: 4
     steps:
       - e2e_test:
           test_runner: playwright
@@ -1343,7 +1343,6 @@ workflows:
       - service_build:
           requires:
             - checkout_repo
-            - check_licenses # TODO: temporary
       - service_build_and_push_image:
           requires:
             - build_base_image
