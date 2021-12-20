@@ -165,6 +165,32 @@ describe('Vasu document page', () => {
         'Other observations include ...'
       )
     })
+
+    test('Fill the goals section', async () => {
+      const vasuEditPage = await editDocument()
+      const goals = vasuEditPage.goalsSection
+
+      await goals.childsStrengthsInput.fill('Super helpful with chores')
+      await goals.goalsForTeachersInput.fill('Child needs help drawing squares')
+      await goals.otherInput.fill(
+        'Child snores heavily, waking all the other kids up'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.childsStrengths,
+        'Super helpful with chores'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.goalsForTeachers,
+        'Child needs help drawing squares'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.other,
+        'Child snores heavily, waking all the other kids up'
+      )
+    })
   })
 
   describe('Followup questions', () => {

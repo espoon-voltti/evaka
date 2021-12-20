@@ -7,6 +7,7 @@ import { Page, TextInput, Element } from '../../../utils/page'
 import {
   AuthorsSection,
   ConsiderationsSection,
+  GoalsSection,
   PreviousVasuGoalsSection
 } from './pageSections'
 
@@ -39,6 +40,10 @@ class VasuPageCommon {
 
   get previousVasuGoalsSection(): PreviousVasuGoalsSection {
     return new PreviousVasuGoalsSection(this.getDocumentSection(2))
+  }
+
+  get goalsSection(): GoalsSection {
+    return new GoalsSection(this.getDocumentSection(3))
   }
 
   get followupQuestionCount(): Promise<number> {

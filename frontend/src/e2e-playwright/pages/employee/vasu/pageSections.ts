@@ -68,3 +68,13 @@ export class PreviousVasuGoalsSection extends SimpleTextAreaSection {
   goalsRealized = this.values.nth(0).innerText
   otherObservations = this.values.nth(1).innerText
 }
+
+export class GoalsSection extends SimpleTextAreaSection {
+  childsStrengthsInput = new TextInput(this.textareas.nth(0))
+  goalsForTeachersInput = new TextInput(this.textareas.nth(1))
+  otherInput = new TextInput(this.textareas.nth(2))
+
+  childsStrengths = this.values.nth(0).innerText
+  goalsForTeachers = this.values.nth(1).innerText
+  other = this.values.nth(2).innerText
+}
