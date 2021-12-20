@@ -353,7 +353,7 @@ fun Database.Read.fetchApplicationSummaries(
 
     val applicationSummaries = createQuery(paginatedSql)
         .bindMap(params + freeTextParams)
-        .map { row ->
+        .mapToPaged(pageSize) { row ->
             WithCount(
                 row.mapColumn<Int>("total"),
                 ApplicationSummary(
@@ -410,7 +410,6 @@ fun Database.Read.fetchApplicationSummaries(
                 )
             )
         }
-        .let(mapToPaged(pageSize))
 
     //language=sql
     val unitSql =
