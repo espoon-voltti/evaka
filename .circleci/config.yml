@@ -413,8 +413,6 @@ commands:
       - restore_repo
       - attach_root_workspace
       - setup_aws
-      - setup_authenticated_remote_docker:
-          docker_layer_caching: false
       - pull_docker_image:
           image: evaka/api-gateway
       - restore_docker_image:
@@ -625,13 +623,11 @@ commands:
                       git_hash="${CIRCLE_SHA1}"
                     fi
                     IMAGE="${IMAGE}:${git_hash}"
-                    if test -z "$(docker images -q "$IMAGE" 2> /dev/null)"; then
-                      if [ "<< parameters.previous >>" = "true" ]; then
-                        docker pull "$IMAGE" || true # cache
-                      else
-                        docker pull "$IMAGE"
-                        docker tag "$IMAGE" "<< parameters.image >>:latest"
-                      fi
+                    if [ "<< parameters.previous >>" = "true" ]; then
+                      docker pull "$IMAGE" || true # cache
+                    else
+                      docker pull "$IMAGE"
+                      docker tag "$IMAGE" "<< parameters.image >>:latest"
                     fi
                   fi
       - when:
@@ -997,19 +993,21 @@ jobs:
           base_image: "<< pipeline.parameters.registry >>/evaka/yarn"
           extra_arguments: "--target=builder"
 
-      - run:
-          name: Lint
-          working_directory: *workspace_apigw
-          command: docker run --rm -t "evaka/api-gateway-build:${CIRCLE_SHA1}" yarn lint
+      - build_docker_image:
+          image: evaka/api-gateway-test
+          dir: *workspace_apigw
+          push: false
+          save: false
+          base_image: "<< pipeline.parameters.registry >>/evaka/yarn"
+          extra_arguments: "--target=test"
+
       - run:
           name: Test
           working_directory: *workspace_apigw
           command: |
-            BUILD_IMAGE="evaka/api-gateway-build:${CIRCLE_SHA1}"
-            docker rm -f "test_apigw_${CIRCLE_SHA1}" || true
-            docker run --name "test_apigw_${CIRCLE_SHA1}" -t "$BUILD_IMAGE" yarn test-ci
-            trap "docker rm -f test_apigw_${CIRCLE_SHA1}" EXIT
-            docker cp "test_apigw_${CIRCLE_SHA1}:/project/build/test-reports" "<< pipeline.parameters.workspace_root >>/apigw/test-reports"
+            id=$(docker create evaka/api-gateway-test)
+            docker cp "$id:/project/build/test-reports" .
+            docker rm -v "$id"
       - store_test_results:
           path: "<< pipeline.parameters.workspace_root >>/apigw/test-reports"
 

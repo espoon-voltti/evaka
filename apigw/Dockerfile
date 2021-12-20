@@ -17,6 +17,11 @@ COPY . .
 
 RUN yarn build
 
+FROM builder AS test
+
+RUN yarn lint
+RUN yarn test-ci
+
 FROM "${BASE_IMAGE}"
 
 WORKDIR /home/evaka

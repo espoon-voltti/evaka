@@ -9,6 +9,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 IMAGE="evaka/api-gateway"
+TEST_IMAGE="evaka/api-gateway-test"
 BUILD_IMAGE="evaka/api-gateway-build"
 
 docker build -t "$BUILD_IMAGE" \
@@ -18,13 +19,12 @@ docker build -t "$BUILD_IMAGE" \
               --target=builder \
               .
 
-docker run --rm -t "$BUILD_IMAGE" yarn lint
-
-docker rm -f dummy || true
-docker run --name dummy -t "$BUILD_IMAGE" yarn test-ci
-
-docker cp dummy:/project/build/test-reports "$(pwd)/test-reports"
-docker rm -f dummy
+docker build -t "$TEST_IMAGE" \
+              --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
+              --build-arg "build=${CIRCLE_BUILD_NUM:-0}" \
+              --build-arg "commit=${CIRCLE_SHA1:-local}" \
+              --target=test \
+              .
 
 docker build -t "$IMAGE" \
               --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
