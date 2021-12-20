@@ -7,7 +7,6 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -125,8 +124,6 @@ class VasuTemplateController(
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
         Audit.VasuTemplateRead.log(id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
         accessControl.requirePermissionFor(user, Action.VasuTemplate.READ, id)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } } ?: throw NotFound("template $id not found")

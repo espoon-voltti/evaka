@@ -151,16 +151,6 @@ WHERE employee_id = :userId
         "cdn.id",
         permittedRoleActions::childDailyNoteActions
     )
-    private val childStickyNote = ActionConfig(
-        """
-SELECT csn.id, role
-FROM child_acl_view
-JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "csn.id",
-        permittedRoleActions::childStickyNoteActions
-    )
     private val childImage = ActionConfig(
         """
 SELECT img.id, role
@@ -170,6 +160,16 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "img.id",
         permittedRoleActions::childImageActions
+    )
+    private val childStickyNote = ActionConfig(
+        """
+SELECT csn.id, role
+FROM child_acl_view
+JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "csn.id",
+        permittedRoleActions::childStickyNoteActions
     )
     private val group = ActionConfig(
         """
@@ -354,19 +354,20 @@ WHERE employee_id = :userId
             is Action.Attachment -> hasPermissionFor(user, action, id as AttachmentId)
             is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
             is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, id as ChildDailyNoteId)
-            is Action.ChildStickyNote -> this.childStickyNote.hasPermission(user, action, id as ChildStickyNoteId)
             is Action.ChildImage -> hasPermissionFor(user, action, id as ChildImageId)
+            is Action.ChildStickyNote -> this.childStickyNote.hasPermission(user, action, id as ChildStickyNoteId)
+            is Action.FeeAlteration -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeAlterationActions)
+            is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
             is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
-            is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)
             is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
+            is Action.MessageContent -> hasPermissionFor(user, action, id as MessageContentId)
+            is Action.MessageDraft -> hasPermissionFor(user, action, id as MessageDraftId)
             is Action.Parentship -> this.parentship.hasPermission(user, action, id as ParentshipId)
             is Action.Partnership -> this.partnership.hasPermission(user, action, id as PartnershipId)
             is Action.Person -> hasPermissionFor(user, action, id as PersonId)
             is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
             is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
-            is Action.MessageContent -> hasPermissionFor(user, action, id as MessageContentId)
-            is Action.MessageDraft -> hasPermissionFor(user, action, id as MessageDraftId)
             else -> error("Unsupported action type")
         }.exhaust()
 

@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.data.getFeeAlteration
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsForPerson
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -46,11 +47,10 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     @PostMapping
     fun createFeeAlteration(db: Database, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_FEE_ALTERATION, feeAlteration.personId)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.upsertFeeAlteration(feeAlteration.copy(id = UUID.randomUUID(), updatedBy = user.id))
+                tx.upsertFeeAlteration(feeAlteration.copy(id = FeeAlterationId(UUID.randomUUID()), updatedBy = user.id))
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -67,15 +67,13 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     }
 
     @PutMapping("/{feeAlterationId}")
-    fun updateFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun updateFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: FeeAlterationId, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val parsedId = parseUUID(feeAlterationId)
+        accessControl.requirePermissionFor(user, Action.FeeAlteration.UPDATE, feeAlterationId)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val existing = tx.getFeeAlteration(parsedId)
-                tx.upsertFeeAlteration(feeAlteration.copy(id = parsedId, updatedBy = user.id))
+                val existing = tx.getFeeAlteration(feeAlterationId)
+                tx.upsertFeeAlteration(feeAlteration.copy(id = feeAlterationId, updatedBy = user.id))
 
                 val expandedPeriod = existing?.let {
                     DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
@@ -89,15 +87,14 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     }
 
     @DeleteMapping("/{feeAlterationId}")
-    fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
+    fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: FeeAlterationId): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val parsedId = parseUUID(feeAlterationId)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val existing = tx.getFeeAlteration(parsedId)
-                tx.deleteFeeAlteration(parsedId)
+                val existing = tx.getFeeAlteration(feeAlterationId)
+                tx.deleteFeeAlteration(feeAlterationId)
 
                 existing?.let {
                     asyncJobRunner.plan(

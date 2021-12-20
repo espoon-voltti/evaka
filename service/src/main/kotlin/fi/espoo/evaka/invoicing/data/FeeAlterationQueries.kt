@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -66,7 +67,7 @@ fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
     handlingExceptions { update.execute() }
 }
 
-fun Database.Read.getFeeAlteration(id: UUID): FeeAlteration? {
+fun Database.Read.getFeeAlteration(id: FeeAlterationId): FeeAlteration? {
     return createQuery(
         """
 SELECT
@@ -141,7 +142,7 @@ WHERE
         .toList()
 }
 
-fun Database.Transaction.deleteFeeAlteration(id: UUID) {
+fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {
     val update = createUpdate("DELETE FROM fee_alteration WHERE id = :id")
         .bind("id", id)
 
@@ -150,7 +151,7 @@ fun Database.Transaction.deleteFeeAlteration(id: UUID) {
 
 val toFeeAlteration = { rs: ResultSet, _: StatementContext ->
     FeeAlteration(
-        id = UUID.fromString(rs.getString("id")),
+        id = FeeAlterationId(UUID.fromString(rs.getString("id"))),
         personId = UUID.fromString(rs.getString("person_id")),
         type = FeeAlteration.Type.valueOf(rs.getString("type")),
         amount = rs.getInt("amount"),

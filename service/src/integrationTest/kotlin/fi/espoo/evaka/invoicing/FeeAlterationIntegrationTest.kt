@@ -11,6 +11,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -27,7 +28,7 @@ import kotlin.test.assertFalse
 
 class FeeAlterationIntegrationTest : FullApplicationTest() {
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
-        val nullId = UUID.fromString("00000000-0000-0000-0000-000000000000")
+        val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
             expected.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
             actual.map { it.copy(id = nullId, updatedAt = null) }.toSet()
@@ -54,7 +55,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     private val personId = testChild_1.id
 
     private val testFeeAlteration = FeeAlteration(
-        id = UUID.randomUUID(),
+        id = FeeAlterationId(UUID.randomUUID()),
         personId = personId,
         type = FeeAlteration.Type.DISCOUNT,
         amount = 50,
@@ -91,7 +92,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     fun `getFeeAlterations works with multiple fee alterations in DB`() {
         val feeAlterations = listOf(
             testFeeAlteration.copy(
-                id = UUID.randomUUID(),
+                id = FeeAlterationId(UUID.randomUUID()),
                 validFrom = testFeeAlteration.validFrom.plusYears(1),
                 validTo = testFeeAlteration.validTo!!.plusYears(1)
             ),
@@ -172,7 +173,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `delete works with existing fee alteration`() {
-        val deletedId = UUID.randomUUID()
+        val deletedId = FeeAlterationId(UUID.randomUUID())
         db.transaction { tx ->
             tx.upsertFeeAlteration(testFeeAlteration)
             tx.upsertFeeAlteration(testFeeAlteration.copy(id = deletedId))
