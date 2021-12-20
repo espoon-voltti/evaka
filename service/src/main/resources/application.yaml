@@ -14,9 +14,6 @@ evaka:
     min_date: "2020-03-01"
   five_years_old_daycare:
     enabled: true
-  integration:
-    message:
-      enabled: true
   max_attachments_per_user: 100
   redis:
     port: 6379

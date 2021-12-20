@@ -4,11 +4,12 @@
 
 package fi.espoo.evaka.sficlient
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.LoggerContext
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.SfiContactPersonEnv
 import fi.espoo.evaka.SfiEnv
-import fi.espoo.evaka.SfiMessageEnv
 import fi.espoo.evaka.SfiPrintingEnv
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
@@ -33,9 +34,13 @@ import org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor
 import org.apache.wss4j.common.ConfigurationConstants
 import org.apache.wss4j.common.crypto.Merlin
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.core.io.ClassPathResource
 import org.springframework.ws.client.WebServiceFaultException
 import org.springframework.ws.client.WebServiceIOException
@@ -53,6 +58,7 @@ import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SoapStackIntegrationTest {
     private lateinit var server: MockServer<MockViranomaisPalvelut>
 
@@ -76,15 +82,15 @@ class SoapStackIntegrationTest {
         emailContent = "email-content"
     )
     private val clientKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri.toString(),
+        location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri,
         password = Sensitive("client")
     )
     private val serverKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/server.p12").uri.toString(),
+        location = ClassPathResource("evaka-integration-test/sficlient/server.p12").uri,
         password = Sensitive("localhost")
     )
     private val untrustWorthyKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri.toString(),
+        location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri,
         password = Sensitive("untrustworthy")
     )
     private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)
@@ -101,23 +107,18 @@ class SoapStackIntegrationTest {
     }
 
     private fun defaultEnv() = SfiEnv(
-        trustStore = serverKeystore,
-        keyStore = KeystoreEnv(),
         address = "https://localhost:${server.port}",
+        trustStore = serverKeystore,
+        keyStore = null,
         signingKeyAlias = "",
-        wsSecurityEnabled = true,
-        message = SfiMessageEnv(
-            authorityIdentifier = "authority",
-            serviceIdentifier = "service",
-            messageApiVersion = "1.1",
-            certificateCommonName = "common-name"
-        ),
+        authorityIdentifier = "authority",
+        serviceIdentifier = "service",
+        certificateCommonName = "common-name",
         printing = SfiPrintingEnv(
-            enabled = true,
             forcePrintForElectronicUser = false,
             printingProvider = "provider",
             billingId = "billing-id",
-            billingPassword = "billing-password",
+            billingPassword = Sensitive("billing-password"),
         ),
         contactPerson = SfiContactPersonEnv(
             name = "contact-name",
@@ -125,6 +126,12 @@ class SoapStackIntegrationTest {
             email = "contact-email",
         )
     )
+
+    @BeforeAll
+    fun beforeAll() {
+        val loggerCtx = LoggerFactory.getILoggerFactory() as LoggerContext
+        loggerCtx.getLogger(Logger.ROOT_LOGGER_NAME).level = Level.INFO
+    }
 
     @BeforeEach
     fun beforeEach() {
@@ -178,19 +185,18 @@ class SoapStackIntegrationTest {
         val client = SfiMessagesSoapClient(env, dummyDocumentService)
         server.service.implementation.set { viranomainen, request ->
             assertEquals(message.messageId, viranomainen.sanomaTunniste)
-            assertEquals(env.message.authorityIdentifier, viranomainen.viranomaisTunnus)
-            assertEquals(env.message.certificateCommonName, viranomainen.sanomaVarmenneNimi)
-            assertEquals(env.message.messageApiVersion, viranomainen.sanomaVersio)
-            assertEquals(env.message.serviceIdentifier, viranomainen.palveluTunnus)
+            assertEquals(env.authorityIdentifier, viranomainen.viranomaisTunnus)
+            assertEquals(env.certificateCommonName, viranomainen.sanomaVarmenneNimi)
+            assertEquals(env.serviceIdentifier, viranomainen.palveluTunnus)
             assertEquals(env.contactPerson.name, viranomainen.yhteyshenkilo.nimi)
             assertEquals(env.contactPerson.email, viranomainen.yhteyshenkilo.sahkoposti)
             assertEquals(env.contactPerson.phone, viranomainen.yhteyshenkilo.matkapuhelin)
 
-            assertEquals(env.printing.printingProvider, request.tulostustoimittaja)
             assertTrue(request.isLahetaTulostukseen)
+            assertEquals(env.printing?.printingProvider, request.tulostustoimittaja)
 
-            assertEquals(env.printing.billingId, request.laskutus.tunniste)
-            assertEquals(env.printing.billingPassword, request.laskutus.salasana)
+            assertEquals(env.printing?.billingId, request.laskutus.tunniste)
+            assertEquals(env.printing?.billingPassword?.value, request.laskutus.salasana)
 
             assertEquals(1, request.kohteet.kohde.size)
             val kohde = request.kohteet.kohde[0]

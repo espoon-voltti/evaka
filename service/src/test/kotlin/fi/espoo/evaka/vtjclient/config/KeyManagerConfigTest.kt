@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.ws.soap.security.support.KeyManagersFactoryBean
 import org.springframework.ws.soap.security.support.KeyStoreFactoryBean
+import java.net.URI
 
 @ExtendWith(MockitoExtension::class)
 class KeyManagerConfigTest {
@@ -92,6 +93,6 @@ class KeyManagerConfigTest {
     @Import(KeyManagerConfig::class)
     class KeyManagerTestConfig {
         @Bean
-        fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env).also { it.copy(keyStore = it.keyStore.copy(location = "file://fake")) }
+        fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env).also { it.copy(keyStore = it.keyStore?.copy(location = URI("file://fake"))) }
     }
 }

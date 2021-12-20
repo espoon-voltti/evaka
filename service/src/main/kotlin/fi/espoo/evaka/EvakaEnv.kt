@@ -9,8 +9,10 @@ import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
+import org.springframework.core.io.UrlResource
 import software.amazon.awssdk.regions.Region
 import java.net.URI
+import java.security.KeyStore
 import java.time.LocalDate
 import java.util.Locale
 
@@ -268,8 +270,8 @@ data class VtjEnv(
 }
 
 data class VtjXroadEnv(
-    val trustStore: KeystoreEnv,
-    val keyStore: KeystoreEnv,
+    val trustStore: KeystoreEnv?,
+    val keyStore: KeystoreEnv?,
     val address: String,
     val client: VtjXroadClientEnv,
     val service: VtjXroadServiceEnv,
@@ -277,16 +279,20 @@ data class VtjXroadEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = VtjXroadEnv(
-            trustStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.vtj.xroad.trust_store.type", "fi.espoo.voltti.vtj.xroad.trustStore.type") ?: "pkcs12",
-                location = env.lookup("evaka.integration.vtj.xroad.trust_store.location", "fi.espoo.voltti.vtj.xroad.trustStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.vtj.xroad.trust_store.password", "fi.espoo.voltti.vtj.xroad.trustStore.password") ?: "")
-            ),
-            keyStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.vtj.xroad.key_store.type", "fi.espoo.voltti.vtj.xroad.keyStore.type") ?: "pkcs12",
-                location = env.lookup("evaka.integration.vtj.xroad.key_store.location", "fi.espoo.voltti.vtj.xroad.keyStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.vtj.xroad.key_store.password", "fi.espoo.voltti.vtj.xroad.keyStore.password") ?: "")
-            ),
+            trustStore = env.lookup<URI?>("evaka.integration.vtj.xroad.trust_store.location", "fi.espoo.voltti.vtj.xroad.trustStore.location")?.let { location ->
+                KeystoreEnv(
+                    location = location,
+                    type = env.lookup("evaka.integration.vtj.xroad.trust_store.type", "fi.espoo.voltti.vtj.xroad.trustStore.type") ?: "pkcs12",
+                    password = Sensitive(env.lookup("evaka.integration.vtj.xroad.trust_store.password", "fi.espoo.voltti.vtj.xroad.trustStore.password") ?: "")
+                )
+            },
+            keyStore = env.lookup<URI?>("evaka.integration.vtj.xroad.key_store.location", "fi.espoo.voltti.vtj.xroad.keyStore.location")?.let { location ->
+                KeystoreEnv(
+                    location = location,
+                    type = env.lookup("evaka.integration.vtj.xroad.key_store.type", "fi.espoo.voltti.vtj.xroad.keyStore.type") ?: "pkcs12",
+                    password = Sensitive(env.lookup("evaka.integration.vtj.xroad.key_store.password", "fi.espoo.voltti.vtj.xroad.keyStore.password") ?: "")
+                )
+            },
             address = env.lookup("evaka.integration.vtj.xroad.address", "fi.espoo.voltti.vtj.xroad.address") ?: "",
             client = VtjXroadClientEnv.fromEnvironment(env),
             service = VtjXroadServiceEnv.fromEnvironment(env),
@@ -331,68 +337,118 @@ data class VtjXroadServiceEnv(
     }
 }
 
+/**
+ * Configuration for Suomi.fi Messages API integration
+ */
 data class SfiEnv(
-    val trustStore: KeystoreEnv,
-    val keyStore: KeystoreEnv,
+    /**
+     * URI of Messages API
+     */
     val address: String,
+    /**
+     * URI of a key store containing public certificate(s) for the Messages API server.
+     *
+     * Used to verify server identity at TLS protocol level during API requests.
+     */
+    val trustStore: KeystoreEnv,
+    /**
+     * URI of key store containing private key + public certificate used for WS-Security request payload signing.
+     *
+     * If not configured, WS-Security signatures are not used.
+     * If configured, WS-Security signatures are included in requests.
+     */
+    val keyStore: KeystoreEnv?,
+    /**
+     * Alias of the signing key used for WS-Security signatures.
+     *
+     * If `keyStore` is set, this property must contain the alias of a valid key inside the key store.
+     */
     val signingKeyAlias: String,
-    val wsSecurityEnabled: Boolean,
-    val message: SfiMessageEnv,
-    val printing: SfiPrintingEnv,
+    /**
+     * Identifier of the organization making requests to the Messages API.
+     *
+     * Given by VIA.
+     */
+    val authorityIdentifier: String,
+    /**
+     * Identifier of the service making requests to the Messages API.
+     *
+     * Given by VIA.
+     */
+    val serviceIdentifier: String,
+    /**
+     * Common name of the certificate used to sign Suomi.fi requests.
+     *
+     * Must match the public certificate that has been sent to VIA.
+     */
+    val certificateCommonName: String,
+    /**
+     * Configuration for sending messages on real paper (vs digital messages).
+     *
+     * If not configured, real paper messages are never sent.
+     * If configured, real paper messages may be sent.
+     */
+    val printing: SfiPrintingEnv?,
+    /**
+     * Contact details for a person in the organization making API requests.
+     *
+     * Not mandatory, but used e.g. to communicate about errors
+     */
     val contactPerson: SfiContactPersonEnv
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiEnv(
+            address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address"),
             trustStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.sfi.trust_store.type", "fi.espoo.evaka.msg.sfi.ws.trustStore.type") ?: "pkcs12",
                 location = env.lookup("evaka.integration.sfi.trust_store.location", "fi.espoo.evaka.msg.sfi.ws.trustStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.sfi.trust_store.password", "fi.espoo.evaka.msg.sfi.ws.trustStore.password") ?: "")
+                type = env.lookup("evaka.integration.sfi.trust_store.type", "fi.espoo.evaka.msg.sfi.ws.trustStore.type") ?: "pkcs12",
+                password = env.lookup<String?>("evaka.integration.sfi.trust_store.password", "fi.espoo.evaka.msg.sfi.ws.trustStore.password")?.let(::Sensitive)
             ),
-            keyStore = KeystoreEnv(
-                type = env.lookup("evaka.integration.sfi.key_store.type", "fi.espoo.evaka.msg.sfi.ws.keyStore.type") ?: "pkcs12",
-                location = env.lookup("evaka.integration.sfi.key_store.location", "fi.espoo.evaka.msg.sfi.ws.keyStore.location"),
-                password = Sensitive(env.lookup("evaka.integration.sfi.key_store.password", "fi.espoo.evaka.msg.sfi.ws.keyStore.password") ?: "")
-            ),
-            address = env.lookup("evaka.integration.sfi.address", "fi.espoo.evaka.msg.sfi.ws.address") ?: "",
+            keyStore = env.lookup<URI?>("evaka.integration.sfi.key_store.location", "fi.espoo.evaka.msg.sfi.ws.keyStore.location")?.let { location ->
+                KeystoreEnv(
+                    location = location,
+                    type = env.lookup("evaka.integration.sfi.key_store.type", "fi.espoo.evaka.msg.sfi.ws.keyStore.type") ?: "pkcs12",
+                    password = env.lookup<String?>("evaka.integration.sfi.key_store.password", "fi.espoo.evaka.msg.sfi.ws.keyStore.password")?.let(::Sensitive)
+                )
+            },
             signingKeyAlias = env.lookup("evaka.integration.sfi.signing_key_alias", "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias") ?: "signing-key",
-            wsSecurityEnabled = env.lookup("evaka.integration.sfi.ws_security_enabled") ?: true,
-            message = SfiMessageEnv.fromEnvironment(env),
-            printing = SfiPrintingEnv.fromEnvironment(env),
+            authorityIdentifier = env.lookup("evaka.integration.sfi.authority_identifier", "evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier"),
+            serviceIdentifier = env.lookup("evaka.integration.sfi.service_identifier", "evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier"),
+            certificateCommonName = env.lookup("evaka.integration.sfi.certificate_common_name", "evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName"),
+            printing = if (env.lookup<Boolean?>("evaka.integration.sfi.printing.enabled", "fi.espoo.evaka.msg.sfi.printing.enablePrinting") == true) {
+                SfiPrintingEnv.fromEnvironment(env)
+            } else null,
             contactPerson = SfiContactPersonEnv.fromEnvironment(env)
         )
     }
 }
 
-data class SfiMessageEnv(
-    val authorityIdentifier: String,
-    val serviceIdentifier: String,
-    val messageApiVersion: String,
-    val certificateCommonName: String
-) {
-    companion object {
-        fun fromEnvironment(env: Environment) = SfiMessageEnv(
-            authorityIdentifier = env.lookup("evaka.integration.sfi.message.authority_identifier", "fi.espoo.evaka.msg.sfi.message.authorityIdentifier") ?: "",
-            serviceIdentifier = env.lookup("evaka.integration.sfi.message.service_identifier", "fi.espoo.evaka.msg.sfi.message.serviceIdentifier") ?: "",
-            messageApiVersion = env.lookup("evaka.integration.sfi.message.message_api_version", "fi.espoo.evaka.msg.sfi.message.messageApiVersion") ?: "1.1",
-            certificateCommonName = env.lookup("evaka.integration.sfi.message.certificate_common_name", "fi.espoo.evaka.msg.sfi.message.certificateCommonName") ?: "",
-        )
-    }
-}
-
 data class SfiPrintingEnv(
-    val enabled: Boolean,
+    /**
+     * Force messages to be sent on paper, even if the recipient has a digital mailbox.
+     */
     val forcePrintForElectronicUser: Boolean,
+    /**
+     * Name of printing provider.
+     *
+     * The organization sending requests to the Messages API must have a printing agreement with the provider.
+     */
     val printingProvider: String,
-    val billingId: String?,
-    val billingPassword: String?,
+    /**
+     * Billing ID sent to the printing provider
+     */
+    val billingId: String,
+    /**
+     * Billing password, if required by the printing provider
+     */
+    val billingPassword: Sensitive<String>?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiPrintingEnv(
-            enabled = env.lookup("evaka.integration.sfi.printing.enabled", "fi.espoo.evaka.msg.sfi.printing.enablePrinting") ?: false,
             forcePrintForElectronicUser = env.lookup("evaka.integration.sfi.printing.force_print_for_electronic_user", "fi.espoo.evaka.msg.sfi.printing.forcePrintForElectronicUser") ?: false,
-            printingProvider = env.lookup("evaka.integration.sfi.printing.provider", "fi.espoo.evaka.msg.sfi.printing.printingProvider") ?: "Edita",
+            printingProvider = env.lookup("evaka.integration.sfi.printing.provider", "fi.espoo.evaka.msg.sfi.printing.printingProvider"),
             billingId = env.lookup("evaka.integration.sfi.printing.billing.id", "fi.espoo.evaka.msg.sfi.printing.billingId"),
-            billingPassword = env.lookup("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword"),
+            billingPassword = env.lookup<String?>("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword")?.let(::Sensitive),
         )
     }
 }
@@ -404,18 +460,22 @@ data class SfiContactPersonEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiContactPersonEnv(
-            name = env.lookup("evaka.integration.sfi.contact_person.name", "fi.espoo.evaka.msg.sfi.printing.contactPersonName") ?: "",
-            phone = env.lookup("evaka.integration.sfi.contact_person.phone", "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone") ?: "",
-            email = env.lookup("evaka.integration.sfi.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail") ?: "",
+            name = env.lookup("evaka.integration.sfi.contact_person.name", "fi.espoo.evaka.msg.sfi.printing.contactPersonName"),
+            phone = env.lookup("evaka.integration.sfi.contact_person.phone", "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone"),
+            email = env.lookup("evaka.integration.sfi.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail"),
         )
     }
 }
 
 data class KeystoreEnv(
+    val location: URI,
     val type: String = "pkcs12",
-    val location: String? = null,
-    val password: Sensitive<String> = Sensitive(""),
-)
+    val password: Sensitive<String>? = null,
+) {
+    fun load(): KeyStore = KeyStore.getInstance(type).apply {
+        UrlResource(location).inputStream.use { load(it, password?.value?.toCharArray()) }
+    }
+}
 
 data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
     companion object {
@@ -468,12 +528,22 @@ private val logger = KotlinLogging.logger {}
 
 fun <T> Environment.lookup(key: String, deprecatedKeys: Array<out String>, clazz: Class<T>): T? =
     deprecatedKeys.asSequence().mapNotNull { legacyKey ->
-        getProperty(legacyKey, clazz)?.also {
-            logger.warn {
-                "Using deprecated configuration key $legacyKey instead of $key (environment variable ${key.toSystemEnvKey()})"
+        try {
+            getProperty(legacyKey, clazz)?.also {
+                logger.warn {
+                    "Using deprecated configuration key $legacyKey instead of $key (environment variable ${key.toSystemEnvKey()})"
+                }
             }
+        } catch (e: Exception) {
+            throw EnvLookupException(legacyKey, e)
         }
-    }.firstOrNull() ?: getProperty(key, clazz)
+    }.firstOrNull() ?: try {
+        getProperty(key, clazz)
+    } catch (e: Exception) {
+        throw EnvLookupException(key, e)
+    }
+
+class EnvLookupException(key: String, cause: Throwable) : RuntimeException("Failed to lookup configuration key $key (environment variable ${key.toSystemEnvKey()})", cause)
 
 // Reference: Spring SystemEnvironmentPropertySource
 fun String.toSystemEnvKey() = uppercase(Locale.ENGLISH)

@@ -22,8 +22,6 @@ System_Boundary(evaka, "eVaka – varhaiskasvatuksen toiminnanohjausjärjestelm�
   Container(evaka_service, "evaka-service", "Spring Boot, Kotlin", "Toteuttaa eVaka-sovelluslogiikan.")
   ContainerDb(evaka_service_db, "evaka-service-db", "Postgres AWS RDS", "Varhaiskasvatuksen hakemusten, perhetietojen ja lasten hoidonaikaisten tietojen tallennus")
 
-  Container(evaka_message_service, "evaka-message-service", "Spring Boot, Kotlin", "Välittää viestit ulkoiselle viestipalvelulle")
-
   ContainerDb(evaka_s3_bucket, "eVaka-päätökset", "AWS S3", "Päätösdokumenttien säilytys. Päätösdokumentit tarjotaan AWS:n S3:sta Signed URL -mekanismilla.")
   ContainerDb(evaka_static_s3_bucket, "eVaka-resurssit", "AWS S3", "Staattiset resurssit, kuten HTML-, JavaScript- ja kuvatiedostot")
 }
@@ -60,10 +58,7 @@ Rel_R(evaka_proxy, evaka_apigw, "käyttää", "JSON/HTTP")
 Rel_R(evaka_apigw, evaka_session_store, "käyttää", "RESP/TCP")
 Rel(evaka_apigw, evaka_service, "käyttää", "JSON/HTTP")
 
-Rel(evaka_service, evaka_message_service, "käyttää", "JSON/HTTP")
-Rel(evaka_message_service, evaka_s3_bucket, "hakee tiedoston", "HTTPS")
-
-Rel(evaka_message_service, suomifiviestit, "Lähettää", "SOAP/HTTPS")
+Rel(evaka_service, suomifiviestit, "lähettää", "SOAP/HTTPS")
 
 Rel_D(evaka_service, evaka_service_db, "lukee ja kirjoittaa", "JDBC")
 
