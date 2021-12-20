@@ -425,7 +425,7 @@ JOIN person child ON p.child_id = child.id
 LEFT JOIN evaka_user ON p.terminated_by = evaka_user.id
 WHERE
     p.child_id = :childId
-    AND p.end_date > now()::date
+    AND p.end_date >= now()::date
     """.trimIndent()
 )
     .bind("childId", childId)

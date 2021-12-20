@@ -36,6 +36,7 @@ export default class CitizenHeader {
       | 'decisions'
       | 'income'
       | 'calendar'
+      | 'children'
       | 'pedagogical-documents'
   ) {
     const isContainedInApplyingSubheader = [

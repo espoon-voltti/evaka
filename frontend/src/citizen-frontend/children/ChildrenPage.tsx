@@ -64,7 +64,7 @@ function ChildItem({ child }: { child: Child }) {
   )
 
   return (
-    <ChildContainer onClick={navigateToChild} opaque>
+    <ChildContainer onClick={navigateToChild} opaque data-qa="child">
       <RoundImage
         size="XL"
         sizeDesktop="XXL"

@@ -30,7 +30,7 @@ export default React.memo(function TerminatedPlacements({ placements }: Props) {
             ? terminatedAdditional.endDate
             : p.endDate
           return (
-            <li key={`${p.unitId}-${p.type}`}>
+            <li key={`${p.unitId}-${p.type}`} data-qa="terminated-placement">
               {type}, {p.unitName},{' '}
               {t.children.placementTermination.lastDayOfPresence.toLowerCase()}:{' '}
               {lastDay.format()}

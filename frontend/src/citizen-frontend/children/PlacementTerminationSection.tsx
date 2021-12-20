@@ -8,6 +8,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { P } from 'lib-components/typography'
 import React from 'react'
+import LocalDate from 'lib-common/local-date'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { getPlacements } from './api'
@@ -39,10 +40,13 @@ export default React.memo(function PlacementTerminationSection({
             .concat(p.additionalPlacements)
             .find((p2) => !!p2.terminationRequestedDate)
         )
+        const terminatableGroups = placements.filter(({ endDate }) =>
+          endDate.isAfter(LocalDate.today())
+        )
         return (
           <FixedSpaceColumn>
             <P>{t.children.placementTermination.description}</P>
-            {placements.map((grp) => (
+            {terminatableGroups.map((grp) => (
               <PlacementTerminationForm
                 key={`${grp.type}-${grp.unitId}`}
                 childId={childId}

@@ -168,6 +168,7 @@ export default React.memo(function PlacementTerminationForm({
         <Label>{t.children.placementTermination.choosePlacement}</Label>
         {sortBy(options, (p) => p.startDate).map((p) => (
           <Checkbox
+            data-qa="placement"
             key={p.pseudoId}
             label={getPlacementLabel(p)}
             checked={
@@ -185,6 +186,7 @@ export default React.memo(function PlacementTerminationForm({
           <Label>{t.children.placementTermination.lastDayOfPresence}</Label>
         </ExpandingInfo>
         <DatePicker
+          data-qa="termination-date"
           hideErrorsBeforeTouched
           required
           locale={lang}
