@@ -1628,7 +1628,7 @@ export const fi = {
     infoParagraph1:
       'Tällä sivulla voit yksikön johtajana/varajohtajana määrittää itsellesi omaan henkilökohtaiseen käyttöösi mobiililaitteen, jolla tarkastelet kaikkien yksiköidesi tietoja  eVakassa. Voit myös tarvittaessa poistaa tai lisätä useamman laitteen.',
     infoParagraph2:
-      'Huolehdithan, että kaikissa mobiiliaitteissasi on pääsykoodi käytössä.',
+      'Huolehdithan, että kaikissa mobiililaitteissasi on pääsykoodi käytössä.',
     name: 'Laitteen nimi',
     addDevice: 'Lisää mobiililaite',
     editName: 'Muokkaa laitteen nimeä',
