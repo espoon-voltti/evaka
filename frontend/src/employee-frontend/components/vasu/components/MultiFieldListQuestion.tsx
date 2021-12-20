@@ -46,7 +46,7 @@ export default React.memo(function MultiFieldListQuestion({
       : undefined
 
   return (
-    <div>
+    <div data-qa="multi-field-list-question">
       <QuestionInfo info={question.info}>
         <Label>
           {questionNumber} {question.name}
@@ -56,7 +56,7 @@ export default React.memo(function MultiFieldListQuestion({
         question.value.map((element, questionIndex) => (
           <Fragment key={questionIndex}>
             <Gap size="m" />
-            <FixedSpaceRow>
+            <FixedSpaceRow data-qa="field-row">
               {question.keys.map((key, keyIndex) => (
                 <FixedSpaceColumn key={key.name} spacing="xxs">
                   <Label>{key.name}</Label>
