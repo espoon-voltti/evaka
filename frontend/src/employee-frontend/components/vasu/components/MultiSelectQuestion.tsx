@@ -44,6 +44,7 @@ export function MultiSelectQuestion({
                   checked={selectedValues.includes(option.key)}
                   label={option.name}
                   onChange={(checked) => onChange(option, checked)}
+                  data-qa="multi-select-question-option"
                 />
               )
             })}

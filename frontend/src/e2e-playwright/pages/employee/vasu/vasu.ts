@@ -8,6 +8,7 @@ import {
   AuthorsSection,
   ConsiderationsSection,
   GoalsSection,
+  InfoSharedToSection,
   OtherDocsAndPlansSection,
   PreviousVasuGoalsSection,
   WellnessSupportSection
@@ -54,6 +55,10 @@ class VasuPageCommon {
 
   get otherDocsAndPlansSection(): OtherDocsAndPlansSection {
     return new OtherDocsAndPlansSection(this.getDocumentSection(5))
+  }
+
+  get infoSharedToSection(): InfoSharedToSection {
+    return new InfoSharedToSection(this.getDocumentSection(6))
   }
 
   get followupQuestionCount(): Promise<number> {

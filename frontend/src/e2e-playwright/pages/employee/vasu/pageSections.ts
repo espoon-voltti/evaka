@@ -49,7 +49,7 @@ export class AuthorsSection extends Element {
 }
 
 class SimpleTextAreaSection extends Element {
-  protected readonly textareas = this.findAll('textarea')
+  protected readonly textareas = this.findAll('[data-qa="text-question-input"]')
   protected readonly values = this.findAll('[data-qa="value-or-no-record"]')
 }
 
@@ -87,4 +87,14 @@ export class WellnessSupportSection extends SimpleTextAreaSection {
 export class OtherDocsAndPlansSection extends SimpleTextAreaSection {
   otherDocsInput = new TextInput(this.textareas.nth(0))
   otherDocs = this.values.nth(0).innerText
+}
+
+export class InfoSharedToSection extends Element {
+  readonly #values = this.findAll('[data-qa="value-or-no-record"]')
+
+  recipientsOptions = this.findAll('[data-qa="multi-select-question-option"]')
+  otherInput = new TextInput(this.find('[data-qa="text-question-input"]'))
+
+  recipients = this.#values.nth(0).innerText
+  other = this.#values.nth(1).innerText
 }

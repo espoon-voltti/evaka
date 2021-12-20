@@ -223,6 +223,23 @@ describe('Vasu document page', () => {
         'Drawings made by child and parents'
       )
     })
+
+    test('Fill the info shared to section', async () => {
+      const vasuEditPage = await editDocument()
+      const sharedTo = vasuEditPage.infoSharedToSection
+
+      await sharedTo.recipientsOptions.nth(1).click()
+      await sharedTo.recipientsOptions.nth(2).click()
+      await sharedTo.otherInput.fill('Police')
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.infoSharedToSection.recipients,
+        'Neuvolaan, Lasten terapiapalveluihin'
+      )
+      await waitUntilEqual(() => vasuPage.infoSharedToSection.other, 'Police')
+    })
   })
 
   describe('Followup questions', () => {
