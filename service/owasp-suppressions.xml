@@ -61,4 +61,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <packageUrl regex="true">^pkg:maven/io\.netty/netty-tcnative-classes@.*</packageUrl>
         <cpe>cpe:/a:netty:netty</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        temporary TODO
+       ]]></notes>
+        <cve>CVE-2021-45105</cve>
+    </suppress>
+
 </suppressions>
