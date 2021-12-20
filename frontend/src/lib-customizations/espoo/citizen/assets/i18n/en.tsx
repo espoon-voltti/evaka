@@ -246,8 +246,8 @@ const en: Translations = {
     staffAnnotation: 'Staff',
     messageEditor: {
       newMessage: 'New message',
-      receivers: 'Receivers',
-      title: 'Title',
+      recipients: 'Recipients',
+      subject: 'Subject',
       message: 'Message',
       deleteDraft: 'Delete draft',
       send: 'Send',
