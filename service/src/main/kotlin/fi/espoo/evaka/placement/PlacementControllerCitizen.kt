@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -47,7 +46,7 @@ class PlacementControllerCitizen(
 
     private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacementType =
         when (type) {
-            PlacementType.CLUB -> TerminatablePlacementType.CLUB
+            CLUB -> TerminatablePlacementType.CLUB
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             PlacementType.SCHOOL_SHIFT_CARE,
@@ -112,7 +111,7 @@ class PlacementControllerCitizen(
 
     @GetMapping("/citizen/children/{childId}/placements")
     fun getPlacements(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable childId: UUID,
@@ -141,7 +140,7 @@ class PlacementControllerCitizen(
 
     @PostMapping("/citizen/children/{childId}/placements/terminate")
     fun postPlacementTermination(
-        db: Database.Connection,
+        db: Database.DeprecatedConnection,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: UUID,
@@ -190,4 +189,3 @@ class PlacementControllerCitizen(
 
 private fun ChildPlacement.startsAfter(date: LocalDate): Boolean = this.startDate.isAfter(date)
 private fun ChildPlacement.containsExclusively(date: LocalDate): Boolean = date.isAfter(this.startDate) && date.isBefore(this.endDate)
-private fun ChildPlacement.isActiveAt(date: LocalDate): Boolean = FiniteDateRange(this.startDate, this.endDate).includes(date)
