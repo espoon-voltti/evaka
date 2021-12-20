@@ -20,12 +20,12 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -265,10 +265,7 @@ fun Database.Read.paginatedSearch(
 
     return createQuery(sql)
         .bindMap(params + freeTextParams)
-        .map { rs, ctx ->
-            WithCount(rs.getInt("count"), toInvoiceSummary(rs, ctx))
-        }
-        .let(mapToPaged(pageSize))
+        .mapToPaged(pageSize) { row -> WithCount(row.mapColumn("count"), toInvoiceSummary(row)) }
         .let { it.copy(data = flattenSummary(it.data)) }
 }
 
@@ -606,42 +603,42 @@ val toDetailedInvoice = { rs: ResultSet, _: StatementContext ->
     )
 }
 
-val toInvoiceSummary = { rs: ResultSet, _: StatementContext ->
+val toInvoiceSummary = { row: RowView ->
     InvoiceSummary(
-        id = rs.getUUID("id"),
-        status = rs.getEnum("status"),
-        periodStart = rs.getDate("invoice_period_start").toLocalDate(),
-        periodEnd = rs.getDate("invoice_period_end").toLocalDate(),
-        rows = rs.getString("invoice_row_id")?.let { rowId ->
+        id = row.mapColumn("id"),
+        status = row.mapColumn("status"),
+        periodStart = row.mapColumn("invoice_period_start"),
+        periodEnd = row.mapColumn("invoice_period_end"),
+        rows = row.mapColumn<UUID?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRowSummary(
-                    id = UUID.fromString(rowId),
+                    id = rowId,
                     child = PersonData.Basic(
-                        id = UUID.fromString(rs.getString("child")),
-                        dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate(),
-                        firstName = rs.getString("child_first_name"),
-                        lastName = rs.getString("child_last_name"),
-                        ssn = rs.getString("child_ssn")
+                        id = UUID.fromString(row.mapColumn("child")),
+                        dateOfBirth = row.mapColumn("child_date_of_birth"),
+                        firstName = row.mapColumn("child_first_name"),
+                        lastName = row.mapColumn("child_last_name"),
+                        ssn = row.mapColumn("child_ssn")
                     ),
-                    amount = rs.getInt("amount"),
-                    unitPrice = rs.getInt("unit_price")
+                    amount = row.mapColumn("amount"),
+                    unitPrice = row.mapColumn("unit_price")
                 )
             )
         } ?: listOf(),
         headOfFamily = PersonData.Detailed(
-            id = rs.getUUID("head_of_family"),
-            dateOfBirth = rs.getDate("head_date_of_birth").toLocalDate(),
-            firstName = rs.getString("head_first_name"),
-            lastName = rs.getString("head_last_name"),
-            ssn = rs.getString("head_ssn"),
-            streetAddress = rs.getString("head_street_address"),
-            postalCode = rs.getString("head_postal_code"),
-            postOffice = rs.getString("head_post_office"),
-            restrictedDetailsEnabled = rs.getBoolean("head_restricted_details_enabled")
+            id = row.mapColumn("head_of_family"),
+            dateOfBirth = row.mapColumn("head_date_of_birth"),
+            firstName = row.mapColumn("head_first_name"),
+            lastName = row.mapColumn("head_last_name"),
+            ssn = row.mapColumn("head_ssn"),
+            streetAddress = row.mapColumn("head_street_address"),
+            postalCode = row.mapColumn("head_postal_code"),
+            postOffice = row.mapColumn("head_post_office"),
+            restrictedDetailsEnabled = row.mapColumn("head_restricted_details_enabled")
         ),
-        sentBy = rs.getString(rs.findColumn("sent_by"))?.let { UUID.fromString(it) },
-        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        createdAt = rs.getTimestamp("created_at")?.toInstant()
+        sentBy = row.mapColumn("sent_by"),
+        sentAt = row.mapColumn("sent_at"),
+        createdAt = row.mapColumn("created_at")
     )
 }
 

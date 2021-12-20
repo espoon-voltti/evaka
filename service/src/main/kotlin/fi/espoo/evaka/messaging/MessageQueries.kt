@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
@@ -293,7 +292,7 @@ SELECT
                 )
             )
         }
-        .let(mapToPaged(pageSize))
+        .mapToPaged(pageSize)
 }
 
 data class MessageResultItem(
@@ -534,8 +533,7 @@ ORDER BY msg.sent_at DESC
 
     return this.createQuery(sql)
         .bindMap(params)
-        .map(withCountMapper<SentMessage>())
-        .let(mapToPaged(pageSize))
+        .mapToPaged(pageSize)
 }
 
 data class ThreadWithParticipants(

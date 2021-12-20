@@ -347,8 +347,7 @@ LIMIT :pageSize OFFSET :pageSize * :page
 """
     return this.createQuery(sql)
         .bindMap(params + freeTextParams)
-        .map { row -> WithCount(row.mapColumn("count"), toVoucherValueDecisionSummary(row)) }
-        .let(mapToPaged(pageSize))
+        .mapToPaged(pageSize) { row -> WithCount(row.mapColumn("count"), toVoucherValueDecisionSummary(row)) }
 }
 
 fun Database.Read.getVoucherValueDecision(id: VoucherValueDecisionId): VoucherValueDecisionDetailed? {
@@ -448,7 +447,11 @@ WHERE decision.head_of_family_id = :headOfFamilyId
         .toList()
 }
 
-fun Database.Transaction.approveValueDecisionDraftsForSending(ids: List<VoucherValueDecisionId>, approvedBy: UUID, approvedAt: Instant) {
+fun Database.Transaction.approveValueDecisionDraftsForSending(
+    ids: List<VoucherValueDecisionId>,
+    approvedBy: UUID,
+    approvedAt: Instant
+) {
     // language=sql
     val sql =
         """
@@ -498,7 +501,10 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(id: VoucherValueD
         .execute()
 }
 
-fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<VoucherValueDecisionId>, status: VoucherValueDecisionStatus) {
+fun Database.Transaction.updateVoucherValueDecisionStatus(
+    ids: List<VoucherValueDecisionId>,
+    status: VoucherValueDecisionStatus
+) {
     // language=sql
     val sql = "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
 

@@ -16,12 +16,9 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
@@ -385,8 +382,7 @@ fun Database.Read.searchFeeDecisions(
 
     return createQuery(sql)
         .bindMap(params + freeTextParams + numberParams)
-        .map { row -> WithCount(row.mapColumn("count"), row.mapRow<FeeDecisionSummary>()) }
-        .let(mapToPaged(pageSize))
+        .mapToPaged<FeeDecisionSummary>(pageSize)
         .let { it.copy(data = it.data.merge()) }
 }
 

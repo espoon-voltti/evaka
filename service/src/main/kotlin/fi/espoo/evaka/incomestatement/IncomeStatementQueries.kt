@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
@@ -179,8 +178,7 @@ fun Database.Read.readIncomeStatementsForPerson(
         .bind("personId", personId)
         .bind("offset", (page - 1) * pageSize)
         .bind("limit", pageSize)
-        .map { row -> WithCount(row.mapColumn("count"), mapIncomeStatement(row, includeEmployeeContent)) }
-        .let(mapToPaged(pageSize))
+        .mapToPaged(pageSize) { row -> WithCount(row.mapColumn("count"), mapIncomeStatement(row, includeEmployeeContent)) }
 
 fun Database.Read.readIncomeStatementForPerson(
     personId: UUID,
@@ -479,8 +477,7 @@ LIMIT :pageSize OFFSET :offset
         .bind("areas", areas.toTypedArray())
         .bind("pageSize", pageSize)
         .bind("offset", (page - 1) * pageSize)
-        .map(withCountMapper<IncomeStatementAwaitingHandler>())
-        .let(mapToPaged(pageSize))
+        .mapToPaged(pageSize)
 
 fun Database.Read.readIncomeStatementStartDates(user: AuthenticatedUser.Citizen): List<LocalDate> =
     createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")

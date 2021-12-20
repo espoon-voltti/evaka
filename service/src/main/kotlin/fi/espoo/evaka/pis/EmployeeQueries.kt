@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
-import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
@@ -218,8 +217,7 @@ LIMIT :pageSize OFFSET :offset
     """.trimIndent()
     return tx.createQuery(sql)
         .bindMap(params + freeTextParams)
-        .map(withCountMapper<EmployeeWithDaycareRoles>())
-        .let(mapToPaged(pageSize))
+        .mapToPaged(pageSize)
 }
 
 fun Database.Transaction.deleteEmployee(employeeId: EmployeeId) = createUpdate(
