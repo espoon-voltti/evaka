@@ -448,6 +448,12 @@ fun getDefaultLeopsContent() = VasuContent(
                     info = "Sovitaan esiopetuksen henkilöstön ja huoltajien yhteisistä seurannan ja arvioinnin käytänteistä ja sovitaan, kuinka pedagogista dokumentointia hyödynnetään lapsen oppimisen, kasvun ja hyvinvoinnin seurannassa esiopetuksen pedagogisten tavoitteiden saavuttamiseksi.",
                     multiline = true,
                     value = ""
+                ),
+                VasuQuestion.Followup(
+                    title = "Täydennykset ja jatkuva arviointi toimintakauden aikana",
+                    name = "Tavoitteiden ja toimenpiteiden toteutumisen arviointia ja tarkennuksia toimintakauden aikana lapsen tarpeiden mukaan sekä mahdollinen huoltajien kanssa tehty yhteistyö",
+                    info = "Täydennä aina myös kunkin kirjauksen päivämäärä.",
+                    value = emptyList()
                 )
             )
         ),
@@ -525,8 +531,7 @@ fun getDefaultLeopsContent() = VasuContent(
                         ),
                         QuestionOption(
                             key = "tuki2",
-                            // TODO: date input / editability ?
-                            name = "Pedagoginen arvio on tehty tehostetun tuen käynnistämiseksi, pvm:"
+                            name = "Pedagoginen arvio on tehty tehostetun tuen käynnistämiseksi"
                         ),
                         QuestionOption(
                             key = "tuki3",
@@ -547,8 +552,12 @@ fun getDefaultLeopsContent() = VasuContent(
                     multiline = true,
                     value = ""
                 ),
-                // TODO: Question with multiple fields and automatic new rows on fill
-                // VasuQuestion,
+                VasuQuestion.MultiFieldList(
+                    name = "Lapsen oppimissuunnitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat",
+                    info = "Esimerkiksi lapsen tilanteeseen liittyvät asiantuntijalausunnot. Huom, älä mainitse tässä mahdollisia diagnooseja.",
+                    keys = listOf(Field("Asiakirja"), Field("Asiakirjan pvm")),
+                    value = listOf()
+                ),
                 VasuQuestion.MultiSelectQuestion(
                     name = "Opiskeluhuolto",
                     info = "Esiopetuksen yksilökohtainen opiskeluhuolto sisältää opiskeluhuollon psykologin ja kuraattorin palvelut sekä tapauskohtaisesti esioppilaan tueksi koottavan monialaisen asiantuntijaryhmän. Myös neuvolan terveydenhoitaja voi osallistua tarpeen mukaan. Yksilökohtainen opiskeluhuolto perustuu vapaaehtoisuuteen ja sen toteuttaminen edellyttää huoltajien suostumuksen.",
