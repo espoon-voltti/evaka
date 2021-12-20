@@ -153,7 +153,7 @@ sealed interface Action {
     enum class AssistanceAction(private val roles: EnumSet<UserRole>) : ScopedAction<AssistanceActionId> {
         UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        READ_PRE_PRESCHOOL_ASSISTANCE_ACTION;
+        READ_PRE_PRESCHOOL_ASSISTANCE_ACTION(SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -162,7 +162,7 @@ sealed interface Action {
     enum class AssistanceNeed(private val roles: EnumSet<UserRole>) : ScopedAction<AssistanceNeedId> {
         UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        READ_PRE_PRESCHOOL_ASSISTANCE_NEED;
+        READ_PRE_PRESCHOOL_ASSISTANCE_NEED(SPECIAL_EDUCATION_TEACHER);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

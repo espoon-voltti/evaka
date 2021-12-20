@@ -73,6 +73,7 @@ export default React.memo(function AssistanceNeedRow({
         } ${assistanceNeed.startDate.format()} - ${assistanceNeed.endDate.format()}`}
         onToggle={() => setToggled((prev) => !prev)}
         open={toggled}
+        data-qa={'assistance-need-row'}
         toolbar={
           <Toolbar
             dateRange={assistanceNeed}
