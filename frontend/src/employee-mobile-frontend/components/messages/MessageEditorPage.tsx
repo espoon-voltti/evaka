@@ -94,8 +94,8 @@ export default function MessageEditorPage() {
           featureFlags.experimental?.messageAttachments ?? false
         }
         defaultSender={{
-          value: selectedAccount.id,
-          label: selectedAccount.name
+          value: selectedAccount.account.id,
+          label: selectedAccount.account.name
         }}
         deleteAttachment={deleteAttachment}
         draftContent={undefined}

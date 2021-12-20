@@ -22,9 +22,8 @@ import { defaultMargins } from 'lib-components/white-space'
 
 export default function MessagesPage() {
   const history = useHistory()
-  const { unitId, groupId } = useParams<{
+  const { unitId } = useParams<{
     unitId: UUID
-    groupId: UUID | 'all'
   }>()
 
   function changeGroup(group: GroupInfo | undefined) {
@@ -38,10 +37,6 @@ export default function MessagesPage() {
     selectThread,
     selectedAccount
   } = useContext(MessageContext)
-
-  const selectedGroup =
-    groupAccounts.find(({ daycareGroup }) => daycareGroup?.id === groupId) ??
-    groupAccounts[0]
 
   const { i18n } = useTranslation()
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
@@ -57,17 +52,17 @@ export default function MessagesPage() {
       <ThreadView
         thread={selectedThread}
         onBack={onBack}
-        senderAccountId={selectedAccount.id}
+        senderAccountId={selectedAccount.account.id}
       />
     </ContentArea>
   ) : !selectedThread && selectedAccount ? (
     <>
       <TopBarWithGroupSelector
         selectedGroup={
-          selectedGroup?.daycareGroup
+          selectedAccount?.daycareGroup
             ? {
-                id: selectedGroup.daycareGroup.id,
-                name: selectedGroup.daycareGroup.name
+                id: selectedAccount.daycareGroup.id,
+                name: selectedAccount.daycareGroup.name
               }
             : undefined
         }
@@ -94,7 +89,7 @@ export default function MessagesPage() {
                 hasUnreadMessages={thread.messages.some(
                   (item) =>
                     !item.readAt &&
-                    item.sender.id !== selectedAccount?.id &&
+                    item.sender.id !== selectedAccount?.account.id &&
                     !groupAccounts.some(
                       (ga) => ga.account.id === item.sender.id
                     )
