@@ -116,9 +116,7 @@ describe('Citizen children page', () => {
           endDate: endDate.formatIso()
         }
       ])
-
-      // Deep down the preferred start date is set to today so this is cancelled
-      // with termination starting also from today
+      
       const application = applicationFixture(
         fixtures.enduserChildFixtureKaarina,
         fixtures.enduserGuardianFixture,
@@ -128,6 +126,7 @@ describe('Citizen children page', () => {
         [fixtures.daycareFixture.id],
         true,
         'SENT',
+        LocalDate.today(),
         true
       )
       await insertApplications([application])
