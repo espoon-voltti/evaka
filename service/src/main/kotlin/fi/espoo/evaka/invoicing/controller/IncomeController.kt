@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -60,8 +59,7 @@ class IncomeController(
     @PostMapping
     fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.CREATE_INCOME, PersonId(income.personId))
         val period = try {
             DateRange(income.validFrom, income.validTo)
         } catch (e: Exception) {
@@ -93,8 +91,7 @@ class IncomeController(
         @RequestBody income: Income
     ): ResponseEntity<Unit> {
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Income.UPDATE, incomeId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -117,8 +114,7 @@ class IncomeController(
     @DeleteMapping("/{incomeId}")
     fun deleteIncome(db: Database, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Income.DELETE, incomeId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -137,8 +133,7 @@ class IncomeController(
 
     @GetMapping("/types")
     fun getTypes(user: AuthenticatedUser): ResponseEntity<Map<String, IncomeType>> {
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_INCOME_TYPES)
         return incomeTypesProvider.get().let { ResponseEntity.ok(it) }
     }
 }

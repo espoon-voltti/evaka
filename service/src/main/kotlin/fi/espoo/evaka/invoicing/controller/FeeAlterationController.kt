@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.maxEndDate
@@ -89,8 +88,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     @DeleteMapping("/{feeAlterationId}")
     fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: FeeAlterationId): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.FeeAlteration.DELETE, feeAlterationId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val existing = tx.getFeeAlteration(feeAlterationId)

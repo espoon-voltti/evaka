@@ -27,10 +27,12 @@ interface PermittedRoleActions {
     fun childStickyNoteActions(role: UserRole): Set<Action.ChildStickyNote>
     fun decisionActions(role: UserRole): Set<Action.Decision>
     fun feeAlterationActions(role: UserRole): Set<Action.FeeAlteration>
+    fun feeDecisionActions(role: UserRole): Set<Action.FeeDecision>
     fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds>
     fun groupActions(role: UserRole): Set<Action.Group>
     fun groupNoteActions(role: UserRole): Set<Action.GroupNote>
     fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
+    fun incomeActions(role: UserRole): Set<Action.Income>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
     fun messageDraftActions(role: UserRole): Set<Action.MessageDraft>
     fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice>
@@ -45,6 +47,7 @@ interface PermittedRoleActions {
     fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument>
     fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup>
     fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate>
+    fun voucherValueDecisionActions(role: UserRole): Set<Action.VoucherValueDecision>
 }
 
 /**
@@ -67,10 +70,12 @@ class StaticPermittedRoleActions(
     val childStickyNote: ActionsByRole<Action.ChildStickyNote> = getDefaults(),
     val decision: ActionsByRole<Action.Decision> = getDefaults(),
     val feeAlteration: ActionsByRole<Action.FeeAlteration> = getDefaults(),
+    val feeDecision: ActionsByRole<Action.FeeDecision> = getDefaults(),
     val feeThresholds: ActionsByRole<Action.FeeThresholds> = getDefaults(),
     val group: ActionsByRole<Action.Group> = getDefaults(),
     val groupNote: ActionsByRole<Action.GroupNote> = getDefaults(),
     val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
+    val income: ActionsByRole<Action.Income> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
     val messageDraft: ActionsByRole<Action.MessageDraft> = getDefaults(),
     val mobileDevice: ActionsByRole<Action.MobileDevice> = getDefaults(),
@@ -85,6 +90,7 @@ class StaticPermittedRoleActions(
     val vasuDocument: ActionsByRole<Action.VasuDocument> = getDefaults(),
     val vasuDocumentFollowup: ActionsByRole<Action.VasuDocumentFollowup> = getDefaults(),
     val vasuTemplate: ActionsByRole<Action.VasuTemplate> = getDefaults(),
+    val voucherValueDecision: ActionsByRole<Action.VoucherValueDecision> = getDefaults(),
 ) : PermittedRoleActions {
     override fun globalActions(role: UserRole): Set<Action.Global> = global[role] ?: emptySet()
     override fun applicationActions(role: UserRole): Set<Action.Application> = application[role] ?: emptySet()
@@ -100,10 +106,12 @@ class StaticPermittedRoleActions(
     override fun childStickyNoteActions(role: UserRole): Set<Action.ChildStickyNote> = childStickyNote[role] ?: emptySet()
     override fun decisionActions(role: UserRole): Set<Action.Decision> = decision[role] ?: emptySet()
     override fun feeAlterationActions(role: UserRole): Set<Action.FeeAlteration> = feeAlteration[role] ?: emptySet()
+    override fun feeDecisionActions(role: UserRole): Set<Action.FeeDecision> = feeDecision[role] ?: emptySet()
     override fun feeThresholdsActions(role: UserRole): Set<Action.FeeThresholds> = feeThresholds[role] ?: emptySet()
     override fun groupActions(role: UserRole): Set<Action.Group> = group[role] ?: emptySet()
     override fun groupNoteActions(role: UserRole): Set<Action.GroupNote> = groupNote[role] ?: emptySet()
     override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
+    override fun incomeActions(role: UserRole): Set<Action.Income> = income[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
     override fun messageDraftActions(role: UserRole): Set<Action.MessageDraft> = messageDraft[role] ?: emptySet()
     override fun mobileDeviceActions(role: UserRole): Set<Action.MobileDevice> = mobileDevice[role] ?: emptySet()
@@ -118,6 +126,7 @@ class StaticPermittedRoleActions(
     override fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument> = vasuDocument[role] ?: emptySet()
     override fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup> = vasuDocumentFollowup[role] ?: emptySet()
     override fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate> = vasuTemplate[role] ?: emptySet()
+    override fun voucherValueDecisionActions(role: UserRole): Set<Action.VoucherValueDecision> = voucherValueDecision[role] ?: emptySet()
 }
 
 typealias ActionsByRole<A> = Map<UserRole, Set<A>>

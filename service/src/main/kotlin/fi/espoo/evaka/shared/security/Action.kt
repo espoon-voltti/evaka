@@ -17,9 +17,11 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -28,6 +30,7 @@ import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
@@ -69,7 +72,13 @@ sealed interface Action {
         READ_FEE_THRESHOLDS(FINANCE_ADMIN),
         CREATE_FEE_THRESHOLDS(FINANCE_ADMIN),
 
+        SEARCH_FEE_DECISIONS(FINANCE_ADMIN),
         GENERATE_FEE_DECISIONS(FINANCE_ADMIN),
+        BATCH_UPDATE_FEE_DECISIONS(FINANCE_ADMIN),
+
+        SEARCH_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
+        GENERATE_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
+        BATCH_UPDATE_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
 
         READ_ASSISTANCE_ACTION_OPTIONS(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
         READ_ASSISTANCE_BASIS_OPTIONS(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
@@ -100,6 +109,8 @@ sealed interface Action {
         READ_VARDA_REPORT(),
 
         UPDATE_SETTINGS(ADMIN),
+
+        READ_INCOME_TYPES(FINANCE_ADMIN),
 
         READ_UNIT_FEATURES(),
         READ_OWN_CHILDREN(END_USER),
@@ -302,6 +313,16 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class FeeAlteration(private val roles: EnumSet<UserRole>) : ScopedAction<FeeAlterationId> {
+        UPDATE(FINANCE_ADMIN),
+        DELETE(FINANCE_ADMIN)
+        ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class FeeDecision(private val roles: EnumSet<UserRole>) : ScopedAction<FeeDecisionId> {
+        READ(FINANCE_ADMIN),
         UPDATE(FINANCE_ADMIN)
         ;
 
@@ -352,6 +373,14 @@ sealed interface Action {
     enum class GroupPlacement(private val roles: EnumSet<UserRole>) : ScopedAction<GroupPlacementId> {
         UPDATE(UNIT_SUPERVISOR),
         DELETE(UNIT_SUPERVISOR);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class Income(private val roles: EnumSet<UserRole>) : ScopedAction<IncomeId> {
+        UPDATE(FINANCE_ADMIN),
+        DELETE(FINANCE_ADMIN);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -427,17 +456,22 @@ sealed interface Action {
     }
     enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
         ADD_SSN(SERVICE_WORKER, FINANCE_ADMIN),
+        CREATE_INCOME(FINANCE_ADMIN),
         CREATE_PARENTSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         CREATE_PARTNERSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         DISABLE_SSN(),
-        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        GENERATE_RETROACTIVE_FEE_DECISIONS(FINANCE_ADMIN),
+        GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
         READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
+        READ_FEE_DECISIONS(FINANCE_ADMIN),
         READ_INCOME(FINANCE_ADMIN),
         READ_INCOME_STATEMENTS(FINANCE_ADMIN),
         READ_INVOICE_ADDRESS(FINANCE_ADMIN),
         READ_OPH_OID(DIRECTOR, UNIT_SUPERVISOR),
         READ_PARENTSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         READ_PARTNERSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
         UPDATE(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR),
         UPDATE_INVOICE_ADDRESS(FINANCE_ADMIN),
         UPDATE_OPH_OID(DIRECTOR, UNIT_SUPERVISOR);
@@ -545,6 +579,16 @@ sealed interface Action {
         COPY(),
         UPDATE(),
         DELETE();
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+
+    enum class VoucherValueDecision(private val roles: EnumSet<UserRole>) : ScopedAction<VoucherValueDecisionId> {
+        READ(FINANCE_ADMIN),
+        UPDATE(FINANCE_ADMIN)
+        ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
