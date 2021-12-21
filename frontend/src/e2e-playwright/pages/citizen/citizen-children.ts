@@ -65,6 +65,7 @@ export class CitizenChildPage {
 
   async submitTermination(nth = 0) {
     await this.page.findAll('text=Irtisano paikka').nth(nth).click()
+    await this.page.findByDataQa('modal-okBtn').click()
   }
 
   getTerminatablePlacements(): Promise<string[]> {

@@ -60,7 +60,7 @@ export default React.memo(function BaseModal(props: Props) {
               </H1>
             )}
             {props.text && (
-              <P data-qa="text" centered>
+              <P data-qa="text" centered preserveWhiteSpace>
                 {props.text}
               </P>
             )}

@@ -8,10 +8,11 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
 import { sortBy } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -88,6 +89,7 @@ export default React.memo(function PlacementTerminationForm({
     [t]
   )
 
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [state, setState] = useState<UiState>(emptyState())
 
   const isValidDate = useCallback(
@@ -129,6 +131,7 @@ export default React.memo(function PlacementTerminationForm({
   )
 
   const onTerminateSuccess = useCallback(() => {
+    setShowConfirmDialog(false)
     setState(emptyState())
     onSuccess()
   }, [onSuccess])
@@ -204,13 +207,26 @@ export default React.memo(function PlacementTerminationForm({
         />
       </div>
 
-      <AsyncButton
+      <Button
         primary
         text={t.children.placementTermination.terminate}
         disabled={terminationState.type !== 'valid'}
-        onClick={onSubmit}
-        onSuccess={onTerminateSuccess}
+        onClick={() => setShowConfirmDialog(true)}
       />
+
+      {showConfirmDialog && terminationState.type === 'valid' && (
+        <AsyncFormModal
+          title={t.children.placementTermination.confirmQuestion}
+          text={t.children.placementTermination.confirmDescription(
+            terminationState.data.terminationDate.format()
+          )}
+          resolveAction={onSubmit}
+          resolveLabel={t.children.placementTermination.terminate}
+          onSuccess={onTerminateSuccess}
+          rejectAction={() => setShowConfirmDialog(false)}
+          rejectLabel={t.common.cancel}
+        />
+      )}
     </>
   )
 })
