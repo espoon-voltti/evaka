@@ -1243,10 +1243,7 @@ workflows:
             - service_build_and_push_image
 
       - proxy_build_and_push_image:
-          context:
-            - org-global
-            - voltti-dockerhub
-            - voltti-slack
+          <<: *default_contexts
           requires:
             - checkout_repo
 
