@@ -90,12 +90,10 @@ function UnitRouter() {
 
   return (
     <UnitContextProvider unitId={unitId}>
-      <MessageContextProvider>
-        <Switch>
-          <Route path={`${path}/groups/:groupId`} component={GroupRouter} />
-          <Redirect to={`${path}/groups/all`} />
-        </Switch>
-      </MessageContextProvider>
+      <Switch>
+        <Route path={`${path}/groups/:groupId`} component={GroupRouter} />
+        <Redirect to={`${path}/groups/all`} />
+      </Switch>
     </UnitContextProvider>
   )
 }
@@ -105,19 +103,21 @@ function GroupRouter() {
   useGroupIdInLocalStorage()
 
   return (
-    <Switch>
-      <Route
-        path={`${path}/child-attendance`}
-        component={ChildAttendanceRouter}
-      />
-      <Route path={`${path}/staff`} component={StaffRouter} />
-      <Route
-        path={`${path}/staff-attendance`}
-        component={StaffAttendanceRouter}
-      />
-      <Route path={`${path}/messages`} component={MessagesRouter} />
-      <Redirect to={`${path}/child-attendance`} />
-    </Switch>
+    <MessageContextProvider>
+      <Switch>
+        <Route
+          path={`${path}/child-attendance`}
+          component={ChildAttendanceRouter}
+        />
+        <Route path={`${path}/staff`} component={StaffRouter} />
+        <Route
+          path={`${path}/staff-attendance`}
+          component={StaffAttendanceRouter}
+        />
+        <Route path={`${path}/messages`} component={MessagesRouter} />
+        <Redirect to={`${path}/child-attendance`} />
+      </Switch>
+    </MessageContextProvider>
   )
 }
 

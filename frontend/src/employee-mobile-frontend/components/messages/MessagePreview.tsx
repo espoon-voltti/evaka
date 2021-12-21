@@ -39,7 +39,9 @@ export function MessagePreview({
           </Truncated>
         </Header>
         <TitleAndDate isRead={!hasUnreadMessages}>
-          <Truncated>{thread.title}</Truncated>
+          <Truncated data-qa={`message-preview-title`}>
+            {thread.title}
+          </Truncated>
           <span>{formatDateOrTime(lastMessage.sentAt)}</span>
         </TitleAndDate>
         <Truncated>

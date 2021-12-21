@@ -5,7 +5,6 @@
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
   Message,
-  MessageAccount,
   MessageThread,
   NestedMessageAccount,
   ThreadReply
@@ -57,7 +56,7 @@ export interface MessagesState {
   pages: number | undefined
   setPages: (pages: number) => void
   groupAccounts: NestedMessageAccount[]
-  selectedAccount: MessageAccount | undefined
+  selectedAccount: NestedMessageAccount | undefined
   receivedMessages: Result<MessageThread[]>
   selectedUnit: SelectOption | undefined
   selectedThread: MessageThread | undefined
@@ -136,12 +135,12 @@ export const MessageContextProvider = React.memo(
         .getOrElse([])
     }, [nestedAccounts, unitId])
 
-    const selectedAccount: MessageAccount = useMemo(() => {
+    const selectedAccount: NestedMessageAccount = useMemo(() => {
       return (
         groupAccounts.find(
           ({ daycareGroup }) => daycareGroup?.id === groupId
         ) ?? groupAccounts[0]
-      )?.account
+      )
     }, [groupAccounts, groupId])
 
     const [receivedMessages, setReceivedMessages] = useState<
@@ -167,7 +166,7 @@ export const MessageContextProvider = React.memo(
 
     useEffect(() => {
       if (selectedAccount && !selectedThread) {
-        loadReceivedMessages(selectedAccount.id, page, PAGE_SIZE)
+        loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
         reloadUnreadCounts()
       }
     }, [
@@ -183,7 +182,7 @@ export const MessageContextProvider = React.memo(
         setSelectedThread(thread)
         if (!thread) return
         if (!selectedAccount) throw new Error('Should never happen')
-        const { id: accountId } = selectedAccount
+        const { id: accountId } = selectedAccount.account
         void markThreadRead(accountId, thread.id)
       },
       [selectedAccount]
