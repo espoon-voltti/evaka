@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.application.utils.helsinkiZone
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.approveFeeDecisionDraftsForSending
@@ -46,9 +46,6 @@ import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -57,27 +54,27 @@ class FeeDecisionService(
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
     private val messageProvider: IMessageProvider,
-    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
+    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
+    private val env: EvakaEnv
 ) {
     fun confirmDrafts(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         ids: List<FeeDecisionId>,
-        lastPossibleDecisionValidFrom: Instant
+        confirmDateTime: HelsinkiDateTime
     ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
         val decisions = tx.getFeeDecisionsByIds(ids)
         if (decisions.isEmpty()) return listOf()
-        val now = Instant.now()
         val notDrafts = decisions.filterNot { it.status == DRAFT }
         if (notDrafts.isNotEmpty()) {
             throw BadRequest("Some fee decisions were not drafts")
         }
-
-        val lastPossibleDecisionValidFromDate = LocalDate.from(lastPossibleDecisionValidFrom
-            .atZone(helsinkiZone))
+        val today = confirmDateTime.toLocalDate()
+        val approvedAt = confirmDateTime.toInstant()
+        val lastPossibleDecisionValidFromDate = today.plusDays(env.nrOfDaysFeeDecisionCanBeSentInAdvance)
         val decisionsNotValidForConfirmation = decisions.filter {
-            it.validFrom.atStartOfDay() > lastPossibleDecisionValidFromDate.atStartOfDay()
+            it.validFrom > lastPossibleDecisionValidFromDate
         }
         if (decisionsNotValidForConfirmation.isNotEmpty()) {
             throw BadRequest(
@@ -114,16 +111,16 @@ class FeeDecisionService(
         tx.deleteFeeDecisions(emptyDecisions.map { it.id })
 
         val (retroactiveDecisions, otherValidDecisions) = validDecisions.partition {
-            isRetroactive(it.validFrom, LocalDate.from(now.atZone(helsinkiZone)))
+            isRetroactive(it.validFrom, today)
         }
 
         tx.approveFeeDecisionDraftsForSending(
             retroactiveDecisions.map { it.id },
             approvedBy = user.id,
             isRetroactive = true,
-            approvedAt = now
+            approvedAt = approvedAt
         )
-        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = now)
+        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = approvedAt)
 
         return validDecisions.map { it.id }
     }

@@ -43,6 +43,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -951,21 +953,23 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(400, response.statusCode)
         assertEquals(
             "feeDecisions.confirmation.tooFarInFuture",
-            JSONObject(response.body().asString("text/json")).getString("errorCode")
+            objectMapper.readTree(response.body().asString("text/json")).get("errorCode").textValue()
         )
     }
 
     @Test
     fun `confirmDrafts when decision at last possible confirmation date exists`() {
-        doReturn(1).whenever(evakaEnv).nrOfDaysFeeDecisionCanBeSentInAdvance
-        val nowDate = LocalDate.now()
+        doReturn(1L).whenever(evakaEnv).nrOfDaysFeeDecisionCanBeSentInAdvance
+        val now = HelsinkiDateTime.now()
+        val clock = MockEvakaClock(now)
         val draftWithFutureDates = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-            .copy(validDuring = DateRange(nowDate.plusDays(1), nowDate.plusYears(1)))
+            .copy(validDuring = DateRange(clock.today().plusDays(1), clock.today().plusYears(1)))
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(objectMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
+            .withMockedTime(now)
             .response()
         assertEquals(204, response.statusCode)
 
@@ -984,7 +988,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         )
         val actual = deserializeResult(result.get()).data
         assertEqualEnough(expected.let(::toDetailed), actual)
-        assertEquals(actual.sentAt?.truncatedTo(ChronoUnit.DAYS), nowDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+        assertEquals(now.toInstant(), actual.approvedAt)
     }
 
     @Test

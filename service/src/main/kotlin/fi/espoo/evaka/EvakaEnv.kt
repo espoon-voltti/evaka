@@ -32,7 +32,7 @@ data class EvakaEnv(
     val httpClientCertificateCheck: Boolean,
     val fiveYearsOldDaycareEnabled: Boolean,
     val mockClock: Boolean,
-    val nrOfDaysFeeDecisionCanBeSentInAdvance: Int
+    val nrOfDaysFeeDecisionCanBeSentInAdvance: Long
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
