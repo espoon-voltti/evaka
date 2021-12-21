@@ -154,9 +154,9 @@ const Container = styled.div`
   background-color: ${colors.greyscale.white};
   @media (max-width: ${desktopMin}) {
     width: 100vw;
-    height: 100vh;
+    height: 100%;
     max-width: 100vh;
-    max-height: 100vh;
+    max-height: 100%;
     position: fixed;
     top: 0;
     left: 0;
