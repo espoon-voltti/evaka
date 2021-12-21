@@ -85,20 +85,6 @@ describe('Citizen children page', () => {
         }
       ])
 
-      // Deep down the preferred start date is set to today so this is cancelled with termination starting also from today
-      const application = applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'DAYCARE',
-        null,
-        [fixtures.daycareFixture.id],
-        true,
-        'SENT',
-        true
-      )
-      await insertApplications([application])
-
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
       await childPage.openTerminationCollapsible()
@@ -116,6 +102,49 @@ describe('Citizen children page', () => {
       await assertTerminatedPlacements(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${LocalDate.today().format()}`
       )
+    })
+
+    test('Upcoming transfer application is deleted when placement is terminated', async () => {
+      const endDate = LocalDate.today().addYears(2)
+      await insertDaycarePlacementFixtures([
+        {
+          id: uuidv4(),
+          type: 'DAYCARE',
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId: fixtures.daycareFixture.id,
+          startDate: LocalDate.today().subMonths(2).formatIso(),
+          endDate: endDate.formatIso()
+        }
+      ])
+
+      // Deep down the preferred start date is set to today so this is cancelled
+      // with termination starting also from today
+      const application = applicationFixture(
+        fixtures.enduserChildFixtureKaarina,
+        fixtures.enduserGuardianFixture,
+        undefined,
+        'DAYCARE',
+        null,
+        [fixtures.daycareFixture.id],
+        true,
+        'SENT',
+        true
+      )
+      await insertApplications([application])
+
+      await header.selectTab('applications')
+      await new CitizenApplicationsPage(page).assertApplicationExists(
+        applicationFixtureId
+      )
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openTerminationCollapsible()
+      const placementLabel = `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`
+      await childPage.togglePlacement(placementLabel)
+      await childPage.fillTerminationDate(LocalDate.today())
+      await childPage.submitTermination()
+      await childPage.assertTerminatablePlacementCount(0)
 
       await header.selectTab('applications')
       await new CitizenApplicationsPage(page).assertApplicationDoesNotExist(

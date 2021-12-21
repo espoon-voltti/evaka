@@ -128,6 +128,10 @@ export default class CitizenApplicationsPage {
   async assertApplicationDoesNotExist(id: string) {
     await this.#applicationType(id).waitUntilHidden()
   }
+
+  async assertApplicationExists(id: string) {
+    await this.#applicationType(id).waitUntilVisible()
+  }
 }
 
 class CitizenApplicationEditor {
