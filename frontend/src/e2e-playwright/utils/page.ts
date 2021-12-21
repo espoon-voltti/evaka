@@ -276,6 +276,28 @@ export class Combobox extends Element {
   }
 }
 
+export class MultiSelect extends Element {
+  #input = new TextInput(this.find('input[type="text"]'))
+
+  async fill(text: string) {
+    await this.#input.fill(text)
+  }
+
+  async selectItem(text: string, value: string) {
+    await this.find(`[data-qa="option"][data-id="id-${value}"]`).click()
+  }
+
+  async close() {
+    await this.#input.click()
+  }
+
+  async fillAndSelectFirst(text: string) {
+    await this.#input.fill(text)
+    await this.findAll(`[data-qa="option"]`).first().click()
+    await this.close()
+  }
+}
+
 export class Collapsible extends Element {
   #trigger = this.find('[data-qa="collapsible-trigger"]')
 
