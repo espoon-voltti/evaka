@@ -4,6 +4,7 @@
 
 import { enduserLogin } from 'e2e-playwright/utils/user'
 import {
+  insertApplications,
   insertDaycarePlacementFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -12,7 +13,11 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../../e2e-test-common/dev-api/data-init'
-import { uuidv4 } from '../../../e2e-test-common/dev-api/fixtures'
+import {
+  applicationFixture,
+  applicationFixtureId,
+  uuidv4
+} from '../../../e2e-test-common/dev-api/fixtures'
 import { DaycarePlacement } from '../../../e2e-test-common/dev-api/types'
 import {
   CitizenChildPage,
@@ -21,6 +26,7 @@ import {
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
+import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -79,6 +85,20 @@ describe('Citizen children page', () => {
         }
       ])
 
+      // Deep down the preferred start date is set to today so this is cancelled with termination starting also from today
+      const application = applicationFixture(
+        fixtures.enduserChildFixtureKaarina,
+        fixtures.enduserGuardianFixture,
+        undefined,
+        'DAYCARE',
+        null,
+        [fixtures.daycareFixture.id],
+        true,
+        'SENT',
+        true
+      )
+      await insertApplications([application])
+
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
       await childPage.openTerminationCollapsible()
@@ -95,6 +115,11 @@ describe('Citizen children page', () => {
       await childPage.assertTerminatedPlacementCount(1)
       await assertTerminatedPlacements(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${LocalDate.today().format()}`
+      )
+
+      await header.selectTab('applications')
+      await new CitizenApplicationsPage(page).assertApplicationDoesNotExist(
+        applicationFixtureId
       )
     })
 

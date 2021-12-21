@@ -660,7 +660,8 @@ export const applicationFixture = (
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false,
-  status: ApplicationStatus = 'SENT'
+  status: ApplicationStatus = 'SENT',
+  transferApplication = false
 ): Application => ({
   id: applicationFixtureId,
   childId: child.id,
@@ -680,7 +681,7 @@ export const applicationFixture = (
   hideFromGuardian: false,
   origin: 'ELECTRONIC',
   status,
-  transferApplication: false
+  transferApplication
 })
 
 export const placementPlanFixture = (
