@@ -181,7 +181,13 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
             exact
             path="/units/:id/application-process"
             component={() => (
-              <TabApplicationProcess reloadUnitData={reloadUnitData} />
+              <TabApplicationProcess
+                isLoading={
+                  unitData.isLoading ||
+                  (unitData.isSuccess && unitData.isReloading)
+                }
+                reloadUnitData={reloadUnitData}
+              />
             )}
           />
           <Route path="/" component={RedirectToUnitInfo} />

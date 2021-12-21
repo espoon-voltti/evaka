@@ -4,6 +4,8 @@
 
 import { Combobox, Element, Page, TextInput } from 'e2e-playwright/utils/page'
 import { UUID } from 'lib-common/types'
+import config from '../../../../e2e-test-common/config'
+import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 
 type UnitProviderType =
   | 'MUNICIPAL'
@@ -18,6 +20,9 @@ export class UnitPage {
 
   readonly #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
   readonly #groupsTab = this.page.find('[data-qa="groups-tab"]')
+  readonly #applicationProcessTab = this.page.find(
+    '[data-qa="application-process-tab"]'
+  )
 
   readonly #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
   readonly #editUnitButton = this.page.find('[data-qa="enable-edit-button"]')
@@ -25,6 +30,10 @@ export class UnitPage {
   readonly #unitEditorContainer = this.page.find(
     '[data-qa="unit-editor-container"]'
   )
+
+  async navigateToUnit(id: string) {
+    await this.page.goto(`${config.employeeUrl}/units/${id}`)
+  }
 
   async openUnitInformation(): Promise<UnitInformationSection> {
     await this.#unitInfoTab.click()
@@ -36,6 +45,11 @@ export class UnitPage {
   async openUnitDetails() {
     await this.#unitDetailsLink.click()
     await this.#editUnitButton.waitUntilVisible()
+  }
+
+  async openApplicationProcessTab() {
+    await this.#applicationProcessTab.click()
+    return new ApplicationProcessPage(this.page)
   }
 
   async clickEditUnit(): Promise<UnitEditor> {
@@ -251,5 +265,84 @@ class GroupsSection {
       .findAll('[data-qa="table-of-missing-groups"]')
       .nth(0)
       .waitUntilVisible()
+  }
+}
+
+class ApplicationProcessPage {
+  constructor(private readonly page: Page) {}
+
+  async assertIsLoading() {
+    await this.page
+      .find('[data-qa="application-process-page"][data-isloading="true"]')
+      .waitUntilVisible()
+  }
+
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="application-process-page"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
+  placementPlans = new PlacementPlanSection(this.page)
+  placementProposals = new PlacementProposalsSection(this.page)
+}
+
+class PlacementPlanSection {
+  constructor(private readonly page: Page) {}
+
+  #waitingGuardianConfirmationRows = this.page.findAll(
+    '[data-qa="placement-plan-row"]'
+  )
+
+  async assertWaitingGuardianConfirmationRowCount(count: number) {
+    await waitUntilEqual(
+      () => this.#waitingGuardianConfirmationRows.count(),
+      count
+    )
+  }
+}
+
+class PlacementProposalsSection {
+  constructor(private readonly page: Page) {}
+
+  #applicationRow(applicationId: string) {
+    return this.page.find(`[data-qa="placement-proposal-row-${applicationId}"]`)
+  }
+
+  #acceptButton = this.page.find(
+    '[data-qa="placement-proposals-accept-button"]'
+  )
+
+  async assertAcceptButtonDisabled() {
+    await waitUntilTrue(() => this.#acceptButton.disabled)
+  }
+
+  async assertAcceptButtonEnabled() {
+    await waitUntilFalse(() => this.#acceptButton.disabled)
+  }
+
+  async clickAcceptButton() {
+    await this.#acceptButton.click()
+  }
+
+  async clickProposalAccept(applicationId: string) {
+    await this.#applicationRow(applicationId)
+      .find('[data-qa="accept-button"]')
+      .click()
+  }
+
+  async clickProposalReject(applicationId: string) {
+    await this.#applicationRow(applicationId)
+      .find('[data-qa="reject-button"]')
+      .click()
+  }
+
+  async selectProposalRejectionReason(n: number) {
+    const radios = this.page.findAll('[data-qa="proposal-reject-reason"]')
+    await radios.nth(n).click()
+  }
+
+  async submitProposalRejectionReason() {
+    await this.page.find('[data-qa="modal-okBtn"]').click()
   }
 }

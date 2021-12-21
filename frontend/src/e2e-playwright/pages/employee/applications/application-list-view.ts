@@ -8,7 +8,7 @@ import config from 'e2e-test-common/config'
 export default class ApplicationListView {
   constructor(private page: Page) {}
 
-  url = `${config.employeeUrl}/applications`
+  static url = `${config.employeeUrl}/applications`
   applicationStatus = this.page.find('[data-qa="application-status"]')
 
   actionsMenu = (applicationId: string) =>
