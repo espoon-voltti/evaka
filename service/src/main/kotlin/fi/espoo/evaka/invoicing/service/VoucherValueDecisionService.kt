@@ -19,6 +19,8 @@ import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.setting.SettingType
+import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -49,7 +51,9 @@ class VoucherValueDecisionService(
         val decision = getDecision(tx, decisionId)
         check(decision.documentKey.isNullOrBlank()) { "Voucher value decision $decisionId has document key already!" }
 
-        val pdf = generatePdf(decision)
+        val settings = tx.getSettings()
+
+        val pdf = generatePdf(decision, settings)
         val key = uploadPdf(decision.id, pdf)
         tx.updateVoucherValueDecisionDocumentKey(decision.id, key)
     }
@@ -180,9 +184,9 @@ ORDER BY start_date ASC
         return key
     }
 
-    private fun generatePdf(decision: VoucherValueDecisionDetailed): ByteArray {
+    private fun generatePdf(decision: VoucherValueDecisionDetailed, settings: Map<SettingType, String>): ByteArray {
         val lang = if (decision.headOfFamily.language == "sv") DocumentLang.sv else DocumentLang.fi
-        return pdfService.generateVoucherValueDecisionPdf(VoucherValueDecisionPdfData(decision, lang))
+        return pdfService.generateVoucherValueDecisionPdf(VoucherValueDecisionPdfData(decision, settings, lang))
     }
 
     fun setType(tx: Database.Transaction, decisionId: VoucherValueDecisionId, type: VoucherValueDecisionType) {
