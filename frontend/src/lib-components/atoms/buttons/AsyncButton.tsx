@@ -94,7 +94,7 @@ export default React.memo(function AsyncButton({
       ? setTimeout(() => onSuccessRef.current(), isAutomatedTest ? 10 : 500)
       : undefined
     const clearShowSuccess = showSuccess
-      ? setTimeout(() => setShowSuccess(false), isAutomatedTest ? 25 : 2000)
+      ? setTimeout(() => setShowSuccess(false), isAutomatedTest ? 250 : 2000)
       : undefined
 
     return () => {
@@ -105,7 +105,7 @@ export default React.memo(function AsyncButton({
 
   useEffect(() => {
     const clearShowFailure = showFailure
-      ? setTimeout(() => setShowFailure(false), isAutomatedTest ? 25 : 2000)
+      ? setTimeout(() => setShowFailure(false), isAutomatedTest ? 250 : 2000)
       : undefined
 
     return () => {
