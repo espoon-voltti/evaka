@@ -72,7 +72,7 @@ const features: Features = {
       realtimeStaffAttendance: false,
       personalDetailsPage: false,
       mobileMessages: false,
-      leops: true
+      leops: false
     }
   }
 }
