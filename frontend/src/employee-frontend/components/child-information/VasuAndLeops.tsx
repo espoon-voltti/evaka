@@ -11,8 +11,9 @@ import React, {
 } from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
-import { Result } from 'lib-common/api'
+import { combine, Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
+import LocalDate from 'lib-common/local-date'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -42,6 +43,10 @@ import { getVasuTemplateSummaries } from '../vasu/templates/api'
 import { RequireRole } from '../../utils/roles'
 import { renderResult, UnwrapResult } from '../async-rendering'
 import { UUID } from 'lib-common/types'
+import {
+  DaycarePlacementWithDetails,
+  PlacementType
+} from 'lib-common/generated/api-types/placement'
 
 const StateCell = styled(Td)`
   display: flex;
@@ -94,12 +99,21 @@ const InitializationContainer = styled.div`
 
 const getValidVasuTemplateSummaries = () => getVasuTemplateSummaries(true)
 
+const preschoolPlacementTypes: readonly PlacementType[] = [
+  'PRESCHOOL',
+  'PRESCHOOL_DAYCARE',
+  'PREPARATORY',
+  'PREPARATORY_DAYCARE'
+]
+
 function VasuInitialization({
   childId,
-  allowCreation
+  allowCreation,
+  placements
 }: {
   childId: UUID
   allowCreation: boolean
+  placements: Result<DaycarePlacementWithDetails[]>
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
@@ -107,6 +121,26 @@ function VasuInitialization({
 
   const [templates, setTemplates] = useState<Result<VasuTemplateSummary[]>>()
   const loadTemplates = useRestApi(getValidVasuTemplateSummaries, setTemplates)
+
+  const filteredTemplates = useMemo(
+    () =>
+      templates
+        ? combine(placements, templates).map(([placements, templates]) => {
+            const placementsNotInFuture = placements.filter(
+              ({ startDate }) => !startDate.isAfter(LocalDate.today())
+            )
+
+            const useableType = placementsNotInFuture.some(({ type }) =>
+              preschoolPlacementTypes.includes(type)
+            )
+              ? 'PRESCHOOL'
+              : 'DAYCARE'
+
+            return templates.filter(({ type }) => type === useableType)
+          })
+        : undefined,
+    [placements, templates]
+  )
 
   const [initializing, setInitializing] = useState(false)
 
@@ -132,11 +166,14 @@ function VasuInitialization({
 
   useEffect(
     function autoSelectTemplate() {
-      if (templates?.isSuccess && templates.value.length === 1) {
-        createVasu(childId, templates.value[0].id)
+      if (
+        filteredTemplates?.isSuccess &&
+        filteredTemplates.value.length === 1
+      ) {
+        createVasu(childId, filteredTemplates.value[0].id)
       }
     },
-    [childId, createVasu, templates]
+    [childId, createVasu, filteredTemplates]
   )
 
   return (
@@ -144,14 +181,16 @@ function VasuInitialization({
       <AddButtonRow
         onClick={loadTemplates}
         disabled={
-          !allowCreation || templates?.isSuccess || templates?.isLoading
+          !allowCreation ||
+          filteredTemplates?.isSuccess ||
+          filteredTemplates?.isLoading
         }
         text={i18n.childInformation.vasu.createNew}
         data-qa="add-new-vasu-button"
       />
-      {templates && (
+      {filteredTemplates && (
         <UnwrapResult
-          result={templates}
+          result={filteredTemplates}
           loading={() => <FullScreenDimmedSpinner />}
           failure={() => (
             <ErrorSegment title={i18n.childInformation.vasu.init.error} />
@@ -249,7 +288,11 @@ export default React.memo(function VasuAndLeops({
         paddingVertical="L"
         data-qa="vasu-and-leops-collapsible"
       >
-        <VasuInitialization childId={childId} allowCreation={allowCreation} />
+        <VasuInitialization
+          childId={childId}
+          allowCreation={allowCreation}
+          placements={placements}
+        />
         {renderResult(vasus, (vasus) => (
           <Table>
             <Tbody>
