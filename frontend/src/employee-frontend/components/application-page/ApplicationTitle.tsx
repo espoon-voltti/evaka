@@ -26,7 +26,7 @@ export default React.memo(function ApplicationTitle({ application }: Props) {
     titleLabels.push(i18n.application.transfer)
 
   return (
-    <>
+    <div data-qa="application-title">
       <TitleRow>
         <TitleWrapper>
           <H1 noMargin>{i18n.application.types[application.type]}</H1>
@@ -53,7 +53,7 @@ export default React.memo(function ApplicationTitle({ application }: Props) {
           true
         )}
       </H2>
-    </>
+    </div>
   )
 })
 

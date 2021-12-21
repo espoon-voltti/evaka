@@ -11,7 +11,7 @@ import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 export default class ApplicationReadView {
   constructor(private page: Page) {}
 
-  #title = this.page.find('h1')
+  #title = this.page.find('[data-qa="application-title"]').find('h1')
   #editButton = this.page.find('[data-qa="edit-application"]')
   #vtjGuardianName = this.page.find('[data-qa="vtj-guardian-name"]')
   #vtjGuardianPhone = this.page.find('[data-qa="vtj-guardian-phone"]')
