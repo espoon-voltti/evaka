@@ -8,6 +8,7 @@ export default class MobileMessagesPage {
   constructor(private readonly page: Page) {}
 
   messagesContainer = this.page.find(`[data-qa="messages-page-content-area"]`)
+  noAccountInfo = this.page.find(`[data-qa="info-no-account-access"]`)
 
   async getThreadTitle(index: number) {
     const titles = this.page.findAll('[data-qa="message-preview-title"]')
