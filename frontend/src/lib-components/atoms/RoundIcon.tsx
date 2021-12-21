@@ -130,10 +130,6 @@ const RoundIcon = React.memo(function RoundIcon({
   bubblecolor,
   number
 }: RoundIconProps) {
-  if (typeof content === 'string' && size !== 'm') {
-    console.warn('Text symbol is designed only for size m')
-  }
-
   function onKeyDown(e: React.KeyboardEvent) {
     if (onClick && (e.key === ' ' || e.key === 'Enter')) onClick(e)
   }
