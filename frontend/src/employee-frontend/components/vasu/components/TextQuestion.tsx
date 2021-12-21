@@ -28,10 +28,19 @@ export function TextQuestion({
       return <ValueOrNoRecord text={value} translations={translations} />
     }
     return multiline ? (
-      <TextArea value={value} onChange={onChange} />
+      <TextArea
+        value={value}
+        onChange={onChange}
+        data-qa="text-question-input"
+      />
     ) : (
       <div>
-        <InputField value={value} onChange={onChange} width="L" />
+        <InputField
+          value={value}
+          onChange={onChange}
+          width="L"
+          data-qa="text-question-input"
+        />
       </div>
     )
   }

@@ -56,6 +56,7 @@ export default React.memo(function DateQuestion({
           onChange={setInputValue}
           onBlur={forceDate}
           locale={lang}
+          data-qa="date-question-picker"
         />
       ) : (
         <ValueOrNoRecord text={value?.format()} translations={translations} />

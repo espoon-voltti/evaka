@@ -48,19 +48,68 @@ export class AuthorsSection extends Element {
   }
 }
 
-export class ConsiderationsSection extends Element {
-  readonly #textareas = this.findAll('textarea')
+class SimpleTextAreaSection extends Element {
+  protected readonly textareas = this.findAll('[data-qa="text-question-input"]')
+  protected readonly values = this.findAll('[data-qa="value-or-no-record"]')
+}
 
-  childsViewInput = new TextInput(this.#textareas.nth(0))
-  guardiansViewInput = new TextInput(this.#textareas.nth(1))
+export class ConsiderationsSection extends SimpleTextAreaSection {
+  childsViewInput = new TextInput(this.textareas.nth(0))
+  guardiansViewInput = new TextInput(this.textareas.nth(1))
 
+  childsView = this.values.nth(0).innerText
+  guardiansView = this.values.nth(1).innerText
+}
+
+export class PreviousVasuGoalsSection extends SimpleTextAreaSection {
+  goalsRealizedInput = new TextInput(this.textareas.nth(0))
+  otherObservationsInput = new TextInput(this.textareas.nth(1))
+
+  goalsRealized = this.values.nth(0).innerText
+  otherObservations = this.values.nth(1).innerText
+}
+
+export class GoalsSection extends SimpleTextAreaSection {
+  childsStrengthsInput = new TextInput(this.textareas.nth(0))
+  goalsForTeachersInput = new TextInput(this.textareas.nth(1))
+  otherInput = new TextInput(this.textareas.nth(2))
+
+  childsStrengths = this.values.nth(0).innerText
+  goalsForTeachers = this.values.nth(1).innerText
+  other = this.values.nth(2).innerText
+}
+
+export class WellnessSupportSection extends SimpleTextAreaSection {
+  wellnessInput = new TextInput(this.textareas.nth(0))
+  wellness = this.values.nth(0).innerText
+}
+
+export class OtherDocsAndPlansSection extends SimpleTextAreaSection {
+  otherDocsInput = new TextInput(this.textareas.nth(0))
+  otherDocs = this.values.nth(0).innerText
+}
+
+export class InfoSharedToSection extends Element {
   readonly #values = this.findAll('[data-qa="value-or-no-record"]')
 
-  get childsView(): Promise<string> {
-    return this.#values.nth(0).innerText
-  }
+  recipientsOptions = this.findAll('[data-qa="multi-select-question-option"]')
+  otherInput = new TextInput(this.find('[data-qa="text-question-input"]'))
 
-  get guardiansView(): Promise<string> {
-    return this.#values.nth(1).innerText
-  }
+  recipients = this.#values.nth(0).innerText
+  other = this.#values.nth(1).innerText
+}
+
+export class AdditionalInfoSection extends SimpleTextAreaSection {
+  infoInput = new TextInput(this.textareas.nth(0))
+  info = this.values.nth(0).innerText
+}
+
+export class DiscussionSection extends SimpleTextAreaSection {
+  dateInput = new TextInput(this.find('[data-qa="date-question-picker"]'))
+  presentInput = new TextInput(this.textareas.nth(0))
+  collaborationAndOpinionInput = new TextInput(this.textareas.nth(1))
+
+  date = this.values.nth(0).innerText
+  present = this.values.nth(1).innerText
+  collaborationAndOpinion = this.values.nth(2).innerText
 }

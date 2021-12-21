@@ -4,7 +4,17 @@
 
 import { waitUntilFalse } from 'e2e-playwright/utils'
 import { Page, TextInput, Element } from '../../../utils/page'
-import { AuthorsSection, ConsiderationsSection } from './pageSections'
+import {
+  AdditionalInfoSection,
+  AuthorsSection,
+  ConsiderationsSection,
+  DiscussionSection,
+  GoalsSection,
+  InfoSharedToSection,
+  OtherDocsAndPlansSection,
+  PreviousVasuGoalsSection,
+  WellnessSupportSection
+} from './pageSections'
 
 class VasuPageCommon {
   constructor(readonly page: Page) {}
@@ -31,6 +41,34 @@ class VasuPageCommon {
 
   get considerationsSection(): ConsiderationsSection {
     return new ConsiderationsSection(this.getDocumentSection(1))
+  }
+
+  get previousVasuGoalsSection(): PreviousVasuGoalsSection {
+    return new PreviousVasuGoalsSection(this.getDocumentSection(2))
+  }
+
+  get goalsSection(): GoalsSection {
+    return new GoalsSection(this.getDocumentSection(3))
+  }
+
+  get wellnessSupportSection(): WellnessSupportSection {
+    return new WellnessSupportSection(this.getDocumentSection(4))
+  }
+
+  get otherDocsAndPlansSection(): OtherDocsAndPlansSection {
+    return new OtherDocsAndPlansSection(this.getDocumentSection(5))
+  }
+
+  get infoSharedToSection(): InfoSharedToSection {
+    return new InfoSharedToSection(this.getDocumentSection(6))
+  }
+
+  get additionalInfoSection(): AdditionalInfoSection {
+    return new AdditionalInfoSection(this.getDocumentSection(7))
+  }
+
+  get discussionSection(): DiscussionSection {
+    return new DiscussionSection(this.getDocumentSection(8))
   }
 
   get followupQuestionCount(): Promise<number> {

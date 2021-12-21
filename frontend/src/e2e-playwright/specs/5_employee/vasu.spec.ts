@@ -142,6 +142,141 @@ describe('Vasu document page', () => {
         "This is the guardian's view"
       )
     })
+
+    test('Fill the previous vasu goals section', async () => {
+      const vasuEditPage = await editDocument()
+      const previousGoals = vasuEditPage.previousVasuGoalsSection
+
+      await previousGoals.goalsRealizedInput.fill(
+        'The goals were realized by ...'
+      )
+      await previousGoals.otherObservationsInput.fill(
+        'Other observations include ...'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.previousVasuGoalsSection.goalsRealized,
+        'The goals were realized by ...'
+      )
+      await waitUntilEqual(
+        () => vasuPage.previousVasuGoalsSection.otherObservations,
+        'Other observations include ...'
+      )
+    })
+
+    test('Fill the goals section', async () => {
+      const vasuEditPage = await editDocument()
+      const goals = vasuEditPage.goalsSection
+
+      await goals.childsStrengthsInput.fill('Super helpful with chores')
+      await goals.goalsForTeachersInput.fill('Child needs help drawing squares')
+      await goals.otherInput.fill(
+        'Child snores heavily, waking all the other kids up'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.childsStrengths,
+        'Super helpful with chores'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.goalsForTeachers,
+        'Child needs help drawing squares'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.other,
+        'Child snores heavily, waking all the other kids up'
+      )
+    })
+
+    test('Fill the wellness support section', async () => {
+      const vasuEditPage = await editDocument()
+      const wellnessSupport = vasuEditPage.wellnessSupportSection
+
+      await wellnessSupport.wellnessInput.fill(
+        'Only sleeps for 0.2 seconds at a time'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.wellnessSupportSection.wellness,
+        'Only sleeps for 0.2 seconds at a time'
+      )
+    })
+
+    test('Fill the other documents and plans section', async () => {
+      const vasuEditPage = await editDocument()
+      const otherDocsAndPlans = vasuEditPage.otherDocsAndPlansSection
+
+      await otherDocsAndPlans.otherDocsInput.fill(
+        'Drawings made by child and parents'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.otherDocsAndPlansSection.otherDocs,
+        'Drawings made by child and parents'
+      )
+    })
+
+    test('Fill the info shared to section', async () => {
+      const vasuEditPage = await editDocument()
+      const sharedTo = vasuEditPage.infoSharedToSection
+
+      await sharedTo.recipientsOptions.nth(1).click()
+      await sharedTo.recipientsOptions.nth(2).click()
+      await sharedTo.otherInput.fill('Police')
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.infoSharedToSection.recipients,
+        'Neuvolaan, Lasten terapiapalveluihin'
+      )
+      await waitUntilEqual(() => vasuPage.infoSharedToSection.other, 'Police')
+    })
+
+    test('Fill the additional info section', async () => {
+      const vasuEditPage = await editDocument()
+      const additionalInfo = vasuEditPage.additionalInfoSection
+
+      await additionalInfo.infoInput.fill('I love icecream')
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.additionalInfoSection.info,
+        'I love icecream'
+      )
+    })
+
+    test('Fill the discussion section', async () => {
+      const vasuEditPage = await editDocument()
+      const discussion = vasuEditPage.discussionSection
+
+      await discussion.dateInput.fill('1.12.2021')
+      await discussion.presentInput.fill('Mom, dad, and teacher')
+      await discussion.collaborationAndOpinionInput.fill(
+        'Everything is awesome'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(() => vasuPage.discussionSection.date, '01.12.2021')
+      await waitUntilEqual(
+        () => vasuPage.discussionSection.present,
+        'Mom, dad, and teacher'
+      )
+      await waitUntilEqual(
+        () => vasuPage.discussionSection.collaborationAndOpinion,
+        'Everything is awesome'
+      )
+    })
   })
 
   describe('Followup questions', () => {
