@@ -35,6 +35,7 @@ import {
   insertChildFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
+  insertDaycarePlacementFixtures,
   insertDecisionFixtures,
   insertEmployeeFixture,
   insertEmployeePins,
@@ -1028,6 +1029,17 @@ export class Fixture {
     })
   }
 
+  static placement(): PlacementBuilder {
+    return new PlacementBuilder({
+      id: uuidv4(),
+      childId: 'not set',
+      unitId: 'not set',
+      type: 'DAYCARE',
+      startDate: LocalDate.today().formatIso(),
+      endDate: LocalDate.today().addYears(1).formatIso()
+    })
+  }
+
   static serviceNeed(): ServiceNeedBuilder {
     return new ServiceNeedBuilder({
       id: uuidv4(),
@@ -1346,6 +1358,32 @@ export class ServiceNeedOptionBuilder {
   // Note: shallow copy
   copy(): ServiceNeedOptionBuilder {
     return new ServiceNeedOptionBuilder({ ...this.data })
+  }
+}
+
+export class PlacementBuilder {
+  data: DaycarePlacement
+
+  constructor(data: DaycarePlacement) {
+    this.data = data
+  }
+
+  with(value: Partial<DaycarePlacement>): PlacementBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<PlacementBuilder> {
+    await insertDaycarePlacementFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): PlacementBuilder {
+    return new PlacementBuilder({ ...this.data })
   }
 }
 

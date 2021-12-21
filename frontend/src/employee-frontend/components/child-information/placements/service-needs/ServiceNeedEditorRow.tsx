@@ -143,6 +143,7 @@ function ServiceNeedEditorRow({
               setForm({ ...form, optionId: optionId ?? undefined })
             }
             placeholder={t.optionPlaceholder}
+            data-qa="service-need-option-select"
           />
         </StyledTd>
         <StyledTd>
@@ -160,11 +161,13 @@ function ServiceNeedEditorRow({
               onClick={onCancel}
               text={i18n.common.cancel}
               disabled={submitting}
+              data-qa="service-need-cancel"
             />
             <InlineButton
               onClick={onSubmit}
               text={i18n.common.save}
               disabled={submitting || !formIsValid}
+              data-qa="service-need-save"
             />
           </FixedSpaceRow>
         </StyledTd>

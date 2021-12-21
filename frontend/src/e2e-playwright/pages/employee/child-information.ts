@@ -10,7 +10,8 @@ import {
   Checkbox,
   Radio,
   Combobox,
-  DatePickerDeprecated
+  DatePickerDeprecated,
+  Select
 } from 'e2e-playwright/utils/page'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Daycare } from '../../../e2e-test-common/dev-api/types'
@@ -397,6 +398,64 @@ export class GuardiansSection {
   }
 }
 
+export class PlacementsSection {
+  constructor(private section: Element) {}
+
+  #placementRow = (id: string) =>
+    this.section.find(`[data-qa="placement-${id}"]`)
+  #serviceNeedRow = (index: number) =>
+    this.section.findAll('[data-qa="service-need-row"]').nth(index)
+  #serviceNeedRowOptionName = (index: number) =>
+    this.#serviceNeedRow(index).find('[data-qa="service-need-name"]')
+  #addMissingServiceNeedButton = this.section.find(
+    '[data-qa="add-new-missing-service-need"]'
+  )
+  #serviceNeedOptionSelect = new Select(
+    this.section.find('[data-qa="service-need-option-select"] select')
+  )
+  #serviceNeedSaveButton = this.section.find('[data-qa="service-need-save"]')
+
+  async openPlacement(id: string) {
+    const placementRow = this.#placementRow(id)
+    if ((await placementRow.getAttribute('data-status')) === 'closed') {
+      await placementRow.find('[data-qa="collapsible-trigger"]').click()
+    }
+  }
+
+  async addMissingServiceNeed(placementId: string, optionName: string) {
+    await this.openPlacement(placementId)
+    await this.#addMissingServiceNeedButton.click()
+    await this.#serviceNeedOptionSelect.selectOption({ label: optionName })
+    await this.#serviceNeedSaveButton.click()
+  }
+
+  async assertNthServiceNeedName(index: number, optionName: string) {
+    await waitUntilEqual(
+      () => this.#serviceNeedRowOptionName(index).textContent,
+      optionName
+    )
+  }
+
+  async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
+    await this.openPlacement(placementId)
+    await this.#addMissingServiceNeedButton.click()
+    await waitUntilTrue(async () => {
+      const selectableOptions = await this.#serviceNeedOptionSelect
+        .findAll('option')
+        .evaluateAll((elements) =>
+          elements
+            .map((e) => e.getAttribute('value'))
+            .filter((value): value is string => !!value)
+        )
+
+      return (
+        optionIds.every((optionId) => selectableOptions.includes(optionId)) &&
+        selectableOptions.every((optionId) => optionIds.includes(optionId))
+      )
+    })
+  }
+}
+
 const collapsibles = {
   dailyServiceTimes: {
     selector: '[data-qa="child-daily-service-times-collapsible"]',
@@ -421,6 +480,10 @@ const collapsibles = {
   guardians: {
     selector: '[data-qa="person-guardians-collapsible"]',
     section: GuardiansSection
+  },
+  placements: {
+    selector: '[data-qa="child-placements-collapsible"]',
+    section: PlacementsSection
   }
 }
 

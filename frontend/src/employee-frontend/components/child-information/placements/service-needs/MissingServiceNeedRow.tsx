@@ -49,6 +49,7 @@ function MissingServiceNeedRow({
             text={t.addNewBtn}
             icon={faPlus}
             disabled={disabled}
+            data-qa="add-new-missing-service-need"
           />
         </RequireRole>
       </Td>

@@ -5,7 +5,6 @@
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import {
@@ -13,11 +12,10 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  createDaycarePlacementFixture,
   daycareGroupFixture,
   enduserDeceasedChildFixture,
   enduserNonSsnChildFixture,
-  uuidv4
+  Fixture
 } from 'e2e-test-common/dev-api/fixtures'
 import ChildInformationPage, {
   AdditionalInformationSection,
@@ -48,13 +46,12 @@ beforeEach(async () => {
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
-
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    childId,
-    unitId
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await Fixture.placement()
+    .with({
+      childId,
+      unitId
+    })
+    .save()
 
   page = await Page.open()
   await employeeLogin(page, 'ADMIN')

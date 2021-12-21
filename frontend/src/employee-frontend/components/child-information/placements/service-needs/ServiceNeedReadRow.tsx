@@ -25,11 +25,11 @@ function ServiceNeedReadRow({
 }: ServiceNeedReadRowProps) {
   const { i18n } = useTranslation()
   return (
-    <Tr>
+    <Tr data-qa="service-need-row">
       <Td>
         {serviceNeed.startDate.format()} - {serviceNeed.endDate.format()}
       </Td>
-      <Td>{serviceNeed.option.nameFi}</Td>
+      <Td data-qa="service-need-name">{serviceNeed.option.nameFi}</Td>
       <Td>{serviceNeed.shiftCare ? i18n.common.yes : i18n.common.no}</Td>
       <Td>
         <Tooltip tooltip={<span>{serviceNeed.confirmed?.name}</span>}>
