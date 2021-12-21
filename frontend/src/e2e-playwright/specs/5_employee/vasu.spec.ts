@@ -78,6 +78,15 @@ describe('Vasu document page', () => {
     return new VasuEditPage(page)
   }
 
+  const finalizeDocument = async () => {
+    let vasuPage = await openDocument()
+    await vasuPage.finalizeButton.click()
+    await vasuPage.modalOkButton.click()
+    await vasuPage.modalOkButton.click()
+    vasuPage = await openDocument()
+    await vasuPage.assertDocumentVisible()
+  }
+
   beforeAll(async () => {
     vasuDocId = await insertVasuDocument(childId, templateId)
   })
@@ -286,15 +295,6 @@ describe('Vasu document page', () => {
     })
 
     describe('With a finalized document', () => {
-      const finalizeDocument = async () => {
-        let vasuPage = await openDocument()
-        await vasuPage.finalizeButton.click()
-        await vasuPage.modalOkButton.click()
-        await vasuPage.modalOkButton.click()
-        vasuPage = await openDocument()
-        await vasuPage.assertDocumentVisible()
-      }
-
       beforeAll(async () => {
         page = await Page.open()
         await employeeLogin(page, 'ADMIN')
@@ -350,6 +350,24 @@ describe('Vasu document page', () => {
           `${date} Seppo Sorsa, muokattu ${date} Seppo Sorsa`
         )
       })
+    })
+  })
+
+  describe('Publishing of vasu documents', () => {
+    beforeEach(async () => {
+      vasuDocId = await insertVasuDocument(childId, templateId)
+    })
+
+    test('Finalize a document', async () => {
+      let vasuPage = await openDocument()
+      await waitUntilEqual(() => vasuPage.publishedDate, 'Ei merkintää')
+
+      await finalizeDocument()
+      vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.publishedDate,
+        LocalDate.today().format()
+      )
     })
   })
 })

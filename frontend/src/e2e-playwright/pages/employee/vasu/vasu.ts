@@ -140,4 +140,8 @@ export class VasuPage extends VasuPageCommon {
     '[data-qa="transition-button-MOVED_TO_READY"]'
   )
   readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
+
+  get publishedDate(): Promise<string> {
+    return this.page.find('[data-qa="vasu-published-date"] span').innerText
+  }
 }
