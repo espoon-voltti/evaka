@@ -2708,7 +2708,8 @@ export const fi = {
     sidePanel: {
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
-      noAccountAccess: 'Sinulla ei ole käyttöoikeutta yhteenkään ryhmään.'
+      noAccountAccess:
+        'Viestejä ei voi näyttää, koska sinua ei ole luvitettu ryhmään. Pyydä lupa esimieheltäsi.'
     },
     messageBoxes: {
       names: {
