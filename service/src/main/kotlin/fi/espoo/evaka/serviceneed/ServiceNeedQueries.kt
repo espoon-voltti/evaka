@@ -210,6 +210,7 @@ SELECT
     fee_description_sv,
     voucher_value_description_fi,
     voucher_value_description_sv,
+    active,
     updated
 FROM service_need_option
 ORDER BY display_order
@@ -239,6 +240,7 @@ SELECT
     fee_description_sv,
     voucher_value_description_fi,
     voucher_value_description_sv,
+    active,
     updated
 FROM service_need_option
 WHERE id = :id

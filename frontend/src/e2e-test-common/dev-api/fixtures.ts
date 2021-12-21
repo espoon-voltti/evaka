@@ -1061,7 +1061,8 @@ export class Fixture {
       validPlacementType: 'DAYCARE',
       voucherValueCoefficient: 0,
       voucherValueDescriptionFi: `Test service need option ${id}`,
-      voucherValueDescriptionSv: `Test service need option ${id}`
+      voucherValueDescriptionSv: `Test service need option ${id}`,
+      active: true
     })
   }
 

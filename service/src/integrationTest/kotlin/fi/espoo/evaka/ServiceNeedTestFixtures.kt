@@ -28,7 +28,8 @@ val snDefaultDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultPartDayDaycare = ServiceNeedOption(
@@ -47,7 +48,8 @@ val snDefaultPartDayDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultFiveYearOldsDaycare = ServiceNeedOption(
@@ -66,7 +68,8 @@ val snDefaultFiveYearOldsDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
@@ -85,7 +88,8 @@ val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultPreschool = ServiceNeedOption(
@@ -104,7 +108,8 @@ val snDefaultPreschool = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultPreschoolDaycare = ServiceNeedOption(
@@ -123,7 +128,8 @@ val snDefaultPreschoolDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultPreparatory = ServiceNeedOption(
@@ -142,7 +148,8 @@ val snDefaultPreparatory = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultPreparatoryDaycare = ServiceNeedOption(
@@ -161,7 +168,8 @@ val snDefaultPreparatoryDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultClub = ServiceNeedOption(
@@ -180,7 +188,8 @@ val snDefaultClub = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultTemporaryDaycare = ServiceNeedOption(
@@ -199,7 +208,8 @@ val snDefaultTemporaryDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDefaultTemporaryPartDayDaycare = ServiceNeedOption(
@@ -218,7 +228,8 @@ val snDefaultTemporaryPartDayDaycare = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDaycareFullDay35 = ServiceNeedOption(
@@ -237,7 +248,8 @@ val snDaycareFullDay35 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDaycareFullDay25to35 = ServiceNeedOption(
@@ -256,7 +268,8 @@ val snDaycareFullDay25to35 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDaycareFullDayPartWeek25 = ServiceNeedOption(
@@ -275,7 +288,8 @@ val snDaycareFullDayPartWeek25 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDaycarePartDay25 = ServiceNeedOption(
@@ -294,7 +308,8 @@ val snDaycarePartDay25 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snPreschoolDaycare45 = ServiceNeedOption(
@@ -313,7 +328,8 @@ val snPreschoolDaycare45 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snPreschoolDaycarePartDay35to45 = ServiceNeedOption(
@@ -332,7 +348,8 @@ val snPreschoolDaycarePartDay35to45 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snPreschoolDaycarePartDay35 = ServiceNeedOption(
@@ -351,7 +368,8 @@ val snPreschoolDaycarePartDay35 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snPreparatoryDaycare50 = ServiceNeedOption(
@@ -370,7 +388,8 @@ val snPreparatoryDaycare50 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snPreparatoryDaycarePartDay40to50 = ServiceNeedOption(
@@ -389,7 +408,8 @@ val snPreparatoryDaycarePartDay40to50 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snPreparatoryDaycarePartDay40 = ServiceNeedOption(
@@ -408,7 +428,8 @@ val snPreparatoryDaycarePartDay40 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val snDaycareFiveYearOldsFullDayPartWeek25 = ServiceNeedOption(
@@ -427,7 +448,8 @@ val snDaycareFiveYearOldsFullDayPartWeek25 = ServiceNeedOption(
     feeDescriptionFi = "",
     feeDescriptionSv = "",
     voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = ""
+    voucherValueDescriptionSv = "",
+    active = true
 )
 
 val serviceNeedTestFixtures = listOf(
