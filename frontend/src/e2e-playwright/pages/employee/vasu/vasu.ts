@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilFalse } from 'e2e-playwright/utils'
+import { waitUntilEqual } from 'e2e-playwright/utils'
 import { Page, TextInput, Element } from '../../../utils/page'
 import {
   AdditionalInfoSection,
@@ -102,6 +102,7 @@ export class VasuEditPage extends VasuPageCommon {
   )
 
   readonly #vasuPreviewBtn = this.page.find('[data-qa="vasu-preview-btn"]')
+  readonly #vasuContainer = this.page.find('[data-qa="vasu-container"]')
 
   async inputFollowupComment(comment: string) {
     await this.#followupNewInput.type(comment)
@@ -127,7 +128,10 @@ export class VasuEditPage extends VasuPageCommon {
   }
 
   async waitUntilSaved(): Promise<void> {
-    await waitUntilFalse(() => this.previewBtn.disabled)
+    await waitUntilEqual(
+      () => this.#vasuContainer.getAttribute('data-status'),
+      'clean'
+    )
   }
 }
 
