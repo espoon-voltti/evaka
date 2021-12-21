@@ -79,7 +79,7 @@ const logUserIn = async (role: UserRole) => {
   await employeeLogin(page, role)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.placementsCollapsible.click()
+  await childInformationPage.placementsCollapsible.open()
   childPlacementsPage = new ChildPlacements(page)
 }
 
