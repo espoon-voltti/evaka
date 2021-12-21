@@ -360,12 +360,40 @@ describe('Vasu document page', () => {
 
     test('Finalize a document', async () => {
       let vasuPage = await openDocument()
-      await waitUntilEqual(() => vasuPage.publishedDate, 'Ei merkintää')
+      await waitUntilEqual(
+        () => vasuPage.publishedToGuardiansDate(),
+        'Ei merkintää'
+      )
 
       await finalizeDocument()
       vasuPage = await openDocument()
+
+      await waitUntilEqual(() => vasuPage.documentState(), 'Laadittu')
       await waitUntilEqual(
-        () => vasuPage.publishedDate,
+        () => vasuPage.publishedDate(),
+        LocalDate.today().format()
+      )
+    })
+
+    const markDocumentReviewed = async () => {
+      const vasuPage = await openDocument()
+      await vasuPage.markReviewedButton.click()
+      await vasuPage.modalOkButton.click()
+      await vasuPage.modalOkButton.click()
+    }
+
+    test('Publish a document as reviewed', async () => {
+      let vasuPage = await openDocument()
+
+      await finalizeDocument()
+      await markDocumentReviewed()
+
+      vasuPage = await openDocument()
+      await vasuPage.assertDocumentVisible()
+
+      await waitUntilEqual(() => vasuPage.documentState(), 'Arvioitu')
+      await waitUntilEqual(
+        () => vasuPage.reviewedDate(),
         LocalDate.today().format()
       )
     })

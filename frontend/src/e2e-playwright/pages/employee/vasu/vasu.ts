@@ -139,9 +139,38 @@ export class VasuPage extends VasuPageCommon {
   readonly finalizeButton = this.page.find(
     '[data-qa="transition-button-MOVED_TO_READY"]'
   )
+  readonly markReviewedButton = this.page.find(
+    '[data-qa="transition-button-MOVED_TO_REVIEWED"]'
+  )
   readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
+  readonly #vasuEventListLabels = this.page.findAll(
+    '[data-qa="vasu-event-list"] label'
+  )
+  readonly #vasuEventListValues = this.page.findAll(
+    '[data-qa="vasu-event-list"] span'
+  )
+  readonly #vasuEventListDocState = this.page.find(
+    '[data-qa="vasu-event-list"] [data-qa="vasu-state-chip"]'
+  )
 
-  get publishedDate(): Promise<string> {
-    return this.page.find('[data-qa="vasu-published-date"] span').innerText
-  }
+  documentState = () => this.#vasuEventListDocState.innerText
+
+  // The (first) label for the state chip has no corresponding span, so the index is off by one.
+  #valueForLabel = (label: string): Promise<string> =>
+    this.#vasuEventListLabels
+      .allInnerTexts()
+      .then((labels) =>
+        labels.reduce(
+          async (acc, l, ix) =>
+            l === label
+              ? await this.#vasuEventListValues.nth(ix - 1).innerText
+              : acc,
+          Promise.resolve('')
+        )
+      )
+
+  publishedToGuardiansDate = () =>
+    this.#valueForLabel('Viimeksi julkaistu huoltajalle')
+  publishedDate = () => this.#valueForLabel('Julkaistu Laadittu-tilaan')
+  reviewedDate = () => this.#valueForLabel('Julkaistu Arvioitu-tilaan')
 }
