@@ -117,7 +117,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.
             </p>
             <p>
-            Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen hakemuksen lakisääteisen järjestelyajan päättymistä. Hakemuksen lakisääteinen järjestelyaika on neljä (4) kuukautta hakemuksen saapumisesta.
+            Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen varhaiskasvatuksen toivottua aloittamista huomioiden varhaiskasvatuslain mukaiset neljän (4) kuukauden tai kahden viikon hakuajat.
             </p>
             <p>
             Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
@@ -154,7 +154,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader.</strong> Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.
             </p>
             <p>
-            Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på <a href="https://esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.
+            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik. Du kan se och godkänna/förkasta beslutet på <a href="https://esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.
             </p>
             <p>
             När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
@@ -188,7 +188,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             We have received your child’s application for early childhood education. The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> until its processing starts.
             </p>
             <p>
-            You will be informed of your child’s early childhood education unit approximately one month before the end of the statutory processing period. The statutory processing period of an application is four (4) months from the receipt of the application. You can see the decision and accept/reject it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>. If you chose to have your application processed urgently, you will also need to provide <strong>a document as proof of sudden employment at a new workplace or a sudden offer of a new study place</strong>.
+            You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care. The guardian who submitted the application can make changes to it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> until its processing starts. 
             </p>
             <p>
             In this case, the <strong>minimum application period is two (2) weeks</strong> and it begins from the date on which the required document was received. When applying for <strong>round-the-clock or evening care</strong>, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. <strong>Your application will only be processed as an application for round-the-clock care after you have provided the required documents</strong>.
@@ -213,7 +213,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
 
-            Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen hakemuksen lakisääteisen järjestelyajan päättymistä. Hakemuksen lakisääteinen järjestelyaika on neljä (4) kuukautta hakemuksen saapumisesta.
+            Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen varhaiskasvatuksen toivottua aloittamista huomioiden varhaiskasvatuslain mukaiset neljän (4) kuukauden tai kahden viikon hakuajat.
 
             Päätös on nähtävissä ja hyväksyttävissä/hylättävissä www.espoonvarhaiskasvatus.fi.
 
@@ -239,7 +239,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.esbosmabarnspedagogik.fi tills den har tagits upp till behandling.
 
-            Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på www.esbosmabarnspedagogik.fi.
+            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik. Du kan se och godkänna/förkasta beslutet på www.esbosmabarnspedagogik.fi.
 
             När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
 
@@ -263,7 +263,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             We have received your child’s application for early childhood education. The application period for early childhood education applications is four (4) months. The guardian who submitted the application can make changes to it at www.espoonvarhaiskasvatus.fi until its processing starts.
 
-            You will be informed of your child’s early childhood education unit approximately one month before the end of the statutory processing period. The statutory processing period of an application is four (4) months from the receipt of the application. You can see the decision and accept/reject it at www.espoonvarhaiskasvatus.fi. If you chose to have your application processed urgently, you will also need to provide a document as proof of sudden employment at a new workplace or a sudden offer of a new study place.
+            You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care. The guardian who submitted the application can make changes to it at www.espoonvarhaiskasvatus.fi until its processing starts.
 
             In this case, the minimum application period is two (2) weeks and it begins from the date on which the required document was received. When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.
 
