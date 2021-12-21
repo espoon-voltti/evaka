@@ -30,6 +30,7 @@ import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { FlexRow } from '../common/styled/containers'
 import { range } from 'lodash'
 import LocalDate from 'lib-common/local-date'
+import { Gap } from 'lib-components/white-space'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -162,9 +163,15 @@ function getDisplayCells(
           const occupancy = row.occupancies[formatDate(date, DATE_FORMAT_ISO)]
 
           if (usedValues === 'percentage') {
-            return typeof occupancy?.percentage === 'number'
-              ? formatPercentage(occupancy.percentage)
-              : ''
+            if (!occupancy) {
+              return ''
+            }
+
+            if (!occupancy.caretakers) {
+              return caretakersMissingSymbol
+            }
+
+            return formatPercentage(occupancy.percentage ?? undefined)
           } else {
             return occupancy?.[usedValues] ?? ''
           }
@@ -391,11 +398,26 @@ function Occupancies() {
                 ))}
               </Tbody>
             </TableScrollable>
+            <Gap size="s" />
+            <Legend>
+              <i>
+                {`${caretakersMissingSymbol} = ${i18n.reports.occupancies.missingCaretakersLegend}`}
+              </i>
+            </Legend>
           </>
         )}
       </ContentArea>
     </Container>
   )
 }
+
+const caretakersMissingSymbol = 'X'
+
+const Legend = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  color: ${({ theme }) => theme.colors.greyscale.dark};
+`
 
 export default Occupancies
