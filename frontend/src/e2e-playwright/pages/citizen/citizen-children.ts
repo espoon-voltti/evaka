@@ -26,6 +26,8 @@ export class CitizenChildrenPage {
 
 export class CitizenChildPage {
   constructor(private readonly page: Page) {}
+  #placements = this.page.findAllByDataQa('placement')
+  #terminatedPlacements = this.page.findAllByDataQa('terminated-placement')
 
   async assertChildNameIsShown(name: string) {
     await this.page.find(`h1:has-text("${name}")`).waitUntilVisible()
@@ -40,28 +42,40 @@ export class CitizenChildPage {
   }
 
   async assertTerminatablePlacementCount(count: number) {
-    await this.page.findAllByDataQa('placement').assertCount(count)
+    await this.#placements.assertCount(count)
   }
 
   async assertTerminatedPlacementCount(count: number) {
-    await this.page.findAllByDataQa('terminated-placement').assertCount(count)
+    await this.#terminatedPlacements.assertCount(count)
   }
 
-  async assertTerminatedPlacement(label: string) {
-    await this.page.find(`text=${label}`).waitUntilVisible()
+  getTerminatedPlacements(): Promise<string[]> {
+    return this.#terminatedPlacements.allInnerTexts()
   }
 
   async togglePlacement(label: string) {
     await this.page.find(`text=${label}`).click()
   }
 
-  async fillTerminationDate(date: LocalDate) {
-    await new TextInput(this.page.findByDataQa('termination-date')).fill(
-      date.format()
-    )
+  async fillTerminationDate(date: LocalDate, nth = 0) {
+    await new TextInput(
+      this.page.findAllByDataQa('termination-date').nth(nth)
+    ).fill(date.format())
   }
 
-  async submitTermination() {
-    await this.page.find('text=Irtisano paikka').click()
+  async submitTermination(nth = 0) {
+    await this.page.findAll('text=Irtisano paikka').nth(nth).click()
+  }
+
+  getTerminatablePlacements(): Promise<string[]> {
+    return this.#placements.allInnerTexts()
+  }
+
+  getToggledPlacements(): Promise<string[]> {
+    return this.#placements.evaluateAll((elems) =>
+      elems
+        .filter((e) => !!e.querySelector('input:checked'))
+        .map((e) => e.textContent ?? '')
+    )
   }
 }

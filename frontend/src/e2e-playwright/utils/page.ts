@@ -117,7 +117,7 @@ export class ElementCollection {
 
   async assertCount(count: number): Promise<void> {
     if (count === 0) {
-      await this.elem().waitUntilHidden()
+      await this.nth(0).waitUntilHidden()
     } else {
       await this.nth(count - 1).waitUntilVisible()
       await this.nth(count).waitUntilHidden()
