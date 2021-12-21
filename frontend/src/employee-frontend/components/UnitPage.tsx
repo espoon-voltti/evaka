@@ -131,7 +131,6 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               counter: unitData
                 .map(
                   (data) =>
-                    (data.applications?.length ?? 0) +
                     (data.placementPlans?.length ?? 0) +
                     (data.placementProposals?.filter(
                       (p) => !p.rejectedByCitizen
