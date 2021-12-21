@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { ApplicationUIContext } from '../../state/application-ui'
 import Button from 'lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
@@ -35,6 +35,15 @@ type Props = {
 
 export default React.memo(function ActionBar({ reloadApplications }: Props) {
   const { i18n } = useTranslation()
+
+  const isMounted = useRef(true)
+  useEffect(
+    () => () => {
+      isMounted.current = false
+    },
+    []
+  )
+
   const { checkedIds, setCheckedIds, status } = useContext(ApplicationUIContext)
   const [actionInFlight, setActionInFlight] = useState(false)
   const { setErrorMessage } = useContext(UIContext)
@@ -46,15 +55,22 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
   const disabled = actionInFlight || checkedIds.length === 0
   const handlePromise = (promise: Promise<void>) => {
     void promise
-      .then(() => clearApplicationList())
-      .catch(() =>
+      .then(() => {
+        if (!isMounted.current) return
+        clearApplicationList()
+      })
+      .catch(() => {
+        if (!isMounted.current) return
         setErrorMessage({
           type: 'error',
           title: i18n.common.error.unknown,
           resolveLabel: i18n.common.ok
         })
-      )
-      .finally(() => setActionInFlight(false))
+      })
+      .finally(() => {
+        if (!isMounted.current) return
+        setActionInFlight(false)
+      })
   }
 
   const actions: Action[] = [
