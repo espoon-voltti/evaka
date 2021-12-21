@@ -59,7 +59,6 @@ export default React.memo(function TabWaitingConfirmation() {
       }
       toggleOpen={() => setOpen(!open)}
     >
-      <Title size={2}>{i18n.unit.placementPlans.title}</Title>
       <div>
         <Table>
           <Thead>
