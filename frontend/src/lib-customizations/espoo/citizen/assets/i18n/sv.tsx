@@ -1730,21 +1730,24 @@ const sv: Translations = {
     buttonText: 'Ladda om sidan'
   },
   children: {
-    title: 'Barnen',
+    title: 'Barn',
     pageDescription:
-      'På denna sida ser du allmänna uppgifter angående dina barns småbarnspedagogik eller förskoleundervisning.',
+      'På denna sida ser du dina allmänna uppgifter som förknippas med dina barns småbarnspedagogik eller förskoleundervisning.',
     noChildren: 'Inga barn',
     placementTermination: {
       title: 'Uppsägning av plats',
       description:
-        'Observera att möjliga ansökningar om överföring raderas efter den sista närvarodagen om du säger upp platsen. Om ditt barn behöver platsen senare, måste du lämna in en ny ansökan.',
+        'När du uppsäger platsen observera gärna att ansökan om förflyttning försvinner efter sista närvarodag. Om du senare behöver en plats för ditt barn, måste du ansöka om den med en ny ansökan.',
       terminatedPlacements: 'Du har sagt upp platsen',
       until: (date: string) => `giltig till ${date}`,
       choosePlacement: 'Välj platsen du vill säga upp',
-      invoicedDaycare: 'Maksullinen varhaiskasvatus', // TODO i18n
+      invoicedDaycare: 'Betald småbarnspedagogik',
       lastDayInfo:
-        'Sista dagen då ditt barn behöver platsen. Platsen sägs upp efter detta datum.',
-      lastDayOfPresence: 'Sista närvarodagen',
+        'Sista dag då ditt barn behöver plats. Platsen sägs upp för att upphöra denna dag.',
+      lastDayOfPresence: 'Sista närvarodag',
+      confirmQuestion: 'Vill du säga upp platsen?',
+      confirmDescription: (date: string) =>
+        `Är du säker på att du vill säga upp platsen så att barnets sista närvarodag är den ${date}?\nUppsägning av platsen kan inte återkallas.`,
       terminate: 'Säg upp platsen'
     }
   }

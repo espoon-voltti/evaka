@@ -1715,6 +1715,9 @@ export default {
       lastDayInfo:
         'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
       lastDayOfPresence: 'Viimeinen läsnäolopäivä',
+      confirmQuestion: 'Irtisanotaanko paikka?',
+      confirmDescription: (date: string) =>
+        `Haluatko varmasti irtisanoa paikan niin, että lapsen viimeinen läsnäolopäivä on ${date}?\nPaikan irtisanomista ei voi peruuttaa.`,
       terminate: 'Irtisano paikka'
     }
   }

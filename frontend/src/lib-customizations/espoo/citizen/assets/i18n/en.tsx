@@ -1771,23 +1771,28 @@ const en: Translations = {
     buttonText: 'Reload page'
   },
   children: {
-    // TODO copy
-    title: 'Lapset',
+    title: 'Children',
     pageDescription:
-      'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
-    noChildren: 'Ei lapsia',
+      "General information related to your children's early childhood education or pre-primary education is displayed on this page.",
+    noChildren: 'No children',
     placementTermination: {
-      title: 'Paikan irtisanominen',
+      title: 'Terminating early childhood education agreement',
       description:
-        'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
-      terminatedPlacements: 'Olet irtisanonut paikan',
-      until: (date: string) => `voimassa ${date}`,
-      choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
-      invoicedDaycare: 'Maksullinen varhaiskasvatus',
+        "When terminating your child's early childhood education agreement, please note that any transfer applications will be automatically withdrawn after your child's last day of attendance. If you later need early childhood education for your child, you must submit a new application.",
+      terminatedPlacements:
+        "You have terminated your child's early childhood education agreement",
+      until: (date: string) => `valid until ${date}`,
+      choosePlacement:
+        'Select the early childhood education agreement that you want to terminate',
+      invoicedDaycare: 'Paid early childhood education',
       lastDayInfo:
-        'Viimeinen päivä, jolloin lapsesi tarvitsee paikkaa. Paikka irtisanotaan päättymään tähän päivään.',
-      lastDayOfPresence: 'Viimeinen läsnäolopäivä',
-      terminate: 'Irtisano paikka'
+        "The last day when your child needs early childhood education. Your child's early childhood education agreement will be terminated to end on this day.",
+      lastDayOfPresence: 'Last day of attendance',
+      confirmQuestion:
+        "Do you want to terminate your child's early childhood education agreement?",
+      confirmDescription: (date: string) =>
+        `Are you sure you want to terminate the agreement so that your child's last day of attendance is ${date}? Once completed, you cannot cancel the termination.`,
+      terminate: 'Terminate the agreement'
     }
   }
 }
