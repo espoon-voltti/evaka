@@ -52,6 +52,12 @@ export class Page {
     this.page.on('popup', (popup) => fn(new Page(popup)))
   }
 
+  async capturePopup(fn: () => Promise<void>): Promise<Page> {
+    const popup = new Promise<Page>((resolve) => this.onPopup(resolve))
+    await fn()
+    return popup
+  }
+
   find(selector: string) {
     return new Element(this.page.locator(selector))
   }
@@ -157,6 +163,10 @@ export class Element {
 
   async getAttribute(name: string): Promise<string | null> {
     return this.locator.getAttribute(name)
+  }
+
+  async hasAttribute(name: string): Promise<boolean> {
+    return (await this.getAttribute(name)) !== null
   }
 
   async evaluate<R>(fn: (el: HTMLElement | SVGElement) => R): Promise<R> {
