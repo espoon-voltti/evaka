@@ -141,7 +141,7 @@ export default React.memo(function MarkAbsent() {
               <span>
                 <RoundIcon
                   content={farStickyNote}
-                  color={colors.blues.medium}
+                  color={colors.main.dark}
                   size={'m'}
                 />
               </span>

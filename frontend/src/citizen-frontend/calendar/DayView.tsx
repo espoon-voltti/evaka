@@ -548,7 +548,7 @@ const Content = styled.div<{ highlight: boolean }>`
   padding: ${defaultMargins.L};
   padding-left: calc(${defaultMargins.L} - 4px);
   border-left: 4px solid
-    ${(p) => (p.highlight ? p.theme.colors.brand.secondary : 'transparent')};
+    ${(p) => (p.highlight ? p.theme.colors.main.light : 'transparent')};
 
   @media (max-width: ${tabletMin}) {
     padding: ${defaultMargins.s};

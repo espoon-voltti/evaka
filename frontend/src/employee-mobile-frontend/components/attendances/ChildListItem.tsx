@@ -63,7 +63,7 @@ export const IconBox = styled.div<{ type: AttendanceStatus }>`
       case 'ABSENT':
         return colors.greyscale.dark
       case 'DEPARTED':
-        return colors.blues.primary
+        return colors.main.primary
       case 'PRESENT':
         return colors.accents.green
       case 'COMING':
@@ -76,7 +76,7 @@ export const IconBox = styled.div<{ type: AttendanceStatus }>`
       case 'ABSENT':
         return `0 0 0 2px ${colors.greyscale.dark}`
       case 'DEPARTED':
-        return `0 0 0 2px ${colors.blues.primary}`
+        return `0 0 0 2px ${colors.main.primary}`
       case 'PRESENT':
         return `0 0 0 2px ${colors.accents.green}`
       case 'COMING':
@@ -155,12 +155,12 @@ export default React.memo(function ChildListItem({
                 type === 'ABSENT'
                   ? colors.greyscale.dark
                   : type === 'DEPARTED'
-                  ? colors.blues.primary
+                  ? colors.main.primary
                   : type === 'PRESENT'
                   ? colors.accents.green
                   : type === 'COMING'
                   ? colors.accents.water
-                  : colors.blues.medium
+                  : colors.main.dark
               }
               size="XL"
             />
@@ -197,7 +197,7 @@ export default React.memo(function ChildListItem({
                 >
                   <RoundIcon
                     content={farUsers}
-                    color={colors.blues.light}
+                    color={colors.main.light}
                     size="m"
                   />
                 </Link>

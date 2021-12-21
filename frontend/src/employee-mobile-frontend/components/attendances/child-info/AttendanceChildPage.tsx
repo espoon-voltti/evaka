@@ -205,7 +205,7 @@ export default React.memo(function AttendanceChildPage() {
                   <RoundIcon
                     size={'L'}
                     content={faCalendarTimes}
-                    color={colors.blues.primary}
+                    color={colors.main.primary}
                   />
                   <LinkButtonText>
                     {i18n.attendances.actions.markAbsentBeforehand}
@@ -306,7 +306,7 @@ function getColorByStatus(status: AttendanceStatus) {
     case 'PRESENT':
       return colors.accents.green
     case 'DEPARTED':
-      return colors.blues.medium
+      return colors.main.dark
     case 'ABSENT':
       return colors.greyscale.dark
   }
@@ -345,7 +345,7 @@ const CustomTitle = styled.h2`
   font-size: 20px;
   line-height: 30px;
   margin-top: 0;
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   text-align: center;
   margin-bottom: ${defaultMargins.xs};
 `
@@ -357,7 +357,7 @@ const GroupName = styled.div`
   font-size: 15px;
   line-height: 22px;
   text-transform: uppercase;
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   letter-spacing: 0.05rem;
 `
 
@@ -403,7 +403,7 @@ const BottomButtonWrapper = styled.div`
 const LinkButtonWithIcon = styled(Link)``
 
 const LinkButtonText = styled.span`
-  color: ${colors.blues.primary};
+  color: ${colors.main.primary};
   margin-left: ${defaultMargins.s};
   font-weight: ${fontWeights.semibold};
   font-size: 16px;

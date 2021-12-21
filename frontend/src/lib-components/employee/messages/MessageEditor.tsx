@@ -613,7 +613,7 @@ const ContainerMobile = styled.div`
 const TopBar = styled.div`
   width: 100%;
   height: 60px;
-  background-color: ${(p) => p.theme.colors.brand.primary};
+  background-color: ${(p) => p.theme.colors.main.primary};
   color: ${(p) => p.theme.colors.greyscale.white};
   display: flex;
   justify-content: space-between;
@@ -625,7 +625,7 @@ const TopBarMobile = styled.div`
   width: 100%;
   height: 60px;
   background-color: ${(p) => p.theme.colors.greyscale.lightest};
-  color: ${(p) => p.theme.colors.brand.primary};
+  color: ${(p) => p.theme.colors.main.primary};
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -313,7 +313,7 @@ export default React.memo(function Group({
             active={childNote != null || notes.childStickyNotes.length > 0}
             data-qa={`daycare-daily-note-icon-${placement.child.id}`}
             content={faStickyNote}
-            color={colors.blues.primary}
+            color={colors.main.primary}
             size="m"
             onClick={() =>
               setNotesModal({

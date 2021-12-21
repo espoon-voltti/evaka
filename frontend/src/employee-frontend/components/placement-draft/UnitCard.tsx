@@ -42,7 +42,7 @@ const Card = styled.div<{ active: boolean }>`
     active &&
     `
     box-shadow: 0px 0px 6px 4px lightgray;
-    border-top: 5px solid ${colors.brandEspoo.espooBlue};
+    border-top: 5px solid ${colors.main.dark};
     border-width: 5px 0 0 0;
   `}
 `

@@ -100,7 +100,7 @@ const UnreadCountNumber = React.memo(function UnreadCountNumber({
 const LinkToGroupMessages = styled(Link)`
   font-size: ${fontSizesMobile.h2};
   font-weight: bold;
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   margin: ${defaultMargins.xs} 0;
 `
 

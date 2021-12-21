@@ -47,7 +47,7 @@ export const UserMenu = React.memo(function UserMenu(props: Props) {
         <FontAwesomeIcon
           icon={faUserUnlock}
           size="lg"
-          color={colors.brandEspoo.espooBlue}
+          color={colors.main.dark}
         />{' '}
         <span data-qa="full-name">{props.name}</span>
       </FixedSpaceRow>

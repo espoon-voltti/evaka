@@ -35,12 +35,12 @@ export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
   justify-content: center;
   align-items: center;
   background: ${(p) =>
-    p.$primary ? colors.blues.primary : colors.greyscale.white};
-  color: ${(p) => (p.$primary ? colors.greyscale.white : colors.blues.primary)};
+    p.$primary ? colors.main.primary : colors.greyscale.white};
+  color: ${(p) => (p.$primary ? colors.greyscale.white : colors.main.primary)};
 `
 
 export const BackButton = styled(IconButton)`
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   position: absolute;
 `
 

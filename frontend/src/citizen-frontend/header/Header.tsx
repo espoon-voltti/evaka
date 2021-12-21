@@ -59,7 +59,7 @@ export default React.memo(function Header() {
 const HeaderContainer = styled.header<{ showMenu: boolean }>`
   z-index: 9;
   color: ${colors.greyscale.white};
-  background-color: ${colors.blues.primary};
+  background-color: ${colors.main.primary};
   position: ${({ showMenu }) => (showMenu ? 'fixed' : 'sticky')};
   top: 0;
   display: grid;

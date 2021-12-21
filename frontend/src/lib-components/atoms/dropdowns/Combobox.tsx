@@ -75,7 +75,7 @@ const MenuItem = styled.div`
   padding: 8px 10px;
 
   &.highlighted {
-    background-color: ${({ theme: { colors } }) => colors.brand.secondaryLight};
+    background-color: ${({ theme: { colors } }) => colors.main.lighter};
   }
 
   &.clickable {

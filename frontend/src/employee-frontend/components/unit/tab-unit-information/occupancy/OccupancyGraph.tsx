@@ -113,8 +113,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(occupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.brandEspoo.espooBlue,
-      borderColor: colors.brandEspoo.espooBlue
+      pointBackgroundColor: colors.main.dark,
+      borderColor: colors.main.dark
     })
   if (planned)
     datasets.push({

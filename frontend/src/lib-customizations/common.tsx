@@ -16,32 +16,25 @@ export { theme }
 
 // mimic lib-components/colors api:
 
-export const espooBrandColors = {
-  espooBlue: theme.colors.brand.primary,
-  espooTurquoise: theme.colors.brand.secondary,
-  espooTurquoiseLight: theme.colors.brand.secondaryLight
-}
-
 export const {
-  colors: { main: blueColors, greyscale, accents: accentColors }
+  colors: { main, greyscale, accents }
 } = theme
 
 const colors = {
-  brandEspoo: espooBrandColors,
-  blues: blueColors,
-  primary: blueColors.primary,
-  primaryHover: blueColors.medium,
-  primaryActive: blueColors.dark,
-  greyscale: greyscale,
-  accents: accentColors
+  main,
+  primary: main.primary,
+  primaryHover: main.dark,
+  primaryActive: main.dark,
+  greyscale,
+  accents
 }
 
 export const absenceColours = {
   UNKNOWN_ABSENCE: colors.accents.green,
-  OTHER_ABSENCE: colors.blues.dark,
+  OTHER_ABSENCE: colors.main.dark,
   SICKLEAVE: colors.accents.violet,
-  PLANNED_ABSENCE: colors.blues.light,
-  PARENTLEAVE: colors.blues.primary,
+  PLANNED_ABSENCE: colors.main.light,
+  PARENTLEAVE: colors.main.primary,
   FORCE_MAJEURE: colors.accents.red,
   TEMPORARY_RELOCATION: colors.accents.orange,
   TEMPORARY_VISITOR: colors.accents.yellow,

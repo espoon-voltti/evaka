@@ -55,8 +55,8 @@ const WeekDiv = styled.div`
   justify-content: center;
   align-items: center;
   padding: ${defaultMargins.s} 0 ${defaultMargins.xs};
-  background-color: ${colors.brandEspoo.espooTurquoiseLight};
-  color: ${colors.blues.dark};
+  background-color: ${colors.main.lighter};
+  color: ${colors.main.dark};
   font-weight: ${fontWeights.semibold};
   font-size: 0.875rem;
   border-bottom: 1px solid ${colors.greyscale.lighter};
@@ -121,14 +121,13 @@ const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
   position: relative;
   padding: ${defaultMargins.s} ${defaultMargins.s};
   border-bottom: 1px solid ${colors.greyscale.lighter};
-  border-left: 6px solid
-    ${(p) => (p.today ? colors.brandEspoo.espooTurquoise : 'transparent')};
+  border-left: 6px solid ${(p) => (p.today ? colors.main.light : 'transparent')};
   cursor: pointer;
 `
 
 const DayColumn = styled(FixedSpaceColumn)<{ inactive: boolean }>`
   width: 3rem;
-  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.blues.dark)};
+  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.main.dark)};
   font-weight: ${fontWeights.semibold};
 `
 
@@ -139,5 +138,5 @@ const HistoryOverlay = styled.div`
   width: 100%;
   height: 100%;
   opacity: 0.3;
-  background-color: ${colors.blues.lighter};
+  background-color: ${colors.main.lighter};
 `

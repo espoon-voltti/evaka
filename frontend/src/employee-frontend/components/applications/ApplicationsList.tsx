@@ -25,7 +25,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
 import Pagination from 'lib-components/Pagination'
-import colors, { blueColors } from 'lib-customizations/common'
+import colors, { main } from 'lib-customizations/common'
 import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -286,7 +286,7 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (
-            <RoundIcon content="L" color={blueColors.dark} size="s" />
+            <RoundIcon content="L" color={main.dark} size="s" />
           )}
           {application.siblingBasis && (
             <RoundIcon content="S" color={colors.accents.green} size="s" />

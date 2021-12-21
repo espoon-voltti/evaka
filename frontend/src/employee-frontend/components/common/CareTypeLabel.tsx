@@ -45,7 +45,7 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
       case 'daycare5yo':
         return colors.accents.greenDark
       case 'preschool':
-        return colors.blues.dark
+        return colors.main.dark
       case 'preparatory':
         return colors.accents.water
       case 'backup-care':

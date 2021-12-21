@@ -49,14 +49,14 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   ${(p) =>
     !p.isRead
       ? `
-    border-left-color: ${p.theme.colors.brand.secondary} !important;
+    border-left-color: ${p.theme.colors.main.light} !important;
     border-left-width: 6px !important;
     padding-left: calc(${defaultMargins.m} - 6px) !important;
   `
       : ''}
 
   ${(p) =>
-    p.active ? `background-color: ${p.theme.colors.brand.secondaryLight};` : ''}
+    p.active ? `background-color: ${p.theme.colors.main.lighter};` : ''}
 `
 
 export const ThreadContainer = styled.div`

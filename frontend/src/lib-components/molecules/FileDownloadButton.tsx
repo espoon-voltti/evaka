@@ -18,7 +18,7 @@ import { fileIcon } from './FileUpload'
 const DownloadButton = styled.button`
   background: none;
   border: none;
-  color: ${({ theme: { colors } }) => colors.main.medium};
+  color: ${({ theme: { colors } }) => colors.main.dark};
   cursor: pointer;
   font-size: 1rem;
   padding: 0;

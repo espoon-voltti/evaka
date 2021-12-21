@@ -230,7 +230,7 @@ export function SingleThreadView({
           icon={faAngleLeft}
           text={i18n.common.goBack}
           onClick={goBack}
-          color={colors.blues.primary}
+          color={colors.main.primary}
         />
       </ContentArea>
       <Gap size="xs" />

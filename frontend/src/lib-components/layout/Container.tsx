@@ -68,11 +68,7 @@ export const ContentArea = styled.section<ContentAreaProps>`
     padding-left: ${(p) => spacing(p.paddingHorizontal, defaultMargins.L)};
   }
   background-color: ${({ theme: { colors }, ...props }) =>
-    props.opaque
-      ? 'white'
-      : props.blue
-      ? colors.brand.secondaryLight
-      : 'transparent'};
+    props.opaque ? 'white' : props.blue ? colors.main.lighter : 'transparent'};
   position: relative;
   ${(p) => (p.fullHeight ? `min-height: 100vh` : '')}
   ${({ theme: { colors }, ...p }) =>

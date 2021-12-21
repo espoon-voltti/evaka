@@ -97,7 +97,7 @@ const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
       : p.type === 'CORRECTION'
       ? colors.accents.yellow
       : p.type === 'NEW'
-      ? colors.blues.primary
+      ? colors.main.primary
       : colors.greyscale.white};
 `
 

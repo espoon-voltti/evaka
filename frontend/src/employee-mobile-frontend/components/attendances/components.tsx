@@ -103,7 +103,7 @@ export const DailyNotes = styled.div`
 `
 
 export const BackButtonInline = styled(InlineButton)`
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
   margin-bottom: ${defaultMargins.s};
@@ -117,12 +117,12 @@ export const TimeWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   font-size: 20px;
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   font-weight: ${fontWeights.semibold};
 
   input {
     font-size: 60px;
-    color: ${colors.blues.dark};
+    color: ${colors.main.dark};
     font-family: Montserrat, sans-serif;
     font-weight: ${fontWeights.light};
     border-bottom: none;

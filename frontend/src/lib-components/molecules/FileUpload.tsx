@@ -205,7 +205,7 @@ const ProgressBar = styled.div<ProgressBarProps>`
   position: absolute;
   top: 0;
   left: 0;
-  background: ${({ theme: { colors } }) => colors.main.medium};
+  background: ${({ theme: { colors } }) => colors.main.dark};
   height: 3px;
   border-radius: 1px;
   transition: width 0.5s ease-out;
@@ -221,7 +221,7 @@ const FileDeleteButton = styled(IconButton)`
   color: ${({ theme: { colors } }) => colors.greyscale.medium};
 
   &:hover {
-    color: ${({ theme: { colors } }) => colors.main.medium};
+    color: ${({ theme: { colors } }) => colors.main.dark};
   }
 
   &:disabled {

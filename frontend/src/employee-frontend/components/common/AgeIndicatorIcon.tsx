@@ -19,7 +19,7 @@ export default React.memo(function AgeIndicatorIcon(props: Props) {
   return (
     <RoundIcon
       content={under3 ? fasArrowDown : fasArrowUp}
-      color={under3 ? colors.accents.green : colors.blues.medium}
+      color={under3 ? colors.accents.green : colors.main.dark}
       size="s"
     />
   )

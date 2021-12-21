@@ -31,10 +31,10 @@ const Tab = styled.div<{ active: boolean }>`
   justify-content: center;
   align-items: center;
   border-bottom: 3px solid
-    ${(p) => (p.active ? colors.blues.primary : 'transparent')};
+    ${(p) => (p.active ? colors.main.primary : 'transparent')};
   cursor: pointer;
 
-  color: ${colors.blues.primary};
+  color: ${colors.main.primary};
   font-family: 'Montserrat', 'Open Sans', sans-serif;
   font-size: 14px;
   text-transform: uppercase;

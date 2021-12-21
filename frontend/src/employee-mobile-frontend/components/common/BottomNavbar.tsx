@@ -37,7 +37,7 @@ const Root = styled.div`
   justify-content: space-evenly;
   align-items: center;
 
-  background: ${colors.blues.primary};
+  background: ${colors.main.primary};
   box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.15);
   margin-bottom: 0 !important;
 `
@@ -52,14 +52,14 @@ const Button = styled.div`
 `
 
 const CustomIcon = styled(FontAwesomeIcon)<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.blues.lighter : colors.blues.light)};
+  color: ${(p) => (p.selected ? colors.main.lighter : colors.main.light)};
   height: 24px !important;
   width: 24px !important;
   margin: 0;
 `
 
 const IconText = styled.span<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.blues.lighter : colors.blues.light)};
+  color: ${(p) => (p.selected ? colors.main.lighter : colors.main.light)};
   font-size: 14px;
 `
 

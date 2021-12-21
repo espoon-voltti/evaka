@@ -115,12 +115,12 @@ const TabLinkContainer = styled(NavLink)<TabContainerProps>`
     background-color: ${({ theme: { colors }, ...p }) =>
       p.$mobile ? colors.greyscale.white : `${colors.main.light}33`};
     border-bottom: ${({ theme: { colors }, ...p }) =>
-      p.$mobile ? `3px solid ${colors.main.medium}` : 'none'};
+      p.$mobile ? `3px solid ${colors.main.dark}` : 'none'};
 
     span {
       div {
         color: ${({ theme: { colors }, ...p }) =>
-          p.$mobile ? colors.main.medium : colors.greyscale.dark};
+          p.$mobile ? colors.main.dark : colors.greyscale.dark};
       }
     }
   }
@@ -150,12 +150,12 @@ const TabButtonContainer = styled.button<TabContainerProps>`
     background-color: ${({ theme: { colors }, ...p }) =>
       p.$mobile ? colors.greyscale.white : `${colors.main.light}33`};
     border-bottom: ${({ theme: { colors }, ...p }) =>
-      p.$mobile ? `3px solid ${colors.main.medium}` : 'none'};
+      p.$mobile ? `3px solid ${colors.main.dark}` : 'none'};
 
     span {
       div {
         color: ${({ theme: { colors }, ...p }) =>
-          p.$mobile ? colors.main.medium : colors.greyscale.dark};
+          p.$mobile ? colors.main.dark : colors.greyscale.dark};
       }
     }
   }

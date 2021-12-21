@@ -69,7 +69,7 @@ const Tab = styled.div<{ active?: boolean }>`
   border-bottom-width: 2px;
   border-bottom-style: solid;
   border-bottom-color: ${({ active, theme }) =>
-    active ? theme.colors.brand.primary : 'transparent'};
+    active ? theme.colors.main.primary : 'transparent'};
 
   font-size: 15px;
   font-weight: ${fontWeights.bold};
@@ -212,11 +212,7 @@ export default React.memo(function NotesModal({
           {indicator && (
             <>
               <Gap horizontal size="xs" />
-              <RoundIcon
-                content=""
-                color={colors.brandEspoo.espooTurquoise}
-                size="xs"
-              />
+              <RoundIcon content="" color={colors.main.light} size="xs" />
             </>
           )}
         </Tab>

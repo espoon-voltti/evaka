@@ -191,7 +191,7 @@ export default React.memo(function Absences({
           />
           <Gap size="L" />
           <FixedSpaceFlexWrap>
-            <StaticChip color={colors.blues.dark}>
+            <StaticChip color={colors.main.dark}>
               {i18n.absences.absenceTypes.OTHER_ABSENCE}
             </StaticChip>
             <StaticChip color={colors.accents.violet}>
@@ -203,7 +203,7 @@ export default React.memo(function Absences({
             <StaticChip color={colors.accents.water}>
               {i18n.absences.absenceTypes.PLANNED_ABSENCE}
             </StaticChip>
-            <StaticChip color={colors.blues.primary}>
+            <StaticChip color={colors.main.primary}>
               {i18n.absences.absenceTypes.PARENTLEAVE}
             </StaticChip>
             <StaticChip color={colors.accents.red}>
@@ -388,7 +388,7 @@ const AbsencesPage = styled.div`
     border-width: ${cellSize} ${cellSize} 0 0;
 
     &-OTHER_ABSENCE {
-      border-top-color: ${colors.blues.dark};
+      border-top-color: ${colors.main.dark};
     }
 
     &-SICKLEAVE {
@@ -400,7 +400,7 @@ const AbsencesPage = styled.div`
     }
 
     &-PLANNED_ABSENCE {
-      border-top-color: ${colors.blues.light};
+      border-top-color: ${colors.main.light};
     }
 
     &-TEMPORARY_RELOCATION {
@@ -412,7 +412,7 @@ const AbsencesPage = styled.div`
     }
 
     &-PARENTLEAVE {
-      border-top-color: ${colors.blues.primary};
+      border-top-color: ${colors.main.primary};
     }
 
     &-FORCE_MAJEURE {
@@ -432,7 +432,7 @@ const AbsencesPage = styled.div`
     border-width: 0 0 ${cellSize} ${cellSize};
 
     &-OTHER_ABSENCE {
-      border-bottom-color: ${colors.blues.dark};
+      border-bottom-color: ${colors.main.dark};
     }
 
     &-SICKLEAVE {
@@ -444,7 +444,7 @@ const AbsencesPage = styled.div`
     }
 
     &-PLANNED_ABSENCE {
-      border-bottom-color: ${colors.blues.light};
+      border-bottom-color: ${colors.main.light};
     }
 
     &-TEMPORARY_RELOCATION {
@@ -456,7 +456,7 @@ const AbsencesPage = styled.div`
     }
 
     &-PARENTLEAVE {
-      border-bottom-color: ${colors.blues.primary};
+      border-bottom-color: ${colors.main.primary};
     }
 
     &-FORCE_MAJEURE {
@@ -473,7 +473,7 @@ const AbsencesPage = styled.div`
   }
 
   .absence-cell-selected {
-    border: 2px solid ${colors.blues.primary};
+    border: 2px solid ${colors.main.primary};
     border-radius: 2px;
 
     .absence-cell-left,

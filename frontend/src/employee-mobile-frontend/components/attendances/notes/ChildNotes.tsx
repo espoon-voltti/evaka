@@ -238,10 +238,10 @@ const Tab = styled.div<TabProps>`
   text-transform: uppercase;
 
   background: ${(props) =>
-    props.selected ? colors.blues.lighter : colors.greyscale.white};
+    props.selected ? colors.main.lighter : colors.greyscale.white};
 
   color: ${(props) =>
-    props.selected ? colors.blues.dark : colors.greyscale.dark};
+    props.selected ? colors.main.dark : colors.greyscale.dark};
 `
 
 const TopRow = styled.div`

@@ -247,7 +247,7 @@ const Grid = styled.div<{ includeWeekends: boolean }>`
 `
 
 const HeadingCell = styled.div`
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   font-family: 'Open Sans', sans-serif;
   font-style: normal;
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
@@ -274,7 +274,7 @@ const DayCell = styled.div<{ today: boolean; selected: boolean }>`
   ${(p) =>
     p.today
       ? css`
-          border-left: 4px solid ${colors.brandEspoo.espooTurquoise};
+          border-left: 4px solid ${colors.main.light};
           padding-left: calc(${defaultMargins.s} - 3px);
         `
       : ''}
@@ -300,7 +300,7 @@ const DayCellHeader = styled.div`
 const DayCellDate = styled.div<{ inactive: boolean }>`
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.blues.dark)};
+  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.main.dark)};
   font-weight: ${fontWeights.semibold};
   font-size: 1.25rem;
 `

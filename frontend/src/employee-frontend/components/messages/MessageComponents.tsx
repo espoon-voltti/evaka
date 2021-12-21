@@ -19,7 +19,7 @@ export const MessageRow = styled.div<{ unread?: boolean }>`
   }
   border-bottom: 1px solid ${colors.greyscale.lighter};
   border-left: ${(p) =>
-    `6px solid ${p.unread ? colors.brandEspoo.espooTurquoise : 'transparent'}`};
+    `6px solid ${p.unread ? colors.main.light : 'transparent'}`};
 `
 export const Participants = styled.div<{ unread?: boolean }>`
   color: ${(p) =>

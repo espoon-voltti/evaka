@@ -79,7 +79,7 @@ export default React.memo(function OccupancyCard({
 
   const color =
     type == 'confirmed'
-      ? colors.brandEspoo.espooBlue
+      ? colors.main.dark
       : type == 'planned'
       ? colors.accents.water
       : type == 'realized'
@@ -94,9 +94,7 @@ export default React.memo(function OccupancyCard({
         </Title>
         <FontAwesomeIcon
           icon={active ? faEye : faEyeSlash}
-          color={
-            active ? colors.brandEspoo.espooBlue : colors.greyscale.lighter
-          }
+          color={active ? colors.main.dark : colors.greyscale.lighter}
           size="lg"
         />
       </HeaderContainer>

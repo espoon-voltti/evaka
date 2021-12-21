@@ -31,7 +31,7 @@ export default React.memo(function CalendarModal({
 })
 
 const Modal = styled.div`
-  background: ${(p) => p.theme.colors.brand.secondaryLight};
+  background: ${(p) => p.theme.colors.main.lighter};
   box-shadow: 0px 10px 24px 24px #0f0f0f14;
   z-index: 20;
   position: fixed;
