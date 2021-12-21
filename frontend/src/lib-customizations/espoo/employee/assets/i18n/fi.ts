@@ -2440,7 +2440,8 @@ export const fi = {
           raw: 'Summa ja kasvattajamäärä erikseen'
         }
       },
-      average: 'Keskiarvo'
+      average: 'Keskiarvo',
+      missingCaretakersLegend: 'kasvattajien lukumäärä puuttuu'
     },
     invoices: {
       title: 'Laskujen täsmäytys',
