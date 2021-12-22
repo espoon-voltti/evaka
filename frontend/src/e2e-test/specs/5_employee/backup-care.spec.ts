@@ -26,7 +26,6 @@ import {
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoManager } from '../../config/users'
-import { formatISODateString } from '../../utils/dates'
 import LocalDate from 'lib-common/local-date'
 import config from 'e2e-test-common/config'
 
@@ -73,7 +72,7 @@ test('daycare has one backup care child missing group', async (t) => {
     .eql(`${childFixture.lastName} ${childFixture.firstName}`)
   await t
     .expect(row.childDateOfBirth.textContent)
-    .eql(formatISODateString(childFixture.dateOfBirth))
+    .eql(LocalDate.parseIso(childFixture.dateOfBirth).format())
   await t
     .expect(row.placementDuration.textContent)
     .eql('01.02.2022 - 03.02.2022')
