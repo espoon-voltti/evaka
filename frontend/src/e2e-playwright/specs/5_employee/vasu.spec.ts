@@ -397,5 +397,29 @@ describe('Vasu document page', () => {
         LocalDate.today().format()
       )
     })
+
+    const markDocumentClosed = async () => {
+      const vasuPage = await openDocument()
+      await vasuPage.markClosedButton.click()
+      await vasuPage.modalOkButton.click()
+      await vasuPage.modalOkButton.click()
+    }
+
+    test('Mark a document closed', async () => {
+      let vasuPage = await openDocument()
+
+      await finalizeDocument()
+      await markDocumentReviewed()
+      await markDocumentClosed()
+
+      vasuPage = await openDocument()
+      await vasuPage.assertDocumentVisible()
+
+      await waitUntilEqual(() => vasuPage.documentState(), 'Päättynyt')
+      await waitUntilEqual(
+        () => vasuPage.closedDate(),
+        LocalDate.today().format()
+      )
+    })
   })
 })
