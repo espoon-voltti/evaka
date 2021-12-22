@@ -423,22 +423,38 @@ class ApplicationProcessPage {
       .waitUntilVisible()
   }
 
-  placementPlans = new PlacementPlanSection(this.page)
+  waitingConfirmation = new WaitingConfirmationSection(
+    this.page.find('[data-qa="waiting-confirmation-section"]')
+  )
   placementProposals = new PlacementProposalsSection(this.page)
 }
 
-class PlacementPlanSection {
-  constructor(private readonly page: Page) {}
-
-  #waitingGuardianConfirmationRows = this.page.findAll(
-    '[data-qa="placement-plan-row"]'
+class WaitingConfirmationSection extends Element {
+  #notificationCounter = this.find('[data-qa="notification-counter"]')
+  #rows = this.findAll('[data-qa="placement-plan-row"]')
+  #rejectedRows = this.findAll(
+    '[data-qa="placement-plan-row"][data-rejected="true"]'
   )
 
-  async assertWaitingGuardianConfirmationRowCount(count: number) {
+  async assertNotificationCounter(value: number) {
     await waitUntilEqual(
-      () => this.#waitingGuardianConfirmationRows.count(),
-      count
+      () => this.#notificationCounter.innerText,
+      value.toString()
     )
+  }
+
+  async assertRowCount(count: number) {
+    await waitUntilEqual(() => this.#rows.count(), count)
+  }
+
+  async assertRejectedRowCount(count: number) {
+    await waitUntilEqual(() => this.#rejectedRows.count(), count)
+  }
+
+  async assertRow(applicationId: string, rejected: boolean) {
+    await this.find(
+      `[data-qa="placement-plan-row"][data-application-id="${applicationId}"][data-rejected=${rejected.toString()}]`
+    ).waitUntilVisible()
   }
 }
 

@@ -147,24 +147,21 @@ SELECT
     pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
     p.id as child_id, p.first_name, p.last_name, p.date_of_birth, (d.status = 'REJECTED'::decision_status AND d.updated > now() - interval '2 week') AS rejected_by_citizen
 FROM placement_plan pp
-LEFT OUTER JOIN application a ON pp.application_id = a.id
-LEFT OUTER JOIN person p ON a.child_id = p.id
+LEFT JOIN application a ON pp.application_id = a.id
+LEFT JOIN person p ON a.child_id = p.id
 LEFT JOIN decision d ON d.application_id = a.id
-WHERE pp.unit_id = :unitId AND (
-                                a.status = ANY(:statuses::application_status_type[])
-                                    AND  (
-                                        (
-                                            a.status != 'REJECTED'::application_status_type
-                                            AND deleted = false
-                                        )
-                                        OR (
-                                            d.status = 'REJECTED'::decision_status
-                                            AND a.status = 'REJECTED'::application_status_type
-                                            AND d.updated > now() - interval '2 week'
-                                        )
-                                        AND pp.unit_confirmation_status != 'REJECTED'::confirmation_status
-                                     )
-                             )
+WHERE
+    pp.unit_id = :unitId AND
+    a.status = ANY(:statuses::application_status_type[]) AND
+    (
+        (a.status != 'REJECTED'::application_status_type AND pp.deleted = false) OR
+        (
+            d.status = 'REJECTED'::decision_status AND 
+            a.status = 'REJECTED'::application_status_type AND
+            d.updated > now() - interval '2 week'
+        )
+    ) AND
+    pp.unit_confirmation_status != 'REJECTED'::confirmation_status
     ${if (to != null) " AND (start_date <= :to OR preschool_daycare_start_date <= :to)" else ""}
     ${if (from != null) " AND (end_date >= :from OR preschool_daycare_end_date >= :from)" else ""} 
     """
