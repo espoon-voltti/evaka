@@ -852,9 +852,7 @@ VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
     .bind("endDate", backupCare.period.end)
     .execute()
 
-fun Database.Transaction.insertApplication(application: ApplicationWithForm): ApplicationId {
-    val id = application.id ?: ApplicationId(UUID.randomUUID())
-
+fun Database.Transaction.insertApplication(application: DevApplicationWithForm): ApplicationId {
     //language=sql
     val sql =
         """
@@ -863,7 +861,7 @@ fun Database.Transaction.insertApplication(application: ApplicationWithForm): Ap
         """.trimIndent()
 
     createUpdate(sql)
-        .bind("id", id)
+        .bind("id", application.id)
         .bind("sentDate", application.sentDate)
         .bind("dueDate", application.dueDate)
         .bind("applicationStatus", application.status)
@@ -876,10 +874,10 @@ fun Database.Transaction.insertApplication(application: ApplicationWithForm): Ap
         .bind("otherGuardianId", application.otherGuardianId)
         .execute()
 
-    return id
+    return application.id
 }
 
-fun Database.Transaction.insertApplicationForm(applicationForm: ApplicationForm): UUID {
+fun Database.Transaction.insertApplicationForm(applicationForm: DevApplicationForm): UUID {
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE

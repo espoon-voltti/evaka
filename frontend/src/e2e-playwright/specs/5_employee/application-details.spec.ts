@@ -154,8 +154,12 @@ describe('Application details', () => {
     await createPlacementPlan(restrictedDetailsGuardianApplication.id, {
       unitId: fixtures.preschoolFixture.id,
       period: {
-        start: restrictedDetailsGuardianApplication.form.preferredStartDate,
-        end: restrictedDetailsGuardianApplication.form.preferredStartDate
+        start:
+          restrictedDetailsGuardianApplication.form.preferences.preferredStartDate?.formatIso() ??
+          '',
+        end:
+          restrictedDetailsGuardianApplication.form.preferences.preferredStartDate?.formatIso() ??
+          ''
       }
     })
     await execSimpleApplicationAction(
@@ -187,8 +191,12 @@ describe('Application details', () => {
     await createPlacementPlan(singleParentApplication.id, {
       unitId: fixtures.preschoolFixture.id,
       period: {
-        start: singleParentApplication.form.preferredStartDate,
-        end: singleParentApplication.form.preferredStartDate
+        start:
+          singleParentApplication.form.preferences.preferredStartDate?.formatIso() ??
+          '',
+        end:
+          singleParentApplication.form.preferences.preferredStartDate?.formatIso() ??
+          ''
       }
     })
     await execSimpleApplicationAction(

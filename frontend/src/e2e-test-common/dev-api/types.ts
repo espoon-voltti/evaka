@@ -7,13 +7,15 @@ import LocalDate from 'lib-common/local-date'
 import { JsonOf } from 'lib-common/json'
 import {
   ApplicationOrigin,
-  ApplicationStatus
+  ApplicationStatus,
+  ApplicationType
 } from 'lib-common/generated/enums'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { ApplicationForm } from 'lib-common/generated/api-types/application'
 
 type ISODate = string
 type Timestamp = string
@@ -307,6 +309,7 @@ export type UserRole =
 
 export interface Application {
   id: UUID
+  type: ApplicationType
   createdDate?: ISODate
   modifiedDate?: ISODate
   sentDate?: ISODate
@@ -320,29 +323,6 @@ export interface Application {
   transferApplication: boolean
   otherGuardianId?: UUID
   form: ApplicationForm
-}
-
-export interface ApplicationForm {
-  type: string
-  child: ApplicationChild
-  guardian: ApplicationAdult
-  apply: ApplicationApply
-  urgent: boolean
-  partTime: boolean
-  connectedDaycare: boolean
-  preferredStartDate: ISODate
-  serviceStart: ISODate
-  serviceEnd: ISODate
-  extendedCare: boolean
-  careDetails: ApplicationCareDetails
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus
-  guardian2?: ApplicationAdult
-  hasOtherAdult: boolean
-  otherAdults: ApplicationAdult[]
-  hasOtherChildren: boolean
-  otherChildren: ApplicationChild[]
-  docVersion: number
-  additionalDetails: ApplicationDaycareAdditionalDetails
 }
 
 export type OtherGuardianAgreementStatus =

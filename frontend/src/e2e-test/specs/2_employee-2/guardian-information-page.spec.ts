@@ -66,8 +66,8 @@ fixture('Employee - Guardian Information')
       {
         ...decisionFixture(
           application.id,
-          application.form.preferredStartDate,
-          application.form.preferredStartDate
+          application.form.preferences.preferredStartDate.formatIso(),
+          application.form.preferences.preferredStartDate.formatIso()
         ),
         employeeId: employee.data.id
       }

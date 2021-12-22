@@ -16,7 +16,6 @@ import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
 import { enduserLogin } from 'e2e-playwright/utils/user'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
-import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
 
 let page: Page
@@ -58,7 +57,7 @@ describe('Citizen applications list', () => {
       application.id,
       'Esiopetushakemus',
       fixtures.daycareFixture.name,
-      LocalDate.parseIso(application.form.preferredStartDate).format(),
+      application.form.preferences.preferredStartDate?.format() ?? '',
       'Lähetetty'
     )
   })
@@ -86,7 +85,7 @@ describe('Citizen applications list', () => {
       application.id,
       'Varhaiskasvatushakemus',
       fixtures.daycareFixture.name,
-      LocalDate.parseIso(application.form.preferredStartDate).format(),
+      application.form.preferences.preferredStartDate?.format() ?? '',
       'Vahvistettavana huoltajalla'
     )
   })

@@ -6,7 +6,6 @@ import { format } from 'date-fns'
 import config from '../config'
 import {
   Application,
-  ApplicationForm,
   BackupCare,
   CareArea,
   Child,
@@ -50,11 +49,12 @@ import {
 } from './index'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
-import { ApplicationStatus } from 'lib-common/generated/enums'
+import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import { UUID } from 'lib-common/types'
+import { ApplicationForm } from 'lib-common/generated/api-types/application'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
@@ -558,103 +558,87 @@ export const adultFixtureWihtoutSSN = {
 }
 
 const applicationForm = (
-  type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB',
+  type: ApplicationType,
   child: PersonDetail,
   guardian: PersonDetail,
-  guardian2Phone = '',
-  guardian2Email = '',
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
-  preferredUnits: string[] = [daycareFixture.id],
-  connectedDaycare = false,
-  startDate: LocalDate | null = null
+  guardian2Phone: string,
+  guardian2Email: string,
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus,
+  preferredStartDate: LocalDate,
+  preferredUnits: string[],
+  connectedDaycare = false
 ): ApplicationForm => {
-  if (!startDate) {
-    // Try to make sure there's an active preschool term for the preferred start date
-    startDate = LocalDate.today()
-    if (
-      type === 'PRESCHOOL' &&
-      // May-Aug
-      [5, 6, 7, 8].includes(startDate.month)
-    ) {
-      // => Sep
-      startDate = startDate.withMonth(9)
-    }
+  const secondGuardian =
+    guardian2Phone || guardian2Email || otherGuardianAgreementStatus
+      ? {
+          phoneNumber: guardian2Phone,
+          email: guardian2Email,
+          agreementStatus: otherGuardianAgreementStatus
+        }
+      : null
 
-    // Move daycare application start date to August if current date is in July
-    if (type === 'DAYCARE' && 7 === startDate.month) {
-      startDate = startDate.withMonth(8)
-    }
-  }
+  const serviceNeed =
+    type === 'PRESCHOOL' && !connectedDaycare
+      ? null
+      : {
+          startTime: '08:00',
+          endTime: '16:00',
+          partTime: false,
+          shiftCare: false,
+          serviceNeedOption: null
+        }
 
   return {
-    type,
-    additionalDetails: {
-      allergyType: '',
-      dietType: '',
-      otherInfo: ''
-    },
-    apply: {
-      preferredUnits: preferredUnits,
-      siblingBasis: false
-    },
-    careDetails: {
-      assistanceNeeded: false
-    },
     child: {
-      firstName: child.firstName,
-      lastName: child.lastName,
-      socialSecurityNumber: child.ssn,
-      address: {
-        street: child.streetAddress,
-        postalCode: child.postalCode,
-        city: child.postOffice,
-        editable: false
+      dateOfBirth: LocalDate.parseNullableIso(child.dateOfBirth),
+      person: {
+        ...child,
+        socialSecurityNumber: child.ssn ?? null
       },
+      address: {
+        street: child.streetAddress ?? '',
+        postalCode: child.postalCode ?? '',
+        postOffice: child.postOffice ?? ''
+      },
+      futureAddress: null,
       nationality: 'FI',
       language: 'fi',
-      restricted: false
+      allergies: '',
+      diet: '',
+      assistanceNeeded: false,
+      assistanceDescription: ''
     },
-    connectedDaycare: type === 'PRESCHOOL' && connectedDaycare,
-    docVersion: 0,
-    extendedCare: false,
     guardian: {
-      firstName: guardian.firstName,
-      lastName: guardian.lastName,
-      socialSecurityNumber: guardian.ssn,
-      address: {
-        street: guardian.streetAddress,
-        postalCode: guardian.postalCode,
-        city: guardian.postOffice,
-        editable: false
+      person: {
+        ...guardian,
+        socialSecurityNumber: guardian.ssn ?? null
       },
-      phoneNumber: guardian.phone,
-      email: guardian.email ?? undefined,
-      restricted: false
-    },
-    guardian2: {
-      firstName: '',
-      lastName: '',
-      socialSecurityNumber: '',
+      phoneNumber: guardian.phone ?? '',
+      email: guardian.email ?? '',
       address: {
-        street: '',
-        postalCode: '',
-        city: '',
-        editable: false
+        street: guardian.streetAddress ?? '',
+        postalCode: guardian.postalCode ?? '',
+        postOffice: guardian.postOffice ?? ''
       },
-      phoneNumber: guardian2Phone,
-      email: guardian2Email,
-      restricted: false
+      futureAddress: null
     },
-    hasOtherAdult: false,
-    hasOtherChildren: false,
-    otherAdults: [],
+    secondGuardian,
+    otherPartner: null,
+    maxFeeAccepted: false,
     otherChildren: [],
-    partTime: false,
-    preferredStartDate: startDate.formatIso(),
-    serviceEnd: '08:00',
-    serviceStart: '16:00',
-    urgent: false,
-    otherGuardianAgreementStatus
+    preferences: {
+      preferredStartDate,
+      preferredUnits: preferredUnits.map((id) => ({ id, name: id })),
+      preparatory: false,
+      serviceNeed,
+      siblingBasis: null,
+      urgent: false
+    },
+    clubDetails: {
+      wasOnClubCare: false,
+      wasOnDaycare: false
+    },
+    otherInfo: ''
   }
 }
 
@@ -668,10 +652,11 @@ export const applicationFixture = (
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false,
   status: ApplicationStatus = 'SENT',
-  startDate: LocalDate | null = null,
+  preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
   transferApplication = false
 ): Application => ({
   id: applicationFixtureId,
+  type: type,
   childId: child.id,
   guardianId: guardian.id,
   otherGuardianId: otherGuardian?.id,
@@ -679,12 +664,12 @@ export const applicationFixture = (
     type,
     child,
     guardian,
-    otherGuardian?.phone,
-    otherGuardian?.email ?? undefined,
+    otherGuardian?.phone ?? '',
+    otherGuardian?.email ?? '',
     otherGuardianAgreementStatus,
+    preferredStartDate,
     preferredUnits,
-    connectedDaycare,
-    startDate
+    connectedDaycare
   ),
   checkedByAdmin: false,
   hideFromGuardian: false,

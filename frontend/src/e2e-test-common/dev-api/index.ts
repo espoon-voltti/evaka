@@ -91,11 +91,7 @@ export async function insertApplications(
   fixture: Application[]
 ): Promise<void> {
   try {
-    const appWithFormStrings = fixture.map((application) => ({
-      ...application,
-      form: JSON.stringify(application.form)
-    }))
-    await devClient.post(`/applications`, appWithFormStrings)
+    await devClient.post(`/applications`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
