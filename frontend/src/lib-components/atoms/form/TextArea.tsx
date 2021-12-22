@@ -142,7 +142,7 @@ const StyledTextArea = styled(TextareaAutosize)`
   &:focus {
     border-width: 2px;
     border-style: solid;
-    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
   }
 
   &.success,

@@ -131,7 +131,7 @@ const SelectionChipWrapper = styled.div`
 
   &:focus,
   &:focus-within {
-    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.main.dark};
     border-radius: 1000px;
     margin: -2px;
   }

@@ -55,7 +55,7 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
       case 'temporary':
         return colors.accents.violet
       case 'school-shift-care':
-        return colors.accents.petrol
+        return colors.greyscale.dark
       default:
         return colors.greyscale.white
     }

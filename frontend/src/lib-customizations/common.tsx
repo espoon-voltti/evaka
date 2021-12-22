@@ -16,38 +16,32 @@ export { theme }
 
 // mimic lib-components/colors api:
 
-export const {
-  colors: { main, greyscale, accents }
-} = theme
+export const { colors } = theme
 
-const colors = {
-  main,
-  greyscale,
-  accents
-}
+const { main, greyscale, accents } = colors
 
 export const absenceColours = {
-  UNKNOWN_ABSENCE: colors.accents.successGreen,
-  OTHER_ABSENCE: colors.main.dark,
-  SICKLEAVE: colors.accents.violet,
-  PLANNED_ABSENCE: colors.main.light,
-  PARENTLEAVE: colors.main.primary,
-  FORCE_MAJEURE: colors.accents.dangerRed,
-  TEMPORARY_RELOCATION: colors.accents.warningOrange,
-  TEMPORARY_VISITOR: colors.accents.peach,
-  PRESENCE: colors.greyscale.white
+  UNKNOWN_ABSENCE: accents.successGreen,
+  OTHER_ABSENCE: main.dark,
+  SICKLEAVE: accents.violet,
+  PLANNED_ABSENCE: main.light,
+  PARENTLEAVE: main.primary,
+  FORCE_MAJEURE: accents.dangerRed,
+  TEMPORARY_RELOCATION: accents.warningOrange,
+  TEMPORARY_VISITOR: accents.peach,
+  PRESENCE: greyscale.white
 }
 
 export const applicationBasisColors = {
-  ADDITIONAL_INFO: colors.main.dark,
-  ASSISTANCE_NEED: colors.accents.turquoise,
-  CLUB_CARE: colors.accents.orangeDark,
-  DAYCARE: colors.accents.warningOrange,
-  DUPLICATE_APPLICATION: colors.accents.emerald,
-  EXTENDED_CARE: colors.main.light,
-  HAS_ATTACHMENTS: colors.accents.pink,
-  SIBLING_BASIS: colors.accents.successGreen,
-  URGENT: colors.accents.dangerRed
+  ADDITIONAL_INFO: main.dark,
+  ASSISTANCE_NEED: accents.turquoise,
+  CLUB_CARE: accents.orangeDark,
+  DAYCARE: accents.warningOrange,
+  DUPLICATE_APPLICATION: accents.emerald,
+  EXTENDED_CARE: main.light,
+  HAS_ATTACHMENTS: accents.pink,
+  SIBLING_BASIS: accents.successGreen,
+  URGENT: accents.dangerRed
 }
 
 export const translationsMergeCustomizer = (

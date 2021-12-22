@@ -84,7 +84,7 @@ const StyledButton = styled.button<ButtonProps>`
   margin: -6px;
 
   &:focus {
-    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
   }
 
   .icon-wrapper {

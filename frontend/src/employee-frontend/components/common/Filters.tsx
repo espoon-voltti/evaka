@@ -160,7 +160,7 @@ const SearchInput = styled.input<{ background?: string }>`
     border-width: 2px;
     border-radius: 2px;
     border-style: solid;
-    border-color: ${colors.accents.petrol};
+    border-color: ${colors.main.primaryFocus};
     margin-top: -2px;
     padding-left: 53px;
     margin-bottom: -2px;

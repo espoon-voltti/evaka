@@ -16,7 +16,8 @@ const theme: Theme = {
     main: {
       ...blueColors,
       primaryHover: blueColors.dark,
-      primaryActive: blueColors.dark
+      primaryActive: blueColors.dark,
+      primaryFocus: blueColors.light
     },
     greyscale: {
       darkest: '#091c3b',
@@ -39,8 +40,7 @@ const theme: Theme = {
       turquoise: '#7ff6fc',
       mint: '#bcfdce',
       lightBlue: '#c9d4dd',
-      pink: '#fca5c7',
-      petrol: '#1f6390'
+      pink: '#fca5c7'
     }
   },
   typography: {

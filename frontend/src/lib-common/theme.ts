@@ -9,6 +9,7 @@ export interface Theme {
       primary: string // main 2
       primaryHover: string
       primaryActive: string
+      primaryFocus: string
       light: string // main 3
       lighter: string // main 4
     }
@@ -34,8 +35,6 @@ export interface Theme {
       mint: string // 11
       lightBlue: string // 12
       pink: string // 13
-      /** @deprecated */
-      petrol: string // TODO this is not in the spec
     }
   }
   typography: {

@@ -33,7 +33,7 @@ const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
   }
 
   &:focus {
-    outline: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
+    outline: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
     outline-offset: 2px;
   }
 

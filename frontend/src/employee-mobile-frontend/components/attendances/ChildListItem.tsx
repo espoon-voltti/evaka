@@ -189,7 +189,7 @@ export default React.memo(function ChildListItem({
                 >
                   <RoundIcon
                     content={farStickyNote}
-                    color={colors.accents.petrol}
+                    color={colors.accents.infoBlue}
                     size="m"
                   />
                 </Link>

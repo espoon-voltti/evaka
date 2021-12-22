@@ -75,7 +75,7 @@ const RadioInput = styled.input<SizeProps>`
 
   &:focus {
     border-width: 2px;
-    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
   }
 
   &:disabled {

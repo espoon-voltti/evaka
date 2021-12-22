@@ -41,7 +41,7 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   border: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
 
   &:focus {
-    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
     margin: -1px 0;
     padding: ${defaultMargins.s} calc(${defaultMargins.m} - 1px);
   }

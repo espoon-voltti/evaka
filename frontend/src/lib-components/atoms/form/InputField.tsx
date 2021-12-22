@@ -67,7 +67,7 @@ export const StyledInput = styled.input<StyledInputProps>`
   &:focus {
     border-width: 2px;
     border-style: solid;
-    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
     margin-top: -2px;
     margin-bottom: -1px;
     padding-${(p) => (p.align === 'right' ? 'right' : 'left')}: 10px;
