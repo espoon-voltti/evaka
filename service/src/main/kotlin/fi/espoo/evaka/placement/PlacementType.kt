@@ -29,7 +29,7 @@ enum class PlacementType {
         PREPARATORY_DAYCARE -> true
         TEMPORARY_DAYCARE -> true
         TEMPORARY_DAYCARE_PART_DAY -> true
-        SCHOOL_SHIFT_CARE -> true
+        SCHOOL_SHIFT_CARE -> false
     }
 
     companion object {
