@@ -9,6 +9,7 @@ import {
   AuthorsSection,
   ConsiderationsSection,
   DiscussionSection,
+  EvaluationSection,
   GoalsSection,
   InfoSharedToSection,
   OtherDocsAndPlansSection,
@@ -69,6 +70,10 @@ class VasuPageCommon {
 
   get discussionSection(): DiscussionSection {
     return new DiscussionSection(this.getDocumentSection(8))
+  }
+
+  get evaluationSection(): EvaluationSection {
+    return new EvaluationSection(this.getDocumentSection(9))
   }
 
   get followupQuestionCount(): Promise<number> {

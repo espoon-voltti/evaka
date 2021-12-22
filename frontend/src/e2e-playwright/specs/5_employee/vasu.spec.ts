@@ -286,9 +286,44 @@ describe('Vasu document page', () => {
         'Everything is awesome'
       )
     })
+
+    test('Fill the evaluation section', async () => {
+      await finalizeDocument()
+      const vasuEditPage = await editDocument()
+      const evaluation = vasuEditPage.evaluationSection
+
+      await evaluation.dateInput.fill('1.12.2021')
+      await evaluation.participantsInput.fill('Mom, dad, and teacher')
+      await evaluation.collaborationWithGuardiansInput.fill(
+        'Collaboration is very good'
+      )
+      await evaluation.evaluationOfGoalsInput.fill(
+        'All goals reached well ahead of time'
+      )
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(() => vasuPage.evaluationSection.date, '01.12.2021')
+      await waitUntilEqual(
+        () => vasuPage.evaluationSection.participants,
+        'Mom, dad, and teacher'
+      )
+      await waitUntilEqual(
+        () => vasuPage.evaluationSection.collaborationWithGuardians,
+        'Collaboration is very good'
+      )
+      await waitUntilEqual(
+        () => vasuPage.evaluationSection.evaluationOfGoals,
+        'All goals reached well ahead of time'
+      )
+    })
   })
 
   describe('Followup questions', () => {
+    beforeAll(async () => {
+      vasuDocId = await insertVasuDocument(childId, templateId)
+    })
+
     test('An unpublished vasu document has no followup questions', async () => {
       const vasuPage = await openDocument()
       await waitUntilEqual(() => vasuPage.followupQuestionCount, 0)

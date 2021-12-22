@@ -113,3 +113,15 @@ export class DiscussionSection extends SimpleTextAreaSection {
   present = this.values.nth(1).innerText
   collaborationAndOpinion = this.values.nth(2).innerText
 }
+
+export class EvaluationSection extends SimpleTextAreaSection {
+  dateInput = new TextInput(this.find('[data-qa="date-question-picker"]'))
+  participantsInput = new TextInput(this.textareas.nth(0))
+  collaborationWithGuardiansInput = new TextInput(this.textareas.nth(1))
+  evaluationOfGoalsInput = new TextInput(this.textareas.nth(2))
+
+  date = this.values.nth(0).innerText
+  participants = this.values.nth(1).innerText
+  collaborationWithGuardians = this.values.nth(2).innerText
+  evaluationOfGoals = this.values.nth(3).innerText
+}
