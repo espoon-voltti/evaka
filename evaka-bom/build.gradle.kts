@@ -61,6 +61,9 @@ dependencies {
         api("redis.clients:jedis:3.7.0")
         api("org.apache.logging.log4j:log4j-api:2.17.0")
         api("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
+        api("ch.qos.logback:logback-access:1.2.9")
+        api("ch.qos.logback:logback-classic:1.2.9")
+        api("ch.qos.logback:logback-core:1.2.9")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
