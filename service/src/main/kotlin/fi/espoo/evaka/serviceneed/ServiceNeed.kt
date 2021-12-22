@@ -83,6 +83,7 @@ data class ServiceNeedOption(
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
     val voucherValueDescriptionSv: String,
+    val active: Boolean,
     val updated: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 

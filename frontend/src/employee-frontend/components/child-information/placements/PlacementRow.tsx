@@ -210,6 +210,7 @@ export default React.memo(function PlacementRow({
             }
           />
         }
+        data-qa={`placement-${placement.id}`}
       >
         <DataRow>
           <DataLabel>{i18n.childInformation.placements.startDate}</DataLabel>

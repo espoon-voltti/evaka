@@ -47,6 +47,7 @@ export interface ServiceNeedCreateRequest {
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedOption
 */
 export interface ServiceNeedOption {
+  active: boolean
   daycareHoursPerWeek: number
   defaultOption: boolean
   feeCoefficient: number

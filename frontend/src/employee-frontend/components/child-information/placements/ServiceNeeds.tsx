@@ -61,7 +61,9 @@ export default React.memo(function ServiceNeeds({
 
   const options = serviceNeedOptions.filter(
     (option) =>
-      option.validPlacementType === placementType && !option.defaultOption
+      option.validPlacementType === placementType &&
+      !option.defaultOption &&
+      option.active
   )
 
   const placementHasNonDefaultServiceNeedOptions = serviceNeedOptions.some(
