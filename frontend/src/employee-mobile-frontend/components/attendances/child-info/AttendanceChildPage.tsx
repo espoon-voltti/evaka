@@ -28,7 +28,7 @@ import BottomModalMenu from '../../common/BottomModalMenu'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import colors from 'lib-customizations/common'
+import colors, { attendanceColors } from 'lib-customizations/common'
 import { deleteChildImage } from '../../../api/childImages'
 import { IconBox } from '../ChildListItem'
 import Absences from '../Absences'
@@ -128,7 +128,7 @@ export default React.memo(function AttendanceChildPage() {
                         ) : (
                           <RoundIcon
                             content={farUser}
-                            color={getColorByStatus(child.status)}
+                            color={attendanceColors[child.status]}
                             size="XXL"
                           />
                         )}
@@ -150,7 +150,7 @@ export default React.memo(function AttendanceChildPage() {
 
                       <ChildStatus>
                         <StaticChip
-                          color={getColorByStatus(child.status)}
+                          color={attendanceColors[child.status]}
                           data-qa="child-status"
                         >
                           {i18n.attendances.types[child.status]}
@@ -299,32 +299,6 @@ export default React.memo(function AttendanceChildPage() {
   )
 })
 
-function getColorByStatus(status: AttendanceStatus) {
-  switch (status) {
-    case 'COMING':
-      return colors.accents.turquoise
-    case 'PRESENT':
-      return colors.accents.successGreen
-    case 'DEPARTED':
-      return colors.main.dark
-    case 'ABSENT':
-      return colors.greyscale.dark
-  }
-}
-
-function getBackgroundColorByStatus(status: AttendanceStatus) {
-  switch (status) {
-    case 'COMING':
-      return '#E2ECF2'
-    case 'PRESENT':
-      return '#EEF4B3'
-    case 'DEPARTED':
-      return '#B3C5DD'
-    case 'ABSENT':
-      return '#E8E8E8'
-  }
-}
-
 const ChildStatus = styled.div`
   color: ${colors.greyscale.medium};
   top: 10px;
@@ -368,7 +342,8 @@ const Zindex = styled.div`
 `
 
 const ChildBackground = styled.div<{ status: AttendanceStatus }>`
-  background: ${(p) => p.status && getBackgroundColorByStatus(p.status)};
+  background-color: ${(p) =>
+    attendanceColors[p.status]}48; // hex 48 is 0.3 alpha
   display: flex;
   flex-direction: column;
   align-items: center;

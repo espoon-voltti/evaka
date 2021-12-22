@@ -32,6 +32,13 @@ export const absenceColours = {
   PRESENCE: greyscale.white
 }
 
+export const attendanceColors = {
+  ABSENT: colors.greyscale.medium,
+  DEPARTED: colors.main.light,
+  PRESENT: colors.accents.successGreen,
+  COMING: colors.accents.peach
+}
+
 export const applicationBasisColors = {
   ADDITIONAL_INFO: main.dark,
   ASSISTANCE_NEED: accents.turquoise,
