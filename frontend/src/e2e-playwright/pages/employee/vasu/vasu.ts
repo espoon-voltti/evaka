@@ -142,6 +142,9 @@ export class VasuPage extends VasuPageCommon {
   readonly markReviewedButton = this.page.find(
     '[data-qa="transition-button-MOVED_TO_REVIEWED"]'
   )
+  readonly markClosedButton = this.page.find(
+    '[data-qa="transition-button-MOVED_TO_CLOSED"]'
+  )
   readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
   readonly #vasuEventListLabels = this.page.findAll(
     '[data-qa="vasu-event-list"] label'
@@ -173,4 +176,5 @@ export class VasuPage extends VasuPageCommon {
     this.#valueForLabel('Viimeksi julkaistu huoltajalle')
   publishedDate = () => this.#valueForLabel('Julkaistu Laadittu-tilaan')
   reviewedDate = () => this.#valueForLabel('Julkaistu Arvioitu-tilaan')
+  closedDate = () => this.#valueForLabel('Päättynyt')
 }
