@@ -407,6 +407,11 @@ class DevApi(
     fun createIncomeStatements(db: Database.DeprecatedConnection, @RequestBody body: DevCreateIncomeStatements) =
         db.transaction { tx -> body.data.forEach { tx.createIncomeStatement(body.personId, it) } }
 
+    @PostMapping("/income")
+    fun createIncome(db: Database.DeprecatedConnection, @RequestBody body: DevIncome) {
+        db.transaction { it.insertTestIncome(body) }
+    }
+
     @PostMapping("/person")
     fun upsertPerson(db: Database.DeprecatedConnection, @RequestBody body: DevPerson): PersonDTO {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")

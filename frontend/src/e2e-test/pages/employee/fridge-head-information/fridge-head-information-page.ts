@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import {
-  selectFirstComboboxOption,
-  waitUntilScrolled
-} from '../../../utils/helpers'
+import { selectFirstComboboxOption } from '../../../utils/helpers'
 import { formatCents } from 'lib-common/money'
 
 interface VerifyFamilyPersonOpts {
@@ -122,8 +119,6 @@ export default class FridgeHeadInformationPage {
     )
 
     await t.click(this.incomesCollapsible.find('[data-qa="save-income"]'))
-
-    await waitUntilScrolled()
   }
 
   async verifyFridgeChildAge({ age }: { age: number }) {

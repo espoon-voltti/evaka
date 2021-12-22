@@ -27,7 +27,8 @@ import {
   PedagogicalDocument,
   ServiceNeedFixture,
   AssistanceNeed,
-  DaycareCaretakers
+  DaycareCaretakers,
+  DevIncome
 } from './types'
 import {
   insertAssistanceNeedFixtures,
@@ -41,6 +42,7 @@ import {
   insertDecisionFixtures,
   insertEmployeeFixture,
   insertEmployeePins,
+  insertIncome,
   insertPedagogicalDocuments,
   insertPersonFixture,
   insertServiceNeedOptions,
@@ -1094,6 +1096,25 @@ export class Fixture {
       endDate: null
     })
   }
+
+  static income(): IncomeBuilder {
+    return new IncomeBuilder({
+      id: uuidv4(),
+      personId: 'not_set',
+      validFrom: LocalDate.today(),
+      validTo: LocalDate.today().addYears(1),
+      data: {
+        MAIN_INCOME: {
+          amount: 100000,
+          monthlyAmount: 100000,
+          coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+        }
+      },
+      effect: 'INCOME',
+      updatedAt: new Date(),
+      updatedBy: 'not_set'
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1355,5 +1376,16 @@ export class DaycareCaretakersBuilder extends FixtureBuilder<DaycareCaretakers> 
 
   copy(): FixtureBuilder<DaycareCaretakers> {
     return new DaycareCaretakersBuilder({ ...this.data })
+  }
+}
+
+export class IncomeBuilder extends FixtureBuilder<DevIncome> {
+  async save() {
+    await insertIncome(this.data)
+    return this
+  }
+
+  copy() {
+    return new IncomeBuilder({ ...this.data })
   }
 }

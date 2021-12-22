@@ -10,6 +10,7 @@ import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/enums'
+import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
@@ -579,4 +580,15 @@ export interface AssistanceNeed {
   capacityFactor: number
   description: string
   otherBasis: string
+}
+
+export interface DevIncome {
+  id: string
+  personId: string
+  validFrom: LocalDate
+  validTo: LocalDate
+  data: Record<string, IncomeValue>
+  effect: IncomeEffect
+  updatedAt: Date
+  updatedBy: string
 }

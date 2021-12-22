@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.dev
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -49,9 +48,9 @@ import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import org.postgresql.util.PGobject
 import org.springframework.core.io.ClassPathResource
-import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -495,40 +494,28 @@ ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
         .execute()
 }
 
-fun Database.Transaction.insertTestIncome(
-    objectMapper: ObjectMapper,
-    personId: UUID,
-    id: UUID = UUID.randomUUID(),
-    validFrom: LocalDate = LocalDate.of(2019, 1, 1),
-    validTo: LocalDate? = null,
-    data: Map<String, IncomeValue> = mapOf(),
-    effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
-    updatedAt: Instant = Instant.now(),
-    updatedBy: UUID
-): UUID {
+data class DevIncome(
+    val personId: UUID,
+    val id: UUID = UUID.randomUUID(),
+    val validFrom: LocalDate = LocalDate.of(2019, 1, 1),
+    val validTo: LocalDate? = null,
+    @Json
+    val data: Map<String, IncomeValue> = mapOf(),
+    val effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
+    val updatedAt: Instant = Instant.now(),
+    val updatedBy: UUID
+)
+
+fun Database.Transaction.insertTestIncome(income: DevIncome): UUID {
     createUpdate(
         """
             INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, updated_at, updated_by)
             VALUES (:id, :personId, :validFrom, :validTo, :data, :effect::income_effect, :updatedAt, :updatedBy)
             """
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "personId" to personId,
-                "validFrom" to validFrom,
-                "validTo" to validTo,
-                "data" to PGobject().apply {
-                    type = "jsonb"
-                    value = objectMapper.writeValueAsString(data)
-                },
-                "effect" to effect.toString(),
-                "updatedAt" to Timestamp(updatedAt.toEpochMilli()),
-                "updatedBy" to updatedBy
-            )
-        )
+        .bindKotlin(income)
         .execute()
-    return id
+    return income.id
 }
 
 fun Database.Transaction.insertTestFeeAlteration(

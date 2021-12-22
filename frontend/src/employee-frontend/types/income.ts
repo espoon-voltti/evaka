@@ -2,37 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 export type IncomeId = 'new' | UUID
-
-export const incomeCoefficients = [
-  'MONTHLY_WITH_HOLIDAY_BONUS',
-  'MONTHLY_NO_HOLIDAY_BONUS',
-  'BI_WEEKLY_WITH_HOLIDAY_BONUS',
-  'BI_WEEKLY_NO_HOLIDAY_BONUS',
-  'DAILY_ALLOWANCE_21_5',
-  'DAILY_ALLOWANCE_25',
-  'YEARLY'
-] as const
-
-export type IncomeCoefficient = typeof incomeCoefficients[number]
-
-export const incomeEffects = [
-  'MAX_FEE_ACCEPTED',
-  'INCOMPLETE',
-  'INCOME'
-] as const
-
-export type IncomeEffect = typeof incomeEffects[number]
-
-export type IncomeValue = {
-  amount: number
-  coefficient: IncomeCoefficient
-  monthlyAmount: number
-}
 
 export type IncomeFields = Partial<Record<string, IncomeValue>>
 

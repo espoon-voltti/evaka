@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
@@ -1966,13 +1967,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     private fun insertIncome(adultId: UUID, amount: Int, period: DateRange) {
         db.transaction { tx ->
             tx.insertTestIncome(
-                objectMapper,
-                personId = adultId,
-                validFrom = period.start,
-                validTo = period.end,
-                effect = IncomeEffect.INCOME,
-                data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
-                updatedBy = testDecisionMaker_1.id
+                DevIncome(
+                    personId = adultId,
+                    validFrom = period.start,
+                    validTo = period.end,
+                    effect = IncomeEffect.INCOME,
+                    data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                    updatedBy = testDecisionMaker_1.id
+                )
             )
         }
     }

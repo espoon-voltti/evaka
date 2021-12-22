@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { IncomeEffect } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { FeeAlterationType } from './fee-alteration'
-import { Income, IncomeEffect } from './income'
+import { Income } from './income'
 import { PlacementType } from 'lib-common/generated/enums'
 import {
   Basic as PersonBasic,

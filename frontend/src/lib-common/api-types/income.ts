@@ -1,0 +1,29 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+export const incomeCoefficients = [
+  'MONTHLY_WITH_HOLIDAY_BONUS',
+  'MONTHLY_NO_HOLIDAY_BONUS',
+  'BI_WEEKLY_WITH_HOLIDAY_BONUS',
+  'BI_WEEKLY_NO_HOLIDAY_BONUS',
+  'DAILY_ALLOWANCE_21_5',
+  'DAILY_ALLOWANCE_25',
+  'YEARLY'
+] as const
+
+export type IncomeCoefficient = typeof incomeCoefficients[number]
+
+export const incomeEffects = [
+  'MAX_FEE_ACCEPTED',
+  'INCOMPLETE',
+  'INCOME'
+] as const
+
+export type IncomeEffect = typeof incomeEffects[number]
+
+export type IncomeValue = {
+  amount: number
+  coefficient: IncomeCoefficient
+  monthlyAmount: number
+}

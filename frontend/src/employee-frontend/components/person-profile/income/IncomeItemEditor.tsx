@@ -24,14 +24,12 @@ import IncomeTable, {
 } from './IncomeTable'
 import { useTranslation } from '../../../state/i18n'
 import {
-  incomeEffects,
-  Income,
-  IncomeBody,
-  IncomeEffect,
   IncomeCoefficient,
-  IncomeValue,
-  IncomeFields
-} from '../../../types/income'
+  IncomeEffect,
+  incomeEffects,
+  IncomeValue
+} from 'lib-common/api-types/income'
+import { Income, IncomeBody, IncomeFields } from '../../../types/income'
 import { formatDate } from 'lib-common/date'
 import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'

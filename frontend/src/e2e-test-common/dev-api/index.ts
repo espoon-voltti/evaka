@@ -36,7 +36,8 @@ import {
   HighestFeeFixture,
   PedagogicalDocument,
   ServiceNeedFixture,
-  AssistanceNeed
+  AssistanceNeed,
+  DevIncome
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -403,6 +404,14 @@ export async function insertIncomeStatements(
 ): Promise<void> {
   try {
     await devClient.post(`/income-statements`, { personId, data })
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertIncome(fixture: DevIncome) {
+  try {
+    await devClient.post('/income', fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
