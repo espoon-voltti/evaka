@@ -8,7 +8,7 @@ import colors from 'lib-customizations/common'
 import { VasuDocumentState } from 'lib-common/generated/api-types/vasu'
 
 const vasuStateChip: Record<VasuDocumentState, string> = {
-  DRAFT: colors.accents.emerald,
+  DRAFT: colors.accents.mint,
   READY: colors.accents.violet,
   REVIEWED: colors.main.primary,
   CLOSED: colors.greyscale.medium
