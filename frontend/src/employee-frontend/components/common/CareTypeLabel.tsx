@@ -2,124 +2,50 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PlacementType } from 'lib-common/generated/enums'
+import { StaticChip } from 'lib-components/atoms/Chip'
+import { careTypeColors } from 'lib-customizations/common'
 import React from 'react'
-import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
-
 import { useTranslation } from '../../state/i18n'
 import { CareTypeLabel } from '../../types'
-import colors from 'lib-customizations/common'
-import { PlacementType } from 'lib-common/generated/enums'
 
-export interface Props {
-  type?: CareTypeLabel
+const placementTypeToCareTypeLabel = (
+  type: PlacementType | 'backup-care'
+): CareTypeLabel => {
+  switch (type) {
+    case 'backup-care':
+      return 'backup-care'
+    case 'CLUB':
+      return 'club'
+    case 'DAYCARE':
+    case 'DAYCARE_PART_TIME':
+      return 'daycare'
+    case 'DAYCARE_FIVE_YEAR_OLDS':
+    case 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS':
+      return 'daycare5yo'
+    case 'PREPARATORY':
+    case 'PREPARATORY_DAYCARE':
+      return 'preparatory'
+    case 'PRESCHOOL':
+    case 'PRESCHOOL_DAYCARE':
+      return 'preschool'
+    case 'SCHOOL_SHIFT_CARE':
+      return 'school-shift-care'
+    case 'TEMPORARY_DAYCARE':
+    case 'TEMPORARY_DAYCARE_PART_DAY':
+      return 'temporary'
+  }
 }
 
-const CareTypeLabelsContainer = styled.div`
-  display: flex;
-
-  > * {
-    margin-left: 10px;
-  }
-
-  > *:first-child {
-    margin-left: 0;
-  }
-`
-
-interface CareTypeLabelContainerProps {
-  type: CareTypeLabel
+interface Props {
+  type: PlacementType | 'backup-care'
 }
 
-const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
-  font-weight: ${fontWeights.semibold};
-  border-radius: 12px;
-  min-height: 25px;
-  padding: 0 10px;
-  text-align: center;
-  line-height: 25px;
-  background: ${(props: CareTypeLabelContainerProps) => {
-    switch (props.type) {
-      case 'daycare':
-        return colors.accents.successGreen
-      case 'daycare5yo':
-        return colors.accents.greenDark
-      case 'preschool':
-        return colors.main.dark
-      case 'preparatory':
-        return colors.accents.turquoise
-      case 'backup-care':
-        return colors.accents.peach
-      case 'club':
-        return colors.greyscale.lighter
-      case 'temporary':
-        return colors.accents.violet
-      case 'school-shift-care':
-        return colors.greyscale.dark
-      default:
-        return colors.greyscale.white
-    }
-  }};
-  color: ${(props: CareTypeLabelContainerProps) => {
-    switch (props.type) {
-      case 'daycare':
-        return colors.greyscale.dark
-      case 'daycare5yo':
-        return colors.greyscale.white
-      case 'preschool':
-        return colors.greyscale.white
-      case 'preparatory':
-        return colors.greyscale.dark
-      case 'backup-care':
-        return colors.greyscale.dark
-      case 'club':
-        return colors.greyscale.dark
-      case 'temporary':
-        return colors.greyscale.white
-      case 'school-shift-care':
-        return colors.greyscale.white
-      default:
-        return 'initial'
-    }
-  }};
-`
-
-function CareTypeLabel({ type }: { type: CareTypeLabel }) {
+export function CareTypeChip({ type }: Props) {
   const { i18n } = useTranslation()
 
-  return (
-    <CareTypeLabelContainer type={type}>
-      <div>{type ? i18n.common.careTypeLabels[type] : type}</div>
-    </CareTypeLabelContainer>
-  )
+  const careType = placementTypeToCareTypeLabel(type)
+  const text = i18n.common.careTypeLabels[careType]
+  const color = careTypeColors[careType]
+  return <StaticChip color={color}>{text}</StaticChip>
 }
-
-export function careTypesFromPlacementType(type: PlacementType) {
-  return (
-    <CareTypeLabelsContainer>
-      {type === 'CLUB' && <CareTypeLabel type="club" />}
-      {(type === 'DAYCARE' || type === 'DAYCARE_PART_TIME') && (
-        <CareTypeLabel type="daycare" />
-      )}
-      {(type === 'DAYCARE_FIVE_YEAR_OLDS' ||
-        type === 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS') && (
-        <CareTypeLabel type="daycare5yo" />
-      )}
-      {(type === 'PRESCHOOL' || type === 'PRESCHOOL_DAYCARE') && (
-        <CareTypeLabel type="preschool" />
-      )}
-      {(type === 'PREPARATORY' || type === 'PREPARATORY_DAYCARE') && (
-        <CareTypeLabel type="preparatory" />
-      )}
-      {(type === 'TEMPORARY_DAYCARE' ||
-        type === 'TEMPORARY_DAYCARE_PART_DAY') && (
-        <CareTypeLabel type="temporary" />
-      )}
-      {type === 'SCHOOL_SHIFT_CARE' && (
-        <CareTypeLabel type="school-shift-care" />
-      )}
-    </CareTypeLabelsContainer>
-  )
-}
-
-export default CareTypeLabel

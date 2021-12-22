@@ -15,6 +15,7 @@ import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
 export const StaticChip = styled.div<{ color: string }>`
+  display: inline-block;
   font-family: 'Open Sans', sans-serif;
   font-weight: ${fontWeights.semibold};
   font-size: ${defaultMargins.s};

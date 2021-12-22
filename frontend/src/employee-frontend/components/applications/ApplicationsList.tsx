@@ -43,7 +43,7 @@ import { ApplicationUIContext } from '../../state/application-ui'
 import ActionBar from '../../components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { careTypesFromPlacementType } from '../common/CareTypeLabel'
+import { CareTypeChip } from '../common/CareTypeLabel'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { UserContext } from '../../state/user'
 import { hasRole, RequireRole } from '../../utils/roles'
@@ -245,8 +245,8 @@ const ApplicationsList = React.memo(function Applications({
       }
     >
       <StatusColorTd color={getAccentColor(application)}>
-        <FixedSpaceColumn spacing="xs">
-          {careTypesFromPlacementType(application.placementType)}
+        <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+          <CareTypeChip type={application.placementType} />
           {application.transferApplication && (
             <Light>{i18n.applications.list.transfer}</Light>
           )}

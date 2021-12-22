@@ -44,6 +44,17 @@ export const applicationBasisColors = {
   URGENT: accents.dangerRed
 }
 
+export const careTypeColors = {
+  'backup-care': colors.accents.peach,
+  club: colors.greyscale.lighter,
+  daycare: colors.accents.successGreen,
+  daycare5yo: colors.accents.greenDark,
+  preparatory: colors.accents.turquoise,
+  preschool: colors.main.dark,
+  'school-shift-care': colors.greyscale.dark,
+  temporary: colors.accents.violet
+}
+
 export const translationsMergeCustomizer = (
   origValue: Record<string, unknown>,
   customizedValue: Record<string, unknown>

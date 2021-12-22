@@ -11,7 +11,7 @@ import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus
 } from '../../../types/unit'
-import { careTypesFromPlacementType } from '../../common/CareTypeLabel'
+import { CareTypeChip } from '../../common/CareTypeLabel'
 import { formatName } from '../../../utils'
 import styled from 'styled-components'
 import {
@@ -134,7 +134,7 @@ export default React.memo(function PlacementProposalRow({
           {placementPlan.period.end.format()}
         </Td>
         <Td data-qa="placement-type">
-          {careTypesFromPlacementType(placementPlan.type)}
+          <CareTypeChip type={placementPlan.type} />
         </Td>
         <Td data-qa="placement-subtype">
           <PlacementCircle

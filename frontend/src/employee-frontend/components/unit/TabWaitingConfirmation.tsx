@@ -9,7 +9,7 @@ import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Link } from 'react-router-dom'
 import { formatName } from '../../utils'
-import { careTypesFromPlacementType } from '../common/CareTypeLabel'
+import { CareTypeChip } from '../common/CareTypeLabel'
 import { getEmployeeUrlPrefix } from '../../constants'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faFileAlt, faTimes } from 'lib-icons'
@@ -147,7 +147,7 @@ export default React.memo(function TabWaitingConfirmation() {
                     )}
                   </Td>
                   <Td data-qa="placement-type">
-                    {careTypesFromPlacementType(p.type)}
+                    <CareTypeChip type={p.type} />
                   </Td>
                   <Td data-qa="placement-subtype">
                     <PlacementCircle
