@@ -1098,14 +1098,10 @@ export class Fixture {
   }
 }
 
-export class DaycareBuilder {
-  data: Daycare
+abstract class FixtureBuilder<T> {
+  constructor(public data: T) {}
 
-  constructor(data: Daycare) {
-    this.data = data
-  }
-
-  with(value: Partial<Daycare>): DaycareBuilder {
+  with<K extends keyof T>(value: Pick<T, K>): this {
     this.data = {
       ...this.data,
       ...value
@@ -1113,6 +1109,11 @@ export class DaycareBuilder {
     return this
   }
 
+  abstract copy(): FixtureBuilder<T>
+  abstract save(): Promise<FixtureBuilder<T>>
+}
+
+export class DaycareBuilder extends FixtureBuilder<Daycare> {
   id(id: string): DaycareBuilder {
     this.data.id = id
     return this
@@ -1128,95 +1129,53 @@ export class DaycareBuilder {
     return this
   }
 
-  async save(): Promise<DaycareBuilder> {
+  async save() {
     await insertDaycareFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): DaycareBuilder {
+  copy() {
     return new DaycareBuilder({ ...this.data })
   }
 }
 
-export class DaycareGroupBuilder {
-  data: DaycareGroup
-
-  constructor(data: DaycareGroup) {
-    this.data = data
-  }
-
-  with(value: Partial<DaycareGroup>): DaycareGroupBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
+export class DaycareGroupBuilder extends FixtureBuilder<DaycareGroup> {
   daycare(daycare: DaycareBuilder): DaycareGroupBuilder {
     this.data.daycareId = daycare.data.id
     return this
   }
 
-  async save(): Promise<DaycareGroupBuilder> {
+  async save() {
     await insertDaycareGroupFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): DaycareGroupBuilder {
+  copy() {
     return new DaycareGroupBuilder({ ...this.data })
   }
 }
 
-export class CareAreaBuilder {
-  data: CareArea
-
-  constructor(data: CareArea) {
-    this.data = data
-  }
-
-  with(value: Partial<CareArea>): CareAreaBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
+export class CareAreaBuilder extends FixtureBuilder<CareArea> {
   id(id: string): CareAreaBuilder {
     this.data.id = id
     return this
   }
 
-  async save(): Promise<CareAreaBuilder> {
+  async save() {
     await insertCareAreaFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): CareAreaBuilder {
+  copy() {
     return new CareAreaBuilder({ ...this.data })
   }
 }
 
-export class PersonBuilder {
-  data: PersonDetailWithDependantsAndGuardians
-
-  constructor(data: PersonDetailWithDependantsAndGuardians) {
-    this.data = data
-  }
-
-  with(value: Partial<PersonDetailWithDependantsAndGuardians>): PersonBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<PersonBuilder> {
+export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependantsAndGuardians> {
+  async save() {
     await insertPersonFixture(this.data)
     return this
   }
@@ -1228,267 +1187,127 @@ export class PersonBuilder {
   }
 
   // Note: shallow copy
-  copy(): PersonBuilder {
+  copy() {
     return new PersonBuilder({ ...this.data })
   }
 }
 
-export class EmployeeBuilder {
-  data: EmployeeDetail
-
-  constructor(data: EmployeeDetail) {
-    this.data = data
-  }
-
-  with(value: Partial<EmployeeDetail>): EmployeeBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<EmployeeBuilder> {
+export class EmployeeBuilder extends FixtureBuilder<EmployeeDetail> {
+  async save() {
     await insertEmployeeFixture(this.data)
     return this
   }
 
   // Note: shallow copy
-  copy(): EmployeeBuilder {
+  copy() {
     return new EmployeeBuilder({ ...this.data })
   }
 }
 
-export class DecisionBuilder {
-  data: DecisionFixture
-
-  constructor(data: DecisionFixture) {
-    this.data = data
-  }
-
-  with(value: Partial<DecisionFixture>): DecisionBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<DecisionBuilder> {
+export class DecisionBuilder extends FixtureBuilder<DecisionFixture> {
+  async save() {
     await insertDecisionFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): DecisionBuilder {
+  copy() {
     return new DecisionBuilder({ ...this.data })
   }
 }
 
-export class EmployeePinBuilder {
-  data: EmployeePin
-
-  constructor(data: EmployeePin) {
-    this.data = data
-  }
-
-  with(value: Partial<EmployeePin>): EmployeePinBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<EmployeePinBuilder> {
+export class EmployeePinBuilder extends FixtureBuilder<EmployeePin> {
+  async save() {
     await insertEmployeePins([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): EmployeePinBuilder {
+  copy() {
     return new EmployeePinBuilder({ ...this.data })
   }
 }
 
-export class PedagogicalDocumentBuilder {
-  data: PedagogicalDocument
-
-  constructor(data: PedagogicalDocument) {
-    this.data = data
-  }
-
-  with(value: Partial<PedagogicalDocument>): PedagogicalDocumentBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<PedagogicalDocumentBuilder> {
+export class PedagogicalDocumentBuilder extends FixtureBuilder<PedagogicalDocument> {
+  async save() {
     await insertPedagogicalDocuments([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): PedagogicalDocumentBuilder {
+  copy() {
     return new PedagogicalDocumentBuilder({ ...this.data })
   }
 }
 
-export class ServiceNeedOptionBuilder {
-  data: ServiceNeedOption
-
-  constructor(data: ServiceNeedOption) {
-    this.data = data
-  }
-
-  with(value: Partial<ServiceNeedOption>): ServiceNeedOptionBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<ServiceNeedOptionBuilder> {
+export class ServiceNeedOptionBuilder extends FixtureBuilder<ServiceNeedOption> {
+  async save() {
     await insertServiceNeedOptions([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): ServiceNeedOptionBuilder {
+  copy() {
     return new ServiceNeedOptionBuilder({ ...this.data })
   }
 }
 
-export class PlacementBuilder {
-  data: DaycarePlacement
-
-  constructor(data: DaycarePlacement) {
-    this.data = data
-  }
-
-  with(value: Partial<DaycarePlacement>): PlacementBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<PlacementBuilder> {
+export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
+  async save() {
     await insertDaycarePlacementFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): PlacementBuilder {
+  copy() {
     return new PlacementBuilder({ ...this.data })
   }
 }
 
-export class GroupPlacementBuilder {
-  data: DaycareGroupPlacement
-
-  constructor(data: DaycareGroupPlacement) {
-    this.data = data
-  }
-
-  with(value: Partial<DaycareGroupPlacement>): GroupPlacementBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<GroupPlacementBuilder> {
+export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement> {
+  async save() {
     await insertDaycareGroupPlacementFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): GroupPlacementBuilder {
+  copy() {
     return new GroupPlacementBuilder({ ...this.data })
   }
 }
 
-export class ServiceNeedBuilder {
-  data: ServiceNeedFixture
-
-  constructor(data: ServiceNeedFixture) {
-    this.data = data
-  }
-
-  with(value: Partial<ServiceNeedFixture>): ServiceNeedBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<ServiceNeedBuilder> {
+export class ServiceNeedBuilder extends FixtureBuilder<ServiceNeedFixture> {
+  async save() {
     await insertServiceNeeds([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): ServiceNeedBuilder {
+  copy() {
     return new ServiceNeedBuilder({ ...this.data })
   }
 }
 
-export class ChildBuilder {
-  data: Child
-
-  constructor(data: Child) {
-    this.data = data
-  }
-
-  with(value: Partial<Child>): ChildBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<ChildBuilder> {
+export class ChildBuilder extends FixtureBuilder<Child> {
+  async save() {
     await insertChildFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): ChildBuilder {
+  copy() {
     return new ChildBuilder({ ...this.data })
   }
 }
 
-export class AssistanceNeedBuilder {
-  data: AssistanceNeed
-
-  constructor(data: AssistanceNeed) {
-    this.data = data
-  }
-
-  with(value: Partial<AssistanceNeed>): AssistanceNeedBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<AssistanceNeedBuilder> {
+export class AssistanceNeedBuilder extends FixtureBuilder<AssistanceNeed> {
+  async save() {
     await insertAssistanceNeedFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): AssistanceNeedBuilder {
+  copy() {
     return new AssistanceNeedBuilder({ ...this.data })
   }
 }
