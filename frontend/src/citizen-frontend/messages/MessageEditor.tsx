@@ -170,7 +170,7 @@ const ErrorMessage = styled.div`
 const TopBar = styled.div`
   width: 100%;
   height: 60px;
-  background-color: ${colors.primary};
+  background-color: ${colors.main.primary};
   color: ${colors.greyscale.white};
   display: flex;
   justify-content: space-between;

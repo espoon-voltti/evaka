@@ -199,7 +199,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faFileAlt}
                 />
                 <LinkTitle
@@ -217,7 +217,11 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon size="L" color={colors.primary} content={faGavel} />
+                <RoundIcon
+                  size="L"
+                  color={colors.main.primary}
+                  content={faGavel}
+                />
                 <LinkTitle data-qa={'report-decisions'} to="/reports/decisions">
                   {i18n.reports.decisions.title}
                 </LinkTitle>
@@ -232,7 +236,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faPercentage}
                 />
                 <LinkTitle to="/reports/occupancies">
@@ -253,7 +257,11 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon size="L" color={colors.primary} content={faChild} />
+                <RoundIcon
+                  size="L"
+                  color={colors.main.primary}
+                  content={faChild}
+                />
                 <LinkTitle to="/reports/child-age-language">
                   {i18n.reports.childAgeLanguage.title}
                 </LinkTitle>
@@ -274,7 +282,11 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon size="L" color={colors.primary} content={faChild} />
+                <RoundIcon
+                  size="L"
+                  color={colors.main.primary}
+                  content={faChild}
+                />
                 <LinkTitle to="/reports/service-needs">
                   {i18n.reports.serviceNeeds.title}
                 </LinkTitle>
@@ -296,7 +308,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faHandHolding}
                 />
                 <LinkTitle to="/reports/assistance-needs-and-actions">
@@ -313,7 +325,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faEuroSign}
                 />
                 <LinkTitle to="/reports/invoices">
@@ -328,7 +340,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faHourglassStart}
                 />
                 <LinkTitle to="/reports/starting-placements">
@@ -345,7 +357,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faHourglassEnd}
                 />
                 <LinkTitle to="/reports/ended-placements">
@@ -362,7 +374,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faDiagnoses}
                 />
                 <LinkTitle to="/reports/presences">
@@ -385,7 +397,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faMoneyBillWave}
                 />
                 <LinkTitle
@@ -405,7 +417,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.primary}
+                  color={colors.main.primary}
                   content={faDatabase}
                 />
                 <LinkTitle to="/reports/raw">

@@ -20,7 +20,7 @@ export const MessageBoxRow = styled.div<{ active: boolean }>`
 `
 
 const UnreadCount = styled.span`
-  color: ${colors.primary};
+  color: ${colors.main.primary};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   padding-left: ${defaultMargins.xxs};

@@ -88,7 +88,7 @@ export default React.memo(function PreferredUnitBox({
                 {t.applications.editor.unitPreference.units.preferences.sv}
               </StaticChip>
             ) : (
-              <StaticChip color={colors.primary}>
+              <StaticChip color={colors.main.light}>
                 {t.applications.editor.unitPreference.units.preferences.fi}
               </StaticChip>
             )}
@@ -148,7 +148,7 @@ const noOp = () => undefined
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
-  border: 1px solid ${colors.primary};
+  border: 1px solid ${colors.main.primary};
   box-sizing: border-box;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
   border-radius: 2px;
@@ -159,7 +159,7 @@ const MainColLeft = styled.div`
   font-family: Montserrat, sans-serif;
   font-style: normal;
   font-weight: ${fontWeights.light};
-  color: ${colors.primary};
+  color: ${colors.main.primary};
   text-align: center;
 
   font-size: 70px;

@@ -207,7 +207,7 @@ const OptionContents = React.memo(function Option({
       {isUnit && (
         <FontAwesomeIcon
           icon={fasMapMarkerAlt}
-          color={colors.primary}
+          color={colors.main.primary}
           style={{ fontSize: '24px' }}
         />
       )}

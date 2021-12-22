@@ -22,9 +22,6 @@ export const {
 
 const colors = {
   main,
-  primary: main.primary,
-  primaryHover: main.dark,
-  primaryActive: main.dark,
   greyscale,
   accents
 }
