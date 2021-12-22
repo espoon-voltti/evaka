@@ -29,7 +29,7 @@ import { UUID } from 'lib-common/types'
 interface Props {
   id: UUID
   childId: UUID
-  attachment: Attachment | null
+  attachments: Attachment[]
   description: string
   created: Date
   updated: Date
@@ -41,7 +41,7 @@ interface Props {
 const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   id,
   childId,
-  attachment,
+  attachments,
   description,
   created,
   updated,
@@ -54,7 +54,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     useState<PedagogicalDocument>({
       id,
       childId,
-      attachment,
+      attachments,
       description,
       created,
       updated
@@ -141,16 +141,35 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         )}
       </DescriptionTd>
       <NameTd data-qa="pedagogical-document-document">
-        {
+        <AttachmentsContainer>
+          {pedagogicalDocument.attachments.map((attachment) => (
+            <FileUpload
+              key={attachment.id}
+              slimSingleFile
+              disabled={submitting}
+              data-qa="upload-pedagogical-document-attachment-existing"
+              files={attachment}
+              i18n={i18n.fileUpload}
+              onDownloadFile={getAttachmentBlob}
+              onUpload={handleAttachmentUpload}
+              onDelete={handleAttachmentDelete}
+              accept={[
+                'image/jpeg',
+                'image/png',
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.oasis.opendocument.text',
+                'video/*',
+                'audio/*'
+              ]}
+            />
+          ))}
           <FileUpload
             slimSingleFile
             disabled={submitting}
-            data-qa="upload-pedagogical-document-attachment"
-            files={
-              pedagogicalDocument.attachment
-                ? [pedagogicalDocument.attachment]
-                : []
-            }
+            data-qa="upload-pedagogical-document-attachment-new"
+            files={[]}
             i18n={i18n.fileUpload}
             onDownloadFile={getAttachmentBlob}
             onUpload={handleAttachmentUpload}
@@ -166,7 +185,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
               'audio/*'
             ]}
           />
-        }
+        </AttachmentsContainer>
       </NameTd>
       <ActionsTd data-qa="pedagogical-document-actions">
         {editMode ? (
@@ -229,4 +248,8 @@ const DescriptionTd = styled(Td)`
 
 const ActionsTd = styled(Td)`
   width: 20%;
+`
+const AttachmentsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
 `

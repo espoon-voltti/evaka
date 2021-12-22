@@ -170,7 +170,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         val parsed = deserializeGetResult(getDocumentAsUser(testChild_1.id, employee).third.get())
         assertEquals(1, parsed.size)
 
-        val attachment = parsed.first().attachment
+        val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
         assertEquals(
             attachmentId,
@@ -190,7 +190,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         val parsed = deserializeGetResult(result.get())
         assertEquals(1, parsed.size)
 
-        val attachment = parsed.first().attachment
+        val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
         assertEquals(
             attachmentId,
@@ -227,7 +227,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, parsed.size)
 
-        val attachment = parsed.first().attachment
+        val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
         assertEquals(
             attachmentId,
@@ -247,7 +247,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         val parsed = deserializeGetResult(getDocumentAsUser(testChild_1.id, groupStaff).third.get())
         assertEquals(1, parsed.size)
 
-        val attachment = parsed.first().attachment
+        val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
         assertEquals(
             attachmentId,

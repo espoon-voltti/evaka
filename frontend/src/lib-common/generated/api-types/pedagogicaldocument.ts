@@ -20,7 +20,7 @@ export interface Attachment {
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocument
 */
 export interface PedagogicalDocument {
-  attachment: Attachment | null
+  attachments: Attachment[]
   childId: UUID
   created: Date
   description: string

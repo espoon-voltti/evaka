@@ -57,6 +57,7 @@ describe('Child Information - Pedagogical documents', () => {
 
   test('Can add a new pedagogigcal document', async () => {
     await section.addNew()
+
     await waitUntilEqual(
       () => section.startDate,
       format(new Date(), 'dd.MM.yyyy')
