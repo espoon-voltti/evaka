@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import _ from 'lodash'
 import styled from 'styled-components'
 
@@ -49,6 +49,14 @@ export default React.memo(function PlacementProposals({
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
 
+  const isMounted = useRef(true)
+  useEffect(
+    () => () => {
+      isMounted.current = false
+    },
+    []
+  )
+
   const [confirmationStates, setConfirmationStates] = useState<
     Record<UUID, DynamicState>
   >({})
@@ -68,7 +76,7 @@ export default React.memo(function PlacementProposals({
     )
   }, [placementPlans, setConfirmationStates])
 
-  const sendConfirmation = (
+  const sendConfirmation = async (
     applicationId: UUID,
     confirmation: PlacementPlanConfirmationStatus,
     reason?: PlacementPlanRejectReason,
@@ -82,31 +90,32 @@ export default React.memo(function PlacementProposals({
       }
     }))
 
-    void respondToPlacementProposal(
-      applicationId,
-      confirmation,
-      reason,
-      otherReason
-    )
-      .then(() =>
-        setConfirmationStates((state) => ({
-          ...state,
-          [applicationId]: {
-            confirmation,
-            submitting: false
-          }
-        }))
+    try {
+      await respondToPlacementProposal(
+        applicationId,
+        confirmation,
+        reason,
+        otherReason
       )
-      .catch(() => {
-        setConfirmationStates((state) => ({
-          ...state,
-          [applicationId]: {
-            ...state[applicationId],
-            submitting: false
-          }
-        }))
-        void loadUnitData()
-      })
+      if (!isMounted.current) return
+      setConfirmationStates((state) => ({
+        ...state,
+        [applicationId]: {
+          confirmation,
+          submitting: false
+        }
+      }))
+    } catch (_err) {
+      if (!isMounted.current) return
+      setConfirmationStates((state) => ({
+        ...state,
+        [applicationId]: {
+          ...state[applicationId],
+          submitting: false
+        }
+      }))
+      void loadUnitData()
+    }
   }
 
   const sortedRows = _.sortBy(placementPlans, [
@@ -152,7 +161,12 @@ export default React.memo(function PlacementProposals({
                   confirmationStates[p.applicationId]?.submitting ?? false
                 }
                 onChange={(state, reason, otherReason) =>
-                  sendConfirmation(p.applicationId, state, reason, otherReason)
+                  void sendConfirmation(
+                    p.applicationId,
+                    state,
+                    reason,
+                    otherReason
+                  )
                 }
                 loadUnitData={loadUnitData}
               />

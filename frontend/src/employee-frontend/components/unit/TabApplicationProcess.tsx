@@ -12,13 +12,17 @@ import TabApplications from './TabApplications'
 import { Gap } from 'lib-components/white-space'
 
 interface Props {
+  isLoading: boolean
   reloadUnitData: () => void
 }
 
-function TabApplicationProcess({ reloadUnitData }: Props) {
+export default React.memo(function TabApplicationProcess({
+  isLoading,
+  reloadUnitData
+}: Props) {
   const { i18n } = useTranslation()
   return (
-    <div>
+    <div data-qa="application-process-page" data-isloading={isLoading}>
       <ContentArea opaque>
         <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
       </ContentArea>
@@ -30,6 +34,4 @@ function TabApplicationProcess({ reloadUnitData }: Props) {
       <TabApplications />
     </div>
   )
-}
-
-export default React.memo(TabApplicationProcess)
+})

@@ -11,14 +11,14 @@ import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 export default class ApplicationReadView {
   constructor(private page: Page) {}
 
-  #title = this.page.find('h1')
+  #title = this.page.find('[data-qa="application-title"]').find('h1')
   #editButton = this.page.find('[data-qa="edit-application"]')
   #vtjGuardianName = this.page.find('[data-qa="vtj-guardian-name"]')
   #vtjGuardianPhone = this.page.find('[data-qa="vtj-guardian-phone"]')
   #vtjGuardianEmail = this.page.find('[data-qa="vtj-guardian-email"]')
   #givenOtherGuardianPhone = this.page.find('[data-qa="second-guardian-phone"]')
   #giveOtherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
-  applicationStatus = this.page.find('[data-qa="application-status"]')
+  #applicationStatus = this.page.find('[data-qa="application-status"]')
   decisionAcceptedStartDate = this.page.find('[data-qa="application-status"]')
 
   async waitUntilLoaded() {
@@ -94,6 +94,10 @@ export default class ApplicationReadView {
 
     const submit = decision.find('[data-qa="decision-send-answer-button"]')
     await submit.click()
+  }
+
+  async assertApplicationStatus(text: string) {
+    await this.#applicationStatus.find(`text=${text}`).waitUntilVisible()
   }
 
   async assertUrgentAttachmentExists(fileName: string) {

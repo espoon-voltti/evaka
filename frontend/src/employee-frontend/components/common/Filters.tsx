@@ -2,17 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, Fragment } from 'react'
+import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import ReactSelect from 'react-select'
 
 import {
+  faAngleDown,
+  faAngleUp,
   faPaperclip,
   faSearch,
+  fasExclamationTriangle,
   faTimes,
-  faTrash,
-  fasExclamationTriangle
+  faTrash
 } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -21,9 +22,9 @@ import { useTranslation } from '../../state/i18n'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus,
-  VoucherValueDecisionStatus,
+  InvoiceDistinctiveDetails,
   InvoiceStatus,
-  InvoiceDistinctiveDetails
+  VoucherValueDecisionStatus
 } from '../../types/invoicing'
 import { ApplicationSummaryStatus } from '../../types/application'
 import {
@@ -32,12 +33,11 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { FlexRow } from './styled/containers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import colors from 'lib-customizations/common'
-import { faAngleDown, faAngleUp } from 'lib-icons'
 import Tooltip from '../../components/common/Tooltip'
 import { CareArea } from '../../types/unit'
 import { Label, LabelText } from './styled/common'
@@ -45,6 +45,7 @@ import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { applicationTypes } from 'lib-customizations/employee'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { ApplicationType } from 'lib-common/generated/enums'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 
 interface Props {
   freeText: string
@@ -1143,8 +1144,21 @@ export function ApplicationBasisFilter({
   )
 }
 
+interface Option {
+  id: string
+  name: string
+}
+
+function getOptionId(option: Option) {
+  return option.id
+}
+
+function getOptionLabel(option: Option) {
+  return option.name
+}
+
 interface MultiUnitsProps {
-  units: { id: string; name: string }[]
+  units: Option[]
   selectedUnits: string[]
   onChange: (v: string[]) => void
   'data-qa': string
@@ -1157,23 +1171,26 @@ export function MultiSelectUnitFilter({
   'data-qa': dataQa
 }: MultiUnitsProps) {
   const { i18n } = useTranslation()
+  const value = useMemo(
+    () => units.filter((unit) => selectedUnits.includes(unit.id)),
+    [selectedUnits, units]
+  )
+  const handleChange = useCallback(
+    (selected: Option[]) => onChange(selected.map(({ id }) => id)),
+    [onChange]
+  )
   return (
     <div data-qa={dataQa}>
       <Label>
         <LabelText>{i18n.filters.unit}</LabelText>
       </Label>
-      <ReactSelect
-        isMulti
+      <MultiSelect
         placeholder={i18n.filters.unitPlaceholder}
-        value={units.filter((unit) => selectedUnits.includes(unit.id))}
+        value={value}
         options={units}
-        onChange={(selected) => {
-          selected && 'length' in selected
-            ? onChange(selected.map(({ id }) => id))
-            : onChange([])
-        }}
-        getOptionValue={(option) => option.id}
-        getOptionLabel={(option) => option.name}
+        onChange={handleChange}
+        getOptionId={getOptionId}
+        getOptionLabel={getOptionLabel}
       />
     </div>
   )

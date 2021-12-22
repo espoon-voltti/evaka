@@ -87,11 +87,14 @@ export class ApplicationWorkbenchPage {
   applicationsAll = this.page.find('[data-qa="application-status-filter-ALL"]')
   // only matches when applications have been loaded
   #applicationList = this.page.find('[data-qa="applications-list"]')
-  #application = this.page.find('[data-qa="table-application-row"]')
   #btnCloseApplication = this.page.find('[data-qa="close-application"]')
   #agreementStatus = this.page.find('[data-qa="agreement-status"]')
   #otherGuardianTel = this.page.find('[data-qa="second-guardian-phone"]')
   #otherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
+
+  #withdraPlacementProposalsButton = this.page.find(
+    `[data-qa="action-bar-withdrawPlacementProposal"]`
+  )
 
   async addNote(note: string) {
     await this.page.find('[data-qa="add-note"]').click()
@@ -151,13 +154,17 @@ export class ApplicationWorkbenchPage {
 
   async withdrawPlacementProposal(applicationId: string) {
     await this.clickApplicationCheckbox(applicationId)
-    await this.page
-      .find(`[data-qa="action-bar-withdrawPlacementProposal"]`)
-      .click()
+    await this.#withdraPlacementProposalsButton.click()
+  }
+
+  async assertWithdrawPlacementProposalsButtonDisabled() {
+    await waitUntilTrue(() => this.#withdraPlacementProposalsButton.disabled)
   }
 
   getApplicationById(id: string) {
-    return this.#application.find(`[data-application-id=${id}]`)
+    return this.page.find(
+      `[data-qa="table-application-row"][data-application-id="${id}"]`
+    )
   }
 
   async closeApplication() {

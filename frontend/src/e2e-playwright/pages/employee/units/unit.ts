@@ -2,8 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Combobox, Element, Page, TextInput } from 'e2e-playwright/utils/page'
+import {
+  Checkbox,
+  Combobox,
+  Element,
+  Page,
+  TextInput
+} from 'e2e-playwright/utils/page'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { CareType } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
+import config from '../../../../e2e-test-common/config'
+import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 
 type UnitProviderType =
   | 'MUNICIPAL'
@@ -16,15 +26,23 @@ type UnitProviderType =
 export class UnitPage {
   constructor(private readonly page: Page) {}
 
+  readonly #unitName = this.page.find('[data-qa="unit-name"]')
+
   readonly #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
   readonly #groupsTab = this.page.find('[data-qa="groups-tab"]')
+  readonly #applicationProcessTab = this.page.find(
+    '[data-qa="application-process-tab"]'
+  )
 
   readonly #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
-  readonly #editUnitButton = this.page.find('[data-qa="enable-edit-button"]')
 
-  readonly #unitEditorContainer = this.page.find(
-    '[data-qa="unit-editor-container"]'
-  )
+  async navigateToUnit(id: string) {
+    await this.page.goto(`${config.employeeUrl}/units/${id}`)
+  }
+
+  async assertUnitName(expectedName: string) {
+    await waitUntilEqual(() => this.#unitName.innerText, expectedName)
+  }
 
   async openUnitInformation(): Promise<UnitInformationSection> {
     await this.#unitInfoTab.click()
@@ -33,15 +51,16 @@ export class UnitPage {
     return section
   }
 
-  async openUnitDetails() {
+  async openUnitDetails(): Promise<UnitDetailsPage> {
     await this.#unitDetailsLink.click()
-    await this.#editUnitButton.waitUntilVisible()
+    const unitDetails = new UnitDetailsPage(this.page)
+    await unitDetails.waitUntilLoaded()
+    return unitDetails
   }
 
-  async clickEditUnit(): Promise<UnitEditor> {
-    await this.#editUnitButton.click()
-    await this.#unitEditorContainer.waitUntilVisible()
-    return new UnitEditor(this.page)
+  async openApplicationProcessTab() {
+    await this.#applicationProcessTab.click()
+    return new ApplicationProcessPage(this.page)
   }
 
   async openGroups(): Promise<GroupsSection> {
@@ -49,6 +68,38 @@ export class UnitPage {
     const section = new GroupsSection(this.page)
     await section.waitUntilVisible()
     return section
+  }
+}
+
+export class UnitDetailsPage {
+  constructor(private readonly page: Page) {}
+
+  readonly #editUnitButton = this.page.find('[data-qa="enable-edit-button"]')
+  readonly #unitName = this.page
+    .find('[data-qa="unit-editor-container"]')
+    .find('h1')
+
+  async waitUntilLoaded() {
+    await this.#editUnitButton.waitUntilVisible()
+  }
+
+  async assertUnitName(expectedName: string) {
+    await waitUntilEqual(() => this.#unitName.innerText, expectedName)
+  }
+
+  readonly #unitManagerName = this.page.find('[data-qa="unit-manager-name"]')
+  readonly #unitManagerPhone = this.page.find('[data-qa="unit-manager-phone"]')
+  readonly #unitManagerEmail = this.page.find('[data-qa="unit-manager-email"]')
+
+  async assertManagerData(name: string, phone: string, email: string) {
+    await waitUntilEqual(() => this.#unitManagerName.innerText, name)
+    await waitUntilEqual(() => this.#unitManagerPhone.innerText, phone)
+    await waitUntilEqual(() => this.#unitManagerEmail.innerText, email)
+  }
+
+  async edit() {
+    await this.#editUnitButton.click()
+    return new UnitEditor(this.page)
   }
 }
 
@@ -66,6 +117,51 @@ export class UnitInformationSection {
 
 export class UnitEditor {
   constructor(private readonly page: Page) {}
+
+  readonly #unitNameInput = new TextInput(
+    this.page.find('[data-qa="unit-name-input"]')
+  )
+  readonly #areaSelect = new Combobox(this.page.find('[data-qa="area-select"]'))
+
+  #careTypeCheckbox(type: CareType) {
+    return new Checkbox(
+      this.page.find(`[data-qa="care-type-checkbox-${type}"]`)
+    )
+  }
+
+  #applicationTypeCheckbox(type: ApplicationType) {
+    return new Checkbox(
+      this.page.find(`[data-qa="application-type-checkbox-${type}"]`)
+    )
+  }
+
+  #streetInput(type: 'visiting-address' | 'mailing-address') {
+    return new TextInput(this.page.find(`[data-qa="${type}-street-input"]`))
+  }
+
+  #postalCodeInput(type: 'visiting-address' | 'mailing-address') {
+    return new TextInput(
+      this.page.find(`[data-qa="${type}-postal-code-input"]`)
+    )
+  }
+
+  #postOfficeInput(type: 'visiting-address' | 'mailing-address') {
+    return new TextInput(
+      this.page.find(`[data-qa="${type}-post-office-input"]`)
+    )
+  }
+
+  readonly #managerNameInput = new TextInput(
+    this.page.find('[data-qa="manager-name-input"]')
+  )
+
+  readonly #managerPhoneInputField = new TextInput(
+    this.page.find('[data-qa="qa-unit-manager-phone-input-field"]')
+  )
+
+  readonly #managerEmailInputField = new TextInput(
+    this.page.find('[data-qa="qa-unit-manager-email-input-field"]')
+  )
 
   readonly #closingDateInput = this.page.find(
     '[data-qa="closing-date-input"] input'
@@ -90,6 +186,59 @@ export class UnitEditor {
   readonly #unitCostCenterInput = new TextInput(
     this.page.find('#unit-cost-center')
   )
+
+  readonly #invoiceByMunicipality = new Checkbox(
+    this.page.find('[data-qa="check-invoice-by-municipality"]')
+  )
+
+  #submitButton = this.page.find('button[type="submit"]')
+
+  static async openById(page: Page, unitId: UUID) {
+    await page.goto(`${config.employeeUrl}/units/${unitId}/details`)
+    await page.find('[data-qa="enable-edit-button"]').click()
+
+    return new UnitEditor(page)
+  }
+
+  async fillUnitName(name: string) {
+    await this.#unitNameInput.fill(name)
+  }
+
+  async chooseArea(name: string) {
+    await this.#areaSelect.fillAndSelectFirst(name)
+  }
+
+  async toggleCareType(type: CareType) {
+    await this.#careTypeCheckbox(type).click()
+  }
+
+  async toggleApplicationType(type: ApplicationType) {
+    await this.#applicationTypeCheckbox(type).click()
+  }
+
+  async fillVisitingAddress(
+    street: string,
+    postalCode: string,
+    postOffice: string
+  ) {
+    await this.#streetInput('visiting-address').fill(street)
+    await this.#postalCodeInput('visiting-address').fill(postalCode)
+    await this.#postOfficeInput('visiting-address').fill(postOffice)
+  }
+
+  async fillManagerData(name: string, phone: string, email: string) {
+    await this.#managerNameInput.fill(name)
+    await this.#managerPhoneInputField.fill(phone)
+    await this.#managerEmailInputField.fill(email)
+  }
+
+  async setInvoiceByMunicipality(state: boolean) {
+    if (state) {
+      await this.#invoiceByMunicipality.check()
+    } else {
+      await this.#invoiceByMunicipality.uncheck()
+    }
+  }
 
   async assertWarningIsVisible(dataQa: string) {
     await this.page.find(`[data-qa="${dataQa}"]`).waitUntilVisible()
@@ -139,6 +288,11 @@ export class UnitEditor {
     visible
       ? await this.#unitCostCenterInput.waitUntilVisible()
       : await this.#unitCostCenterInput.waitUntilHidden()
+  }
+
+  async submit() {
+    await this.#submitButton.click()
+    return new UnitDetailsPage(this.page)
   }
 }
 
@@ -251,5 +405,84 @@ class GroupsSection {
       .findAll('[data-qa="table-of-missing-groups"]')
       .nth(0)
       .waitUntilVisible()
+  }
+}
+
+class ApplicationProcessPage {
+  constructor(private readonly page: Page) {}
+
+  async assertIsLoading() {
+    await this.page
+      .find('[data-qa="application-process-page"][data-isloading="true"]')
+      .waitUntilVisible()
+  }
+
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="application-process-page"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
+  placementPlans = new PlacementPlanSection(this.page)
+  placementProposals = new PlacementProposalsSection(this.page)
+}
+
+class PlacementPlanSection {
+  constructor(private readonly page: Page) {}
+
+  #waitingGuardianConfirmationRows = this.page.findAll(
+    '[data-qa="placement-plan-row"]'
+  )
+
+  async assertWaitingGuardianConfirmationRowCount(count: number) {
+    await waitUntilEqual(
+      () => this.#waitingGuardianConfirmationRows.count(),
+      count
+    )
+  }
+}
+
+class PlacementProposalsSection {
+  constructor(private readonly page: Page) {}
+
+  #applicationRow(applicationId: string) {
+    return this.page.find(`[data-qa="placement-proposal-row-${applicationId}"]`)
+  }
+
+  #acceptButton = this.page.find(
+    '[data-qa="placement-proposals-accept-button"]'
+  )
+
+  async assertAcceptButtonDisabled() {
+    await waitUntilTrue(() => this.#acceptButton.disabled)
+  }
+
+  async assertAcceptButtonEnabled() {
+    await waitUntilFalse(() => this.#acceptButton.disabled)
+  }
+
+  async clickAcceptButton() {
+    await this.#acceptButton.click()
+  }
+
+  async clickProposalAccept(applicationId: string) {
+    await this.#applicationRow(applicationId)
+      .find('[data-qa="accept-button"]')
+      .click()
+  }
+
+  async clickProposalReject(applicationId: string) {
+    await this.#applicationRow(applicationId)
+      .find('[data-qa="reject-button"]')
+      .click()
+  }
+
+  async selectProposalRejectionReason(n: number) {
+    const radios = this.page.findAll('[data-qa="proposal-reject-reason"]')
+    await radios.nth(n).click()
+  }
+
+  async submitProposalRejectionReason() {
+    await this.page.find('[data-qa="modal-okBtn"]').click()
   }
 }

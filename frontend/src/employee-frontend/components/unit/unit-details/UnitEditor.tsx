@@ -162,6 +162,7 @@ const CapacityInputContainer = styled.div`
 const AddressSecondRowContainer = styled.div`
   display: flex;
   justify-content: space-between;
+
   & > :first-child {
     margin-right: 20px;
   }
@@ -1194,7 +1195,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             data-qa="manager-name-input"
           />
         ) : (
-          unitManager.name
+          <div data-qa="unit-manager-name">{unitManager.name}</div>
         )}
       </FormPart>
       <FormPart>
@@ -1210,7 +1211,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             data-qa={'qa-unit-manager-phone-input-field'}
           />
         ) : (
-          unitManager.phone
+          <div data-qa="unit-manager-phone">{unitManager.phone}</div>
         )}
       </FormPart>
       <FormPart>
@@ -1227,7 +1228,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             data-qa={'qa-unit-manager-email-input-field'}
           />
         ) : (
-          unitManager.email
+          <div data-qa="unit-manager-email">{unitManager.email}</div>
         )}
       </FormPart>
       <H3>{i18n.unitEditor.title.decisionCustomization}</H3>

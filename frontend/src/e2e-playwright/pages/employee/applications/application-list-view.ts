@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Combobox, Page } from '../../../utils/page'
+import { MultiSelect, Page } from '../../../utils/page'
 import config from 'e2e-test-common/config'
+import { waitUntilEqual } from '../../../utils'
 
 export default class ApplicationListView {
   constructor(private page: Page) {}
 
-  url = `${config.employeeUrl}/applications`
+  static url = `${config.employeeUrl}/applications`
   applicationStatus = this.page.find('[data-qa="application-status"]')
 
   actionsMenu = (applicationId: string) =>
@@ -31,7 +32,7 @@ export default class ApplicationListView {
     )
   }
 
-  #areaFilter = new Combobox(this.page.find('[data-qa="area-filter"]'))
+  #areaFilter = new MultiSelect(this.page.find('[data-qa="area-filter"]'))
 
   async toggleArea(areaName: string) {
     await this.#areaFilter.fillAndSelectFirst(areaName)
@@ -43,17 +44,25 @@ export default class ApplicationListView {
     )
   }
 
-  #unitFilter = new Combobox(this.page.find('[data-qa="unit-selector"]'))
+  #unitFilter = new MultiSelect(this.page.find('[data-qa="unit-selector"]'))
 
   toggleUnit = async (unitName: string) => {
     await this.#unitFilter.fillAndSelectFirst(unitName)
   }
 
-  application = (id: string) => this.page.find(`[data-application-id="${id}"]`)
+  #application = (id: string) => this.page.find(`[data-application-id="${id}"]`)
 
-  applications = this.page
+  async assertApplicationIsVisible(applicationId: string) {
+    await this.#application(applicationId).waitUntilVisible()
+  }
+
+  #applications = this.page
     .find('[data-qa="table-of-applications"]')
-    .find('[data-qa="table-application-row"]')
+    .findAll('[data-qa="table-application-row"]')
+
+  async assertApplicationCount(n: number) {
+    await waitUntilEqual(() => this.#applications.count(), n)
+  }
 
   voucherUnitFilter = {
     firstChoice: this.page.find('[data-qa="filter-voucher-first-choice"]'),
