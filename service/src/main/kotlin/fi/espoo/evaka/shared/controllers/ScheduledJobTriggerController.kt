@@ -7,9 +7,10 @@ package fi.espoo.evaka.shared.controllers
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.job.ScheduledJob
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -18,11 +19,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/scheduled")
-class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class ScheduledJobTriggerController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     @GetMapping(produces = ["text/html"])
     fun form(user: AuthenticatedUser): String {
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.TRIGGER_SCHEDULED_JOBS)
 
         // language=html
         return """
@@ -63,8 +66,7 @@ class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<A
 
     @PostMapping
     fun trigger(user: AuthenticatedUser, db: Database, @RequestBody body: TriggerBody) {
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.TRIGGER_SCHEDULED_JOBS)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

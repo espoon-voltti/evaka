@@ -11,10 +11,8 @@ import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
@@ -105,23 +103,6 @@ FROM daycare_group_acl_view
 WHERE employee_id = :userId AND daycare_group_id = :groupId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("groupId", groupId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForPlacement(user: AuthenticatedUser, placementId: PlacementId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM placement
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
-WHERE employee_id = :userId AND placement.id = :placementId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("placementId", placementId).mapTo<UserRole>().toSet()
             }
         }
     )
@@ -262,23 +243,6 @@ WHERE child_acl_view.employee_id = :userId AND pd.id = :documentId
                     .bind("userId", user.id)
                     .bind("documentId", documentId)
                     .mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForMobileDevice(user: AuthenticatedUser, deviceId: MobileDeviceId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM daycare_acl_view dav
-JOIN mobile_device d ON dav.daycare_id = d.unit_id OR dav.employee_id = d.employee_id
-WHERE dav.employee_id = :userId AND d.id = :deviceId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("deviceId", deviceId).mapTo<UserRole>().toSet()
             }
         }
     )

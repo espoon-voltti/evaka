@@ -201,6 +201,16 @@ WHERE employee_id = :userId
         "daycare_group_placement.id",
         permittedRoleActions::groupPlacementActions
     )
+    private val mobileDevice = ActionConfig(
+        """
+SELECT d.id, role
+FROM daycare_acl_view dav
+JOIN mobile_device d ON dav.daycare_id = d.unit_id OR dav.employee_id = d.employee_id
+WHERE dav.employee_id = :userId
+        """.trimIndent(),
+        "d.id",
+        permittedRoleActions::mobileDeviceActions
+    )
     private val parentship = ActionConfig(
         """
 SELECT fridge_child.id, role
@@ -365,6 +375,7 @@ WHERE employee_id = :userId
             is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
             is Action.MessageContent -> hasPermissionFor(user, action, id as MessageContentId)
             is Action.MessageDraft -> hasPermissionFor(user, action, id as MessageDraftId)
+            is Action.MobileDevice -> this.mobileDevice.hasPermission(user, action, id as MobileDeviceId)
             is Action.Parentship -> this.parentship.hasPermission(user, action, id as ParentshipId)
             is Action.Partnership -> this.partnership.hasPermission(user, action, id as PartnershipId)
             is Action.Person -> hasPermissionFor(user, action, id as PersonId)
@@ -781,15 +792,6 @@ WHERE employee_id = :userId
             } else Unit
             else -> throw Forbidden()
         }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForMobileDevice(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::mobileDeviceActions
-        )
-    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.Pairing, id: PairingId) {
         assertPermission(

@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -79,6 +80,12 @@ sealed interface Action {
         SEARCH_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
         GENERATE_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
         BATCH_UPDATE_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
+
+        TRIGGER_SCHEDULED_JOBS,
+
+        READ_PERSONAL_MOBILE_DEVICES(UNIT_SUPERVISOR),
+
+        SEARCH_INVOICES(FINANCE_ADMIN),
 
         READ_ASSISTANCE_ACTION_OPTIONS(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
         READ_ASSISTANCE_BASIS_OPTIONS(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
@@ -409,7 +416,9 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class MobileDevice(private val roles: EnumSet<UserRole>) : Action {
+    enum class MobileDevice(private val roles: EnumSet<UserRole>) : ScopedAction<MobileDeviceId> {
+        UPDATE_NAME(UNIT_SUPERVISOR),
+        DELETE(UNIT_SUPERVISOR)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -527,6 +536,8 @@ sealed interface Action {
         ACCEPT_PLACEMENT_PROPOSAL(SERVICE_WORKER, UNIT_SUPERVISOR),
 
         CREATE_GROUP(UNIT_SUPERVISOR),
+
+        READ_MOBILE_DEVICES(UNIT_SUPERVISOR),
 
         READ_ACL(UNIT_SUPERVISOR),
         INSERT_ACL_UNIT_SUPERVISOR(),

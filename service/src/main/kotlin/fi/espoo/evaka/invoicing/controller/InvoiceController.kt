@@ -24,6 +24,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -56,7 +58,8 @@ enum class InvoiceSortParam {
 @RestController
 @RequestMapping("/invoices")
 class InvoiceController(
-    private val service: InvoiceService
+    private val service: InvoiceService,
+    private val accessControl: AccessControl
 ) {
     @PostMapping("/search")
     fun searchInvoices(
@@ -65,8 +68,7 @@ class InvoiceController(
         @RequestBody body: SearchInvoicesRequest
     ): ResponseEntity<Paged<InvoiceSummary>> {
         Audit.InvoicesSearch.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.SEARCH_INVOICES)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->

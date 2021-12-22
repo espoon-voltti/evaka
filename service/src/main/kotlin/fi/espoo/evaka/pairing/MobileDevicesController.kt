@@ -13,10 +13,10 @@ import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,9 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class MobileDevicesController(
-    private val acl: AccessControlList
-) {
+class MobileDevicesController(private val accessControl: AccessControl) {
     @GetMapping("/mobile-devices")
     fun getMobileDevices(
         db: Database,
@@ -38,8 +36,7 @@ class MobileDevicesController(
         @RequestParam unitId: DaycareId
     ): ResponseEntity<List<MobileDevice>> {
         Audit.MobileDevicesList.log(targetId = unitId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_DEVICES, unitId)
         return db.connect { dbc ->
             dbc
                 .read { it.listSharedDevices(unitId) }
@@ -53,19 +50,17 @@ class MobileDevicesController(
         user: AuthenticatedUser.Employee,
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = user.id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
         return db.connect { dbc -> dbc.read { it.listPersonalDevices(EmployeeId(user.id)) } }
     }
 
     @GetMapping("/system/mobile-devices/{id}")
     fun getMobileDevice(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.SystemInternalUser,
         @PathVariable id: MobileDeviceId
     ): ResponseEntity<MobileDeviceDetails> {
         Audit.MobileDevicesRead.log(targetId = id)
-        user.assertSystemInternalUser()
 
         return db.connect { dbc ->
             dbc
@@ -85,8 +80,7 @@ class MobileDevicesController(
         @RequestBody body: RenameRequest
     ): ResponseEntity<Unit> {
         Audit.MobileDevicesRename.log(targetId = id)
-        @Suppress("DEPRECATION")
-        acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.MobileDevice.UPDATE_NAME, id)
 
         db.connect { dbc -> dbc.transaction { it.renameDevice(id, body.name) } }
         return ResponseEntity.noContent().build()
@@ -99,8 +93,7 @@ class MobileDevicesController(
         @PathVariable id: MobileDeviceId
     ): ResponseEntity<Unit> {
         Audit.MobileDevicesDelete.log(targetId = id)
-        @Suppress("DEPRECATION")
-        acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.MobileDevice.DELETE, id)
 
         db.connect { dbc -> dbc.transaction { it.softDeleteDevice(id) } }
         return ResponseEntity.noContent().build()
