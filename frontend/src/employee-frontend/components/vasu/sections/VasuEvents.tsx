@@ -29,26 +29,18 @@ const ChipContainer = styled.div`
   display: inline-flex;
 `
 
-function EventRow({
-  label,
-  date,
-  'data-qa': dataQa
-}: {
-  label: string
-  date: LocalDate | null
-  'data-qa'?: string
-}) {
+function EventRow({ label, date }: { label: string; date: LocalDate | null }) {
   const { i18n } = useTranslation()
 
   return (
-    <div data-qa={dataQa}>
+    <>
       <Label>{label}</Label>
       {date ? (
         <span>{date.format()}</span>
       ) : (
         <Dimmed>{i18n.vasu.noRecord}</Dimmed>
       )}
-    </div>
+    </>
   )
 }
 
@@ -83,7 +75,7 @@ export function VasuEvents({
   )
 
   return (
-    <Container opaque>
+    <Container opaque data-qa="vasu-event-list">
       <H2>{i18n.vasu.events[type]}</H2>
       <ListGrid labelWidth={labelWidth}>
         <Label>{i18n.vasu.state}</Label>
@@ -93,14 +85,12 @@ export function VasuEvents({
         <EventRow
           label={i18n.vasu.lastModified}
           date={LocalDate.fromSystemTzDate(modifiedAt)}
-          data-qa="vasu-modified-date"
         />
         <EventRow
           label={i18n.vasu.lastPublished}
           date={
             lastPublished ? LocalDate.fromSystemTzDate(lastPublished) : null
           }
-          data-qa="vasu-published-date"
         />
         {trackedDates.map(([label, date]) => (
           <EventRow key={label} label={label} date={date} />
