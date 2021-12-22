@@ -127,11 +127,22 @@ export function useVasu(id: string): Vasu {
         loading: () => null,
         failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
         success: () => {
-          setStatus({ state: 'loading' })
-          void getVasuDocument(id).then(handleVasuDocLoaded)
+          if (status.state === 'dirty') {
+            debouncedSave({ documentId: id, content, childLanguage })
+          } else {
+            setStatus({ state: 'loading' })
+            void getVasuDocument(id).then(handleVasuDocLoaded)
+          }
         }
       }),
-    [id, handleVasuDocLoaded]
+    [
+      status.state,
+      id,
+      handleVasuDocLoaded,
+      debouncedSave,
+      content,
+      childLanguage
+    ]
   )
   const editFollowup = useRestApi(
     editFollowupEntry,
