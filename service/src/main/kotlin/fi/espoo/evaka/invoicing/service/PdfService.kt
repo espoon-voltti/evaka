@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
@@ -39,11 +40,13 @@ class Page(val template: Template, val context: Context)
 
 data class FeeDecisionPdfData(
     val decision: FeeDecisionDetailed,
+    val settings: Map<SettingType, String>,
     val lang: String
 )
 
 data class VoucherValueDecisionPdfData(
     val decision: VoucherValueDecisionDetailed,
+    val settings: Map<SettingType, String>,
     val lang: DocumentLang
 )
 
@@ -129,7 +132,7 @@ class PDFService(
     )
 
     private fun getVoucherValueDecisionPdfVariables(data: VoucherValueDecisionPdfData): Map<String, Any?> {
-        val (decision, lang) = data
+        val (decision, settings, lang) = data
 
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
         val hideTotalIncome =
@@ -183,6 +186,8 @@ class PDFService(
             "approverLastName" to (
                 decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
                 ),
+            "decisionMakerName" to settings[SettingType.DECISION_MAKER_NAME],
+            "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE]
 
         )
     }
@@ -208,7 +213,7 @@ class PDFService(
             val siblingDiscount: Int
         )
 
-        val (decision, lang) = data
+        val (decision, settings, lang) = data
 
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
@@ -271,6 +276,8 @@ class PDFService(
             "approverLastName" to (
                 decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
                 ),
+            "decisionMakerName" to settings[SettingType.DECISION_MAKER_NAME],
+            "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE]
         ).mapValues {
             it.value ?: ""
         }

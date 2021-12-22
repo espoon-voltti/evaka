@@ -188,6 +188,7 @@ class PdfServiceTest {
     fun `variables are ok with normal decision`() {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
+            settings = mapOf(),
             lang = DocumentLang.fi.name
         )
 
@@ -228,6 +229,8 @@ class PdfServiceTest {
             "showValidTo" to true,
             "approverFirstName" to "Pirkko",
             "approverLastName" to "Päättäjä",
+            "decisionMakerName" to "",
+            "decisionMakerTitle" to "",
             "showTotalIncome" to true,
             "isElementaryFamily" to false
         )
@@ -238,6 +241,7 @@ class PdfServiceTest {
     fun `variables are ok with relief decision`() {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = reliefDecision,
+            settings = mapOf(),
             lang = DocumentLang.fi.name
         )
 
@@ -278,6 +282,8 @@ class PdfServiceTest {
             "showValidTo" to true,
             "approverFirstName" to "Pirkko",
             "approverLastName" to "Päättäjä",
+            "decisionMakerName" to "",
+            "decisionMakerTitle" to "",
             "showTotalIncome" to true,
             "isElementaryFamily" to false
         )
@@ -288,6 +294,7 @@ class PdfServiceTest {
     fun `generateFeeDecisionPdf smoke test`() {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
+            settings = mapOf(),
             lang = DocumentLang.fi.name
         )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
@@ -302,6 +309,7 @@ class PdfServiceTest {
 
         val voucherValueDecisionPdfData = VoucherValueDecisionPdfData(
             decision = normalVoucherValueDecision,
+            settings = mapOf(),
             lang = DocumentLang.fi
         )
         val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)

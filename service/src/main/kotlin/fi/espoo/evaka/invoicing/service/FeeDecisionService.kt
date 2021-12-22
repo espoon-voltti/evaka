@@ -30,6 +30,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
+import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -139,9 +140,10 @@ class FeeDecisionService(
             throw Conflict("Fee decision $id has document key already!")
         }
 
+        val settings = tx.getSettings()
         val lang = getDecisionLanguage(decision)
 
-        val pdfByteArray = pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, lang))
+        val pdfByteArray = pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
         val key = s3Client.uploadFeeDecisionPdf(decision.id, pdfByteArray, lang)
         tx.updateFeeDecisionDocumentKey(decision.id, key)
     }
