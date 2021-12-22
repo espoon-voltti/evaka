@@ -26,12 +26,14 @@ import {
   EmployeePin,
   PedagogicalDocument,
   ServiceNeedFixture,
-  AssistanceNeed
+  AssistanceNeed,
+  DaycareCaretakers
 } from './types'
 import {
   insertAssistanceNeedFixtures,
   insertCareAreaFixtures,
   insertChildFixtures,
+  insertDaycareCaretakerFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
@@ -1083,6 +1085,15 @@ export class Fixture {
       updatedBy: ''
     })
   }
+
+  static daycareCaretakers(): DaycareCaretakersBuilder {
+    return new DaycareCaretakersBuilder({
+      groupId: 'not_set',
+      amount: 1,
+      startDate: LocalDate.today(),
+      endDate: null
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1333,5 +1344,16 @@ export class AssistanceNeedBuilder extends FixtureBuilder<AssistanceNeed> {
   // Note: shallow copy
   copy() {
     return new AssistanceNeedBuilder({ ...this.data })
+  }
+}
+
+export class DaycareCaretakersBuilder extends FixtureBuilder<DaycareCaretakers> {
+  async save(): Promise<FixtureBuilder<DaycareCaretakers>> {
+    await insertDaycareCaretakerFixtures([this.data])
+    return this
+  }
+
+  copy(): FixtureBuilder<DaycareCaretakers> {
+    return new DaycareCaretakersBuilder({ ...this.data })
   }
 }

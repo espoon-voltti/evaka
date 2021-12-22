@@ -215,8 +215,8 @@ export interface DaycareGroup {
 export interface DaycareCaretakers {
   groupId: UUID
   amount: number
-  startDate: string
-  endDate?: string
+  startDate: LocalDate
+  endDate: LocalDate | null
 }
 
 export interface Child {
