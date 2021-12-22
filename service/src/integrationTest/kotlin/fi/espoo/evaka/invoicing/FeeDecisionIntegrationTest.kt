@@ -45,6 +45,7 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.withMockedTime
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -54,8 +55,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -961,9 +960,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts when decision at last possible confirmation date exists`() {
         doReturn(1L).whenever(evakaEnv).nrOfDaysFeeDecisionCanBeSentInAdvance
         val now = HelsinkiDateTime.now()
-        val clock = MockEvakaClock(now)
         val draftWithFutureDates = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-            .copy(validDuring = DateRange(clock.today().plusDays(1), clock.today().plusYears(1)))
+            .copy(validDuring = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusYears(1)))
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
         val (_, response, _) = http.post("/decisions/confirm")
