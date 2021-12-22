@@ -66,7 +66,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
           <AttachmentBox>
             <RoundIconStyled
               content={faInfo}
-              color={colors.main.light}
+              color={colors.main.dark}
               size="s"
             />
             <div>

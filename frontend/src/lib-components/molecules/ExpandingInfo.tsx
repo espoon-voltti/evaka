@@ -119,7 +119,7 @@ export const InfoButton = React.memo(function InfoButton({
       data-qa={dataQa}
       margin={margin ?? 'zero'}
       content={fasInfo}
-      color={colors.main.light}
+      color={colors.main.dark}
       size="s"
       onClick={onClick}
       tabindex={0}
@@ -147,7 +147,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   return (
     <InfoBoxContainer className={className} fullWidth={fullWidth}>
       <InfoBoxContentArea opaque={false}>
-        <RoundIcon content={fasInfo} color={colors.main.light} size="s" />
+        <RoundIcon content={fasInfo} color={colors.main.dark} size="s" />
 
         <InfoContainer data-qa={dataQa ? `${dataQa}-text` : undefined}>
           {info}
