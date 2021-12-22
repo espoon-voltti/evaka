@@ -3,18 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  createDaycareGroupPlacementFixture,
-  createDaycarePlacementFixture,
   daycareGroupFixture,
+  Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import MobileNav from 'e2e-playwright/pages/mobile/mobile-nav'
 import StaffPage from 'e2e-playwright/pages/mobile/staff-page'
 import {
-  insertDaycareGroupFixtures,
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -38,18 +34,20 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   await insertDefaultServiceNeedOptions()
 
-  await insertDaycareGroupFixtures([daycareGroupFixture, daycareGroup2Fixture])
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    fixtures.familyWithTwoGuardians.children[0].id,
-    fixtures.daycareFixture.id
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  const groupPlacementFixture = createDaycareGroupPlacementFixture(
-    daycarePlacementFixture.id,
-    daycareGroupFixture.id
-  )
-  await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
+  await Fixture.daycareGroup().with(daycareGroupFixture).save()
+  await Fixture.daycareGroup().with(daycareGroup2Fixture).save()
+  const daycarePlacementFixture = await Fixture.placement()
+    .with({
+      childId: fixtures.familyWithTwoGuardians.children[0].id,
+      unitId: fixtures.daycareFixture.id
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .with({
+      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycareGroupId: daycareGroupFixture.id
+    })
+    .save()
 
   page = await Page.open()
   nav = new MobileNav(page)

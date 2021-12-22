@@ -6,8 +6,6 @@ import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import {
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -16,8 +14,6 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  createDaycareGroupPlacementFixture,
-  createDaycarePlacementFixture,
   daycareFixture,
   daycareGroupFixture,
   EmployeeBuilder,
@@ -69,19 +65,24 @@ async function createPlacements(
   groupId: string = daycareGroupFixture.id,
   placementType: PlacementType = 'DAYCARE'
 ) {
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    childId,
-    fixtures.daycareFixture.id,
-    '2021-05-01', // TODO use dynamic date
-    '2022-08-31',
-    placementType
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  await insertDaycareGroupPlacementFixtures([
-    createDaycareGroupPlacementFixture(daycarePlacementFixture.id, groupId)
-  ])
-  return daycarePlacementFixture
+  const daycarePlacementFixture = await Fixture.placement()
+    .with({
+      childId,
+      unitId: fixtures.daycareFixture.id,
+      type: placementType,
+      startDate: '2021-05-01',
+      endDate: '2022-08-31'
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .with({
+      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycareGroupId: groupId,
+      startDate: daycarePlacementFixture.data.startDate,
+      endDate: daycarePlacementFixture.data.endDate
+    })
+    .save()
+  return daycarePlacementFixture.data
 }
 
 const createPlacementAndReload = async (

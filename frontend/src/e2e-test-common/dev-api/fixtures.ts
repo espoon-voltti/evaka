@@ -35,6 +35,7 @@ import {
   insertChildFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
+  insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertDecisionFixtures,
   insertEmployeeFixture,
@@ -887,21 +888,6 @@ export function createPreschoolDaycarePlacementFixture(
   }
 }
 
-export function createDaycareGroupPlacementFixture(
-  placementId: string,
-  groupId: string,
-  startDate = '2021-05-01',
-  endDate = '2022-08-31'
-): DaycareGroupPlacement {
-  return {
-    id: uuidv4(),
-    daycareGroupId: groupId,
-    daycarePlacementId: placementId,
-    startDate,
-    endDate
-  }
-}
-
 export function createBackupCareFixture(
   childId: string,
   unitId: string
@@ -1041,6 +1027,16 @@ export class Fixture {
       childId: 'not set',
       unitId: 'not set',
       type: 'DAYCARE',
+      startDate: LocalDate.today().formatIso(),
+      endDate: LocalDate.today().addYears(1).formatIso()
+    })
+  }
+
+  static groupPlacement(): GroupPlacementBuilder {
+    return new GroupPlacementBuilder({
+      id: uuidv4(),
+      daycareGroupId: 'not set',
+      daycarePlacementId: 'not set',
       startDate: LocalDate.today().formatIso(),
       endDate: LocalDate.today().addYears(1).formatIso()
     })
@@ -1390,6 +1386,32 @@ export class PlacementBuilder {
   // Note: shallow copy
   copy(): PlacementBuilder {
     return new PlacementBuilder({ ...this.data })
+  }
+}
+
+export class GroupPlacementBuilder {
+  data: DaycareGroupPlacement
+
+  constructor(data: DaycareGroupPlacement) {
+    this.data = data
+  }
+
+  with(value: Partial<DaycareGroupPlacement>): GroupPlacementBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<GroupPlacementBuilder> {
+    await insertDaycareGroupPlacementFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): GroupPlacementBuilder {
+    return new GroupPlacementBuilder({ ...this.data })
   }
 }
 

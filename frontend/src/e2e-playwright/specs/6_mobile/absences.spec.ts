@@ -2,24 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  createDaycareGroupPlacementFixture,
-  createDaycarePlacementFixture,
-  daycareGroupFixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
+import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import {
-  insertDaycareGroupFixtures,
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import { waitUntilEqual } from 'e2e-playwright/utils'
-import { DaycareGroup } from 'e2e-test-common/dev-api/types'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import LocalDate from 'lib-common/local-date'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
@@ -33,28 +22,23 @@ let listPage: MobileListPage
 let childPage: MobileChildPage
 let absencesPage: MobileAbsencesPage
 
-const daycareGroup2Fixture: DaycareGroup = {
-  ...daycareGroupFixture,
-  id: uuidv4(),
-  name: 'Ryhmä 2'
-}
-
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  await insertDaycareGroupFixtures([daycareGroupFixture, daycareGroup2Fixture])
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    fixtures.familyWithTwoGuardians.children[0].id,
-    fixtures.daycareFixture.id
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  const groupPlacementFixture = createDaycareGroupPlacementFixture(
-    daycarePlacementFixture.id,
-    daycareGroupFixture.id
-  )
-  await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
+  await Fixture.daycareGroup().with(daycareGroupFixture).save()
+  const daycarePlacementFixture = await Fixture.placement()
+    .with({
+      childId: fixtures.familyWithTwoGuardians.children[0].id,
+      unitId: fixtures.daycareFixture.id
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .with({
+      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycareGroupId: daycareGroupFixture.id
+    })
+    .save()
 
   page = await Page.open()
   listPage = new MobileListPage(page)

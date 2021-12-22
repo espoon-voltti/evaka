@@ -10,8 +10,6 @@ import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   insertGuardianFixtures,
   resetDatabase,
@@ -22,12 +20,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import {
-  createDaycareGroupPlacementFixture,
-  createDaycarePlacementFixture,
-  daycareGroupFixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
+import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { Page } from '../../utils/page'
 
@@ -58,17 +51,18 @@ beforeEach(async () => {
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.enduserChildFixtureJari.id
 
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    childId,
-    unitId
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  const groupPlacementFixture = createDaycareGroupPlacementFixture(
-    daycarePlacementFixture.id,
-    daycareGroupFixture.id
-  )
-  await insertDaycareGroupPlacementFixtures([groupPlacementFixture])
+  const daycarePlacementFixture = await Fixture.placement()
+    .with({
+      childId,
+      unitId
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .with({
+      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycareGroupId: daycareGroupFixture.id
+    })
+    .save()
   await upsertMessageAccounts()
   await insertGuardianFixtures([
     {
