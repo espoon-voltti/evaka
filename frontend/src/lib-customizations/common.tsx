@@ -38,6 +38,18 @@ export const absenceColours = {
   PRESENCE: colors.greyscale.white
 }
 
+export const applicationBasisColors = {
+  ADDITIONAL_INFO: colors.main.dark,
+  ASSISTANCE_NEED: colors.accents.turquoise,
+  CLUB_CARE: colors.accents.orangeDark,
+  DAYCARE: colors.accents.warningOrange,
+  DUPLICATE_APPLICATION: colors.accents.emerald,
+  EXTENDED_CARE: colors.main.light,
+  HAS_ATTACHMENTS: colors.accents.pink,
+  SIBLING_BASIS: colors.accents.successGreen,
+  URGENT: colors.accents.dangerRed
+}
+
 export const translationsMergeCustomizer = (
   origValue: Record<string, unknown>,
   customizedValue: Record<string, unknown>

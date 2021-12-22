@@ -25,7 +25,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
 import Pagination from 'lib-components/Pagination'
-import colors from 'lib-customizations/common'
+import colors, { applicationBasisColors } from 'lib-customizations/common'
 import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -232,7 +232,6 @@ const ApplicationsList = React.memo(function Applications({
     )
   }
 
-  // todo: check new logic for status color border
   const rows = applications.map((application) => (
     <Tr
       key={application.id}
@@ -286,42 +285,66 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (
-            <RoundIcon content="L" color={colors.main.dark} size="s" />
+            <RoundIcon
+              content="L"
+              color={applicationBasisColors['ADDITIONAL_INFO']}
+              size="s"
+            />
           )}
           {application.siblingBasis && (
             <RoundIcon
               content="S"
-              color={colors.accents.successGreen}
+              color={applicationBasisColors['SIBLING_BASIS']}
               size="s"
             />
           )}
           {application.assistanceNeed && (
-            <RoundIcon content="T" color={colors.accents.turquoise} size="s" />
+            <RoundIcon
+              content="T"
+              color={applicationBasisColors['ASSISTANCE_NEED']}
+              size="s"
+            />
           )}
           {application.wasOnClubCare && (
-            <RoundIcon content="K" color={colors.accents.dangerRed} size="s" />
+            <RoundIcon
+              content="K"
+              color={applicationBasisColors['CLUB_CARE']}
+              size="s"
+            />
           )}
           {application.wasOnDaycare && (
             <RoundIcon
               content="P"
-              color={colors.accents.warningOrange}
+              color={applicationBasisColors['DAYCARE']}
               size="s"
             />
           )}
           {application.extendedCare && (
-            <RoundIcon content="V" color={colors.accents.petrol} size="s" />
+            <RoundIcon
+              content="V"
+              color={applicationBasisColors['EXTENDED_CARE']}
+              size="s"
+            />
           )}
           {application.duplicateApplication && (
-            <RoundIcon content="2" color={colors.accents.emerald} size="s" />
+            <RoundIcon
+              content="2"
+              color={applicationBasisColors['DUPLICATE_APPLICATION']}
+              size="s"
+            />
           )}
           {application.urgent && (
-            <RoundIcon content="!" color={colors.accents.dangerRed} size="s" />
+            <RoundIcon
+              content="!"
+              color={applicationBasisColors['URGENT']}
+              size="s"
+            />
           )}
           {(application.urgent || application.extendedCare) &&
             application.attachmentCount > 0 && (
               <RoundIcon
                 content={faPaperclip}
-                color={colors.accents.violet}
+                color={applicationBasisColors['HAS_ATTACHMENTS']}
                 size="s"
               />
             )}

@@ -191,6 +191,7 @@ export default React.memo(function Absences({
           />
           <Gap size="L" />
           <FixedSpaceFlexWrap>
+            {/* TODO use absenceColors */}
             <StaticChip color={colors.main.dark}>
               {i18n.absences.absenceTypes.OTHER_ABSENCE}
             </StaticChip>
