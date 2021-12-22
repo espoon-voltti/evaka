@@ -409,7 +409,7 @@ const MaxFeeError = styled(ErrorDescription)`
 `
 
 const SaveError = styled.span`
-  color: ${colors.accents.red};
+  color: ${colors.accents.dangerRed};
 `
 
 type ValidationErrors = Partial<

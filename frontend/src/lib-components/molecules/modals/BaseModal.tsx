@@ -148,11 +148,11 @@ const ModalIcon = styled.div<{ color?: IconColor }>`
       case 'blue':
         return colors.main.dark
       case 'orange':
-        return colors.accents.orange
+        return colors.accents.warningOrange
       case 'green':
-        return colors.accents.green
+        return colors.accents.successGreen
       case 'red':
-        return colors.accents.red
+        return colors.accents.dangerRed
       default:
         return colors.main.dark
     }

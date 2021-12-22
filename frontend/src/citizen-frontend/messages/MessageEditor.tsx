@@ -164,7 +164,7 @@ const Container = styled.div`
 `
 
 const ErrorMessage = styled.div`
-  color: ${colors.accents.red};
+  color: ${colors.accents.dangerRed};
 `
 
 const TopBar = styled.div`

@@ -454,7 +454,7 @@ export function FeeDecisionDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -560,7 +560,7 @@ export function ValueDecisionDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -662,7 +662,7 @@ export function InvoiceDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -967,7 +967,7 @@ export function ApplicationDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -1028,7 +1028,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="S"
-            color={colors.accents.green}
+            color={colors.accents.successGreen}
             size="m"
             onClick={toggle('SIBLING_BASIS')}
             active={toggled.includes('SIBLING_BASIS')}
@@ -1043,7 +1043,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="T"
-            color={colors.accents.water}
+            color={colors.accents.turquoise}
             size="m"
             onClick={toggle('ASSISTANCE_NEED')}
             active={toggled.includes('ASSISTANCE_NEED')}
@@ -1058,7 +1058,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="K"
-            color={colors.accents.red}
+            color={colors.accents.dangerRed}
             size="m"
             onClick={toggle('CLUB_CARE')}
             active={toggled.includes('CLUB_CARE')}
@@ -1073,7 +1073,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="P"
-            color={colors.accents.orange}
+            color={colors.accents.warningOrange}
             size="m"
             onClick={toggle('DAYCARE')}
             active={toggled.includes('DAYCARE')}
@@ -1118,7 +1118,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="!"
-            color={colors.accents.red}
+            color={colors.accents.dangerRed}
             size="m"
             onClick={toggle('URGENT')}
             active={toggled.includes('URGENT')}

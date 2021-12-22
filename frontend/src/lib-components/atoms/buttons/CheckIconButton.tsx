@@ -26,7 +26,7 @@ const StyledButton = styled.button`
 
   &.active {
     color: ${({ theme: { colors } }) => colors.greyscale.white};
-    background-color: ${({ theme: { colors } }) => colors.accents.green};
+    background-color: ${({ theme: { colors } }) => colors.accents.successGreen};
     border-radius: 100%;
   }
 `

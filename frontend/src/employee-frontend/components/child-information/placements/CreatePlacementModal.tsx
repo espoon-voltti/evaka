@@ -200,7 +200,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
 
 const ValidationError = styled.div`
   font-size: 0.9em;
-  color: ${colors.accents.red};
+  color: ${colors.accents.dangerRed};
 `
 
 export default CreatePlacementModal

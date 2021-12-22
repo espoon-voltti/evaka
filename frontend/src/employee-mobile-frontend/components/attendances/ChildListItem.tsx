@@ -65,9 +65,9 @@ export const IconBox = styled.div<{ type: AttendanceStatus }>`
       case 'DEPARTED':
         return colors.main.primary
       case 'PRESENT':
-        return colors.accents.green
+        return colors.accents.successGreen
       case 'COMING':
-        return colors.accents.water
+        return colors.accents.turquoise
     }
   }};
   border-radius: 50%;
@@ -78,9 +78,9 @@ export const IconBox = styled.div<{ type: AttendanceStatus }>`
       case 'DEPARTED':
         return `0 0 0 2px ${colors.main.primary}`
       case 'PRESENT':
-        return `0 0 0 2px ${colors.accents.green}`
+        return `0 0 0 2px ${colors.accents.successGreen}`
       case 'COMING':
-        return `0 0 0 2px ${colors.accents.water}`
+        return `0 0 0 2px ${colors.accents.turquoise}`
     }
   }};
   border: 2px solid ${colors.greyscale.white};
@@ -157,9 +157,9 @@ export default React.memo(function ChildListItem({
                   : type === 'DEPARTED'
                   ? colors.main.primary
                   : type === 'PRESENT'
-                  ? colors.accents.green
+                  ? colors.accents.successGreen
                   : type === 'COMING'
-                  ? colors.accents.water
+                  ? colors.accents.turquoise
                   : colors.main.dark
               }
               size="XL"
@@ -174,7 +174,11 @@ export default React.memo(function ChildListItem({
             <div>
               {infoText}
               {child.backup && (
-                <RoundIcon content="V" size="m" color={colors.accents.green} />
+                <RoundIcon
+                  content="V"
+                  size="m"
+                  color={colors.accents.successGreen}
+                />
               )}
             </div>
             <FixedSpaceRowWithLeftMargin>

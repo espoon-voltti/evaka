@@ -197,22 +197,19 @@ export default React.memo(function Absences({
             <StaticChip color={colors.accents.violet}>
               {i18n.absences.absenceTypes.SICKLEAVE}
             </StaticChip>
-            <StaticChip color={colors.accents.green}>
+            <StaticChip color={colors.accents.successGreen}>
               {i18n.absences.absenceTypes.UNKNOWN_ABSENCE}
             </StaticChip>
-            <StaticChip color={colors.accents.water}>
+            <StaticChip color={colors.accents.turquoise}>
               {i18n.absences.absenceTypes.PLANNED_ABSENCE}
             </StaticChip>
             <StaticChip color={colors.main.primary}>
               {i18n.absences.absenceTypes.PARENTLEAVE}
             </StaticChip>
-            <StaticChip color={colors.accents.red}>
+            <StaticChip color={colors.accents.dangerRed}>
               {i18n.absences.absenceTypes.FORCE_MAJEURE}
             </StaticChip>
-            <StaticChip
-              color={colors.greyscale.medium}
-              textColor={colors.greyscale.white}
-            >
+            <StaticChip color={colors.greyscale.medium}>
               {i18n.absences.absenceTypes.PRESENCE}
             </StaticChip>
           </FixedSpaceFlexWrap>
@@ -396,7 +393,7 @@ const AbsencesPage = styled.div`
     }
 
     &-UNKNOWN_ABSENCE {
-      border-top-color: ${colors.accents.green};
+      border-top-color: ${colors.accents.successGreen};
     }
 
     &-PLANNED_ABSENCE {
@@ -404,11 +401,11 @@ const AbsencesPage = styled.div`
     }
 
     &-TEMPORARY_RELOCATION {
-      border-top-color: ${colors.accents.orange};
+      border-top-color: ${colors.accents.warningOrange};
     }
 
     &-TEMPORARY_VISITOR {
-      border-top-color: ${colors.accents.yellow};
+      border-top-color: ${colors.accents.peach};
     }
 
     &-PARENTLEAVE {
@@ -416,7 +413,7 @@ const AbsencesPage = styled.div`
     }
 
     &-FORCE_MAJEURE {
-      border-top-color: ${colors.accents.red};
+      border-top-color: ${colors.accents.dangerRed};
     }
 
     &-weekend {
@@ -440,7 +437,7 @@ const AbsencesPage = styled.div`
     }
 
     &-UNKNOWN_ABSENCE {
-      border-bottom-color: ${colors.accents.green};
+      border-bottom-color: ${colors.accents.successGreen};
     }
 
     &-PLANNED_ABSENCE {
@@ -448,11 +445,11 @@ const AbsencesPage = styled.div`
     }
 
     &-TEMPORARY_RELOCATION {
-      border-bottom-color: ${colors.accents.orange};
+      border-bottom-color: ${colors.accents.warningOrange};
     }
 
     &-TEMPORARY_VISITOR {
-      border-bottom-color: ${colors.accents.yellow};
+      border-bottom-color: ${colors.accents.peach};
     }
 
     &-PARENTLEAVE {
@@ -460,7 +457,7 @@ const AbsencesPage = styled.div`
     }
 
     &-FORCE_MAJEURE {
-      border-bottom-color: ${colors.accents.red};
+      border-bottom-color: ${colors.accents.dangerRed};
     }
 
     &-weekend {

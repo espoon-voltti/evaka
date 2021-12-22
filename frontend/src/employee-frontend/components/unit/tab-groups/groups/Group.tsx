@@ -605,7 +605,7 @@ export default React.memo(function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={colors.accents.orange}
+                                  color={colors.accents.warningOrange}
                                 >
                                   <FontAwesomeIcon icon={faTimes} inverse />
                                 </StatusIconContainer>
@@ -619,7 +619,7 @@ export default React.memo(function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={colors.accents.green}
+                                  color={colors.accents.successGreen}
                                 >
                                   <FontAwesomeIcon icon={faCheck} inverse />
                                 </StatusIconContainer>

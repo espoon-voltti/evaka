@@ -81,9 +81,9 @@ export default React.memo(function OccupancyCard({
     type == 'confirmed'
       ? colors.main.dark
       : type == 'planned'
-      ? colors.accents.water
+      ? colors.accents.turquoise
       : type == 'realized'
-      ? colors.accents.green
+      ? colors.accents.successGreen
       : colors.greyscale.lighter
 
   return (

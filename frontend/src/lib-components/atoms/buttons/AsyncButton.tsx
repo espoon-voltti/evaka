@@ -167,7 +167,7 @@ export default React.memo(function AsyncButton({
               transform: cross.opacity.interpolate((x) => `scale(${x ?? 0})`)
             }}
           >
-            <FontAwesomeIcon icon={faTimes} color={colors.accents.red} />
+            <FontAwesomeIcon icon={faTimes} color={colors.accents.dangerRed} />
           </IconWrapper>
         </IconContainer>
         <span>

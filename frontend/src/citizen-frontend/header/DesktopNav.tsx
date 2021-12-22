@@ -248,7 +248,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
             {showUserAttentionIndicator && (
               <RoundIcon
                 content={faExclamation}
-                color={theme.colors.accents.orange}
+                color={theme.colors.accents.warningOrange}
                 size="s"
                 data-qa="personal-details-attention-indicator-desktop"
               />

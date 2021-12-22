@@ -51,7 +51,7 @@ const Container = styled.div<{ status: StatusLabelType }>`
     p.status == 'conflict'
       ? `
    color: ${colors.greyscale.white};
-   background: ${colors.accents.red};
+   background: ${colors.accents.dangerRed};
   `
       : ''}
 `

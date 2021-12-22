@@ -15,8 +15,8 @@ const Chip = styled(StaticChip)`
 `
 
 const chipColors = {
-  MESSAGE: accents.yellow,
-  BULLETIN: accents.water
+  MESSAGE: accents.peach,
+  BULLETIN: accents.turquoise
 }
 
 export function MessageTypeChip({ type }: { type: MessageType }) {

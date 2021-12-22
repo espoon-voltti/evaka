@@ -182,5 +182,5 @@ const UnreadMessagesIndicator = styled.div`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
   border-radius: 100%;
-  background-color: ${colors.accents.orange};
+  background-color: ${colors.accents.warningOrange};
 `

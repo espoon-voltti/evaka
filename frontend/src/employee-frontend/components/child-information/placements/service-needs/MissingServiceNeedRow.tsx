@@ -37,7 +37,7 @@ function MissingServiceNeedRow({
         {t.missing}{' '}
         <FontAwesomeIcon
           icon={faExclamationTriangle}
-          color={colors.accents.orange}
+          color={colors.accents.warningOrange}
         />
       </InfoTd>
       <Td />

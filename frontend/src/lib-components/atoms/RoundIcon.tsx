@@ -247,7 +247,7 @@ const Circle = styled.span<{ smaller: boolean; color?: string }>`
   line-height: ${(p) => (p.smaller ? '10px' : '13px')};
   border-radius: 10px;
   background-color: ${({ theme: { colors }, ...p }) =>
-    p.color ? p.color : colors.accents.green};
+    p.color ? p.color : colors.accents.successGreen};
   color: ${({ theme: { colors } }) => colors.greyscale.white};
   display: inline-block;
   position: absolute;

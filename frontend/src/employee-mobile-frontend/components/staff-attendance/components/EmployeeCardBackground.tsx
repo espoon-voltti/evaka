@@ -15,7 +15,7 @@ import { Staff } from '../staff'
 import { IconBox } from '../StaffListItem'
 
 function getColorByStatus(present: boolean) {
-  return present ? colors.accents.green : colors.accents.water
+  return present ? colors.accents.successGreen : colors.accents.turquoise
 }
 
 function getBackgroundColorByStatus(present: boolean) {

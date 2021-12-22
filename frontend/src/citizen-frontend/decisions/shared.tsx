@@ -26,15 +26,15 @@ export const Status = styled.span`
 export const decisionStatusIcon = {
   PENDING: {
     icon: faGavel,
-    color: accents.orange
+    color: accents.warningOrange
   },
   ACCEPTED: {
     icon: faCheck,
-    color: accents.green
+    color: accents.successGreen
   },
   REJECTED: {
     icon: faTimes,
-    color: accents.red
+    color: accents.dangerRed
   }
 }
 
@@ -47,15 +47,15 @@ export const applicationStatusIcon: {
   },
   PENDING: {
     icon: faGavel,
-    color: accents.orange
+    color: accents.warningOrange
   },
   ACCEPTED: {
     icon: faCheck,
-    color: accents.green
+    color: accents.successGreen
   },
   REJECTED: {
     icon: faTimes,
-    color: accents.red
+    color: accents.dangerRed
   },
   CREATED: {
     icon: faFile,

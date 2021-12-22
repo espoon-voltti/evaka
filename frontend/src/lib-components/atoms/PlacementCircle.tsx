@@ -13,7 +13,7 @@ const Circle = styled.div`
   min-height: 34px;
   max-width: 34px;
   max-height: 34px;
-  background-color: ${({ theme: { colors } }) => colors.accents.green};
+  background-color: ${({ theme: { colors } }) => colors.accents.successGreen};
   border-radius: 100%;
 `
 
@@ -24,7 +24,7 @@ const HalfCircle = styled.div`
   min-height: 34px;
   max-width: 17px;
   max-height: 34px;
-  background-color: ${({ theme: { colors } }) => colors.accents.green};
+  background-color: ${({ theme: { colors } }) => colors.accents.successGreen};
   border-top-left-radius: 17px;
   border-bottom-left-radius: 17px;
 `

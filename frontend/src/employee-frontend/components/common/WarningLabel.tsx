@@ -35,6 +35,6 @@ const Wrapper = styled.div`
   text-align: center;
   line-height: 30px;
   font-weight: ${fontWeights.semibold};
-  background: ${colors.accents.red};
+  background: ${colors.accents.dangerRed};
   color: ${colors.greyscale.white};
 `

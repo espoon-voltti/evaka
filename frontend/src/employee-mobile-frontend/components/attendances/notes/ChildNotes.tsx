@@ -52,7 +52,7 @@ const NoteTypeTab = ({
       <RoundIcon
         data-qa={`${dataQa}-indicator`}
         content={String(noteCount)}
-        color={colors.accents.orange}
+        color={colors.accents.warningOrange}
         size="xs"
       />
     )}

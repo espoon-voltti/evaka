@@ -14,8 +14,8 @@ const Chip = styled(StaticChip)`
 `
 
 const chipColors: Record<MessageType, string> = {
-  MESSAGE: accents.yellow,
-  BULLETIN: accents.water
+  MESSAGE: accents.peach,
+  BULLETIN: accents.turquoise
 }
 
 interface Props {

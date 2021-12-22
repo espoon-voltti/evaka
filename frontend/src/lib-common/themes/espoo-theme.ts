@@ -27,16 +27,20 @@ const theme: Theme = {
       white: '#ffffff'
     },
     accents: {
-      orange: '#ff7300',
-      orangeDark: '#b85300',
-      green: '#c6db00',
-      greenDark: '#6e7a00',
-      water: '#9fc1d3',
-      yellow: '#ffce00',
-      red: '#db0c41',
-      petrol: '#1f6390',
-      emerald: '#038572',
-      violet: '#9d55c3'
+      dangerRed: '#ff4f57',
+      warningOrange: '#ff8e31',
+      successGreen: '#70c673',
+      infoBlue: blueColors.light,
+      greenDark: '#014b30',
+      orangeDark: '#ad581a',
+      emerald: '#148190',
+      violet: '#8f41b9',
+      peach: '#ffc386',
+      turquoise: '#7ff6fc',
+      mint: '#bcfdce',
+      lightBlue: '#c9d4dd',
+      pink: '#fca5c7',
+      petrol: '#1f6390'
     }
   },
   typography: {

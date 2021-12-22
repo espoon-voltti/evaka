@@ -25,7 +25,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
 import Pagination from 'lib-components/Pagination'
-import colors, { main } from 'lib-customizations/common'
+import colors from 'lib-customizations/common'
 import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -175,19 +175,19 @@ const ApplicationsList = React.memo(function Applications({
       application.status === 'WAITING_PLACEMENT' &&
       !application.checkedByAdmin
     )
-      return colors.accents.orange
+      return colors.accents.warningOrange
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'ACCEPTED'
     )
-      return colors.accents.green
+      return colors.accents.successGreen
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'REJECTED'
     )
-      return colors.accents.red
+      return colors.accents.dangerRed
 
-    return colors.accents.water
+    return colors.accents.turquoise
   }
 
   const dateOfBirthInfo = (application: ApplicationSummary) => {
@@ -286,19 +286,27 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (
-            <RoundIcon content="L" color={main.dark} size="s" />
+            <RoundIcon content="L" color={colors.main.dark} size="s" />
           )}
           {application.siblingBasis && (
-            <RoundIcon content="S" color={colors.accents.green} size="s" />
+            <RoundIcon
+              content="S"
+              color={colors.accents.successGreen}
+              size="s"
+            />
           )}
           {application.assistanceNeed && (
-            <RoundIcon content="T" color={colors.accents.water} size="s" />
+            <RoundIcon content="T" color={colors.accents.turquoise} size="s" />
           )}
           {application.wasOnClubCare && (
-            <RoundIcon content="K" color={colors.accents.red} size="s" />
+            <RoundIcon content="K" color={colors.accents.dangerRed} size="s" />
           )}
           {application.wasOnDaycare && (
-            <RoundIcon content="P" color={colors.accents.orange} size="s" />
+            <RoundIcon
+              content="P"
+              color={colors.accents.warningOrange}
+              size="s"
+            />
           )}
           {application.extendedCare && (
             <RoundIcon content="V" color={colors.accents.petrol} size="s" />
@@ -307,7 +315,7 @@ const ApplicationsList = React.memo(function Applications({
             <RoundIcon content="2" color={colors.accents.emerald} size="s" />
           )}
           {application.urgent && (
-            <RoundIcon content="!" color={colors.accents.red} size="s" />
+            <RoundIcon content="!" color={colors.accents.dangerRed} size="s" />
           )}
           {(application.urgent || application.extendedCare) &&
             application.attachmentCount > 0 && (

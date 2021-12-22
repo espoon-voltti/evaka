@@ -122,8 +122,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(plannedOccupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.accents.water,
-      borderColor: colors.accents.water
+      pointBackgroundColor: colors.accents.turquoise,
+      borderColor: colors.accents.turquoise
     })
   if (realized)
     datasets.push({
@@ -131,8 +131,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(realizedOccupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.accents.green,
-      borderColor: colors.accents.green
+      pointBackgroundColor: colors.accents.successGreen,
+      borderColor: colors.accents.successGreen
     })
 
   return (

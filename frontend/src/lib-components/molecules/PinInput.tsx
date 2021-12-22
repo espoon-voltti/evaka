@@ -19,7 +19,7 @@ import { defaultMargins } from '../white-space'
 const SingleNumberInput = styled(StyledInput)<{ invalid?: boolean }>`
   border: 1px solid
     ${({ theme, invalid }) =>
-      invalid ? theme.colors.accents.red : theme.colors.main.primary};
+      invalid ? theme.colors.accents.dangerRed : theme.colors.main.primary};
   text-align: center;
 
   font-family: 'Montserrat', sans-serif;

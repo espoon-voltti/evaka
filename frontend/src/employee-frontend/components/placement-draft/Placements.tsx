@@ -54,7 +54,7 @@ const Dates = styled.span`
   width: 220px;
 
   svg {
-    color: ${colors.accents.orange};
+    color: ${colors.accents.warningOrange};
     margin-left: 5px;
   }
 `

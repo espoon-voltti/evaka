@@ -93,9 +93,9 @@ const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
   right: -1px;
   background-color: ${(p) =>
     p.type === 'REFUND'
-      ? colors.accents.orange
+      ? colors.accents.warningOrange
       : p.type === 'CORRECTION'
-      ? colors.accents.yellow
+      ? colors.accents.peach
       : p.type === 'NEW'
       ? colors.main.primary
       : colors.greyscale.white};

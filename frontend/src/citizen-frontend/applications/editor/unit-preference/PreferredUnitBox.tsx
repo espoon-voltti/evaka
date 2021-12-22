@@ -41,26 +41,17 @@ export default React.memo(function PreferredUnitBox({
       ? t.common.unit.providerTypes.PRIVATE
       : t.common.unit.providerTypes[unit.providerType]
 
-  const getProviderTypeColors = (): { color: string; textColor: string } => {
+  const getProviderTypeColors = (): { color: string } => {
     switch (unit.providerType) {
       case 'MUNICIPAL':
       case 'MUNICIPAL_SCHOOL':
-        return {
-          color: colors.accents.water,
-          textColor: colors.greyscale.darkest
-        }
+        return { color: colors.accents.turquoise }
       case 'PRIVATE':
       case 'PRIVATE_SERVICE_VOUCHER':
-        return {
-          color: colors.accents.emerald,
-          textColor: colors.greyscale.white
-        }
+        return { color: colors.accents.emerald }
       case 'PURCHASED':
       case 'EXTERNAL_PURCHASED':
-        return {
-          color: colors.accents.green,
-          textColor: colors.greyscale.darkest
-        }
+        return { color: colors.main.lighter }
     }
   }
 
@@ -84,7 +75,7 @@ export default React.memo(function PreferredUnitBox({
           </FixedSpaceColumn>
           <FixedSpaceFlexWrap horizontalSpacing={'xs'} verticalSpacing={'xs'}>
             {unit.language === 'sv' ? (
-              <StaticChip color={colors.accents.yellow}>
+              <StaticChip color={colors.accents.peach}>
                 {t.applications.editor.unitPreference.units.preferences.sv}
               </StaticChip>
             ) : (

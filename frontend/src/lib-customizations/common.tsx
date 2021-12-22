@@ -27,14 +27,14 @@ const colors = {
 }
 
 export const absenceColours = {
-  UNKNOWN_ABSENCE: colors.accents.green,
+  UNKNOWN_ABSENCE: colors.accents.successGreen,
   OTHER_ABSENCE: colors.main.dark,
   SICKLEAVE: colors.accents.violet,
   PLANNED_ABSENCE: colors.main.light,
   PARENTLEAVE: colors.main.primary,
-  FORCE_MAJEURE: colors.accents.red,
-  TEMPORARY_RELOCATION: colors.accents.orange,
-  TEMPORARY_VISITOR: colors.accents.yellow,
+  FORCE_MAJEURE: colors.accents.dangerRed,
+  TEMPORARY_RELOCATION: colors.accents.warningOrange,
+  TEMPORARY_VISITOR: colors.accents.peach,
   PRESENCE: colors.greyscale.white
 }
 

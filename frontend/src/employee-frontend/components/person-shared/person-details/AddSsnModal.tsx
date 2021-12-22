@@ -17,7 +17,7 @@ import { UUID } from 'lib-common/types'
 const Error = styled.div`
   display: flex;
   justify-content: center;
-  color: ${colors.accents.red};
+  color: ${colors.accents.dangerRed};
   margin: 20px;
 `
 

@@ -241,7 +241,7 @@ const ProgressBarError = styled.div`
   color: ${({ theme: { colors } }) => colors.accents.orangeDark};
   margin-top: 3px;
   svg {
-    color: ${({ theme: { colors } }) => colors.accents.orange};
+    color: ${({ theme: { colors } }) => colors.accents.warningOrange};
     margin-left: 8px;
   }
 `

@@ -83,11 +83,11 @@ export const StyledInput = styled.input<StyledInputProps>`
   }
 
   &.success {
-    border-color: ${({ theme: { colors } }) => colors.accents.green};
+    border-color: ${({ theme: { colors } }) => colors.accents.successGreen};
   }
 
   &.warning {
-    border-color: ${({ theme: { colors } }) => colors.accents.orange};
+    border-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
   }
 
   &:read-only {
@@ -141,7 +141,7 @@ export const InputFieldUnderRow = styled.div`
   }
 
   &.warning {
-    color: ${({ theme: { colors } }) => colors.accents.orangeDark};
+    color: ${({ theme: { colors } }) => colors.accents.warningOrange};
   }
 `
 

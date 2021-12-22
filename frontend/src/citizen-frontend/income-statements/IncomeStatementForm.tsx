@@ -1282,7 +1282,7 @@ const LabelError = styled(
       <span className={className}>
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={colors.accents.orange}
+          color={colors.accents.warningOrange}
         />
         {text}
       </span>

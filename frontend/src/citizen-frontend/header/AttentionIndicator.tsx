@@ -35,5 +35,5 @@ const Indicator = styled.div`
   bottom: -2px;
   right: -6px;
   border-radius: 6px;
-  background: ${({ theme }) => theme.colors.accents.orange};
+  background: ${({ theme }) => theme.colors.accents.warningOrange};
 `

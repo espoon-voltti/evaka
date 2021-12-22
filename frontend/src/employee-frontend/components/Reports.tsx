@@ -74,7 +74,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.orange}
+                  color={colors.accents.warningOrange}
                   content={faCopy}
                 />
                 <LinkTitle to="/reports/duplicate-people">
@@ -98,7 +98,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.orange}
+                  color={colors.accents.warningOrange}
                   content={faUsers}
                 />
                 <LinkTitle to="/reports/family-conflicts">
@@ -122,7 +122,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.orange}
+                  color={colors.accents.warningOrange}
                   content={faUserAltSlash}
                 />
                 <LinkTitle to="/reports/missing-head-of-family">
@@ -146,7 +146,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.orange}
+                  color={colors.accents.warningOrange}
                   content={faClock}
                 />
                 <LinkTitle to="/reports/missing-service-need">
@@ -163,7 +163,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.orange}
+                  color={colors.accents.warningOrange}
                   content={faHome}
                 />
                 <LinkTitle to="/reports/partners-in-different-address">
@@ -180,7 +180,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.yellow}
+                  color={colors.accents.peach}
                   content={faHome}
                 />
                 <LinkTitle to="/reports/children-in-different-address">
@@ -432,7 +432,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.orange}
+                  color={colors.accents.warningOrange}
                   content={faUsers}
                 />
                 <LinkTitle
@@ -452,7 +452,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.orange}
+                  color={colors.accents.warningOrange}
                   content={faDiagnoses}
                 />
                 <LinkTitle

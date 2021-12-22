@@ -88,7 +88,7 @@ const WarningIcon = () => (
   <FontAwesomeIcon
     icon={faExclamationTriangle}
     size={'1x'}
-    color={colors.accents.orange}
+    color={colors.accents.warningOrange}
   />
 )
 

@@ -302,9 +302,9 @@ export default React.memo(function AttendanceChildPage() {
 function getColorByStatus(status: AttendanceStatus) {
   switch (status) {
     case 'COMING':
-      return colors.accents.water
+      return colors.accents.turquoise
     case 'PRESENT':
-      return colors.accents.green
+      return colors.accents.successGreen
     case 'DEPARTED':
       return colors.main.dark
     case 'ABSENT':

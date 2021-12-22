@@ -41,15 +41,15 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
   background: ${(props: CareTypeLabelContainerProps) => {
     switch (props.type) {
       case 'daycare':
-        return colors.accents.green
+        return colors.accents.successGreen
       case 'daycare5yo':
         return colors.accents.greenDark
       case 'preschool':
         return colors.main.dark
       case 'preparatory':
-        return colors.accents.water
+        return colors.accents.turquoise
       case 'backup-care':
-        return colors.accents.yellow
+        return colors.accents.peach
       case 'club':
         return colors.greyscale.lighter
       case 'temporary':
