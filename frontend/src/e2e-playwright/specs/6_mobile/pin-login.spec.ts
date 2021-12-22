@@ -11,8 +11,6 @@ import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import {
   insertBackupPickups,
   insertChildFixtures,
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
   insertFamilyContacts,
   insertFridgeChildren,
   insertFridgePartners,
@@ -23,17 +21,11 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  createDaycarePlacementFixture,
-  DaycareGroupBuilder,
   enduserChildFixtureJari,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import {
-  Child,
-  DaycarePlacement,
-  PersonDetail
-} from 'e2e-test-common/dev-api/types'
+import { Child, PersonDetail } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
 
@@ -44,11 +36,6 @@ let childPage: MobileChildPage
 let pinLoginPage: PinLoginPage
 let topNav: TopNav
 
-const employeeId = uuidv4()
-const daycareGroupPlacementId = uuidv4()
-
-let daycarePlacementFixture: DaycarePlacement
-let daycareGroup: DaycareGroupBuilder
 let child: PersonDetail
 
 const empFirstName = 'Yrjö'
@@ -67,8 +54,6 @@ beforeEach(async () => {
 
   const employee = await Fixture.employee()
     .with({
-      id: employeeId,
-      externalId: `espooad: ${employeeId}`,
       firstName: empFirstName,
       lastName: empLastName,
       email: 'yy@example.com',
@@ -77,24 +62,16 @@ beforeEach(async () => {
     .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
     .save()
   await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()
-  daycareGroup = await Fixture.daycareGroup()
+  const daycareGroup = await Fixture.daycareGroup()
     .with({ daycareId: unit.id })
     .save()
-  daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    child.id,
-    unit.id
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  await insertDaycareGroupPlacementFixtures([
-    {
-      id: daycareGroupPlacementId,
-      daycareGroupId: daycareGroup.data.id,
-      daycarePlacementId: daycarePlacementFixture.id,
-      startDate: daycarePlacementFixture.startDate,
-      endDate: daycarePlacementFixture.endDate
-    }
-  ])
+  const placementFixture = await Fixture.placement()
+    .with({ childId: child.id, unitId: unit.id })
+    .save()
+  await Fixture.groupPlacement()
+    .withGroup(daycareGroup)
+    .withPlacement(placementFixture)
+    .save()
 
   page = await Page.open()
   listPage = new MobileListPage(page)

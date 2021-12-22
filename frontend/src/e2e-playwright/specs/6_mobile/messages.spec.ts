@@ -9,23 +9,16 @@ import { Page } from 'e2e-playwright/utils/page'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import config from 'e2e-test-common/config'
 import {
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
   insertGuardianFixtures,
   resetDatabase,
   upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
-import {
-  Daycare,
-  DaycarePlacement,
-  PersonDetail
-} from 'e2e-test-common/dev-api/types'
+import { Daycare, PersonDetail } from 'e2e-test-common/dev-api/types'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  createDaycarePlacementFixture,
   DaycareGroupBuilder,
   Fixture,
   uuidv4
@@ -51,14 +44,10 @@ let pinLoginPage: PinLoginPage
 let unreadMessageCountsPage: UnreadMobileMessagesPage
 let nav: MobileNav
 
-const daycareGroupPlacementId = uuidv4()
-const daycareGroupPlacement2Id = uuidv4()
 const daycareGroupId = uuidv4()
 const daycareGroup2Id = uuidv4()
 const daycareGroup3Id = uuidv4()
 
-let daycarePlacementFixture: DaycarePlacement
-let daycarePlacement2Fixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
 let daycareGroup2: DaycareGroupBuilder
 let daycareGroup3: DaycareGroupBuilder
@@ -140,38 +129,22 @@ beforeEach(async () => {
   await Fixture.employeePin().with({ userId: staff.data.id, pin }).save()
   await Fixture.employeePin().with({ userId: staff2.data.id, pin }).save()
 
-  daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    child.id,
-    unit.id
-  )
+  const placementFixture = await Fixture.placement()
+    .with({ childId: child.id, unitId: unit.id })
+    .save()
+  await Fixture.groupPlacement()
+    .withGroup(daycareGroup)
+    .withPlacement(placementFixture)
+    .save()
 
-  daycarePlacement2Fixture = createDaycarePlacementFixture(
-    uuidv4(),
-    child2.id,
-    unit.id
-  )
+  const placement2Fixture = await Fixture.placement()
+    .with({ childId: child2.id, unitId: unit.id })
+    .save()
+  await Fixture.groupPlacement()
+    .withGroup(daycareGroup2)
+    .withPlacement(placement2Fixture)
+    .save()
 
-  await insertDaycarePlacementFixtures([
-    daycarePlacementFixture,
-    daycarePlacement2Fixture
-  ])
-  await insertDaycareGroupPlacementFixtures([
-    {
-      id: daycareGroupPlacementId,
-      daycareGroupId: daycareGroup.data.id,
-      daycarePlacementId: daycarePlacementFixture.id,
-      startDate: daycarePlacementFixture.startDate,
-      endDate: daycarePlacementFixture.endDate
-    },
-    {
-      id: daycareGroupPlacement2Id,
-      daycareGroupId: daycareGroup2.data.id,
-      daycarePlacementId: daycarePlacement2Fixture.id,
-      startDate: daycarePlacement2Fixture.startDate,
-      endDate: daycarePlacement2Fixture.endDate
-    }
-  ])
   await upsertMessageAccounts()
   await insertGuardianFixtures([
     {

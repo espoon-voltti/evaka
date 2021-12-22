@@ -1271,6 +1271,24 @@ export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
 }
 
 export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement> {
+  withGroup(group: DaycareGroupBuilder): this {
+    this.data = {
+      ...this.data,
+      daycareGroupId: group.data.id
+    }
+    return this
+  }
+
+  withPlacement(placement: PlacementBuilder): this {
+    this.data = {
+      ...this.data,
+      daycarePlacementId: placement.data.id,
+      startDate: placement.data.startDate,
+      endDate: placement.data.endDate
+    }
+    return this
+  }
+
   async save() {
     await insertDaycareGroupPlacementFixtures([this.data])
     return this

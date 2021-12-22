@@ -9,8 +9,6 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertBackupCareFixtures,
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
   postChildDailyNote,
   postGroupNote,
   postMobileDevice,
@@ -20,7 +18,6 @@ import { mobileLogin } from '../../config/users'
 import { t } from 'testcafe'
 import {
   CareAreaBuilder,
-  createDaycarePlacementFixture,
   DaycareBuilder,
   DaycareGroupBuilder,
   enduserChildFixtureJari,
@@ -29,7 +26,6 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
-import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
   ChildDailyNoteBody,
   GroupNoteBody
@@ -41,9 +37,7 @@ let fixtures: AreaAndPersonFixtures
 const employeeId = uuidv4()
 const mobileDeviceId = employeeId
 const mobileLongTermToken = uuidv4()
-const daycareGroupPlacementId = uuidv4()
 
-let daycarePlacementFixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
 let daycare: DaycareBuilder
 let backupCareDaycareGroup: DaycareGroupBuilder
@@ -70,22 +64,13 @@ fixture('Mobile daily notes for backup care')
     daycare = await Fixture.daycare().careArea(careArea).save()
     daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
 
-    daycarePlacementFixture = createDaycarePlacementFixture(
-      uuidv4(),
-      childId,
-      daycare.data.id
-    )
-
-    await insertDaycarePlacementFixtures([daycarePlacementFixture])
-    await insertDaycareGroupPlacementFixtures([
-      {
-        id: daycareGroupPlacementId,
-        daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: daycarePlacementFixture.id,
-        startDate: daycarePlacementFixture.startDate,
-        endDate: daycarePlacementFixture.endDate
-      }
-    ])
+    const placementFixture = await Fixture.placement()
+      .with({ childId, unitId: daycare.data.id })
+      .save()
+    await Fixture.groupPlacement()
+      .withGroup(daycareGroup)
+      .withPlacement(placementFixture)
+      .save()
 
     backupCareDaycare = await Fixture.daycare().careArea(careArea).save()
     backupCareDaycareGroup = await Fixture.daycareGroup()
