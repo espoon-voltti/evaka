@@ -44,13 +44,16 @@ import {
   insertPersonFixture,
   insertServiceNeedOptions,
   insertServiceNeeds,
-  insertVtjPersonFixture
+  insertVtjPersonFixture,
+  setAclForDaycareGroups,
+  setAclForDaycares
 } from './index'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/generated/enums'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import { UUID } from 'lib-common/types'
 
 export const supervisor: EmployeeDetail = {
@@ -988,7 +991,7 @@ export class Fixture {
       externalId: `e2etest:${uuidv4()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,
-      roles: ['ADMIN']
+      roles: []
     })
   }
 
@@ -996,8 +999,7 @@ export class Fixture {
     return new DecisionBuilder({
       id: uuidv4(),
       applicationId: nullUUID,
-      //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      employeeId: supervisor.externalId!,
+      employeeId: supervisor.externalId,
       unitId: nullUUID,
       type: 'DAYCARE',
       startDate: '2020-01-01',
@@ -1193,8 +1195,27 @@ export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependantsAndG
 }
 
 export class EmployeeBuilder extends FixtureBuilder<EmployeeDetail> {
+  daycareAcl: { unitId: string; role: ScopedRole }[] = []
+  groupAcl: string[] = []
+
+  withDaycareAcl(unitId: string, role: ScopedRole): this {
+    this.daycareAcl.push({ unitId, role })
+    return this
+  }
+
+  withGroupAcl(groupId: string): this {
+    this.groupAcl.push(groupId)
+    return this
+  }
+
   async save() {
     await insertEmployeeFixture(this.data)
+    for (const { unitId, role } of this.daycareAcl) {
+      await setAclForDaycares(this.data.externalId, unitId, role)
+    }
+    if (this.groupAcl.length > 0) {
+      await setAclForDaycareGroups(this.data.id, this.groupAcl)
+    }
     return this
   }
 

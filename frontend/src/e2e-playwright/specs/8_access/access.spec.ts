@@ -9,17 +9,9 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
-import {
-  insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
-  resetDatabase,
-  setAclForDaycares
-} from 'e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin } from 'e2e-playwright/utils/user'
-import {
-  createDaycarePlacementFixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { Page } from '../../utils/page'
 
 let fixtures: AreaAndPersonFixtures
@@ -30,82 +22,64 @@ let childInfo: ChildInformationPage
 beforeAll(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
-  await insertEmployeeFixture({
-    id: config.serviceWorkerAad,
-    externalId: `espoo-ad:${config.serviceWorkerAad}`,
-    email: 'paula.palveluohjaaja@evaka.test',
-    firstName: 'Paula',
-    lastName: 'Palveluohjaaja',
-    roles: ['SERVICE_WORKER']
-  })
-  await insertEmployeeFixture({
-    id: config.financeAdminAad,
-    externalId: `espoo-ad:${config.financeAdminAad}`,
-    email: 'lasse.laskuttaja@evaka.test',
-    firstName: 'Lasse',
-    lastName: 'Laskuttaja',
-    roles: ['FINANCE_ADMIN']
-  })
-  await insertEmployeeFixture({
-    id: config.directorAad,
-    externalId: `espoo-ad:${config.directorAad}`,
-    email: 'hemmo.hallinto@evaka.test',
-    firstName: 'Hemmo',
-    lastName: 'Hallinto',
-    roles: ['DIRECTOR']
-  })
-  await insertEmployeeFixture({
-    id: config.reportViewerAad,
-    externalId: `espoo-ad:${config.reportViewerAad}`,
-    email: 'raisa.raportoija@evaka.test',
-    firstName: 'Raisa',
-    lastName: 'Raportoija',
-    roles: ['REPORT_VIEWER']
-  })
-  await insertEmployeeFixture({
-    id: config.unitSupervisorAad,
-    externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'essi.esimies@evaka.test',
-    firstName: 'Essi',
-    lastName: 'Esimies',
-    roles: []
-  })
-  await setAclForDaycares(
-    `espoo-ad:${config.unitSupervisorAad}`,
-    fixtures.daycareFixture.id
-  )
-  await insertEmployeeFixture({
-    id: config.staffAad,
-    externalId: `espoo-ad:${config.staffAad}`,
-    email: 'kaisa.kasvattaja@evaka.test',
-    firstName: 'Kaisa',
-    lastName: 'Kasvattaja',
-    roles: []
-  })
-  await setAclForDaycares(
-    `espoo-ad:${config.staffAad}`,
-    fixtures.daycareFixture.id,
-    'STAFF'
-  )
-  await insertEmployeeFixture({
-    id: config.specialEducationTeacher,
-    externalId: `espoo-ad:${config.specialEducationTeacher}`,
-    email: 'erkki.erityisopettaja@evaka.test',
-    firstName: 'Erkki',
-    lastName: 'Erityisopettaja',
-    roles: []
-  })
-  await setAclForDaycares(
-    `espoo-ad:${config.specialEducationTeacher}`,
-    fixtures.daycareFixture.id,
-    'SPECIAL_EDUCATION_TEACHER'
-  )
-  const placementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    fixtures.enduserChildFixtureJari.id,
-    fixtures.daycareFixture.id
-  )
-  await insertDaycarePlacementFixtures([placementFixture])
+  await Fixture.employee()
+    .with({
+      id: config.serviceWorkerAad,
+      externalId: `espoo-ad:${config.serviceWorkerAad}`,
+      roles: ['SERVICE_WORKER']
+    })
+    .save()
+  await Fixture.employee()
+    .with({
+      id: config.financeAdminAad,
+      externalId: `espoo-ad:${config.financeAdminAad}`,
+      roles: ['FINANCE_ADMIN']
+    })
+    .save()
+  await Fixture.employee()
+    .with({
+      id: config.directorAad,
+      externalId: `espoo-ad:${config.directorAad}`,
+      roles: ['DIRECTOR']
+    })
+    .save()
+  await Fixture.employee()
+    .with({
+      id: config.reportViewerAad,
+      externalId: `espoo-ad:${config.reportViewerAad}`,
+      roles: ['REPORT_VIEWER']
+    })
+    .save()
+  await Fixture.employee()
+    .with({
+      id: config.unitSupervisorAad,
+      externalId: `espoo-ad:${config.unitSupervisorAad}`,
+      roles: []
+    })
+    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+    .save()
+  await Fixture.employee()
+    .with({
+      id: config.staffAad,
+      externalId: `espoo-ad:${config.staffAad}`,
+      roles: []
+    })
+    .withDaycareAcl(fixtures.daycareFixture.id, 'STAFF')
+    .save()
+  await Fixture.employee()
+    .with({
+      id: config.specialEducationTeacher,
+      externalId: `espoo-ad:${config.specialEducationTeacher}`,
+      roles: []
+    })
+    .withDaycareAcl(fixtures.daycareFixture.id, 'SPECIAL_EDUCATION_TEACHER')
+    .save()
+  await Fixture.placement()
+    .with({
+      childId: fixtures.enduserChildFixtureJari.id,
+      unitId: fixtures.daycareFixture.id
+    })
+    .save()
 })
 beforeEach(async () => {
   page = await Page.open()

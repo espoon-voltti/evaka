@@ -28,7 +28,9 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
-  employee = await Fixture.employee().save()
+  employee = await Fixture.employee()
+    .with({ roles: ['ADMIN'] })
+    .save()
   placement = await Fixture.placement()
     .with({
       childId,

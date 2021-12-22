@@ -10,7 +10,6 @@ import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
   postMobileDevice,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -48,16 +47,13 @@ fixture('Mobile attendances')
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
 
-    await Promise.all([
-      insertEmployeeFixture({
+    await Fixture.employee()
+      .with({
         id: employeeId,
         externalId: `espooad: ${employeeId}`,
-        firstName: 'Yrjö',
-        lastName: 'Yksikkö',
-        email: 'yy@example.com',
         roles: []
       })
-    ])
+      .save()
 
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()

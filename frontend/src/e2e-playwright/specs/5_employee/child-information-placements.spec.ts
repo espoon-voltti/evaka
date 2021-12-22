@@ -7,9 +7,7 @@ import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
-  insertEmployeeFixture,
   resetDatabase,
-  setAclForDaycares,
   terminatePlacement
 } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
@@ -17,6 +15,7 @@ import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   familyWithTwoGuardians,
+  Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { employeeLogin, UserRole } from 'e2e-playwright/utils/user'
@@ -64,15 +63,17 @@ const setupPlacement = async (
 }
 
 const setupUser = async (id: UUID) => {
-  await insertEmployeeFixture({
-    id,
-    externalId: `espoo-ad:${id}`,
-    email: 'essi.esimies@evaka.test',
-    firstName: 'Essi',
-    lastName: 'Esimies',
-    roles: []
-  })
-  await setAclForDaycares(`espoo-ad:${id}`, unitId)
+  await Fixture.employee()
+    .with({
+      id,
+      externalId: `espoo-ad:${id}`,
+      email: 'essi.esimies@evaka.test',
+      firstName: 'Essi',
+      lastName: 'Esimies',
+      roles: []
+    })
+    .withDaycareAcl(unitId, 'UNIT_SUPERVISOR')
+    .save()
 }
 
 const logUserIn = async (role: UserRole) => {

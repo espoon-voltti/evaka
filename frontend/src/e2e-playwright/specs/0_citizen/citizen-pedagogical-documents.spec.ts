@@ -66,7 +66,7 @@ describe('Citizen pedagogical documents', () => {
         .save()
       await insertPedagogicalDocumentAttachment(
         pd.data.id,
-        employee.data.id!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        employee.data.id,
         testFileName,
         testFilePath
       )

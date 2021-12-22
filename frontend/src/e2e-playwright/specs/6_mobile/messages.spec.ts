@@ -13,8 +13,6 @@ import {
   insertDaycarePlacementFixtures,
   insertGuardianFixtures,
   resetDatabase,
-  setAclForDaycareGroups,
-  setAclForDaycares,
   upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
 import {
@@ -29,7 +27,6 @@ import {
 import {
   createDaycarePlacementFixture,
   DaycareGroupBuilder,
-  EmployeeBuilder,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
@@ -54,9 +51,6 @@ let pinLoginPage: PinLoginPage
 let unreadMessageCountsPage: UnreadMobileMessagesPage
 let nav: MobileNav
 
-const employeeId = uuidv4()
-const staffId = uuidv4()
-const staff2Id = uuidv4()
 const daycareGroupPlacementId = uuidv4()
 const daycareGroupPlacement2Id = uuidv4()
 const daycareGroupId = uuidv4()
@@ -68,9 +62,6 @@ let daycarePlacement2Fixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
 let daycareGroup2: DaycareGroupBuilder
 let daycareGroup3: DaycareGroupBuilder
-let employee: EmployeeBuilder
-let staff: EmployeeBuilder
-let staff2: EmployeeBuilder
 let child: PersonDetail
 let child2: PersonDetail
 
@@ -97,43 +88,6 @@ beforeEach(async () => {
   child2 = fixtures.enduserChildFixtureKaarina
   unit = fixtures.daycareFixture
 
-  employee = await Fixture.employee()
-    .with({
-      id: employeeId,
-      externalId: `espooad: ${employeeId}`,
-      firstName: empFirstName,
-      lastName: empLastName,
-      email: 'yy@example.com',
-      roles: []
-    })
-    .save()
-
-  staff = await Fixture.employee()
-    .with({
-      id: staffId,
-      externalId: `espooad: ${staffId}`,
-      firstName: staffFirstName,
-      lastName: staffLastName,
-      email: 'zz@example.com',
-      roles: []
-    })
-    .save()
-
-  staff2 = await Fixture.employee()
-    .with({
-      id: staff2Id,
-      externalId: `espooad: ${staff2Id}`,
-      firstName: staff2FirstName,
-      lastName: staff2LastName,
-      email: 'aa@example.com',
-      roles: []
-    })
-    .save()
-
-  await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()
-  await Fixture.employeePin().with({ userId: staff.data.id, pin }).save()
-  await Fixture.employeePin().with({ userId: staff2.data.id, pin }).save()
-
   daycareGroup = await Fixture.daycareGroup()
     .with({ id: daycareGroupId, daycareId: unit.id })
     .save()
@@ -146,6 +100,46 @@ beforeEach(async () => {
     .with({ id: daycareGroup3Id, daycareId: unit.id })
     .save()
 
+  const employee = await Fixture.employee()
+    .with({
+      firstName: empFirstName,
+      lastName: empLastName,
+      email: 'yy@example.com',
+      roles: []
+    })
+    .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
+    .save()
+
+  const staff = await Fixture.employee()
+    .with({
+      firstName: staffFirstName,
+      lastName: staffLastName,
+      email: 'zz@example.com',
+      roles: []
+    })
+    .withDaycareAcl(unit.id, 'STAFF')
+    .withGroupAcl(daycareGroup.data.id)
+    .withGroupAcl(daycareGroup2.data.id)
+    .withGroupAcl(daycareGroup3.data.id)
+    .save()
+
+  const staff2 = await Fixture.employee()
+    .with({
+      firstName: staff2FirstName,
+      lastName: staff2LastName,
+      email: 'aa@example.com',
+      roles: []
+    })
+    .withDaycareAcl(unit.id, 'STAFF')
+    .withGroupAcl(daycareGroup.data.id)
+    .withGroupAcl(daycareGroup2.data.id)
+    .withGroupAcl(daycareGroup3.data.id)
+    .save()
+
+  await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()
+  await Fixture.employeePin().with({ userId: staff.data.id, pin }).save()
+  await Fixture.employeePin().with({ userId: staff2.data.id, pin }).save()
+
   daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     child.id,
@@ -157,19 +151,6 @@ beforeEach(async () => {
     child2.id,
     unit.id
   )
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await setAclForDaycares(employee.data.externalId!, unit.id)
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await setAclForDaycares(staff.data.externalId!, unit.id, 'STAFF')
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await setAclForDaycares(staff2.data.externalId!, unit.id, 'STAFF')
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await setAclForDaycareGroups(staff.data.id!, unit.id, [
-    daycareGroup.data.id,
-    daycareGroup2.data.id,
-    daycareGroup3.data.id
-  ])
 
   await insertDaycarePlacementFixtures([
     daycarePlacementFixture,

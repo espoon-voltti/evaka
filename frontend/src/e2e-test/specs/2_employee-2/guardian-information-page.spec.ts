@@ -8,8 +8,8 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
+  Fixture,
   invoiceFixture,
-  supervisor,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import {
@@ -29,7 +29,6 @@ import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertDecisionFixtures,
-  insertEmployeeFixture,
   insertInvoiceFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
@@ -41,7 +40,6 @@ const guardianPage = new GuardianPage()
 
 let fixtures: AreaAndPersonFixtures
 let daycarePlacementFixture: DaycarePlacement
-let supervisorId: string
 
 fixture('Employee - Guardian Information')
   .meta({ type: 'regression', subType: 'guardianinformation' })
@@ -49,7 +47,9 @@ fixture('Employee - Guardian Information')
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
     await insertDaycareGroupFixtures([daycareGroupFixture])
-    supervisorId = await insertEmployeeFixture(supervisor)
+    const employee = await Fixture.employee()
+      .with({ roles: ['ADMIN'] })
+      .save()
 
     daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),
@@ -69,7 +69,7 @@ fixture('Employee - Guardian Information')
           application.form.preferredStartDate,
           application.form.preferredStartDate
         ),
-        employeeId: supervisorId
+        employeeId: employee.data.id
       }
     ])
     await employeeLogin(t, seppoAdmin)

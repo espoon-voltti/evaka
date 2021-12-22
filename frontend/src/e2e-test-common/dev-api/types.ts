@@ -284,10 +284,10 @@ export interface Family {
 }
 
 export interface EmployeeDetail {
-  id?: string
+  id: string
   firstName: string
   lastName: string
-  externalId?: string
+  externalId: string
   email?: string
   roles: UserRole[]
   pin?: string

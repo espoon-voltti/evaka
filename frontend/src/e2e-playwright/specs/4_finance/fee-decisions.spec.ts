@@ -13,7 +13,6 @@ import {
   Fixture
 } from 'e2e-test-common/dev-api/fixtures'
 import {
-  insertEmployeeFixture,
   insertFeeDecisionFixtures,
   insertGuardianFixtures,
   resetDatabase
@@ -41,14 +40,13 @@ beforeEach(async () => {
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
   page = await Page.open({ acceptDownloads: true })
 
-  await insertEmployeeFixture({
-    id: config.financeAdminAad,
-    externalId: `espoo-ad:${config.financeAdminAad}`,
-    email: 'lasse.laskuttaja@evaka.test',
-    firstName: 'Lasse',
-    lastName: 'Laskuttaja',
-    roles: ['FINANCE_ADMIN']
-  })
+  await Fixture.employee()
+    .with({
+      id: config.financeAdminAad,
+      externalId: `espoo-ad:${config.financeAdminAad}`,
+      roles: ['FINANCE_ADMIN']
+    })
+    .save()
   await employeeLogin(page, 'FINANCE_ADMIN')
   await page.goto(config.employeeUrl)
 })

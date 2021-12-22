@@ -8,7 +8,6 @@ import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
   insertDefaultServiceNeedOptions,
   resetDatabase,
   postChildDailyNote
@@ -48,14 +47,13 @@ fixture('Mobile employee daily notes')
     const fixtures = await initializeAreaAndPersonData()
 
     await insertDefaultServiceNeedOptions()
-    await insertEmployeeFixture({
-      id: employeeId,
-      externalId: `espooad: ${employeeId}`,
-      firstName: 'Yrjö',
-      lastName: 'Yksikkö',
-      email: 'yy@example.com',
-      roles: []
-    })
+    await Fixture.employee()
+      .with({
+        id: employeeId,
+        externalId: `espooad: ${employeeId}`,
+        roles: []
+      })
+      .save()
 
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()

@@ -16,8 +16,7 @@ import {
   insertFamilyContacts,
   insertFridgeChildren,
   insertFridgePartners,
-  resetDatabase,
-  setAclForDaycares
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
@@ -26,7 +25,6 @@ import {
 import {
   createDaycarePlacementFixture,
   DaycareGroupBuilder,
-  EmployeeBuilder,
   enduserChildFixtureJari,
   Fixture,
   uuidv4
@@ -51,7 +49,6 @@ const daycareGroupPlacementId = uuidv4()
 
 let daycarePlacementFixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
-let employee: EmployeeBuilder
 let child: PersonDetail
 
 const empFirstName = 'Yrjö'
@@ -68,7 +65,7 @@ beforeEach(async () => {
   child = fixtures.enduserChildFixtureJari
   const unit = fixtures.daycareFixture
 
-  employee = await Fixture.employee()
+  const employee = await Fixture.employee()
     .with({
       id: employeeId,
       externalId: `espooad: ${employeeId}`,
@@ -77,8 +74,8 @@ beforeEach(async () => {
       email: 'yy@example.com',
       roles: []
     })
+    .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
     .save()
-
   await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()
   daycareGroup = await Fixture.daycareGroup()
     .with({ daycareId: unit.id })
@@ -88,8 +85,6 @@ beforeEach(async () => {
     child.id,
     unit.id
   )
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await setAclForDaycares(employee.data.externalId!, unit.id)
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
   await insertDaycareGroupPlacementFixtures([
     {

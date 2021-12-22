@@ -11,7 +11,6 @@ import {
   insertBackupCareFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
   postChildDailyNote,
   postGroupNote,
   postMobileDevice,
@@ -59,16 +58,13 @@ fixture('Mobile daily notes for backup care')
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
 
-    await Promise.all([
-      insertEmployeeFixture({
+    await Fixture.employee()
+      .with({
         id: employeeId,
         externalId: `espooad: ${employeeId}`,
-        firstName: 'Yrjö',
-        lastName: 'Varayksikkö',
-        email: 'yy@example.com',
         roles: []
       })
-    ])
+      .save()
 
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()

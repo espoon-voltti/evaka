@@ -10,10 +10,8 @@ import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
-  insertEmployeeFixture,
   insertGuardianFixtures,
   resetDatabase,
-  setAclForDaycares,
   upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
 import {
@@ -34,19 +32,16 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
-  await insertEmployeeFixture({
-    id: config.unitSupervisorAad,
-    externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'essi.esimies@evaka.test',
-    firstName: 'Essi',
-    lastName: 'Esimies',
-    roles: []
-  })
-  await setAclForDaycares(
-    `espoo-ad:${config.unitSupervisorAad}`,
-    fixtures.daycareFixture.id,
-    'UNIT_SUPERVISOR'
-  )
+  await Fixture.employee()
+    .with({
+      id: config.unitSupervisorAad,
+      externalId: `espoo-ad:${config.unitSupervisorAad}`,
+      firstName: 'Essi',
+      lastName: 'Esimies',
+      roles: []
+    })
+    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+    .save()
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.enduserChildFixtureJari.id

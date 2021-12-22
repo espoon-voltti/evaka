@@ -6,11 +6,10 @@ import config from 'e2e-test-common/config'
 import {
   execSimpleApplicationActions,
   insertApplications,
-  insertEmployeeFixture,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
+import { applicationFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { Family } from 'e2e-test-common/dev-api/types'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
@@ -26,14 +25,13 @@ beforeEach(async () => {
   await resetDatabase()
   familyWithDeadGuardian = (await initializeAreaAndPersonData())
     .familyWithDeadGuardian
-  await insertEmployeeFixture({
-    id: config.serviceWorkerAad,
-    externalId: `espoo-ad:${config.serviceWorkerAad}`,
-    email: 'paula.palveluohjaaja@evaka.test',
-    firstName: 'Paula',
-    lastName: 'Palveluohjaaja',
-    roles: ['SERVICE_WORKER']
-  })
+  await Fixture.employee()
+    .with({
+      id: config.serviceWorkerAad,
+      externalId: `espoo-ad:${config.serviceWorkerAad}`,
+      roles: ['SERVICE_WORKER']
+    })
+    .save()
 
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)

@@ -52,7 +52,9 @@ beforeEach(async () => {
 
   await Fixture.daycareGroup().with(group2).save()
 
-  employee = await Fixture.employee().save()
+  employee = await Fixture.employee()
+    .with({ roles: ['ADMIN'] })
+    .save()
 
   page = await Page.open()
   listPage = new MobileListPage(page)

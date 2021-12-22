@@ -7,7 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import config from 'e2e-test-common/config'
 import {
   insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
   insertFeeDecisionFixtures,
   insertInvoiceFixtures,
   insertParentshipFixtures,
@@ -22,6 +21,7 @@ import {
   adultFixtureWihtoutSSN,
   createDaycarePlacementFixture,
   feeDecisionsFixture,
+  Fixture,
   invoiceFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
@@ -78,14 +78,13 @@ beforeEach(async () => {
 
   page = await Page.open({ acceptDownloads: true })
 
-  await insertEmployeeFixture({
-    id: config.financeAdminAad,
-    externalId: `espoo-ad:${config.financeAdminAad}`,
-    email: 'lasse.laskuttaja@evaka.test',
-    firstName: 'Lasse',
-    lastName: 'Laskuttaja',
-    roles: ['FINANCE_ADMIN']
-  })
+  await Fixture.employee()
+    .with({
+      id: config.financeAdminAad,
+      externalId: `espoo-ad:${config.financeAdminAad}`,
+      roles: ['FINANCE_ADMIN']
+    })
+    .save()
   await employeeLogin(page, 'FINANCE_ADMIN')
 
   await page.goto(config.employeeUrl)

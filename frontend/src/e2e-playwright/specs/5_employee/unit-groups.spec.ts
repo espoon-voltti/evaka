@@ -5,12 +5,8 @@
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import config from 'e2e-test-common/config'
 import {
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
-  insertEmployeeFixture,
   resetDatabase,
-  setAclForDaycares,
   terminatePlacement
 } from 'e2e-test-common/dev-api'
 import UnitsPage from 'e2e-playwright/pages/employee/units/units'
@@ -19,19 +15,11 @@ import {
   GroupsSection,
   UnitPage
 } from 'e2e-playwright/pages/employee/units/unit'
-import {
-  createDaycarePlacementFixture,
-  Fixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
+import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Page } from '../../utils/page'
-import {
-  Child,
-  Daycare,
-  DaycarePlacement
-} from '../../../e2e-test-common/dev-api/types'
+import { Child, Daycare } from '../../../e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 let page: Page
@@ -40,8 +28,8 @@ let unitPage: UnitPage
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
 let child2Fixture: Child
-let child1DaycarePlacementFixture: DaycarePlacement
-let child2DaycarePlacementFixture: DaycarePlacement
+let child1DaycarePlacementId: UUID
+let child2DaycarePlacementId: UUID
 
 let daycare: Daycare
 const employeeId: UUID = config.unitSupervisorAad
@@ -56,14 +44,14 @@ beforeEach(async () => {
 
   await insertDefaultServiceNeedOptions()
 
-  await insertEmployeeFixture({
-    id: employeeId,
-    externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'teppo.testaaja@example.com',
-    firstName: 'Teppo',
-    lastName: 'Testaaja',
-    roles: []
-  })
+  await Fixture.employee()
+    .with({
+      id: config.unitSupervisorAad,
+      externalId: `espoo-ad:${config.unitSupervisorAad}`,
+      roles: []
+    })
+    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+    .save()
   await Fixture.daycareGroup()
     .with({
       id: groupId,
@@ -71,30 +59,30 @@ beforeEach(async () => {
       name: 'Testailijat'
     })
     .save()
-  await setAclForDaycares(`espoo-ad:${config.unitSupervisorAad}`, daycare.id)
 
   child1Fixture = fixtures.familyWithTwoGuardians.children[0]
-  child1DaycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    child1Fixture.id,
-    daycare.id,
-    placementStartDate.format('yyyy-MM-dd'),
-    placementEndDate.format('yyyy-MM-dd')
-  )
+  child1DaycarePlacementId = uuidv4()
+  await Fixture.placement()
+    .with({
+      id: child1DaycarePlacementId,
+      childId: child1Fixture.id,
+      unitId: daycare.id,
+      startDate: placementStartDate.format('yyyy-MM-dd'),
+      endDate: placementEndDate.format('yyyy-MM-dd')
+    })
+    .save()
 
   child2Fixture = fixtures.enduserChildFixtureJari
-  child2DaycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    child2Fixture.id,
-    daycare.id,
-    placementStartDate.format('yyyy-MM-dd'),
-    placementEndDate.format('yyyy-MM-dd')
-  )
-
-  await insertDaycarePlacementFixtures([
-    child1DaycarePlacementFixture,
-    child2DaycarePlacementFixture
-  ])
+  child2DaycarePlacementId = uuidv4()
+  await Fixture.placement()
+    .with({
+      id: child2DaycarePlacementId,
+      childId: child2Fixture.id,
+      unitId: daycare.id,
+      startDate: placementStartDate.format('yyyy-MM-dd'),
+      endDate: placementEndDate.format('yyyy-MM-dd')
+    })
+    .save()
 
   page = await Page.open()
   await employeeLogin(page, 'UNIT_SUPERVISOR')
@@ -113,15 +101,14 @@ describe('Employee - unit view', () => {
     await unitPage.openUnitInformation()
     await unitPage.openGroups()
     await groupsSection.assertMissingGroupPlacementRowCount(2)
-    await insertDaycareGroupPlacementFixtures([
-      {
-        id: uuidv4(),
+    await Fixture.groupPlacement()
+      .with({
         daycareGroupId: groupId,
-        daycarePlacementId: child1DaycarePlacementFixture.id,
+        daycarePlacementId: child1DaycarePlacementId,
         startDate: placementStartDate.format('yyyy-MM-dd'),
         endDate: placementEndDate.format('yyyy-MM-dd')
-      }
-    ])
+      })
+      .save()
 
     await page.reload()
     await groupsSection.assertMissingGroupPlacementRowCount(1)
@@ -137,7 +124,7 @@ describe('Employee - unit view', () => {
 
   test('Child with a terminated placement is shown in terminated placement list', async () => {
     await terminatePlacement(
-      child1DaycarePlacementFixture.id,
+      child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
       employeeId
@@ -148,14 +135,14 @@ describe('Employee - unit view', () => {
 
   test('Child with a terminated placement is shown not in terminated placement list when termination is older than 2 weeks', async () => {
     await terminatePlacement(
-      child1DaycarePlacementFixture.id,
+      child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
       employeeId
     )
 
     await terminatePlacement(
-      child2DaycarePlacementFixture.id,
+      child2DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
       employeeId
@@ -165,7 +152,7 @@ describe('Employee - unit view', () => {
     await groupsSection.assertTerminatedPlacementRowCount(2)
 
     await terminatePlacement(
-      child1DaycarePlacementFixture.id,
+      child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today().subDays(15),
       employeeId
@@ -191,7 +178,7 @@ describe('Employee - unit view', () => {
 
   test('Service worker will not see terminated placements', async () => {
     await terminatePlacement(
-      child1DaycarePlacementFixture.id,
+      child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
       employeeId

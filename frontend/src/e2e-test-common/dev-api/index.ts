@@ -32,7 +32,6 @@ import {
   FridgeChild,
   FridgePartner,
   EmployeePin,
-  UserRole,
   PersonDetailWithDependantsAndGuardians,
   HighestFeeFixture,
   PedagogicalDocument,
@@ -54,6 +53,7 @@ import {
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
+import { ScopedRole } from 'lib-common/api-types/employee-auth'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
@@ -307,7 +307,7 @@ export async function upsertMessageAccounts(): Promise<void> {
 export async function setAclForDaycares(
   externalId: string,
   daycareId: UUID,
-  role?: UserRole
+  role: ScopedRole = 'UNIT_SUPERVISOR'
 ): Promise<void> {
   try {
     await devClient.put(`/daycares/${daycareId}/acl`, { externalId, role })
@@ -318,7 +318,6 @@ export async function setAclForDaycares(
 
 export async function setAclForDaycareGroups(
   employeeId: UUID,
-  daycareId: UUID,
   groupIds: UUID[]
 ): Promise<void> {
   try {

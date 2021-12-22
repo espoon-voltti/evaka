@@ -20,11 +20,9 @@ import {
   execSimpleApplicationActions,
   insertApplications,
   insertDecisionFixtures,
-  insertEmployeeFixture,
   insertPlacementPlan,
   rejectDecisionByCitizen,
-  resetDatabase,
-  setAclForDaycares
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
@@ -66,7 +64,7 @@ beforeEach(async () => {
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
 
-  await insertEmployeeFixture(serviceWorker)
+  await Fixture.employee().with(serviceWorker).save()
 
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
@@ -255,11 +253,10 @@ describe('Application transitions', () => {
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
 
-    await insertEmployeeFixture(unitSupervisor)
-    await setAclForDaycares(
-      unitSupervisor.externalId,
-      fixtures.daycareFixture.id
-    )
+    await Fixture.employee()
+      .with(unitSupervisor)
+      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+      .save()
     await employeeLogin(page2, 'UNIT_SUPERVISOR')
 
     // unit supervisor
@@ -395,11 +392,10 @@ describe('Application transitions', () => {
     ).data.id
     await rejectDecisionByCitizen(decisionId)
 
-    await insertEmployeeFixture(unitSupervisor)
-    await setAclForDaycares(
-      unitSupervisor.externalId,
-      fixtures.daycareFixture.id
-    )
+    await Fixture.employee()
+      .with(unitSupervisor)
+      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+      .save()
 
     async function assertApplicationRows(
       addDays: number,
