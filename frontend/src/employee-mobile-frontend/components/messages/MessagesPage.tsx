@@ -19,12 +19,16 @@ import colors from 'lib-customizations/common'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
+import TopBar from '../common/TopBar'
+import { UnitContext } from '../../state/unit'
 
 export default function MessagesPage() {
   const history = useHistory()
   const { unitId } = useParams<{
     unitId: UUID
   }>()
+
+  const { unitInfoResponse } = useContext(UnitContext)
 
   function changeGroup(group: GroupInfo | undefined) {
     if (group) history.push(`/units/${unitId}/groups/${group.id}/messages`)
@@ -112,26 +116,39 @@ export default function MessagesPage() {
       ))}
     </>
   ) : (
-    <ContentArea
-      opaque
-      paddingVertical={'zero'}
-      paddingHorizontal={'zero'}
-      data-qa={`messages-page-content-area`}
-    >
-      <HeaderContainer>
-        <H1 noMargin={true}>{i18n.messages.title}</H1>
-      </HeaderContainer>
-      <EmptyMessageFolder
-        loading={receivedMessages.isLoading}
-        iconColor={colors.greyscale.medium}
-        text={i18n.messages.emptyInbox}
-      />
-      <BottomNavBar selected="messages" />
-    </ContentArea>
+    renderResult(unitInfoResponse, (unit) => (
+      <ContentArea
+        opaque
+        paddingVertical={'zero'}
+        paddingHorizontal={'zero'}
+        data-qa={`messages-page-content-area`}
+      >
+        <TopBar title={unit.name} />
+        <HeaderContainer>
+          <H1 noMargin={true}>{i18n.messages.title}</H1>
+        </HeaderContainer>
+        {groupAccounts.length === 0 ? (
+          <NoAccounts data-qa={'info-no-account-access'}>
+            {i18n.messages.noAccountAccess}
+          </NoAccounts>
+        ) : (
+          <EmptyMessageFolder
+            loading={false}
+            iconColor={colors.greyscale.medium}
+            text={i18n.messages.emptyInbox}
+          />
+        )}
+        <BottomNavBar selected="messages" />
+      </ContentArea>
+    ))
   )
 }
 
 export const HeaderContainer = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.s};
   border-bottom: 1px solid ${colors.greyscale.lighter};
+`
+
+const NoAccounts = styled.div`
+  padding: ${defaultMargins.m} ${defaultMargins.s};
 `

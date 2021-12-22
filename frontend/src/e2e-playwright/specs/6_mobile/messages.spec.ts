@@ -56,6 +56,7 @@ let nav: MobileNav
 
 const employeeId = uuidv4()
 const staffId = uuidv4()
+const staff2Id = uuidv4()
 const daycareGroupPlacementId = uuidv4()
 const daycareGroupPlacement2Id = uuidv4()
 const daycareGroupId = uuidv4()
@@ -69,6 +70,7 @@ let daycareGroup2: DaycareGroupBuilder
 let daycareGroup3: DaycareGroupBuilder
 let employee: EmployeeBuilder
 let staff: EmployeeBuilder
+let staff2: EmployeeBuilder
 let child: PersonDetail
 let child2: PersonDetail
 
@@ -81,6 +83,10 @@ const employeeName = `${empLastName} ${empFirstName}`
 const staffFirstName = 'Sari'
 const staffLastName = 'Staff'
 const staffName = `${staffLastName} ${staffFirstName}`
+
+const staff2FirstName = 'Mari'
+const staff2LastName = 'Staff'
+const staff2Name = `${staff2LastName} ${staff2FirstName}`
 
 const pin = '2580'
 
@@ -113,8 +119,20 @@ beforeEach(async () => {
     })
     .save()
 
+  staff2 = await Fixture.employee()
+    .with({
+      id: staff2Id,
+      externalId: `espooad: ${staff2Id}`,
+      firstName: staff2FirstName,
+      lastName: staff2LastName,
+      email: 'aa@example.com',
+      roles: []
+    })
+    .save()
+
   await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()
   await Fixture.employeePin().with({ userId: staff.data.id, pin }).save()
+  await Fixture.employeePin().with({ userId: staff2.data.id, pin }).save()
 
   daycareGroup = await Fixture.daycareGroup()
     .with({ id: daycareGroupId, daycareId: unit.id })
@@ -144,6 +162,8 @@ beforeEach(async () => {
   await setAclForDaycares(employee.data.externalId!, unit.id)
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   await setAclForDaycares(staff.data.externalId!, unit.id, 'STAFF')
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  await setAclForDaycares(staff2.data.externalId!, unit.id, 'STAFF')
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   await setAclForDaycareGroups(staff.data.id!, unit.id, [
     daycareGroup.data.id,
@@ -313,6 +333,11 @@ describe('Child message thread', () => {
     await nav.selectGroup(daycareGroup3.data.id)
     await messagesPage.messagesDontExist()
   })
+
+  test('Staff without group access sees info that no accounts were found', async () => {
+    await staff2LoginsToMessagesPage()
+    await messagesPage.noAccountInfo.waitUntilVisible()
+  })
 })
 
 async function citizenSendsMessageToGroup() {
@@ -347,6 +372,12 @@ async function staffLoginsToMessagesPage() {
   await listPage.gotoMessages()
   await unreadMessageCountsPage.pinLoginButton.click()
   await pinLoginPage.login(staffName, pin)
+}
+
+async function staff2LoginsToMessagesPage() {
+  await listPage.gotoMessages()
+  await unreadMessageCountsPage.pinLoginButton.click()
+  await pinLoginPage.login(staff2Name, pin)
 }
 
 async function employeeNavigatesToMessagesSelectingLogin() {

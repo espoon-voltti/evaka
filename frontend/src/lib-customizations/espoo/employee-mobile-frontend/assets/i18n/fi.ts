@@ -314,7 +314,9 @@ export const fi = {
     unreadMessages: 'Uudet viestit',
     openPinLock: 'Avaa lukitus',
     pinLockInfo:
-      'Lukeaksesi viestit sinun tulee avata lukitus PIN-koodilla. Voit lukea vain oman ryhmäsi viestit.'
+      'Lukeaksesi viestit sinun tulee avata lukitus PIN-koodilla. Voit lukea vain oman ryhmäsi viestit.',
+    noAccountAccess:
+      'Viestejä ei voi näyttää, koska sinua ei ole luvitettu ryhmään. Pyydä lupa esimieheltäsi.'
   },
   mobile: {
     landerText1:
