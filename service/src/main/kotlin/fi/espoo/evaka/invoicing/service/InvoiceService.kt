@@ -16,10 +16,13 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
@@ -36,7 +39,7 @@ data class InvoiceCodes(
 
 @Component
 class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
-    fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, invoiceIds: List<UUID>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
+    fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, invoiceIds: List<InvoiceId>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
         val invoices = tx.getInvoicesByIds(invoiceIds)
         if (invoices.isEmpty()) return
 
@@ -71,11 +74,11 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
         if (invoiceDate != null && dueDate != null) {
             tx.updateInvoiceDates(invoices.map { it.id }, invoiceDate, dueDate)
         }
-        tx.setDraftsSent(succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.id)
+        tx.setDraftsSent(succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, EvakaUserId(user.id))
         tx.updateToWaitingForSending(withoutSSNs.map { it.id })
     }
 
-    fun updateInvoice(tx: Database.Transaction, uuid: UUID, invoice: Invoice) {
+    fun updateInvoice(tx: Database.Transaction, uuid: InvoiceId, invoice: Invoice) {
         val original = tx.getInvoice(uuid)
             ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
 
@@ -89,12 +92,12 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
         tx.upsertInvoices(listOf(updated))
     }
 
-    fun getInvoiceIds(tx: Database.Read, from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
+    fun getInvoiceIds(tx: Database.Read, from: LocalDate, to: LocalDate, areas: List<String>): List<InvoiceId> {
         return tx.getInvoiceIdsByDates(FiniteDateRange(from, to), areas)
     }
 }
 
-fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: List<UUID>) {
+fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: List<InvoiceId>) {
     val sql =
         """
         UPDATE invoice SET status = :status_sent::invoice_status, sent_at = :sent_at, sent_by = :sent_by
@@ -108,7 +111,7 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
         .bind("sent_at", Instant.now())
         .bind("sent_by", user.id)
         .bind("ids", invoiceIds.toTypedArray())
-        .mapTo(UUID::class.java)
+        .mapTo<InvoiceId>()
         .list()
 
     if (updatedIds.toSet() != invoiceIds.toSet()) throw BadRequest("Some invoices have incorrect status")

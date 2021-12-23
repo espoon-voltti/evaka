@@ -39,6 +39,7 @@ sealed interface DatabaseTable {
     sealed class GroupPlacement : DatabaseTable
     sealed class Income : DatabaseTable
     sealed class IncomeStatement : DatabaseTable
+    sealed class Invoice : DatabaseTable
     sealed class Message : DatabaseTable
     sealed class MessageAccount : DatabaseTable
     sealed class MessageContent : DatabaseTable
@@ -91,6 +92,7 @@ typealias GroupId = Id<DatabaseTable.Group>
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 typealias IncomeId = Id<DatabaseTable.Income>
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
+typealias InvoiceId = Id<DatabaseTable.Invoice>
 typealias MessageId = Id<DatabaseTable.Message>
 typealias MessageAccountId = Id<DatabaseTable.MessageAccount>
 typealias MessageContentId = Id<DatabaseTable.MessageContent>

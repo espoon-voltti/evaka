@@ -30,6 +30,8 @@ import fi.espoo.evaka.invoicing.integration.fallbackPostOffice
 import fi.espoo.evaka.invoicing.integration.fallbackPostalCode
 import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -548,7 +550,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .asUser(testUser)
             .responseString()
 
-        val updated = draft.copy(status = InvoiceStatus.SENT, number = 5000000002L, sentBy = testDecisionMaker_1.id)
+        val updated = draft.copy(status = InvoiceStatus.SENT, number = 5000000002L, sentBy = EvakaUserId(testDecisionMaker_1.id))
 
         assertEqualEnough(
             listOf(updated.let(::toSummary)),
@@ -557,7 +559,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         objectMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
             assertEquals(InvoiceStatus.SENT, it.data.status)
-            assertEquals(testDecisionMaker_1.id, it.data.sentBy)
+            assertEquals(testDecisionMaker_1.id, it.data.sentBy?.raw)
             assertNotNull(it.data.sentAt)
         }
     }
@@ -595,7 +597,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val drafts = (1..2).map {
             testInvoices[0].let {
                 it.copy(
-                    id = UUID.randomUUID(),
+                    id = InvoiceId(UUID.randomUUID()),
                     number = null,
                     rows = it.rows.map { row -> row.copy(id = UUID.randomUUID()) }
                 )
@@ -629,7 +631,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .asUser(testUser)
             .responseString()
 
-        val updated = invoice.copy(status = InvoiceStatus.SENT, sentBy = testDecisionMaker_1.id)
+        val updated = invoice.copy(status = InvoiceStatus.SENT, sentBy = EvakaUserId(testDecisionMaker_1.id))
 
         assertEqualEnough(
             listOf(updated.let(::toSummary)),
@@ -638,7 +640,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         objectMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
             assertEquals(InvoiceStatus.SENT, it.data.status)
-            assertEquals(testDecisionMaker_1.id, it.data.sentBy)
+            assertEquals(testDecisionMaker_1.id, it.data.sentBy?.raw)
             assertNotNull(it.data.sentAt)
         }
     }

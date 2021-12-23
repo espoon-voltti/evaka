@@ -19,6 +19,8 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.InvoiceId
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -33,7 +35,7 @@ interface RowWithPrice {
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Invoice(
-    val id: UUID,
+    val id: InvoiceId,
     val status: InvoiceStatus,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
@@ -43,7 +45,7 @@ data class Invoice(
     val headOfFamily: PersonData.JustId,
     val rows: List<InvoiceRow>,
     val number: Long? = null,
-    val sentBy: UUID? = null,
+    val sentBy: EvakaUserId? = null,
     val sentAt: Instant? = null
 ) {
     @JsonProperty("totalPrice")
@@ -76,7 +78,7 @@ data class InvoiceRow(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceDetailed(
-    val id: UUID,
+    val id: InvoiceId,
     val status: InvoiceStatus,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
@@ -86,7 +88,7 @@ data class InvoiceDetailed(
     val headOfFamily: PersonData.Detailed,
     val rows: List<InvoiceRowDetailed>,
     val number: Long?,
-    val sentBy: UUID?,
+    val sentBy: EvakaUserId?,
     val sentAt: Instant?
 ) {
     val account: Int = 3295
@@ -114,13 +116,13 @@ data class InvoiceRowDetailed(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceSummary(
-    val id: UUID,
+    val id: InvoiceId,
     val status: InvoiceStatus,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val headOfFamily: PersonData.Detailed,
     val rows: List<InvoiceRowSummary>,
-    val sentBy: UUID?,
+    val sentBy: EvakaUserId?,
     val sentAt: Instant?,
     val createdAt: Instant? = null
 ) {

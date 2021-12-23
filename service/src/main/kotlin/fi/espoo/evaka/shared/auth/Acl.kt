@@ -7,13 +7,9 @@ package fi.espoo.evaka.shared.auth
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
-import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
-import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -124,23 +120,6 @@ WHERE employee_id = :userId AND child_id = :childId
     )
 
     @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForDecision(user: AuthenticatedUser, decisionId: DecisionId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM decision
-JOIN daycare_acl_view ON decision.unit_id = daycare_acl_view.daycare_id
-WHERE employee_id = :userId AND decision.id = :decisionId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("decisionId", decisionId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForAssistanceNeed(user: AuthenticatedUser, assistanceNeedId: AssistanceNeedId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
@@ -174,58 +153,6 @@ WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
                 }
             }
         )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForBackupPickup(user: AuthenticatedUser, backupPickupId: BackupPickupId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM child_acl_view acl
-JOIN backup_pickup bp ON acl.child_id = bp.child_id
-WHERE bp.id = :backupPickupId AND acl.employee_id = :userId
-                    """.trimIndent()
-                ).bind("backupPickupId", backupPickupId).bind("userId", user.id).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForServiceNeed(user: AuthenticatedUser, serviceNeedId: ServiceNeedId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM service_need
-JOIN placement ON placement.id = service_need.placement_id
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
-WHERE employee_id = :userId AND service_need.id = :serviceNeedId
-                    """.trimIndent()
-                ).bind("serviceNeedId", serviceNeedId).bind("userId", user.id).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForPairing(user: AuthenticatedUser, pairingId: PairingId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM daycare_acl_view dav
-JOIN pairing p ON dav.daycare_id = p.unit_id OR dav.employee_id = p.employee_id
-WHERE dav.employee_id = :userId AND p.id = :pairingId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("pairingId", pairingId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
 
     @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForPedagogicalDocument(user: AuthenticatedUser, documentId: PedagogicalDocumentId): AclAppliedRoles = AclAppliedRoles(

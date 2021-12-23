@@ -368,7 +368,7 @@ export interface SearchInvoicesRequest {
   sortBy: InvoiceSortParam | null
   sortDirection: SortDirection | null
   status: string | null
-  unit: string | null
+  unit: UUID | null
 }
 
 /**

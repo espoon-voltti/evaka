@@ -7,7 +7,6 @@ package fi.espoo.evaka.decision
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -15,6 +14,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,7 +31,7 @@ class DecisionController(
     private val acl: AccessControlList,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
-    private val personService: PersonService
+    private val accessControl: AccessControl
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
@@ -77,8 +78,7 @@ class DecisionController(
     @GetMapping("/units")
     fun getDecisionUnits(db: Database, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Global.READ_DECISION_UNITS)
         val units = db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
         return ResponseEntity.ok(units)
     }
@@ -90,11 +90,7 @@ class DecisionController(
         @PathVariable("id") decisionId: DecisionId
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
-
-        @Suppress("DEPRECATION")
-        val roles = acl.getRolesForDecision(user, decisionId)
-        @Suppress("DEPRECATION")
-        roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Decision.DOWNLOAD_PDF, decisionId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->

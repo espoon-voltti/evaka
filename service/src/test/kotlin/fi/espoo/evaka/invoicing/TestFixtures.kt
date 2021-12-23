@@ -32,6 +32,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
@@ -155,7 +156,7 @@ val testInvoiceRow = InvoiceRow(
 )
 
 val testInvoice = Invoice(
-    id = uuid1,
+    id = InvoiceId(uuid1),
     status = InvoiceStatus.DRAFT,
     periodStart = LocalDate.of(2019, 5, 1),
     periodEnd = LocalDate.of(2019, 5, 31),
@@ -303,7 +304,7 @@ fun createInvoiceFixture(
     period: DateRange = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
     rows: List<InvoiceRow>
 ) = Invoice(
-    id = UUID.randomUUID(),
+    id = InvoiceId(UUID.randomUUID()),
     status = status,
     number = number,
     agreementType = agreementType,
