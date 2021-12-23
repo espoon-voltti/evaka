@@ -121,7 +121,8 @@ const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
   position: relative;
   padding: ${defaultMargins.s} ${defaultMargins.s};
   border-bottom: 1px solid ${colors.greyscale.lighter};
-  border-left: 6px solid ${(p) => (p.today ? colors.main.light : 'transparent')};
+  border-left: 6px solid
+    ${(p) => (p.today ? colors.accents.successGreen : 'transparent')};
   cursor: pointer;
 `
 

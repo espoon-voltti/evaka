@@ -274,7 +274,7 @@ const DayCell = styled.div<{ today: boolean; selected: boolean }>`
   ${(p) =>
     p.today
       ? css`
-          border-left: 4px solid ${colors.main.light};
+          border-left: 4px solid ${colors.accents.successGreen};
           padding-left: calc(${defaultMargins.s} - 3px);
         `
       : ''}
