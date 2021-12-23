@@ -7,12 +7,10 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import _ from 'lodash'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import CareTypeLabel, {
-  careTypesFromPlacementType
-} from '../../../components/common/CareTypeLabel'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { TerminatedPlacement } from '../../../types/unit'
 import { formatName } from '../../../utils'
+import { CareTypeChip } from '../../common/CareTypeLabel'
 
 function renderTerminatedPlacementRow(
   placement: TerminatedPlacement,
@@ -32,11 +30,7 @@ function renderTerminatedPlacementRow(
       </Td>
       <Td data-qa="child-dob">{placement.child.dateOfBirth.format()}</Td>
       <Td data-qa="placement-type">
-        {placement.type ? (
-          careTypesFromPlacementType(placement.type)
-        ) : (
-          <CareTypeLabel type="backup-care" />
-        )}
+        <CareTypeChip type={placement.type} />
       </Td>
       <Td data-qa="termination-requested-date">{`${placement.terminationRequestedDate.format()}`}</Td>
       <Td data-qa="placement-end-date">{`${placement.endDate.format()}`}</Td>
