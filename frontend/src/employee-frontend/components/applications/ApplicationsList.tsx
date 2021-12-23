@@ -187,7 +187,7 @@ const ApplicationsList = React.memo(function Applications({
     )
       return colors.accents.dangerRed
 
-    return colors.accents.turquoise
+    return colors.main.light
   }
 
   const dateOfBirthInfo = (application: ApplicationSummary) => {
