@@ -70,7 +70,7 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
     ),
     applicationId = ApplicationId(rs.getUUID("application_id")),
     childId = UUID.fromString(rs.getString("child_id")),
-    childName = "${rs.getString("child_first_name")} ${rs.getString("child_last_name")}"
+    childName = "${rs.getString("child_last_name")} ${rs.getString("child_first_name")}"
 )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? {

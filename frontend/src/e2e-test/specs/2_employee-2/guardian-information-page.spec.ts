@@ -78,7 +78,7 @@ fixture('Employee - Guardian Information')
   .afterEach(logConsoleMessages)
 
 test('guardian information is shown', async () => {
-  const expectedChildName = `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`
+  const expectedChildName = `${enduserChildFixtureJari.lastName} ${enduserChildFixtureJari.firstName}`
   await guardianPage.assertPersonInfo(
     enduserGuardianFixture.lastName,
     enduserGuardianFixture.firstName,

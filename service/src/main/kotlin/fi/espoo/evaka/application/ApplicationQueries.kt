@@ -442,7 +442,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: UUID): List<P
         SELECT
             a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.document->>'type' AS type,
             a.childId, a.childName, a.childSsn,
-            a.guardianId, concat(p.first_name, ' ', p.last_name) as guardianName,
+            a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
             a.connecteddaycare,
             a.preparatoryeducation,
             d.name AS daycareName,
@@ -468,7 +468,7 @@ fun Database.Read.fetchApplicationSummariesForChild(childId: UUID): List<PersonA
         SELECT
             a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.document->>'type' AS type,
             a.childId, a.childName, a.childSsn,
-            a.guardianId, concat(p.first_name, ' ', p.last_name) as guardianName,
+            a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
             a.connecteddaycare,
             a.preparatoryeducation,
             d.name AS daycareName,

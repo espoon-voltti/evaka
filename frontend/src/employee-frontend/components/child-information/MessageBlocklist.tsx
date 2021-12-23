@@ -67,10 +67,10 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
                   key={recipient.personId}
                   data-qa={`recipient-${recipient.personId}`}
                 >
-                  <Td>{formatPersonName(recipient, i18n)}</Td>
+                  <Td>{formatPersonName(recipient, i18n, true)}</Td>
                   <Td>
                     <Checkbox
-                      label={formatPersonName(recipient, i18n)}
+                      label={formatPersonName(recipient, i18n, true)}
                       hiddenLabel
                       checked={!recipient.blocklisted}
                       data-qa={'blocklist-checkbox'}

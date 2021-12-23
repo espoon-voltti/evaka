@@ -148,7 +148,8 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                             {formatName(
                               partner.firstName,
                               partner.lastName,
-                              i18n
+                              i18n,
+                              true
                             )}
                           </Link>
                         </NameTd>

@@ -50,7 +50,7 @@ function mapPersonToRow(
   const age = getAge(dateOfBirth)
   return {
     personId,
-    name: formatName(firstName, lastName, i18n),
+    name: formatName(firstName, lastName, i18n, true),
     role,
     age,
     restrictedDetailsEnabled,

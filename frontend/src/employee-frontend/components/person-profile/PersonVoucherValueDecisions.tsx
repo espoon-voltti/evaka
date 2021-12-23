@@ -88,7 +88,7 @@ export default React.memo(function PersonVoucherValueDecisions({
                   data-qa="table-voucher-value-decision-row"
                 >
                   <Td>
-                    {decision.child.firstName} {decision.child.lastName}
+                    {decision.child.lastName} {decision.child.firstName}
                     <br />
                     <Link to={`/finance/value-decisions/${decision.id}`}>
                       {`${decision.validFrom.format()} - ${

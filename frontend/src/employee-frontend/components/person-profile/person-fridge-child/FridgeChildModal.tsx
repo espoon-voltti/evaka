@@ -144,7 +144,8 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
                 {formatName(
                   parentship.child.firstName,
                   parentship.child.lastName,
-                  i18n
+                  i18n,
+                  true
                 )}
               </div>
             ) : (

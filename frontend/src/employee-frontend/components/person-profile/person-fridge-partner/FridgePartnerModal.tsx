@@ -158,7 +158,8 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
               ? `${formatName(
                   form.partner.firstName,
                   form.partner.lastName,
-                  i18n
+                  i18n,
+                  true
                 )} (${form.partner.socialSecurityNumber ?? ''})`
               : ''}
           </div>

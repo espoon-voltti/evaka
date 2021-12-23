@@ -66,7 +66,8 @@ export default React.memo(function Guardians({ startOpen }: Props) {
                         {formatName(
                           guardian.firstName,
                           guardian.lastName,
-                          i18n
+                          i18n,
+                          true
                         )}
                       </Link>
                     </NameTd>
