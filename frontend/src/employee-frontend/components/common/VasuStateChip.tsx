@@ -8,10 +8,10 @@ import colors from 'lib-customizations/common'
 import { VasuDocumentState } from 'lib-common/generated/api-types/vasu'
 
 const vasuStateChip: Record<VasuDocumentState, string> = {
-  DRAFT: colors.accents.mint,
+  DRAFT: colors.accents.peach,
   READY: colors.accents.violet,
-  REVIEWED: colors.main.primary,
-  CLOSED: colors.greyscale.medium
+  REVIEWED: colors.main.dark,
+  CLOSED: colors.greyscale.lighter
 }
 
 type ChipLabels = Record<VasuDocumentState, string>
