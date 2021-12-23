@@ -154,7 +154,10 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader.</strong> Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.
             </p>
             <p>
-            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik. Du kan se och godkänna/förkasta beslutet på <a href="https://esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.
+            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik.
+            </p>
+            <p>
+            Du kan se och godkänna/förkasta beslutet på <a href="https://esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.
             </p>
             <p>
             När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
@@ -239,7 +242,9 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.esbosmabarnspedagogik.fi tills den har tagits upp till behandling.
 
-            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik. Du kan se och godkänna/förkasta beslutet på www.esbosmabarnspedagogik.fi.
+            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik.
+
+            Du kan se och godkänna/förkasta beslutet på www.esbosmabarnspedagogik.fi.
 
             När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
 
