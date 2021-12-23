@@ -146,7 +146,7 @@ const ModalIcon = styled.div<{ color?: IconColor }>`
   background: ${({ theme: { colors }, ...props }) => {
     switch (props.color) {
       case 'blue':
-        return colors.main.dark
+        return colors.accents.infoBlue
       case 'orange':
         return colors.accents.warningOrange
       case 'green':
@@ -154,7 +154,7 @@ const ModalIcon = styled.div<{ color?: IconColor }>`
       case 'red':
         return colors.accents.dangerRed
       default:
-        return colors.main.dark
+        return colors.accents.infoBlue
     }
   }};
   font-size: 36px;
