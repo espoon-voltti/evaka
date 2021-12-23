@@ -75,6 +75,7 @@ function StatusLabel(props: Props) {
           endDate: props.dateRange.end
         })
 
+  // TODO use StaticChip
   return <Container status={status}>{i18n.common.statuses[status]}</Container>
 }
 
