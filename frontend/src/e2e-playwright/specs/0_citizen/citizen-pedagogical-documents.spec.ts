@@ -77,6 +77,7 @@ describe('Citizen pedagogical documents', () => {
       )
 
       await header.selectTab('pedagogical-documents')
+
       await pedagogicalDocumentsPage.downloadAttachment(pd.data.id)
 
       await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()

@@ -198,9 +198,6 @@ export class DailyServiceTimesSectionEdit {
 export class PedagogicalDocumentsSection {
   constructor(private section: Element) {}
 
-  readonly testFileName = 'test_file.png'
-  testFilePath = `src/e2e-playwright/assets/${this.testFileName}`
-
   readonly #startDate = this.section.find(
     '[data-qa="pedagogical-document-start-date"]'
   )
@@ -271,14 +268,18 @@ export class PedagogicalDocumentsSection {
     return new PedagogicalDocumentsSection(this.section)
   }
 
-  async addAttachment(page: Page) {
+  async addAttachmentAndAssert(
+    page: Page,
+    testfileName: string,
+    testfilePath: string
+  ) {
     await new FileInput(page.find('[data-qa="btn-upload-file"]')).setInputFiles(
-      this.testFilePath
+      testfilePath
     )
     await waitUntilTrue(async () =>
       (
-        await page.find('[data-qa="file-download-button"]').innerText
-      ).includes(this.testFileName)
+        await page.findAll('[data-qa="file-download-button"]').allInnerTexts()
+      ).includes(testfileName)
     )
   }
 }

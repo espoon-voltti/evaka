@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -31,31 +30,37 @@ class PedagogicalDocumentControllerCitizen(
 ) {
     @GetMapping
     fun getPedagogicalDocumentsByGuardian(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): List<PedagogicalDocumentCitizen> {
         Audit.PedagogicalDocumentReadByGuardian.log(user.id)
-        return db.read { it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type) }
+        return db.connect { dbc ->
+            dbc.read { it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type) }
+        }
     }
 
     @PostMapping("/{documentId}/mark-read")
     fun markPedagogicalDocumentRead(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
         Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, documentId)
-        db.transaction { it.markDocumentReadByGuardian(documentId, PersonId(user.id)) }
+        return db.connect { dbc ->
+            dbc.transaction { it.markDocumentReadByGuardian(documentId, PersonId(user.id)) }
+        }
     }
 
     @GetMapping("/unread-count")
     fun getUnreadPedagogicalDocumentCount(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): Number {
         Audit.PedagogicalDocumentCountUnread.log(user.id)
-        return db.transaction { it.countUnreadDocumentsByGuardian(PersonId(user.id)) }
+        return db.connect { dbc ->
+            dbc.transaction { it.countUnreadDocumentsByGuardian(PersonId(user.id)) }
+        }
     }
 }
 
@@ -71,24 +76,20 @@ private fun Database.Read.findPedagogicalDocumentsByGuardian(
                 pd.description,
                 pd.created,
                 pd.updated,
-                a.id attachment_id,
-                a.name attachment_name,
-                a.content_type attachment_content_type,
                 pdr.read_at is not null is_read,
                 chp.first_name,
                 chp.preferred_name
             FROM pedagogical_document pd
             JOIN guardian g ON pd.child_id = g.child_id
-            LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
             LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
             LEFT JOIN person chp ON chp.id = pd.child_id
             WHERE g.guardian_id = :guardian_id
-            AND (LENGTH(pd.description) > 0 OR a.id IS NOT NULL)
+            AND LENGTH(pd.description) > 0
             ORDER BY pd.created DESC
         """.trimIndent()
     )
         .bind("guardian_id", guardianId)
-        .map { row -> mapPedagogicalDocumentCitizen(row, userType) }
+        .map { row -> mapPedagogicalDocumentCitizen(row, userType, getPedagogicalDocumentAttachments(row.mapColumn("id"))) }
         .filterNotNull()
 }
 
@@ -146,26 +147,21 @@ data class PedagogicalDocumentCitizen(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
-    val attachment: Attachment?,
+    val attachments: List<Attachment>,
     val created: HelsinkiDateTime,
     val isRead: Boolean,
     val childFirstName: String,
     val childPreferredName: String?
 )
 
-fun mapPedagogicalDocumentCitizen(row: RowView, userType: AuthenticatedUserType): PedagogicalDocumentCitizen? {
+fun mapPedagogicalDocumentCitizen(row: RowView, userType: AuthenticatedUserType, attachments: List<Attachment>): PedagogicalDocumentCitizen? {
     val id: PedagogicalDocumentId = row.mapColumn("id") ?: return null
-    val hasAttachment: Boolean = row.mapColumn<AttachmentId?>("attachment_id") != null
 
     return PedagogicalDocumentCitizen(
         id = id,
         childId = row.mapColumn("child_id"),
         description = row.mapColumn("description"),
-        attachment = if (hasAttachment) Attachment(
-            id = row.mapColumn("attachment_id"),
-            name = if (userType === AuthenticatedUserType.citizen_weak) "" else row.mapColumn("attachment_name"),
-            contentType = row.mapColumn("attachment_content_type"),
-        ) else null,
+        attachments = attachments.map { if (userType === AuthenticatedUserType.citizen_weak) it.copy(name = "") else it },
         created = row.mapColumn("created"),
         isRead = row.mapColumn("is_read"),
         childFirstName = row.mapColumn("first_name"),

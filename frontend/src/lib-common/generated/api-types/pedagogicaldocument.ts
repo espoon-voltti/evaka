@@ -32,7 +32,7 @@ export interface PedagogicalDocument {
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentCitizen
 */
 export interface PedagogicalDocumentCitizen {
-  attachment: Attachment | null
+  attachments: Attachment[]
   childFirstName: string
   childId: UUID
   childPreferredName: string | null

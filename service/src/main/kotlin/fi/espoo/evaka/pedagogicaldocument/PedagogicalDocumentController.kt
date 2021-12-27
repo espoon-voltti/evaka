@@ -158,25 +158,6 @@ private fun Database.Transaction.updateDocument(
         .first()
 }
 
-private fun Database.Read.getPedagogicalDocumentAttachments(
-    pedagogicalDocumentId: PedagogicalDocumentId
-): List<Attachment> {
-    return this.createQuery(
-        """
-            SELECT 
-                a.id,
-                a.name,
-                a.content_type
-            FROM attachment a
-            JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
-            WHERE pd.id = :pedagogicalDocumentId
-        """.trimIndent()
-    )
-        .bind("pedagogicalDocumentId", pedagogicalDocumentId)
-        .mapTo<Attachment>()
-        .list()
-}
-
 private fun Database.Read.findPedagogicalDocumentsByChild(
     childId: ChildId
 ): List<PedagogicalDocument> {

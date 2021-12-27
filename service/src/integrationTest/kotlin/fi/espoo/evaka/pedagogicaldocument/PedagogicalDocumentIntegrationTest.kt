@@ -306,7 +306,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         val parsed = deserializeGetResultCitizen(getDocumentsAsCitizen(guardian).third.get())
         assertEquals(1, parsed.size)
 
-        val attachment = parsed.first().attachment
+        val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
         assertEquals(
             attachmentId,

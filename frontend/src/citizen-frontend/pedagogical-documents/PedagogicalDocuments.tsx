@@ -18,7 +18,10 @@ import { fontWeights, H1 } from 'lib-components/typography'
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import LocalDate from 'lib-common/local-date'
-import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import {
+  Attachment,
+  PedagogicalDocumentCitizen
+} from 'lib-common/generated/api-types/pedagogicaldocument'
 import { getAttachmentBlob } from '../attachments'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { OverlayContext } from '../overlay/state'
@@ -33,55 +36,92 @@ import {
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { renderResult } from '../async-rendering'
 
-const Attachment = React.memo(function Attachment({
-  item,
+const AttachmentLink = React.memo(function AttachmentLink({
+  pedagogicalDocument,
+  attachment,
   onRead,
   onAttachmentUnavailable,
   dataQa
 }: {
-  item: PedagogicalDocumentCitizen
+  pedagogicalDocument: PedagogicalDocumentCitizen
+  attachment: Attachment
   onRead: (doc: PedagogicalDocumentCitizen) => void
   onAttachmentUnavailable: () => void
   dataQa: string
 }) {
-  return item && item.attachment ? (
+  return (
     <FileDownloadButton
-      key={item.attachment.id}
-      file={item.attachment}
+      key={attachment.id}
+      file={attachment}
       fileFetchFn={getAttachmentBlob}
-      afterFetch={() => onRead(item)}
+      afterFetch={() => onRead(pedagogicalDocument)}
       onFileUnavailable={onAttachmentUnavailable}
       icon
       data-qa={dataQa}
       openInBrowser={true}
     />
-  ) : null
+  )
 })
 
 const AttachmentDownloadButton = React.memo(function AttachmentDownloadButton({
-  item,
+  pedagogicalDocument,
+  attachment,
   onRead,
   onAttachmentUnavailable,
   dataQa
 }: {
-  item: PedagogicalDocumentCitizen
+  pedagogicalDocument: PedagogicalDocumentCitizen
+  attachment: Attachment
   onRead: (doc: PedagogicalDocumentCitizen) => void
   onAttachmentUnavailable: () => void
   dataQa: string
 }) {
   const t = useTranslation()
-  return item.attachment ? (
+  return (
     <FileDownloadButton
-      key={item.attachment.id}
-      file={item.attachment}
+      key={attachment.id}
+      file={attachment}
       fileFetchFn={getAttachmentBlob}
-      afterFetch={() => onRead(item)}
+      afterFetch={() => onRead(pedagogicalDocument)}
       onFileUnavailable={onAttachmentUnavailable}
       icon={faArrowDown}
       data-qa={dataQa}
       text={t.fileDownload.download}
     />
-  ) : null
+  )
+})
+
+const AttachmentRow = React.memo(function AttachmentRow({
+  pedagogicalDocument,
+  attachment,
+  onRead,
+  onAttachmentUnavailable,
+  dataQa
+}: {
+  pedagogicalDocument: PedagogicalDocumentCitizen
+  attachment: Attachment
+  onRead: (doc: PedagogicalDocumentCitizen) => void
+  onAttachmentUnavailable: () => void
+  dataQa: string
+}) {
+  return (
+    <AttachmentRowContainer data-qa={dataQa}>
+      <AttachmentLink
+        pedagogicalDocument={pedagogicalDocument}
+        attachment={attachment}
+        onRead={onRead}
+        onAttachmentUnavailable={onAttachmentUnavailable}
+        dataQa={`pedagogical-document-list-attachment-${attachment.id}`}
+      />
+      <AttachmentDownloadButton
+        pedagogicalDocument={pedagogicalDocument}
+        attachment={attachment}
+        onRead={onRead}
+        onAttachmentUnavailable={onAttachmentUnavailable}
+        dataQa={`pedagogical-document-list-attachment-download-${attachment.id}`}
+      />
+    </AttachmentRowContainer>
+  )
 })
 
 const ItemDescription = React.memo(function ItemDescription({
@@ -204,18 +244,18 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
             clampLines={1}
             dataQa={`pedagogical-document-list-description-${item.id}`}
           />
-          <Attachment
-            item={item}
-            onRead={onRead}
-            onAttachmentUnavailable={onAttachmentUnavailable}
-            dataQa={`pedagogical-document-list-attachment-${item.id}`}
-          />
-          <AttachmentDownloadButton
-            item={item}
-            onRead={onRead}
-            onAttachmentUnavailable={onAttachmentUnavailable}
-            dataQa={`pedagogical-document-list-attachment-download-${item.id}`}
-          />
+          <AttachmentsContainer>
+            {item.attachments.map((attachment) => (
+              <AttachmentRow
+                key={attachment.id}
+                pedagogicalDocument={item}
+                attachment={attachment}
+                onRead={onRead}
+                onAttachmentUnavailable={onAttachmentUnavailable}
+                dataQa={`attachment-${item.id}`}
+              />
+            ))}
+          </AttachmentsContainer>
         </ListItem>
       ))}
     </>
@@ -243,7 +283,6 @@ const PedagogicalDocumentsTable = React.memo(
             {showChildrenNames && <Th>{t.pedagogicalDocuments.table.child}</Th>}
             <Th>{t.pedagogicalDocuments.table.description}</Th>
             <Th>{t.pedagogicalDocuments.table.document}</Th>
-            <Th />
           </Tr>
         </Thead>
         <Tbody>
@@ -264,22 +303,20 @@ const PedagogicalDocumentsTable = React.memo(
                   dataQa={`pedagogical-document-description-${item.id}`}
                 />
               </DescriptionTd>
-              <NameTd>
-                <Attachment
-                  item={item}
-                  onRead={onRead}
-                  onAttachmentUnavailable={onAttachmentUnavailable}
-                  dataQa={`pedagogical-document-attachment-${item.id}`}
-                />
-              </NameTd>
-              <ActionsTd>
-                <AttachmentDownloadButton
-                  item={item}
-                  onRead={onRead}
-                  onAttachmentUnavailable={onAttachmentUnavailable}
-                  dataQa={`pedagogical-document-attachment-download-${item.id}`}
-                />
-              </ActionsTd>
+              <AttachmentsTd>
+                <AttachmentsContainer>
+                  {item.attachments.map((attachment) => (
+                    <AttachmentRow
+                      key={attachment.id}
+                      pedagogicalDocument={item}
+                      attachment={attachment}
+                      onRead={onRead}
+                      onAttachmentUnavailable={onAttachmentUnavailable}
+                      dataQa={`attachment-${item.id}`}
+                    />
+                  ))}
+                </AttachmentsContainer>
+              </AttachmentsTd>
             </ItemTr>
           ))}
         </Tbody>
@@ -348,17 +385,25 @@ const DateTd = styled(Td)`
   width: 15%;
 `
 
-const NameTd = styled(Td)`
-  width: 20%;
-`
-
 const DescriptionTd = styled(Td)`
-  width: 45%;
+  width: 35%;
   white-space: pre-line;
 `
 
-const ActionsTd = styled(Td)`
-  width: 20%;
+const AttachmentsTd = styled(Td)`
+  width: 50%;
+`
+
+const AttachmentsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const AttachmentRowContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-bottom: 8px;
 `
 
 const Mobile = styled.div`
