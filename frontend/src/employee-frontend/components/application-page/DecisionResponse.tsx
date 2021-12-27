@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { Decision } from '../../types/decision'
 import {
@@ -31,13 +31,13 @@ export default React.memo(function DecisionResponse({
   const [accept, setAccept] = useState(true)
   const [acceptDate, setAcceptDate] = useState(decision.startDate)
 
-  const onSubmit = () => {
+  const onSubmit = useCallback(() => {
     if (accept) {
       return acceptDecision(applicationId, decision.id, acceptDate)
     } else {
       return rejectDecision(applicationId, decision.id)
     }
-  }
+  }, [accept, acceptDate, applicationId, decision.id])
 
   return (
     <FixedSpaceColumn>

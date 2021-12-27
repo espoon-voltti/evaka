@@ -4,13 +4,13 @@
 
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import React, { Dispatch, memo, SetStateAction } from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
 import {
   DaycarePlacementPlan,
   PlacementDraft
 } from '../../types/placementdraft'
-import MemoizedCard from './UnitCard'
+import UnitCard from './UnitCard'
 
 const FlexContainer = styled.div`
   display: flex;
@@ -27,7 +27,7 @@ interface Props {
   selectedUnitIsGhostUnit: boolean
 }
 
-const MemoizedCards = memo(function UnitCards({
+export default React.memo(function UnitCards({
   additionalUnits,
   setAdditionalUnits,
   placement,
@@ -47,7 +47,7 @@ const MemoizedCards = memo(function UnitCards({
       {placementDraft.preferredUnits.concat(additionalUnits).map((unit) => {
         const isSelectedUnit = placement.unitId === unit.id
         return (
-          <MemoizedCard
+          <UnitCard
             unitId={unit.id}
             unitName={unit.name}
             key={unit.id}
@@ -64,5 +64,3 @@ const MemoizedCards = memo(function UnitCards({
     </FlexContainer>
   )
 })
-
-export default MemoizedCards

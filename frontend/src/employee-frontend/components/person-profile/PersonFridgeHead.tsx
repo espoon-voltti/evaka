@@ -10,6 +10,7 @@ import PersonDetails from '../../components/person-shared/PersonDetails'
 import { faUser } from 'lib-icons'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
+import { isLoading } from 'lib-common/api'
 
 export default React.memo(function PersonFridgeHead() {
   const { i18n } = useTranslation()
@@ -28,7 +29,10 @@ export default React.memo(function PersonFridgeHead() {
   }, [formatTitleName, i18n.titles.customers, person, setTitle])
 
   return (
-    <div data-qa="person-fridge-head-section" data-isloading={person.isLoading}>
+    <div
+      data-qa="person-fridge-head-section"
+      data-isloading={isLoading(person)}
+    >
       <CollapsibleSection
         icon={faUser}
         title={i18n.personProfile.personDetails}

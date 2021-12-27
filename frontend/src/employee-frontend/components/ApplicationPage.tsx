@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Result, Success } from 'lib-common/api'
+import { combine, Loading, Result, Success } from 'lib-common/api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
@@ -11,8 +11,6 @@ import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Loader from 'lib-components/atoms/Loader'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
@@ -176,9 +174,6 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     editedApplication.form.preferences.serviceNeed.serviceNeedOption !== null
 
   useEffect(() => {
-    if (!editing) {
-      return
-    }
     if (shouldLoadServiceNeedOptions) {
       loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
     } else {
@@ -187,38 +182,8 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   }, [
     setServiceNeedOptions,
     loadServiceNeedOptions,
-    shouldLoadServiceNeedOptions,
-    editing
+    shouldLoadServiceNeedOptions
   ])
-
-  const renderApplication = (applicationData: ApplicationResponse) =>
-    editing ? (
-      editedApplication ? (
-        <>
-          {serviceNeedOptions.isLoading && <Loader />}
-          {serviceNeedOptions.isFailure && (
-            <ErrorSegment
-              title={i18n.application.serviceNeed.error.getServiceNeedOptions}
-            />
-          )}
-          {serviceNeedOptions.isSuccess && (
-            <ApplicationEditView
-              application={editedApplication}
-              setApplication={setEditedApplication}
-              errors={validationErrors}
-              units={units}
-              guardians={applicationData.guardians}
-              serviceNeedOptions={serviceNeedOptions.value}
-            />
-          )}
-        </>
-      ) : null
-    ) : (
-      <ApplicationReadView
-        application={applicationData}
-        reloadApplication={reloadApplication}
-      />
-    )
 
   return (
     <>
@@ -227,7 +192,27 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
         <ReturnButton label={i18n.common.goBack} data-qa="close-application" />
         <FixedSpaceRow>
           <ApplicationArea opaque>
-            {renderResult(application, renderApplication)}
+            {renderResult(
+              combine(application, serviceNeedOptions),
+              ([applicationData, serviceNeedOptions]) =>
+                editing ? (
+                  editedApplication ? (
+                    <ApplicationEditView
+                      application={editedApplication}
+                      setApplication={setEditedApplication}
+                      errors={validationErrors}
+                      units={units}
+                      guardians={applicationData.guardians}
+                      serviceNeedOptions={serviceNeedOptions}
+                    />
+                  ) : null
+                ) : (
+                  <ApplicationReadView
+                    application={applicationData}
+                    reloadApplication={reloadApplication}
+                  />
+                )
+            )}
           </ApplicationArea>
           <RequireRole
             oneOf={['ADMIN', 'SERVICE_WORKER', 'SPECIAL_EDUCATION_TEACHER']}

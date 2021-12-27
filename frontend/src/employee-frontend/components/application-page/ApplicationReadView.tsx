@@ -46,6 +46,7 @@ function YesNoValue({ value }: { value: boolean | null | undefined }) {
 const AttachmentContainer = styled.div`
   display: flex;
   flex-direction: column;
+
   & > div {
     margin-top: 5px;
     margin-bottom: 5px;
@@ -73,7 +74,7 @@ interface PreschoolApplicationProps {
   reloadApplication: () => void
 }
 
-function ApplicationReadView({
+export default React.memo(function ApplicationReadView({
   application,
   reloadApplication
 }: PreschoolApplicationProps) {
@@ -557,6 +558,4 @@ function ApplicationReadView({
       <ApplicationStatusSection application={application.application} />
     </div>
   )
-}
-
-export default ApplicationReadView
+})

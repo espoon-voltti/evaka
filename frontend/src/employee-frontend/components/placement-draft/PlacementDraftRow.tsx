@@ -85,7 +85,7 @@ interface Props {
   updatePreschoolEnd: (date: LocalDate) => void
 }
 
-function PlacementDraftSection({
+export default React.memo(function PlacementDraftSection({
   placementDraft,
   placement,
   updateStart,
@@ -194,6 +194,4 @@ function PlacementDraftSection({
       )}
     </Container>
   )
-}
-
-export default PlacementDraftSection
+})

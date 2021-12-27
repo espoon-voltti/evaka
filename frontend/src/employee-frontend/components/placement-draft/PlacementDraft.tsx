@@ -4,14 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { History } from 'history'
-import { Loading, Result, Success } from 'lib-common/api'
+import { isLoading, Loading, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
@@ -43,6 +42,7 @@ import { formatName } from '../../utils'
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
 import UnitCards from './UnitCards'
+import { renderResult } from '../async-rendering'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;
@@ -284,105 +284,110 @@ export default React.memo(function PlacementDraft({
   }
 
   return (
-    <ContainerNarrow>
+    <ContainerNarrow
+      data-qa="placement-draft-page"
+      data-isloading={isLoading(placementDraft)}
+    >
       <Gap size={'L'} />
       <ContentArea opaque>
-        {placementDraft.isFailure && <p>{i18n.common.loadingFailed}</p>}
-        {placementDraft.isLoading && <Loader />}
-        {placementDraft.isSuccess && placement.period && (
-          <Fragment>
-            <PlacementDraftInfo>
-              {placementDraft.value.guardianHasRestrictedDetails && (
-                <FloatRight>
-                  <Tooltip
-                    tooltipId={`tooltip_warning`}
-                    tooltipText={i18n.placementDraft.restrictedDetailsTooltip}
-                    place={'top'}
-                    delayShow={750}
-                  >
-                    <WarningLabel
-                      text={i18n.placementDraft.restrictedDetails}
-                      data-qa={`restricted-details-warning`}
-                    />
-                  </Tooltip>
-                </FloatRight>
-              )}
-              <Title size={1}>{i18n.placementDraft.createPlacementDraft}</Title>
-              <ChildName>
-                <Title size={3}>
-                  {formatName(
-                    placementDraft.value.child.firstName,
-                    placementDraft.value.child.lastName,
-                    i18n
-                  )}
+        {renderResult(placementDraft, (placementDraft) =>
+          placement.period ? (
+            <Fragment>
+              <PlacementDraftInfo>
+                {placementDraft.guardianHasRestrictedDetails && (
+                  <FloatRight>
+                    <Tooltip
+                      tooltipId={`tooltip_warning`}
+                      tooltipText={i18n.placementDraft.restrictedDetailsTooltip}
+                      place={'top'}
+                      delayShow={750}
+                    >
+                      <WarningLabel
+                        text={i18n.placementDraft.restrictedDetails}
+                        data-qa={`restricted-details-warning`}
+                      />
+                    </Tooltip>
+                  </FloatRight>
+                )}
+                <Title size={1}>
+                  {i18n.placementDraft.createPlacementDraft}
                 </Title>
-                <Link
-                  to={`/child-information/${placementDraft.value.child.id}`}
-                >
-                  {i18n.childInformation.title}
-                  <FontAwesomeIcon icon={faLink} />
-                </Link>
-              </ChildName>
-              <ChildDateOfBirth>
-                <DOBTitle>{i18n.placementDraft.dateOfBirth}</DOBTitle>
-                {placementDraft.value.child.dob.format()}
-              </ChildDateOfBirth>
-            </PlacementDraftInfo>
-            <PlacementDraftRow
-              placementDraft={placementDraft.value}
-              placement={placement}
-              updateStart={updatePlacementDate('period', 'start')}
-              updateEnd={updatePlacementDate('period', 'end')}
-              updatePreschoolStart={updatePlacementDate(
-                'preschoolDaycarePeriod',
-                'start'
-              )}
-              updatePreschoolEnd={updatePlacementDate(
-                'preschoolDaycarePeriod',
-                'end'
-              )}
-            />
-            {placementDraft.value.placements && (
-              <Placements placementDraft={placementDraft.value} />
-            )}
-            <SelectContainer>
-              <Combobox
-                placeholder={i18n.filters.unitPlaceholder}
-                selectedItem={null}
-                items={units
-                  .map((us) =>
-                    us
-                      .map(({ id, name }) => ({ name, id }))
-                      .sort((a, b) => (a.name < b.name ? -1 : 1))
-                  )
-                  .getOrElse([])}
-                getItemLabel={({ name }) => name}
-                onChange={(option) => (option ? addUnit(option.id) : undefined)}
-                isLoading={units.isLoading}
-                menuEmptyLabel={i18n.common.noResults}
+                <ChildName>
+                  <Title size={3}>
+                    {formatName(
+                      placementDraft.child.firstName,
+                      placementDraft.child.lastName,
+                      i18n
+                    )}
+                  </Title>
+                  <Link to={`/child-information/${placementDraft.child.id}`}>
+                    {i18n.childInformation.title}
+                    <FontAwesomeIcon icon={faLink} />
+                  </Link>
+                </ChildName>
+                <ChildDateOfBirth>
+                  <DOBTitle>{i18n.placementDraft.dateOfBirth}</DOBTitle>
+                  {placementDraft.child.dob.format()}
+                </ChildDateOfBirth>
+              </PlacementDraftInfo>
+              <PlacementDraftRow
+                placementDraft={placementDraft}
+                placement={placement}
+                updateStart={updatePlacementDate('period', 'start')}
+                updateEnd={updatePlacementDate('period', 'end')}
+                updatePreschoolStart={updatePlacementDate(
+                  'preschoolDaycarePeriod',
+                  'start'
+                )}
+                updatePreschoolEnd={updatePlacementDate(
+                  'preschoolDaycarePeriod',
+                  'end'
+                )}
               />
-            </SelectContainer>
-            <UnitCards
-              additionalUnits={additionalUnits}
-              setAdditionalUnits={setAdditionalUnits}
-              placement={placement}
-              setPlacement={setPlacement}
-              placementDraft={placementDraft.value}
-              selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
-            />
-            <SendButtonContainer>
-              <AsyncButton
-                primary
-                disabled={
-                  placement.unitId === undefined || selectedUnitIsGhostUnit
-                }
-                data-qa="send-placement-button"
-                onClick={() => createPlacementPlan(id, placement)}
-                onSuccess={() => redirectToMainPage(history)}
-                text={i18n.placementDraft.createPlacementDraft}
+              {placementDraft.placements && (
+                <Placements placementDraft={placementDraft} />
+              )}
+              <SelectContainer>
+                <Combobox
+                  placeholder={i18n.filters.unitPlaceholder}
+                  selectedItem={null}
+                  items={units
+                    .map((us) =>
+                      us
+                        .map(({ id, name }) => ({ name, id }))
+                        .sort((a, b) => (a.name < b.name ? -1 : 1))
+                    )
+                    .getOrElse([])}
+                  getItemLabel={({ name }) => name}
+                  onChange={(option) =>
+                    option ? addUnit(option.id) : undefined
+                  }
+                  isLoading={units.isLoading}
+                  menuEmptyLabel={i18n.common.noResults}
+                />
+              </SelectContainer>
+              <UnitCards
+                additionalUnits={additionalUnits}
+                setAdditionalUnits={setAdditionalUnits}
+                placement={placement}
+                setPlacement={setPlacement}
+                placementDraft={placementDraft}
+                selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
               />
-            </SendButtonContainer>
-          </Fragment>
+              <SendButtonContainer>
+                <AsyncButton
+                  primary
+                  disabled={
+                    placement.unitId === undefined || selectedUnitIsGhostUnit
+                  }
+                  data-qa="send-placement-button"
+                  onClick={() => createPlacementPlan(id, placement)}
+                  onSuccess={() => redirectToMainPage(history)}
+                  text={i18n.placementDraft.createPlacementDraft}
+                />
+              </SendButtonContainer>
+            </Fragment>
+          ) : null
         )}
       </ContentArea>
     </ContainerNarrow>
