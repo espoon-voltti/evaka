@@ -187,6 +187,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.fillData(minimalDaycareForm.form)
     await editorPage.assertChildAddress('')
     await editorPage.verifyAndSend()
+    await editorPage.waitUntilLoaded()
   })
 
   test('Urgent application attachment can be uploaded and downloaded by citizen', async () => {

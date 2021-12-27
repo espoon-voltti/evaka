@@ -156,6 +156,12 @@ class CitizenApplicationEditor {
     '[data-qa="preferredStartDate-input-info"]'
   )
 
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="applications-list"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
   getNewApplicationId() {
     const urlParts = this.page.url.split('/')
     return urlParts[urlParts.length - 2]
