@@ -46,7 +46,7 @@ export default React.memo(function ChildHeader({
         fallbackColor={colors.greyscale.lighter}
       />
       <div>
-        <H1 noMargin>
+        <H1 noMargin data-qa={'child-name'}>
           {firstName} {lastName}
         </H1>
         <Strong>{group?.name}</Strong>
