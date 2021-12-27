@@ -14,7 +14,7 @@ import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { combine } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import {
   addDaycareAclSpecialEducationTeacher,
   addDaycareAclStaff,
@@ -692,7 +692,10 @@ export default React.memo(function UnitAccessControl({
   )
 
   return (
-    <>
+    <div
+      data-qa="daycare-acl"
+      data-isloading={isLoading(combine(daycareAclRows, mobileDevices))}
+    >
       {uiMode === `remove-daycare-acl-${unitId}` && (
         <DeleteConfirmationModal
           onClose={closeRemoveModal}
@@ -813,6 +816,6 @@ export default React.memo(function UnitAccessControl({
           ))}
         </ContentArea>
       )}
-    </>
+    </div>
   )
 })
