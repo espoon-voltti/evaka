@@ -43,6 +43,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.varda.VardaServiceNeed
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
@@ -387,8 +388,8 @@ RETURNING id
 fun Database.Transaction.insertTestPlacement(placement: DevPlacement) = insertTestDataRow(
     placement,
     """
-INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
-VALUES (:id, :type, :childId, :unitId, :startDate, :endDate)
+INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by)
+VALUES (:id, :type, :childId, :unitId, :startDate, :endDate, :terminationRequestedDate, :terminatedBy)
 RETURNING id
 """
 ).let(::PlacementId)
@@ -987,6 +988,15 @@ fun Database.Transaction.insertEmployeePin(employeePin: DevEmployeePin) = insert
     """
 INSERT INTO employee_pin (id, user_id, pin, locked)
 VALUES (:id, :userId, :pin, :locked)
+RETURNING id
+"""
+)
+
+fun Database.Transaction.insertEvakaUser(evakaUser: EvakaUser) = insertTestDataRow(
+    evakaUser,
+    """
+INSERT INTO evaka_user (id, type, name)
+VALUES (:id, :type, :name)
 RETURNING id
 """
 )

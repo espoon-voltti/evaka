@@ -265,6 +265,9 @@ const Navigation = React.memo(function Navigation({
           {t.header.nav.calendar}
         </StyledNavLink>
       )}
+      <StyledNavLink to="/children" onClick={close} data-qa="nav-children">
+        {t.header.nav.children} {maybeLockElem}
+      </StyledNavLink>
     </Nav>
   )
 })

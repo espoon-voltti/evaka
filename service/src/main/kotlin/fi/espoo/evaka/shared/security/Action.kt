@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -29,6 +30,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
+import fi.espoo.evaka.shared.auth.UserRole.END_USER
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
 import fi.espoo.evaka.shared.auth.UserRole.MOBILE
@@ -97,6 +99,7 @@ sealed interface Action {
         UPDATE_SETTINGS(ADMIN),
 
         READ_UNIT_FEATURES(),
+        READ_OWN_CHILDREN(END_USER),
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -237,6 +240,7 @@ sealed interface Action {
         DELETE_DAILY_SERVICE_TIMES(UNIT_SUPERVISOR),
 
         READ_PLACEMENT(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
+        TERMINATE_PLACEMENT,
 
         READ_FAMILY_CONTACTS(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         UPDATE_FAMILY_CONTACT(UNIT_SUPERVISOR),
@@ -254,7 +258,10 @@ sealed interface Action {
         CREATE_PEDAGOGICAL_DOCUMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_PEDAGOGICAL_DOCUMENTS(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
 
-        READ_SENSITIVE_INFO(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE);
+        READ_SENSITIVE_INFO(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
+
+        UPLOAD_IMAGE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF, MOBILE),
+        DELETE_IMAGE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF, MOBILE);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -271,6 +278,13 @@ sealed interface Action {
     enum class ChildStickyNote(private val roles: EnumSet<UserRole>) : ScopedAction<ChildStickyNoteId> {
         UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
         DELETE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class ChildImage(private val roles: EnumSet<UserRole>) : ScopedAction<ChildImageId> {
+        DOWNLOAD(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF, MOBILE);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -423,7 +437,10 @@ sealed interface Action {
 
         CREATE_GROUP_PLACEMENT(UNIT_SUPERVISOR),
 
-        CREATE_SERVICE_NEED(UNIT_SUPERVISOR);
+        CREATE_SERVICE_NEED(UNIT_SUPERVISOR),
+
+        READ_TERMINATIONS,
+        TERMINATE();
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -470,7 +487,9 @@ sealed interface Action {
         READ_FAMILY_CONTACT_REPORT(UNIT_SUPERVISOR),
         READ_SERVICE_VOUCHER_VALUES_REPORT(FINANCE_ADMIN, UNIT_SUPERVISOR),
 
-        UPDATE_FEATURES();
+        UPDATE_FEATURES(),
+
+        READ_TERMINATED_PLACEMENTS(UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

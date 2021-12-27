@@ -82,6 +82,9 @@ export default React.memo(function DesktopNav({
                       {t.header.nav.calendar}
                     </StyledNavLink>
                   )}
+                  <StyledNavLink to="/children" data-qa="nav-children">
+                    {t.header.nav.children} {maybeLockElem}
+                  </StyledNavLink>
                 </>
               ) : null}
             </Nav>

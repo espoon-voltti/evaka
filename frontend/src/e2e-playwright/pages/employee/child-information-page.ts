@@ -106,3 +106,23 @@ export class ChildAssistanceNeed {
     await waitUntilEqual(() => this.#assistanceNeedRow.count(), expectedCount)
   }
 }
+
+export class ChildPlacements {
+  constructor(private page: Page) {}
+
+  #placement = (placementId: string) =>
+    this.page.find(`[data-qa="placement-${placementId}"]`)
+  #terminatedByGuardian = (placementId: string) =>
+    this.#placement(placementId).find('[data-qa="placement-terminated"]')
+
+  async assertTerminatedByGuardianIsShown(placementId: string) {
+    await this.#terminatedByGuardian(placementId).waitUntilVisible()
+  }
+
+  async assertTerminatedByGuardianIsNotShown(placementId: string) {
+    await this.#placement(placementId)
+      .find('[data-qa="placement-details-start-date"]')
+      .waitUntilVisible()
+    await this.#terminatedByGuardian(placementId).waitUntilHidden()
+  }
+}

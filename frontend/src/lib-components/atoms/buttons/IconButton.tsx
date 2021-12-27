@@ -8,7 +8,7 @@ import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { BaseProps } from '../../utils'
-import { IconSize } from '../RoundIcon'
+import { IconSize } from '../icon-size'
 
 interface ButtonProps {
   size: IconSize | undefined

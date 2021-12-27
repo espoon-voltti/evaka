@@ -56,7 +56,6 @@ const openCollapsible = async () => {
 describe('Service need', () => {
   test('add service need to a placement', async () => {
     const section = await openCollapsible()
-
     await section.addMissingServiceNeed(
       placement.data.id,
       activeServiceNeedOption.data.nameFi

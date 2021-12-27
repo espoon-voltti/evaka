@@ -11,6 +11,7 @@ import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGrou
 import { combine, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { renderResult } from '../async-rendering'
+import TerminatedPlacements from './tab-groups/TerminatedPlacements'
 
 interface Props {
   reloadUnitData: () => void
@@ -45,6 +46,17 @@ export default React.memo(function TabGroups({
     combine(unitInformation, unitData, groupPermittedActions),
     ([unitInformation, unitData, groupPermittedActions]) => (
       <FixedSpaceColumn>
+        {unitData.recentlyTerminatedPlacements &&
+          unitData.recentlyTerminatedPlacements.length > 0 && (
+            <ContentArea opaque>
+              <TerminatedPlacements
+                recentlyTerminatedPlacements={
+                  unitData.recentlyTerminatedPlacements
+                }
+              />
+            </ContentArea>
+          )}
+
         <ContentArea opaque>
           <MissingGroupPlacements
             groups={unitData.groups}

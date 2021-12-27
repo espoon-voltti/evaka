@@ -561,22 +561,25 @@ const applicationForm = (
   guardian2Email = '',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
   preferredUnits: string[] = [daycareFixture.id],
-  connectedDaycare = false
+  connectedDaycare = false,
+  startDate: LocalDate | null = null
 ): ApplicationForm => {
-  // Try to make sure there's an active preschool term for the preferred start date
-  let startDate = LocalDate.today()
-  if (
-    type === 'PRESCHOOL' &&
-    // May-Aug
-    [5, 6, 7, 8].includes(startDate.month)
-  ) {
-    // => Sep
-    startDate = startDate.withMonth(9)
-  }
+  if (!startDate) {
+    // Try to make sure there's an active preschool term for the preferred start date
+    startDate = LocalDate.today()
+    if (
+      type === 'PRESCHOOL' &&
+      // May-Aug
+      [5, 6, 7, 8].includes(startDate.month)
+    ) {
+      // => Sep
+      startDate = startDate.withMonth(9)
+    }
 
-  // Move daycare application start date to August if current date is in July
-  if (type === 'DAYCARE' && 7 === startDate.month) {
-    startDate = startDate.withMonth(8)
+    // Move daycare application start date to August if current date is in July
+    if (type === 'DAYCARE' && 7 === startDate.month) {
+      startDate = startDate.withMonth(8)
+    }
   }
 
   return {
@@ -660,7 +663,9 @@ export const applicationFixture = (
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false,
-  status: ApplicationStatus = 'SENT'
+  status: ApplicationStatus = 'SENT',
+  startDate: LocalDate | null = null,
+  transferApplication = false
 ): Application => ({
   id: applicationFixtureId,
   childId: child.id,
@@ -674,13 +679,14 @@ export const applicationFixture = (
     otherGuardian?.email ?? undefined,
     otherGuardianAgreementStatus,
     preferredUnits,
-    connectedDaycare
+    connectedDaycare,
+    startDate
   ),
   checkedByAdmin: false,
   hideFromGuardian: false,
   origin: 'ELECTRONIC',
   status,
-  transferApplication: false
+  transferApplication
 })
 
 export const placementPlanFixture = (

@@ -780,7 +780,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                             endDate = daycarePlacementEndDate
                         )
                     ),
-                    serviceNeeds = emptyList()
+                    serviceNeeds = emptyList(),
+                    terminatedBy = null,
+                    terminationRequestedDate = null
                 )
             ),
             placements
@@ -926,8 +928,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                             endDate = date(20)
                         )
                     ),
-                    serviceNeeds = emptyList()
-                )
+                    serviceNeeds = emptyList(),
+                    terminatedBy = null,
+                    terminationRequestedDate = null
+                ),
             ),
             placements
         )

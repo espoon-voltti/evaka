@@ -14,6 +14,7 @@ import {
   UnitProviderType
 } from 'lib-customizations/types'
 import { DayOfWeek } from './index'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
 
 export interface CareArea {
   id: UUID
@@ -122,6 +123,8 @@ export interface DaycarePlacement {
   serviceNeeds: ServiceNeed[]
   startDate: LocalDate
   endDate: LocalDate
+  terminationRequestedDate: LocalDate | null
+  terminatedBy: EvakaUser | null
 }
 
 export interface ChildBasics {
@@ -130,6 +133,16 @@ export interface ChildBasics {
   firstName: string | null
   lastName: string | null
   dateOfBirth: LocalDate
+}
+
+export interface TerminatedPlacement {
+  id: UUID
+  endDate: LocalDate
+  type: PlacementType
+  terminationRequestedDate: LocalDate
+  child: ChildBasics
+  terminatedBy: EvakaUser
+  currentDaycareGroupName: string | null
 }
 
 export type PlacementPlanConfirmationStatus =

@@ -6,12 +6,14 @@ import styled from 'styled-components'
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
 
-const HorizontalLine = styled.hr<{ slim?: boolean }>`
+const HorizontalLine = styled.hr<{ slim?: boolean; dashed?: boolean }>`
   width: 100%;
   margin-block-start: ${(p) => (p.slim ? defaultMargins.m : defaultMargins.XL)};
   margin-block-end: ${(p) => (p.slim ? defaultMargins.m : defaultMargins.XL)};
   border: none;
-  border-bottom: 1px solid ${(p) => p.theme.colors.greyscale.lighter};
+  border-bottom-width: 1px;
+  border-bottom-style: ${(p) => (p.dashed ? 'dashed' : 'solid')};
+  border-bottom-color: ${(p) => p.theme.colors.greyscale.lighter};
 
   @media (max-width: ${tabletMin}) {
     margin-block-start: ${(p) =>

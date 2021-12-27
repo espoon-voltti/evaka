@@ -65,6 +65,14 @@ export class Page {
   findAll(selector: string) {
     return new ElementCollection(this.page.locator(selector))
   }
+
+  findByDataQa(dataQa: string) {
+    return this.find(`[data-qa="${dataQa}"]`)
+  }
+
+  findAllByDataQa(dataQa: string) {
+    return this.findAll(`[data-qa="${dataQa}"]`)
+  }
 }
 
 export class ElementCollection {
@@ -105,6 +113,15 @@ export class ElementCollection {
 
   findAll(selector: string) {
     return new ElementCollection(this.locator.locator(selector))
+  }
+
+  async assertCount(count: number): Promise<void> {
+    if (count === 0) {
+      await this.nth(0).waitUntilHidden()
+    } else {
+      await this.nth(count - 1).waitUntilVisible()
+      await this.nth(count).waitUntilHidden()
+    }
   }
 }
 

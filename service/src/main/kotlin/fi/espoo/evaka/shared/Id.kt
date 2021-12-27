@@ -26,10 +26,12 @@ sealed interface DatabaseTable {
     sealed class BackupPickup : DatabaseTable
     sealed class Daycare : DatabaseTable
     sealed class ChildDailyNote : DatabaseTable
+    sealed class ChildImage : DatabaseTable
     sealed class ChildStickyNote : DatabaseTable
     sealed class GroupNote : DatabaseTable
     sealed class Decision : DatabaseTable
     sealed class Employee : DatabaseTable
+    sealed class EvakaUser : DatabaseTable
     sealed class FeeDecision : DatabaseTable
     sealed class FeeThresholds : DatabaseTable
     sealed class Group : DatabaseTable
@@ -75,10 +77,12 @@ typealias BackupPickupId = Id<DatabaseTable.BackupPickup>
 typealias ChildId = Id<DatabaseTable.Person>
 typealias DaycareId = Id<DatabaseTable.Daycare>
 typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
+typealias ChildImageId = Id<DatabaseTable.ChildImage>
 typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>
 typealias GroupNoteId = Id<DatabaseTable.GroupNote>
 typealias DecisionId = Id<DatabaseTable.Decision>
 typealias EmployeeId = Id<DatabaseTable.Employee>
+typealias EvakaUserId = Id<DatabaseTable.EvakaUser>
 typealias FeeDecisionId = Id<DatabaseTable.FeeDecision>
 typealias FeeThresholdsId = Id<DatabaseTable.FeeThresholds>
 typealias GroupId = Id<DatabaseTable.Group>

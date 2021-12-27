@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { EvakaUser } from './user'
 import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
@@ -21,6 +22,28 @@ export interface ChildBasics {
   id: UUID
   lastName: string
   socialSecurityNumber: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.ChildPlacement
+*/
+export interface ChildPlacement {
+  childId: UUID
+  endDate: LocalDate
+  id: UUID
+  startDate: LocalDate
+  terminatedBy: EvakaUser | null
+  terminationRequestedDate: LocalDate | null
+  type: PlacementType
+  unitId: UUID
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.ChildPlacementResponse
+*/
+export interface ChildPlacementResponse {
+  placements: TerminatablePlacementGroup[]
 }
 
 /**
@@ -59,6 +82,8 @@ export interface DaycarePlacementWithDetails {
   missingServiceNeedDays: number
   serviceNeeds: ServiceNeed[]
   startDate: LocalDate
+  terminatedBy: EvakaUser | null
+  terminationRequestedDate: LocalDate | null
   type: PlacementType
 }
 
@@ -179,6 +204,16 @@ export type PlacementPlanRejectReason =
   | 'REASON_3'
 
 /**
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.PlacementTerminationRequestBody
+*/
+export interface PlacementTerminationRequestBody {
+  terminateDaycareOnly: boolean | null
+  terminationDate: LocalDate
+  type: TerminatablePlacementType
+  unitId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.placement.PlacementType
 */
 export type PlacementType = 
@@ -202,3 +237,25 @@ export interface PlacementUpdateRequestBody {
   endDate: LocalDate
   startDate: LocalDate
 }
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.TerminatablePlacementGroup
+*/
+export interface TerminatablePlacementGroup {
+  additionalPlacements: ChildPlacement[]
+  endDate: LocalDate
+  placements: ChildPlacement[]
+  startDate: LocalDate
+  type: TerminatablePlacementType
+  unitId: UUID
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.TerminatablePlacementType
+*/
+export type TerminatablePlacementType = 
+  | 'CLUB'
+  | 'PREPARATORY'
+  | 'DAYCARE'
+  | 'PRESCHOOL'

@@ -714,7 +714,8 @@ fun Database.Transaction.insertApplication(
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi",
-    serviceNeedOption: ServiceNeedOption? = null
+    serviceNeedOption: ServiceNeedOption? = null,
+    transferApplication: Boolean = false
 ): ApplicationDetails {
     insertTestApplication(
         id = applicationId,
@@ -722,7 +723,8 @@ fun Database.Transaction.insertApplication(
         dueDate = null,
         status = status,
         guardianId = guardian.id,
-        childId = child.id
+        childId = child.id,
+        transferApplication = transferApplication
     )
     val application = ApplicationDetails(
         id = applicationId,
@@ -799,7 +801,7 @@ fun Database.Transaction.insertApplication(
         sentDate = null,
         dueDate = null,
         dueDateSetManuallyAt = null,
-        transferApplication = false,
+        transferApplication = transferApplication,
         additionalDaycareApplication = false,
         otherGuardianId = null,
         otherGuardianLivesInSameAddress = null,

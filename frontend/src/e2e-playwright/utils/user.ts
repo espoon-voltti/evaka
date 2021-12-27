@@ -38,7 +38,10 @@ function getLoginUser(role: UserRole): DevLoginUser | string {
         roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
       }
     case 'SERVICE_WORKER':
-      return config.serviceWorkerAad
+      return {
+        aad: config.serviceWorkerAad,
+        roles: ['SERVICE_WORKER']
+      }
     case 'FINANCE_ADMIN':
       return config.financeAdminAad
     case 'DIRECTOR':

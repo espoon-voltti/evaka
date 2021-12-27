@@ -13,7 +13,7 @@ healthcheck() {
 TRIES=1
 STATUS=$(healthcheck)
 
-while [ "$STATUS" != "204" ]; do
+while [ "$STATUS" != "200" ]; do
 	if [ $TRIES -lt 37 ]; then
 		sleep 5s
 		TRIES=$((TRIES + 1))

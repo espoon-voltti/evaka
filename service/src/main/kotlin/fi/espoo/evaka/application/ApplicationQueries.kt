@@ -19,6 +19,7 @@ import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -1044,3 +1045,40 @@ fun Database.Read.isOwnApplication(user: AuthenticatedUser.Citizen, applicationI
         .mapTo<Int>()
         .any()
 }
+
+fun Database.Transaction.cancelAllActiveTransferApplicationsAfterDate(childId: ChildId, preferredStartDateMinDate: LocalDate): List<ApplicationId> = createUpdate(
+    //language=sql
+    """
+UPDATE application
+SET status = 'CANCELLED'
+WHERE transferapplication
+AND child_id = :childId
+AND status = ANY(:activeApplicationStatus::application_status_type[])
+AND EXISTS (
+    SELECT 1
+    FROM application_form f
+    WHERE 
+        f.application_id = application.id
+        AND f.latest
+        AND daterange(:preferredStartDateMinDate::date, null, '[]') @> (f.document->>'preferredStartDate')::date
+)
+RETURNING id
+    """.trimIndent()
+)
+    .bind(
+        "activeApplicationStatus",
+        arrayOf(
+            ApplicationStatus.CREATED,
+            ApplicationStatus.SENT,
+            ApplicationStatus.WAITING_PLACEMENT,
+            ApplicationStatus.WAITING_CONFIRMATION,
+            ApplicationStatus.WAITING_UNIT_CONFIRMATION,
+            ApplicationStatus.WAITING_DECISION,
+            ApplicationStatus.WAITING_MAILING
+        )
+    )
+    .bind("preferredStartDateMinDate", preferredStartDateMinDate)
+    .bind("childId", childId)
+    .executeAndReturnGeneratedKeys()
+    .mapTo<ApplicationId>()
+    .list()

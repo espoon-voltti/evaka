@@ -99,7 +99,8 @@ const en: Translations = {
       messages: 'Messages',
       calendar: 'Calendar',
       applying: 'Applications',
-      pedagogicalDocuments: 'Growth and learning'
+      pedagogicalDocuments: 'Growth and learning',
+      children: 'Children'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1744,9 +1745,55 @@ const en: Translations = {
     },
     toggleExpandText: 'Show or hide the text'
   },
+  placement: {
+    // TODO i18n
+    type: {
+      CLUB: 'Kerho',
+      DAYCARE: 'Varhaiskasvatus',
+      FIVE_YEARS_OLD_DAYCARE: '5-vuotiaiden varhaiskasvatus',
+      PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
+      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
+        '5-vuotiaiden osapäiväinen varhaiskasvatus',
+      PRESCHOOL: 'Esiopetus',
+      PREPARATORY: 'Valmistava opetus',
+      PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
+      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+    }
+  },
   reloadNotification: {
     title: 'New version of eVaka is available',
     buttonText: 'Reload page'
+  },
+  children: {
+    title: 'Children',
+    pageDescription:
+      "General information related to your children's early childhood education or pre-primary education is displayed on this page.",
+    noChildren: 'No children',
+    placementTermination: {
+      title: 'Terminating early childhood education agreement',
+      description:
+        "When terminating your child's early childhood education agreement, please note that any transfer applications will be automatically withdrawn after your child's last day of attendance. If you later need early childhood education for your child, you must submit a new application.",
+      terminatedPlacements:
+        "You have terminated your child's early childhood education agreement",
+      until: (date: string) => `valid until ${date}`,
+      choosePlacement:
+        'Select the early childhood education agreement that you want to terminate',
+      invoicedDaycare: 'Paid early childhood education',
+      lastDayInfo:
+        "The last day when your child needs early childhood education. Your child's early childhood education agreement will be terminated to end on this day.",
+      lastDayOfPresence: 'Last day of attendance',
+      confirmQuestion:
+        "Do you want to terminate your child's early childhood education agreement?",
+      confirmDescription: (date: string) =>
+        `Are you sure you want to terminate the agreement so that your child's last day of attendance is ${date}? Once completed, you cannot cancel the termination.`,
+      terminate: 'Terminate the agreement'
+    }
   }
 }
 

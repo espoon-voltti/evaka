@@ -5,6 +5,7 @@
 import { ErrorBoundary } from '@sentry/react'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
+import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 import React, { ReactNode, useCallback, useContext } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
@@ -17,6 +18,8 @@ import { UnwrapResult } from './async-rendering'
 import requireAuth from './auth/requireAuth'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
+import ChildPage from './children/ChildPage'
+import ChildrenPage from './children/ChildrenPage'
 import CitizenReloadNotification from './CitizenReloadNotification'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
@@ -86,6 +89,20 @@ export default function App() {
                           path="/applications/:applicationId/edit"
                           component={requireAuth(ApplicationEditor)}
                         />
+                        {featureFlags.experimental?.placementTermination && (
+                          <Route
+                            exact
+                            path="/children/:childId"
+                            component={requireAuth(ChildPage)}
+                          />
+                        )}
+                        {featureFlags.experimental?.placementTermination && (
+                          <Route
+                            exact
+                            path="/children"
+                            component={requireAuth(ChildrenPage)}
+                          />
+                        )}
                         <Route
                           exact
                           path="/decisions/by-application/:applicationId"

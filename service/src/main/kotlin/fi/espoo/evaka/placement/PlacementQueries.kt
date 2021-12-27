@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -16,7 +17,9 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -25,7 +28,7 @@ import java.util.UUID
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.id = :id
         """.trimIndent()
@@ -74,7 +77,7 @@ fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraf
 fun Database.Read.getPlacementsForChild(childId: UUID): List<Placement> {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.child_id = :childId
         """.trimIndent()
@@ -87,7 +90,7 @@ WHERE p.child_id = :childId
 fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: LocalDate?): List<Placement> {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
@@ -103,7 +106,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
 fun Database.Read.getCurrentPlacementForChild(childId: UUID): Placement? {
     return createQuery(
         """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') @> now()::date
@@ -269,9 +272,19 @@ fun Database.Read.getDaycarePlacements(
     val sql =
         """
         SELECT
-            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id,
-            d.name AS daycare_name, d.provider_type, d.enabled_pilot_features, a.name AS area_name,
-            ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
+            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.termination_requested_date, 
+            terminated_by.id AS terminated_by_id,
+            terminated_by.name AS terminated_by_name,
+            terminated_by.type AS terminated_by_type,
+            pl.unit_id AS daycare_id,
+            d.name AS daycare_name,
+            d.provider_type AS daycare_provider_type,
+            d.enabled_pilot_features AS daycare_enabled_pilot_features,
+            a.name AS daycare_area,
+            ch.first_name as child_first_name,
+            ch.last_name as child_last_name,
+            ch.social_security_number as child_social_security_number,
+            ch.date_of_birth as child_date_of_birth,
             CASE
                 WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
                 ELSE (
@@ -280,11 +293,12 @@ fun Database.Read.getDaycarePlacements(
                     LEFT JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                     WHERE sn.id IS NULL
                 )
-            END AS missing_service_need
+            END AS missing_service_need_days
         FROM placement pl
-        LEFT OUTER JOIN daycare d on pl.unit_id = d.id
-        LEFT OUTER JOIN person ch on pl.child_id = ch.id
-        LEFT JOIN care_area a ON d.care_area_id = a.id
+        JOIN daycare d on pl.unit_id = d.id
+        JOIN person ch on pl.child_id = ch.id
+        JOIN care_area a ON d.care_area_id = a.id
+        LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:daycareId::uuid IS NULL OR pl.unit_id = :daycareId)
         AND (:childId::uuid IS NULL OR pl.child_id = :childId)
@@ -295,7 +309,7 @@ fun Database.Read.getDaycarePlacements(
         .bind("to", endDate)
         .bindNullable("daycareId", daycareId)
         .bindNullable("childId", childId)
-        .map(toDaycarePlacementDetails)
+        .mapTo<DaycarePlacementDetails>()
         .toList()
 }
 
@@ -330,6 +344,94 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
         .map(toDaycarePlacement)
         .firstOrNull()
 }
+
+fun Database.Read.getTerminatedPlacements(
+    today: LocalDate,
+    daycareId: DaycareId,
+    terminationRequestedMinDate: LocalDate?,
+    terminationRequestedMaxDate: LocalDate?
+): List<TerminatedPlacements> = createQuery(
+    """
+SELECT
+    pl.id, pl.end_date, pl.type, pl.termination_requested_date, 
+    ch.id AS child_id,
+    ch.first_name AS child_first_name,
+    ch.last_name AS child_last_name,
+    ch.social_security_number AS child_social_security_number,
+    ch.date_of_birth AS child_date_of_birth,
+    terminated_by.id AS terminated_by_id,
+    terminated_by.name AS terminated_by_name,
+    terminated_by.type AS terminated_by_type,
+    dg.name AS current_daycare_group_name
+    FROM placement pl
+    JOIN daycare d on pl.unit_id = d.id
+    JOIN person ch on pl.child_id = ch.id
+    LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
+    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
+    LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
+    WHERE (pl.unit_id = :daycareId)
+    AND daterange(:terminationRequestedMinDate, :terminationRequestedMaxDate, '[]') @> pl.termination_requested_date 
+    """.trimIndent()
+)
+    .bind("today", today)
+    .bind("daycareId", daycareId)
+    .bind("terminationRequestedMinDate", terminationRequestedMinDate)
+    .bind("terminationRequestedMaxDate", terminationRequestedMaxDate)
+    .mapTo<TerminatedPlacements>()
+    .list()
+
+data class TerminatedPlacements(
+    val id: PlacementId,
+    val endDate: LocalDate,
+    val type: PlacementType,
+    val terminationRequestedDate: LocalDate?,
+    @Nested("child")
+    val child: ChildBasics,
+    @Nested("terminated_by")
+    val terminatedBy: EvakaUser?,
+    var currentDaycareGroupName: String?
+)
+
+data class ChildPlacement(
+    val childId: ChildId,
+    val id: PlacementId,
+    val type: PlacementType,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val unitId: DaycareId,
+    val unitName: String,
+    val terminationRequestedDate: LocalDate?,
+    @Nested("terminated_by")
+    val terminatedBy: EvakaUser?,
+)
+
+fun Database.Read.getCitizenChildPlacements(today: LocalDate, childId: UUID): List<ChildPlacement> = createQuery(
+    """
+SELECT
+    child.id AS child_id,
+    p.id,
+    p.type,
+    p.start_date,
+    p.end_date,
+    p.termination_requested_date,
+    d.id AS unit_id,
+    d.name AS unit_name,
+    evaka_user.id as terminated_by_id,
+    evaka_user.name as terminated_by_name,
+    evaka_user.type as terminated_by_type
+FROM placement p
+JOIN daycare d ON p.unit_id = d.id
+JOIN person child ON p.child_id = child.id
+LEFT JOIN evaka_user ON p.terminated_by = evaka_user.id
+WHERE
+    p.child_id = :childId
+    AND p.end_date >= now()::date
+    """.trimIndent()
+)
+    .bind("childId", childId)
+    .bind("today", today)
+    .mapTo<ChildPlacement>()
+    .list()
 
 fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPlacement? {
     // language=SQL
@@ -544,29 +646,5 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
         startDate = rs.getDate("placement_start").toLocalDate(),
         endDate = rs.getDate("placement_end").toLocalDate(),
         type = rs.getEnum("placement_type")
-    )
-}
-
-private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycarePlacementDetails = { rs, ctx ->
-    DaycarePlacementDetails(
-        id = PlacementId(rs.getUUID("id")),
-        child = ChildBasics(
-            id = rs.getUUID("child_id"),
-            socialSecurityNumber = rs.getString("social_security_number"),
-            firstName = rs.getString("first_name"),
-            lastName = rs.getString("last_name"),
-            dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
-        ),
-        daycare = DaycareBasics(
-            id = DaycareId(rs.getUUID("unit_id")),
-            name = rs.getString("daycare_name"),
-            area = rs.getString("area_name"),
-            providerType = rs.getEnum("provider_type"),
-            enabledPilotFeatures = ctx.mapColumn<Array<PilotFeature>>(rs, "enabled_pilot_features").toList()
-        ),
-        startDate = rs.getDate("start_date").toLocalDate(),
-        endDate = rs.getDate("end_date").toLocalDate(),
-        type = rs.getEnum("type"),
-        missingServiceNeedDays = rs.getInt("missing_service_need")
     )
 }

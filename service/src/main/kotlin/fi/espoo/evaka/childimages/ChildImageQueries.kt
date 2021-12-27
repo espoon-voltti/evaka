@@ -4,8 +4,9 @@
 
 package fi.espoo.evaka.childimages
 
+import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
@@ -27,9 +28,18 @@ fun Database.Transaction.deleteChildImage(childId: UUID): UUID? {
         .firstOrNull()
 }
 
-fun Database.Read.getChildImage(imageId: UUID): ChildImage {
-    return createQuery("SELECT id, child_id, updated FROM child_images WHERE id = :id;")
-        .bind("id", imageId)
-        .mapTo<ChildImage>()
-        .firstOrNull() ?: throw NotFound("Image $imageId not found")
+fun Database.Read.hasPermissionForChildImage(user: AuthenticatedUser.Citizen, id: ChildImageId): Boolean {
+    return createQuery(
+        """
+SELECT EXISTS(
+    SELECT 1
+    FROM child_images img
+    JOIN person child ON img.child_id = child.id
+    JOIN guardian g ON child.id = g.child_id AND g.guardian_id = :guardianId
+    WHERE
+        img.id = :imageId
+)
+
+        """.trimIndent()
+    ).bind("guardianId", user.id).bind("imageId", id).mapTo<Boolean>().one()
 }

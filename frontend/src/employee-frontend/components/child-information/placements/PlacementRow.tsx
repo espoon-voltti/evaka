@@ -171,7 +171,7 @@ export default React.memo(function PlacementRow({
       statusLabel={getStatusLabelByDateRange(placement)}
     />
   ) : (
-    <>
+    <div>
       <ToolbarAccordion
         title={placement.daycare.name}
         subtitle={`${placement.startDate.format()} - ${placement.endDate.format()}`}
@@ -268,6 +268,18 @@ export default React.memo(function PlacementRow({
             )}
           </DataValue>
         </DataRow>
+        {placement.terminationRequestedDate && (
+          <DataRow>
+            <DataLabel>
+              {i18n.childInformation.placements.terminatedByGuardian}
+            </DataLabel>
+            <DataValue data-qa="placement-terminated">
+              {`${
+                i18n.childInformation.placements.terminated
+              } ${placement.terminationRequestedDate.format()}`}
+            </DataValue>
+          </DataRow>
+        )}
         <DataRow>
           <DataLabel>{i18n.childInformation.placements.area}</DataLabel>
           <DataValue data-qa="placement-details-area">
@@ -353,7 +365,7 @@ export default React.memo(function PlacementRow({
           }}
         />
       )}
-    </>
+    </div>
   )
 })
 

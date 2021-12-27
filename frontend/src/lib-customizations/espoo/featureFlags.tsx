@@ -30,7 +30,8 @@ const features: Features = {
       realtimeStaffAttendance: false,
       personalDetailsPage: true,
       mobileMessages: true,
-      leops: true
+      leops: true,
+      placementTermination: true
     }
   },
   staging: {
@@ -51,7 +52,8 @@ const features: Features = {
       realtimeStaffAttendance: true,
       personalDetailsPage: true,
       mobileMessages: true,
-      leops: true
+      leops: true,
+      placementTermination: true
     }
   },
   prod: {
@@ -72,7 +74,8 @@ const features: Features = {
       realtimeStaffAttendance: false,
       personalDetailsPage: false,
       mobileMessages: false,
-      leops: false
+      leops: false,
+      placementTermination: false
     }
   }
 }

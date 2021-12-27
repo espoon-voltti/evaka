@@ -753,6 +753,8 @@ export const fi = {
       rowTitle: 'Sijoituspäätös voimassa',
       startDate: 'Aloituspäivämäärä',
       endDate: 'Päättymispäivämäärä',
+      terminatedByGuardian: 'Huoltaja irtisanonut',
+      terminated: 'Irtisanottu',
       area: 'Alue',
       daycareUnit: 'Toimipaikka',
       daycareGroup: 'Nykyinen ryhmä',
@@ -1478,6 +1480,12 @@ export const fi = {
           groupEnded: 'Ryhmä on jo lakkautettu'
         }
       }
+    },
+    termination: {
+      title: 'Irtisanotut paikat',
+      terminationRequestedDate: 'Irtisanomispäivä',
+      endDate: 'Päättymispäivämäärä',
+      groupName: 'Ryhmä'
     },
     calendar: {
       title: 'Varaukset ja läsnäolot',

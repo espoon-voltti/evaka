@@ -7,10 +7,11 @@ package fi.espoo.evaka.childimages
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
@@ -26,7 +27,7 @@ import java.util.UUID
 
 @RestController
 class ChildImageController(
-    private val acl: AccessControlList,
+    private val ac: AccessControl,
     private val documentClient: DocumentService,
     env: BucketEnv
 ) {
@@ -41,9 +42,7 @@ class ChildImageController(
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<Unit> {
         Audit.ChildImageUpload.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
+        ac.requirePermissionFor(user, Action.Child.UPLOAD_IMAGE, childId)
 
         db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file) }
 
@@ -57,27 +56,22 @@ class ChildImageController(
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildImageDelete.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
+        ac.requirePermissionFor(user, Action.Child.DELETE_IMAGE, childId)
 
         db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
 
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping("/child-images/{imageId}")
+    @GetMapping(value = ["/child-images/{imageId}", "/citizen/child-images/{imageId}"])
     fun getImage(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable imageId: UUID
+        @PathVariable imageId: ChildImageId
     ): ResponseEntity<Any> {
         Audit.ChildImageDownload.log(targetId = imageId)
 
-        val image = db.connect { dbc -> dbc.read { it.getChildImage(imageId) } }
-        @Suppress("DEPRECATION")
-        acl.getRolesForChild(user, image.childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
+        ac.requirePermissionFor(user, Action.ChildImage.DOWNLOAD, imageId)
 
         val key = "$childImagesBucketPrefix$imageId"
         val presignedUrl = documentClient.presignedGetUrl(bucket, key)
@@ -94,7 +88,6 @@ class ChildImageController(
             val stream = documentClient.stream(bucket, key)
             ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
-                .lastModified(image.updated.toInstant())
                 .body(InputStreamResource(stream))
         }
     }

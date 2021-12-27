@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -29,7 +30,7 @@ import java.net.URL
 import java.util.UUID
 import javax.xml.bind.DatatypeConverter
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 
 class ChildImageTest : FullApplicationTest() {
 
@@ -95,7 +96,7 @@ class ChildImageTest : FullApplicationTest() {
         }
 
         assertEquals(1, images.size)
-        assertFalse(oldImageId == images.first().id)
+        assertNotEquals(oldImageId, images.first().id)
 
         verify(documentService).delete(
             bucketName = "evaka-data-it",
@@ -142,7 +143,7 @@ class ChildImageTest : FullApplicationTest() {
             it
                 .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
                 .bind("childId", testChild_1.id)
-                .mapTo<UUID>()
+                .mapTo<ChildImageId>()
                 .one()
         }
 
@@ -175,7 +176,7 @@ class ChildImageTest : FullApplicationTest() {
             it
                 .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
                 .bind("childId", testChild_1.id)
-                .mapTo<UUID>()
+                .mapTo<ChildImageId>()
                 .one()
         }
 

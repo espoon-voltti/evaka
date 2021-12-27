@@ -15,6 +15,7 @@ import {
   Occupancy,
   OccupancyType,
   Stats,
+  TerminatedPlacement,
   Unit,
   UnitLanguage,
   UnitManager,
@@ -175,6 +176,7 @@ export type UnitData = {
   unitOccupancies?: UnitOccupancies
   groupOccupancies?: GroupOccupancies
   missingGroupPlacements: MissingGroupPlacement[]
+  recentlyTerminatedPlacements: TerminatedPlacement[]
   placementProposals?: DaycarePlacementPlan[]
   placementPlans?: DaycarePlacementPlan[]
   applications?: ApplicationUnitSummary[]
@@ -204,6 +206,10 @@ export async function getUnitData(
       missingGroupPlacements: response.data.missingGroupPlacements.map(
         mapMissingGroupPlacementJson
       ),
+      recentlyTerminatedPlacements:
+        response.data.recentlyTerminatedPlacements.map(
+          mapRecentlyTerminatedPlacementJson
+        ),
       unitOccupancies:
         response.data.unitOccupancies &&
         mapUnitOccupancyJson(response.data.unitOccupancies),
@@ -271,7 +277,10 @@ function mapPlacementJson(data: JsonOf<DaycarePlacement>): DaycarePlacement {
       startDate: LocalDate.parseIso(groupPlacement.startDate),
       endDate: LocalDate.parseIso(groupPlacement.endDate),
       type: data.type
-    }))
+    })),
+    terminationRequestedDate: LocalDate.parseNullableIso(
+      data.terminationRequestedDate
+    )
   }
 }
 
@@ -296,6 +305,20 @@ function mapMissingGroupPlacementJson(
     placementPeriod: FiniteDateRange.parseJson(data.placementPeriod),
     serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
     gap: FiniteDateRange.parseJson(data.gap)
+  }
+}
+
+function mapRecentlyTerminatedPlacementJson(
+  data: JsonOf<TerminatedPlacement>
+): TerminatedPlacement {
+  return {
+    ...data,
+    endDate: LocalDate.parseIso(data.endDate),
+    terminationRequestedDate: LocalDate.parseIso(data.terminationRequestedDate),
+    child: {
+      ...data.child,
+      dateOfBirth: LocalDate.parseIso(data.child.dateOfBirth)
+    }
   }
 }
 

@@ -8,8 +8,10 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
@@ -251,4 +253,58 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
         .mapTo<Boolean>()
         .toList()
         .singleOrNull()
+}
+
+fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: UUID?) {
+    createUpdate(
+        //language=SQL
+        """
+UPDATE daycare_group_placement 
+SET end_date = :placementTerminationDate 
+WHERE daycare_placement_id = :placementId
+        """.trimIndent()
+    )
+        .bind("placementId", placementId)
+        .bind("placementTerminationDate", placementTerminationDate)
+        .execute()
+
+    createUpdate(
+        //language=SQL
+        """
+DELETE FROM service_need 
+WHERE placement_id = :placementId
+    AND start_date > :placementTerminationDate
+        """.trimIndent()
+    )
+        .bind("placementId", placementId)
+        .bind("placementTerminationDate", placementTerminationDate)
+        .execute()
+
+    createUpdate(
+        //language=SQL
+        """
+UPDATE service_need 
+SET end_date = :placementTerminationDate 
+WHERE placement_id = :placementId
+    AND daterange(start_date, end_date, '[]') @> :placementTerminationDate::date
+        """.trimIndent()
+    )
+        .bind("placementId", placementId)
+        .bind("placementTerminationDate", placementTerminationDate)
+        .execute()
+
+    createUpdate(
+        """
+UPDATE placement
+SET termination_requested_date = :terminationRequestedDate,
+    terminated_by = :terminationRequestedBy,
+    end_date = :placementTerminationDate
+WHERE id = :placementId
+        """.trimIndent()
+    )
+        .bindNullable("terminationRequestedDate", if (terminatedBy == null) null else terminationRequestedDate)
+        .bindNullable("terminationRequestedBy", terminatedBy)
+        .bind("placementTerminationDate", placementTerminationDate)
+        .bind("placementId", placementId)
+        .execute()
 }

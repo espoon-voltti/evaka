@@ -99,7 +99,8 @@ const sv: Translations = {
       messages: 'Meddelanden',
       calendar: 'Kalender',
       applying: 'Ansökningar',
-      pedagogicalDocuments: 'Tillväxt och inlärning'
+      pedagogicalDocuments: 'Tillväxt och inlärning',
+      children: 'Barn'
     },
     lang: {
       fi: 'Suomeksi',
@@ -1701,9 +1702,54 @@ const sv: Translations = {
     },
     toggleExpandText: 'Visa eller göm texten'
   },
+  placement: {
+    type: {
+      CLUB: 'Klubb',
+      DAYCARE: 'Småbarnspedagogik',
+      FIVE_YEARS_OLD_DAYCARE: '5-åringars småbarnspedagogik',
+      PRESCHOOL_WITH_DAYCARE: 'Förskola och tillhörande småbarnspedagogik',
+      PREPARATORY_WITH_DAYCARE:
+        'Förberedande undervisning och tillhörande småbarnspedagogik',
+      DAYCARE_PART_TIME: 'Småbarnspedagogik på deltid',
+      DAYCARE_FIVE_YEAR_OLDS: '5-åringars småbarnspedagogik',
+      DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
+        '5-åringars småbarnspedagogik på deltid',
+      PRESCHOOL: 'Förskola',
+      PREPARATORY: 'Förberedande undervisning',
+      PREPARATORY_DAYCARE:
+        'Förberedande undervisning och tillhörande småbarnspedagogik',
+      PRESCHOOL_DAYCARE:
+        'Förskoleundervisning och tillhörande småbarnspedagogik',
+      TEMPORARY_DAYCARE: 'Tillfällig småbarnspedagogik på heltid',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig småbarnspedagogik på deltid',
+      SCHOOL_SHIFT_CARE: 'Skiftvård för skolbarn'
+    }
+  },
   reloadNotification: {
     title: 'En ny version av eVaka är tillgänglig',
     buttonText: 'Ladda om sidan'
+  },
+  children: {
+    title: 'Barn',
+    pageDescription:
+      'På denna sida ser du dina allmänna uppgifter som förknippas med dina barns småbarnspedagogik eller förskoleundervisning.',
+    noChildren: 'Inga barn',
+    placementTermination: {
+      title: 'Uppsägning av plats',
+      description:
+        'När du uppsäger platsen observera gärna att ansökan om förflyttning försvinner efter sista närvarodag. Om du senare behöver en plats för ditt barn, måste du ansöka om den med en ny ansökan.',
+      terminatedPlacements: 'Du har sagt upp platsen',
+      until: (date: string) => `giltig till ${date}`,
+      choosePlacement: 'Välj platsen du vill säga upp',
+      invoicedDaycare: 'Betald småbarnspedagogik',
+      lastDayInfo:
+        'Sista dag då ditt barn behöver plats. Platsen sägs upp för att upphöra denna dag.',
+      lastDayOfPresence: 'Sista närvarodag',
+      confirmQuestion: 'Vill du säga upp platsen?',
+      confirmDescription: (date: string) =>
+        `Är du säker på att du vill säga upp platsen så att barnets sista närvarodag är den ${date}?\nUppsägning av platsen kan inte återkallas.`,
+      terminate: 'Säg upp platsen'
+    }
   }
 }
 
