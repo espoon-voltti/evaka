@@ -64,7 +64,12 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
   const [submitting, setSubmitting] = useState(false)
 
-  const updateDocument = () => {
+  const endEdit = useCallback(() => {
+    setEditMode(false)
+    clearUiMode()
+  }, [clearUiMode])
+
+  const updateDocument = useCallback(() => {
     const { childId, description } = pedagogicalDocument
     if (!description) return
     setSubmitting(true)
@@ -82,7 +87,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         })
       }
     })
-  }
+  }, [endEdit, i18n, id, onReload, pedagogicalDocument, setErrorMessage])
 
   const handleAttachmentUpload = useCallback(
     async (
@@ -94,14 +99,11 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         await savePedagogicalDocumentAttachment(id, file, onUploadProgress)
       ).map((id) => {
         setSubmitting(false)
-        setPedagogicalDocument(({ ...rest }) => ({
-          ...rest,
-          attachment: { id, name: file.name, contentType: file.type }
-        }))
+        onReload()
         return id
       })
     },
-    [id]
+    [id, onReload]
   )
 
   const handleAttachmentDelete = useCallback(
@@ -114,11 +116,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       ),
     []
   )
-
-  const endEdit = () => {
-    setEditMode(false)
-    clearUiMode()
-  }
 
   return (
     <Tr
@@ -142,34 +139,11 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       </DescriptionTd>
       <NameTd data-qa="pedagogical-document-document">
         <AttachmentsContainer>
-          {pedagogicalDocument.attachments.map((attachment) => (
-            <FileUpload
-              key={attachment.id}
-              slimSingleFile
-              disabled={submitting}
-              data-qa="upload-pedagogical-document-attachment-existing"
-              files={attachment}
-              i18n={i18n.fileUpload}
-              onDownloadFile={getAttachmentBlob}
-              onUpload={handleAttachmentUpload}
-              onDelete={handleAttachmentDelete}
-              accept={[
-                'image/jpeg',
-                'image/png',
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.oasis.opendocument.text',
-                'video/*',
-                'audio/*'
-              ]}
-            />
-          ))}
           <FileUpload
-            slimSingleFile
+            slim
             disabled={submitting}
             data-qa="upload-pedagogical-document-attachment-new"
-            files={[]}
+            files={attachments}
             i18n={i18n.fileUpload}
             onDownloadFile={getAttachmentBlob}
             onUpload={handleAttachmentUpload}
