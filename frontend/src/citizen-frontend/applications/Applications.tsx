@@ -14,6 +14,7 @@ import ChildApplicationsBlock from '../applications/ChildApplicationsBlock'
 import Footer from '../Footer'
 import useTitle from '../useTitle'
 import { renderResult } from '../async-rendering'
+import { isLoading } from 'lib-common/api'
 
 export default React.memo(function Applications() {
   const t = useTranslation()
@@ -26,7 +27,10 @@ export default React.memo(function Applications() {
 
   return (
     <>
-      <Container>
+      <Container
+        data-qa="applications-list"
+        data-isloading={isLoading(guardianApplications)}
+      >
         <Gap size="s" />
         <ContentArea opaque paddingVertical="L">
           <H1 noMargin>{t.applicationsList.title}</H1>
