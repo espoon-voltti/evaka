@@ -188,13 +188,19 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             <p>
             Dear guardian(s), <br>
-            We have received your child’s application for early childhood education. The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> until its processing starts.
+            We have received your child’s application for early childhood education.
+            </p>
+            <p>
+            The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> until its processing starts.
             </p>
             <p>
             You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care.
             </p>
             <p>
             You can see the decision and accept/reject it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
+            </p>
+            <p>
+            When applying for a service voucher day care centre, please contact the unit directly at the latest after submitting your application.
             </p>
             <p>
             If you chose to have your application processed urgently, you will also need to provide <strong>a document as proof of sudden employment at a new workplace or a sudden offer of a new study place.</strong> In this case, the <strong>minimum application period is two (2) weeks</strong> and it begins from the date on which the required document was received.
@@ -209,7 +215,10 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             When applying for a <strong>transfer</strong> to a different <strong>municipal early childhood education unit</strong>, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.
             </p>
             <p>
-            Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>. You can send your supporting documents by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to <a href="mailto:vaka.palveluohjaus@espoo.fi">vaka.palveluohjaus@espoo.fi</a> (please note that the connection is not encrypted).
+            How to apply for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education#section-6228">www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education#section-6228</a>
+            </p>
+            <p>
+            Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>.
             </p>
         """.trimIndent()
     }
@@ -272,11 +281,15 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             Dear guardian(s),
 
-            We have received your child’s application for early childhood education. The application period for early childhood education applications is four (4) months. The guardian who submitted the application can make changes to it at www.espoonvarhaiskasvatus.fi until its processing starts.
+            We have received your child’s application for early childhood education.
+
+            The application period for early childhood education applications is four (4) months. The guardian who submitted the application can make changes to it at www.espoonvarhaiskasvatus.fi until its processing starts.
 
             You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care.
 
             You can see the decision and accept/reject it at https://www.espoonvarhaiskasvatus.fi.
+
+            When applying for a service voucher day care centre, please contact the unit directly at the latest after submitting your application.
 
             If you chose to have your application processed urgently, you will also need to provide a document as proof of sudden employment at a new workplace or a sudden offer of a new study place. In this case, the minimum application period is two (2) weeks and it begins from the date on which the required document was received.
 
@@ -286,7 +299,9 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             When applying for a transfer to a different municipal early childhood education unit, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.
 
-            Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers. You can send your supporting documents by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to vaka.palveluohjaus@espoo.fi (please note that the connection is not encrypted).
+            How to apply for a service voucher: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education#section-6228
+
+            Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
         """.trimIndent()
     }
 
