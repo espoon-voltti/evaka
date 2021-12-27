@@ -8,6 +8,7 @@ import ApplicationListView from '../employee/applications/application-list-view'
 import { ApplicationStatus } from 'lib-common/generated/enums'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import ApplicationDetailsPage from './application-details-page'
+import { PlacementDraftPage } from '../employee/placement-draft-page'
 
 export class SearchFilter {
   constructor(private page: Page) {}
@@ -124,6 +125,7 @@ export class ApplicationWorkbenchPage {
     await this.getApplicationById(id)
       .find('[data-qa="primary-action-create-placement-plan"]')
       .click()
+    return new PlacementDraftPage(this.page)
   }
 
   async verifyApplication(applicationId: string) {

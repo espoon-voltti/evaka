@@ -23,6 +23,9 @@ export default class ApplicationReadView {
 
   async waitUntilLoaded() {
     await this.page.find('[data-qa="application-read-view"]').waitUntilVisible()
+    await this.page
+      .find('[data-qa="vtj-guardian-section"][data-isloading="false"]')
+      .waitUntilVisible()
   }
 
   async assertDecisionAvailableForDownload(type: DecisionType) {

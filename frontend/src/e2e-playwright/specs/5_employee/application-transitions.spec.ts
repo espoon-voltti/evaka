@@ -89,6 +89,7 @@ describe('Application transitions', () => {
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.acceptDecision('DAYCARE')
 
+    await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertApplicationStatus('Paikka vastaanotettu')
   })
 
@@ -120,6 +121,7 @@ describe('Application transitions', () => {
     )
 
     await applicationReadView.acceptDecision('DAYCARE')
+    await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertApplicationStatus('Paikka vastaanotettu')
   })
 
@@ -147,6 +149,7 @@ describe('Application transitions', () => {
     await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
 
     await applicationReadView.navigateToApplication(applicationId)
+    await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertApplicationStatus(
       'Vahvistettavana huoltajalla'
     )
@@ -176,6 +179,7 @@ describe('Application transitions', () => {
     await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
 
     await applicationReadView.navigateToApplication(applicationId)
+    await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertApplicationStatus('Odottaa postitusta')
   })
 
@@ -204,9 +208,10 @@ describe('Application transitions', () => {
 
     await applicationWorkbench.openPlacementQueue()
 
-    await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
-
-    await page.find('[data-qa="restricted-details-warning"]').waitUntilVisible()
+    const placementDraftPage =
+      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await placementDraftPage.waitUntilLoaded()
+    await placementDraftPage.assertRestrictedDetailsWarning()
   })
 
   test('Placement proposal flow', async () => {
@@ -322,6 +327,7 @@ describe('Application transitions', () => {
     await employeeLogin(page, 'SERVICE_WORKER')
 
     await applicationReadView.navigateToApplication(applicationId)
+    await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertDecisionDownloadPending(decision.type)
 
     // NOTE: No need to wait for pending async jobs as this is synchronous (unlike the normal flow of users creating
@@ -329,6 +335,7 @@ describe('Application transitions', () => {
     await createDecisionPdf(decisionId)
 
     await applicationReadView.navigateToApplication(applicationId)
+    await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertDecisionAvailableForDownload(decision.type)
   })
 })
