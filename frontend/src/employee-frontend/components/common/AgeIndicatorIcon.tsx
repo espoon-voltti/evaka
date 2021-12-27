@@ -7,10 +7,14 @@ import { fasArrowDown, fasArrowUp } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import colors from 'lib-customizations/common'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import { useTranslation } from '../../state/i18n'
 
 type Props = { isUnder3: boolean } | { dateOfBirth: LocalDate }
 
-export default React.memo(function AgeIndicatorIcon(props: Props) {
+export const AgeIndicatorIcon = React.memo(function AgeIndicatorIcon(
+  props: Props
+) {
   const under3 =
     'isUnder3' in props
       ? props.isUnder3
@@ -24,3 +28,30 @@ export default React.memo(function AgeIndicatorIcon(props: Props) {
     />
   )
 })
+
+export default AgeIndicatorIcon
+
+export const AgeIndicatorIconWithTooltip = React.memo(
+  function AgeIndicatorIconTooltip(props: Props) {
+    const { i18n } = useTranslation()
+
+    const under3 =
+      'isUnder3' in props
+        ? props.isUnder3
+        : LocalDate.today().differenceInYears(props.dateOfBirth) < 3
+
+    return (
+      <Tooltip
+        tooltip={
+          <span>
+            {under3
+              ? i18n.applications.list.lessthan3
+              : i18n.applications.list.morethan3}
+          </span>
+        }
+      >
+        <AgeIndicatorIcon isUnder3={under3} />
+      </Tooltip>
+    )
+  }
+)
