@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
+import { isLoading, Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -179,10 +179,7 @@ export default React.memo(function UnitCard({
     <Card
       active={isSelectedUnit}
       data-qa="placement-item"
-      data-isloading={
-        occupancies.isLoading ||
-        (occupancies.isSuccess && occupancies.isReloading)
-      }
+      data-isloading={isLoading(occupancies)}
     >
       {isRemovable && (
         <RemoveBtn role="button" onClick={() => removeUnit(unitId)}>

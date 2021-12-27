@@ -25,6 +25,7 @@ import { FlexRow } from '../../common/styled/containers'
 import { renderResult } from '../../async-rendering'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { isLoading } from 'lib-common/api'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;
@@ -83,7 +84,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
   return (
     <div
       data-qa="additional-information-section"
-      data-isloading={additionalInformation.isLoading}
+      data-isloading={isLoading(additionalInformation)}
     >
       <FlexRow justifyContent="space-between">
         <H4>{i18n.childInformation.additionalInformation.title}</H4>

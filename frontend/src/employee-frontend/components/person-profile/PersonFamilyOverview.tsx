@@ -22,6 +22,7 @@ import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import { isLoading } from 'lib-common/api'
 
 interface Props {
   open: boolean
@@ -104,7 +105,7 @@ export default React.memo(function FamilyOverview({ open }: Props) {
     .getOrElse(undefined)
 
   return (
-    <div data-qa="family-overview-section" data-isloading={family.isLoading}>
+    <div data-qa="family-overview-section" data-isloading={isLoading(family)}>
       <CollapsibleSection
         icon={faHome}
         title={i18n.personProfile.familyOverview.title}

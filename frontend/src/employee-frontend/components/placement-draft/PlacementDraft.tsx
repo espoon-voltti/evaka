@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { History } from 'history'
-import { Loading, Result, Success } from 'lib-common/api'
+import { isLoading, Loading, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -286,10 +286,7 @@ export default React.memo(function PlacementDraft({
   return (
     <ContainerNarrow
       data-qa="placement-draft-page"
-      data-isloading={
-        placementDraft.isLoading ||
-        (placementDraft.isSuccess && placementDraft.isReloading)
-      }
+      data-isloading={isLoading(placementDraft)}
     >
       <Gap size={'L'} />
       <ContentArea opaque>

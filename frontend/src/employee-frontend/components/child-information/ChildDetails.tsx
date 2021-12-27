@@ -11,6 +11,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { renderResult } from '../async-rendering'
 import { UUID } from 'lib-common/types'
+import { isLoading } from 'lib-common/api'
 
 interface Props {
   id: UUID
@@ -24,7 +25,7 @@ export default React.memo(function ChildDetails({ id }: Props) {
   const [open, setOpen] = useState(true)
 
   return (
-    <div data-qa="person-details-section" data-isloading={person.isLoading}>
+    <div data-qa="person-details-section" data-isloading={isLoading(person)}>
       <CollapsibleContentArea
         title={<H2 noMargin>{i18n.childInformation.personDetails.title}</H2>}
         open={open}

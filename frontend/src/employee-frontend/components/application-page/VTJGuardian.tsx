@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { getPerson } from '../../api/person'
-import { Loading, Result } from 'lib-common/api'
+import { isLoading, Loading, Result } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { Dimmed, H4, Label } from 'lib-components/typography'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -40,11 +40,7 @@ export default React.memo(function VTJGuardian({
   return (
     <div
       data-qa="vtj-guardian-section"
-      data-isloading={
-        !!guardianId &&
-        (guardianResult.isLoading ||
-          (guardianResult.isSuccess && guardianResult.isReloading))
-      }
+      data-isloading={!!guardianId && isLoading(guardianResult)}
     >
       <H4>{i18n.application.guardians.vtjGuardian}</H4>
       {guardianId ? (

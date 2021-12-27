@@ -270,6 +270,10 @@ export function isCancelled<T>(
   return 'cancelled' in value && value.cancelled
 }
 
+export function isLoading(value: Result<unknown>) {
+  return value.isLoading || (value.isSuccess && value.isReloading)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiFunction = (...args: any[]) => Promise<Result<any>>
 export type ApiResultOf<T extends ApiFunction> = ReturnType<T> extends Promise<

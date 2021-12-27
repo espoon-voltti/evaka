@@ -32,6 +32,7 @@ import { UUID } from 'lib-common/types'
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
+import { isLoading } from 'lib-common/api'
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
@@ -182,10 +183,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
             path="/units/:id/application-process"
             component={() => (
               <TabApplicationProcess
-                isLoading={
-                  unitData.isLoading ||
-                  (unitData.isSuccess && unitData.isReloading)
-                }
+                isLoading={isLoading(unitData)}
                 reloadUnitData={reloadUnitData}
               />
             )}
