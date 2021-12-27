@@ -25,6 +25,8 @@ import { UIContext } from '../../../state/ui'
 import { DaycareGroup } from '../../../types/unit'
 import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
+import { AgeIndicatorIconWithTooltip } from '../../common/AgeIndicatorIcon'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,
@@ -53,7 +55,14 @@ function renderMissingGroupPlacementRow(
           {formatName(firstName, lastName, i18n, true)}
         </Link>
       </Td>
-      <Td data-qa="child-dob">{dateOfBirth.format()}</Td>
+      <Td data-qa="child-dob">
+        <FixedSpaceRow spacing="xs">
+          <AgeIndicatorIconWithTooltip
+            isUnder3={placementPeriod.start.differenceInYears(dateOfBirth) < 3}
+          />
+          <span>{dateOfBirth.format()}</span>
+        </FixedSpaceRow>
+      </Td>
       <Td data-qa="placement-type">
         {placementType ? (
           careTypesFromPlacementType(placementType)
