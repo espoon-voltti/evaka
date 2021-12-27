@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { ApplicationNote } from '../../types/application'
 import styled from 'styled-components'
 import { colors } from 'lib-customizations/common'
-import { Label } from 'lib-components/typography'
+import { Label, Light } from 'lib-components/typography'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { formatParagraphs } from '../../utils/html-utils'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -49,10 +49,8 @@ const ButtonsBar = styled.div`
   margin-top: ${defaultMargins.s};
 `
 
-const DetailText = styled.span`
+const DetailText = styled(Light)`
   font-size: 12px;
-  color: ${colors.greyscale.medium};
-  font-style: italic;
 `
 
 interface ReadProps {

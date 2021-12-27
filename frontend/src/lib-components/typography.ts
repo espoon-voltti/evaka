@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
-
 import { defaultMargins } from 'lib-components/white-space'
+import styled from 'styled-components'
 
 import { BaseProps } from './utils'
 
@@ -180,10 +179,14 @@ export const Strong = styled.span`
   font-weight: ${fontWeights.bold};
 `
 
-export const InformationText = styled.span`
-  color: ${(p) => p.theme.colors.greyscale.dark};
-  font-size: 14px;
+export const Bold = styled.span`
+  color: ${(p) => p.theme.colors.greyscale.darkest};
   font-weight: ${fontWeights.semibold};
+`
+
+export const Light = styled.span`
+  font-style: italic;
+  color: ${(p) => p.theme.colors.greyscale.dark};
 `
 
 export const Title = styled.span`
@@ -199,4 +202,10 @@ export const BigNumber = styled.span`
   font-weight: ${fontWeights.light};
   line-height: 73px;
   color: ${(p) => p.theme.colors.main.dark};
+`
+
+export const InformationText = styled.span`
+  color: ${(p) => p.theme.colors.greyscale.dark};
+  font-size: 14px;
+  font-weight: ${fontWeights.semibold};
 `

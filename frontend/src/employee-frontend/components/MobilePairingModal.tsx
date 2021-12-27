@@ -2,11 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Loading, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import InputField from 'lib-components/atoms/form/InputField'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { Bold, fontWeights, P } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
+import { faPlus } from 'lib-icons'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
-import { Loading, Result } from 'lib-common/api'
-import { fontWeights, P } from 'lib-components/typography'
 import {
   getPairingStatus,
   PairingResponse,
@@ -14,20 +18,12 @@ import {
   postPairingResponse,
   putMobileDeviceName
 } from '../api/unit'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import InputField from 'lib-components/atoms/form/InputField'
-import { faPlus } from 'lib-icons'
 import { useTranslation } from '../state/i18n'
-import { UUID } from 'lib-common/types'
 import { renderResult } from './async-rendering'
 
 type IdProps = { unitId: UUID } | { employeeId: UUID }
 
 type Props = IdProps & { closeModal: () => void }
-
-const Bold = styled.span`
-  font-weight: ${fontWeights.semibold};
-`
 
 const Flex = styled.div`
   display: flex;

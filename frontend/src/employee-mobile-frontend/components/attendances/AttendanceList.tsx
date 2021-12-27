@@ -9,9 +9,8 @@ import {
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
-import { fontWeights } from 'lib-components/typography'
+import { Bold } from 'lib-components/typography'
 import React, { useMemo } from 'react'
-import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import ChildList from './ChildList'
 
@@ -125,7 +124,3 @@ export default React.memo(function AttendanceList({
     </>
   )
 })
-
-const Bold = styled.div`
-  font-weight: ${fontWeights.semibold};
-`

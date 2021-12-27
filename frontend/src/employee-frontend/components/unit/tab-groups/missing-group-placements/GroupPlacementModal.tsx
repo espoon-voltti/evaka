@@ -2,34 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext } from 'react'
-import styled from 'styled-components'
-
+import { Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
-import { fontWeights } from 'lib-components/typography'
-import { useTranslation } from '../../../../state/i18n'
-import { UIContext } from '../../../../state/ui'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { UUID } from 'lib-common/types'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Result } from 'lib-common/api'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Bold } from 'lib-components/typography'
 import { faChild } from 'lib-icons'
+import React, { useContext, useState } from 'react'
+import { updateBackupCare } from '../../../../api/child/backup-care'
 import {
   createGroupPlacement,
   MissingGroupPlacement
 } from '../../../../api/unit'
-import { updateBackupCare } from '../../../../api/child/backup-care'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { formatName } from '../../../../utils'
-import { DaycareGroup } from '../../../../types/unit'
 import { EVAKA_START } from '../../../../constants'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { UUID } from 'lib-common/types'
-
-const Bold = styled.div`
-  font-weight: ${fontWeights.semibold};
-`
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
+import { DaycareGroup } from '../../../../types/unit'
+import { formatName } from '../../../../utils'
 
 interface Props {
   groups: DaycareGroup[]

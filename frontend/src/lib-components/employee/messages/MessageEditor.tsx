@@ -31,7 +31,7 @@ import {
   PostMessageBody,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { fontWeights } from 'lib-components/typography'
+import { Bold } from 'lib-components/typography'
 import {
   deselectAll,
   getReceiverOptions,
@@ -688,8 +688,4 @@ const BottomBarMobile = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.m};
-`
-
-const Bold = styled.span`
-  font-weight: ${fontWeights.semibold};
 `

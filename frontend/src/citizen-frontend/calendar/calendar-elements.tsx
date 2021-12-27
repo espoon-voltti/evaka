@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
 import {
   ChildDailyData,
   DailyReservationData
 } from 'lib-common/generated/api-types/reservations'
+import React from 'react'
+import styled from 'styled-components'
+import { Light } from 'lib-components/typography'
 import { Translations, useTranslation } from '../localization'
 
 export const Reservations = React.memo(function Reservations({
@@ -31,13 +32,8 @@ export const Reservations = React.memo(function Reservations({
 
 export const Holiday = React.memo(function Holiday() {
   const i18n = useTranslation()
-  return <HolidayNote>{i18n.calendar.holiday}</HolidayNote>
+  return <Light>{i18n.calendar.holiday}</Light>
 })
-
-const HolidayNote = styled.span`
-  font-style: italic;
-  color: ${({ theme }) => theme.colors.greyscale.dark};
-`
 
 export const NoReservation = React.memo(function NoReservation() {
   const i18n = useTranslation()
