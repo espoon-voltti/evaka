@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -94,7 +95,7 @@ class PlacementController(
         Audit.PlacementPlanSearch.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_PLACEMENT_PLAN, daycareId)
 
-        return db.read { it.getPlacementPlans(daycareId, startDate, endDate) }
+        return db.read { it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, startDate, endDate) }
     }
 
     @PostMapping("/placements")

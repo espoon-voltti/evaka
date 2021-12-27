@@ -119,7 +119,13 @@ WHERE application_id = :applicationId AND deleted = false
         .orElseThrow { NotFound("Placement plan for application $applicationId not found") }
 }
 
-fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
+fun Database.Read.getPlacementPlans(
+    today: LocalDate,
+    unitId: DaycareId,
+    from: LocalDate?,
+    to: LocalDate?,
+    statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()
+): List<PlacementPlanDetails> {
     data class QueryResult(
         val id: PlacementPlanId,
         val unitId: DaycareId,
@@ -145,7 +151,7 @@ fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: Loc
 SELECT 
     pp.id, pp.unit_id, pp.application_id, pp.type, pp.start_date, pp.end_date, pp.preschool_daycare_start_date, pp.preschool_daycare_end_date,
     pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
-    p.id as child_id, p.first_name, p.last_name, p.date_of_birth, (d.status = 'REJECTED'::decision_status AND d.updated > now() - interval '2 week') AS rejected_by_citizen
+    p.id as child_id, p.first_name, p.last_name, p.date_of_birth, (d.status = 'REJECTED'::decision_status AND d.updated > :today - interval '2 week') AS rejected_by_citizen
 FROM placement_plan pp
 LEFT JOIN application a ON pp.application_id = a.id
 LEFT JOIN person p ON a.child_id = p.id
@@ -158,7 +164,7 @@ WHERE
         (
             d.status = 'REJECTED'::decision_status AND 
             a.status = 'REJECTED'::application_status_type AND
-            d.updated > now() - interval '2 week'
+            d.updated > :today - interval '2 week'
         )
     ) AND
     pp.unit_confirmation_status != 'REJECTED'::confirmation_status
@@ -166,6 +172,7 @@ WHERE
     ${if (from != null) " AND (end_date >= :from OR preschool_daycare_end_date >= :from)" else ""} 
     """
     ).bind("unitId", unitId)
+        .bind("today", today)
         .bind("from", from)
         .bind("to", to)
         .bind("statuses", statuses.toTypedArray())

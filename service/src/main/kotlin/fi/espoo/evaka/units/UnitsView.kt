@@ -38,6 +38,7 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -57,6 +58,7 @@ class UnitsView(private val accessControl: AccessControl) {
     fun getUnitViewData(
         db: Database.DeprecatedConnection,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam(
@@ -101,9 +103,15 @@ class UnitsView(private val accessControl: AccessControl) {
             if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
                 val unitOccupancies = getUnitOccupancies(tx, unitId, period)
                 val groupOccupancies = getGroupOccupancies(tx, unitId, period)
-                val placementProposals =
-                    tx.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
+                val placementProposals = tx.getPlacementPlans(
+                    evakaClock.today(),
+                    unitId,
+                    null,
+                    null,
+                    listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
+                )
                 val placementPlans = tx.getPlacementPlans(
+                    evakaClock.today(),
                     unitId,
                     null,
                     null,

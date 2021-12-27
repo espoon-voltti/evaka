@@ -34,6 +34,7 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Application } from '../../../e2e-test-common/dev-api/types'
+import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage
@@ -400,19 +401,38 @@ describe('Application transitions', () => {
       fixtures.daycareFixture.id
     )
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
-    const unitPage = new UnitPage(page)
-    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
-    const waitingConfirmation = (await unitPage.openApplicationProcessTab())
-      .waitingConfirmation
+    async function assertApplicationRows(
+      addDays: number,
+      expectRejectedApplicationToBeVisible: boolean
+    ) {
+      const page = await Page.open({
+        mockedTime:
+          addDays !== 0
+            ? LocalDate.today().addDays(addDays).toSystemTzDate()
+            : undefined
+      })
 
-    await waitingConfirmation.assertNotificationCounter(1)
-    await waitingConfirmation.assertRowCount(2)
-    await waitingConfirmation.assertRejectedRowCount(1)
+      await employeeLogin(page, 'UNIT_SUPERVISOR')
+      const unitPage = new UnitPage(page)
+      await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+      const waitingConfirmation = (await unitPage.openApplicationProcessTab())
+        .waitingConfirmation
 
-    await waitingConfirmation.assertRow(application1.id, false)
-    await waitingConfirmation.assertRow(application2.id, true)
+      await waitingConfirmation.assertNotificationCounter(1)
+      if (expectRejectedApplicationToBeVisible) {
+        await waitingConfirmation.assertRowCount(2)
+        await waitingConfirmation.assertRejectedRowCount(1)
+        await waitingConfirmation.assertRow(application1.id, false)
+        await waitingConfirmation.assertRow(application2.id, true)
+      } else {
+        await waitingConfirmation.assertRowCount(1)
+        await waitingConfirmation.assertRejectedRowCount(0)
+        await waitingConfirmation.assertRow(application1.id, false)
+      }
+      await page.close()
+    }
 
-    // TODO: Check that the rejected row disappears after 2 weeks
+    await assertApplicationRows(14, true)
+    await assertApplicationRows(15, false)
   })
 })
