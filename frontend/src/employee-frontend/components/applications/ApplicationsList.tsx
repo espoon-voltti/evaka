@@ -14,13 +14,13 @@ import {
 } from 'lib-icons'
 import { Paged } from 'lib-common/api'
 import {
+  SortableTh,
   Table,
-  Tr,
-  Th,
-  Td,
-  Thead,
   Tbody,
-  SortableTh
+  Td,
+  Th,
+  Thead,
+  Tr
 } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
@@ -56,27 +56,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { updateServiceWorkerNote } from '../../api/applications'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-
-const CircleIcon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  min-height: 34px;
-  font-size: 24px !important;
-  border-radius: 100%;
-  color: ${colors.greyscale.white};
-`
-
-const CircleIconGreen = styled(CircleIcon)`
-  background-color: ${colors.accents.green};
-`
-
-const CircleIconRed = styled(CircleIcon)`
-  background-color: ${colors.accents.red};
-`
+import { CircleIconGreen, CircleIconRed } from './CircleIcon'
 
 const TitleRowContainer = styled.div`
   display: flex;

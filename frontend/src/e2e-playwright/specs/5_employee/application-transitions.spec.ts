@@ -4,12 +4,15 @@
 
 import config from 'e2e-test-common/config'
 import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
-  decisionFixture
+  decisionFixture,
+  Fixture,
+  placementPlanFixture,
+  uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -18,17 +21,20 @@ import {
   insertApplications,
   insertDecisionFixtures,
   insertEmployeeFixture,
+  insertPlacementPlan,
+  rejectDecisionByCitizen,
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-// import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { addWeeks, format } from 'date-fns'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
+import { Application } from '../../../e2e-test-common/dev-api/types'
+import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage
@@ -293,9 +299,9 @@ describe('Application transitions', () => {
     ])
 
     await unitPage.navigateToUnit(fixtures.daycareFixture.id)
-    const placementPlans = (await unitPage.openApplicationProcessTab())
-      .placementPlans
-    await placementPlans.assertWaitingGuardianConfirmationRowCount(1)
+    const waitingConfirmation = (await unitPage.openApplicationProcessTab())
+      .waitingConfirmation
+    await waitingConfirmation.assertRowCount(1)
   })
 
   test('Supervisor can download decision PDF only after it has been generated', async () => {
@@ -337,5 +343,96 @@ describe('Application transitions', () => {
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertDecisionAvailableForDownload(decision.type)
+  })
+
+  test('Application rejected by citizen is shown for 2 weeks', async () => {
+    const application1: Application = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureJari,
+        fixtures.enduserGuardianFixture
+      ),
+      id: uuidv4(),
+      status: 'WAITING_CONFIRMATION'
+    }
+    const application2: Application = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureKaarina,
+        fixtures.enduserGuardianFixture
+      ),
+      id: uuidv4(),
+      status: 'WAITING_CONFIRMATION'
+    }
+
+    await insertApplications([application1, application2])
+
+    await insertPlacementPlan(
+      application1.id,
+      placementPlanFixture(
+        fixtures.daycareFixture.id,
+        application1.form.preferredStartDate,
+        application1.form.preferredStartDate
+      )
+    )
+    await insertPlacementPlan(
+      application2.id,
+      placementPlanFixture(
+        fixtures.daycareFixture.id,
+        application2.form.preferredStartDate,
+        application2.form.preferredStartDate
+      )
+    )
+
+    const decisionId = (
+      await Fixture.decision()
+        .with({
+          applicationId: application2.id,
+          employeeId: serviceWorker.id,
+          unitId: fixtures.daycareFixture.id,
+          startDate: application2.form.preferredStartDate,
+          endDate: application2.form.preferredStartDate
+        })
+        .save()
+    ).data.id
+    await rejectDecisionByCitizen(decisionId)
+
+    await insertEmployeeFixture(unitSupervisor)
+    await setAclForDaycares(
+      unitSupervisor.externalId,
+      fixtures.daycareFixture.id
+    )
+
+    async function assertApplicationRows(
+      addDays: number,
+      expectRejectedApplicationToBeVisible: boolean
+    ) {
+      const page = await Page.open({
+        mockedTime:
+          addDays !== 0
+            ? LocalDate.today().addDays(addDays).toSystemTzDate()
+            : undefined
+      })
+
+      await employeeLogin(page, 'UNIT_SUPERVISOR')
+      const unitPage = new UnitPage(page)
+      await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+      const waitingConfirmation = (await unitPage.openApplicationProcessTab())
+        .waitingConfirmation
+
+      await waitingConfirmation.assertNotificationCounter(1)
+      if (expectRejectedApplicationToBeVisible) {
+        await waitingConfirmation.assertRowCount(2)
+        await waitingConfirmation.assertRejectedRowCount(1)
+        await waitingConfirmation.assertRow(application1.id, false)
+        await waitingConfirmation.assertRow(application2.id, true)
+      } else {
+        await waitingConfirmation.assertRowCount(1)
+        await waitingConfirmation.assertRejectedRowCount(0)
+        await waitingConfirmation.assertRow(application1.id, false)
+      }
+      await page.close()
+    }
+
+    await assertApplicationRows(14, true)
+    await assertApplicationRows(15, false)
   })
 })

@@ -356,6 +356,13 @@ export async function createDecisionPdf(id: string): Promise<void> {
   }
 }
 
+export async function rejectDecisionByCitizen(id: string): Promise<void> {
+  try {
+    await devClient.post(`/decisions/${id}/actions/reject-by-citizen`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
 export async function insertFeeDecisionFixtures(
   fixture: FeeDecision[]
 ): Promise<void> {

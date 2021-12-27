@@ -16,8 +16,7 @@ if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
     const evakaMockedTime = mockNow()
     if (evakaMockedTime) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      config.params = { ...config.params, evakaMockedTime }
+      config.headers = { ...config.headers, EvakaMockedTime: evakaMockedTime }
     }
     return config
   })

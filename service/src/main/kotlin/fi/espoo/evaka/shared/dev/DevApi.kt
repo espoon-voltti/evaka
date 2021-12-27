@@ -28,6 +28,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.insertDecision
 import fi.espoo.evaka.emailclient.MockEmail
@@ -321,6 +322,28 @@ class DevApi(
     @PostMapping("/decisions/{id}/actions/create-pdf")
     fun createDecisionPdf(db: Database.DeprecatedConnection, @PathVariable id: DecisionId): ResponseEntity<Unit> {
         db.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/decisions/{id}/actions/reject-by-citizen")
+    fun rejectDecisionByCitizen(
+        db: Database,
+        @PathVariable id: DecisionId,
+    ): ResponseEntity<Unit> {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val decision = tx.getDecision(id) ?: throw NotFound("decision not found")
+                val application =
+                    tx.fetchApplicationDetails(decision.applicationId) ?: throw NotFound("application not found")
+                applicationStateService.rejectDecision(
+                    tx,
+                    AuthenticatedUser.Citizen(application.guardianId),
+                    application.id,
+                    id,
+                    isEnduser = true
+                )
+            }
+        }
         return ResponseEntity.noContent().build()
     }
 
