@@ -20,8 +20,7 @@ export const fontSizesMobile = {
   h1: '24px',
   h2: '22px',
   h3: '18px',
-  h4: '16px',
-  h5: '14px'
+  h4: '16px'
 }
 
 type HeadingProps = BaseProps & {
@@ -30,7 +29,6 @@ type HeadingProps = BaseProps & {
   centered?: boolean
   noMargin?: boolean
   smaller?: boolean
-  bold?: boolean
   primary?: boolean
 }
 
@@ -38,57 +36,52 @@ export const H1 = styled.h1<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
     p.primary || p.primary === undefined
       ? colors.main.dark
-      : colors.greyscale.dark};
+      : colors.greyscale.darkest};
   font-size: ${(p) => (p.smaller ? fontSizesMobile.h1 : '36px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${({ theme: { typography }, ...p }) =>
-    p.bold ? typography.h1.bold : typography.h1.weight};
-  line-height: 58px;
+  font-weight: ${({ theme: { typography } }) => typography.h1.weight};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.m};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
 
   @media (max-width: 600px) {
-    font-size: 24px;
+    font-size: ${fontSizesMobile.h1};
     ${({ theme: { typography } }) =>
       typography.h1.mobile?.weight &&
       `font-weight: ${typography.h1.mobile?.weight};`}
-    line-height: 36px;
   }
 `
 
 export const H2 = styled.h2<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
-    p.primary ? colors.main.dark : colors.greyscale.dark};
+    p.primary ? colors.main.dark : colors.greyscale.darkest};
   font-size: ${(p) => (p.smaller ? fontSizesMobile.h2 : '24px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${({ theme: { typography }, ...p }) =>
-    p.bold ? typography.h2.bold : typography.h2.weight};
+  font-weight: ${({ theme: { typography } }) => typography.h2.weight};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
 
   @media (max-width: 600px) {
-    font-size: 20px;
+    font-size: ${fontSizesMobile.h2};
     ${({ theme: { typography } }) =>
       typography.h2.mobile?.weight &&
       `font-weight: ${typography.h2.mobile?.weight};`}
-    line-height: 30px;
   }
 `
 
 export const H3 = styled.h3<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
-    p.primary ? colors.main.dark : colors.greyscale.dark};
+    p.primary ? colors.main.dark : colors.greyscale.darkest};
   font-size: ${(p) => (p.smaller ? fontSizesMobile.h3 : '20px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${({ theme: { typography }, ...p }) =>
-    p.bold ? typography.h3.bold : typography.h3.weight};
+  font-weight: ${({ theme: { typography } }) => typography.h3.weight};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
 
   @media (max-width: 600px) {
+    font-size: ${fontSizesMobile.h3};
     ${({ theme: { typography } }) =>
       typography.h3.mobile?.weight &&
       `font-weight: ${typography.h3.mobile?.weight};`}
@@ -97,37 +90,19 @@ export const H3 = styled.h3<HeadingProps>`
 
 export const H4 = styled.h4<HeadingProps>`
   color: ${({ theme: { colors }, ...p }) =>
-    p.primary ? colors.main.dark : colors.greyscale.dark};
+    p.primary ? colors.main.dark : colors.greyscale.darkest};
   font-size: ${(p) => (p.smaller ? fontSizesMobile.h4 : '18px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${({ theme: { typography }, ...p }) =>
-    p.bold ? typography.h4.bold : typography.h4.weight};
+  font-weight: ${({ theme: { typography } }) => typography.h4.weight};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
 
   @media (max-width: 600px) {
+    font-size: ${fontSizesMobile.h4};
     ${({ theme: { typography } }) =>
       typography.h4.mobile?.weight &&
       `font-weight: ${typography.h4.mobile?.weight};`}
-  }
-`
-
-export const H5 = styled.h4<HeadingProps>`
-  color: ${({ theme: { colors }, ...p }) =>
-    p.primary ? colors.main.dark : colors.greyscale.dark};
-  font-size: ${(p) => (p.smaller ? fontSizesMobile.h5 : '16px')};
-  font-family: Montserrat, sans-serif;
-  font-weight: ${({ theme: { typography }, ...p }) =>
-    p.bold ? typography.h5.bold : typography.h5.weight};
-  ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
-  ${(p) => (p.centered ? `text-align: center;` : '')}
-  ${(p) => (p.noMargin ? `margin: 0;` : '')}
-
-  @media (max-width: 600px) {
-    ${({ theme: { typography } }) =>
-      typography.h5.mobile?.weight &&
-      `font-weight: ${typography.h5.mobile?.weight};`}
   }
 `
 
@@ -138,9 +113,11 @@ type LabelProps = {
 
 export const Label = styled.label<LabelProps>`
   font-weight: ${(p) => (p.light ? fontWeights.normal : fontWeights.semibold)};
+  color: ${(p) => p.theme.colors.greyscale.darkest};
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
 `
 
+/** @deprecated use Label or a real heading */
 export const H3LikeLabel = styled.label`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
   font-size: 20px;
@@ -172,22 +149,54 @@ export const P = styled.p<ParagraphProps>`
   ${(p) => (p.color ? `color: ${p.color};` : '')};
 
   strong {
+    color: ${(p) => p.theme.colors.greyscale.darkest};
     font-weight: ${fontWeights.semibold};
   }
 
   a {
-    color: ${({ theme: { colors } }) => colors.main.primary};
-    text-decoration: underline;
+    color: ${(p) => p.theme.colors.main.primary};
   }
 
   a:hover {
+    color: ${(p) => p.theme.colors.main.dark};
+    cursor: pointer;
     text-decoration: underline;
   }
+
+  a:focus {
+    outline: 1px solid ${(p) => p.theme.colors.main.light};
+  }
+
+  a:visited {
+    color: ${(p) => p.theme.colors.accents.violet};
+  }
 `
+
 export const Dimmed = styled.span`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `
 
 export const Strong = styled.span`
   font-weight: ${fontWeights.bold};
+`
+
+export const InformationText = styled.span`
+  color: ${(p) => p.theme.colors.greyscale.dark};
+  font-size: 14px;
+  font-weight: ${fontWeights.semibold};
+`
+
+export const Title = styled.span`
+  font-family: Montserrat, sans-serif;
+  color: ${(p) => p.theme.colors.main.dark};
+  font-size: 20px;
+  font-weight: ${fontWeights.semibold};
+`
+
+export const BigNumber = styled.span`
+  font-family: Montserrat, sans-serif;
+  font-size: 60px;
+  font-weight: ${fontWeights.light};
+  line-height: 73px;
+  color: ${(p) => p.theme.colors.main.dark};
 `

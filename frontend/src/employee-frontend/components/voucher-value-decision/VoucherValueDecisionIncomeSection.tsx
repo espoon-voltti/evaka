@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import LabelValueList from '../../components/common/LabelValueList'
 import { Gap } from 'lib-components/white-space'
-import { fontWeights, H3, H5 } from 'lib-components/typography'
+import { H3, H4 } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { Income } from '../../types/income'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
@@ -137,9 +137,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
         <>
           <Gap size="s" />
           <IncomeTotal>
-            <IncomeTotalTitle noMargin>
-              {i18n.valueDecision.summary.income.total}
-            </IncomeTotalTitle>
+            <H4 noMargin>{i18n.valueDecision.summary.income.total}</H4>
             <b>{formatCents(decision.totalIncome)} €</b>
           </IncomeTotal>
         </>
@@ -167,8 +165,4 @@ const IncomeTotal = styled.div`
   align-items: center;
   background: ghostwhite;
   padding: 16px 30px;
-`
-
-const IncomeTotalTitle = styled(H5)`
-  font-weight: ${fontWeights.semibold};
 `

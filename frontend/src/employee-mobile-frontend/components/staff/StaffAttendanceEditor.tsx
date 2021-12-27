@@ -8,7 +8,7 @@ import { formatDecimal } from 'lib-common/utils/number'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { fontWeights, H2, H5 } from 'lib-components/typography'
+import { fontWeights, H2, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import PlusMinus from './PlusMinus'
@@ -56,7 +56,6 @@ export default React.memo(function StaffAttendanceEditor({
   return (
     <>
       <H2
-        bold
         centered
         smaller
         primary
@@ -120,19 +119,19 @@ export default React.memo(function StaffAttendanceEditor({
         </>
       )}
       <FixedSpaceRow justifyContent="center" marginBottom="s">
-        <H5 noMargin data-qa="updated">
+        <H4 noMargin data-qa="updated">
           {updatedTime(i18n, updated)}
-        </H5>
+        </H4>
       </FixedSpaceRow>
       <FixedSpaceRow justifyContent="center">
-        <OccupancyHeading noMargin data-qa="realized-occupancy">
+        <H4 noMargin data-qa="realized-occupancy">
           {groupId
             ? i18n.staff.realizedGroupOccupancy
             : i18n.staff.realizedUnitOccupancy}{' '}
           {realizedOccupancy === undefined
             ? '-'
             : `${formatDecimal(realizedOccupancy)} %`}
-        </OccupancyHeading>
+        </H4>
       </FixedSpaceRow>
     </>
   )
@@ -159,10 +158,6 @@ const CancelButton = styled(Button)`
 `
 const ConfirmButton = styled(AsyncButton)`
   width: 172px;
-`
-
-const OccupancyHeading = styled(H5)`
-  color: #000000;
 `
 
 function updatedTime(i18n: Translations, date: Date | null): string {

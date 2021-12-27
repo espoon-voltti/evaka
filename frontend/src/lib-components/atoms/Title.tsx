@@ -13,7 +13,6 @@ export interface TitleProps extends BaseProps {
   centered?: boolean
   noMargin?: boolean
   smaller?: boolean
-  bold?: boolean
   primary?: boolean
 }
 
@@ -25,7 +24,6 @@ export default React.memo(function Title({
   className,
   noMargin,
   smaller,
-  bold,
   primary
 }: TitleProps) {
   switch (size) {
@@ -38,7 +36,6 @@ export default React.memo(function Title({
           className={className}
           noMargin={noMargin}
           smaller={smaller}
-          bold={bold}
           primary={primary}
         >
           {children}
@@ -53,7 +50,6 @@ export default React.memo(function Title({
           className={className}
           noMargin={noMargin}
           smaller={smaller}
-          bold={bold}
           primary={primary}
         >
           {children}
@@ -68,7 +64,6 @@ export default React.memo(function Title({
           className={className}
           noMargin={noMargin}
           smaller={smaller}
-          bold={bold}
           primary={primary}
         >
           {children}
@@ -83,7 +78,6 @@ export default React.memo(function Title({
           className={className}
           noMargin={noMargin}
           smaller={smaller}
-          bold={bold}
           primary={primary}
         >
           {children}
