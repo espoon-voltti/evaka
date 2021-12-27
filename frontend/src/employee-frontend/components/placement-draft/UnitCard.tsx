@@ -2,31 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Loader from 'lib-components/atoms/Loader'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
-import React, {
-  Dispatch,
-  memo,
-  SetStateAction,
-  useEffect,
-  useState
-} from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { getOccupancyRates, OccupancyResponse } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
 import { Occupancy } from '../../types/unit'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { renderResult } from '../async-rendering'
 
 const MarginBox = styled.div`
   margin: 1rem;
@@ -60,10 +55,6 @@ const RemoveBtn = styled.a`
   position: absolute;
   right: 0;
   top: -2rem;
-`
-
-const FailText = styled.div`
-  color: ${colors.accents.red};
 `
 
 const Values = styled.div`
@@ -116,6 +107,24 @@ function OccupancyValue({ type, heading, occupancy }: OccupancyValueProps) {
   )
 }
 
+async function getUnitOccupancies(
+  unitId: UUID,
+  startDate: LocalDate,
+  endDate: LocalDate
+): Promise<Result<OccupancyResponse>> {
+  const occupancyStartDate = startDate.isBefore(LocalDate.today())
+    ? LocalDate.today()
+    : startDate
+  const maxDate = occupancyStartDate.addYears(1)
+  const occupancyEndDate = endDate.isAfter(maxDate) ? maxDate : endDate
+  return getOccupancyRates(
+    unitId,
+    occupancyStartDate,
+    occupancyEndDate,
+    'PLANNED'
+  )
+}
+
 interface Props {
   unitId: string
   unitName: string
@@ -128,7 +137,7 @@ interface Props {
   displayGhostUnitWarning: boolean
 }
 
-const MemoizedCard = memo(function UnitCard({
+export default React.memo(function UnitCard({
   unitId,
   unitName,
   startDate,
@@ -141,32 +150,12 @@ const MemoizedCard = memo(function UnitCard({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [occupancies, setOccupancies] = useState<Result<OccupancyResponse>>(
-    Loading.of()
+  const [occupancies] = useApiState(
+    () => getUnitOccupancies(unitId, startDate, endDate),
+    [unitId, startDate, endDate]
   )
 
   const isRemovable = additionalUnits.map((item) => item.id).includes(unitId)
-
-  useEffect(() => {
-    if (unitId) {
-      setOccupancies(Loading.of())
-      const occupancyStartDate = startDate.isBefore(LocalDate.today())
-        ? LocalDate.today()
-        : startDate
-      const maxDate = occupancyStartDate.addYears(1)
-      const occupancyEndDate = endDate.isAfter(maxDate) ? maxDate : endDate
-      void getOccupancyRates(
-        unitId,
-        occupancyStartDate,
-        occupancyEndDate,
-        'PLANNED'
-      ).then(setOccupancies)
-    }
-
-    return () => {
-      setOccupancies(Loading.of())
-    }
-  }, [unitId, startDate, endDate])
 
   function removeUnit(id: UUID) {
     setPlacement((prevPlacement) =>
@@ -187,7 +176,14 @@ const MemoizedCard = memo(function UnitCard({
   }
 
   return (
-    <Card active={isSelectedUnit} data-qa="placement-item">
+    <Card
+      active={isSelectedUnit}
+      data-qa="placement-item"
+      data-isloading={
+        occupancies.isLoading ||
+        (occupancies.isSuccess && occupancies.isReloading)
+      }
+    >
       {isRemovable && (
         <RemoveBtn role="button" onClick={() => removeUnit(unitId)}>
           {i18n.placementDraft.card.remove}
@@ -203,18 +199,16 @@ const MemoizedCard = memo(function UnitCard({
         </Link>
       </MarginBox>
       <OccupancyContainer>
-        {occupancies.isLoading ? (
-          <Loader />
-        ) : occupancies.isFailure ? (
-          <FailText>{i18n.unit.occupancy.fail}</FailText>
-        ) : occupancies.value.max ? (
-          <OccupancyValue
-            type="planned"
-            heading={i18n.placementDraft.card.title}
-            occupancy={occupancies.value.max}
-          />
-        ) : (
-          <span>{i18n.unit.occupancy.noValidValues}</span>
+        {renderResult(occupancies, (occupancies) =>
+          occupancies.max ? (
+            <OccupancyValue
+              type="planned"
+              heading={i18n.placementDraft.card.title}
+              occupancy={occupancies.max}
+            />
+          ) : (
+            <span>{i18n.unit.occupancy.noValidValues}</span>
+          )
         )}
       </OccupancyContainer>
       {displayGhostUnitWarning ? (
@@ -239,5 +233,3 @@ const MemoizedCard = memo(function UnitCard({
     </Card>
   )
 })
-
-export default MemoizedCard
