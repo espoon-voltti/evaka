@@ -13,6 +13,8 @@ import StaffAttendance from './StaffAttendance'
 import { Translations, useTranslation } from '../../state/i18n'
 import Tooltip from '../../components/common/Tooltip'
 import { UUID } from 'lib-common/types'
+import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 interface AbsenceRowProps {
   child: Child
@@ -53,21 +55,23 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
   return (
     <tr>
       <td className={'absence-child-name hover-highlight'}>
-        <Tooltip
-          tooltipId={`tooltip_absence-child-name-${child.id}`}
-          tooltipText={`${child.lastName}, ${child.firstName}`}
-          place={'top'}
-          delayShow={750}
-        >
-          <Link
-            to={`/child-information/${child.id}`}
-            className={'absence-child-link'}
+        <FixedSpaceRow spacing="xs">
+          <AgeIndicatorIcon dateOfBirth={child.dob} />
+          <Tooltip
+            tooltipId={`tooltip_absence-child-name-${child.id}`}
+            tooltipText={`${child.lastName}, ${child.firstName}`}
+            place={'top'}
+            delayShow={750}
           >
-            {shortChildName(child.firstName, child.lastName, i18n)}
-          </Link>
-        </Tooltip>
+            <Link
+              to={`/child-information/${child.id}`}
+              className={'absence-child-link'}
+            >
+              {shortChildName(child.firstName, child.lastName, i18n)}
+            </Link>
+          </Tooltip>
+        </FixedSpaceRow>
       </td>
-      <td className={'hover-highlight'}>{child.dob.format()}</td>
       {dateCols.map((date) => {
         return operationDays.some((operationDay) =>
           operationDay.isEqual(date)
@@ -120,7 +124,6 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
     <thead>
       <tr>
         <th>{i18n.absences.table.nameCol}</th>
-        <th>{i18n.absences.table.dobCol}</th>
         {dateCols.map((item) =>
           operationDays.some((operationDay) => operationDay.isEqual(item)) ? (
             <th
