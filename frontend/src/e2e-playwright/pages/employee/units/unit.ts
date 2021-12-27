@@ -40,6 +40,15 @@ export class UnitPage {
     await this.page.goto(`${config.employeeUrl}/units/${id}`)
   }
 
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="unit-information"][data-isloading="false"]')
+      .waitUntilVisible()
+    await this.page
+      .find('[data-qa="daycare-acl"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
   async assertUnitName(expectedName: string) {
     await waitUntilEqual(() => this.#unitName.innerText, expectedName)
   }

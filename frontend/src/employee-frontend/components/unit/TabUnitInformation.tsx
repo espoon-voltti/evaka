@@ -21,7 +21,7 @@ import { DataList } from '../common/DataList'
 import { useTranslation } from '../../state/i18n'
 import { Gap } from 'lib-components/white-space'
 import { UnitData } from '../../api/unit'
-import { Result } from 'lib-common/api'
+import { isLoading, Result } from 'lib-common/api'
 
 export default React.memo(function TabUnitInformation() {
   const { i18n } = useTranslation()
@@ -43,7 +43,11 @@ export default React.memo(function TabUnitInformation() {
 
   return renderResult(unitInformation, (unitInformation) => (
     <FixedSpaceColumn>
-      <ContentArea opaque>
+      <ContentArea
+        opaque
+        data-qa="unit-information"
+        data-isloading={isLoading(unitData)}
+      >
         <H2 data-qa="unit-name">{unitInformation.daycare.name}</H2>
         <Gap size="s" />
         <H3>{i18n.unit.occupancies}</H3>

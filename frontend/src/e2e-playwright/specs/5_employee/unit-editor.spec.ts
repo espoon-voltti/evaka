@@ -46,6 +46,7 @@ describe('Employee - unit details', () => {
 
     await unitEditorPage.submit()
     const unitPage = new UnitPage(page)
+    await unitPage.waitUntilLoaded()
     await unitPage.assertUnitName('Uusi Kerho')
   })
 
