@@ -6,6 +6,9 @@ import app from './app'
 import { logInfo } from '../shared/logging'
 import { httpPort } from '../shared/config'
 
-app.listen(httpPort.internal, () =>
+const server = app.listen(httpPort.internal, () =>
   logInfo(`Evaka Internal API Gateway listening on port ${httpPort.internal}`)
 )
+
+server.keepAliveTimeout = 70 * 1000
+server.headersTimeout = 75 * 1000
