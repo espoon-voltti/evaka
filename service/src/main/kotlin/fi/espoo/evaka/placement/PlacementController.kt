@@ -48,7 +48,7 @@ class PlacementController(
 
     @GetMapping("/placements")
     fun getPlacements(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = false) daycareId: DaycareId? = null,
         @RequestParam(value = "childId", required = false) childId: UUID? = null,
@@ -71,19 +71,21 @@ class PlacementController(
         val auth = acl.getAuthorizedDaycares(user)
         val authorizedDaycares = auth.ids ?: emptySet()
 
-        return db.read {
-            it.getDetailedDaycarePlacements(daycareId, childId, startDate, endDate).map { placement ->
-                // TODO: is some info only hidden on frontend?
-                if (auth !is AclAuthorization.All && !authorizedDaycares.contains(placement.daycare.id))
-                    placement.copy(isRestrictedFromUser = true)
-                else placement
-            }.toSet()
+        return db.connect { dbc ->
+            dbc.read {
+                it.getDetailedDaycarePlacements(daycareId, childId, startDate, endDate).map { placement ->
+                    // TODO: is some info only hidden on frontend?
+                    if (auth !is AclAuthorization.All && !authorizedDaycares.contains(placement.daycare.id))
+                        placement.copy(isRestrictedFromUser = true)
+                    else placement
+                }.toSet()
+            }
         }
     }
 
     @GetMapping("/placements/plans")
     fun getPlacementPlans(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = true) daycareId: DaycareId,
         @RequestParam(
@@ -95,12 +97,12 @@ class PlacementController(
         Audit.PlacementPlanSearch.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_PLACEMENT_PLAN, daycareId)
 
-        return db.read { it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, startDate, endDate) }
+        return db.connect { dbc -> dbc.read { it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, startDate, endDate) } }
     }
 
     @PostMapping("/placements")
     fun createPlacement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PlacementCreateRequestBody
     ) {
@@ -109,35 +111,37 @@ class PlacementController(
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
-        db.transaction { tx ->
-            if (tx.getChild(body.childId) == null) {
-                tx.createChild(
-                    Child(
-                        id = body.childId,
-                        additionalInformation = AdditionalInformation()
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (tx.getChild(body.childId) == null) {
+                    tx.createChild(
+                        Child(
+                            id = body.childId,
+                            additionalInformation = AdditionalInformation()
+                        )
                     )
+                }
+
+                createPlacement(
+                    tx,
+                    type = body.type,
+                    childId = body.childId,
+                    unitId = body.unitId,
+                    startDate = body.startDate,
+                    endDate = body.endDate,
+                    useFiveYearsOldDaycare = useFiveYearsOldDaycare
+                )
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate)))
                 )
             }
-
-            createPlacement(
-                tx,
-                type = body.type,
-                childId = body.childId,
-                unitId = body.unitId,
-                startDate = body.startDate,
-                endDate = body.endDate,
-                useFiveYearsOldDaycare = useFiveYearsOldDaycare
-            )
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate)))
-            )
         }
     }
 
     @PutMapping("/placements/{placementId}")
     fun updatePlacementById(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
@@ -146,44 +150,48 @@ class PlacementController(
         accessControl.requirePermissionFor(user, Action.Placement.UPDATE, placementId)
 
         val aclAuth = acl.getAuthorizedDaycares(user)
-        db.transaction { tx ->
-            val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth, useFiveYearsOldDaycare)
-            asyncJobRunner.plan(
-                tx,
-                listOf(
-                    AsyncJob.GenerateFinanceDecisions.forChild(
-                        oldPlacement.childId,
-                        DateRange(
-                            minOf(body.startDate, oldPlacement.startDate),
-                            maxOf(body.endDate, oldPlacement.endDate)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth, useFiveYearsOldDaycare)
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forChild(
+                            oldPlacement.childId,
+                            DateRange(
+                                minOf(body.startDate, oldPlacement.startDate),
+                                maxOf(body.endDate, oldPlacement.endDate)
+                            )
                         )
                     )
                 )
-            )
+            }
         }
     }
 
     @DeleteMapping("/placements/{placementId}")
     fun deletePlacement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId
     ) {
         Audit.PlacementCancel.log(targetId = placementId)
         accessControl.requirePermissionFor(user, Action.Placement.DELETE, placementId)
 
-        db.transaction { tx ->
-            val (childId, startDate, endDate) = tx.cancelPlacement(placementId)
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(startDate, endDate)))
-            )
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val (childId, startDate, endDate) = tx.cancelPlacement(placementId)
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(startDate, endDate)))
+                )
+            }
         }
     }
 
     @PostMapping("/placements/{placementId}/group-placements")
     fun createGroupPlacement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
@@ -191,31 +199,33 @@ class PlacementController(
         Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
         accessControl.requirePermissionFor(user, Action.Placement.CREATE_GROUP_PLACEMENT, placementId)
 
-        return db.transaction { tx ->
-            tx.checkAndCreateGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = body.groupId,
-                startDate = body.startDate,
-                endDate = body.endDate
-            )
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.checkAndCreateGroupPlacement(
+                    daycarePlacementId = placementId,
+                    groupId = body.groupId,
+                    startDate = body.startDate,
+                    endDate = body.endDate
+                )
+            }
         }
     }
 
     @DeleteMapping("/group-placements/{groupPlacementId}")
     fun deleteGroupPlacement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
     ) {
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
         accessControl.requirePermissionFor(user, Action.GroupPlacement.DELETE, groupPlacementId)
 
-        db.transaction { it.deleteGroupPlacement(groupPlacementId) }
+        db.connect { dbc -> dbc.transaction { it.deleteGroupPlacement(groupPlacementId) } }
     }
 
     @PostMapping("/group-placements/{groupPlacementId}/transfer")
     fun transferGroupPlacement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody
@@ -223,8 +233,10 @@ class PlacementController(
         Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
         accessControl.requirePermissionFor(user, Action.GroupPlacement.UPDATE, groupPlacementId)
 
-        db.transaction {
-            it.transferGroup(groupPlacementId, body.groupId, body.startDate)
+        db.connect { dbc ->
+            dbc.transaction {
+                it.transferGroup(groupPlacementId, body.groupId, body.startDate)
+            }
         }
     }
 }

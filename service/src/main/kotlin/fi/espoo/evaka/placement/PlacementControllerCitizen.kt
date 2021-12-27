@@ -113,7 +113,7 @@ class PlacementControllerCitizen(
 
     @GetMapping("/citizen/children/{childId}/placements")
     fun getPlacements(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable childId: UUID,
@@ -121,16 +121,18 @@ class PlacementControllerCitizen(
         Audit.PlacementSearch.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PLACEMENT, childId)
 
-        return ChildPlacementResponse(
-            placements = mapToTerminatablePlacements(
-                db.read {
-                    it.getCitizenChildPlacements(
-                        evakaClock.today(),
-                        childId
-                    )
-                }
+        return db.connect { dbc ->
+            ChildPlacementResponse(
+                placements = mapToTerminatablePlacements(
+                    dbc.read {
+                        it.getCitizenChildPlacements(
+                            evakaClock.today(),
+                            childId
+                        )
+                    }
+                )
             )
-        )
+        }
     }
 
     data class PlacementTerminationRequestBody(
@@ -142,7 +144,7 @@ class PlacementControllerCitizen(
 
     @PostMapping("/citizen/children/{childId}/placements/terminate")
     fun postPlacementTermination(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: UUID,
@@ -150,43 +152,46 @@ class PlacementControllerCitizen(
     ) {
         Audit.PlacementTerminate.log(body.unitId, body.type)
 
-        val terminatablePlacements = db.read { it.getCitizenChildPlacements(clock.today(), childId) }
-            .also {
-                // TODO list support for accessControl
-                it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, id) }
-            }
-            .let { mapToTerminatablePlacements(it) }
-            .filter { it.unitId == body.unitId && it.type == body.type }
-            .flatMap { it.placements + it.additionalPlacements }
-            .filter { it.startsAfter(body.terminationDate) || it.containsExclusively(body.terminationDate) }
-            .also { if (it.isEmpty()) throw NotFound("Matching placement type not found") }
+        db.connect { dbc ->
 
-        db.transaction { tx ->
-            terminatablePlacements
-                .sortedByDescending { it.startDate }
-                .forEach { placement ->
-                    if (placement.startsAfter(body.terminationDate)) {
-                        tx.cancelPlacement(placement.id)
-                    } else if (placement.containsExclusively(body.terminationDate)) {
-                        if (body.terminateDaycareOnly == true && (placement.type == PRESCHOOL_DAYCARE || placement.type == PREPARATORY_DAYCARE)) {
-                            tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, null)
-                            // create new placement without daycare for the remaining period
-                            // with placement type to PRESCHOOL / PREPARATORY
-                            val typeForRemainingPeriod = if (placement.type === PRESCHOOL_DAYCARE) PRESCHOOL else PREPARATORY
-                            tx.insertPlacement(
-                                type = typeForRemainingPeriod,
-                                childId = childId,
-                                unitId = body.unitId,
-                                startDate = body.terminationDate.plusDays(1),
-                                endDate = placement.endDate
-                            )
-                        } else {
-                            tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, user.id)
+            val terminatablePlacements = dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
+                .also {
+                    // TODO list support for accessControl
+                    it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, id) }
+                }
+                .let { mapToTerminatablePlacements(it) }
+                .filter { it.unitId == body.unitId && it.type == body.type }
+                .flatMap { it.placements + it.additionalPlacements }
+                .filter { it.startsAfter(body.terminationDate) || it.containsExclusively(body.terminationDate) }
+                .also { if (it.isEmpty()) throw NotFound("Matching placement type not found") }
+
+            dbc.transaction { tx ->
+                terminatablePlacements
+                    .sortedByDescending { it.startDate }
+                    .forEach { placement ->
+                        if (placement.startsAfter(body.terminationDate)) {
+                            tx.cancelPlacement(placement.id)
+                        } else if (placement.containsExclusively(body.terminationDate)) {
+                            if (body.terminateDaycareOnly == true && (placement.type == PRESCHOOL_DAYCARE || placement.type == PREPARATORY_DAYCARE)) {
+                                tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, null)
+                                // create new placement without daycare for the remaining period
+                                // with placement type to PRESCHOOL / PREPARATORY
+                                val typeForRemainingPeriod = if (placement.type === PRESCHOOL_DAYCARE) PRESCHOOL else PREPARATORY
+                                tx.insertPlacement(
+                                    type = typeForRemainingPeriod,
+                                    childId = childId,
+                                    unitId = body.unitId,
+                                    startDate = body.terminationDate.plusDays(1),
+                                    endDate = placement.endDate
+                                )
+                            } else {
+                                tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, user.id)
+                            }
                         }
                     }
-                }
 
-            tx.cancelAllActiveTransferApplicationsAfterDate(ChildId(childId), body.terminationDate)
+                tx.cancelAllActiveTransferApplicationsAfterDate(ChildId(childId), body.terminationDate)
+            }
         }
     }
 }
