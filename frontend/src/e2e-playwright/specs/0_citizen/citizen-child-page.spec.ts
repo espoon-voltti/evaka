@@ -116,7 +116,7 @@ describe('Citizen children page', () => {
           endDate: endDate.formatIso()
         }
       ])
-      
+
       const application = applicationFixture(
         fixtures.enduserChildFixtureKaarina,
         fixtures.enduserGuardianFixture,

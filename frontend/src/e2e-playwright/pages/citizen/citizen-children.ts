@@ -9,6 +9,7 @@ export class CitizenChildrenPage {
   constructor(private readonly page: Page) {}
 
   #childRows = this.page.findAllByDataQa('child')
+  #childName = this.page.findByDataQa('child-name')
 
   async assertChildCount(count: number) {
     await this.#childRows.assertCount(count)
@@ -16,6 +17,7 @@ export class CitizenChildrenPage {
 
   async navigateToChild(nth: number) {
     await this.#childRows.nth(nth).click()
+    await this.#childName.waitUntilVisible()
   }
 
   async openChildPage(childName: string) {
