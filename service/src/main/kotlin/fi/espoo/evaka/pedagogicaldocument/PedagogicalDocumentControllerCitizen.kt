@@ -35,7 +35,11 @@ class PedagogicalDocumentControllerCitizen(
     ): List<PedagogicalDocumentCitizen> {
         Audit.PedagogicalDocumentReadByGuardian.log(user.id)
         return db.connect { dbc ->
-            dbc.read { it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type) }
+            dbc.read {
+                it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type).filter { pd ->
+                    pd.description.isNotEmpty() || pd.attachments.size > 0
+                }
+            }
         }
     }
 
@@ -84,7 +88,6 @@ private fun Database.Read.findPedagogicalDocumentsByGuardian(
             LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
             LEFT JOIN person chp ON chp.id = pd.child_id
             WHERE g.guardian_id = :guardian_id
-            AND LENGTH(pd.description) > 0
             ORDER BY pd.created DESC
         """.trimIndent()
     )
@@ -147,7 +150,7 @@ data class PedagogicalDocumentCitizen(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
-    val attachments: List<Attachment>,
+    val attachments: List<Attachment> = emptyList(),
     val created: HelsinkiDateTime,
     val isRead: Boolean,
     val childFirstName: String,
