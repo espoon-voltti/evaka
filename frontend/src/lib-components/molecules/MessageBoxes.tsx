@@ -118,9 +118,7 @@ export const InfoBox = React.memo(function InfoBox({
   noMargin,
   ...props
 }: InfoBoxProps) {
-  const {
-    colors: { accents: accentColors }
-  } = useTheme()
+  const theme = useTheme()
   // without this hacking compiler gives an error because IconProp type is already super complex
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
   const notNullIcon: IconProp = (icon as any) ?? faInfo
@@ -129,7 +127,7 @@ export const InfoBox = React.memo(function InfoBox({
       title={title}
       message={message}
       icon={notNullIcon}
-      color={accentColors.turquoise}
+      color={theme.colors.accents.infoBlue}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
       noMargin={noMargin}

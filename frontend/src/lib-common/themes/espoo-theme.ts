@@ -45,30 +45,32 @@ const theme: Theme = {
   },
   typography: {
     h1: {
-      weight: 200,
+      weight: 500,
       bold: 600,
       mobile: {
         weight: 600
       }
     },
     h2: {
-      weight: 300,
+      weight: 500,
       bold: 600,
       mobile: {
         weight: 600
       }
     },
     h3: {
-      weight: 'normal',
-      bold: 600
+      weight: 400,
+      bold: 600,
+      mobile: {
+        weight: 500
+      }
     },
     h4: {
-      weight: 'normal',
-      bold: 600
-    },
-    h5: {
-      weight: 'normal',
-      bold: 600
+      weight: 400,
+      bold: 600,
+      mobile: {
+        weight: 500
+      }
     }
   }
 }

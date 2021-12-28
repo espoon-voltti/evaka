@@ -13,6 +13,7 @@ import { incomeCoefficients } from 'lib-common/api-types/income'
 import { IncomeOption } from '../../../../types/income'
 import { formatCents } from 'lib-common/money'
 import { IncomeValueString } from '../IncomeTable'
+import { Light } from 'lib-components/typography'
 
 type Props = {
   i18n: Translations
@@ -74,7 +75,7 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
         ) : undefined}
       </Td>
       <Td align="right">
-        <MonthlyValue>{`${formatCents(state.monthlyAmount)} €`} </MonthlyValue>
+        <Light>{`${formatCents(state.monthlyAmount)} €`}</Light>
       </Td>
     </Tr>
   )
@@ -82,10 +83,6 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
 
 const TypeLabel = styled.span<{ indent: boolean }>`
   margin-left: ${(props) => (props.indent ? '2rem' : '0')};
-`
-
-const MonthlyValue = styled.span`
-  font-style: italic;
 `
 
 export default IncomeTableRow

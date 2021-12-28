@@ -31,7 +31,7 @@ import {
   PostMessageBody,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { fontWeights } from 'lib-components/typography'
+import { Bold } from 'lib-components/typography'
 import {
   deselectAll,
   getReceiverOptions,
@@ -431,8 +431,6 @@ export default React.memo(function MessageEditor({
       </BottomBarMobile>
     </ContainerMobile>
   ) : (
-    //          className={classNames({ checked: selected })}
-
     <FullScreenContainer
       data-qa="fullscreen-container"
       className={classNames({ fullscreen: expandedView })}
@@ -589,7 +587,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${(p) => p.theme.colors.greyscale.white};
-  overflow: scroll;
+  overflow: auto;
 
   &.fullscreen {
     width: 95%;
@@ -606,7 +604,7 @@ const ContainerMobile = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${(p) => p.theme.colors.greyscale.white};
-  overflow: scroll;
+  overflow: auto;
   height: 100vh;
 `
 
@@ -688,8 +686,4 @@ const BottomBarMobile = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.m};
-`
-
-const Bold = styled.span`
-  font-weight: ${fontWeights.semibold};
 `

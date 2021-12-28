@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
 import { AbsenceType } from 'lib-common/generated/enums'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
+import React from 'react'
+import { useTranslation } from '../../state/i18n'
 import {
   AbsenceTypes,
   CareTypeCategories,
   CareTypeCategory
 } from '../../types/absence'
-import { useTranslation } from '../../state/i18n'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Label, LabelText } from '../common/styled/common'
-import Radio from 'lib-components/atoms/form/Radio'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 
 export default React.memo(function AbsenceModal({
   onSave,
@@ -45,9 +45,7 @@ export default React.memo(function AbsenceModal({
       rejectLabel={i18n.absences.modal.cancelButton}
     >
       <FixedSpaceColumn spacing={'L'}>
-        <Label>
-          <LabelText>{i18n.absences.modal.absenceSectionLabel}</LabelText>
-        </Label>
+        <Label>{i18n.absences.modal.absenceSectionLabel}</Label>
         <FixedSpaceColumn spacing={'xs'}>
           {AbsenceTypes.map((absenceType, index) => (
             <Radio
@@ -66,9 +64,7 @@ export default React.memo(function AbsenceModal({
           />
         </FixedSpaceColumn>
 
-        <Label>
-          <LabelText>{i18n.absences.modal.placementSectionLabel}</LabelText>
-        </Label>
+        <Label>{i18n.absences.modal.placementSectionLabel}</Label>
         <FixedSpaceColumn spacing={'xs'}>
           {CareTypeCategories.map((careTypeCategory, index) => (
             <Checkbox

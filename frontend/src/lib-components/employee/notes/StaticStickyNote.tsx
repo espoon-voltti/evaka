@@ -7,16 +7,11 @@ import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Dimmed, P } from 'lib-components/typography'
+import { Light, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback } from 'react'
-import styled from 'styled-components'
-import { Note } from './notes'
 import { InlineAsyncButton } from './InlineAsyncButton'
-
-const ValidTo = styled(Dimmed)`
-  font-style: italic;
-`
+import { Note } from './notes'
 
 export interface StaticLabels {
   edit: string
@@ -46,9 +41,9 @@ export const StaticStickyNote = React.memo(function StaticStickyNote({
         {note.note}
       </P>
       <Gap size="xs" />
-      <ValidTo data-qa="sticky-note-expires">
+      <Light data-qa="sticky-note-expires">
         {labels.validTo(note.expires.format())}
-      </ValidTo>
+      </Light>
       <Gap size="xs" />
       <FixedSpaceRow justifyContent="flex-end">
         <InlineButton

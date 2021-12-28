@@ -2,17 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
-import styled from 'styled-components'
-import {
-  faCheck,
-  faCommentAlt,
-  faPaperclip,
-  fasCommentAltLines,
-  faTimes,
-  faTrash
-} from 'lib-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Paged } from 'lib-common/api'
+import { formatDate } from 'lib-common/date'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import { UUID } from 'lib-common/types'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import {
   SortableTh,
   Table,
@@ -22,40 +27,35 @@ import {
   Thead,
   Tr
 } from 'lib-components/layout/Table'
-import { useTranslation } from '../../state/i18n'
-import { SearchOrder } from '../../types'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import Pagination from 'lib-components/Pagination'
+import { Bold, H1, Light } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
+import {
+  faCheck,
+  faCommentAlt,
+  faPaperclip,
+  fasCommentAltLines,
+  faTimes,
+  faTrash
+} from 'lib-icons'
+import React, { useContext, useState } from 'react'
+import styled from 'styled-components'
+import { updateServiceWorkerNote } from '../../api/applications'
+import ActionBar from '../../components/applications/ActionBar'
+import ApplicationActions from '../../components/applications/ApplicationActions'
+import { getEmployeeUrlPrefix } from '../../constants'
+import { ApplicationUIContext } from '../../state/application-ui'
+import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
+import { SearchOrder } from '../../types'
 import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { fontWeights, H1 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { getEmployeeUrlPrefix } from '../../constants'
-import { formatDate } from 'lib-common/date'
-import ApplicationActions from '../../components/applications/ApplicationActions'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { ApplicationUIContext } from '../../state/application-ui'
-import ActionBar from '../../components/applications/ActionBar'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Tooltip from 'lib-components/atoms/Tooltip'
-import { CareTypeChip } from '../common/CareTypeLabel'
-import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import { UserContext } from '../../state/user'
-import { hasRole, RequireRole } from '../../utils/roles'
 import { isPartDayPlacement } from '../../utils/placements'
+import { hasRole, RequireRole } from '../../utils/roles'
 import { AgeIndicatorIconWithTooltip } from '../common/AgeIndicatorIcon'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { UUID } from 'lib-common/types'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import { updateServiceWorkerNote } from '../../api/applications'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { CareTypeChip } from '../common/CareTypeLabel'
 import { CircleIconGreen, CircleIconRed } from './CircleIcon'
 
 const TitleRowContainer = styled.div`
@@ -82,15 +82,6 @@ const PaginationWrapper = styled.div<PaginationWrapperProps>`
     p.paddingVertical && p.paddingHorizontal
       ? `${p.paddingVertical} ${p.paddingHorizontal}`
       : '0px'};
-`
-
-const Bold = styled.span`
-  font-weight: ${fontWeights.semibold};
-`
-
-const Light = styled.span`
-  font-style: italic;
-  color: ${colors.greyscale.medium};
 `
 
 const StatusColorTd = styled(Td)<{ color: string }>`
@@ -346,12 +337,12 @@ const ApplicationsList = React.memo(function Applications({
                 {application.preferredUnits.map((unit, i) => (
                   <p key={`unit-pref-${i}`}>{unit.name}</p>
                 ))}
-                {application.currentPlacementUnit ? (
-                  <CurrentUnit>
+                {application.currentPlacementUnit && (
+                  <Light>
                     {i18n.applications.list.currentUnit}{' '}
                     {application.currentPlacementUnit.name}
-                  </CurrentUnit>
-                ) : null}
+                  </Light>
+                )}
               </div>
             }
           >
@@ -568,10 +559,6 @@ export default ApplicationsList
 const CheckAllContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-`
-
-const CurrentUnit = styled.p`
-  font-style: italic;
 `
 
 const AlignRight = styled.div`

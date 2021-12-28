@@ -6,7 +6,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { fontWeights, H2, Label } from 'lib-components/typography'
+import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -718,9 +718,7 @@ const Separator = styled.div`
   grid-column-end: 4;
 `
 
-const MissingDateRange = styled.span`
-  color: ${({ theme }) => theme.colors.greyscale.dark};
-  font-style: italic;
+const MissingDateRange = styled(Light)`
   grid-column-start: 1;
   grid-column-end: 4;
 `

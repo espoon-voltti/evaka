@@ -24,7 +24,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { H1, H2, Label } from 'lib-components/typography'
+import { H1, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
@@ -405,19 +405,16 @@ const EmailMissing = styled(
     const t = useTranslation()
     const { colors } = useTheme()
     return (
-      <span className={className}>
+      <Light className={className}>
         {t.personalDetails.emailMissing}
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
           color={colors.accents.warningOrange}
         />
-      </span>
+      </Light>
     )
   })
 )`
-  color: ${({ theme }) => theme.colors.greyscale.dark};
-  font-style: italic;
-
   svg {
     margin-left: ${defaultMargins.xs};
   }

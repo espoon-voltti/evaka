@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { fontWeights } from 'lib-components/typography'
+import { Bold } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
@@ -48,15 +48,6 @@ const StaffBoxInfo = styled.div`
   align-items: flex-start;
   justify-content: space-between;
   min-height: ${imageHeight};
-`
-
-const Bold = styled.div`
-  font-weight: ${fontWeights.semibold};
-
-  h2,
-  h3 {
-    font-weight: ${fontWeights.medium};
-  }
 `
 
 export const IconBox = styled.div<{ present: boolean }>`

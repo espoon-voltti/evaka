@@ -63,7 +63,7 @@ export default React.memo(function TopBar({
 
   return (
     <StickyTopBar invertedColors={invertedColors}>
-      {onBack ? (
+      {onBack && (
         <TopBarIconContainer>
           <IconButton
             icon={faArrowLeft}
@@ -72,9 +72,11 @@ export default React.memo(function TopBar({
             data-qa="go-back"
           />
         </TopBarIconContainer>
-      ) : null}
+      )}
       <Title>
-        <Label data-qa="top-bar-title">{title}</Label>
+        <Label data-qa="top-bar-title" white={!invertedColors}>
+          {title}
+        </Label>
       </Title>
       {onClose ? (
         <TopBarIconContainer>

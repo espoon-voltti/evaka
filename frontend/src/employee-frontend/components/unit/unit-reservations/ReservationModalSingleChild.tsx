@@ -2,31 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useMemo, useState } from 'react'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { fontWeights, H2, Label } from 'lib-components/typography'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
-import LocalDate from 'lib-common/local-date'
-import DatePicker, {
-  DatePickerSpacer
-} from 'lib-components/molecules/date-picker/DatePicker'
-import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
+import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { postReservations } from '../../../api/unit'
-import { useTranslation } from '../../../state/i18n'
-import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
+import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
 import {
   DailyReservationRequest,
   TimeRange
 } from 'lib-common/generated/api-types/reservations'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Child } from 'lib-common/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faPlus, faTrash } from 'lib-icons'
-import styled from 'styled-components'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import DatePicker, {
+  DatePickerSpacer
+} from 'lib-components/molecules/date-picker/DatePicker'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { fontWeights, H2, Label, Light } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faPlus, faTrash } from 'lib-icons'
+import React, { Fragment, useMemo, useState } from 'react'
+import styled from 'styled-components'
+import { postReservations } from '../../../api/unit'
+import { useTranslation } from '../../../state/i18n'
+import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 
 interface Props {
   onClose: () => void
@@ -640,9 +640,7 @@ const Separator = styled.div`
   grid-column-end: 4;
 `
 
-const MissingDateRange = styled.span`
-  color: ${({ theme }) => theme.colors.greyscale.dark};
-  font-style: italic;
+const MissingDateRange = styled(Light)`
   grid-column-start: 1;
   grid-column-end: 4;
 `

@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
+import { Bold } from 'lib-components/typography'
 import {
   AttendanceStatus,
   Child
@@ -46,15 +46,6 @@ const ChildBoxInfo = styled.div`
   align-items: flex-start;
   justify-content: space-between;
   min-height: ${imageHeight};
-`
-
-const Bold = styled.div`
-  font-weight: ${fontWeights.semibold};
-
-  h2,
-  h3 {
-    font-weight: ${fontWeights.medium};
-  }
 `
 
 export const IconBox = styled.div<{ type: AttendanceStatus }>`
@@ -135,7 +126,7 @@ export default React.memo(function ChildListItem({
           )}
         </IconBox>
         <ChildBoxInfo onClick={onClick}>
-          <Bold data-qa={'child-name'}>
+          <Bold data-qa="child-name">
             {child.firstName} {child.lastName}
           </Bold>
           <DetailsRow>

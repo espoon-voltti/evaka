@@ -16,7 +16,6 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Label, LabelText } from '../../common/styled/common'
 import DateRangeInput from '../../common/DateRangeInput'
 import IncomeTable, {
   IncomeTableData,
@@ -35,6 +34,7 @@ import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
 import { IncomeTypeOptions } from '../../../api/income'
 import { parseCents } from 'lib-common/money'
+import { Label } from 'lib-components/typography'
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;
@@ -165,9 +165,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
   return (
     <>
       <div data-qa="income-date-range">
-        <Label>
-          <LabelText>{i18n.personProfile.income.details.dateRange}</LabelText>
-        </Label>
+        <Label>{i18n.personProfile.income.details.dateRange}</Label>
         <Gap size={'m'} />
         <DateRangeInput
           start={editedIncome.validFrom}
@@ -186,9 +184,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         />
       </div>
       <Gap size={'L'} />
-      <Label>
-        <LabelText>{i18n.personProfile.income.details.effect}</LabelText>
-      </Label>
+
+      <Label>{i18n.personProfile.income.details.effect}</Label>
       <Gap size={'m'} />
       <FixedSpaceColumn alignItems="flex-start" data-qa="income-effect">
         {incomeEffects.map((effect) => (
@@ -202,9 +199,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         ))}
       </FixedSpaceColumn>
       <Gap size={'L'} />
-      <Label>
-        <LabelText>{i18n.personProfile.income.details.miscTitle}</LabelText>
-      </Label>
+
+      <Label>{i18n.personProfile.income.details.miscTitle}</Label>
       <Gap size={'m'} />
       <FixedSpaceColumn>
         <Checkbox
@@ -230,9 +226,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
       </FixedSpaceColumn>
       <Gap size={'L'} />
       <div data-qa="income-notes">
-        <Label>
-          <LabelText>{i18n.personProfile.income.details.notes}</LabelText>
-        </Label>
+        <Label>{i18n.personProfile.income.details.notes}</Label>
         <Gap size={'m'} />
         <InputField
           width="L"
@@ -248,6 +242,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
             <Label>{i18n.personProfile.income.details.updated}</Label>
             <span>{formatDate(baseIncome.updatedAt)}</span>
+
             <Label>{i18n.personProfile.income.details.handler}</Label>
             <span>{baseIncome.updatedBy}</span>
           </ListGrid>

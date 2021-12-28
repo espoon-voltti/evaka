@@ -11,7 +11,7 @@ import { faTimes } from 'lib-icons'
 import Button from '../atoms/buttons/Button'
 import TextArea from '../atoms/form/TextArea'
 import ButtonContainer from '../layout/ButtonContainer'
-import { fontWeights } from '../typography'
+import { fontWeights, Label } from '../typography'
 import { defaultMargins } from '../white-space'
 
 const MultiRowTextArea = styled(TextArea)`
@@ -27,9 +27,6 @@ const EditorRow = styled.div`
   & + & {
     margin-top: ${defaultMargins.s};
   }
-`
-const Label = styled.span`
-  font-weight: ${fontWeights.semibold};
 `
 
 const Recipient = styled.span<{ selected: boolean; toggleable: boolean }>`

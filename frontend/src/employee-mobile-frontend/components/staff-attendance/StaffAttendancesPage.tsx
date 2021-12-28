@@ -7,7 +7,7 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Tabs from 'lib-components/molecules/Tabs'
-import { fontWeights } from 'lib-components/typography'
+import { Bold } from 'lib-components/typography'
 import { faPlus } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
@@ -21,9 +21,6 @@ import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import { toStaff } from './staff'
 import StaffListItem from './StaffListItem'
 
-const Bold = styled.div`
-  font-weight: ${fontWeights.semibold};
-`
 const StaticIconContainer = styled.div`
   position: fixed;
   bottom: 68px;

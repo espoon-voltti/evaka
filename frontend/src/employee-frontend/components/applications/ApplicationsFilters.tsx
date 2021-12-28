@@ -183,7 +183,7 @@ export default React.memo(function ApplicationFilters() {
             onChange={changeUnits}
             data-qa={'unit-selector'}
           />
-          <Gap size="xs" />
+          <Gap size="m" />
           <ApplicationDistinctionsFilter
             toggle={toggleApplicationDistinctions}
             toggled={distinctions}
@@ -254,6 +254,7 @@ const AreaMultiSelect = React.memo(function AreaMultiSelect({
   return (
     <>
       <Label>{i18n.filters.area}</Label>
+      <Gap size="xs" />
       <MultiSelect
         value={value}
         options={areas}

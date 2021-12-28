@@ -8,8 +8,8 @@ import { Table } from 'lib-components/layout/Table'
 import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
-import { GapVerticalSmall } from '../common/styled/separators'
 import colors from 'lib-customizations/common'
+import { Gap } from 'lib-components/white-space'
 
 export const TableScrollableWrapper = styled.div`
   display: block;
@@ -68,7 +68,7 @@ export function RowCountInfo({ rowCount }: { rowCount: number }) {
 
   return (
     <>
-      <GapVerticalSmall />
+      <Gap size="xxs" />
       <FlexRow justifyContent="flex-end">
         <span>
           {i18n.reports.common.total}: {rowCount}

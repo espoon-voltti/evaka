@@ -8,7 +8,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { farUser } from 'lib-icons'
 import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
+import { H2 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { useTranslation } from '../../../state/i18n'
 import { Staff } from '../staff'
@@ -33,18 +33,6 @@ const EmployeeStatus = styled.div`
   color: ${colors.greyscale.medium};
   top: 10px;
   position: relative;
-`
-
-const CustomTitle = styled.h2`
-  font-family: Montserrat, 'Arial', sans-serif;
-  font-style: normal;
-  font-weight: ${fontWeights.semibold};
-  font-size: 20px;
-  line-height: 30px;
-  margin-top: 0;
-  color: ${colors.main.dark};
-  text-align: center;
-  margin-bottom: ${defaultMargins.xs};
 `
 
 const Zindex = styled.div`
@@ -82,7 +70,9 @@ export function EmployeeCardBackground({
 
           <Gap size="s" />
 
-          <CustomTitle data-qa="employee-name">{name}</CustomTitle>
+          <H2 noMargin centered data-qa="employee-name">
+            {name}
+          </H2>
 
           <EmployeeStatus>
             <StaticChip

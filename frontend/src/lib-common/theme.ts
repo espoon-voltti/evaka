@@ -42,7 +42,6 @@ export interface Theme {
     h2: FontSettings & HasBoldOption
     h3: FontSettings & HasBoldOption
     h4: FontSettings & HasBoldOption
-    h5: FontSettings & HasBoldOption
   }
 }
 
