@@ -8,7 +8,7 @@ import { faCopy, faPen, faQuestion } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { fontWeights, H2, H3, H4 } from 'lib-components/typography'
+import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
@@ -346,10 +346,6 @@ const ColumnWithMargin = styled(FixedSpaceColumn)`
 
 const RowWithMargin = styled(FixedSpaceRow)`
   margin: ${defaultMargins.s} 0;
-`
-
-const Label = styled.span`
-  font-weight: ${fontWeights.semibold};
 `
 
 const Indent = styled.span`

@@ -4,7 +4,7 @@
 
 import React, { Fragment, ReactNode } from 'react'
 import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
+import { Label } from 'lib-components/typography'
 
 type Spacing = 'small' | 'large'
 type LabelWidth = '25%' | 'fit-content(40%)'
@@ -42,7 +42,7 @@ const LabelValueList = React.memo(function LabelValueList({
             </OnlyValue>
           ) : (
             <Fragment key={index}>
-              <Label index={index + 1}>{label}</Label>
+              <GridLabel index={index + 1}>{label}</GridLabel>
               <Value index={index + 1} width={valueWidth} data-qa={dataQa}>
                 {value}
               </Value>
@@ -66,10 +66,9 @@ const GridContainer = styled.div<{
   align-items: baseline;
 `
 
-const Label = styled.div<{ index: number }>`
+const GridLabel = styled(Label)<{ index: number }>`
   grid-column: 1;
   grid-row: ${({ index }) => index};
-  font-weight: ${fontWeights.semibold};
 `
 
 const Value = styled.div<{ index: number; width?: string }>`

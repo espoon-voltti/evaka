@@ -2,9 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useMemo } from 'react'
-import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { ApplicationType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import Radio from 'lib-components/atoms/form/Radio'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors, { applicationBasisColors } from 'lib-customizations/common'
+import { applicationTypes } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -14,10 +30,12 @@ import {
   faTimes,
   faTrash
 } from 'lib-icons'
-import LocalDate from 'lib-common/local-date'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import React, { Fragment, useCallback, useMemo } from 'react'
+import styled from 'styled-components'
+import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
+import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
+import { ApplicationSummaryStatus } from '../../types/application'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus,
@@ -25,26 +43,8 @@ import {
   InvoiceStatus,
   VoucherValueDecisionStatus
 } from '../../types/invoicing'
-import { ApplicationSummaryStatus } from '../../types/application'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import Radio from 'lib-components/atoms/form/Radio'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { FlexRow } from './styled/containers'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import colors, { applicationBasisColors } from 'lib-customizations/common'
-import Tooltip from '../../components/common/Tooltip'
 import { CareArea } from '../../types/unit'
-import { Label, LabelText } from './styled/common'
-import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
-import { applicationTypes } from 'lib-customizations/employee'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { ApplicationType } from 'lib-common/generated/enums'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import { FlexRow } from './styled/containers'
 
 interface Props {
   freeText: string
@@ -136,9 +136,7 @@ const SearchInputContainer = styled.div`
 const SearchInput = styled.input<{ background?: string }>`
   width: 100%;
   border: none;
-  font-size: 1rem;
   background: ${(p) => p.background ?? colors.greyscale.lightest};
-  width: 100%;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -229,9 +227,8 @@ export function AreaFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.area}</LabelText>
-      </Label>
+      <Label>{i18n.filters.area}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         {areas
           .sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0))
@@ -272,18 +269,17 @@ export const UnitFilter = React.memo(function UnitFilter({
   const options = units.map(({ id, label }) => ({ id, label, value: id }))
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.unit}</LabelText>
-        <Combobox
-          items={options}
-          placeholder={i18n.filters.unitPlaceholder}
-          selectedItem={selected ?? null}
-          onChange={(option) => select(option?.id)}
-          clearable
-          fullWidth
-          getItemLabel={(item) => item.label}
-        />
-      </Label>
+      <Label>{i18n.filters.unit}</Label>
+      <Gap size="xs" />
+      <Combobox
+        items={options}
+        placeholder={i18n.filters.unitPlaceholder}
+        selectedItem={selected ?? null}
+        onChange={(option) => select(option?.id)}
+        clearable
+        fullWidth
+        getItemLabel={(item) => item.label}
+      />
     </>
   )
 })
@@ -311,18 +307,17 @@ export const FinanceDecisionHandlerFilter = React.memo(
     )
     return (
       <>
-        <Label>
-          <LabelText>{i18n.filters.financeDecisionHandler}</LabelText>
-          <Combobox
-            items={options}
-            placeholder={i18n.filters.financeDecisionHandlerPlaceholder}
-            selectedItem={selected ?? null}
-            onChange={(option) => select(option?.value)}
-            clearable
-            fullWidth
-            getItemLabel={(item) => item.label}
-          />
-        </Label>
+        <Label>{i18n.filters.financeDecisionHandler}</Label>
+        <Gap size="xs" />
+        <Combobox
+          items={options}
+          placeholder={i18n.filters.financeDecisionHandlerPlaceholder}
+          selectedItem={selected ?? null}
+          onChange={(option) => select(option?.value)}
+          clearable
+          fullWidth
+          getItemLabel={(item) => item.label}
+        />
       </>
     )
   }
@@ -349,9 +344,8 @@ export function FeeDecisionStatusFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.status}</LabelText>
-      </Label>
+      <Label>{i18n.filters.status}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         {statuses.map((id) => (
           <Radio
@@ -387,9 +381,8 @@ export function FeeDecisionDistinctionsFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.distinctiveDetails}</LabelText>
-      </Label>
+      <Label>{i18n.filters.distinctiveDetails}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         {distinctiveDetails.map((id) => (
           <Checkbox
@@ -426,10 +419,7 @@ export function FeeDecisionDateFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.validityPeriod}</LabelText>
-      </Label>
-
+      <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
         <DatePickerClearableDeprecated
           date={startDate}
@@ -458,9 +448,7 @@ export function FeeDecisionDateFilter({
           </span>
         </>
       ) : null}
-
       <Gap size="s" />
-
       <Checkbox
         label={i18n.filters.searchByStartDate}
         checked={searchByStartDate}
@@ -491,9 +479,8 @@ export const ValueDecisionStatusFilter = React.memo(
 
     return (
       <>
-        <Label>
-          <LabelText>{i18n.filters.status}</LabelText>
-        </Label>
+        <Label>{i18n.filters.status}</Label>
+        <Gap size="xs" />
         <FixedSpaceColumn spacing={'xs'}>
           {statuses.map((id) => (
             <Radio
@@ -532,10 +519,7 @@ export function ValueDecisionDateFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.validityPeriod}</LabelText>
-      </Label>
-
+      <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
         <DatePickerClearableDeprecated
           date={startDate}
@@ -592,9 +576,8 @@ export function InvoiceStatusFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.status}</LabelText>
-      </Label>
+      <Label>{i18n.filters.status}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         {statuses.map((id) => (
           <Radio
@@ -634,10 +617,7 @@ export function InvoiceDateFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.invoiceDate}</LabelText>
-      </Label>
-
+      <Label>{i18n.filters.invoiceDate}</Label>
       <FlexRow>
         <DatePickerClearableDeprecated
           date={startDate}
@@ -694,9 +674,8 @@ export function InvoiceDistinctionsFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.filters.distinctiveDetails}</LabelText>
-      </Label>
+      <Label>{i18n.filters.distinctiveDetails}</Label>
+      <Gap size="xs" />
       {distinctiveDetails.map((id) => (
         <Checkbox
           key={id}
@@ -751,9 +730,8 @@ export function ApplicationTypeFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.applications.list.type}</LabelText>
-      </Label>
+      <Label>{i18n.applications.list.type}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         {types.map((id) => {
           return id != 'PRESCHOOL' ? (
@@ -858,9 +836,8 @@ export function ApplicationStatusFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.application.state.title}</LabelText>
-      </Label>
+      <Label>{i18n.application.state.title}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         {statuses.map((id: ApplicationSummaryStatusOptions) => (
           <Radio
@@ -927,10 +904,8 @@ export function ApplicationDateFilter({
 
   return (
     <>
-      <Label>
-        <LabelText>{i18n.common.date}</LabelText>
-      </Label>
-
+      <Label>{i18n.common.date}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         {dates.map((dateType) => (
           <Checkbox
@@ -998,10 +973,8 @@ export function ApplicationBasisFilter({
   const { i18n } = useTranslation()
   return (
     <>
-      <Label>
-        <LabelText>{i18n.applications.basis}</LabelText>
-      </Label>
-      <Gap horizontal size="xs" />
+      <Label>{i18n.applications.basis}</Label>
+      <Gap size="xs" />
       <FixedSpaceRow spacing="xxs">
         <Tooltip
           tooltipId={'application-basis-ADDITIONAL_INFO'}
@@ -1180,9 +1153,8 @@ export function MultiSelectUnitFilter({
   )
   return (
     <div data-qa={dataQa}>
-      <Label>
-        <LabelText>{i18n.filters.unit}</LabelText>
-      </Label>
+      <Label>{i18n.filters.unit}</Label>
+      <Gap size="xs" />
       <MultiSelect
         placeholder={i18n.filters.unitPlaceholder}
         value={value}
@@ -1251,9 +1223,8 @@ export function TransferApplicationsFilter({
   const { i18n } = useTranslation()
   return (
     <>
-      <Label>
-        <LabelText>{i18n.applications.list.transferFilter.title}</LabelText>
-      </Label>
+      <Label>{i18n.applications.list.transferFilter.title}</Label>
+      <Gap size="xs" />
       <FixedSpaceColumn spacing={'xs'}>
         <Radio
           data-qa="filter-transfer-only"

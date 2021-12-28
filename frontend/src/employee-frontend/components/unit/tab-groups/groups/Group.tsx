@@ -20,7 +20,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { fontWeights, H3 } from 'lib-components/typography'
+import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -765,7 +765,3 @@ const TitleSummary = React.memo(function TitleSummary({
     </>
   )
 })
-
-const Label = styled.label`
-  font-weight: ${fontWeights.semibold};
-`

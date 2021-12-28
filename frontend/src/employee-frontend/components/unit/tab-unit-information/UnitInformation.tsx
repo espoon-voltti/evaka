@@ -11,6 +11,7 @@ import { Unit } from '../../../types/unit'
 import { DataList } from '../../common/DataList'
 import { Gap } from 'lib-components/white-space'
 import { Action } from 'lib-common/generated/action'
+import { Label } from 'lib-components/typography'
 
 const DetailsLink = styled(Link)`
   text-transform: uppercase;
@@ -30,15 +31,15 @@ function UnitInformation({ unit, permittedActions }: Props) {
     return (
       <DataList>
         <div>
-          <label>{i18n.unit.manager.name}</label>
+          <Label>{i18n.unit.manager.name}</Label>
           <span data-qa={'unit-manager-name'}>{unitManager?.name}</span>
         </div>
         <div>
-          <label>{i18n.unit.manager.email}</label>
+          <Label>{i18n.unit.manager.email}</Label>
           <span data-qa={'unit-manager-email'}>{unitManager?.email}</span>
         </div>
         <div>
-          <label>{i18n.unit.manager.phone}</label>
+          <Label>{i18n.unit.manager.phone}</Label>
           <span data-qa={'unit-manager-phone'}>{unitManager?.phone}</span>
         </div>
       </DataList>
