@@ -316,8 +316,6 @@ export class MultiSelect extends Element {
 }
 
 export class Collapsible extends Element {
-  #trigger = this.find('[data-qa="collapsible-trigger"]')
-
   async isOpen() {
     const status = await waitUntilDefined(() =>
       this.getAttribute('data-status')
@@ -328,7 +326,7 @@ export class Collapsible extends Element {
   async open() {
     await waitUntilTrue(async () => {
       if (!(await this.isOpen())) {
-        await this.#trigger.click()
+        await this.click()
       }
       return this.isOpen()
     })
