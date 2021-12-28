@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController
 class TermsController {
 
     @GetMapping("/public/club-terms")
-    fun getClubTerms(db: Database.DeprecatedConnection): List<ClubTerm> {
-        return db.read { it.getClubTerms() }
+    fun getClubTerms(db: Database): List<ClubTerm> {
+        return db.connect { dbc -> dbc.read { it.getClubTerms() } }
     }
 
     @GetMapping("/public/preschool-terms")
-    fun getPreschoolTerms(db: Database.DeprecatedConnection): List<PreschoolTerm> {
-        return db.read { it.getPreschoolTerms() }
+    fun getPreschoolTerms(db: Database): List<PreschoolTerm> {
+        return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
     }
 }
