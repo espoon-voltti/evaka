@@ -191,28 +191,26 @@ export default React.memo(function Absences({
           />
           <Gap size="L" />
           <FixedSpaceFlexWrap>
-            <StaticChip color={colors.blues.dark}>
+            {/* TODO use absenceColors */}
+            <StaticChip color={colors.main.dark}>
               {i18n.absences.absenceTypes.OTHER_ABSENCE}
             </StaticChip>
             <StaticChip color={colors.accents.violet}>
               {i18n.absences.absenceTypes.SICKLEAVE}
             </StaticChip>
-            <StaticChip color={colors.accents.green}>
+            <StaticChip color={colors.accents.successGreen}>
               {i18n.absences.absenceTypes.UNKNOWN_ABSENCE}
             </StaticChip>
-            <StaticChip color={colors.accents.water}>
+            <StaticChip color={colors.accents.turquoise}>
               {i18n.absences.absenceTypes.PLANNED_ABSENCE}
             </StaticChip>
-            <StaticChip color={colors.blues.primary}>
+            <StaticChip color={colors.main.primary}>
               {i18n.absences.absenceTypes.PARENTLEAVE}
             </StaticChip>
-            <StaticChip color={colors.accents.red}>
+            <StaticChip color={colors.accents.dangerRed}>
               {i18n.absences.absenceTypes.FORCE_MAJEURE}
             </StaticChip>
-            <StaticChip
-              color={colors.greyscale.medium}
-              textColor={colors.greyscale.white}
-            >
+            <StaticChip color={colors.greyscale.medium}>
               {i18n.absences.absenceTypes.PRESENCE}
             </StaticChip>
           </FixedSpaceFlexWrap>
@@ -388,7 +386,7 @@ const AbsencesPage = styled.div`
     border-width: ${cellSize} ${cellSize} 0 0;
 
     &-OTHER_ABSENCE {
-      border-top-color: ${colors.blues.dark};
+      border-top-color: ${colors.main.dark};
     }
 
     &-SICKLEAVE {
@@ -396,27 +394,27 @@ const AbsencesPage = styled.div`
     }
 
     &-UNKNOWN_ABSENCE {
-      border-top-color: ${colors.accents.green};
+      border-top-color: ${colors.accents.successGreen};
     }
 
     &-PLANNED_ABSENCE {
-      border-top-color: ${colors.blues.light};
+      border-top-color: ${colors.main.light};
     }
 
     &-TEMPORARY_RELOCATION {
-      border-top-color: ${colors.accents.orange};
+      border-top-color: ${colors.accents.warningOrange};
     }
 
     &-TEMPORARY_VISITOR {
-      border-top-color: ${colors.accents.yellow};
+      border-top-color: ${colors.accents.peach};
     }
 
     &-PARENTLEAVE {
-      border-top-color: ${colors.blues.primary};
+      border-top-color: ${colors.main.primary};
     }
 
     &-FORCE_MAJEURE {
-      border-top-color: ${colors.accents.red};
+      border-top-color: ${colors.accents.dangerRed};
     }
 
     &-weekend {
@@ -432,7 +430,7 @@ const AbsencesPage = styled.div`
     border-width: 0 0 ${cellSize} ${cellSize};
 
     &-OTHER_ABSENCE {
-      border-bottom-color: ${colors.blues.dark};
+      border-bottom-color: ${colors.main.dark};
     }
 
     &-SICKLEAVE {
@@ -440,27 +438,27 @@ const AbsencesPage = styled.div`
     }
 
     &-UNKNOWN_ABSENCE {
-      border-bottom-color: ${colors.accents.green};
+      border-bottom-color: ${colors.accents.successGreen};
     }
 
     &-PLANNED_ABSENCE {
-      border-bottom-color: ${colors.blues.light};
+      border-bottom-color: ${colors.main.light};
     }
 
     &-TEMPORARY_RELOCATION {
-      border-bottom-color: ${colors.accents.orange};
+      border-bottom-color: ${colors.accents.warningOrange};
     }
 
     &-TEMPORARY_VISITOR {
-      border-bottom-color: ${colors.accents.yellow};
+      border-bottom-color: ${colors.accents.peach};
     }
 
     &-PARENTLEAVE {
-      border-bottom-color: ${colors.blues.primary};
+      border-bottom-color: ${colors.main.primary};
     }
 
     &-FORCE_MAJEURE {
-      border-bottom-color: ${colors.accents.red};
+      border-bottom-color: ${colors.accents.dangerRed};
     }
 
     &-weekend {
@@ -473,7 +471,7 @@ const AbsencesPage = styled.div`
   }
 
   .absence-cell-selected {
-    border: 2px solid ${colors.blues.primary};
+    border: 2px solid ${colors.main.primary};
     border-radius: 2px;
 
     .absence-cell-left,

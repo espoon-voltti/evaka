@@ -24,7 +24,7 @@ const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
     }
   }
 
-  background-color: ${({ theme: { colors } }) => colors.brand.secondaryLight};
+  background-color: ${({ theme: { colors } }) => colors.main.lighter};
   overflow: hidden;
   ${({ fullWidth }) =>
     fullWidth
@@ -119,7 +119,7 @@ export const InfoButton = React.memo(function InfoButton({
       data-qa={dataQa}
       margin={margin ?? 'zero'}
       content={fasInfo}
-      color={colors.brand.secondary}
+      color={colors.main.dark}
       size="s"
       onClick={onClick}
       tabindex={0}
@@ -147,7 +147,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   return (
     <InfoBoxContainer className={className} fullWidth={fullWidth}>
       <InfoBoxContentArea opaque={false}>
-        <RoundIcon content={fasInfo} color={colors.brand.secondary} size="s" />
+        <RoundIcon content={fasInfo} color={colors.main.dark} size="s" />
 
         <InfoContainer data-qa={dataQa ? `${dataQa}-text` : undefined}>
           {info}

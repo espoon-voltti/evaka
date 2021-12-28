@@ -10,7 +10,7 @@ import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { formatName } from '../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import { careTypesFromPlacementType } from '../common/CareTypeLabel'
+import { CareTypeChip } from '../common/CareTypeLabel'
 import { isPartDayPlacement } from '../../utils/placements'
 import { NotificationCounter } from '../UnitPage'
 import { renderResult } from '../async-rendering'
@@ -72,7 +72,7 @@ export default React.memo(function TabApplications() {
                     <div data-qa="guardian-email">{row.guardianEmail}</div>
                   </Td>
                   <Td data-qa="placement-type">
-                    {careTypesFromPlacementType(row.requestedPlacementType)}
+                    <CareTypeChip type={row.requestedPlacementType} />
                   </Td>
                   <Td data-qa="placement-subtype">
                     <PlacementCircle

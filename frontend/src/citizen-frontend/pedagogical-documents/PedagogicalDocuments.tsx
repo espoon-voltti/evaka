@@ -335,9 +335,9 @@ export default React.memo(function PedagogicalDocuments() {
   )
 })
 
-const ItemTr = styled(Tr)`
-  font-weight: ${(props: { documentIsRead: boolean }) =>
-    props.documentIsRead ? fontWeights.normal : fontWeights.semibold};
+const ItemTr = styled(Tr)<{ documentIsRead: boolean }>`
+  font-weight: ${(p) =>
+    p.documentIsRead ? fontWeights.normal : fontWeights.semibold};
 
   button {
     font-weight: ${fontWeights.semibold};
@@ -381,18 +381,20 @@ const PaddedDiv = styled.div`
   padding: 0 ${defaultMargins.s};
 `
 
-const ListItem = styled(FixedSpaceColumn)`
+const ListItem = styled(FixedSpaceColumn)<{ documentIsRead: boolean }>`
   padding: ${defaultMargins.s};
-  ${(props: { documentIsRead: boolean }) =>
-    !props.documentIsRead && `padding-left: calc(${defaultMargins.s} - 6px)`};
+  ${(p) =>
+    !p.documentIsRead && `padding-left: calc(${defaultMargins.s} - 6px)`};
   border-top: 1px solid #b1b1b1;
-  border-left: ${(props: { documentIsRead: boolean }) =>
-    props.documentIsRead ? 'none' : '6px solid #249fff'};
+  border-left: ${(p) =>
+    p.documentIsRead
+      ? 'none'
+      : `6px solid ${p.theme.colors.accents.successGreen}`};
   font-weight: ${fontWeights.semibold};
 
   & > div {
-    font-weight: ${(props: { documentIsRead: boolean }) =>
-      props.documentIsRead ? fontWeights.normal : fontWeights.semibold};
+    font-weight: ${(p) =>
+      p.documentIsRead ? fontWeights.normal : fontWeights.semibold};
   }
 `
 

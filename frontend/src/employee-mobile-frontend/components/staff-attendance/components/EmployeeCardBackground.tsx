@@ -15,7 +15,7 @@ import { Staff } from '../staff'
 import { IconBox } from '../StaffListItem'
 
 function getColorByStatus(present: boolean) {
-  return present ? colors.accents.green : colors.accents.water
+  return present ? colors.accents.successGreen : colors.accents.turquoise
 }
 
 function getBackgroundColorByStatus(present: boolean) {
@@ -42,7 +42,7 @@ const CustomTitle = styled.h2`
   font-size: 20px;
   line-height: 30px;
   margin-top: 0;
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   text-align: center;
   margin-bottom: ${defaultMargins.xs};
 `

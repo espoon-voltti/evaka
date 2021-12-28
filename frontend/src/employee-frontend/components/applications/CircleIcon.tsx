@@ -19,10 +19,10 @@ const CircleIcon = styled.div`
 `
 
 export const CircleIconGreen = styled(CircleIcon)`
-  background-color: ${colors.accents.green};
+  background-color: ${colors.accents.successGreen};
 `
 export const CircleIconRed = styled(CircleIcon)`
-  background-color: ${colors.accents.red};
+  background-color: ${colors.accents.dangerRed};
 `
 
 export const CircleIconSmallOrange = styled(CircleIcon)`
@@ -31,5 +31,5 @@ export const CircleIconSmallOrange = styled(CircleIcon)`
   width: 16px;
   height: 16px;
   font-size: 16px;
-  background-color: ${colors.accents.orange};
+  background-color: ${colors.accents.warningOrange};
 `

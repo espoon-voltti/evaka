@@ -67,7 +67,7 @@ export const StyledInput = styled.input<StyledInputProps>`
   &:focus {
     border-width: 2px;
     border-style: solid;
-    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
     margin-top: -2px;
     margin-bottom: -1px;
     padding-${(p) => (p.align === 'right' ? 'right' : 'left')}: 10px;
@@ -83,11 +83,11 @@ export const StyledInput = styled.input<StyledInputProps>`
   }
 
   &.success {
-    border-color: ${({ theme: { colors } }) => colors.accents.green};
+    border-color: ${({ theme: { colors } }) => colors.accents.successGreen};
   }
 
   &.warning {
-    border-color: ${({ theme: { colors } }) => colors.accents.orange};
+    border-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
   }
 
   &:read-only {
@@ -141,7 +141,7 @@ export const InputFieldUnderRow = styled.div`
   }
 
   &.warning {
-    color: ${({ theme: { colors } }) => colors.accents.orangeDark};
+    color: ${({ theme: { colors } }) => colors.accents.warningOrange};
   }
 `
 

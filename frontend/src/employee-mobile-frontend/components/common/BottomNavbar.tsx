@@ -11,6 +11,7 @@ import { faChild, faComments, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
@@ -37,7 +38,7 @@ const Root = styled.div`
   justify-content: space-evenly;
   align-items: center;
 
-  background: ${colors.blues.primary};
+  background: ${colors.greyscale.white};
   box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.15);
   margin-bottom: 0 !important;
 `
@@ -52,15 +53,16 @@ const Button = styled.div`
 `
 
 const CustomIcon = styled(FontAwesomeIcon)<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.blues.lighter : colors.blues.light)};
+  color: ${(p) => (p.selected ? colors.main.dark : colors.greyscale.dark)};
   height: 24px !important;
   width: 24px !important;
   margin: 0;
 `
 
 const IconText = styled.span<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.blues.lighter : colors.blues.light)};
+  color: ${(p) => (p.selected ? colors.main.dark : colors.greyscale.dark)};
   font-size: 14px;
+  font-weight: ${fontWeights.semibold};
 `
 
 type BottomTextProps = {
@@ -182,5 +184,5 @@ const UnreadMessagesIndicator = styled.div`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
   border-radius: 100%;
-  background-color: ${colors.accents.orange};
+  background-color: ${colors.accents.warningOrange};
 `

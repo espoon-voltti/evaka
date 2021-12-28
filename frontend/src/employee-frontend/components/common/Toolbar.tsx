@@ -92,7 +92,7 @@ function Toolbar({
           <FontAwesomeIcon
             icon={faExclamationTriangle}
             size="1x"
-            color={colors.accents.orange}
+            color={colors.accents.warningOrange}
           />
         </Tooltip>
       )}
@@ -105,7 +105,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faSync}
-            color={disableAll ? colors.greyscale.medium : colors.primary}
+            color={disableAll ? colors.greyscale.medium : colors.main.primary}
             size="lg"
           />
         </ToolbarButton>
@@ -119,7 +119,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faCopy}
-            color={disableAll ? colors.greyscale.medium : colors.primary}
+            color={disableAll ? colors.greyscale.medium : colors.main.primary}
             size="lg"
           />
         </ToolbarButton>
@@ -133,7 +133,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faPen}
-            color={disableAll ? colors.greyscale.medium : colors.primary}
+            color={disableAll ? colors.greyscale.medium : colors.main.primary}
             size="lg"
           />
         </ToolbarButton>
@@ -147,7 +147,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faTrash}
-            color={disableAll ? colors.greyscale.medium : colors.primary}
+            color={disableAll ? colors.greyscale.medium : colors.main.primary}
             size="lg"
           />
         </ToolbarButton>

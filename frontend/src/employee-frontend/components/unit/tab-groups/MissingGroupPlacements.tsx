@@ -16,9 +16,7 @@ import _ from 'lodash'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MissingGroupPlacement } from '../../../api/unit'
-import CareTypeLabel, {
-  careTypesFromPlacementType
-} from '../../../components/common/CareTypeLabel'
+import { CareTypeChip } from '../../common/CareTypeLabel'
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
@@ -55,11 +53,7 @@ function renderMissingGroupPlacementRow(
       </Td>
       <Td data-qa="child-dob">{dateOfBirth.format()}</Td>
       <Td data-qa="placement-type">
-        {placementType ? (
-          careTypesFromPlacementType(placementType)
-        ) : (
-          <CareTypeLabel type="backup-care" />
-        )}
+        <CareTypeChip type={placementType ?? 'backup-care'} />
       </Td>
       <Td data-qa="placement-subtype">
         {placementType && (

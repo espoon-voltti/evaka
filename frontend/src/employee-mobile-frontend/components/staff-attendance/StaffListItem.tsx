@@ -61,12 +61,12 @@ const Bold = styled.div`
 
 export const IconBox = styled.div<{ present: boolean }>`
   background-color: ${(p) =>
-    p.present ? colors.accents.green : colors.accents.water};
+    p.present ? colors.accents.successGreen : colors.accents.turquoise};
   border-radius: 50%;
   box-shadow: ${(p) =>
     p.present
-      ? `0 0 0 2px ${colors.accents.green}`
-      : `0 0 0 2px ${colors.accents.water}`};
+      ? `0 0 0 2px ${colors.accents.successGreen}`
+      : `0 0 0 2px ${colors.accents.turquoise}`};
   border: 2px solid ${colors.greyscale.white};
 `
 
@@ -90,7 +90,9 @@ export default React.memo(function StaffListItem({
         <IconBox present={present}>
           <RoundIcon
             content={farUser}
-            color={present ? colors.accents.green : colors.accents.water}
+            color={
+              present ? colors.accents.successGreen : colors.accents.turquoise
+            }
             size="XL"
           />
         </IconBox>

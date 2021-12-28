@@ -34,7 +34,7 @@ import { formatDate } from 'lib-common/date'
 import { ApplicationStatus } from 'lib-common/generated/enums'
 
 const StyledLink = styled(Link)`
-  color: ${colors.blues.primary};
+  color: ${colors.main.primary};
   text-decoration: none;
 `
 
@@ -253,17 +253,14 @@ export default React.memo(function ChildApplicationsBlock({
 
                   {applicationStatus === 'WAITING_CONFIRMATION' && (
                     <ConfirmationContainer>
-                      <div color={colors.blues.primary}>
+                      <div color={colors.main.primary}>
                         {t.applicationsList.confirmationLinkInstructions}
                       </div>
                       <StyledLink
                         to={`/decisions/by-application/${applicationId}`}
                       >
                         {t.applicationsList.confirmationLink}{' '}
-                        <Icon
-                          icon={faArrowRight}
-                          color={colors.blues.primary}
-                        />
+                        <Icon icon={faArrowRight} color={colors.main.primary} />
                       </StyledLink>
                     </ConfirmationContainer>
                   )}

@@ -248,7 +248,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
             {showUserAttentionIndicator && (
               <RoundIcon
                 content={faExclamation}
-                color={theme.colors.accents.orange}
+                color={theme.colors.accents.warningOrange}
                 size="s"
                 data-qa="personal-details-attention-indicator-desktop"
               />
@@ -321,7 +321,7 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   cursor: pointer;
   font-family: Open Sans;
   color: ${({ selected }) =>
-    selected ? colors.brandEspoo.espooBlue : colors.greyscale.darkest};
+    selected ? colors.main.dark : colors.greyscale.darkest};
   font-size: 1em;
   font-weight: ${({ selected }) =>
     selected ? fontWeights.semibold : fontWeights.normal};
@@ -329,7 +329,7 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   width: 100%;
 
   &:hover {
-    background: ${colors.blues.light};
+    background: ${colors.main.lighter};
   }
 `
 

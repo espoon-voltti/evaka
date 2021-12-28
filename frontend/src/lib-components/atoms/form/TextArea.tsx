@@ -142,7 +142,7 @@ const StyledTextArea = styled(TextareaAutosize)`
   &:focus {
     border-width: 2px;
     border-style: solid;
-    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
   }
 
   &.success,
@@ -156,18 +156,20 @@ const StyledTextArea = styled(TextareaAutosize)`
   }
 
   &.success {
-    border-bottom: 2px solid ${({ theme: { colors } }) => colors.accents.green};
+    border-bottom: 2px solid
+      ${({ theme: { colors } }) => colors.accents.successGreen};
 
     &:focus {
-      border-color: ${({ theme: { colors } }) => colors.accents.green};
+      border-color: ${({ theme: { colors } }) => colors.accents.successGreen};
     }
   }
 
   &.warning {
-    border-bottom: 2px solid ${({ theme: { colors } }) => colors.accents.orange};
+    border-bottom: 2px solid
+      ${({ theme: { colors } }) => colors.accents.warningOrange};
 
     &:focus {
-      border-color: ${({ theme: { colors } }) => colors.accents.orange};
+      border-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
     }
   }
 `

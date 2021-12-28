@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { StaticChip } from 'lib-components/atoms/Chip'
-import { accentColors } from 'lib-customizations/common'
+import { colors } from 'lib-customizations/common'
 import { MessageType } from 'lib-common/generated/enums'
 import React from 'react'
 import styled from 'styled-components'
@@ -14,8 +14,8 @@ const Chip = styled(StaticChip)`
 `
 
 const chipColors: Record<MessageType, string> = {
-  MESSAGE: accentColors.yellow,
-  BULLETIN: accentColors.water
+  MESSAGE: colors.accents.violet,
+  BULLETIN: colors.main.dark
 }
 
 interface Props {

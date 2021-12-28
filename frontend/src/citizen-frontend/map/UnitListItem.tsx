@@ -50,7 +50,7 @@ const Wrapper = styled.div`
   margin: ${dM.xs} -${dM.s} -${dM.xs} -${dM.L};
 
   &:hover {
-    background-color: ${colors.brandEspoo.espooTurquoiseLight};
+    background-color: ${colors.main.lighter};
   }
 
   &:after {

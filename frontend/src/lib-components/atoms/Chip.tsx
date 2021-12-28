@@ -14,7 +14,8 @@ import { tabletMin } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
-export const StaticChip = styled.div<{ color: string; textColor?: string }>`
+export const StaticChip = styled.div<{ color: string }>`
+  display: inline-block;
   font-family: 'Open Sans', sans-serif;
   font-weight: ${fontWeights.semibold};
   font-size: ${defaultMargins.s};
@@ -24,7 +25,6 @@ export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   border-radius: 1000px;
   background-color: ${(p) => p.color};
   color: ${({ theme: { colors }, ...p }) =>
-    p.textColor ??
     readableColor(p.color, colors.greyscale.white, colors.greyscale.darkest)};
   padding: ${defaultMargins.xxs}
     calc(${defaultMargins.xs} + ${defaultMargins.xxs});
@@ -132,7 +132,7 @@ const SelectionChipWrapper = styled.div`
 
   &:focus,
   &:focus-within {
-    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.main.dark};
     border-radius: 1000px;
     margin: -2px;
   }

@@ -44,7 +44,7 @@ const SearchInput = styled.input<{ background?: string; showClose: boolean }>`
     border-width: 2px;
     border-radius: 2px;
     border-style: solid;
-    border-color: ${colors.accents.petrol};
+    border-color: ${colors.main.primaryFocus};
     padding-left: 53px;
   }
 `

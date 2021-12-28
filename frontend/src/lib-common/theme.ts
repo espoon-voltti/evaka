@@ -4,39 +4,37 @@
 
 export interface Theme {
   colors: {
-    brand: {
-      primary: string
-      secondary: string
-      secondaryLight: string
-    }
     main: {
-      dark: string
-      medium: string
-      primary: string
+      dark: string // main 1
+      primary: string // main 2
       primaryHover: string
       primaryActive: string
-      light: string
-      lighter: string
+      primaryFocus: string
+      light: string // main 3
+      lighter: string // main 4
     }
     greyscale: {
-      darkest: string
-      dark: string
-      medium: string
-      lighter: string
-      lightest: string
-      white: string
+      darkest: string // 100
+      dark: string // 70
+      medium: string // 35
+      lighter: string // 15
+      lightest: string // 4
+      white: string // 0
     }
     accents: {
-      orange: string
-      orangeDark: string
-      green: string
-      greenDark: string
-      water: string
-      yellow: string
-      red: string
-      petrol: string
-      emerald: string
-      violet: string
+      dangerRed: string // 1
+      warningOrange: string // 2
+      successGreen: string // 3
+      infoBlue: string // 4
+      greenDark: string // 5
+      orangeDark: string // 6
+      emerald: string // 7
+      violet: string // 8
+      peach: string // 9
+      turquoise: string // 10
+      mint: string // 11
+      lightBlue: string // 12
+      pink: string // 13
     }
   }
   typography: {

@@ -13,7 +13,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import UnitPreferenceSection from '../../../applications/editor/verification/UnitPreferenceSection'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import ServiceNeedSection from './ServiceNeedSection'
-import { espooBrandColors } from 'lib-customizations/common'
+import colors from 'lib-customizations/common'
 import styled from 'styled-components'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { faInfo } from 'lib-icons'
@@ -30,7 +30,7 @@ type DaycareApplicationVerificationViewProps = {
 }
 
 const AttachmentBox = styled.div`
-  border: 2px solid ${espooBrandColors.espooTurquoise};
+  border: 2px solid ${colors.main.light};
   padding: 0 ${defaultMargins.m};
   display: flex;
 `
@@ -66,7 +66,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
           <AttachmentBox>
             <RoundIconStyled
               content={faInfo}
-              color={espooBrandColors.espooTurquoise}
+              color={colors.main.dark}
               size="s"
             />
             <div>

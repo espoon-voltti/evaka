@@ -20,7 +20,7 @@ import colors from 'lib-customizations/common'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 export const ErrorMessage = styled.div`
-  color: ${colors.accents.red};
+  color: ${colors.accents.dangerRed};
   margin-right: 20px;
 `
 

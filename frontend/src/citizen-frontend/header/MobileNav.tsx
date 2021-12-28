@@ -150,7 +150,7 @@ const MenuContainer = styled.div`
   overflow-y: scroll;
   top: 0;
   right: 0;
-  background: ${colors.blues.primary};
+  background: ${colors.main.primary};
   box-sizing: border-box;
   width: 100vw;
   height: 100%;
@@ -317,7 +317,7 @@ const UserContainer = styled.div`
 `
 
 const LogInLogOutButton = styled.button`
-  background: ${colors.blues.dark};
+  background: ${colors.main.dark};
   color: ${colors.greyscale.white};
   border: none;
   font-family: 'Open Sans', sans-serif;

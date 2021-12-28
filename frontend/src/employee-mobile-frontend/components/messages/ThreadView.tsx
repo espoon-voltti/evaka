@@ -135,7 +135,7 @@ const RoundIconButton = styled.button`
   min-height: ${defaultMargins.L};
   max-width: ${defaultMargins.L};
   max-height: ${defaultMargins.L};
-  background: ${colors.blues.primary};
+  background: ${colors.main.primary};
   border: none;
   border-radius: 100%;
   display: flex;
@@ -156,13 +156,13 @@ const MessageContainer = styled.div`
       ? `
       border-bottom-right-radius: 2px;
       align-self: flex-end;
-      background-color: ${colors.blues.primary};
+      background-color: ${colors.main.primary};
       color: white;
     `
       : `
       border-bottom-left-radius: 2px;
       align-self: flex-start;
-      background-color: ${colors.blues.lighter};
+      background-color: ${colors.main.lighter};
     `}
   padding: ${defaultMargins.s};
   margin: ${defaultMargins.xs};

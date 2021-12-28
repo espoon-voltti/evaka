@@ -313,7 +313,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
                 tooltipText={`${i18n.personProfile.restrictedDetails}`}
                 place={'right'}
               >
-                <StatusIconContainer color={colors.accents.red}>
+                <StatusIconContainer color={colors.accents.dangerRed}>
                   <FontAwesomeIcon icon={faExclamation} inverse />
                 </StatusIconContainer>
               </Tooltip>

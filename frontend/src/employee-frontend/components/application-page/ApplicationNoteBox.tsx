@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ApplicationNote } from '../../types/application'
 import styled from 'styled-components'
-import { greyscale } from 'lib-customizations/common'
+import { colors } from 'lib-customizations/common'
 import { Label } from 'lib-components/typography'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { formatParagraphs } from '../../utils/html-utils'
@@ -26,7 +26,7 @@ const NoteContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${defaultMargins.s};
-  background: ${greyscale.white};
+  background: ${colors.greyscale.white};
 `
 
 const TopBar = styled.div`
@@ -51,7 +51,7 @@ const ButtonsBar = styled.div`
 
 const DetailText = styled.span`
   font-size: 12px;
-  color: ${greyscale.medium};
+  color: ${colors.greyscale.medium};
   font-style: italic;
 `
 

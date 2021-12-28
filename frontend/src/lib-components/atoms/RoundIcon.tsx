@@ -5,7 +5,7 @@
 import React from 'react'
 import classNames from 'classnames'
 import styled from 'styled-components'
-import { shade } from 'polished'
+import { readableColor, shade } from 'polished'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fontWeights } from '../typography'
@@ -38,20 +38,29 @@ const IconContainer = styled.div<IconContainerProps>`
   align-items: center;
 
   border-radius: 100%;
-  border: 1px solid ${(props) => props.color};
-  background: ${({ theme: { colors } }) => colors.greyscale.white};
-  color: ${(props) => props.color};
+  border: 2px solid ${(props) => props.color};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   user-select: none;
 
+  font-family: Montserrat, sans-serif;
+  font-weight: ${fontWeights.bold};
+
   &.active {
-    background: ${(props) => props.color};
-    color: ${({ theme: { colors } }) => colors.greyscale.white};
+    background-color: ${(props) => props.color};
+    color: ${({ theme: { colors }, color }) =>
+      readableColor(color, colors.greyscale.white, colors.greyscale.darkest)};
   }
 
   &.clickable:hover {
-    background: ${(props) => shade(0.2, props.color)};
+    background-color: ${(props) => shade(0.2, props.color)};
     border-color: ${(props) => shade(0.2, props.color)};
-    color: ${({ theme: { colors } }) => colors.greyscale.white};
+    color: ${({ theme: { colors }, color }) =>
+      readableColor(
+        shade(0.2, color),
+        colors.greyscale.white,
+        colors.greyscale.darkest
+      )};
     cursor: pointer;
   }
 
@@ -67,12 +76,7 @@ const IconContainer = styled.div<IconContainerProps>`
 
   &.m {
     font-size: 16px;
-
     ${diameter(24)}
-    span.text {
-      font-family: Montserrat, sans-serif;
-      font-weight: ${fontWeights.bold};
-    }
   }
 
   &.l {
@@ -247,7 +251,7 @@ const Circle = styled.span<{ smaller: boolean; color?: string }>`
   line-height: ${(p) => (p.smaller ? '10px' : '13px')};
   border-radius: 10px;
   background-color: ${({ theme: { colors }, ...p }) =>
-    p.color ? p.color : colors.accents.green};
+    p.color ? p.color : colors.accents.successGreen};
   color: ${({ theme: { colors } }) => colors.greyscale.white};
   display: inline-block;
   position: absolute;

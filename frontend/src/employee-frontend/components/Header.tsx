@@ -70,14 +70,14 @@ const NavbarItem = styled.div`
 const LogoutLink = styled.a`
   cursor: pointer;
   text-decoration: none;
-  color: ${colors.blues.medium};
+  color: ${colors.main.dark};
 `
 
 const UnreadCount = styled.span`
-  color: ${colors.blues.medium};
+  color: ${colors.main.dark};
   font-weight: ${fontWeights.medium};
   margin-left: ${defaultMargins.xs};
-  border: 1px solid ${colors.blues.medium};
+  border: 1px solid ${colors.main.dark};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -421,7 +421,7 @@ const NavbarLink = styled(NavLink)<NavbarLinkProps>`
   margin-left: ${(p) => (p.$noMargin ? '0' : '1rem')};
 
   &.active {
-    border-bottom: 4px solid ${colors.blues.primary};
+    border-bottom: 4px solid ${colors.main.primary};
     font-weight: ${fontWeights.bold};
     padding-bottom: 1rem;
   }

@@ -11,7 +11,7 @@ export default styled.ul<{ spacing?: SpacingSize | string }>`
 
   li {
     &::marker {
-      color: ${({ theme: { colors } }) => colors.brand.secondary};
+      color: ${({ theme: { colors } }) => colors.main.light};
     }
     margin-bottom: ${(p) =>
       p.spacing

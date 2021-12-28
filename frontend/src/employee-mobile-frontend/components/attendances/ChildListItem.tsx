@@ -10,7 +10,7 @@ import {
   Child
 } from 'lib-common/generated/api-types/attendance'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import colors from 'lib-customizations/common'
+import colors, { attendanceColors } from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
 import { Translations, useTranslation } from '../../state/i18n'
@@ -58,31 +58,9 @@ const Bold = styled.div`
 `
 
 export const IconBox = styled.div<{ type: AttendanceStatus }>`
-  background-color: ${(props) => {
-    switch (props.type) {
-      case 'ABSENT':
-        return colors.greyscale.dark
-      case 'DEPARTED':
-        return colors.blues.primary
-      case 'PRESENT':
-        return colors.accents.green
-      case 'COMING':
-        return colors.accents.water
-    }
-  }};
+  background-color: ${(props) => attendanceColors[props.type]};
   border-radius: 50%;
-  box-shadow: ${(props) => {
-    switch (props.type) {
-      case 'ABSENT':
-        return `0 0 0 2px ${colors.greyscale.dark}`
-      case 'DEPARTED':
-        return `0 0 0 2px ${colors.blues.primary}`
-      case 'PRESENT':
-        return `0 0 0 2px ${colors.accents.green}`
-      case 'COMING':
-        return `0 0 0 2px ${colors.accents.water}`
-    }
-  }};
+  box-shadow: 0 0 0 2px ${(props) => attendanceColors[props.type]};
   border: 2px solid ${colors.greyscale.white};
 `
 
@@ -151,17 +129,7 @@ export default React.memo(function ChildListItem({
           ) : (
             <RoundIcon
               content={farUser}
-              color={
-                type === 'ABSENT'
-                  ? colors.greyscale.dark
-                  : type === 'DEPARTED'
-                  ? colors.blues.primary
-                  : type === 'PRESENT'
-                  ? colors.accents.green
-                  : type === 'COMING'
-                  ? colors.accents.water
-                  : colors.blues.medium
-              }
+              color={type ? attendanceColors[type] : colors.main.dark}
               size="XL"
             />
           )}
@@ -174,7 +142,7 @@ export default React.memo(function ChildListItem({
             <div>
               {infoText}
               {child.backup && (
-                <RoundIcon content="V" size="m" color={colors.accents.green} />
+                <RoundIcon content="V" size="m" color={colors.main.dark} />
               )}
             </div>
             <FixedSpaceRowWithLeftMargin>
@@ -185,7 +153,7 @@ export default React.memo(function ChildListItem({
                 >
                   <RoundIcon
                     content={farStickyNote}
-                    color={colors.accents.petrol}
+                    color={colors.accents.pink}
                     size="m"
                   />
                 </Link>
@@ -197,7 +165,7 @@ export default React.memo(function ChildListItem({
                 >
                   <RoundIcon
                     content={farUsers}
-                    color={colors.blues.light}
+                    color={colors.main.lighter}
                     size="m"
                   />
                 </Link>

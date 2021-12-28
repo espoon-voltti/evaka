@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { espooBrandColors } from 'lib-customizations/common'
+import colors from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import { fontWeights } from 'lib-components/typography'
@@ -16,12 +16,11 @@ export const MessageBoxRow = styled.div<{ active: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
   font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
-  background-color: ${(p) =>
-    p.active ? espooBrandColors.espooTurquoiseLight : 'unset'};
+  background-color: ${(p) => (p.active ? colors.main.lighter : 'unset')};
 `
 
 const UnreadCount = styled.span`
-  color: ${espooBrandColors.espooBlue};
+  color: ${colors.main.primary};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   padding-left: ${defaultMargins.xxs};

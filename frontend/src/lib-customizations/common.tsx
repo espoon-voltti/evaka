@@ -16,36 +16,50 @@ export { theme }
 
 // mimic lib-components/colors api:
 
-export const espooBrandColors = {
-  espooBlue: theme.colors.brand.primary,
-  espooTurquoise: theme.colors.brand.secondary,
-  espooTurquoiseLight: theme.colors.brand.secondaryLight
-}
+export const { colors } = theme
 
-export const {
-  colors: { main: blueColors, greyscale, accents: accentColors }
-} = theme
-
-const colors = {
-  brandEspoo: espooBrandColors,
-  blues: blueColors,
-  primary: blueColors.primary,
-  primaryHover: blueColors.medium,
-  primaryActive: blueColors.dark,
-  greyscale: greyscale,
-  accents: accentColors
-}
+const { main, greyscale, accents } = colors
 
 export const absenceColours = {
-  UNKNOWN_ABSENCE: colors.accents.green,
-  OTHER_ABSENCE: colors.blues.dark,
-  SICKLEAVE: colors.accents.violet,
-  PLANNED_ABSENCE: colors.blues.light,
-  PARENTLEAVE: colors.blues.primary,
-  FORCE_MAJEURE: colors.accents.red,
-  TEMPORARY_RELOCATION: colors.accents.orange,
-  TEMPORARY_VISITOR: colors.accents.yellow,
-  PRESENCE: colors.greyscale.white
+  UNKNOWN_ABSENCE: accents.successGreen,
+  OTHER_ABSENCE: main.dark,
+  SICKLEAVE: accents.violet,
+  PLANNED_ABSENCE: main.light,
+  PARENTLEAVE: main.primary,
+  FORCE_MAJEURE: accents.dangerRed,
+  TEMPORARY_RELOCATION: accents.warningOrange,
+  TEMPORARY_VISITOR: accents.peach,
+  PRESENCE: greyscale.white
+}
+
+export const attendanceColors = {
+  ABSENT: colors.greyscale.medium,
+  DEPARTED: colors.main.light,
+  PRESENT: colors.accents.successGreen,
+  COMING: colors.accents.peach
+}
+
+export const applicationBasisColors = {
+  ADDITIONAL_INFO: main.dark,
+  ASSISTANCE_NEED: accents.turquoise,
+  CLUB_CARE: accents.orangeDark,
+  DAYCARE: accents.warningOrange,
+  DUPLICATE_APPLICATION: accents.emerald,
+  EXTENDED_CARE: main.light,
+  HAS_ATTACHMENTS: accents.pink,
+  SIBLING_BASIS: accents.successGreen,
+  URGENT: accents.dangerRed
+}
+
+export const careTypeColors = {
+  'backup-care': colors.accents.peach,
+  club: colors.greyscale.lighter,
+  daycare: colors.accents.successGreen,
+  daycare5yo: colors.accents.greenDark,
+  preparatory: colors.accents.turquoise,
+  preschool: colors.main.dark,
+  'school-shift-care': colors.greyscale.dark,
+  temporary: colors.accents.violet
 }
 
 export const translationsMergeCustomizer = (

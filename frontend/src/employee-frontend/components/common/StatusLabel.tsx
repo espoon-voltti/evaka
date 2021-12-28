@@ -2,61 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
-import colors from 'lib-customizations/common'
-import { fontWeights } from 'lib-components/typography'
+import { StaticChip } from 'lib-components/atoms/Chip'
+import { colors } from 'lib-customizations/common'
+import React from 'react'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 
 export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'
 
-const Container = styled.div<{ status: StatusLabelType }>`
-  height: 24px;
-  line-height: 22px;
-  width: fit-content;
-  border-radius: 12px;
-  padding: 0 10px;
-  text-align: center;
-  font-weight: ${fontWeights.semibold};
-  font-size: 14px;
-  letter-spacing: 0;
+const colorsByStatus: Record<StatusLabelType, string> = {
+  active: colors.accents.emerald,
+  coming: colors.accents.mint,
+  completed: colors.accents.lightBlue,
+  conflict: colors.accents.warningOrange
+}
 
-  ${(p) =>
-    p.status == 'coming'
-      ? `
-   color: ${colors.accents.emerald};
-   border: 1px solid ${colors.accents.emerald};
-  `
-      : ''}
-
-  ${(p) =>
-    p.status == 'active'
-      ? `
-   color: ${colors.greyscale.white};
-   background: ${colors.accents.emerald};
-  `
-      : ''}
-
-  ${(p) =>
-    p.status == 'completed'
-      ? `
-   color: ${colors.greyscale.dark};
-   border: 1px solid ${colors.greyscale.medium};
-  `
-      : ''}
-
-  ${(p) =>
-    p.status == 'conflict'
-      ? `
-   color: ${colors.greyscale.white};
-   background: ${colors.accents.red};
-  `
-      : ''}
-`
-
-export type Props =
+type Props =
   | {
       status: StatusLabelType
     }
@@ -75,7 +37,11 @@ function StatusLabel(props: Props) {
           endDate: props.dateRange.end
         })
 
-  return <Container status={status}>{i18n.common.statuses[status]}</Container>
+  return (
+    <StaticChip color={colorsByStatus[status]}>
+      {i18n.common.statuses[status]}
+    </StaticChip>
+  )
 }
 
-export default StatusLabel
+export default React.memo(StatusLabel)

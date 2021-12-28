@@ -41,26 +41,17 @@ export default React.memo(function PreferredUnitBox({
       ? t.common.unit.providerTypes.PRIVATE
       : t.common.unit.providerTypes[unit.providerType]
 
-  const getProviderTypeColors = (): { color: string; textColor: string } => {
+  const getProviderTypeColors = (): { color: string } => {
     switch (unit.providerType) {
       case 'MUNICIPAL':
       case 'MUNICIPAL_SCHOOL':
-        return {
-          color: colors.accents.water,
-          textColor: colors.greyscale.darkest
-        }
+        return { color: colors.accents.turquoise }
       case 'PRIVATE':
       case 'PRIVATE_SERVICE_VOUCHER':
-        return {
-          color: colors.accents.emerald,
-          textColor: colors.greyscale.white
-        }
+        return { color: colors.accents.emerald }
       case 'PURCHASED':
       case 'EXTERNAL_PURCHASED':
-        return {
-          color: colors.accents.green,
-          textColor: colors.greyscale.darkest
-        }
+        return { color: colors.main.lighter }
     }
   }
 
@@ -84,11 +75,11 @@ export default React.memo(function PreferredUnitBox({
           </FixedSpaceColumn>
           <FixedSpaceFlexWrap horizontalSpacing={'xs'} verticalSpacing={'xs'}>
             {unit.language === 'sv' ? (
-              <StaticChip color={colors.accents.yellow}>
+              <StaticChip color={colors.accents.peach}>
                 {t.applications.editor.unitPreference.units.preferences.sv}
               </StaticChip>
             ) : (
-              <StaticChip color={colors.primary}>
+              <StaticChip color={colors.main.light}>
                 {t.applications.editor.unitPreference.units.preferences.fi}
               </StaticChip>
             )}
@@ -148,7 +139,7 @@ const noOp = () => undefined
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
-  border: 1px solid ${colors.primary};
+  border: 1px solid ${colors.main.primary};
   box-sizing: border-box;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
   border-radius: 2px;
@@ -159,7 +150,7 @@ const MainColLeft = styled.div`
   font-family: Montserrat, sans-serif;
   font-style: normal;
   font-weight: ${fontWeights.light};
-  color: ${colors.primary};
+  color: ${colors.main.primary};
   text-align: center;
 
   font-size: 70px;

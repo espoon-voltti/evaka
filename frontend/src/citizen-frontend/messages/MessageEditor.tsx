@@ -164,13 +164,13 @@ const Container = styled.div`
 `
 
 const ErrorMessage = styled.div`
-  color: ${colors.accents.red};
+  color: ${colors.accents.dangerRed};
 `
 
 const TopBar = styled.div`
   width: 100%;
   height: 60px;
-  background-color: ${colors.primary};
+  background-color: ${colors.main.primary};
   color: ${colors.greyscale.white};
   display: flex;
   justify-content: space-between;

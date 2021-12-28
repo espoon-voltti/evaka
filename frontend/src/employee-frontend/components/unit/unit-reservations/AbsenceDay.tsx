@@ -34,7 +34,7 @@ export default React.memo(function AbsenceDay({ type }: Props) {
   return (
     <AbsenceCell>
       <FixedSpaceRow spacing="xs" alignItems="center">
-        <RoundIcon content="–" color={colors.primary} size="m" />
+        <RoundIcon content="–" color={colors.main.primary} size="m" />
         <div>
           {i18n.absences.absenceTypes[type] ??
             i18n.absences.absenceTypes.OTHER_ABSENCE}

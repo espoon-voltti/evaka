@@ -583,7 +583,7 @@ export default React.memo(function ApplicationEditView({
                     <FontAwesomeIcon
                       size="sm"
                       icon={faExclamationTriangle}
-                      color={colors.accents.orange}
+                      color={colors.accents.warningOrange}
                     />
                   </>
                 ) : null}

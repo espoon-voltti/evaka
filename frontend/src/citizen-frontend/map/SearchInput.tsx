@@ -186,7 +186,7 @@ const OptionWrapper = styled.div`
 
   &:hover,
   &.focused {
-    background-color: ${colors.blues.lighter};
+    background-color: ${colors.main.lighter};
   }
 
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
@@ -207,7 +207,7 @@ const OptionContents = React.memo(function Option({
       {isUnit && (
         <FontAwesomeIcon
           icon={fasMapMarkerAlt}
-          color={colors.primary}
+          color={colors.main.primary}
           style={{ fontSize: '24px' }}
         />
       )}

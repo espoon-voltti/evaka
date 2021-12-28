@@ -41,7 +41,7 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   border: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
 
   &:focus {
-    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
     margin: -1px 0;
     padding: ${defaultMargins.s} calc(${defaultMargins.m} - 1px);
   }
@@ -49,14 +49,14 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   ${(p) =>
     !p.isRead
       ? `
-    border-left-color: ${p.theme.colors.brand.secondary} !important;
+    border-left-color: ${p.theme.colors.main.light} !important;
     border-left-width: 6px !important;
     padding-left: calc(${defaultMargins.m} - 6px) !important;
   `
       : ''}
 
   ${(p) =>
-    p.active ? `background-color: ${p.theme.colors.brand.secondaryLight};` : ''}
+    p.active ? `background-color: ${p.theme.colors.main.lighter};` : ''}
 `
 
 export const ThreadContainer = styled.div`

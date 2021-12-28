@@ -25,7 +25,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
 import Pagination from 'lib-components/Pagination'
-import colors, { blueColors } from 'lib-customizations/common'
+import colors, { applicationBasisColors } from 'lib-customizations/common'
 import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -43,7 +43,7 @@ import { ApplicationUIContext } from '../../state/application-ui'
 import ActionBar from '../../components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { careTypesFromPlacementType } from '../common/CareTypeLabel'
+import { CareTypeChip } from '../common/CareTypeLabel'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { UserContext } from '../../state/user'
 import { hasRole, RequireRole } from '../../utils/roles'
@@ -175,19 +175,19 @@ const ApplicationsList = React.memo(function Applications({
       application.status === 'WAITING_PLACEMENT' &&
       !application.checkedByAdmin
     )
-      return colors.accents.orange
+      return colors.accents.warningOrange
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'ACCEPTED'
     )
-      return colors.accents.green
+      return colors.accents.successGreen
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'REJECTED'
     )
-      return colors.accents.red
+      return colors.accents.dangerRed
 
-    return colors.accents.water
+    return colors.main.light
   }
 
   const dateOfBirthInfo = (application: ApplicationSummary) => {
@@ -232,7 +232,6 @@ const ApplicationsList = React.memo(function Applications({
     )
   }
 
-  // todo: check new logic for status color border
   const rows = applications.map((application) => (
     <Tr
       key={application.id}
@@ -246,8 +245,8 @@ const ApplicationsList = React.memo(function Applications({
       }
     >
       <StatusColorTd color={getAccentColor(application)}>
-        <FixedSpaceColumn spacing="xs">
-          {careTypesFromPlacementType(application.placementType)}
+        <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+          <CareTypeChip type={application.placementType} />
           {application.transferApplication && (
             <Light>{i18n.applications.list.transfer}</Light>
           )}
@@ -286,34 +285,66 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (
-            <RoundIcon content="L" color={blueColors.dark} size="s" />
+            <RoundIcon
+              content="L"
+              color={applicationBasisColors['ADDITIONAL_INFO']}
+              size="s"
+            />
           )}
           {application.siblingBasis && (
-            <RoundIcon content="S" color={colors.accents.green} size="s" />
+            <RoundIcon
+              content="S"
+              color={applicationBasisColors['SIBLING_BASIS']}
+              size="s"
+            />
           )}
           {application.assistanceNeed && (
-            <RoundIcon content="T" color={colors.accents.water} size="s" />
+            <RoundIcon
+              content="T"
+              color={applicationBasisColors['ASSISTANCE_NEED']}
+              size="s"
+            />
           )}
           {application.wasOnClubCare && (
-            <RoundIcon content="K" color={colors.accents.red} size="s" />
+            <RoundIcon
+              content="K"
+              color={applicationBasisColors['CLUB_CARE']}
+              size="s"
+            />
           )}
           {application.wasOnDaycare && (
-            <RoundIcon content="P" color={colors.accents.orange} size="s" />
+            <RoundIcon
+              content="P"
+              color={applicationBasisColors['DAYCARE']}
+              size="s"
+            />
           )}
           {application.extendedCare && (
-            <RoundIcon content="V" color={colors.accents.petrol} size="s" />
+            <RoundIcon
+              content="V"
+              color={applicationBasisColors['EXTENDED_CARE']}
+              size="s"
+            />
           )}
           {application.duplicateApplication && (
-            <RoundIcon content="2" color={colors.accents.emerald} size="s" />
+            <RoundIcon
+              content="2"
+              color={applicationBasisColors['DUPLICATE_APPLICATION']}
+              size="s"
+            />
           )}
           {application.urgent && (
-            <RoundIcon content="!" color={colors.accents.red} size="s" />
+            <RoundIcon
+              content="!"
+              color={applicationBasisColors['URGENT']}
+              size="s"
+            />
           )}
           {(application.urgent || application.extendedCare) &&
             application.attachmentCount > 0 && (
               <RoundIcon
                 content={faPaperclip}
-                color={colors.accents.violet}
+                color={applicationBasisColors['HAS_ATTACHMENTS']}
                 size="s"
               />
             )}

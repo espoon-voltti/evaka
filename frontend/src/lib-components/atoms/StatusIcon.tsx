@@ -29,11 +29,14 @@ export default React.memo(function UnderRowStatusIcon({
       {status === 'warning' && (
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={colors.accents.orange}
+          color={colors.accents.warningOrange}
         />
       )}
       {status === 'success' && (
-        <FontAwesomeIcon icon={fasCheckCircle} color={colors.accents.green} />
+        <FontAwesomeIcon
+          icon={fasCheckCircle}
+          color={colors.accents.successGreen}
+        />
       )}
     </StatusIcon>
   )

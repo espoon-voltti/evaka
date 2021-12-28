@@ -66,7 +66,7 @@ const OverlapError = styled.span`
 
   svg {
     font-size: 1rem;
-    color: ${colors.accents.orange};
+    color: ${colors.accents.warningOrange};
     margin-left: 10px;
     margin-right: 10px;
   }

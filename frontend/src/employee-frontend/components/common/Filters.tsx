@@ -5,7 +5,6 @@
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
 import {
   faAngleDown,
   faAngleUp,
@@ -37,7 +36,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { FlexRow } from './styled/containers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import colors from 'lib-customizations/common'
+import colors, { applicationBasisColors } from 'lib-customizations/common'
 import Tooltip from '../../components/common/Tooltip'
 import { CareArea } from '../../types/unit'
 import { Label, LabelText } from './styled/common'
@@ -161,7 +160,7 @@ const SearchInput = styled.input<{ background?: string }>`
     border-width: 2px;
     border-radius: 2px;
     border-style: solid;
-    border-color: ${colors.accents.petrol};
+    border-color: ${colors.main.primaryFocus};
     margin-top: -2px;
     padding-left: 53px;
     margin-bottom: -2px;
@@ -207,7 +206,7 @@ export function FreeTextSearch({
         onChange={(e) => setValue(e.target.value)}
         data-qa="free-text-search-input"
         background={background}
-      ></SearchInput>
+      />
       <CustomIconButton icon={faTimes} onClick={clear} size={'m'} />
     </SearchInputContainer>
   )
@@ -454,7 +453,7 @@ export function FeeDecisionDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -560,7 +559,7 @@ export function ValueDecisionDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -662,7 +661,7 @@ export function InvoiceDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -967,7 +966,7 @@ export function ApplicationDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.orange}
+              color={colors.accents.warningOrange}
             />
           </span>
         </>
@@ -1013,7 +1012,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="L"
-            color={colors.blues.dark}
+            color={applicationBasisColors['ADDITIONAL_INFO']}
             size="m"
             onClick={toggle('ADDITIONAL_INFO')}
             active={toggled.includes('ADDITIONAL_INFO')}
@@ -1028,7 +1027,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="S"
-            color={colors.accents.green}
+            color={applicationBasisColors['SIBLING_BASIS']}
             size="m"
             onClick={toggle('SIBLING_BASIS')}
             active={toggled.includes('SIBLING_BASIS')}
@@ -1043,7 +1042,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="T"
-            color={colors.accents.water}
+            color={applicationBasisColors['ASSISTANCE_NEED']}
             size="m"
             onClick={toggle('ASSISTANCE_NEED')}
             active={toggled.includes('ASSISTANCE_NEED')}
@@ -1058,7 +1057,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="K"
-            color={colors.accents.red}
+            color={applicationBasisColors['CLUB_CARE']}
             size="m"
             onClick={toggle('CLUB_CARE')}
             active={toggled.includes('CLUB_CARE')}
@@ -1073,7 +1072,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="P"
-            color={colors.accents.orange}
+            color={applicationBasisColors['DAYCARE']}
             size="m"
             onClick={toggle('DAYCARE')}
             active={toggled.includes('DAYCARE')}
@@ -1088,7 +1087,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="V"
-            color={colors.accents.petrol}
+            color={applicationBasisColors['EXTENDED_CARE']}
             size="m"
             onClick={toggle('EXTENDED_CARE')}
             active={toggled.includes('EXTENDED_CARE')}
@@ -1103,7 +1102,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="2"
-            color={colors.accents.emerald}
+            color={applicationBasisColors['DUPLICATE_APPLICATION']}
             size="m"
             onClick={toggle('DUPLICATE_APPLICATION')}
             active={toggled.includes('DUPLICATE_APPLICATION')}
@@ -1118,7 +1117,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="!"
-            color={colors.accents.red}
+            color={applicationBasisColors['URGENT']}
             size="m"
             onClick={toggle('URGENT')}
             active={toggled.includes('URGENT')}
@@ -1133,7 +1132,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content={faPaperclip}
-            color={colors.accents.violet}
+            color={applicationBasisColors['HAS_ATTACHMENTS']}
             size="m"
             onClick={toggle('HAS_ATTACHMENTS')}
             active={toggled.includes('HAS_ATTACHMENTS')}

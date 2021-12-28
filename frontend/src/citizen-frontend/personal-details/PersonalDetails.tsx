@@ -409,7 +409,7 @@ const EmailMissing = styled(
         {t.personalDetails.emailMissing}
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={colors.accents.orange}
+          color={colors.accents.warningOrange}
         />
       </span>
     )

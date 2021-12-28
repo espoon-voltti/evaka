@@ -31,7 +31,7 @@ export const StyledButton = styled.button`
   }
 
   &:focus {
-    outline: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
+    outline: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
     outline-offset: 2px;
   }
 

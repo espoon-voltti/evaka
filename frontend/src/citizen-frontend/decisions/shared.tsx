@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import colors, {
-  accentColors,
-  blueColors,
-  greyscale
-} from 'lib-customizations/common'
+import { colors } from 'lib-customizations/common'
 import {
   faGavel,
   faCheck,
@@ -30,15 +26,15 @@ export const Status = styled.span`
 export const decisionStatusIcon = {
   PENDING: {
     icon: faGavel,
-    color: accentColors.orange
+    color: colors.accents.warningOrange
   },
   ACCEPTED: {
     icon: faCheck,
-    color: accentColors.green
+    color: colors.accents.successGreen
   },
   REJECTED: {
     icon: faTimes,
-    color: accentColors.red
+    color: colors.accents.dangerRed
   }
 }
 
@@ -47,27 +43,27 @@ export const applicationStatusIcon: {
 } = {
   PROCESSING: {
     icon: faPlay,
-    color: blueColors.dark
+    color: colors.main.dark
   },
   PENDING: {
     icon: faGavel,
-    color: accentColors.orange
+    color: colors.accents.warningOrange
   },
   ACCEPTED: {
     icon: faCheck,
-    color: accentColors.green
+    color: colors.accents.successGreen
   },
   REJECTED: {
     icon: faTimes,
-    color: accentColors.red
+    color: colors.accents.dangerRed
   },
   CREATED: {
     icon: faFile,
-    color: greyscale.dark
+    color: colors.greyscale.dark
   },
   SENT: {
     icon: faEnvelope,
-    color: blueColors.dark
+    color: colors.main.dark
   }
 }
 

@@ -16,7 +16,7 @@ import { InvoicesActions } from './invoices-state'
 import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`
-  color: ${colors.accents.red};
+  color: ${colors.accents.dangerRed};
 `
 
 const CheckedRowsInfo = styled.div`

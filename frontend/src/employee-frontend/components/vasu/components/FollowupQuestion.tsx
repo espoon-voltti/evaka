@@ -17,7 +17,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { blueColors } from 'lib-customizations/common'
+import { colors } from 'lib-customizations/common'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faPen } from 'lib-icons'
 import { PermittedFollowupActions } from 'lib-common/api-types/vasu'
@@ -212,7 +212,7 @@ const FollowupQuestionContainer = styled.div<{ editable: boolean }>`
   ${(p) =>
     p.editable &&
     css`
-      border-left: 5px solid ${blueColors.medium};
+      border-left: 5px solid ${colors.main.dark};
       box-shadow: 0px -4px 4px rgba(15, 15, 15, 0.1);
       width: calc(100% + 2 * ${defaultMargins.L});
       padding: ${defaultMargins.L};

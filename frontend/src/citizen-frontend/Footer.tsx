@@ -81,6 +81,6 @@ const FooterContainer = styled(Container)`
 `
 
 const FooterLink = styled.a`
-  color: ${colors.brandEspoo.espooBlue};
+  color: ${colors.main.primary};
   text-decoration: none;
 `

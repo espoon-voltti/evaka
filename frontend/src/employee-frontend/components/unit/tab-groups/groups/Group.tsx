@@ -49,9 +49,7 @@ import {
   deleteGroupPlacement,
   OccupancyResponse
 } from '../../../../api/unit'
-import CareTypeLabel, {
-  careTypesFromPlacementType
-} from '../../../../components/common/CareTypeLabel'
+import { CareTypeChip } from '../../../common/CareTypeLabel'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
@@ -313,7 +311,7 @@ export default React.memo(function Group({
             active={childNote != null || notes.childStickyNotes.length > 0}
             data-qa={`daycare-daily-note-icon-${placement.child.id}`}
             content={faStickyNote}
-            color={colors.blues.primary}
+            color={colors.main.primary}
             size="m"
             onClick={() =>
               setNotesModal({
@@ -561,11 +559,13 @@ export default React.memo(function Group({
                             : placement.child.birthDate.format()}
                         </Td>
                         <Td data-qa="placement-type">
-                          {'type' in placement ? (
-                            careTypesFromPlacementType(placement.type)
-                          ) : (
-                            <CareTypeLabel type="backup-care" />
-                          )}
+                          <CareTypeChip
+                            type={
+                              'type' in placement
+                                ? placement.type
+                                : 'backup-care'
+                            }
+                          />
                         </Td>
                         <Td data-qa="placement-subtype">
                           {'type' in placement ? (
@@ -605,7 +605,7 @@ export default React.memo(function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={colors.accents.orange}
+                                  color={colors.accents.warningOrange}
                                 >
                                   <FontAwesomeIcon icon={faTimes} inverse />
                                 </StatusIconContainer>
@@ -619,7 +619,7 @@ export default React.memo(function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={colors.accents.green}
+                                  color={colors.accents.successGreen}
                                 >
                                   <FontAwesomeIcon icon={faCheck} inverse />
                                 </StatusIconContainer>

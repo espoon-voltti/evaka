@@ -29,7 +29,7 @@ const TopRow = styled.div`
   align-items: center;
   margin-bottom: 16px;
 
-  color: ${colors.blues.dark};
+  color: ${colors.main.dark};
   font-style: normal;
   font-weight: ${fontWeights.semibold};
   font-size: 16px;
