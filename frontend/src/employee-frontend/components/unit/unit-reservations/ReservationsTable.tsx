@@ -64,12 +64,12 @@ export default React.memo(function ReservationsTable({
             <Tr key={childName}>
               <NameTd>
                 <ChildName>
-                  <Link to={`/child-information/${childReservations.child.id}`}>
-                    {childName}
-                  </Link>
                   <AgeIndicatorIcon
                     dateOfBirth={childReservations.child.dateOfBirth}
                   />
+                  <Link to={`/child-information/${childReservations.child.id}`}>
+                    {childName}
+                  </Link>
                 </ChildName>
               </NameTd>
               {operationalDays.map((day) => (
@@ -120,7 +120,7 @@ const ChildName = styled.div`
   align-items: center;
 
   a {
-    margin-right: ${defaultMargins.xs};
+    margin-left: ${defaultMargins.xs};
   }
 `
 

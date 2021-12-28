@@ -48,7 +48,7 @@ import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { UserContext } from '../../state/user'
 import { hasRole, RequireRole } from '../../utils/roles'
 import { isPartDayPlacement } from '../../utils/placements'
-import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+import { AgeIndicatorIconWithTooltip } from '../common/AgeIndicatorIcon'
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { UUID } from 'lib-common/types'
@@ -206,23 +206,11 @@ const ApplicationsList = React.memo(function Applications({
       application.dateOfBirth &&
       startDateOrDueDate && (
         <FixedSpaceRow spacing="xs">
-          <Tooltip
-            tooltip={
-              <span>
-                {startDateOrDueDate.differenceInYears(application.dateOfBirth) <
-                3
-                  ? i18n.applications.list.lessthan3
-                  : i18n.applications.list.morethan3}
-              </span>
+          <AgeIndicatorIconWithTooltip
+            isUnder3={
+              startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
             }
-          >
-            <AgeIndicatorIcon
-              isUnder3={
-                startDateOrDueDate.differenceInYears(application.dateOfBirth) <
-                3
-              }
-            />
-          </Tooltip>
+          />
           <span>
             {application.socialSecurityNumber ||
               formatDate(application.dateOfBirth.toSystemTzDate())}

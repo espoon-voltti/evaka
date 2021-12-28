@@ -69,6 +69,7 @@ import { renderResult } from '../../../async-rendering'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
 import NotesModal from '../notes/NotesModal'
+import { AgeIndicatorIconWithTooltip } from '../../../common/AgeIndicatorIcon'
 
 interface Props {
   unit: Unit
@@ -536,6 +537,17 @@ export default React.memo(function Group({
                             'DELETE'
                           ))
                     )
+
+                    const dateOfBirth =
+                      'type' in placement
+                        ? placement.child.dateOfBirth
+                        : placement.child.birthDate
+
+                    const placementStart =
+                      'type' in placement
+                        ? placement.startDate
+                        : placement.period.start
+
                     return (
                       <Tr
                         key={placement.id || ''}
@@ -553,10 +565,18 @@ export default React.memo(function Group({
                             {formatPersonName(placement.child, i18n, true)}
                           </Link>
                         </Td>
-                        <Td data-qa="child-dob">
-                          {'type' in placement
-                            ? placement.child.dateOfBirth.format()
-                            : placement.child.birthDate.format()}
+                        <Td>
+                          <FixedSpaceRow spacing="xs">
+                            <AgeIndicatorIconWithTooltip
+                              isUnder3={
+                                placementStart.differenceInYears(dateOfBirth) <
+                                3
+                              }
+                            />
+                            <span data-qa="child-dob">
+                              {dateOfBirth.format()}
+                            </span>
+                          </FixedSpaceRow>
                         </Td>
                         <Td data-qa="placement-type">
                           <CareTypeChip
