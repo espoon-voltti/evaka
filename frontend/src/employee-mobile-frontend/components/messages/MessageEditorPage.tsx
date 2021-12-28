@@ -28,9 +28,15 @@ import {
 } from '../../api/attachments'
 import { featureFlags } from 'lib-customizations/employee'
 import { useTranslation } from '../../state/i18n'
-import { useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { Result } from 'lib-common/api'
 import { renderResult } from '../async-rendering'
+import styled from 'styled-components'
+import { defaultMargins } from 'lib-components/white-space'
+import { ContentArea } from 'lib-components/layout/Container'
+import { faArrowLeft } from 'lib-icons'
+import { BackButtonInline } from '../attendances/components'
+import TopBar from '../common/TopBar'
 
 export default function MessageEditorPage() {
   const { i18n } = useTranslation()
@@ -39,6 +45,9 @@ export default function MessageEditorPage() {
     groupId: UUID
     childId: UUID
   }>()
+
+  const history = useHistory()
+
   const { nestedAccounts, selectedAccount, selectedUnit } =
     useContext(MessageContext)
 
@@ -67,7 +76,7 @@ export default function MessageEditorPage() {
       setSending(true)
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
-          history.back()
+          history.goBack()
         } else {
           // TODO handle eg. expired pin session correctly
           console.error('Failed to send message')
@@ -75,16 +84,19 @@ export default function MessageEditorPage() {
         setSending(false)
       })
     },
-    []
+    [history]
   )
 
-  const onDiscard = useCallback((accountId: UUID, draftId: UUID) => {
-    void deleteDraft(accountId, draftId).then(() => history.back())
-  }, [])
+  const onDiscard = useCallback(
+    (accountId: UUID, draftId: UUID) => {
+      void deleteDraft(accountId, draftId).then(() => history.goBack())
+    },
+    [history]
+  )
 
   const onHide = useCallback(() => {
-    history.back()
-  }, [])
+    history.goBack()
+  }, [history])
 
   return renderResult(nestedAccounts, (accounts) =>
     selectedReceivers && selectedAccount && selectedUnit ? (
@@ -116,6 +128,28 @@ export default function MessageEditorPage() {
         selectedUnit={selectedUnit}
         sending={sending}
       />
+    ) : !selectedReceivers ? (
+      <ContentArea
+        opaque
+        paddingVertical={'zero'}
+        paddingHorizontal={'zero'}
+        fullHeight={true}
+        data-qa={`messages-editor-content-area`}
+      >
+        <TopBar title={i18n.messages.newMessage} />
+        <PaddedContainer>
+          <span data-qa={'info-no-receivers'}>{i18n.messages.noReceivers}</span>
+        </PaddedContainer>
+        <BackButtonInline
+          onClick={() => history.goBack()}
+          icon={faArrowLeft}
+          text={i18n.common.back}
+        />
+      </ContentArea>
     ) : null
   )
 }
+
+const PaddedContainer = styled.div`
+  padding: ${defaultMargins.m} ${defaultMargins.s};
+`

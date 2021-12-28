@@ -11,6 +11,7 @@ export default class MobileMessageEditorPage {
   #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
   #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
   #sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
+  noReceiversInfo = this.page.find('[data-qa="info-no-receivers"]')
 
   async getEditorState() {
     return this.page

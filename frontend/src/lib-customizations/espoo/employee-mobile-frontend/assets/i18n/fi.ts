@@ -290,6 +290,7 @@ export const fi = {
   messages: {
     title: 'Saapuneet viestit',
     inputPlaceholder: 'Kirjoita...',
+    newMessage: 'Uusi viesti',
     messageEditor: {
       newMessage: (unitName: string) => `Uusi viesti (${unitName})`,
       to: {
@@ -316,7 +317,8 @@ export const fi = {
     pinLockInfo:
       'Lukeaksesi viestit sinun tulee avata lukitus PIN-koodilla. Voit lukea vain oman ryhmäsi viestit.',
     noAccountAccess:
-      'Viestejä ei voi näyttää, koska sinua ei ole luvitettu ryhmään. Pyydä lupa esimieheltäsi.'
+      'Viestejä ei voi näyttää, koska sinua ei ole luvitettu ryhmään. Pyydä lupa esimieheltäsi.',
+    noReceivers: 'Vastaanottajalle ei voi lähettää viestiä'
   },
   mobile: {
     landerText1:
