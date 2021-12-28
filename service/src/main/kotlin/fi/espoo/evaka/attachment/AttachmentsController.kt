@@ -57,7 +57,7 @@ class AttachmentsController(
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentEmployee(
-        db: Database.DeprecatedConnection,
+        db: Database,
         evakaClock: EvakaClock,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
@@ -66,38 +66,40 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
         accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
-        return handleFileUpload(db, user, AttachmentParent.Application(applicationId), file, defaultAllowedAttachmentContentTypes, type).also {
-            db.transaction { tx -> stateService.reCalculateDueDate(tx, evakaClock.today(), applicationId) }
+        return db.connect { dbc ->
+            handleFileUpload(dbc, user, AttachmentParent.Application(applicationId), file, defaultAllowedAttachmentContentTypes, type).also {
+                dbc.transaction { tx -> stateService.reCalculateDueDate(tx, evakaClock.today(), applicationId) }
+            } 
         }
     }
 
     @PostMapping("/income-statements/{incomeStatementId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadIncomeStatementAttachmentEmployee(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
-        return handleFileUpload(db, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes)
+        return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes) }
     }
 
     @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadMessageAttachment(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable draftId: MessageDraftId,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForMessageDraft.log(draftId)
         accessControl.requirePermissionFor(user, Action.MessageDraft.UPLOAD_ATTACHMENT, draftId)
-        return handleFileUpload(db, user, AttachmentParent.MessageDraft(draftId), file, defaultAllowedAttachmentContentTypes)
+        return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.MessageDraft(draftId), file, defaultAllowedAttachmentContentTypes) }
     }
 
     @PostMapping("/pedagogical-documents/{documentId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadPedagogicalDocumentAttachment(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestPart("file") file: MultipartFile
@@ -105,14 +107,16 @@ class AttachmentsController(
         Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.CREATE_ATTACHMENT, documentId)
 
-        return handleFileUpload(db, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttachmentContentTypes) { tx ->
-            pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, documentId)
+        return db.connect { dbc ->
+            handleFileUpload(dbc, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttachmentContentTypes) { tx ->
+                pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, documentId)
+            }
         }
     }
 
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentCitizen(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
@@ -123,10 +127,12 @@ class AttachmentsController(
         accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
 
         val attachTo = AttachmentParent.Application(applicationId)
-        checkAttachmentCount(db, attachTo, user)
+        return db.connect { dbc ->
+            checkAttachmentCount(dbc, attachTo, user)
 
-        return handleFileUpload(db, user, attachTo, file, defaultAllowedAttachmentContentTypes, type) { tx ->
-            stateService.reCalculateDueDate(tx, evakaClock.today(), applicationId)
+            handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes, type) { tx ->
+                stateService.reCalculateDueDate(tx, evakaClock.today(), applicationId)
+            }
         }
     }
 
@@ -135,7 +141,7 @@ class AttachmentsController(
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadAttachmentCitizen(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
@@ -147,12 +153,14 @@ class AttachmentsController(
 
         val attachTo =
             if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId) else AttachmentParent.None
-        checkAttachmentCount(db, attachTo, user)
 
-        return handleFileUpload(db, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+        return db.connect { dbc ->
+            checkAttachmentCount(dbc, attachTo, user)
+            handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+        }
     }
 
-    private fun checkAttachmentCount(db: Database.DeprecatedConnection, attachTo: AttachmentParent, user: AuthenticatedUser) {
+    private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser) {
         val count = db.read {
             when (attachTo) {
                 AttachmentParent.None -> it.userUnparentedAttachmentCount(user.id)
@@ -186,7 +194,7 @@ class AttachmentsController(
         .last()
 
     private fun handleFileUpload(
-        db: Database.DeprecatedConnection,
+        db: Database.Connection,
         user: AuthenticatedUser,
         attachTo: AttachmentParent,
         file: MultipartFile,

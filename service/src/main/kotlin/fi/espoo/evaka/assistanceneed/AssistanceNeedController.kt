@@ -31,66 +31,72 @@ class AssistanceNeedController(
 ) {
     @PostMapping("/children/{childId}/assistance-needs")
     fun createAssistanceNeed(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: AssistanceNeedRequest
     ): ResponseEntity<AssistanceNeed> {
         Audit.ChildAssistanceNeedCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED, childId)
-        return assistanceNeedService.createAssistanceNeed(
-            db,
-            user = user,
-            childId = childId,
-            data = body
-        ).let { created(it, URI.create("/children/$childId/assistance-needs/${it.id}")) }
+        return db.connect { dbc ->
+            assistanceNeedService.createAssistanceNeed(
+                dbc,
+                user = user,
+                childId = childId,
+                data = body
+            )
+        }.let { created(it, URI.create("/children/$childId/assistance-needs/${it.id}")) }
     }
 
     @GetMapping("/children/{childId}/assistance-needs")
     fun getAssistanceNeeds(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<AssistanceNeed> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
-        return assistanceNeedService.getAssistanceNeedsByChildId(db, childId).filter { assistanceNeed ->
-            accessControl.hasPermissionFor(user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, assistanceNeed.id)
+        return db.connect { dbc ->
+            assistanceNeedService.getAssistanceNeedsByChildId(dbc, childId).filter { assistanceNeed ->
+                accessControl.hasPermissionFor(user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, assistanceNeed.id)
+            }
         }
     }
 
     @PutMapping("/assistance-needs/{id}")
     fun updateAssistanceNeed(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId,
         @RequestBody body: AssistanceNeedRequest
     ): ResponseEntity<AssistanceNeed> {
         Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId)
         accessControl.requirePermissionFor(user, Action.AssistanceNeed.UPDATE, assistanceNeedId)
-        return assistanceNeedService.updateAssistanceNeed(
-            db,
-            user = user,
-            id = assistanceNeedId,
-            data = body
-        ).let(::ok)
+        return db.connect { dbc ->
+            assistanceNeedService.updateAssistanceNeed(
+                dbc,
+                user = user,
+                id = assistanceNeedId,
+                data = body
+            )
+        }.let(::ok)
     }
 
     @DeleteMapping("/assistance-needs/{id}")
     fun deleteAssistanceNeed(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId
     ): ResponseEntity<Unit> {
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
         accessControl.requirePermissionFor(user, Action.AssistanceNeed.DELETE, assistanceNeedId)
-        assistanceNeedService.deleteAssistanceNeed(db, assistanceNeedId)
+        db.connect { dbc -> assistanceNeedService.deleteAssistanceNeed(dbc, assistanceNeedId) }
         return noContent()
     }
 
     @GetMapping("/assistance-basis-options")
-    fun getAssistanceBasisOptions(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<AssistanceBasisOption> {
+    fun getAssistanceBasisOptions(db: Database, user: AuthenticatedUser): List<AssistanceBasisOption> {
         accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
-        return assistanceNeedService.getAssistanceBasisOptions(db)
+        return db.connect { dbc -> assistanceNeedService.getAssistanceBasisOptions(dbc) }
     }
 }
