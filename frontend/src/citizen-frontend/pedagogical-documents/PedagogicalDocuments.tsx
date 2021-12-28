@@ -111,14 +111,14 @@ const AttachmentRow = React.memo(function AttachmentRow({
         attachment={attachment}
         onRead={onRead}
         onAttachmentUnavailable={onAttachmentUnavailable}
-        dataQa={`pedagogical-document-list-attachment-${attachment.id}`}
+        dataQa={`${dataQa}-attachment`}
       />
       <AttachmentDownloadButton
         pedagogicalDocument={pedagogicalDocument}
         attachment={attachment}
         onRead={onRead}
         onAttachmentUnavailable={onAttachmentUnavailable}
-        dataQa={`pedagogical-document-list-attachment-download-${attachment.id}`}
+        dataQa={`${dataQa}-download`}
       />
     </AttachmentRowContainer>
   )
@@ -252,7 +252,7 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
                 attachment={attachment}
                 onRead={onRead}
                 onAttachmentUnavailable={onAttachmentUnavailable}
-                dataQa={`attachment-${item.id}`}
+                dataQa={`list-attachment-${attachment.id}`}
               />
             ))}
           </AttachmentsContainer>
@@ -312,7 +312,7 @@ const PedagogicalDocumentsTable = React.memo(
                       attachment={attachment}
                       onRead={onRead}
                       onAttachmentUnavailable={onAttachmentUnavailable}
-                      dataQa={`attachment-${item.id}`}
+                      dataQa={`attachment-${attachment.id}`}
                     />
                   ))}
                 </AttachmentsContainer>

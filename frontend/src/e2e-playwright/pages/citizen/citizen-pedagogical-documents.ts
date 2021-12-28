@@ -15,7 +15,7 @@ export default class CitizenPedagogicalDocumentsPage {
   readonly #description = (id: string) =>
     this.page.find(`[data-qa="pedagogical-document-description-${id}"]`)
   readonly #downloadAttachment = (id: string) =>
-    this.page.find(`[data-qa="pedagogical-document-attachment-download-${id}"]`)
+    this.page.find(`[data-qa="attachment-${id}-download"]`)
   readonly #unreadDocumentCount = this.page.find(
     '[data-qa="unread-pedagogical-documents-count"]'
   )
