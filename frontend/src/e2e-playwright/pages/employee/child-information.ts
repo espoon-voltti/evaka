@@ -61,31 +61,51 @@ export default class ChildInformationPage {
     await this.#confirmButton.click()
   }
 
+  async assertCollapsiblesVisible(params: Record<Collapsible, boolean>) {
+    const collapsibleArray = Object.entries(collapsibles) as [
+      Collapsible,
+      { selector: string }
+    ][]
+
+    await waitUntilEqual(async () => {
+      const collapsibleStatus = collapsibleArray.map(
+        async ([key, { selector }]) => {
+          const isVisible = await this.page.find(selector).visible
+          return [key, isVisible] as const
+        }
+      )
+      return Object.fromEntries(await Promise.all(collapsibleStatus))
+    }, params)
+  }
+
   async openCollapsible<C extends Collapsible>(
     collapsible: C
   ): Promise<SectionFor<C>> {
     const { selector, section } = collapsibles[collapsible]
     const element = this.page.find(selector)
     await element.click()
-    return new section(element) as SectionFor<C>
+    return new section(this.page, element) as SectionFor<C>
   }
 
   additionalInformationSection() {
     return new AdditionalInformationSection(
+      this.page,
       this.page.find('[data-qa="additional-information-section"]')
     )
   }
 }
 
-export class AdditionalInformationSection {
-  constructor(private section: Element) {}
+class Section extends Element {
+  constructor(protected page: Page, root: Element) {
+    super(root)
+  }
+}
 
-  #medication = this.section.find('[data-qa="medication"]')
-  #editBtn = this.section.find('[data-qa="edit-child-settings-button"]')
-  #medicationInput = new TextInput(
-    this.section.find('[data-qa="medication-input"]')
-  )
-  #confirmBtn = this.section.find('[data-qa="confirm-edited-child-button"]')
+export class AdditionalInformationSection extends Section {
+  #medication = this.find('[data-qa="medication"]')
+  #editBtn = this.find('[data-qa="edit-child-settings-button"]')
+  #medicationInput = new TextInput(this.find('[data-qa="medication-input"]'))
+  #confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
 
   async assertMedication(text: string) {
     await waitUntilEqual(() => this.#medication.textContent, text)
@@ -104,12 +124,10 @@ export class AdditionalInformationSection {
   }
 }
 
-export class DailyServiceTimeSection {
-  constructor(private section: Element) {}
-
-  readonly #typeText = this.section.find('[data-qa="times-type"]')
-  readonly #timesText = this.section.find('[data-qa="times"]')
-  readonly #editButton = this.section.find('[data-qa="edit-button"]')
+export class DailyServiceTimeSection extends Section {
+  readonly #typeText = this.find('[data-qa="times-type"]')
+  readonly #timesText = this.find('[data-qa="times"]')
+  readonly #editButton = this.find('[data-qa="edit-button"]')
 
   get typeText(): Promise<string> {
     return this.#typeText.innerText
@@ -125,22 +143,16 @@ export class DailyServiceTimeSection {
 
   async edit() {
     await this.#editButton.click()
-    return new DailyServiceTimesSectionEdit(this.section)
+    return new DailyServiceTimesSectionEdit(this.page, this)
   }
 }
 
-export class DailyServiceTimesSectionEdit {
-  readonly #notSetRadio = this.section.find('[data-qa="radio-not-set"]')
+export class DailyServiceTimesSectionEdit extends Section {
+  readonly #notSetRadio = this.find('[data-qa="radio-not-set"]')
 
-  readonly #regularRadio = new Radio(
-    this.section.find('[data-qa="radio-regular"]')
-  )
-  readonly #irregularRadio = new Radio(
-    this.section.find('[data-qa="radio-irregular"]')
-  )
-  readonly #submitButton = this.section.find('[data-qa="submit-button"]')
-
-  constructor(private section: Element) {}
+  readonly #regularRadio = new Radio(this.find('[data-qa="radio-regular"]'))
+  readonly #irregularRadio = new Radio(this.find('[data-qa="radio-irregular"]'))
+  readonly #submitButton = this.find('[data-qa="submit-button"]')
 
   async selectTimeNotSet() {
     await this.#notSetRadio.click()
@@ -159,7 +171,7 @@ export class DailyServiceTimesSectionEdit {
   }
 
   #timeInput(which: string, startEnd: 'start' | 'end') {
-    return new TextInput(this.section.find(`[data-qa="${which}-${startEnd}"]`))
+    return new TextInput(this.find(`[data-qa="${which}-${startEnd}"]`))
   }
 
   async fillTimeRange(which: string, start: string, end: string) {
@@ -168,7 +180,7 @@ export class DailyServiceTimesSectionEdit {
   }
 
   #checkbox(day: string) {
-    return this.section.find(`[data-qa="${day}-checkbox"]`)
+    return this.find(`[data-qa="${day}-checkbox"]`)
   }
 
   async selectDay(day: string) {
@@ -195,40 +207,24 @@ export class DailyServiceTimesSectionEdit {
   }
 }
 
-export class PedagogicalDocumentsSection {
-  constructor(private section: Element) {}
+export class PedagogicalDocumentsSection extends Section {
+  readonly #startDate = this.find('[data-qa="pedagogical-document-start-date"]')
 
-  readonly #startDate = this.section.find(
-    '[data-qa="pedagogical-document-start-date"]'
-  )
-
-  readonly #document = this.section.find(
-    '[data-qa="pedagogical-document-document"]'
-  )
+  readonly #document = this.find('[data-qa="pedagogical-document-document"]')
 
   readonly #descriptionInput = new TextInput(
-    this.section.find('[data-qa="pedagogical-document-description"]')
+    this.find('[data-qa="pedagogical-document-description"]')
   )
 
-  readonly #description = this.section.find(
+  readonly #description = this.find(
     '[data-qa="pedagogical-document-description"]'
   )
 
-  readonly #create = this.section.find(
-    '[data-qa="button-create-pedagogical-document"]'
-  )
-  readonly #save = this.section.find(
-    '[data-qa="pedagogical-document-button-save"]'
-  )
-  readonly #edit = this.section.find(
-    '[data-qa="pedagogical-document-button-edit"]'
-  )
-  readonly #cancel = this.section.find(
-    '[data-qa="pedagogical-document-button-cancel"]'
-  )
-  readonly #delete = this.section.find(
-    '[data-qa="pedagogical-document-button-delete"]'
-  )
+  readonly #create = this.find('[data-qa="button-create-pedagogical-document"]')
+  readonly #save = this.find('[data-qa="pedagogical-document-button-save"]')
+  readonly #edit = this.find('[data-qa="pedagogical-document-button-edit"]')
+  readonly #cancel = this.find('[data-qa="pedagogical-document-button-cancel"]')
+  readonly #delete = this.find('[data-qa="pedagogical-document-button-delete"]')
 
   async save() {
     await this.#save.click()
@@ -265,7 +261,7 @@ export class PedagogicalDocumentsSection {
 
   async addNew() {
     await this.#create.click()
-    return new PedagogicalDocumentsSection(this.section)
+    return new PedagogicalDocumentsSection(this.page, this)
   }
 
   async addAttachmentAndAssert(
@@ -284,34 +280,28 @@ export class PedagogicalDocumentsSection {
   }
 }
 
-export class VasuAndLeopsSection {
-  constructor(private section: Element) {}
-
-  readonly #addNew = this.section.find('[data-qa="add-new-vasu-button"]')
+export class VasuAndLeopsSection extends Section {
+  readonly #addNew = this.find('[data-qa="add-new-vasu-button"]')
 
   async addNew() {
     return this.#addNew.click()
   }
 }
 
-export class BackupCaresSection {
-  constructor(private section: Element) {}
-
-  #createBackupCareButton = this.section.find(
-    '[data-qa="backup-care-create-btn"]'
-  )
+export class BackupCaresSection extends Section {
+  #createBackupCareButton = this.find('[data-qa="backup-care-create-btn"]')
   #backupCareSelectUnit = new Combobox(
-    this.section.find('[data-qa="backup-care-select-unit"]')
+    this.find('[data-qa="backup-care-select-unit"]')
   )
 
-  #dates = this.section.findAll('[data-qa="dates"] > *')
+  #dates = this.findAll('[data-qa="dates"] > *')
   #startDate = new DatePickerDeprecated(this.#dates.nth(0))
   #endDate = new DatePickerDeprecated(this.#dates.nth(1))
 
-  // #backupCareForm = this.section.find('[data-qa="backup-care-form"]')
-  #submit = this.section.find('[data-qa="submit-backup-care-form"]')
+  // #backupCareForm = this.find('[data-qa="backup-care-form"]')
+  #submit = this.find('[data-qa="submit-backup-care-form"]')
 
-  #backupCares = this.section.find('[data-qa="backup-cares"]')
+  #backupCares = this.find('[data-qa="backup-cares"]')
 
   async createBackupCare(daycare: Daycare, startDate: string, endDate: string) {
     await this.#createBackupCareButton.click()
@@ -326,7 +316,7 @@ export class BackupCaresSection {
 
   async getBackupCares(): Promise<Array<{ unit: string; period: string }>> {
     await this.#backupCares.waitUntilVisible()
-    return this.section.evaluate((el) => {
+    return this.evaluate((el) => {
       return Array.from(el.querySelectorAll('[data-qa="backup-care-row"]')).map(
         (row) => ({
           unit: row.querySelector('[data-qa="unit"]')?.textContent ?? '',
@@ -350,21 +340,17 @@ export class BackupCaresSection {
   }
 }
 
-export class FamilyContactsSection {
-  constructor(private section: Element) {}
-
+export class FamilyContactsSection extends Section {
   #row(name: string) {
-    return this.section.find(`[data-qa="table-backup-pickup-row-${name}"]`)
+    return this.find(`[data-qa="table-backup-pickup-row-${name}"]`)
   }
 
-  #createBtn = this.section.find('[data-qa="create-backup-pickup-btn"]')
-  #nameInput = new TextInput(
-    this.section.find('[data-qa="backup-pickup-name-input"]')
-  )
+  #createBtn = this.find('[data-qa="create-backup-pickup-btn"]')
+  #nameInput = new TextInput(this.find('[data-qa="backup-pickup-name-input"]'))
   #phoneInput = new TextInput(
-    this.section.find('[data-qa="backup-pickup-phone-input"]')
+    this.find('[data-qa="backup-pickup-phone-input"]')
   )
-  #modalOk = this.section.find('[data-qa="modal-okBtn"]')
+  #modalOk = this.find('[data-qa="modal-okBtn"]')
 
   async addBackupPickup(name: string, phone: string) {
     await this.#createBtn.click()
@@ -387,10 +373,8 @@ export class FamilyContactsSection {
   }
 }
 
-export class GuardiansSection {
-  constructor(private section: Element) {}
-
-  #guardianRows = this.section.find('[data-qa="table-guardian-row"]')
+export class GuardiansSection extends Section {
+  #guardianRows = this.find('[data-qa="table-guardian-row"]')
 
   async assertGuardianExists(ssn: string) {
     await this.#guardianRows
@@ -399,22 +383,21 @@ export class GuardiansSection {
   }
 }
 
-export class PlacementsSection {
-  constructor(private section: Element) {}
-
-  #placementRow = (id: string) =>
-    this.section.find(`[data-qa="placement-${id}"]`)
+export class PlacementsSection extends Section {
+  #placementRow = (id: string) => this.find(`[data-qa="placement-${id}"]`)
   #serviceNeedRow = (index: number) =>
-    this.section.findAll('[data-qa="service-need-row"]').nth(index)
+    this.findAll('[data-qa="service-need-row"]').nth(index)
   #serviceNeedRowOptionName = (index: number) =>
     this.#serviceNeedRow(index).find('[data-qa="service-need-name"]')
-  #addMissingServiceNeedButton = this.section.find(
+  #addMissingServiceNeedButton = this.find(
     '[data-qa="add-new-missing-service-need"]'
   )
   #serviceNeedOptionSelect = new Select(
-    this.section.find('[data-qa="service-need-option-select"] select')
+    this.find('[data-qa="service-need-option-select"] select')
   )
-  #serviceNeedSaveButton = this.section.find('[data-qa="service-need-save"]')
+  #serviceNeedSaveButton = this.find('[data-qa="service-need-save"]')
+  #terminatedByGuardian = (placementId: string) =>
+    this.#placementRow(placementId).find('[data-qa="placement-terminated"]')
 
   async openPlacement(id: string) {
     const placementRow = this.#placementRow(id)
@@ -455,7 +438,69 @@ export class PlacementsSection {
       )
     })
   }
+
+  async assertTerminatedByGuardianIsShown(placementId: string) {
+    await this.#terminatedByGuardian(placementId).waitUntilVisible()
+  }
+
+  async assertTerminatedByGuardianIsNotShown(placementId: string) {
+    await this.#placementRow(placementId)
+      .find('[data-qa="placement-details-start-date"]')
+      .waitUntilVisible()
+    await this.#terminatedByGuardian(placementId).waitUntilHidden()
+  }
 }
+
+export class AssistanceNeedSection extends Section {
+  #createAssistanceNeedButton = this.find(
+    '[data-qa="assistance-need-create-btn"]'
+  )
+  #assistanceNeedMultiplierInput = new TextInput(
+    this.find('[data-qa="input-assistance-need-multiplier"]')
+  )
+  #confirmAssistanceNeedButton = this.find(
+    '[data-qa="button-assistance-need-confirm"]'
+  )
+  #assistanceNeedMultiplier = this.findAll(
+    '[data-qa="assistance-need-multiplier"]'
+  )
+  #assistanceNeedRow = this.findAll('[data-qa="assistance-need-row"]')
+
+  async createNewAssistanceNeed() {
+    await this.#createAssistanceNeedButton.click()
+  }
+
+  async setAssistanceNeedMultiplier(multiplier: string) {
+    await this.#assistanceNeedMultiplierInput.fill(multiplier)
+  }
+
+  async confirmAssistanceNeed() {
+    await this.#confirmAssistanceNeedButton.click()
+  }
+
+  async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
+    await waitUntilEqual(
+      () => this.#assistanceNeedMultiplier.nth(nth).innerText,
+      expected
+    )
+  }
+
+  async assertAssistanceNeedCount(expectedCount: number) {
+    await waitUntilEqual(() => this.#assistanceNeedRow.count(), expectedCount)
+  }
+}
+
+class MessageBlocklistSection extends Section {
+  async addParentToBlockList(parentId: string) {
+    await this.find(
+      `[data-qa="recipient-${parentId}"] [data-qa="blocklist-checkbox"]`
+    ).click()
+  }
+}
+
+class FeeAlterationsSection extends Section {}
+
+class ApplicationsSection extends Section {}
 
 const collapsibles = {
   dailyServiceTimes: {
@@ -485,6 +530,22 @@ const collapsibles = {
   placements: {
     selector: '[data-qa="child-placements-collapsible"]',
     section: PlacementsSection
+  },
+  assistanceNeed: {
+    selector: '[data-qa="assistance-collapsible"]',
+    section: AssistanceNeedSection
+  },
+  messageBlocklist: {
+    selector: '[data-qa="child-message-blocklist-collapsible"]',
+    section: MessageBlocklistSection
+  },
+  applications: {
+    selector: '[data-qa="applications-collapsible"]',
+    section: ApplicationsSection
+  },
+  feeAlterations: {
+    selector: '[data-qa="fee-alteration-collapsible"]',
+    section: FeeAlterationsSection
   }
 }
 

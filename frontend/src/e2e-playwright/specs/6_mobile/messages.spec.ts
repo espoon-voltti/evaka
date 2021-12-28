@@ -31,7 +31,7 @@ import { waitUntilEqual } from '../../utils'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
-import ChildInformationPage from '../../pages/employee/child-information-page'
+import ChildInformationPage from '../../pages/employee/child-information'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
@@ -300,10 +300,13 @@ describe('Child message thread', () => {
     await employeeLogin(adminPage, 'ADMIN')
     await adminPage.goto(`${config.employeeUrl}/child-information/${child.id}`)
     const childInformationPage = new ChildInformationPage(adminPage)
-    await childInformationPage.addParentToBlockList(
+    const blocklistSection = await childInformationPage.openCollapsible(
+      'messageBlocklist'
+    )
+    await blocklistSection.addParentToBlockList(
       fixtures.enduserGuardianFixture.id
     )
-    await childInformationPage.addParentToBlockList(
+    await blocklistSection.addParentToBlockList(
       fixtures.enduserChildJariOtherGuardianFixture.id
     )
 
