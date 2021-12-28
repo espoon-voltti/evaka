@@ -39,8 +39,8 @@ const FridgeParents = React.memo(function FridgeParents() {
                 <Tr key={parentship.id}>
                   <Td>
                     <Link to={`/profile/${parentship.headOfChildId}`}>
-                      {parentship.headOfChild.firstName}{' '}
-                      {parentship.headOfChild.lastName}
+                      {parentship.headOfChild.lastName}{' '}
+                      {parentship.headOfChild.firstName}
                     </Link>
                   </Td>
                   <Td>{parentship.headOfChild.socialSecurityNumber}</Td>

@@ -60,7 +60,7 @@ SELECT
   urgent,
   preferredStartDate,
   startDate,
-  childFirstName || ' ' || childLastName AS childName,
+  childLastName || ' ' || childFirstName AS childName,
   childFirstName,
   childLastName,
   childSSN,

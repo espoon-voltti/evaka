@@ -56,7 +56,8 @@ export default React.memo(function PersonDependants({ id, open }: Props) {
                           {formatName(
                             dependant.firstName,
                             dependant.lastName,
-                            i18n
+                            i18n,
+                            true
                           )}
                         </Link>
                       </NameTd>

@@ -132,7 +132,8 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
                       {formatName(
                         fridgeChild.child.firstName,
                         fridgeChild.child.lastName,
-                        i18n
+                        i18n,
+                        true
                       )}
                     </Link>
                   </NameTd>
