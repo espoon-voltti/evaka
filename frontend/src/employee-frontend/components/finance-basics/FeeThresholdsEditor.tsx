@@ -8,7 +8,7 @@ import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import colors from 'lib-customizations/common'
-import { H3LikeLabel, H4, Label } from 'lib-components/typography'
+import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
@@ -101,7 +101,7 @@ export default React.memo(function FeeThresholdsEditor({
     <>
       <div className="separator large" />
       <RowWithMargin alignItems="center" spacing="xs">
-        <H3LikeLabel>{i18n.financeBasics.fees.validDuring}</H3LikeLabel>
+        <H3>{i18n.financeBasics.fees.validDuring}</H3>
         <DatePicker
           locale="fi"
           date={editorState.validFrom}
