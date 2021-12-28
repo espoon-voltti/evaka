@@ -6,9 +6,6 @@ import config from 'e2e-test-common/config'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
   insertDefaultServiceNeedOptions,
   resetDatabase,
   postChildDailyNote
@@ -17,7 +14,6 @@ import { employeeLogin, seppoAdmin } from '../../config/users'
 import { t } from 'testcafe'
 import {
   CareAreaBuilder,
-  createDaycarePlacementFixture,
   DaycareBuilder,
   DaycareGroupBuilder,
   enduserChildFixtureJari,
@@ -25,15 +21,11 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 const employeeId = uuidv4()
-
-let daycarePlacementFixtureJari: DaycarePlacement
-let daycarePlacementFixtureKaarina: DaycarePlacement
 
 let daycareGroup: DaycareGroupBuilder
 let daycare: DaycareBuilder
@@ -48,50 +40,39 @@ fixture('Mobile employee daily notes')
     const fixtures = await initializeAreaAndPersonData()
 
     await insertDefaultServiceNeedOptions()
-    await insertEmployeeFixture({
-      id: employeeId,
-      externalId: `espooad: ${employeeId}`,
-      firstName: 'Yrjö',
-      lastName: 'Yksikkö',
-      email: 'yy@example.com',
-      roles: []
-    })
+    await Fixture.employee()
+      .with({
+        id: employeeId,
+        externalId: `espooad: ${employeeId}`,
+        roles: []
+      })
+      .save()
 
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()
     daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
-    daycarePlacementFixtureJari = createDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureJari.id,
-      daycare.data.id
-    )
 
-    daycarePlacementFixtureKaarina = createDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureKaarina.id,
-      daycare.data.id
-    )
+    const placementFixtureJari = await Fixture.placement()
+      .with({
+        childId: fixtures.enduserChildFixtureJari.id,
+        unitId: daycare.data.id
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .withGroup(daycareGroup)
+      .withPlacement(placementFixtureJari)
+      .save()
 
-    await insertDaycarePlacementFixtures([
-      daycarePlacementFixtureJari,
-      daycarePlacementFixtureKaarina
-    ])
-    await insertDaycareGroupPlacementFixtures([
-      {
-        id: uuidv4(),
-        daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: daycarePlacementFixtureJari.id,
-        startDate: daycarePlacementFixtureJari.startDate,
-        endDate: daycarePlacementFixtureJari.endDate
-      },
-      {
-        id: uuidv4(),
-        daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: daycarePlacementFixtureKaarina.id,
-        startDate: daycarePlacementFixtureKaarina.startDate,
-        endDate: daycarePlacementFixtureKaarina.endDate
-      }
-    ])
+    const placementFixtureKaarina = await Fixture.placement()
+      .with({
+        childId: fixtures.enduserChildFixtureKaarina.id,
+        unitId: daycare.data.id
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .withGroup(daycareGroup)
+      .withPlacement(placementFixtureKaarina)
+      .save()
 
     await employeeLogin(t, seppoAdmin, config.employeeUrl)
     await employeeHome.navigateToUnits()

@@ -7,19 +7,11 @@ import {
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
-import {
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
-  postMobileDevice,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
+import { postMobileDevice, resetDatabase } from 'e2e-test-common/dev-api'
 import { mobileLogin } from '../../config/users'
 import { t } from 'testcafe'
 import {
   CareAreaBuilder,
-  createDaycarePlacementFixture,
-  createPreschoolDaycarePlacementFixture,
   DaycareBuilder,
   DaycareGroupBuilder,
   Fixture,
@@ -27,7 +19,6 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
-import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
@@ -36,8 +27,6 @@ const employeeId = uuidv4()
 const mobileDeviceId = employeeId
 const mobileLongTermToken = uuidv4()
 
-let daycarePlacementFixture: DaycarePlacement
-let preschoolDaycarePlacementFixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
 let daycare: DaycareBuilder
 let careArea: CareAreaBuilder
@@ -48,55 +37,45 @@ fixture('Mobile attendances')
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
 
-    await Promise.all([
-      insertEmployeeFixture({
+    await Fixture.employee()
+      .with({
         id: employeeId,
         externalId: `espooad: ${employeeId}`,
-        firstName: 'Yrjö',
-        lastName: 'Yksikkö',
-        email: 'yy@example.com',
         roles: []
       })
-    ])
+      .save()
 
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()
     daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
-    daycarePlacementFixture = createDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureJari.id,
-      daycare.data.id,
-      LocalDate.today().addMonths(3).addDays(1).formatIso(),
-      LocalDate.today().addMonths(8).formatIso()
-    )
-    preschoolDaycarePlacementFixture = createPreschoolDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureJari.id,
-      daycare.data.id,
-      LocalDate.today().formatIso(),
-      LocalDate.today().addMonths(3).formatIso()
-    )
 
-    await insertDaycarePlacementFixtures([
-      daycarePlacementFixture,
-      preschoolDaycarePlacementFixture
-    ])
-    await insertDaycareGroupPlacementFixtures([
-      {
-        id: uuidv4(),
-        daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: daycarePlacementFixture.id,
-        startDate: daycarePlacementFixture.startDate,
-        endDate: daycarePlacementFixture.endDate
-      },
-      {
-        id: uuidv4(),
-        daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: preschoolDaycarePlacementFixture.id,
-        startDate: preschoolDaycarePlacementFixture.startDate,
-        endDate: preschoolDaycarePlacementFixture.endDate
-      }
-    ])
+    const daycarePlacementFixture = await Fixture.placement()
+      .with({
+        type: 'DAYCARE',
+        childId: fixtures.enduserChildFixtureJari.id,
+        unitId: daycare.data.id,
+        startDate: LocalDate.today().addMonths(3).addDays(1).formatIso(),
+        endDate: LocalDate.today().addMonths(8).formatIso()
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .withGroup(daycareGroup)
+      .withPlacement(daycarePlacementFixture)
+      .save()
+
+    const preschoolDaycarePlacementFixture = await Fixture.placement()
+      .with({
+        type: 'PRESCHOOL_DAYCARE',
+        childId: fixtures.enduserChildFixtureJari.id,
+        unitId: daycare.data.id,
+        startDate: LocalDate.today().formatIso(),
+        endDate: LocalDate.today().addMonths(3).formatIso()
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .withGroup(daycareGroup)
+      .withPlacement(preschoolDaycarePlacementFixture)
+      .save()
 
     await postMobileDevice({
       id: mobileDeviceId,

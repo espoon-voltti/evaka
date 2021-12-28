@@ -25,8 +25,8 @@ LEFT JOIN child_images img ON p.id = img.child_id
 LEFT JOIN placement pl ON pl.child_id = p.id AND daterange(pl.start_date, pl.end_date, '[]') @> :today::date
 LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
 LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-WHERE
-    g.guardian_id = :userId
+WHERE g.guardian_id = :userId
+ORDER BY p.date_of_birth, p.last_name, p.first_name
         """.trimIndent()
     )
         .bind("today", HelsinkiDateTime.now().toLocalDate())

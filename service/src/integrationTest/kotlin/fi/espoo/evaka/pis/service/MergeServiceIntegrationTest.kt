@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestChild
@@ -121,7 +122,14 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
                 startDate = LocalDate.of(2015, 1, 1),
                 endDate = LocalDate.of(2030, 1, 1)
             )
-            it.insertTestIncome(objectMapper, adultIdDuplicate, validFrom = validFrom, validTo = validTo, updatedBy = testDecisionMaker_1.id)
+            it.insertTestIncome(
+                DevIncome(
+                    adultIdDuplicate,
+                    validFrom = validFrom,
+                    validTo = validTo,
+                    updatedBy = testDecisionMaker_1.id
+                )
+            )
         }
 
         val countBefore = db.read {

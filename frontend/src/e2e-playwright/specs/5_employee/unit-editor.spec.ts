@@ -4,13 +4,13 @@
 
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import config from 'e2e-test-common/config'
-import { insertEmployeeFixture, resetDatabase } from 'e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import { Page } from '../../utils/page'
 import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { UnitPage, UnitEditor } from 'e2e-playwright/pages/employee/units/unit'
-
 import { employeeLogin } from 'e2e-playwright/utils/user'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { Daycare } from 'e2e-test-common/dev-api/types'
 
 describe('Employee - unit details', () => {
@@ -82,13 +82,12 @@ describe('Employee - unit editor validations and warnings', () => {
     await resetDatabase()
 
     const fixtures = await initializeAreaAndPersonData()
-    await insertEmployeeFixture({
-      externalId: `espoo-ad:${config.adminExternalId}`,
-      email: 'teppo.testaaja@example.com',
-      firstName: 'Teppo',
-      lastName: 'Testaaja',
-      roles: []
-    })
+    await Fixture.employee()
+      .with({
+        externalId: `espoo-ad:${config.adminExternalId}`,
+        roles: []
+      })
+      .save()
 
     page = await Page.open()
     await employeeLogin(page, 'ADMIN')

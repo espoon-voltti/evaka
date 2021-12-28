@@ -7,13 +7,11 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
-import { supervisor } from 'e2e-test-common/dev-api/fixtures'
 import { daycareGroupFixture } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { t } from 'testcafe'
 import {
   insertDaycareGroupFixtures,
-  insertEmployeeFixture,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
@@ -33,7 +31,6 @@ fixture('Employee - paper application')
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
     await insertDaycareGroupFixtures([daycareGroupFixture])
-    await insertEmployeeFixture(supervisor)
 
     await employeeLogin(t, seppoAdmin, employeeHome.url)
     await employeeHome.navigateToChildInformation(

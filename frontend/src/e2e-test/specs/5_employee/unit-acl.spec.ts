@@ -9,15 +9,11 @@ import {
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
-import {
-  deleteEmployeeFixture,
-  insertEmployeeFixture,
-  resetDatabase,
-  setAclForDaycares
-} from 'e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { employeeLogin } from '../../config/users'
 import { UUID } from 'lib-common/types'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 const home = new EmployeeHome()
 const unitPage = new UnitPage()
@@ -41,33 +37,37 @@ fixture('Employee - Unit ACL')
   .beforeEach(async () => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
-    await deleteEmployeeFixture(config.supervisorExternalId)
-    await insertEmployeeFixture({
-      externalId: config.supervisorExternalId,
-      firstName: 'Seppo',
-      lastName: 'Sorsa',
-      email: 'seppo.sorsa@evaka.test',
-      roles: []
-    })
-    await setAclForDaycares(
-      config.supervisorExternalId,
-      fixtures.daycareFixture.id
-    )
-    employeeUuids = await Promise.all([
-      insertEmployeeFixture({
-        externalId: employeeExternalIds[0],
-        firstName: 'Pete',
-        lastName: 'Päiväkoti',
-        email: 'pete@example.com',
-        roles: []
-      }),
-      insertEmployeeFixture({
-        externalId: employeeExternalIds[1],
-        firstName: 'Yrjö',
-        lastName: 'Yksikkö',
-        email: 'yy@example.com',
+    await Fixture.employee()
+      .with({
+        externalId: config.supervisorExternalId,
+        firstName: 'Seppo',
+        lastName: 'Sorsa',
+        email: 'seppo.sorsa@evaka.test',
         roles: []
       })
+      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+      .save()
+    employeeUuids = await Promise.all([
+      Fixture.employee()
+        .with({
+          externalId: employeeExternalIds[0],
+          firstName: 'Pete',
+          lastName: 'Päiväkoti',
+          email: 'pete@example.com',
+          roles: []
+        })
+        .save()
+        .then(({ data: { id } }) => id),
+      Fixture.employee()
+        .with({
+          externalId: employeeExternalIds[1],
+          firstName: 'Yrjö',
+          lastName: 'Yksikkö',
+          email: 'yy@example.com',
+          roles: []
+        })
+        .save()
+        .then(({ data: { id } }) => id)
     ])
   })
   .afterEach(logConsoleMessages)

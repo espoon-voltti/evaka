@@ -4,11 +4,7 @@
 
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import config from 'e2e-test-common/config'
-import {
-  insertEmployeeFixture,
-  resetDatabase,
-  setAclForDaycares
-} from 'e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { UnitPage } from 'e2e-playwright/pages/employee/units/unit'
@@ -29,7 +25,7 @@ const taunoFirstname = 'Tauno'
 const taunoLastname = 'Testimies'
 const taunoName = `${taunoFirstname} ${taunoLastname}`
 const taunoEmail = 'tauno.testimies@example.com'
-const tauno: EmployeeDetail = {
+const tauno: Omit<EmployeeDetail, 'id' | 'externalId'> = {
   email: taunoEmail,
   firstName: taunoFirstname,
   lastName: taunoLastname,
@@ -40,13 +36,13 @@ beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertEmployeeFixture({
-    externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'teppo.testaaja@example.com',
-    firstName: 'Teppo',
-    lastName: 'Testaaja',
-    roles: []
-  })
+  await Fixture.employee()
+    .with({
+      externalId: `espoo-ad:${config.unitSupervisorAad}`,
+      roles: []
+    })
+    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+    .save()
   await Fixture.daycareGroup()
     .with({
       id: groupId,
@@ -54,11 +50,10 @@ beforeEach(async () => {
       name: 'Testailijat'
     })
     .save()
-  await setAclForDaycares(
-    `espoo-ad:${config.unitSupervisorAad}`,
-    fixtures.daycareFixture.id
-  )
-  staffId = await insertEmployeeFixture(tauno)
+  staffId = await Fixture.employee()
+    .with(tauno)
+    .save()
+    .then(({ data: { id } }) => id)
 
   page = await Page.open()
   await employeeLogin(page, 'UNIT_SUPERVISOR')

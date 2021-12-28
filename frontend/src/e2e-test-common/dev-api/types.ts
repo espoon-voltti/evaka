@@ -7,13 +7,16 @@ import LocalDate from 'lib-common/local-date'
 import { JsonOf } from 'lib-common/json'
 import {
   ApplicationOrigin,
-  ApplicationStatus
+  ApplicationStatus,
+  ApplicationType
 } from 'lib-common/generated/enums'
+import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { ApplicationForm } from 'lib-common/generated/api-types/application'
 
 type ISODate = string
 type Timestamp = string
@@ -213,8 +216,8 @@ export interface DaycareGroup {
 export interface DaycareCaretakers {
   groupId: UUID
   amount: number
-  startDate: string
-  endDate?: string
+  startDate: LocalDate
+  endDate: LocalDate | null
 }
 
 export interface Child {
@@ -284,10 +287,10 @@ export interface Family {
 }
 
 export interface EmployeeDetail {
-  id?: string
+  id: string
   firstName: string
   lastName: string
-  externalId?: string
+  externalId: string
   email?: string
   roles: UserRole[]
   pin?: string
@@ -307,6 +310,7 @@ export type UserRole =
 
 export interface Application {
   id: UUID
+  type: ApplicationType
   createdDate?: ISODate
   modifiedDate?: ISODate
   sentDate?: ISODate
@@ -320,29 +324,6 @@ export interface Application {
   transferApplication: boolean
   otherGuardianId?: UUID
   form: ApplicationForm
-}
-
-export interface ApplicationForm {
-  type: string
-  child: ApplicationChild
-  guardian: ApplicationAdult
-  apply: ApplicationApply
-  urgent: boolean
-  partTime: boolean
-  connectedDaycare: boolean
-  preferredStartDate: ISODate
-  serviceStart: ISODate
-  serviceEnd: ISODate
-  extendedCare: boolean
-  careDetails: ApplicationCareDetails
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus
-  guardian2?: ApplicationAdult
-  hasOtherAdult: boolean
-  otherAdults: ApplicationAdult[]
-  hasOtherChildren: boolean
-  otherChildren: ApplicationChild[]
-  docVersion: number
-  additionalDetails: ApplicationDaycareAdditionalDetails
 }
 
 export type OtherGuardianAgreementStatus =
@@ -599,4 +580,15 @@ export interface AssistanceNeed {
   capacityFactor: number
   description: string
   otherBasis: string
+}
+
+export interface DevIncome {
+  id: string
+  personId: string
+  validFrom: LocalDate
+  validTo: LocalDate
+  data: Record<string, IncomeValue>
+  effect: IncomeEffect
+  updatedAt: Date
+  updatedBy: string
 }

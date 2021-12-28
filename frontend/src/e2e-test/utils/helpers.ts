@@ -14,19 +14,6 @@ export async function scrollThenClick(t: TestController, s: Selector) {
   await t.click(s)
 }
 
-export const waitUntilScrolled = ClientFunction(
-  (timeout = 5000) =>
-    new Promise((resolve) => {
-      const handler = () => {
-        window.removeEventListener('scroll', handler)
-        resolve(undefined)
-      }
-
-      window.addEventListener('scroll', handler)
-      setTimeout(handler, timeout)
-    })
-)
-
 export class Checkbox {
   private _input: Selector
 
@@ -74,16 +61,6 @@ export class SelectionChip {
   get exists(): Promise<boolean> {
     return this.selector.exists
   }
-}
-
-export const selectFirstOption = async (
-  container: Selector,
-  searchString: string
-) => {
-  await t.click(container)
-  const input = container.find('input')
-  await t.typeText(input, searchString)
-  await t.click(container.find('[id*="-option-"]'))
 }
 
 export const selectFirstComboboxOption = async (

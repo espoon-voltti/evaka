@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -203,11 +204,12 @@ class FamilyOverviewTest : FullApplicationTest() {
         val incomeTotal = 500000
         db.transaction {
             it.insertTestIncome(
-                objectMapper,
-                personId,
-                effect = IncomeEffect.INCOME,
-                data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
-                updatedBy = testDecisionMaker_1.id
+                DevIncome(
+                    personId = personId,
+                    effect = IncomeEffect.INCOME,
+                    data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                    updatedBy = testDecisionMaker_1.id
+                )
             )
         }
         return incomeTotal

@@ -15,13 +15,15 @@ import {
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
-  insertEmployeeFixture,
   insertIncomeStatements,
   insertPersonFixture,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import LocalDate from 'lib-common/local-date'
-import { enduserGuardianFixture } from '../../../e2e-test-common/dev-api/fixtures'
+import {
+  enduserGuardianFixture,
+  Fixture
+} from '../../../e2e-test-common/dev-api/fixtures'
 import { IncomeStatementPage } from '../../pages/employee/IncomeStatementPage'
 import { PersonProfilePage } from '../../pages/employee/person-profile'
 import { Page } from '../../utils/page'
@@ -51,14 +53,13 @@ beforeEach(async () => {
     }
   ])
 
-  await insertEmployeeFixture({
-    id: config.financeAdminAad,
-    externalId: `espoo-ad:${config.financeAdminAad}`,
-    email: 'lasse.laskuttaja@evaka.test',
-    firstName: 'Lasse',
-    lastName: 'Laskuttaja',
-    roles: ['FINANCE_ADMIN']
-  })
+  await Fixture.employee()
+    .with({
+      id: config.financeAdminAad,
+      externalId: `espoo-ad:${config.financeAdminAad}`,
+      roles: ['FINANCE_ADMIN']
+    })
+    .save()
   await employeeLogin(page, 'FINANCE_ADMIN')
 
   await page.goto(config.employeeUrl)

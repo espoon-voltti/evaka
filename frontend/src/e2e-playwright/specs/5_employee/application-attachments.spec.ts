@@ -3,15 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from 'e2e-test-common/config'
-import {
-  insertApplications,
-  insertEmployeeFixture,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
+import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
-  applicationFixtureId
+  applicationFixtureId,
+  Fixture
 } from 'e2e-test-common/dev-api/fixtures'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
@@ -33,14 +30,13 @@ beforeEach(async () => {
     fixtures.enduserGuardianFixture
   )
   await insertApplications([fixture])
-  await insertEmployeeFixture({
-    id: config.serviceWorkerAad,
-    externalId: `espoo-ad:${config.serviceWorkerAad}`,
-    email: 'paula.palveluohjaaja@evaka.test',
-    firstName: 'Paula',
-    lastName: 'Palveluohjaaja',
-    roles: ['SERVICE_WORKER']
-  })
+  await Fixture.employee()
+    .with({
+      id: config.serviceWorkerAad,
+      externalId: `espoo-ad:${config.serviceWorkerAad}`,
+      roles: ['SERVICE_WORKER']
+    })
+    .save()
 
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)

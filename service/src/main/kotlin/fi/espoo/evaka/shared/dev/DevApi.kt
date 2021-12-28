@@ -4,17 +4,17 @@
 
 package fi.espoo.evaka.shared.dev
 
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.ApplicationDetails
+import fi.espoo.evaka.application.ApplicationForm
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
@@ -407,6 +407,11 @@ class DevApi(
     fun createIncomeStatements(db: Database.DeprecatedConnection, @RequestBody body: DevCreateIncomeStatements) =
         db.transaction { tx -> body.data.forEach { tx.createIncomeStatement(body.personId, it) } }
 
+    @PostMapping("/income")
+    fun createIncome(db: Database.DeprecatedConnection, @RequestBody body: DevIncome) {
+        db.transaction { it.insertTestIncome(body) }
+    }
+
     @PostMapping("/person")
     fun upsertPerson(db: Database.DeprecatedConnection, @RequestBody body: DevPerson): PersonDTO {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
@@ -531,29 +536,21 @@ RETURNING id
     @PostMapping("/applications")
     fun createApplications(
         db: Database.DeprecatedConnection,
-        @RequestBody applications: List<ApplicationWithForm>
-    ): List<ApplicationId> {
-        return db.transaction { tx ->
+        @RequestBody applications: List<DevApplicationWithForm>
+    ): List<ApplicationId> =
+        db.transaction { tx ->
             applications.map { application ->
                 val id = tx.insertApplication(application)
-                application.form?.let { applicationFormString ->
-                    tx.insertApplicationForm(
-                        ApplicationForm(
-                            applicationId = id,
-                            revision = 1,
-                            document = deserializeApplicationForm(applicationFormString)
-                        )
+                tx.insertApplicationForm(
+                    DevApplicationForm(
+                        applicationId = id,
+                        revision = 1,
+                        document = DaycareFormV0.fromForm2(application.form, application.type, false, false)
                     )
-                }
+                )
                 id
             }
         }
-    }
-
-    fun deserializeApplicationForm(jsonString: String): DaycareFormV0 {
-        val mapper = objectMapper()
-        return mapper.treeToValue<EnduserDaycareFormJSON>(mapper.readTree(jsonString)).deserialize()
-    }
 
     @PostMapping("/placement-plan/{application-id}")
     fun createPlacementPlan(
@@ -1193,8 +1190,9 @@ data class PlacementPlan(
     val preschoolDaycarePeriodEnd: LocalDate?
 )
 
-data class ApplicationWithForm(
-    val id: ApplicationId?,
+data class DevApplicationWithForm(
+    val id: ApplicationId,
+    val type: ApplicationType,
     val createdDate: OffsetDateTime?,
     val modifiedDate: OffsetDateTime?,
     var sentDate: LocalDate?,
@@ -1207,10 +1205,10 @@ data class ApplicationWithForm(
     val hideFromGuardian: Boolean,
     val transferApplication: Boolean,
     val otherGuardianId: UUID?,
-    val form: String?
+    val form: ApplicationForm
 )
 
-data class ApplicationForm(
+data class DevApplicationForm(
     val id: UUID? = UUID.randomUUID(),
     val applicationId: ApplicationId,
     val createdDate: OffsetDateTime? = OffsetDateTime.now(),

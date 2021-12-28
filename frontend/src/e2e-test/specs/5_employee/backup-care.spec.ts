@@ -8,7 +8,8 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import {
   createBackupCareFixture,
-  daycareGroupFixture
+  daycareGroupFixture,
+  Fixture
 } from 'e2e-test-common/dev-api/fixtures'
 import Home from '../../pages/employee/home'
 import UnitPage, {
@@ -22,12 +23,9 @@ import { BackupCare, PersonDetail } from 'e2e-test-common/dev-api/types'
 import {
   insertBackupCareFixtures,
   insertDaycareGroupFixtures,
-  insertEmployeeFixture,
-  resetDatabase,
-  setAclForDaycares
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoManager } from '../../config/users'
-import { formatISODateString } from '../../utils/dates'
 import LocalDate from 'lib-common/local-date'
 import config from 'e2e-test-common/config'
 
@@ -48,16 +46,13 @@ fixture('Employee - Backup care')
       childFixture.id,
       fixtures.daycareFixture.id
     )
-    await insertEmployeeFixture({
-      externalId: config.supervisorExternalId,
-      firstName: 'Seppo',
-      lastName: 'Sorsa',
-      roles: []
-    })
-    await setAclForDaycares(
-      config.supervisorExternalId,
-      fixtures.daycareFixture.id
-    )
+    await Fixture.employee()
+      .with({
+        externalId: config.supervisorExternalId,
+        roles: []
+      })
+      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+      .save()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertBackupCareFixtures([backupCareFixture])
 
@@ -77,7 +72,7 @@ test('daycare has one backup care child missing group', async (t) => {
     .eql(`${childFixture.lastName} ${childFixture.firstName}`)
   await t
     .expect(row.childDateOfBirth.textContent)
-    .eql(formatISODateString(childFixture.dateOfBirth))
+    .eql(LocalDate.parseIso(childFixture.dateOfBirth).format())
   await t
     .expect(row.placementDuration.textContent)
     .eql('01.02.2022 - 03.02.2022')

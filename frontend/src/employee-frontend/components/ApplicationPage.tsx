@@ -8,6 +8,7 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -154,7 +155,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   }, [debouncedEditedApplication]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    window.scrollTo({ left: 0, top: position })
+    scrollToPos({ left: 0, top: position })
   }, [application]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [serviceNeedOptions, setServiceNeedOptions] = useState<

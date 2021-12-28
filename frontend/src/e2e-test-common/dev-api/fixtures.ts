@@ -6,7 +6,6 @@ import { format } from 'date-fns'
 import config from '../config'
 import {
   Application,
-  ApplicationForm,
   BackupCare,
   CareArea,
   Child,
@@ -27,30 +26,39 @@ import {
   EmployeePin,
   PedagogicalDocument,
   ServiceNeedFixture,
-  AssistanceNeed
+  AssistanceNeed,
+  DaycareCaretakers,
+  DevIncome
 } from './types'
 import {
   insertAssistanceNeedFixtures,
   insertCareAreaFixtures,
   insertChildFixtures,
+  insertDaycareCaretakerFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
+  insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertDecisionFixtures,
   insertEmployeeFixture,
   insertEmployeePins,
+  insertIncome,
   insertPedagogicalDocuments,
   insertPersonFixture,
   insertServiceNeedOptions,
   insertServiceNeeds,
-  insertVtjPersonFixture
+  insertVtjPersonFixture,
+  setAclForDaycareGroups,
+  setAclForDaycares
 } from './index'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
-import { ApplicationStatus } from 'lib-common/generated/enums'
+import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import { UUID } from 'lib-common/types'
+import { ApplicationForm } from 'lib-common/generated/api-types/application'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
@@ -554,103 +562,87 @@ export const adultFixtureWihtoutSSN = {
 }
 
 const applicationForm = (
-  type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB',
+  type: ApplicationType,
   child: PersonDetail,
   guardian: PersonDetail,
-  guardian2Phone = '',
-  guardian2Email = '',
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
-  preferredUnits: string[] = [daycareFixture.id],
-  connectedDaycare = false,
-  startDate: LocalDate | null = null
+  guardian2Phone: string,
+  guardian2Email: string,
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus,
+  preferredStartDate: LocalDate,
+  preferredUnits: string[],
+  connectedDaycare = false
 ): ApplicationForm => {
-  if (!startDate) {
-    // Try to make sure there's an active preschool term for the preferred start date
-    startDate = LocalDate.today()
-    if (
-      type === 'PRESCHOOL' &&
-      // May-Aug
-      [5, 6, 7, 8].includes(startDate.month)
-    ) {
-      // => Sep
-      startDate = startDate.withMonth(9)
-    }
+  const secondGuardian =
+    guardian2Phone || guardian2Email || otherGuardianAgreementStatus
+      ? {
+          phoneNumber: guardian2Phone,
+          email: guardian2Email,
+          agreementStatus: otherGuardianAgreementStatus
+        }
+      : null
 
-    // Move daycare application start date to August if current date is in July
-    if (type === 'DAYCARE' && 7 === startDate.month) {
-      startDate = startDate.withMonth(8)
-    }
-  }
+  const serviceNeed =
+    type === 'PRESCHOOL' && !connectedDaycare
+      ? null
+      : {
+          startTime: '08:00',
+          endTime: '16:00',
+          partTime: false,
+          shiftCare: false,
+          serviceNeedOption: null
+        }
 
   return {
-    type,
-    additionalDetails: {
-      allergyType: '',
-      dietType: '',
-      otherInfo: ''
-    },
-    apply: {
-      preferredUnits: preferredUnits,
-      siblingBasis: false
-    },
-    careDetails: {
-      assistanceNeeded: false
-    },
     child: {
-      firstName: child.firstName,
-      lastName: child.lastName,
-      socialSecurityNumber: child.ssn,
-      address: {
-        street: child.streetAddress,
-        postalCode: child.postalCode,
-        city: child.postOffice,
-        editable: false
+      dateOfBirth: LocalDate.parseNullableIso(child.dateOfBirth),
+      person: {
+        ...child,
+        socialSecurityNumber: child.ssn ?? null
       },
+      address: {
+        street: child.streetAddress ?? '',
+        postalCode: child.postalCode ?? '',
+        postOffice: child.postOffice ?? ''
+      },
+      futureAddress: null,
       nationality: 'FI',
       language: 'fi',
-      restricted: false
+      allergies: '',
+      diet: '',
+      assistanceNeeded: false,
+      assistanceDescription: ''
     },
-    connectedDaycare: type === 'PRESCHOOL' && connectedDaycare,
-    docVersion: 0,
-    extendedCare: false,
     guardian: {
-      firstName: guardian.firstName,
-      lastName: guardian.lastName,
-      socialSecurityNumber: guardian.ssn,
-      address: {
-        street: guardian.streetAddress,
-        postalCode: guardian.postalCode,
-        city: guardian.postOffice,
-        editable: false
+      person: {
+        ...guardian,
+        socialSecurityNumber: guardian.ssn ?? null
       },
-      phoneNumber: guardian.phone,
-      email: guardian.email ?? undefined,
-      restricted: false
-    },
-    guardian2: {
-      firstName: '',
-      lastName: '',
-      socialSecurityNumber: '',
+      phoneNumber: guardian.phone ?? '',
+      email: guardian.email ?? '',
       address: {
-        street: '',
-        postalCode: '',
-        city: '',
-        editable: false
+        street: guardian.streetAddress ?? '',
+        postalCode: guardian.postalCode ?? '',
+        postOffice: guardian.postOffice ?? ''
       },
-      phoneNumber: guardian2Phone,
-      email: guardian2Email,
-      restricted: false
+      futureAddress: null
     },
-    hasOtherAdult: false,
-    hasOtherChildren: false,
-    otherAdults: [],
+    secondGuardian,
+    otherPartner: null,
+    maxFeeAccepted: false,
     otherChildren: [],
-    partTime: false,
-    preferredStartDate: startDate.formatIso(),
-    serviceEnd: '08:00',
-    serviceStart: '16:00',
-    urgent: false,
-    otherGuardianAgreementStatus
+    preferences: {
+      preferredStartDate,
+      preferredUnits: preferredUnits.map((id) => ({ id, name: id })),
+      preparatory: false,
+      serviceNeed,
+      siblingBasis: null,
+      urgent: false
+    },
+    clubDetails: {
+      wasOnClubCare: false,
+      wasOnDaycare: false
+    },
+    otherInfo: ''
   }
 }
 
@@ -664,10 +656,11 @@ export const applicationFixture = (
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false,
   status: ApplicationStatus = 'SENT',
-  startDate: LocalDate | null = null,
+  preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
   transferApplication = false
 ): Application => ({
   id: applicationFixtureId,
+  type: type,
   childId: child.id,
   guardianId: guardian.id,
   otherGuardianId: otherGuardian?.id,
@@ -675,12 +668,12 @@ export const applicationFixture = (
     type,
     child,
     guardian,
-    otherGuardian?.phone,
-    otherGuardian?.email ?? undefined,
+    otherGuardian?.phone ?? '',
+    otherGuardian?.email ?? '',
     otherGuardianAgreementStatus,
+    preferredStartDate,
     preferredUnits,
-    connectedDaycare,
-    startDate
+    connectedDaycare
   ),
   checkedByAdmin: false,
   hideFromGuardian: false,
@@ -887,21 +880,6 @@ export function createPreschoolDaycarePlacementFixture(
   }
 }
 
-export function createDaycareGroupPlacementFixture(
-  placementId: string,
-  groupId: string,
-  startDate = '2021-05-01',
-  endDate = '2022-08-31'
-): DaycareGroupPlacement {
-  return {
-    id: uuidv4(),
-    daycareGroupId: groupId,
-    daycarePlacementId: placementId,
-    startDate,
-    endDate
-  }
-}
-
 export function createBackupCareFixture(
   childId: string,
   unitId: string
@@ -1002,7 +980,7 @@ export class Fixture {
       externalId: `e2etest:${uuidv4()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,
-      roles: ['ADMIN']
+      roles: []
     })
   }
 
@@ -1010,8 +988,7 @@ export class Fixture {
     return new DecisionBuilder({
       id: uuidv4(),
       applicationId: nullUUID,
-      //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      employeeId: supervisor.externalId!,
+      employeeId: supervisor.externalId,
       unitId: nullUUID,
       type: 'DAYCARE',
       startDate: '2020-01-01',
@@ -1041,6 +1018,16 @@ export class Fixture {
       childId: 'not set',
       unitId: 'not set',
       type: 'DAYCARE',
+      startDate: LocalDate.today().formatIso(),
+      endDate: LocalDate.today().addYears(1).formatIso()
+    })
+  }
+
+  static groupPlacement(): GroupPlacementBuilder {
+    return new GroupPlacementBuilder({
+      id: uuidv4(),
+      daycareGroupId: 'not set',
+      daycarePlacementId: 'not set',
       startDate: LocalDate.today().formatIso(),
       endDate: LocalDate.today().addYears(1).formatIso()
     })
@@ -1100,16 +1087,40 @@ export class Fixture {
       updatedBy: ''
     })
   }
-}
 
-export class DaycareBuilder {
-  data: Daycare
-
-  constructor(data: Daycare) {
-    this.data = data
+  static daycareCaretakers(): DaycareCaretakersBuilder {
+    return new DaycareCaretakersBuilder({
+      groupId: 'not_set',
+      amount: 1,
+      startDate: LocalDate.today(),
+      endDate: null
+    })
   }
 
-  with(value: Partial<Daycare>): DaycareBuilder {
+  static income(): IncomeBuilder {
+    return new IncomeBuilder({
+      id: uuidv4(),
+      personId: 'not_set',
+      validFrom: LocalDate.today(),
+      validTo: LocalDate.today().addYears(1),
+      data: {
+        MAIN_INCOME: {
+          amount: 100000,
+          monthlyAmount: 100000,
+          coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+        }
+      },
+      effect: 'INCOME',
+      updatedAt: new Date(),
+      updatedBy: 'not_set'
+    })
+  }
+}
+
+abstract class FixtureBuilder<T> {
+  constructor(public data: T) {}
+
+  with<K extends keyof T>(value: Pick<T, K>): this {
     this.data = {
       ...this.data,
       ...value
@@ -1117,6 +1128,11 @@ export class DaycareBuilder {
     return this
   }
 
+  abstract copy(): FixtureBuilder<T>
+  abstract save(): Promise<FixtureBuilder<T>>
+}
+
+export class DaycareBuilder extends FixtureBuilder<Daycare> {
   id(id: string): DaycareBuilder {
     this.data.id = id
     return this
@@ -1132,95 +1148,53 @@ export class DaycareBuilder {
     return this
   }
 
-  async save(): Promise<DaycareBuilder> {
+  async save() {
     await insertDaycareFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): DaycareBuilder {
+  copy() {
     return new DaycareBuilder({ ...this.data })
   }
 }
 
-export class DaycareGroupBuilder {
-  data: DaycareGroup
-
-  constructor(data: DaycareGroup) {
-    this.data = data
-  }
-
-  with(value: Partial<DaycareGroup>): DaycareGroupBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
+export class DaycareGroupBuilder extends FixtureBuilder<DaycareGroup> {
   daycare(daycare: DaycareBuilder): DaycareGroupBuilder {
     this.data.daycareId = daycare.data.id
     return this
   }
 
-  async save(): Promise<DaycareGroupBuilder> {
+  async save() {
     await insertDaycareGroupFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): DaycareGroupBuilder {
+  copy() {
     return new DaycareGroupBuilder({ ...this.data })
   }
 }
 
-export class CareAreaBuilder {
-  data: CareArea
-
-  constructor(data: CareArea) {
-    this.data = data
-  }
-
-  with(value: Partial<CareArea>): CareAreaBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
+export class CareAreaBuilder extends FixtureBuilder<CareArea> {
   id(id: string): CareAreaBuilder {
     this.data.id = id
     return this
   }
 
-  async save(): Promise<CareAreaBuilder> {
+  async save() {
     await insertCareAreaFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): CareAreaBuilder {
+  copy() {
     return new CareAreaBuilder({ ...this.data })
   }
 }
 
-export class PersonBuilder {
-  data: PersonDetailWithDependantsAndGuardians
-
-  constructor(data: PersonDetailWithDependantsAndGuardians) {
-    this.data = data
-  }
-
-  with(value: Partial<PersonDetailWithDependantsAndGuardians>): PersonBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<PersonBuilder> {
+export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependantsAndGuardians> {
+  async save() {
     await insertPersonFixture(this.data)
     return this
   }
@@ -1232,241 +1206,186 @@ export class PersonBuilder {
   }
 
   // Note: shallow copy
-  copy(): PersonBuilder {
+  copy() {
     return new PersonBuilder({ ...this.data })
   }
 }
 
-export class EmployeeBuilder {
-  data: EmployeeDetail
+export class EmployeeBuilder extends FixtureBuilder<EmployeeDetail> {
+  daycareAcl: { unitId: string; role: ScopedRole }[] = []
+  groupAcl: string[] = []
 
-  constructor(data: EmployeeDetail) {
-    this.data = data
-  }
-
-  with(value: Partial<EmployeeDetail>): EmployeeBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
+  withDaycareAcl(unitId: string, role: ScopedRole): this {
+    this.daycareAcl.push({ unitId, role })
     return this
   }
 
-  async save(): Promise<EmployeeBuilder> {
+  withGroupAcl(groupId: string): this {
+    this.groupAcl.push(groupId)
+    return this
+  }
+
+  async save() {
     await insertEmployeeFixture(this.data)
+    for (const { unitId, role } of this.daycareAcl) {
+      await setAclForDaycares(this.data.externalId, unitId, role)
+    }
+    if (this.groupAcl.length > 0) {
+      await setAclForDaycareGroups(this.data.id, this.groupAcl)
+    }
     return this
   }
 
   // Note: shallow copy
-  copy(): EmployeeBuilder {
+  copy() {
     return new EmployeeBuilder({ ...this.data })
   }
 }
 
-export class DecisionBuilder {
-  data: DecisionFixture
-
-  constructor(data: DecisionFixture) {
-    this.data = data
-  }
-
-  with(value: Partial<DecisionFixture>): DecisionBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<DecisionBuilder> {
+export class DecisionBuilder extends FixtureBuilder<DecisionFixture> {
+  async save() {
     await insertDecisionFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): DecisionBuilder {
+  copy() {
     return new DecisionBuilder({ ...this.data })
   }
 }
 
-export class EmployeePinBuilder {
-  data: EmployeePin
-
-  constructor(data: EmployeePin) {
-    this.data = data
-  }
-
-  with(value: Partial<EmployeePin>): EmployeePinBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<EmployeePinBuilder> {
+export class EmployeePinBuilder extends FixtureBuilder<EmployeePin> {
+  async save() {
     await insertEmployeePins([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): EmployeePinBuilder {
+  copy() {
     return new EmployeePinBuilder({ ...this.data })
   }
 }
 
-export class PedagogicalDocumentBuilder {
-  data: PedagogicalDocument
-
-  constructor(data: PedagogicalDocument) {
-    this.data = data
-  }
-
-  with(value: Partial<PedagogicalDocument>): PedagogicalDocumentBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<PedagogicalDocumentBuilder> {
+export class PedagogicalDocumentBuilder extends FixtureBuilder<PedagogicalDocument> {
+  async save() {
     await insertPedagogicalDocuments([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): PedagogicalDocumentBuilder {
+  copy() {
     return new PedagogicalDocumentBuilder({ ...this.data })
   }
 }
 
-export class ServiceNeedOptionBuilder {
-  data: ServiceNeedOption
-
-  constructor(data: ServiceNeedOption) {
-    this.data = data
-  }
-
-  with(value: Partial<ServiceNeedOption>): ServiceNeedOptionBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<ServiceNeedOptionBuilder> {
+export class ServiceNeedOptionBuilder extends FixtureBuilder<ServiceNeedOption> {
+  async save() {
     await insertServiceNeedOptions([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): ServiceNeedOptionBuilder {
+  copy() {
     return new ServiceNeedOptionBuilder({ ...this.data })
   }
 }
 
-export class PlacementBuilder {
-  data: DaycarePlacement
-
-  constructor(data: DaycarePlacement) {
-    this.data = data
-  }
-
-  with(value: Partial<DaycarePlacement>): PlacementBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<PlacementBuilder> {
+export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
+  async save() {
     await insertDaycarePlacementFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): PlacementBuilder {
+  copy() {
     return new PlacementBuilder({ ...this.data })
   }
 }
 
-export class ServiceNeedBuilder {
-  data: ServiceNeedFixture
-
-  constructor(data: ServiceNeedFixture) {
-    this.data = data
-  }
-
-  with(value: Partial<ServiceNeedFixture>): ServiceNeedBuilder {
+export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement> {
+  withGroup(group: DaycareGroupBuilder): this {
     this.data = {
       ...this.data,
-      ...value
+      daycareGroupId: group.data.id
     }
     return this
   }
 
-  async save(): Promise<ServiceNeedBuilder> {
+  withPlacement(placement: PlacementBuilder): this {
+    this.data = {
+      ...this.data,
+      daycarePlacementId: placement.data.id,
+      startDate: placement.data.startDate,
+      endDate: placement.data.endDate
+    }
+    return this
+  }
+
+  async save() {
+    await insertDaycareGroupPlacementFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new GroupPlacementBuilder({ ...this.data })
+  }
+}
+
+export class ServiceNeedBuilder extends FixtureBuilder<ServiceNeedFixture> {
+  async save() {
     await insertServiceNeeds([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): ServiceNeedBuilder {
+  copy() {
     return new ServiceNeedBuilder({ ...this.data })
   }
 }
 
-export class ChildBuilder {
-  data: Child
-
-  constructor(data: Child) {
-    this.data = data
-  }
-
-  with(value: Partial<Child>): ChildBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<ChildBuilder> {
+export class ChildBuilder extends FixtureBuilder<Child> {
+  async save() {
     await insertChildFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): ChildBuilder {
+  copy() {
     return new ChildBuilder({ ...this.data })
   }
 }
 
-export class AssistanceNeedBuilder {
-  data: AssistanceNeed
-
-  constructor(data: AssistanceNeed) {
-    this.data = data
-  }
-
-  with(value: Partial<AssistanceNeed>): AssistanceNeedBuilder {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  async save(): Promise<AssistanceNeedBuilder> {
+export class AssistanceNeedBuilder extends FixtureBuilder<AssistanceNeed> {
+  async save() {
     await insertAssistanceNeedFixtures([this.data])
     return this
   }
 
   // Note: shallow copy
-  copy(): AssistanceNeedBuilder {
+  copy() {
     return new AssistanceNeedBuilder({ ...this.data })
+  }
+}
+
+export class DaycareCaretakersBuilder extends FixtureBuilder<DaycareCaretakers> {
+  async save(): Promise<FixtureBuilder<DaycareCaretakers>> {
+    await insertDaycareCaretakerFixtures([this.data])
+    return this
+  }
+
+  copy(): FixtureBuilder<DaycareCaretakers> {
+    return new DaycareCaretakersBuilder({ ...this.data })
+  }
+}
+
+export class IncomeBuilder extends FixtureBuilder<DevIncome> {
+  async save() {
+    await insertIncome(this.data)
+    return this
+  }
+
+  copy() {
+    return new IncomeBuilder({ ...this.data })
   }
 }

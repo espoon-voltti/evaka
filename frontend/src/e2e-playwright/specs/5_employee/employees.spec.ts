@@ -7,7 +7,8 @@ import { waitUntilEqual } from 'e2e-playwright/utils'
 import { Page } from 'e2e-playwright/utils/page'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
-import { insertEmployeeFixture, resetDatabase } from 'e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { EmployeesPage } from '../../pages/employee/employees'
 
 let page: Page
@@ -17,12 +18,13 @@ let employeesPage: EmployeesPage
 beforeEach(async () => {
   await resetDatabase()
 
-  await insertEmployeeFixture({
-    email: 'teppo.testaaja@example.com',
-    firstName: 'Teppo',
-    lastName: 'Testaaja',
-    roles: ['SERVICE_WORKER']
-  })
+  await Fixture.employee()
+    .with({
+      firstName: 'Teppo',
+      lastName: 'Testaaja',
+      roles: ['SERVICE_WORKER']
+    })
+    .save()
 
   page = await Page.open()
   await employeeLogin(page, 'ADMIN')

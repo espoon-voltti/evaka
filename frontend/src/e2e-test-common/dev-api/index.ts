@@ -32,12 +32,12 @@ import {
   FridgeChild,
   FridgePartner,
   EmployeePin,
-  UserRole,
   PersonDetailWithDependantsAndGuardians,
   HighestFeeFixture,
   PedagogicalDocument,
   ServiceNeedFixture,
-  AssistanceNeed
+  AssistanceNeed,
+  DevIncome
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -54,6 +54,7 @@ import {
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
+import { ScopedRole } from 'lib-common/api-types/employee-auth'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
@@ -91,11 +92,7 @@ export async function insertApplications(
   fixture: Application[]
 ): Promise<void> {
   try {
-    const appWithFormStrings = fixture.map((application) => ({
-      ...application,
-      form: JSON.stringify(application.form)
-    }))
-    await devClient.post(`/applications`, appWithFormStrings)
+    await devClient.post(`/applications`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -307,7 +304,7 @@ export async function upsertMessageAccounts(): Promise<void> {
 export async function setAclForDaycares(
   externalId: string,
   daycareId: UUID,
-  role?: UserRole
+  role: ScopedRole = 'UNIT_SUPERVISOR'
 ): Promise<void> {
   try {
     await devClient.put(`/daycares/${daycareId}/acl`, { externalId, role })
@@ -318,7 +315,6 @@ export async function setAclForDaycares(
 
 export async function setAclForDaycareGroups(
   employeeId: UUID,
-  daycareId: UUID,
   groupIds: UUID[]
 ): Promise<void> {
   try {
@@ -364,6 +360,7 @@ export async function rejectDecisionByCitizen(id: string): Promise<void> {
     throw new DevApiError(e)
   }
 }
+
 export async function insertFeeDecisionFixtures(
   fixture: FeeDecision[]
 ): Promise<void> {
@@ -408,6 +405,14 @@ export async function insertIncomeStatements(
 ): Promise<void> {
   try {
     await devClient.post(`/income-statements`, { personId, data })
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertIncome(fixture: DevIncome) {
+  try {
+    await devClient.post('/income', fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -502,9 +507,9 @@ export async function runPendingAsyncJobs(): Promise<void> {
   }
 }
 
-export function getMessages(): Promise<SuomiFiMessage[]> {
+export async function getMessages(): Promise<SuomiFiMessage[]> {
   try {
-    return devClient.get<SuomiFiMessage[]>(`/messages`).then((res) => res.data)
+    return (await devClient.get<SuomiFiMessage[]>(`/messages`)).data
   } catch (e) {
     throw new DevApiError(e)
   }

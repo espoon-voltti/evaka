@@ -7,9 +7,7 @@ import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
-  insertEmployeeFixture,
-  resetDatabase,
-  setAclForDaycares
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
@@ -26,6 +24,7 @@ import ChildInformationPage, {
 import { addDays, format, subDays } from 'date-fns'
 import { PlacementType } from 'lib-common/generated/enums'
 import { Page } from '../../utils/page'
+import { ScopedRole } from 'lib-common/api-types/employee-auth'
 
 let page: Page
 let childInformationPage: ChildInformationPage
@@ -58,16 +57,15 @@ const setupPlacement = async (childPlacementType: PlacementType) => {
   ])
 }
 
-const setupUser = async (id: UUID, role: UserRole | undefined = undefined) => {
-  await insertEmployeeFixture({
-    id,
-    externalId: `espoo-ad:${id}`,
-    email: 'essi.esimies@evaka.test',
-    firstName: 'Essi',
-    lastName: 'Esimies',
-    roles: []
-  })
-  await setAclForDaycares(`espoo-ad:${id}`, unitId, role)
+const setupUser = async (id: UUID, role: ScopedRole = 'UNIT_SUPERVISOR') => {
+  await Fixture.employee()
+    .with({
+      id,
+      externalId: `espoo-ad:${id}`,
+      roles: []
+    })
+    .withDaycareAcl(unitId, role)
+    .save()
 }
 
 const logUserIn = async (role: UserRole) => {

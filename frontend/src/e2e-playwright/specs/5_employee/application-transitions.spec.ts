@@ -20,16 +20,13 @@ import {
   execSimpleApplicationActions,
   insertApplications,
   insertDecisionFixtures,
-  insertEmployeeFixture,
   insertPlacementPlan,
   rejectDecisionByCitizen,
-  resetDatabase,
-  setAclForDaycares
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { addWeeks, format } from 'date-fns'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
@@ -66,7 +63,7 @@ beforeEach(async () => {
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
 
-  await insertEmployeeFixture(serviceWorker)
+  await Fixture.employee().with(serviceWorker).save()
 
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
@@ -120,10 +117,7 @@ describe('Application transitions', () => {
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.setDecisionStartDate(
       'DAYCARE',
-      format(
-        addWeeks(new Date(fixture.form.preferredStartDate), 2),
-        'dd.MM.yyyy'
-      )
+      fixture.form.preferences.preferredStartDate?.addWeeks(2).format() ?? ''
     )
 
     await applicationReadView.acceptDecision('DAYCARE')
@@ -255,11 +249,10 @@ describe('Application transitions', () => {
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
 
-    await insertEmployeeFixture(unitSupervisor)
-    await setAclForDaycares(
-      unitSupervisor.externalId,
-      fixtures.daycareFixture.id
-    )
+    await Fixture.employee()
+      .with(unitSupervisor)
+      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+      .save()
     await employeeLogin(page2, 'UNIT_SUPERVISOR')
 
     // unit supervisor
@@ -318,8 +311,8 @@ describe('Application transitions', () => {
 
     const decision = decisionFixture(
       applicationId,
-      application.form.preferredStartDate,
-      application.form.preferredStartDate
+      application.form.preferences.preferredStartDate?.formatIso() ?? '',
+      application.form.preferences.preferredStartDate?.formatIso() ?? ''
     )
     const decisionId = decision.id
 
@@ -362,6 +355,7 @@ describe('Application transitions', () => {
       id: uuidv4(),
       status: 'WAITING_CONFIRMATION'
     }
+    const placementStartDate = '2021-08-16'
 
     await insertApplications([application1, application2])
 
@@ -369,16 +363,16 @@ describe('Application transitions', () => {
       application1.id,
       placementPlanFixture(
         fixtures.daycareFixture.id,
-        application1.form.preferredStartDate,
-        application1.form.preferredStartDate
+        placementStartDate,
+        placementStartDate
       )
     )
     await insertPlacementPlan(
       application2.id,
       placementPlanFixture(
         fixtures.daycareFixture.id,
-        application2.form.preferredStartDate,
-        application2.form.preferredStartDate
+        placementStartDate,
+        placementStartDate
       )
     )
 
@@ -388,18 +382,17 @@ describe('Application transitions', () => {
           applicationId: application2.id,
           employeeId: serviceWorker.id,
           unitId: fixtures.daycareFixture.id,
-          startDate: application2.form.preferredStartDate,
-          endDate: application2.form.preferredStartDate
+          startDate: placementStartDate,
+          endDate: placementStartDate
         })
         .save()
     ).data.id
     await rejectDecisionByCitizen(decisionId)
 
-    await insertEmployeeFixture(unitSupervisor)
-    await setAclForDaycares(
-      unitSupervisor.externalId,
-      fixtures.daycareFixture.id
-    )
+    await Fixture.employee()
+      .with(unitSupervisor)
+      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+      .save()
 
     async function assertApplicationRows(
       addDays: number,

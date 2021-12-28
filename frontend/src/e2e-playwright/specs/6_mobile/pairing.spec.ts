@@ -9,20 +9,14 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import {
   deleteEmployeeFixture,
-  insertEmployeeFixture,
   postPairing,
   postPairingResponse,
-  resetDatabase,
-  setAclForDaycares
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
 import { Page } from 'e2e-playwright/utils/page'
-
-const employeeExternalIds = [
-  'espoo-ad:df979243-f081-4241-bc4f-e93a019bddfa',
-  'espoo-ad:7e7daa1e-2e92-4c36-9e90-63cea3cd8f3f'
-] as const
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 let page: Page
 let pairingFlow: PairingFlow
@@ -34,33 +28,13 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   await deleteEmployeeFixture(config.supervisorExternalId)
-  await insertEmployeeFixture({
-    externalId: config.supervisorExternalId,
-    firstName: 'Seppo',
-    lastName: 'Sorsa',
-    email: 'seppo.sorsa@evaka.test',
-    roles: []
-  })
-  await setAclForDaycares(
-    config.supervisorExternalId,
-    fixtures.daycareFixture.id
-  )
-  await Promise.all([
-    insertEmployeeFixture({
-      externalId: employeeExternalIds[0],
-      firstName: 'Pete',
-      lastName: 'Päiväkoti',
-      email: 'pete@example.com',
-      roles: []
-    }),
-    insertEmployeeFixture({
-      externalId: employeeExternalIds[1],
-      firstName: 'Yrjö',
-      lastName: 'Yksikkö',
-      email: 'yy@example.com',
+  await Fixture.employee()
+    .with({
+      externalId: config.supervisorExternalId,
       roles: []
     })
-  ])
+    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+    .save()
 })
 
 describe('Mobile pairing', () => {

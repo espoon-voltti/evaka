@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from 'e2e-test-common/config'
-import { insertEmployeeFixture, resetDatabase } from 'e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import PersonSearchPage from 'e2e-playwright/pages/employee/person-search'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 let adminPage: Page
 let adminPersonSearchPage: PersonSearchPage
@@ -17,14 +18,13 @@ let serviceWorkerPersonSearchPage: PersonSearchPage
 beforeEach(async () => {
   await resetDatabase()
 
-  await insertEmployeeFixture({
-    id: config.serviceWorkerAad,
-    externalId: `espoo-ad:${config.serviceWorkerAad}`,
-    email: 'paula.palveluohjaaja@evaka.test',
-    firstName: 'Paula',
-    lastName: 'Palveluohjaaja',
-    roles: ['SERVICE_WORKER']
-  })
+  await Fixture.employee()
+    .with({
+      id: config.serviceWorkerAad,
+      externalId: `espoo-ad:${config.serviceWorkerAad}`,
+      roles: ['SERVICE_WORKER']
+    })
+    .save()
 
   adminPage = await Page.open()
   await employeeLogin(adminPage, 'ADMIN')

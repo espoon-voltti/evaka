@@ -4,27 +4,13 @@
 
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
-import {
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
-  resetDatabase,
-  setAclForDaycares
-} from '../../../e2e-test-common/dev-api'
+import { resetDatabase } from '../../../e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../../e2e-test-common/dev-api/data-init'
-import {
-  createDaycarePlacementFixture,
-  DaycareGroupBuilder,
-  EmployeeBuilder,
-  Fixture,
-  uuidv4
-} from '../../../e2e-test-common/dev-api/fixtures'
-import {
-  DaycarePlacement,
-  PersonDetail
-} from '../../../e2e-test-common/dev-api/types'
+import { Fixture, uuidv4 } from '../../../e2e-test-common/dev-api/fixtures'
+import { PersonDetail } from '../../../e2e-test-common/dev-api/types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
@@ -37,13 +23,6 @@ let notePage: MobileNotePage
 
 let fixtures: AreaAndPersonFixtures
 let child: PersonDetail
-let employee: EmployeeBuilder
-const employeeId = uuidv4()
-
-const daycareGroupPlacementId = uuidv4()
-
-let daycarePlacementFixture: DaycarePlacement
-let daycareGroup: DaycareGroupBuilder
 
 beforeEach(async () => {
   await resetDatabase()
@@ -51,7 +30,8 @@ beforeEach(async () => {
   child = fixtures.enduserChildFixtureJari
   const unit = fixtures.daycareFixture
 
-  employee = await Fixture.employee()
+  const employeeId = uuidv4()
+  await Fixture.employee()
     .with({
       id: employeeId,
       externalId: `espooad: ${employeeId}`,
@@ -60,28 +40,19 @@ beforeEach(async () => {
       email: 'yy@example.com',
       roles: []
     })
+    .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
     .save()
 
-  daycareGroup = await Fixture.daycareGroup()
+  const daycareGroup = await Fixture.daycareGroup()
     .with({ daycareId: unit.id })
     .save()
-  daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    child.id,
-    unit.id
-  )
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await setAclForDaycares(employee.data.externalId!, unit.id)
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  await insertDaycareGroupPlacementFixtures([
-    {
-      id: daycareGroupPlacementId,
-      daycareGroupId: daycareGroup.data.id,
-      daycarePlacementId: daycarePlacementFixture.id,
-      startDate: daycarePlacementFixture.startDate,
-      endDate: daycarePlacementFixture.endDate
-    }
-  ])
+  const placementFixture = await Fixture.placement()
+    .with({ childId: child.id, unitId: unit.id })
+    .save()
+  await Fixture.groupPlacement()
+    .withGroup(daycareGroup)
+    .withPlacement(placementFixture)
+    .save()
 
   page = await Page.open()
 

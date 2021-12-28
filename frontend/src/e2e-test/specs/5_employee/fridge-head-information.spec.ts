@@ -22,6 +22,7 @@ import { employeeLogin, seppoAdmin } from '../../config/users'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 const home = new Home()
 const fridgeHeadInformation = new FridgeHeadInformationPage()
@@ -137,15 +138,26 @@ test('Added partner is shown n family overview', async () => {
 })
 
 test('Manually added income is shown in family overview', async () => {
-  const income = 1000
+  const totalIncome = 100000
+  const employee = await Fixture.employee().save()
+  await Fixture.income()
+    .with({
+      personId: regularPerson.id,
+      effect: 'INCOME',
+      data: {
+        MAIN_INCOME: {
+          amount: totalIncome,
+          monthlyAmount: totalIncome,
+          coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+        }
+      },
+      updatedBy: employee.data.id
+    })
+    .save()
 
   await home.navigateToGuardianInformation(regularPerson.id)
-  await fridgeHeadInformation.addIncome({
-    mainIncome: income
-  })
-
   await fridgeHeadInformation.verifyFamilyPerson({
     personId: regularPerson.id,
-    incomeCents: income * 100
+    incomeCents: totalIncome
   })
 })

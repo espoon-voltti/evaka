@@ -10,51 +10,51 @@ import UnitPage, {
   missingPlacementElement
 } from '../../pages/employee/units/unit-page'
 import GroupPlacementModal from '../../pages/employee/units/group-placement-modal'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
-import {
-  createDaycarePlacementFixture,
-  daycareGroupFixture,
+  DaycareGroupBuilder,
   Fixture,
-  uuidv4
+  PlacementBuilder
 } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
-import { Child, DaycarePlacement } from 'e2e-test-common/dev-api/types'
+import { Daycare, PersonDetail } from 'e2e-test-common/dev-api/types'
 import {
-  insertDaycareCaretakerFixtures,
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
-import { formatISODateString } from '../../utils/dates'
+import LocalDate from 'lib-common/local-date'
 
 const home = new Home()
 const unitsPage = new UnitsPage()
 const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()
 
-let fixtures: AreaAndPersonFixtures
-let childFixture: Child
-let daycarePlacementFixture: DaycarePlacement
+let unitFixture: Daycare
+let groupFixture: DaycareGroupBuilder
+let childFixture: PersonDetail
+let placementFixture: PlacementBuilder
+
+const isoToFi = (isoDate: string) => LocalDate.parseIso(isoDate).format()
+const placementDates = () => ({
+  start: isoToFi(placementFixture.data.startDate),
+  end: isoToFi(placementFixture.data.endDate)
+})
 
 fixture('Employee - Units')
   .meta({ type: 'regression', subType: 'units' })
   .beforeEach(async (t) => {
     await resetDatabase()
-    fixtures = await initializeAreaAndPersonData()
+    const fixtures = await initializeAreaAndPersonData()
     await insertDefaultServiceNeedOptions()
-    await insertDaycareGroupFixtures([daycareGroupFixture])
+    unitFixture = fixtures.daycareFixture
     childFixture = fixtures.familyWithTwoGuardians.children[0]
-    daycarePlacementFixture = createDaycarePlacementFixture(
-      uuidv4(),
-      childFixture.id,
-      fixtures.daycareFixture.id
-    )
-    await insertDaycarePlacementFixtures([daycarePlacementFixture])
+    groupFixture = await Fixture.daycareGroup()
+      .with({ daycareId: unitFixture.id, name: 'Kosmiset vakiot' })
+      .save()
+    placementFixture = await Fixture.placement()
+      .with({ childId: childFixture.id, unitId: unitFixture.id })
+      .save()
 
     await employeeLogin(t, seppoAdmin, home.homePage('admin'))
     await home.navigateToUnits()
@@ -62,32 +62,32 @@ fixture('Employee - Units')
   .afterEach(logConsoleMessages)
 
 test('filtering units, navigating to one, contact details', async (t) => {
-  await unitsPage.filterByName(fixtures.daycareFixture.name)
+  await unitsPage.filterByName(unitFixture.name)
   await t.expect(unitsPage.unitRows.count).eql(1)
   await unitsPage.navigateToNthUnit(0)
-  await t
-    .expect(unitPage.unitName.textContent)
-    .eql(fixtures.daycareFixture.name)
+  await t.expect(unitPage.unitName.textContent).eql(unitFixture.name)
   await t
     .expect(unitPage.visitingAddress.textContent)
     .eql(
-      `${fixtures.daycareFixture.streetAddress}, ${fixtures.daycareFixture.postalCode} ${fixtures.daycareFixture.postOffice}`
+      `${unitFixture.streetAddress}, ${unitFixture.postalCode} ${unitFixture.postOffice}`
     )
 })
 
 test('daycare has an empty group', async (t) => {
-  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.navigateHere(unitFixture.id)
   await unitPage.openTabGroups()
   await unitPage.openGroups()
   await t.expect(unitPage.groups.count).eql(1)
   const group = daycareGroupElement(unitPage.groups.nth(0))
-  await t.expect(group.groupName.textContent).eql(daycareGroupFixture.name)
-  await t.expect(group.groupStartDate.textContent).eql('01.01.2000')
+  await t.expect(group.groupName.textContent).eql(groupFixture.data.name)
+  await t
+    .expect(group.groupStartDate.textContent)
+    .eql(isoToFi(groupFixture.data.startDate))
   await t.expect(group.noChildrenPlaceholder.visible).ok()
 })
 
 test('Unit group name, start date and end date can all be updated', async (t) => {
-  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.navigateHere(unitFixture.id)
   await unitPage.openTabGroups()
 
   await t.expect(unitPage.groups.count).eql(1)
@@ -111,33 +111,27 @@ test('Unit group name, start date and end date can all be updated', async (t) =>
 })
 
 test('daycare has one child missing group', async (t) => {
-  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.navigateHere(unitFixture.id)
   await unitPage.openTabGroups()
   await t.expect(unitPage.missingPlacementRows.count).eql(1)
   const row = missingPlacementElement(unitPage.missingPlacementRows.nth(0))
   await t
     .expect(row.childName.textContent)
-    .eql(
-      `${fixtures.familyWithTwoGuardians.children[0].lastName} ${fixtures.familyWithTwoGuardians.children[0].firstName}`
-    )
+    .eql(`${childFixture.lastName} ${childFixture.firstName}`)
   await t
     .expect(row.childDateOfBirth.textContent)
-    .eql(
-      formatISODateString(
-        fixtures.familyWithTwoGuardians.children[0].dateOfBirth
-      )
-    )
+    .eql(LocalDate.parseIso(childFixture.dateOfBirth).format())
   await t
     .expect(row.placementDuration.textContent)
-    .eql('01.05.2021 - 31.08.2022')
+    .eql(`${placementDates().start} - ${placementDates().end}`)
   await t
     .expect(row.groupMissingDuration.textContent)
-    .eql('01.05.2021 - 31.08.2022')
+    .eql(`${placementDates().start} - ${placementDates().end}`)
   await t.expect(row.addToGroupBtn.visible).ok()
 })
 
 test('child can be placed into a group and removed from it', async (t) => {
-  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.navigateHere(unitFixture.id)
   await unitPage.openTabGroups()
   await unitPage.openGroups()
   // open the group placement modal and submit it with default values
@@ -159,12 +153,10 @@ test('child can be placed into a group and removed from it', async (t) => {
   )
   await t
     .expect(groupPlacement.childName.textContent)
-    .eql(
-      `${fixtures.familyWithTwoGuardians.children[0].lastName} ${fixtures.familyWithTwoGuardians.children[0].firstName}`
-    )
+    .eql(`${childFixture.lastName} ${childFixture.firstName}`)
   await t
     .expect(groupPlacement.placementDuration.textContent)
-    .eql('01.05.2021- 31.08.2022')
+    .eql(`${placementDates().start}- ${placementDates().end}`)
 
   // after removing the child is again visible at missing groups and no longer at the group
   await groupPlacement.remove()
@@ -174,35 +166,33 @@ test('child can be placed into a group and removed from it', async (t) => {
   )
   await t
     .expect(missingPlacement2.childName.textContent)
-    .eql(
-      `${fixtures.familyWithTwoGuardians.children[0].lastName} ${fixtures.familyWithTwoGuardians.children[0].firstName}`
-    )
+    .eql(`${childFixture.lastName} ${childFixture.firstName}`)
   await t
     .expect(missingPlacement2.placementDuration.textContent)
-    .eql('01.05.2021 - 31.08.2022')
+    .eql(`${placementDates().start} - ${placementDates().end}`)
   await t
     .expect(missingPlacement2.groupMissingDuration.textContent)
-    .eql('01.05.2021 - 31.08.2022')
+    .eql(`${placementDates().start} - ${placementDates().end}`)
   await t.expect(group.groupPlacementRows.count).eql(0)
   await t.expect(group.noChildrenPlaceholder.visible).ok()
 })
 
 test('Unit occupancy rates cannot be determined when no caretaker', async (t) => {
-  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.navigateHere(unitFixture.id)
 
   await t.expect(unitPage.occupancies('confirmed').noValidValues.exists).ok()
   await t.expect(unitPage.occupancies('planned').noValidValues.exists).ok()
 })
 
 test('Unit occupancy rates are correct with properly set caretaker counts', async (t) => {
-  await insertDaycareCaretakerFixtures([
-    {
-      groupId: daycareGroupFixture.id,
-      amount: 1.0,
-      startDate: daycareGroupFixture.startDate
-    }
-  ])
-  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await Fixture.daycareCaretakers()
+    .with({
+      groupId: groupFixture.data.id,
+      amount: 1,
+      startDate: LocalDate.parseIso(groupFixture.data.startDate)
+    })
+    .save()
+  await unitPage.navigateHere(unitFixture.id)
   await t
     .expect(unitPage.occupancies('confirmed').maximum.textContent)
     .contains('14,3 %')

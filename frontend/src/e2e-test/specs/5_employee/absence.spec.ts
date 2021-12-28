@@ -5,6 +5,7 @@
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
+  Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import EmployeeHome from '../../pages/employee/home'
@@ -20,10 +21,8 @@ import {
 import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
-  insertEmployeeFixture,
   insertDefaultServiceNeedOptions,
-  resetDatabase,
-  setAclForDaycares
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
 import AbsencesPage from '../../pages/employee/absences/absences-page'
@@ -44,16 +43,13 @@ fixture('Employee - Absences')
     fixtures = await initializeAreaAndPersonData()
     await insertDefaultServiceNeedOptions()
     await insertDaycareGroupFixtures([daycareGroupFixture])
-    await insertEmployeeFixture({
-      externalId: config.supervisorExternalId,
-      firstName: 'Seppo',
-      lastName: 'Sorsa',
-      roles: []
-    })
-    await setAclForDaycares(
-      config.supervisorExternalId,
-      fixtures.daycareFixture.id
-    )
+    await Fixture.employee()
+      .with({
+        externalId: config.supervisorExternalId,
+        roles: []
+      })
+      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+      .save()
 
     daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),

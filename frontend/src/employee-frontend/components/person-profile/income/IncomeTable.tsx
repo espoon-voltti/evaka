@@ -9,11 +9,8 @@ import IncomeTableHeader from './income-table/IncomeTableHeader'
 import IncomeTableRow from './income-table/IncomeTableRow'
 import IncomeSum from './income-table/IncomeSum'
 import { useTranslation } from '../../../state/i18n'
-import {
-  IncomeCoefficient,
-  IncomeFields,
-  IncomeOption
-} from '../../../types/income'
+import { IncomeCoefficient } from 'lib-common/api-types/income'
+import { IncomeFields, IncomeOption } from '../../../types/income'
 import { IncomeTypeOptions } from '../../../api/income'
 import { formatCents } from 'lib-common/money'
 

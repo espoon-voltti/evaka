@@ -8,17 +8,15 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
+import { applicationFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import {
   cleanUpMessages,
   createPlacementPlan,
   execSimpleApplicationAction,
   getMessages,
   insertApplications,
-  insertEmployeeFixture,
   resetDatabase,
-  runPendingAsyncJobs,
-  setAclForDaycares
+  runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import { Application } from 'e2e-test-common/dev-api/types'
 import { Page } from '../../utils/page'
@@ -73,17 +71,16 @@ beforeEach(async () => {
     ),
     id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
   }
-  await insertEmployeeFixture({
-    externalId: `espoo-ad:${config.unitSupervisorAad}`,
-    email: 'esa.esimies@evaka.test',
-    firstName: 'Esa',
-    lastName: 'Esimies',
-    roles: []
-  })
-  await setAclForDaycares(
-    `espoo-ad:${config.unitSupervisorAad}`,
-    fixtures.preschoolFixture.id
-  )
+  await Fixture.employee()
+    .with({
+      externalId: `espoo-ad:${config.unitSupervisorAad}`,
+      email: 'esa.esimies@evaka.test',
+      firstName: 'Esa',
+      lastName: 'Esimies',
+      roles: []
+    })
+    .withDaycareAcl(fixtures.preschoolFixture.id, 'UNIT_SUPERVISOR')
+    .save()
   await cleanUpMessages()
 
   await insertApplications([
@@ -157,8 +154,12 @@ describe('Application details', () => {
     await createPlacementPlan(restrictedDetailsGuardianApplication.id, {
       unitId: fixtures.preschoolFixture.id,
       period: {
-        start: restrictedDetailsGuardianApplication.form.preferredStartDate,
-        end: restrictedDetailsGuardianApplication.form.preferredStartDate
+        start:
+          restrictedDetailsGuardianApplication.form.preferences.preferredStartDate?.formatIso() ??
+          '',
+        end:
+          restrictedDetailsGuardianApplication.form.preferences.preferredStartDate?.formatIso() ??
+          ''
       }
     })
     await execSimpleApplicationAction(
@@ -190,8 +191,12 @@ describe('Application details', () => {
     await createPlacementPlan(singleParentApplication.id, {
       unitId: fixtures.preschoolFixture.id,
       period: {
-        start: singleParentApplication.form.preferredStartDate,
-        end: singleParentApplication.form.preferredStartDate
+        start:
+          singleParentApplication.form.preferences.preferredStartDate?.formatIso() ??
+          '',
+        end:
+          singleParentApplication.form.preferences.preferredStartDate?.formatIso() ??
+          ''
       }
     })
     await execSimpleApplicationAction(
