@@ -504,8 +504,8 @@ commands:
           path: frontend/traces
           destination: traces
       - store_artifacts:
-          path: frontend/videos
-          destination: videos
+          path: frontend/screenshots
+          destination: screenshots
       - store_test_results:
           path: frontend/test-results
 
