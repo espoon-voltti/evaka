@@ -106,14 +106,17 @@ export const H4 = styled.h4<HeadingProps>`
   }
 `
 
-type LabelProps = {
+interface LabelProps {
   inputRow?: boolean
-  light?: boolean
+  white?: boolean
 }
 
 export const Label = styled.label<LabelProps>`
-  font-weight: ${(p) => (p.light ? fontWeights.normal : fontWeights.semibold)};
-  color: ${(p) => p.theme.colors.greyscale.darkest};
+  font-weight: ${fontWeights.semibold};
+  color: ${(p) =>
+    p.white
+      ? p.theme.colors.greyscale.white
+      : p.theme.colors.greyscale.darkest};
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
 `
 
