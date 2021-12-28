@@ -567,7 +567,7 @@ export default React.memo(function Group({
                             {formatPersonName(placement.child, i18n, true)}
                           </Link>
                         </Td>
-                        <Td data-qa="child-dob">
+                        <Td>
                           <FixedSpaceRow spacing="xs">
                             <AgeIndicatorIconWithTooltip
                               isUnder3={
@@ -575,7 +575,9 @@ export default React.memo(function Group({
                                 3
                               }
                             />
-                            <span>{dateOfBirth.format()}</span>
+                            <span data-qa="child-dob">
+                              {dateOfBirth.format()}
+                            </span>
                           </FixedSpaceRow>
                         </Td>
                         <Td data-qa="placement-type">

@@ -55,12 +55,12 @@ function renderMissingGroupPlacementRow(
           {formatName(firstName, lastName, i18n, true)}
         </Link>
       </Td>
-      <Td data-qa="child-dob">
+      <Td>
         <FixedSpaceRow spacing="xs">
           <AgeIndicatorIconWithTooltip
             isUnder3={placementPeriod.start.differenceInYears(dateOfBirth) < 3}
           />
-          <span>{dateOfBirth.format()}</span>
+          <span data-qa="child-dob">{dateOfBirth.format()}</span>
         </FixedSpaceRow>
       </Td>
       <Td data-qa="placement-type">
