@@ -360,6 +360,7 @@ export async function rejectDecisionByCitizen(id: string): Promise<void> {
     throw new DevApiError(e)
   }
 }
+
 export async function insertFeeDecisionFixtures(
   fixture: FeeDecision[]
 ): Promise<void> {
@@ -506,9 +507,9 @@ export async function runPendingAsyncJobs(): Promise<void> {
   }
 }
 
-export function getMessages(): Promise<SuomiFiMessage[]> {
+export async function getMessages(): Promise<SuomiFiMessage[]> {
   try {
-    return devClient.get<SuomiFiMessage[]>(`/messages`).then((res) => res.data)
+    return (await devClient.get<SuomiFiMessage[]>(`/messages`)).data
   } catch (e) {
     throw new DevApiError(e)
   }
