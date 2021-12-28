@@ -5,9 +5,9 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
-import { fontWeights } from '../typography'
-import { defaultMargins } from '../white-space'
 import Container from '../layout/Container'
+import { fontWeights, NavLinkText } from '../typography'
+import { defaultMargins } from '../white-space'
 
 interface CommonProps {
   mobile?: boolean
@@ -58,7 +58,7 @@ export default React.memo(function Tabs(props: Props) {
                   $mobile={mobile}
                   className={active ? 'active' : undefined}
                 >
-                  <TabTitle $mobile={mobile}>{label}</TabTitle>
+                  <NavLinkText>{label}</NavLinkText>
                   {counter ? <TabCounter>{counter}</TabCounter> : null}
                 </TabButtonContainer>
               ))
@@ -70,7 +70,7 @@ export default React.memo(function Tabs(props: Props) {
                   $maxWidth={maxWidth}
                   $mobile={mobile}
                 >
-                  <TabTitle $mobile={mobile}>{label}</TabTitle>
+                  <NavLinkText>{label}</NavLinkText>
                   {counter ? <TabCounter>{counter}</TabCounter> : null}
                 </TabLinkContainer>
               ))}
@@ -109,7 +109,7 @@ const TabLinkContainer = styled(NavLink)<TabContainerProps>`
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
-  max-width: ${(p) => (p.$maxWidth ? p.$maxWidth : 'none')};
+  max-width: ${(p) => p.$maxWidth ?? 'none'};
 
   &.active {
     background-color: ${({ theme: { colors }, ...p }) =>
@@ -117,11 +117,9 @@ const TabLinkContainer = styled(NavLink)<TabContainerProps>`
     border-bottom: ${({ theme: { colors }, ...p }) =>
       p.$mobile ? `3px solid ${colors.main.dark}` : 'none'};
 
-    span {
-      div {
-        color: ${({ theme: { colors }, ...p }) =>
-          p.$mobile ? colors.main.dark : colors.greyscale.dark};
-      }
+    ${NavLinkText} {
+      color: ${(p) => p.theme.colors.main.dark};
+      font-weight: ${fontWeights.bold};
     }
   }
 `
@@ -152,21 +150,10 @@ const TabButtonContainer = styled.button<TabContainerProps>`
     border-bottom: ${({ theme: { colors }, ...p }) =>
       p.$mobile ? `3px solid ${colors.main.dark}` : 'none'};
 
-    span {
-      div {
-        color: ${({ theme: { colors }, ...p }) =>
-          p.$mobile ? colors.main.dark : colors.greyscale.dark};
-      }
+    ${NavLinkText} {
+      color: ${(p) => p.theme.colors.main.dark};
+      font-weight: ${fontWeights.bold};
     }
-  }
-`
-
-const TabTitle = styled.span<TabContainerProps>`
-  color: ${({ theme: { colors } }) => colors.greyscale.dark};
-  ${({ $mobile }) => ($mobile ? `line-height: 16px;` : '')};
-
-  &.active {
-    font-weight: ${fontWeights.bold};
   }
 `
 

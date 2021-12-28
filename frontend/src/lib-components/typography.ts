@@ -4,6 +4,7 @@
 
 import { defaultMargins } from 'lib-components/white-space'
 import styled from 'styled-components'
+import { tabletMin } from './breakpoints'
 
 import { BaseProps } from './utils'
 
@@ -194,4 +195,20 @@ export const InformationText = styled.span`
   color: ${(p) => p.theme.colors.greyscale.dark};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
+`
+
+export const NavLinkText = styled.span`
+  color: ${(p) => p.theme.colors.greyscale.darkest};
+  cursor: pointer;
+  font-family: Montserrat, sans-serif;
+  font-weight: ${fontWeights.medium};
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  @media (min-width: ${tabletMin}) {
+    font-size: 15px;
+  }
 `

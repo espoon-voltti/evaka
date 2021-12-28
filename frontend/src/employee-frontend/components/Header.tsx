@@ -7,8 +7,9 @@ import classNames from 'classnames'
 import { combine } from 'lib-common/api'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
+import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, NavLinkText } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { cityLogo, featureFlags } from 'lib-customizations/employee'
@@ -22,11 +23,11 @@ import {
   withRouter
 } from 'react-router-dom'
 import styled from 'styled-components'
+import { desktopMin } from 'lib-components/breakpoints'
 import { logoutUrl } from '../api/auth'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { MessageContext } from './messages/MessageContext'
-import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
 
 const Img = styled.img`
   color: #0050bb;
@@ -36,6 +37,27 @@ const Img = styled.img`
   height: auto;
   max-width: 100%;
   width: 150px;
+`
+
+const NavbarLink = styled(NavLink)`
+  box-sizing: inherit;
+  position: relative;
+  flex-grow: 0;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  min-height: 3.25rem;
+  padding: 0;
+  border-bottom: 4px solid transparent;
+
+  &.active {
+    border-bottom: 4px solid ${(p) => p.theme.colors.main.primary};
+    ${NavLinkText} {
+      color: ${(p) => p.theme.colors.main.primary};
+      font-weight: ${fontWeights.bold};
+    }
+  }
 `
 
 const NavbarEnd = styled.div`
@@ -143,9 +165,8 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               className="navbar-item is-tab"
               to="/applications"
               data-qa="applications-nav"
-              $noMargin
             >
-              {i18n.header.applications}
+              <NavLinkText>{i18n.header.applications}</NavLinkText>
             </NavbarLink>
           )}
 
@@ -156,7 +177,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               to="/units"
               data-qa="units-nav"
             >
-              {i18n.header.units}
+              <NavLinkText>{i18n.header.units}</NavLinkText>
             </NavbarLink>
           )}
 
@@ -164,12 +185,12 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             <NavbarLink
               onClick={closeUserPopup}
               className={classNames('navbar-item is-tab', {
-                'is-active': atCustomerInfo
+                active: atCustomerInfo
               })}
               to="/search"
               data-qa="search-nav"
             >
-              {i18n.header.search}
+              <NavLinkText>{i18n.header.search}</NavLinkText>
             </NavbarLink>
           )}
 
@@ -180,7 +201,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               to="/finance"
               data-qa="finance-nav"
             >
-              {i18n.header.finance}
+              <NavLinkText>{i18n.header.finance}</NavLinkText>
             </NavbarLink>
           )}
 
@@ -191,7 +212,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               to="/reports"
               data-qa="reports-nav"
             >
-              {i18n.header.reports}
+              <NavLinkText>{i18n.header.reports}</NavLinkText>
             </NavbarLink>
           )}
 
@@ -202,7 +223,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               to="/messages"
               data-qa="messages-nav"
             >
-              {i18n.header.messages}
+              <NavLinkText>{i18n.header.messages} </NavLinkText>
               {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
             </NavbarLink>
           )}
@@ -391,52 +412,21 @@ interface NavbarMenuProps {
 const NavbarMenu = styled.div<NavbarMenuProps>`
   display: ${(p) => (p.visible ? 'block' : 'none')};
 
-  @media screen and (min-width: 1024px) {
+  @media screen and (min-width: ${desktopMin}) {
     display: flex;
     flex-grow: 1;
     flex-shrink: 0;
   }
 `
 
-interface NavbarLinkProps {
-  $noMargin?: boolean
-}
-
-const NavbarLink = styled(NavLink)<NavbarLinkProps>`
-  box-sizing: inherit;
-  text-decoration: none;
-  color: #6e6e6e;
-  line-height: 1.5;
-  position: relative;
-  flex-grow: 0;
-  flex-shrink: 0;
-  align-items: center;
-  display: flex;
-  cursor: pointer;
-  min-height: 3.25rem;
-  padding: 1rem 1.2rem calc(1rem + 4px);
-  border-bottom: 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-left: ${(p) => (p.$noMargin ? '0' : '1rem')};
-
-  &.active {
-    border-bottom: 4px solid ${colors.main.primary};
-    font-weight: ${fontWeights.bold};
-    padding-bottom: 1rem;
-  }
-
-  @media screen and (max-width: 1023px) {
-    margin-left: 0;
-  }
-`
-
 const NavbarStart = styled.div`
-  @media screen and (min-width: 1024px) {
+  display: flex;
+  flex-direction: column;
+  @media screen and (min-width: ${desktopMin}) {
+    flex-direction: row;
+    gap: ${defaultMargins.L};
     align-items: stretch;
-    display: flex;
-    justify-content: flex-start;
-    margin-right: auto;
+    margin-right: auto; // push user menu to right
   }
 `
 
