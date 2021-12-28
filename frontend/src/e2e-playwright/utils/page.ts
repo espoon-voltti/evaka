@@ -166,6 +166,10 @@ export class Element {
     return this.locator.isDisabled()
   }
 
+  async hover(): Promise<void> {
+    await this.locator.hover()
+  }
+
   async click(): Promise<void> {
     await this.locator.click()
   }
@@ -330,5 +334,13 @@ export class Collapsible extends Element {
       }
       return this.isOpen()
     })
+  }
+}
+
+export class Modal extends Element {
+  #closeButton = this.find('[data-qa="modal-close"]')
+
+  async close() {
+    await this.#closeButton.click()
   }
 }
