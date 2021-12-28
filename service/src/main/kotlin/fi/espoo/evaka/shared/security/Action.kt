@@ -489,7 +489,8 @@ sealed interface Action {
 
         UPDATE_FEATURES(),
 
-        READ_TERMINATED_PLACEMENTS(UNIT_SUPERVISOR);
+        READ_TERMINATED_PLACEMENTS(UNIT_SUPERVISOR),
+        READ_MISSING_GROUP_PLACEMENTS(UNIT_SUPERVISOR);
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
