@@ -69,7 +69,7 @@ class ChildAttendanceController(
 
     @GetMapping("/units/{unitId}")
     fun getAttendances(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): AttendanceResponse {
@@ -77,7 +77,7 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.read { it.getAttendancesResponse(unitId, HelsinkiDateTime.now()) }
+        return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, HelsinkiDateTime.now()) } }
     }
 
     data class ArrivalRequest(
@@ -86,7 +86,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/arrival")
     fun postArrival(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -96,26 +96,28 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        db.transaction { tx ->
-            tx.fetchChildPlacementBasics(childId, unitId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.fetchChildPlacementBasics(childId, unitId)
 
-            tx.deleteAbsencesByDate(childId, dateNow())
-            try {
-                tx.insertAttendance(
-                    childId = childId,
-                    unitId = unitId,
-                    arrived = HelsinkiDateTime.now().withTime(body.arrived),
-                    departed = null
-                )
-            } catch (e: Exception) {
-                throw mapPSQLException(e)
+                tx.deleteAbsencesByDate(childId, dateNow())
+                try {
+                    tx.insertAttendance(
+                        childId = childId,
+                        unitId = unitId,
+                        arrived = HelsinkiDateTime.now().withTime(body.arrived),
+                        departed = null
+                    )
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
+                }
             }
         }
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
     fun returnToComing(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
@@ -124,20 +126,22 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        db.transaction { tx ->
-            tx.fetchChildPlacementBasics(childId, unitId)
-            tx.deleteAbsencesByDate(childId, dateNow())
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.fetchChildPlacementBasics(childId, unitId)
+                tx.deleteAbsencesByDate(childId, dateNow())
 
-            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
-            if (attendance != null) {
-                if (attendance.departed == null) {
-                    try {
-                        tx.deleteAttendance(attendance.id)
-                    } catch (e: Exception) {
-                        throw mapPSQLException(e)
+                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
+                if (attendance != null) {
+                    if (attendance.departed == null) {
+                        try {
+                            tx.deleteAttendance(attendance.id)
+                        } catch (e: Exception) {
+                            throw mapPSQLException(e)
+                        }
+                    } else {
+                        throw Conflict("Already departed, did you mean return-to-present?")
                     }
-                } else {
-                    throw Conflict("Already departed, did you mean return-to-present?")
                 }
             }
         }
@@ -145,7 +149,7 @@ class ChildAttendanceController(
 
     @GetMapping("/units/{unitId}/children/{childId}/departure")
     fun getChildDeparture(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
@@ -154,25 +158,27 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return db.read { tx ->
-            val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
-            val attendance = tx.getChildOngoingAttendance(childId, unitId)
-            if (attendance == null) {
-                throw Conflict("Cannot depart, has not yet arrived")
-            } else if (attendance.departed != null) {
-                throw Conflict("Cannot depart, already departed")
+                val attendance = tx.getChildOngoingAttendance(childId, unitId)
+                if (attendance == null) {
+                    throw Conflict("Cannot depart, has not yet arrived")
+                } else if (attendance.departed != null) {
+                    throw Conflict("Cannot depart, already departed")
+                }
+
+                val arrived = attendance.arrived.toLocalTime()
+
+                // temporary hotfix for case where scheduled job was missing and child arrived yesterday
+                val forgottenToDepart = attendance.arrived.toLocalDate() != dateNow()
+
+                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
+
+                if (forgottenToDepart) listOf()
+                else getPartialAbsenceThresholds(placementBasics, arrived, childHasPaidServiceNeedToday)
             }
-
-            val arrived = attendance.arrived.toLocalTime()
-
-            // temporary hotfix for case where scheduled job was missing and child arrived yesterday
-            val forgottenToDepart = attendance.arrived.toLocalDate() != dateNow()
-
-            val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
-
-            if (forgottenToDepart) listOf()
-            else getPartialAbsenceThresholds(placementBasics, arrived, childHasPaidServiceNeedToday)
         }
     }
 
@@ -183,7 +189,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -193,54 +199,56 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        db.transaction { tx ->
-            val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
-            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
-            if (attendance == null) {
-                // temporary hotfix for case where scheduled job was missing and child arrived yesterday
-                val forgottenAttendance: ChildAttendance = tx.getChildOngoingAttendance(childId, unitId)
-                    ?: throw Conflict("Cannot depart, has not yet arrived")
-                tx.updateAttendanceEnd(
-                    attendanceId = forgottenAttendance.id,
-                    departed = forgottenAttendance.arrived.withTime(LocalTime.of(23, 59))
-                )
-                return@transaction tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-            } else if (attendance.departed != null) {
-                throw Conflict("Cannot depart, already departed")
-            }
-
-            val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
-
-            val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.arrived.toLocalTime(), childHasPaidServiceNeedToday)
-                .filter { body.departed <= it.time }
-            tx.deleteAbsencesByDate(childId, dateNow())
-            if (absentFrom.isNotEmpty()) {
-                if (body.absenceType == null) {
-                    throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
+                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
+                if (attendance == null) {
+                    // temporary hotfix for case where scheduled job was missing and child arrived yesterday
+                    val forgottenAttendance: ChildAttendance = tx.getChildOngoingAttendance(childId, unitId)
+                        ?: throw Conflict("Cannot depart, has not yet arrived")
+                    tx.updateAttendanceEnd(
+                        attendanceId = forgottenAttendance.id,
+                        departed = forgottenAttendance.arrived.withTime(LocalTime.of(23, 59))
+                    )
+                    return@transaction tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
+                } else if (attendance.departed != null) {
+                    throw Conflict("Cannot depart, already departed")
                 }
 
-                absentFrom.forEach { (careType, _) ->
-                    tx.insertAbsence(user, childId, dateNow(), careType, body.absenceType)
-                }
-            } else if (body.absenceType != null) {
-                throw BadRequest("Request defines absenceType but child was not absent.")
-            }
+                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
 
-            try {
-                tx.updateAttendanceEnd(
-                    attendanceId = attendance.id,
-                    departed = HelsinkiDateTime.now().withTime(body.departed)
-                )
-            } catch (e: Exception) {
-                throw mapPSQLException(e)
+                val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.arrived.toLocalTime(), childHasPaidServiceNeedToday)
+                    .filter { body.departed <= it.time }
+                tx.deleteAbsencesByDate(childId, dateNow())
+                if (absentFrom.isNotEmpty()) {
+                    if (body.absenceType == null) {
+                        throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
+                    }
+
+                    absentFrom.forEach { (careType, _) ->
+                        tx.insertAbsence(user, childId, dateNow(), careType, body.absenceType)
+                    }
+                } else if (body.absenceType != null) {
+                    throw BadRequest("Request defines absenceType but child was not absent.")
+                }
+
+                try {
+                    tx.updateAttendanceEnd(
+                        attendanceId = attendance.id,
+                        departed = HelsinkiDateTime.now().withTime(body.departed)
+                    )
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
+                }
             }
         }
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
     fun returnToPresent(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
@@ -249,19 +257,21 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        db.transaction { tx ->
-            tx.fetchChildPlacementBasics(childId, unitId)
-            tx.deleteAbsencesByDate(childId, dateNow())
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.fetchChildPlacementBasics(childId, unitId)
+                tx.deleteAbsencesByDate(childId, dateNow())
 
-            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
+                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
 
-            if (attendance?.departed == null) {
-                throw Conflict("Can not return to present since not yet departed")
-            } else {
-                try {
-                    tx.updateAttendance(attendance.id, attendance.arrived, null)
-                } catch (e: Exception) {
-                    throw mapPSQLException(e)
+                if (attendance?.departed == null) {
+                    throw Conflict("Can not return to present since not yet departed")
+                } else {
+                    try {
+                        tx.updateAttendance(attendance.id, attendance.arrived, null)
+                    } catch (e: Exception) {
+                        throw mapPSQLException(e)
+                    }
                 }
             }
         }
@@ -273,7 +283,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/full-day-absence")
     fun postFullDayAbsence(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -283,21 +293,23 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        db.transaction { tx ->
-            val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
-            val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
-            if (attendance != null) {
-                throw Conflict("Cannot add full day absence, child already has attendance")
-            }
-
-            try {
-                tx.deleteAbsencesByDate(childId, dateNow())
-                getCareTypes(placementBasics.placementType).forEach { careType ->
-                    tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
+                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
+                if (attendance != null) {
+                    throw Conflict("Cannot add full day absence, child already has attendance")
                 }
-            } catch (e: Exception) {
-                throw mapPSQLException(e)
+
+                try {
+                    tx.deleteAbsencesByDate(childId, dateNow())
+                    getCareTypes(placementBasics.placementType).forEach { careType ->
+                        tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
+                    }
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
+                }
             }
         }
     }
@@ -310,7 +322,7 @@ class ChildAttendanceController(
 
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
     fun postAbsenceRange(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
@@ -320,25 +332,27 @@ class ChildAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        db.transaction { tx ->
-            val typeOnDates = tx.fetchChildPlacementTypeDates(childId, unitId, body.startDate, body.endDate)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val typeOnDates = tx.fetchChildPlacementTypeDates(childId, unitId, body.startDate, body.endDate)
 
-            try {
-                for ((date, placementType) in typeOnDates) {
-                    tx.deleteAbsencesByDate(childId, date)
-                    getCareTypes(placementType).forEach { careType ->
-                        tx.insertAbsence(user, childId, date, careType, body.absenceType)
+                try {
+                    for ((date, placementType) in typeOnDates) {
+                        tx.deleteAbsencesByDate(childId, date)
+                        getCareTypes(placementType).forEach { careType ->
+                            tx.insertAbsence(user, childId, date, careType, body.absenceType)
+                        }
                     }
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
                 }
-            } catch (e: Exception) {
-                throw mapPSQLException(e)
             }
         }
     }
 
     @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")
     fun deleteAbsenceRange(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -347,7 +361,7 @@ class ChildAttendanceController(
         Audit.AbsenceDeleteRange.log(targetId = childId)
         @Suppress("DEPRECATION")
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
-        return db.transaction { tx -> tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)) }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)) } }
     }
 }
 

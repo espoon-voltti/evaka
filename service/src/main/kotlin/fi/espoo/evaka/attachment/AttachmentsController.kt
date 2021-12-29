@@ -69,7 +69,7 @@ class AttachmentsController(
         return db.connect { dbc ->
             handleFileUpload(dbc, user, AttachmentParent.Application(applicationId), file, defaultAllowedAttachmentContentTypes, type).also {
                 dbc.transaction { tx -> stateService.reCalculateDueDate(tx, evakaClock.today(), applicationId) }
-            } 
+            }
         }
     }
 
