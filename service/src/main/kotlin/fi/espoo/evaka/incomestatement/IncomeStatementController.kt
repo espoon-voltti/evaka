@@ -30,7 +30,7 @@ class IncomeStatementController(
 ) {
     @GetMapping("/person/{personId}")
     fun getIncomeStatements(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
@@ -38,31 +38,35 @@ class IncomeStatementController(
     ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read {
-            it.readIncomeStatementsForPerson(
-                personId = personId.raw,
-                includeEmployeeContent = true,
-                page = page,
-                pageSize = pageSize
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                it.readIncomeStatementsForPerson(
+                    personId = personId.raw,
+                    includeEmployeeContent = true,
+                    page = page,
+                    pageSize = pageSize
+                )
+            }
         }
     }
 
     @GetMapping("/person/{personId}/{incomeStatementId}")
     fun getIncomeStatement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
-        return db.read {
-            it.readIncomeStatementForPerson(
-                personId.raw,
-                incomeStatementId,
-                includeEmployeeContent = true
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                it.readIncomeStatementForPerson(
+                    personId.raw,
+                    incomeStatementId,
+                    includeEmployeeContent = true
+                )
+            } 
         } ?: throw NotFound("No such income statement")
     }
 
@@ -70,25 +74,27 @@ class IncomeStatementController(
 
     @PostMapping("/{incomeStatementId}/handled")
     fun setHandled(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody
     ) {
         Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
-        db.transaction { tx ->
-            tx.updateIncomeStatementHandled(
-                incomeStatementId,
-                body.handlerNote,
-                if (body.handled) EmployeeId(user.id) else null,
-            )
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.updateIncomeStatementHandled(
+                    incomeStatementId,
+                    body.handlerNote,
+                    if (body.handled) EmployeeId(user.id) else null,
+                )
+            }
         }
     }
 
     @GetMapping("/awaiting-handler")
     fun getIncomeStatementsAwaitingHandler(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam areas: String,
         @RequestParam page: Int,
@@ -97,13 +103,15 @@ class IncomeStatementController(
         Audit.IncomeStatementsAwaitingHandler.log()
         accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
         val areasList = areas.split(",").filter { it.isNotEmpty() }
-        return db.read {
-            it.fetchIncomeStatementsAwaitingHandler(
-                HelsinkiDateTime.now().toLocalDate(),
-                areasList,
-                page,
-                pageSize
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                it.fetchIncomeStatementsAwaitingHandler(
+                    HelsinkiDateTime.now().toLocalDate(),
+                    areasList,
+                    page,
+                    pageSize
+                )
+            }
         }
     }
 }
