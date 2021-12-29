@@ -12,6 +12,11 @@ export default class MobileListPage {
     `[data-qa="unread-messages-indicator"]`
   )
 
+  async readChildGroupName(childId: UUID) {
+    const elem = this.page.find(`[data-qa="child-group-name-${childId}"]`)
+    return elem.innerText
+  }
+
   async selectChild(childId: UUID) {
     const elem = this.page.find(`[data-qa="child-${childId}"]`)
     return elem.click()

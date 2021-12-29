@@ -76,6 +76,19 @@ const FixedSpaceRowWithLeftMargin = styled(FixedSpaceRow)`
   margin-left: ${defaultMargins.m};
 `
 
+const NameRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`
+
+const GroupName = styled.div`
+  color: ${colors.greyscale.dark};
+  font-size: 0.875em;
+  white-space: nowrap;
+  text-align: right;
+`
+
 interface ChildListItemProps {
   child: Child
   onClick?: () => void
@@ -111,6 +124,8 @@ export default React.memo(function ChildListItem({
     ? groupName
     : childReservationInfo(i18n, child)
 
+  const maybeGroupName = type && groupId === 'all' ? groupName : undefined
+
   return (
     <ChildBox data-qa={`child-${child.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
@@ -126,9 +141,14 @@ export default React.memo(function ChildListItem({
           )}
         </IconBox>
         <ChildBoxInfo onClick={onClick}>
-          <Bold data-qa="child-name">
-            {child.firstName} {child.lastName}
-          </Bold>
+          <NameRow>
+            <Bold data-qa="child-name">
+              {child.firstName} {child.lastName}
+            </Bold>
+            <GroupName data-qa={`child-group-name-${child.id}`}>
+              {maybeGroupName}
+            </GroupName>
+          </NameRow>
           <DetailsRow>
             <div>
               {infoText}

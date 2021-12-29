@@ -242,4 +242,23 @@ describe('Child mobile attendance list', () => {
       total: 3
     })
   })
+
+  test('Group name is visible only when all-group selected', async () => {
+    const childId = enduserChildFixtureKaarina.id
+    await createPlacements(childId)
+    await createPlacements(enduserChildFixturePorriHatterRestricted.id)
+    await createPlacements(enduserChildFixtureJari.id, group2.id)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await listPage.selectGroup('all')
+    await waitUntilEqual(
+      () => listPage.readChildGroupName(childId),
+      daycareGroupFixture.name.toUpperCase()
+    )
+
+    await listPage.selectGroup(daycareGroupFixture.id)
+    await waitUntilEqual(() => listPage.readChildGroupName(childId), '')
+  })
 })
