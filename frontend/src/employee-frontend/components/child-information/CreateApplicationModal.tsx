@@ -188,6 +188,7 @@ function CreateApplicationModal({
                   checked={personType === 'GUARDIAN'}
                   label={i18nView.personTypes.GUARDIAN}
                   onChange={() => setPersonType('GUARDIAN')}
+                  data-qa="select-guardian-radio"
                 />
                 <div>
                   <Select
@@ -221,6 +222,7 @@ function CreateApplicationModal({
                 checked={personType === 'VTJ'}
                 label={i18nView.personTypes.VTJ}
                 onChange={() => setPersonType('VTJ')}
+                data-qa="vtj-person-radio"
               />
               <VtjPersonSearch
                 data-qa="select-search-from-vtj-guardian"

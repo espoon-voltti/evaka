@@ -140,6 +140,10 @@ export class Element {
     return new Element(this.locator.locator(selector))
   }
 
+  findText(text: string): Element {
+    return new Element(this.locator.locator(`text=${text}`))
+  }
+
   findAll(selector: string): ElementCollection {
     return new ElementCollection(this.locator.locator(selector))
   }

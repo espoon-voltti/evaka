@@ -20,7 +20,6 @@ export default class ApplicationReadView {
   #givenOtherGuardianPhone = this.page.find('[data-qa="second-guardian-phone"]')
   #giveOtherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
   #applicationStatus = this.page.find('[data-qa="application-status"]')
-  decisionAcceptedStartDate = this.page.find('[data-qa="application-status"]')
 
   async waitUntilLoaded() {
     await this.page.find('[data-qa="application-read-view"]').waitUntilVisible()

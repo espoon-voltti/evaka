@@ -12,9 +12,12 @@ import {
   Combobox,
   DatePickerDeprecated,
   Select
-} from 'e2e-playwright/utils/page'
+} from '../../utils/page'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Daycare } from '../../../e2e-test-common/dev-api/types'
+import { Daycare } from 'e2e-test-common/dev-api/types'
+import config from 'e2e-test-common/config'
+import { UUID } from 'lib-common/types'
+import CreateApplicationModal from './applications/create-application-modal'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
@@ -31,6 +34,10 @@ export default class ChildInformationPage {
   readonly #confirmButton = this.page.find(
     '[data-qa="confirm-edited-person-button"]'
   )
+
+  async navigateToChild(id: UUID) {
+    await this.page.goto(config.employeeUrl + '/child-information/' + id)
+  }
 
   async waitUntilLoaded() {
     await this.page
@@ -500,7 +507,17 @@ class MessageBlocklistSection extends Section {
 
 class FeeAlterationsSection extends Section {}
 
-class ApplicationsSection extends Section {}
+class ApplicationsSection extends Section {
+  #createApplication = this.find('[data-qa="button-create-application"]')
+
+  async openCreateApplicationModal() {
+    await this.#createApplication.click()
+    return new CreateApplicationModal(
+      this.page,
+      this.page.find('[data-qa="modal"]')
+    )
+  }
+}
 
 const collapsibles = {
   dailyServiceTimes: {
