@@ -28,9 +28,10 @@ import MobileMessageEditorPage from '../../pages/mobile/message-editor'
 import MobileMessagesPage from '../../pages/mobile/messages'
 import ThreadViewPage from '../../pages/mobile/thread-view'
 import { waitUntilEqual } from '../../utils'
-import { enduserLogin } from '../../utils/user'
+import { employeeLogin, enduserLogin } from '../../utils/user'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
+import ChildInformationPage from '../../pages/employee/child-information-page'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
@@ -291,6 +292,25 @@ describe('Child message thread', () => {
   test('Staff without group access sees info that no accounts were found', async () => {
     await staff2LoginsToMessagesPage()
     await messagesPage.noAccountInfo.waitUntilVisible()
+  })
+
+  test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
+    // Add child's guardians to block list
+    const adminPage = await Page.open()
+    await employeeLogin(adminPage, 'ADMIN')
+    await adminPage.goto(`${config.employeeUrl}/child-information/${child.id}`)
+    const childInformationPage = new ChildInformationPage(adminPage)
+    await childInformationPage.addParentToBlockList(
+      fixtures.enduserGuardianFixture.id
+    )
+    await childInformationPage.addParentToBlockList(
+      fixtures.enduserChildJariOtherGuardianFixture.id
+    )
+
+    await listPage.selectChild(child.id)
+    await childPage.openMessageEditor()
+    await pinLoginPage.login(employeeName, pin)
+    await messageEditorPage.noReceiversInfo.waitUntilVisible()
   })
 })
 
