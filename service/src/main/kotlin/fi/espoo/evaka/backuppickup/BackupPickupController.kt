@@ -30,15 +30,17 @@ class BackupPickupController(
 ) {
     @PostMapping("/children/{childId}/backup-pickups")
     fun createForChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID,
         @RequestBody body: ChildBackupPickupContent
     ): ResponseEntity<ChildBackupPickupCreateResponse> {
         Audit.ChildBackupPickupCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_PICKUP, childId)
-        return db.transaction { tx ->
-            tx.createBackupPickup(childId, body)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.createBackupPickup(childId, body)
+            }
         }.let {
             ResponseEntity.ok(ChildBackupPickupCreateResponse(it))
         }
@@ -46,29 +48,33 @@ class BackupPickupController(
 
     @GetMapping("/children/{childId}/backup-pickups")
     fun getForChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<List<ChildBackupPickup>> {
         Audit.ChildBackupPickupRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_PICKUP, childId)
 
-        return db.transaction { tx ->
-            tx.getBackupPickupsForChild(childId)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.getBackupPickupsForChild(childId)
+            }
         }.let { ResponseEntity.ok(it) }
     }
 
     @PutMapping("/backup-pickups/{id}")
     fun update(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") id: BackupPickupId,
         @RequestBody body: ChildBackupPickupContent
     ): ResponseEntity<Unit> {
         Audit.ChildBackupPickupUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.BackupPickup.UPDATE, id)
-        return db.transaction { tx ->
-            tx.updateBackupPickup(id, body)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.updateBackupPickup(id, body)
+            }
         }.let {
             ResponseEntity.noContent().build()
         }
@@ -76,14 +82,16 @@ class BackupPickupController(
 
     @DeleteMapping("/backup-pickups/{id}")
     fun delete(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") id: BackupPickupId
     ): ResponseEntity<Unit> {
         Audit.ChildBackupPickupDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.BackupPickup.DELETE, id)
-        db.transaction { tx ->
-            tx.deleteBackupPickup(id)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.deleteBackupPickup(id)
+            }
         }
         return ResponseEntity.noContent().build()
     }

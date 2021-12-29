@@ -29,23 +29,25 @@ class DailyServiceTimesController(
 
     @GetMapping("/children/{childId}/daily-service-times")
     fun getDailyServiceTimes(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<DailyServiceTimesResponse> {
         Audit.ChildDailyServiceTimesRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_DAILY_SERVICE_TIMES, childId)
 
-        return db.read { it.getChildDailyServiceTimes(childId) }.let {
-            ResponseEntity.ok(
-                DailyServiceTimesResponse(it)
-            )
+        return db.connect { dbc ->
+            dbc.read { it.getChildDailyServiceTimes(childId) }.let {
+                ResponseEntity.ok(
+                    DailyServiceTimesResponse(it)
+                )
+            }
         }
     }
 
     @PutMapping("/children/{childId}/daily-service-times")
     fun putDailyServiceTimes(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: DailyServiceTimes
@@ -53,21 +55,21 @@ class DailyServiceTimesController(
         Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_DAILY_SERVICE_TIMES, childId)
 
-        db.transaction { it.upsertChildDailyServiceTimes(childId, body) }
+        db.connect { dbc -> dbc.transaction { it.upsertChildDailyServiceTimes(childId, body) } }
 
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/children/{childId}/daily-service-times")
     fun deleteDailyServiceTimes(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildDailyServiceTimesDelete.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.DELETE_DAILY_SERVICE_TIMES, childId)
 
-        db.transaction { it.deleteChildDailyServiceTimes(childId) }
+        db.connect { dbc -> dbc.transaction { it.deleteChildDailyServiceTimes(childId) } }
 
         return ResponseEntity.noContent().build()
     }
