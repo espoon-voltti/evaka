@@ -22,7 +22,7 @@ class ChildSensitiveInfoController(
 
     @GetMapping("/children/{childId}/sensitive-info")
     fun getSensitiveInfo(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId,
     ): ChildSensitiveInformation {
@@ -30,6 +30,6 @@ class ChildSensitiveInfoController(
 
         ac.requirePermissionFor(user, Action.Child.READ_SENSITIVE_INFO, childId.raw)
 
-        return db.read { it.getChildSensitiveInfo(childId.raw) ?: throw NotFound("Child not found") }
+        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(childId.raw) ?: throw NotFound("Child not found") } }
     }
 }

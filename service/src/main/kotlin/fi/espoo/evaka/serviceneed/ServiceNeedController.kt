@@ -43,26 +43,28 @@ class ServiceNeedController(
 
     @PostMapping("/service-needs")
     fun postServiceNeed(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: ServiceNeedCreateRequest
     ) {
         Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
         accessControl.requirePermissionFor(user, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
 
-        db.transaction { tx ->
-            createServiceNeed(
-                tx = tx,
-                user = user,
-                placementId = body.placementId,
-                startDate = body.startDate,
-                endDate = body.endDate,
-                optionId = body.optionId,
-                shiftCare = body.shiftCare,
-                confirmedAt = HelsinkiDateTime.now()
-            )
-                .let { id -> tx.getServiceNeedChildRange(id) }
-                .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                createServiceNeed(
+                    tx = tx,
+                    user = user,
+                    placementId = body.placementId,
+                    startDate = body.startDate,
+                    endDate = body.endDate,
+                    optionId = body.optionId,
+                    shiftCare = body.shiftCare,
+                    confirmedAt = HelsinkiDateTime.now()
+                )
+                    .let { id -> tx.getServiceNeedChildRange(id) }
+                    .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
+            }
         }
     }
 
@@ -75,7 +77,7 @@ class ServiceNeedController(
 
     @PutMapping("/service-needs/{id}")
     fun putServiceNeed(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
@@ -83,64 +85,68 @@ class ServiceNeedController(
         Audit.PlacementServiceNeedUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.ServiceNeed.UPDATE, id)
 
-        db.transaction { tx ->
-            val oldRange = tx.getServiceNeedChildRange(id)
-            updateServiceNeed(
-                tx = tx,
-                user = user,
-                id = id,
-                startDate = body.startDate,
-                endDate = body.endDate,
-                optionId = body.optionId,
-                shiftCare = body.shiftCare,
-                confirmedAt = HelsinkiDateTime.now()
-            )
-            notifyServiceNeedUpdated(
-                tx,
-                asyncJobRunner,
-                ServiceNeedChildRange(
-                    childId = oldRange.childId,
-                    dateRange = FiniteDateRange(
-                        minOf(oldRange.dateRange.start, body.startDate),
-                        maxOf(oldRange.dateRange.end, body.endDate)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val oldRange = tx.getServiceNeedChildRange(id)
+                updateServiceNeed(
+                    tx = tx,
+                    user = user,
+                    id = id,
+                    startDate = body.startDate,
+                    endDate = body.endDate,
+                    optionId = body.optionId,
+                    shiftCare = body.shiftCare,
+                    confirmedAt = HelsinkiDateTime.now()
+                )
+                notifyServiceNeedUpdated(
+                    tx,
+                    asyncJobRunner,
+                    ServiceNeedChildRange(
+                        childId = oldRange.childId,
+                        dateRange = FiniteDateRange(
+                            minOf(oldRange.dateRange.start, body.startDate),
+                            maxOf(oldRange.dateRange.end, body.endDate)
+                        )
                     )
                 )
-            )
+            }
         }
     }
 
     @DeleteMapping("/service-needs/{id}")
     fun deleteServiceNeed(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: ServiceNeedId
     ) {
         Audit.PlacementServiceNeedDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.ServiceNeed.DELETE, id)
 
-        db.transaction { tx ->
-            val childRange = tx.getServiceNeedChildRange(id)
-            tx.deleteServiceNeed(id)
-            notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val childRange = tx.getServiceNeedChildRange(id)
+                tx.deleteServiceNeed(id)
+                notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
+            }
         }
     }
 
     @GetMapping("/service-needs/options")
     fun getServiceNeedOptions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): List<ServiceNeedOption> {
         Audit.ServiceNeedOptionsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_NEED_OPTIONS)
 
-        return db.read { it.getServiceNeedOptions() }
+        return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }
     }
 
     @GetMapping("/public/service-needs/options")
     fun getServiceNeedOptionPublicInfos(
-        db: Database.DeprecatedConnection,
+        db: Database,
         @RequestParam(required = true) placementTypes: List<PlacementType>
     ): List<ServiceNeedOptionPublicInfo> {
-        return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }
+        return db.connect { dbc -> dbc.read { it.getServiceNeedOptionPublicInfos(placementTypes) } }
     }
 }

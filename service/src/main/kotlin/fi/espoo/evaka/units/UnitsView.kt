@@ -60,7 +60,7 @@ class UnitsView(private val accessControl: AccessControl) {
 
     @GetMapping("/{unitId}")
     fun getUnitViewData(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
@@ -74,66 +74,76 @@ class UnitsView(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, Action.Unit.READ_BASIC, unitId)
 
         val period = FiniteDateRange(from, to)
-        val unitData = db.read { tx ->
-            val groups = tx.getDaycareGroups(unitId, from, to)
-            val placements = tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
-            val backupCares = tx.getBackupCaresForDaycare(unitId, period)
-            val missingGroupPlacements = getMissingGroupPlacements(tx, unitId)
-            val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(user, Action.Unit.READ_TERMINATED_PLACEMENTS, unitId)) tx.getTerminatedPlacements(evakaClock.today(), unitId, evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks), evakaClock.today()) else emptyList()
-            val caretakers = Caretakers(
-                unitCaretakers = tx.getUnitStats(unitId, from, to),
-                groupCaretakers = tx.getGroupStats(unitId, from, to)
-            )
-            val backupCareIds = backupCares.map { it.id }.toSet() +
-                missingGroupPlacements.mapNotNull { if (it.backup) { BackupCareId(it.placementId.raw) } else null }.toSet()
-            val placementIds = placements.map { it.id }.toSet() +
-                missingGroupPlacements.mapNotNull { if (!it.backup) { it.placementId } else null }.toSet()
+        val unitData = db.connect { dbc ->
+            dbc.read { tx ->
+                val groups = tx.getDaycareGroups(unitId, from, to)
+                val placements = tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
+                val backupCares = tx.getBackupCaresForDaycare(unitId, period)
+                val missingGroupPlacements = getMissingGroupPlacements(tx, unitId)
+                val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(user, Action.Unit.READ_TERMINATED_PLACEMENTS, unitId)) tx.getTerminatedPlacements(evakaClock.today(), unitId, evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks), evakaClock.today()) else emptyList()
+                val caretakers = Caretakers(
+                    unitCaretakers = tx.getUnitStats(unitId, from, to),
+                    groupCaretakers = tx.getGroupStats(unitId, from, to)
+                )
+                val backupCareIds = backupCares.map { it.id }.toSet() +
+                    missingGroupPlacements.mapNotNull {
+                        if (it.backup) {
+                            BackupCareId(it.placementId.raw)
+                        } else null
+                    }.toSet()
+                val placementIds = placements.map { it.id }.toSet() +
+                    missingGroupPlacements.mapNotNull {
+                        if (!it.backup) {
+                            it.placementId
+                        } else null
+                    }.toSet()
 
-            val basicData = UnitDataResponse(
-                groups = groups,
-                placements = placements,
-                backupCares = backupCares,
-                missingGroupPlacements = missingGroupPlacements,
-                recentlyTerminatedPlacements = recentlyTerminatedPlacements,
-                caretakers = caretakers,
-                permittedBackupCareActions = accessControl.getPermittedBackupCareActions(user, backupCareIds),
-                permittedPlacementActions = accessControl.getPermittedPlacementActions(user, placementIds),
-                permittedGroupPlacementActions = accessControl.getPermittedGroupPlacementActions(
-                    user,
-                    placements.flatMap { placement ->
-                        placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }
-                    }
+                val basicData = UnitDataResponse(
+                    groups = groups,
+                    placements = placements,
+                    backupCares = backupCares,
+                    missingGroupPlacements = missingGroupPlacements,
+                    recentlyTerminatedPlacements = recentlyTerminatedPlacements,
+                    caretakers = caretakers,
+                    permittedBackupCareActions = accessControl.getPermittedBackupCareActions(user, backupCareIds),
+                    permittedPlacementActions = accessControl.getPermittedPlacementActions(user, placementIds),
+                    permittedGroupPlacementActions = accessControl.getPermittedGroupPlacementActions(
+                        user,
+                        placements.flatMap { placement ->
+                            placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }
+                        }
+                    )
                 )
-            )
 
-            if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
-                val unitOccupancies = getUnitOccupancies(tx, unitId, period)
-                val groupOccupancies = getGroupOccupancies(tx, unitId, period)
-                val placementProposals = tx.getPlacementPlans(
-                    evakaClock.today(),
-                    unitId,
-                    null,
-                    null,
-                    listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
-                )
-                val placementPlans = tx.getPlacementPlans(
-                    evakaClock.today(),
-                    unitId,
-                    null,
-                    null,
-                    listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING, ApplicationStatus.REJECTED)
-                )
-                val applications = tx.getApplicationUnitSummaries(unitId)
+                if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
+                    val unitOccupancies = getUnitOccupancies(tx, unitId, period)
+                    val groupOccupancies = getGroupOccupancies(tx, unitId, period)
+                    val placementProposals = tx.getPlacementPlans(
+                        evakaClock.today(),
+                        unitId,
+                        null,
+                        null,
+                        listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
+                    )
+                    val placementPlans = tx.getPlacementPlans(
+                        evakaClock.today(),
+                        unitId,
+                        null,
+                        null,
+                        listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING, ApplicationStatus.REJECTED)
+                    )
+                    val applications = tx.getApplicationUnitSummaries(unitId)
 
-                basicData.copy(
-                    unitOccupancies = unitOccupancies,
-                    groupOccupancies = groupOccupancies,
-                    placementProposals = placementProposals,
-                    placementPlans = placementPlans,
-                    applications = applications
-                )
-            } else {
-                basicData
+                    basicData.copy(
+                        unitOccupancies = unitOccupancies,
+                        groupOccupancies = groupOccupancies,
+                        placementProposals = placementProposals,
+                        placementPlans = placementPlans,
+                        applications = applications
+                    )
+                } else {
+                    basicData
+                }
             }
         }
         return ResponseEntity.ok(unitData)

@@ -22,7 +22,7 @@ import java.time.LocalDate
 class ApplicationsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
@@ -31,7 +31,7 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, Action.Global.READ_APPLCIATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.read { it.getApplicationsRows(from, to) }
+        return db.connect { dbc -> dbc.read { it.getApplicationsRows(from, to) } }
     }
 }
 

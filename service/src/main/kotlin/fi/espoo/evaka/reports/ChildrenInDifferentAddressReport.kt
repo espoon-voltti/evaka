@@ -25,12 +25,12 @@ class ChildrenInDifferentAddressReportController(
 ) {
     @GetMapping("/reports/children-in-different-address")
     fun getChildrenInDifferentAddressReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): List<ChildrenInDifferentAddressReportRow> {
         Audit.ChildrenInDifferentAddressReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT)
-        return db.read { it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user)) }
+        return db.connect { dbc -> dbc.read { it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user)) } }
     }
 }
 

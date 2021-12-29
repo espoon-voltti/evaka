@@ -33,7 +33,7 @@ class ReservationControllerCitizen(
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
@@ -48,32 +48,34 @@ class ReservationControllerCitizen(
             throw BadRequest("Invalid date range $from - $to")
         }
 
-        return db.read { tx ->
-            val children = tx.getReservationChildren(user.id, range)
-            val includeWeekends = children.any {
-                it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
-            }
-            val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
-            val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours).let { reservableDays ->
-                val maxPlacementEnd = children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
-                if (reservableDays.start > maxPlacementEnd) null
-                else FiniteDateRange(
-                    maxOf(reservableDays.start, children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN),
-                    minOf(reservableDays.end, maxPlacementEnd)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val children = tx.getReservationChildren(user.id, range)
+                val includeWeekends = children.any {
+                    it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
+                }
+                val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
+                val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours).let { reservableDays ->
+                    val maxPlacementEnd = children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
+                    if (reservableDays.start > maxPlacementEnd) null
+                    else FiniteDateRange(
+                        maxOf(reservableDays.start, children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN),
+                        minOf(reservableDays.end, maxPlacementEnd)
+                    )
+                }
+                ReservationsResponse(
+                    dailyData = reservations,
+                    children = children,
+                    reservableDays = reservableDays,
+                    includesWeekends = includeWeekends
                 )
             }
-            ReservationsResponse(
-                dailyData = reservations,
-                children = children,
-                reservableDays = reservableDays,
-                includesWeekends = includeWeekends
-            )
         }
     }
 
     @PostMapping("/citizen/reservations")
     fun postReservations(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: List<DailyReservationRequest>
     ) {
@@ -82,18 +84,20 @@ class ReservationControllerCitizen(
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.map { it.childId }.toSet())
 
-        db.transaction { tx ->
-            val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours)
-            if (body.any { !reservableDays.includes(it.date) }) {
-                throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours)
+                if (body.any { !reservableDays.includes(it.date) }) {
+                    throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
+                }
+                createReservationsAsCitizen(tx, user.id, body)
             }
-            createReservationsAsCitizen(tx, user.id, body)
         }
     }
 
     @PostMapping("/citizen/absences")
     fun postAbsences(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: AbsenceRequest
     ) {
@@ -105,13 +109,15 @@ class ReservationControllerCitizen(
         if (body.dateRange.start.isBefore(dateNow()))
             throw BadRequest("Cannot mark absences for past days")
 
-        db.transaction { tx ->
-            tx.clearOldAbsences(
-                body.childIds.flatMap { childId ->
-                    body.dateRange.dates().map { childId to it }
-                }
-            )
-            tx.insertAbsences(user.id, body)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.clearOldAbsences(
+                    body.childIds.flatMap { childId ->
+                        body.dateRange.dates().map { childId to it }
+                    }
+                )
+                tx.insertAbsences(user.id, body)
+            }
         }
     }
 }

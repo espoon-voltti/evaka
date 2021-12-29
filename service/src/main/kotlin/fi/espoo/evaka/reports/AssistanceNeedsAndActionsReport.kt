@@ -31,18 +31,20 @@ import java.time.LocalDate
 class AssistanceNeedsAndActionsReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-needs-and-actions")
     fun getAssistanceNeedReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {
         Audit.AssistanceNeedsReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
-        return db.read {
-            AssistanceNeedsAndActionsReport(
-                bases = it.getAssistanceBasisOptions(),
-                actions = it.getAssistanceActionOptions(),
-                rows = it.getReportRows(date, acl.getAuthorizedUnits(user))
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                AssistanceNeedsAndActionsReport(
+                    bases = it.getAssistanceBasisOptions(),
+                    actions = it.getAssistanceActionOptions(),
+                    rows = it.getReportRows(date, acl.getAuthorizedUnits(user))
+                )
+            }
         }
     }
 

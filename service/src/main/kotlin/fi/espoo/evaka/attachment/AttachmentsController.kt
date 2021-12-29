@@ -235,14 +235,14 @@ class AttachmentsController(
 
     @GetMapping("/{attachmentId}/download")
     fun getAttachment(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable attachmentId: AttachmentId
     ): ResponseEntity<ByteArray> {
         Audit.AttachmentsRead.log(targetId = attachmentId)
 
         val attachment =
-            db.read { it.getAttachment(attachmentId) } ?: throw NotFound("Attachment $attachmentId not found")
+            db.connect { dbc -> dbc.read { it.getAttachment(attachmentId) } } ?: throw NotFound("Attachment $attachmentId not found")
 
         val action = when (attachment.attachedTo) {
             is AttachmentParent.Application -> Action.Attachment.READ_APPLICATION_ATTACHMENT

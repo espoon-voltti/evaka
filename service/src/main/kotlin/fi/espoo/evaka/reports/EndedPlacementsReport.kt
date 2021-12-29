@@ -20,7 +20,7 @@ import java.util.UUID
 class EndedPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/ended-placements")
     fun getEndedPlacementsReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int
@@ -30,7 +30,7 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        return db.read { it.getEndedPlacementsRows(from, to) }
+        return db.connect { dbc -> dbc.read { it.getEndedPlacementsRows(from, to) } }
     }
 }
 

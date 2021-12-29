@@ -25,12 +25,12 @@ class PartnersInDifferentAddressReportController(
 ) {
     @GetMapping("/reports/partners-in-different-address")
     fun getPartnersInDifferentAddressReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): List<PartnersInDifferentAddressReportRow> {
         Audit.PartnersInDifferentAddressReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT)
-        return db.read { it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user)) }
+        return db.connect { dbc -> dbc.read { it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user)) } }
     }
 }
 

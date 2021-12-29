@@ -31,13 +31,13 @@ internal fun getMonthPeriod(date: LocalDate): DateRange {
 class InvoiceReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/invoices")
     fun getInvoiceReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): InvoiceReport {
         Audit.InvoicesReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_INVOICE_REPORT)
-        return db.read { it.getInvoiceReportWithRows(getMonthPeriod(date)) }
+        return db.connect { dbc -> dbc.read { it.getInvoiceReportWithRows(getMonthPeriod(date)) } }
     }
 }
 

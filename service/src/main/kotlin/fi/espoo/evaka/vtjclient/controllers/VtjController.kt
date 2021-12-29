@@ -29,7 +29,7 @@ import java.util.UUID
 class VtjController(private val personService: PersonService, private val accessControlCitizen: AccessControlCitizen) {
     @GetMapping("/uuid/{personId}")
     internal fun getDetails(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): CitizenUserDetails {
@@ -41,14 +41,16 @@ class VtjController(private val personService: PersonService, private val access
             notFound()
         }
 
-        return db.transaction { tx ->
-            val person = tx.getPersonById(personId) ?: return@transaction null
-            when (person.identity) {
-                is ExternalIdentifier.NoID ->
-                    CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user))
-                is ExternalIdentifier.SSN ->
-                    personService.getPersonWithChildren(tx, user, personId)
-                        ?.let { CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user)) }
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val person = tx.getPersonById(personId) ?: return@transaction null
+                when (person.identity) {
+                    is ExternalIdentifier.NoID ->
+                        CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user))
+                    is ExternalIdentifier.SSN ->
+                        personService.getPersonWithChildren(tx, user, personId)
+                            ?.let { CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user)) }
+                }
             }
         } ?: notFound()
     }

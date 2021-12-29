@@ -28,7 +28,7 @@ import java.util.UUID
 class RawReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/raw")
     fun getRawReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
@@ -38,7 +38,7 @@ class RawReportController(private val accessControl: AccessControl) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 
-        return db.read { it.getRawRows(from, to) }
+        return db.connect { dbc -> dbc.read { it.getRawRows(from, to) } }
     }
 }
 

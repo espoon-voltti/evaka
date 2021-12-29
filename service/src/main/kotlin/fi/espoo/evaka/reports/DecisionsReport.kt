@@ -23,7 +23,7 @@ import java.time.LocalDate
 class DecisionsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/decisions")
     fun getDecisionsReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
@@ -32,7 +32,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, Action.Global.READ_DECISIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.read { it.getDecisionsRows(FiniteDateRange(from, to)) }
+        return db.connect { dbc -> dbc.read { it.getDecisionsRows(FiniteDateRange(from, to)) } }
     }
 }
 

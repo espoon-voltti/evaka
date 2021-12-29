@@ -39,7 +39,7 @@ import java.util.UUID
 class AttendanceReservationController(private val ac: AccessControl) {
     @GetMapping
     fun getAttendanceReservations(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -49,37 +49,40 @@ class AttendanceReservationController(private val ac: AccessControl) {
         ac.requirePermissionFor(user, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val dateRange = FiniteDateRange(from, to)
-        return db.read { tx ->
-            val unitName = tx.getDaycare(unitId)?.name ?: throw NotFound("Unit $unitId not found")
-            val operationalDays = tx.getUnitOperationalDays(unitId, dateRange)
-            tx
-                .getAttendanceReservationData(unitId, dateRange)
-                .groupBy { it.group }
-                .let { groupedReservations ->
-                    val ungroupedRows = groupedReservations[null]
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val unitName = tx.getDaycare(unitId)?.name ?: throw NotFound("Unit $unitId not found")
+                val operationalDays = tx.getUnitOperationalDays(unitId, dateRange)
+                tx
+                    .getAttendanceReservationData(unitId, dateRange)
+                    .groupBy { it.group }
+                    .let { groupedReservations ->
+                        val ungroupedRows = groupedReservations[null]
 
-                    val childIds = groupedReservations.values.flatten().map { it.child.id }.toSet()
-                    val serviceTimes = tx.getDailyServiceTimes(childIds)
+                        val childIds = groupedReservations.values.flatten().map { it.child.id }.toSet()
+                        val serviceTimes = tx.getDailyServiceTimes(childIds)
 
-                    UnitAttendanceReservations(
-                        unit = unitName,
-                        operationalDays = operationalDays,
-                        groups = groupedReservations.entries.mapNotNull { (group, rows) ->
-                            if (group == null) null
-                            else UnitAttendanceReservations.GroupAttendanceReservations(
-                                group = group,
-                                children = mapChildReservations(rows, serviceTimes)
-                            )
-                        },
-                        ungrouped = ungroupedRows?.let { mapChildReservations(it, serviceTimes) } ?: emptyList()
-                    )
-                }
+                        UnitAttendanceReservations(
+                            unit = unitName,
+                            operationalDays = operationalDays,
+                            groups = groupedReservations.entries.mapNotNull { (group, rows) ->
+                                if (group == null) null
+                                else UnitAttendanceReservations.GroupAttendanceReservations(
+                                    group = group,
+                                    children = mapChildReservations(rows, serviceTimes)
+                                )
+                            },
+                            ungrouped = ungroupedRows?.let { mapChildReservations(it, serviceTimes) }
+                                ?: emptyList()
+                        )
+                    }
+            }
         }
     }
 
     @PostMapping
     fun postReservations(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: List<DailyReservationRequest>
     ) {
@@ -89,7 +92,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
             ac.requirePermissionFor(user, Action.Child.CREATE_ATTENDANCE_RESERVATION, childId)
         }
 
-        db.transaction { createReservationsAsEmployee(it, user.id, body) }
+        db.connect { dbc -> dbc.transaction { createReservationsAsEmployee(it, user.id, body) } }
     }
 }
 
