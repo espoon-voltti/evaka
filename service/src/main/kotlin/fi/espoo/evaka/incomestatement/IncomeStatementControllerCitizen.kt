@@ -42,7 +42,7 @@ class IncomeStatementControllerCitizen {
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
-            } 
+            }
         }
     }
 
@@ -70,7 +70,7 @@ class IncomeStatementControllerCitizen {
             dbc.read { tx ->
                 tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
                     ?: throw NotFound("No such income statement")
-            } 
+            }
         }
     }
 
@@ -126,7 +126,7 @@ class IncomeStatementControllerCitizen {
                         }
                     }
                 }
-            } 
+            }
         }.let { success -> if (!success) throw NotFound("Income statement not found") }
     }
 
@@ -143,7 +143,7 @@ class IncomeStatementControllerCitizen {
             dbc.transaction { tx ->
                 verifyIncomeStatementModificationsAllowed(tx, user, id)
                 tx.removeIncomeStatement(id)
-            } 
+            }
         }
     }
 

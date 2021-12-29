@@ -66,7 +66,7 @@ class IncomeStatementController(
                     incomeStatementId,
                     includeEmployeeContent = true
                 )
-            } 
+            }
         } ?: throw NotFound("No such income statement")
     }
 

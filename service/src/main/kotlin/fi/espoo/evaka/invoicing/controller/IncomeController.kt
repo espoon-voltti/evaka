@@ -49,16 +49,16 @@ class IncomeController(
     private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getIncome(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<Income>> {
+    fun getIncome(db: Database, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<Income>> {
         Audit.PersonIncomeRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME, personId)
 
-        val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId.raw) }
+        val incomes = db.connect { dbc -> dbc.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId.raw) } }
         return Wrapper(incomes)
     }
 
     @PostMapping
-    fun createIncome(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
+    fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -70,14 +70,16 @@ class IncomeController(
             }
         }
 
-        val id = db.transaction { tx ->
-            val id = IncomeId(UUID.randomUUID())
-            val incomeTypes = incomeTypesProvider.get()
-            val validIncome = validateIncome(income.copy(id = id), incomeTypes)
-            tx.splitEarlierIncome(validIncome.personId, period)
-            tx.upsertIncome(mapper, validIncome, user.id)
-            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
-            id
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                val id = IncomeId(UUID.randomUUID())
+                val incomeTypes = incomeTypesProvider.get()
+                val validIncome = validateIncome(income.copy(id = id), incomeTypes)
+                tx.splitEarlierIncome(validIncome.personId, period)
+                tx.upsertIncome(mapper, validIncome, user.id)
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
+                id
+            }
         }
 
         return ResponseEntity.ok(id)
@@ -85,7 +87,7 @@ class IncomeController(
 
     @PutMapping("/{incomeId}")
     fun updateIncome(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable incomeId: IncomeId,
         @RequestBody income: Income
@@ -94,36 +96,40 @@ class IncomeController(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
-        db.transaction { tx ->
-            val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
-            val incomeTypes = incomeTypesProvider.get()
-            val validIncome = validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
-            tx.upsertIncome(mapper, validIncome, user.id)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
+                val incomeTypes = incomeTypesProvider.get()
+                val validIncome = validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
+                tx.upsertIncome(mapper, validIncome, user.id)
 
-            val expandedPeriod = existing?.let {
-                DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
-            } ?: DateRange(income.validFrom, income.validTo)
+                val expandedPeriod = existing?.let {
+                    DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
+                } ?: DateRange(income.validFrom, income.validTo)
 
-            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
+            }
         }
 
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
+    fun deleteIncome(db: Database, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
-        db.transaction { tx ->
-            val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
-                ?: throw BadRequest("Income not found")
-            val period = DateRange(existing.validFrom, existing.validTo)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
+                    ?: throw BadRequest("Income not found")
+                val period = DateRange(existing.validFrom, existing.validTo)
 
-            tx.deleteIncome(incomeId)
+                tx.deleteIncome(incomeId)
 
-            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
+            }
         }
 
         return ResponseEntity.noContent().build()

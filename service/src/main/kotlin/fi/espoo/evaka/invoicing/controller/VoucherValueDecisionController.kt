@@ -63,7 +63,7 @@ class VoucherValueDecisionController(
 ) {
     @PostMapping("/search")
     fun search(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchVoucherValueDecisionRequest
     ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
@@ -72,91 +72,97 @@ class VoucherValueDecisionController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        return db
-            .read { tx ->
-                tx.searchValueDecisions(
-                    body.page,
-                    body.pageSize,
-                    body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                    body.sortDirection ?: SortDirection.DESC,
-                    body.status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
-                        ?: throw BadRequest("Status is a mandatory parameter"),
-                    body.area?.split(",") ?: listOf(),
-                    body.unit?.let { parseUUID(it) },
-                    body.searchTerms ?: "",
-                    body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
-                    body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
-                    body.searchByStartDate,
-                    body.financeDecisionHandlerId
-                )
-            }
+        return db.connect { dbc ->
+            dbc
+                .read { tx ->
+                    tx.searchValueDecisions(
+                        body.page,
+                        body.pageSize,
+                        body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                        body.sortDirection ?: SortDirection.DESC,
+                        body.status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
+                            ?: throw BadRequest("Status is a mandatory parameter"),
+                        body.area?.split(",") ?: listOf(),
+                        body.unit?.let { parseUUID(it) },
+                        body.searchTerms ?: "",
+                        body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
+                        body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
+                        body.searchByStartDate,
+                        body.financeDecisionHandlerId
+                    )
+                }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/{id}")
     fun getDecision(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VoucherValueDecisionId
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read { it.getVoucherValueDecision(id) }
+        val res = db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @GetMapping("/head-of-family/{headOfFamilyId}")
     fun getHeadOfFamilyDecisions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable headOfFamilyId: UUID
     ): ResponseEntity<List<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
-        val res = db.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) }
+        val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
         return ResponseEntity.ok(res)
     }
 
     @PostMapping("/send")
-    fun sendDrafts(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
+    fun sendDrafts(db: Database, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction {
-            sendVoucherValueDecisions(
-                tx = it,
-                asyncJobRunner = asyncJobRunner,
-                user = user,
-                now = ZonedDateTime.now(europeHelsinki).toInstant(),
-                ids = decisionIds
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                sendVoucherValueDecisions(
+                    tx = it,
+                    asyncJobRunner = asyncJobRunner,
+                    user = user,
+                    now = ZonedDateTime.now(europeHelsinki).toInstant(),
+                    ids = decisionIds
+                )
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/mark-sent")
-    fun markSent(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
+    fun markSent(db: Database, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { tx ->
-            val decisions = tx.getValueDecisionsByIds(ids)
-            if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING })
-                throw BadRequest("Voucher value decision cannot be marked sent")
-            tx.markVoucherValueDecisionsSent(ids, Instant.now())
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val decisions = tx.getValueDecisionsByIds(ids)
+                if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING })
+                    throw BadRequest("Voucher value decision cannot be marked sent")
+                tx.markVoucherValueDecisionsSent(ids, Instant.now())
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/pdf/{id}")
-    fun getDecisionPdf(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it, id) }
+        val (filename, pdf) = db.connect { dbc -> dbc.read { valueDecisionService.getDecisionPdf(it, id) } }
         val headers = HttpHeaders().apply {
             add("Content-Disposition", "attachment; filename=\"$filename\"")
             add("Content-Type", "application/pdf")
@@ -166,7 +172,7 @@ class VoucherValueDecisionController(
 
     @PostMapping("/set-type/{uuid}")
     fun setType(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest
@@ -174,13 +180,13 @@ class VoucherValueDecisionController(
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { valueDecisionService.setType(it, uuid, request.type) }
+        db.connect { dbc -> dbc.transaction { valueDecisionService.setType(it, uuid, request.type) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveDecisions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
@@ -188,7 +194,7 @@ class VoucherValueDecisionController(
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { generator.createRetroactiveValueDecisions(it, id, body.from) }
+        db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, id, body.from) } }
     }
 }
 

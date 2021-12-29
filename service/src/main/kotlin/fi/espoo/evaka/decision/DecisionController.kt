@@ -112,7 +112,7 @@ class DecisionController(
                     throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
                 decisionService.getDecisionPdf(tx, decisionId)
-            } 
+            }
         }.let { document ->
             ResponseEntity.ok()
                 .header("Content-Disposition", "attachment;filename=${document.getName()}")
