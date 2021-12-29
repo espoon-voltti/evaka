@@ -272,10 +272,12 @@ export class Radio extends Checkable {}
 export class SelectionChip extends Checkable {}
 
 export class Select extends Element {
+  #input = this.find('select')
+
   async selectOption(
     value: string | string[] | { value: string } | { label: string }
   ) {
-    await this.locator.selectOption(value)
+    await this.#input.locator.selectOption(value)
   }
 }
 

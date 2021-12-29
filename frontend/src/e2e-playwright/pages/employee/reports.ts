@@ -9,11 +9,9 @@ import { captureTextualDownload } from 'e2e-playwright/browser'
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
 
-  readonly #month = new Select(
-    this.page.find('[data-qa="select-month"] select')
-  )
-  readonly #year = new Select(this.page.find('[data-qa="select-year"] select'))
-  readonly #area = new Select(this.page.find('[data-qa="select-area"] select'))
+  readonly #month = new Select(this.page.find('[data-qa="select-month"]'))
+  readonly #year = new Select(this.page.find('[data-qa="select-year"]'))
+  readonly #area = new Select(this.page.find('[data-qa="select-area"]'))
 
   readonly #downloadCsvLink = this.page.find('[data-qa="download-csv"] a')
 

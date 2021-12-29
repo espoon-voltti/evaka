@@ -393,7 +393,7 @@ export class PlacementsSection extends Section {
     '[data-qa="add-new-missing-service-need"]'
   )
   #serviceNeedOptionSelect = new Select(
-    this.find('[data-qa="service-need-option-select"] select')
+    this.find('[data-qa="service-need-option-select"]')
   )
   #serviceNeedSaveButton = this.find('[data-qa="service-need-save"]')
   #terminatedByGuardian = (placementId: string) =>

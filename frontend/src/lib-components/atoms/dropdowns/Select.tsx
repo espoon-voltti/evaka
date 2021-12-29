@@ -53,7 +53,6 @@ function Select<T>(props: SelectProps<T>) {
           onChange={onSelectedItemChange}
           disabled={disabled}
           onFocus={onFocus}
-          data-qa={dataQa}
         >
           {'placeholder' in props && (
             <option value="">{props.placeholder}</option>

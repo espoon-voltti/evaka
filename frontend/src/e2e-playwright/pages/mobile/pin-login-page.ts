@@ -8,7 +8,7 @@ import { waitUntilEqual } from '../../utils'
 export default class PinLoginPage {
   constructor(private readonly page: Page) {}
 
-  #staffSelect = new Select(this.page.find('[data-qa="select-staff"] select'))
+  #staffSelect = new Select(this.page.find('[data-qa="select-staff"]'))
   #pinInput = new TextInput(this.page.find('[data-qa="pin-input"]'))
   #pinSubmit = new TextInput(this.page.find('[data-qa="pin-submit"]'))
   #pinInfo = this.page.find('[data-qa="pin-input-info"]')
