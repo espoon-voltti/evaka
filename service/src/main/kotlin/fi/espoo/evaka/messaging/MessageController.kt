@@ -49,15 +49,15 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.DeprecatedConnection, user: AuthenticatedUser): Set<NestedMessageAccount> {
+    fun getAccountsByUser(db: Database, user: AuthenticatedUser): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
-        return db.read { it.getEmployeeNestedMessageAccounts(user.id) }
+        return db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(user.id) } }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
     fun getAccountsByDevice(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): Set<NestedMessageAccount> {
@@ -65,56 +65,60 @@ class MessageController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
         return if (user is AuthenticatedUser.MobileDevice && user.employeeId != null) {
-            db.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) }
+            db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) } }
         } else setOf()
     }
 
     @GetMapping("/{accountId}/received")
     fun getReceivedMessages(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log(accountId)
-        requireMessageAccountAccess(db, user, accountId)
-        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
+            dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+        }
     }
 
     @GetMapping("/{accountId}/sent")
     fun getSentMessages(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log(accountId)
-        requireMessageAccountAccess(db, user, accountId)
-        return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
+            dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+        }
     }
 
     @GetMapping("/unread")
     fun getUnreadMessages(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         requireAuthorizedMessagingRole(user)
-        return db.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user))) }
+        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user))) } }
     }
 
     @GetMapping("/unread/{unitId}")
     fun getUnreadMessagesByUnit(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): Set<UnreadCountByAccountAndGroup> {
         Audit.MessagingUnreadMessagesRead.log()
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
-        return db.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) }
+        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) } }
     }
 
     data class PostMessageBody(
@@ -129,115 +133,128 @@ class MessageController(
 
     @PostMapping("/{accountId}")
     fun createMessage(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody,
     ): List<MessageThreadId> {
         Audit.MessagingNewMessageWrite.log(accountId)
-        requireMessageAccountAccess(db, user, accountId)
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
 
-        checkAuthorizedRecipients(db, user, body.recipientAccountIds)
-        val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
-
-        return db.transaction { tx ->
-            messageService.createMessageThreadsForRecipientGroups(
-                tx,
-                title = body.title,
-                content = body.content,
-                sender = accountId,
-                type = body.type,
-                recipientNames = body.recipientNames,
-                recipientGroups = groupedRecipients,
-                attachmentIds = body.attachmentIds,
-            ).also {
-                if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+            checkAuthorizedRecipients(dbc, user, body.recipientAccountIds)
+            val groupedRecipients = dbc.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
+            dbc.transaction { tx ->
+                messageService.createMessageThreadsForRecipientGroups(
+                    tx,
+                    title = body.title,
+                    content = body.content,
+                    sender = accountId,
+                    type = body.type,
+                    recipientNames = body.recipientNames,
+                    recipientGroups = groupedRecipients,
+                    attachmentIds = body.attachmentIds,
+                ).also {
+                    if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                }
             }
         }
     }
 
     @GetMapping("/{accountId}/drafts")
     fun getDrafts(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
     ): List<DraftContent> {
         Audit.MessagingDraftsRead.log(accountId)
-        requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { it.getDrafts(accountId) }
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
+            dbc.transaction { it.getDrafts(accountId) }
+        }
     }
 
     @PostMapping("/{accountId}/drafts")
     fun initDraft(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
     ): MessageDraftId {
         Audit.MessagingCreateDraft.log(accountId)
-        requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { it.initDraft(accountId) }
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
+            dbc.transaction { it.initDraft(accountId) }
+        }
     }
 
     @PutMapping("/{accountId}/drafts/{draftId}")
     fun upsertDraft(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
         @RequestBody content: UpsertableDraftContent,
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
-        requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { it.upsertDraft(accountId, draftId, content) }
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
+            dbc.transaction { it.upsertDraft(accountId, draftId, content) }
+        }
     }
 
     @DeleteMapping("/{accountId}/drafts/{draftId}")
     fun deleteDraft(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
     ) {
         Audit.MessagingDeleteDraft.log(accountId, draftId)
-        requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { tx -> tx.deleteDraft(accountId, draftId) }
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
+            dbc.transaction { tx -> tx.deleteDraft(accountId, draftId) }
+        }
     }
 
     @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         Audit.MessagingReplyToMessageWrite.log(accountId, messageId)
-        requireMessageAccountAccess(db, user, accountId)
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
 
-        return messageService.replyToThread(
-            db = db,
-            replyToMessageId = messageId,
-            senderAccount = accountId,
-            recipientAccountIds = body.recipientAccountIds,
-            content = body.content
-        )
+            messageService.replyToThread(
+                db = dbc,
+                replyToMessageId = messageId,
+                senderAccount = accountId,
+                recipientAccountIds = body.recipientAccountIds,
+                content = body.content
+            )
+        }
     }
 
     @PutMapping("/{accountId}/threads/{threadId}/read")
     fun markThreadRead(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable threadId: MessageThreadId,
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(accountId, threadId)
-        requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { it.markThreadRead(accountId, threadId) }
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, accountId)
+            dbc.transaction { it.markThreadRead(accountId, threadId) }
+        }
     }
 
     @GetMapping("/receivers")
     fun getReceiversForNewMessage(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
@@ -251,7 +268,7 @@ class MessageController(
             UserRole.MOBILE
         )
 
-        return db.read { it.getReceiversForNewMessage(user.id, unitId) }
+        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(user.id, unitId) } }
     }
 
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
@@ -264,7 +281,7 @@ class MessageController(
     }
 
     private fun requireMessageAccountAccess(
-        db: Database.DeprecatedConnection,
+        db: Database.Connection,
         user: AuthenticatedUser,
         accountId: MessageAccountId
     ) {
@@ -274,7 +291,7 @@ class MessageController(
     }
 
     private fun checkAuthorizedRecipients(
-        db: Database.DeprecatedConnection,
+        db: Database.Connection,
         user: AuthenticatedUser,
         recipientAccountIds: Set<MessageAccountId>
     ) {
