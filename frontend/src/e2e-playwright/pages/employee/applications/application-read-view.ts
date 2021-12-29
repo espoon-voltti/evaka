@@ -7,6 +7,7 @@ import { DecisionType } from 'e2e-test-common/dev-api/types'
 import config from 'e2e-test-common/config'
 import { UUID } from 'lib-common/types'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import ApplicationEditView from './application-edit-view'
 
 export default class ApplicationReadView {
   constructor(private page: Page) {}
@@ -140,7 +141,12 @@ export default class ApplicationReadView {
       .waitUntilVisible()
   }
 
-  async startEditing() {
+  async assertApplicantIsDead() {
+    await this.page.find('[data-qa="applicant-dead"]').waitUntilVisible()
+  }
+
+  async startEditing(): Promise<ApplicationEditView> {
     await this.#editButton.click()
+    return new ApplicationEditView(this.page)
   }
 }
