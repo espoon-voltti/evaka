@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -68,7 +69,7 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {
-        val response = childController.getAdditionalInfo(deprecatedDb, user, childId)
+        val response = childController.getAdditionalInfo(Database(jdbi), user, childId)
         val body = response.body!!
 
         assertEquals(HttpStatus.OK, response.statusCode)
