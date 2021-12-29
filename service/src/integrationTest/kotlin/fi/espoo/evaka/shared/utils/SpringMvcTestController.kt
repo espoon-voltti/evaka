@@ -14,16 +14,16 @@ import java.util.concurrent.atomic.AtomicReference
 @RestController
 @RequestMapping("/integration-test")
 class SpringMvcTestController {
-    val lastDbConnection = AtomicReference<Database.DeprecatedConnection?>()
+    val lastDbConnection = AtomicReference<Database.Connection?>()
 
     @GetMapping("/db-connection-pass")
-    fun dbConnectionPass(db: Database.DeprecatedConnection) {
-        lastDbConnection.set(db)
+    fun dbConnectionPass(db: Database) {
+        db.connect { dbc -> lastDbConnection.set(dbc) }
     }
 
     @GetMapping("/db-connection-fail")
-    fun dbConnectionFail(db: Database.DeprecatedConnection) {
-        lastDbConnection.set(db)
+    fun dbConnectionFail(db: Database) {
+        db.connect { dbc -> lastDbConnection.set(dbc) }
         throw RuntimeException("Failed")
     }
 

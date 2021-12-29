@@ -54,14 +54,6 @@ class Database(private val jdbi: Jdbi) {
         return Connection(threadId, connected, lazy(LazyThreadSafetyMode.NONE) { jdbi.open() })
     }
 
-    fun deprecatedConnection(): DeprecatedConnection {
-        threadId.assertCurrentThread()
-        check(!connected.get()) { "Already connected to database" }
-        return DeprecatedConnection(threadId, connected, lazy(LazyThreadSafetyMode.NONE) { jdbi.open() })
-    }
-
-    class DeprecatedConnection internal constructor(threadId: ThreadId, connected: AtomicBoolean, lazyHandle: Lazy<Handle>) : Connection(threadId, connected, lazyHandle)
-
     /**
      * A single lazily initialized database connection tied to a single thread
      */
