@@ -35,75 +35,81 @@ import java.util.UUID
 @RequestMapping("/fee-alterations")
 class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
     @GetMapping
-    fun getFeeAlterations(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestParam personId: UUID): ResponseEntity<Wrapper<List<FeeAlteration>>> {
+    fun getFeeAlterations(db: Database, user: AuthenticatedUser, @RequestParam personId: UUID): ResponseEntity<Wrapper<List<FeeAlteration>>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FEE_ALTERATIONS, personId)
 
-        val feeAlterations = db.read { it.getFeeAlterationsForPerson(personId) }
+        val feeAlterations = db.connect { dbc -> dbc.read { it.getFeeAlterationsForPerson(personId) } }
         return ResponseEntity.ok(Wrapper(feeAlterations))
     }
 
     @PostMapping
-    fun createFeeAlteration(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun createFeeAlteration(db: Database, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { tx ->
-            tx.upsertFeeAlteration(feeAlteration.copy(id = UUID.randomUUID(), updatedBy = user.id))
-            asyncJobRunner.plan(
-                tx,
-                listOf(
-                    AsyncJob.GenerateFinanceDecisions.forChild(
-                        feeAlteration.personId,
-                        DateRange(feeAlteration.validFrom, feeAlteration.validTo)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.upsertFeeAlteration(feeAlteration.copy(id = UUID.randomUUID(), updatedBy = user.id))
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forChild(
+                            feeAlteration.personId,
+                            DateRange(feeAlteration.validFrom, feeAlteration.validTo)
+                        )
                     )
                 )
-            )
+            }
         }
 
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/{feeAlterationId}")
-    fun updateFeeAlteration(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun updateFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)
-        db.transaction { tx ->
-            val existing = tx.getFeeAlteration(parsedId)
-            tx.upsertFeeAlteration(feeAlteration.copy(id = parsedId, updatedBy = user.id))
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val existing = tx.getFeeAlteration(parsedId)
+                tx.upsertFeeAlteration(feeAlteration.copy(id = parsedId, updatedBy = user.id))
 
-            val expandedPeriod = existing?.let {
-                DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
-            } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
+                val expandedPeriod = existing?.let {
+                    DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
+                } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
-            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
+            }
         }
 
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{feeAlterationId}")
-    fun deleteFeeAlteration(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
+    fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)
-        db.transaction { tx ->
-            val existing = tx.getFeeAlteration(parsedId)
-            tx.deleteFeeAlteration(parsedId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val existing = tx.getFeeAlteration(parsedId)
+                tx.deleteFeeAlteration(parsedId)
 
-            existing?.let {
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            existing.personId,
-                            DateRange(existing.validFrom, existing.validTo)
+                existing?.let {
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                existing.personId,
+                                DateRange(existing.validFrom, existing.validTo)
+                            )
                         )
                     )
-                )
+                }
             }
         }
 

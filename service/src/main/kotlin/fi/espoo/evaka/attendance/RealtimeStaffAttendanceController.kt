@@ -36,7 +36,7 @@ class RealtimeStaffAttendanceController(
 ) {
     @GetMapping
     fun getAttendancesByUnit(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): StaffAttendanceResponse {
@@ -46,11 +46,13 @@ class RealtimeStaffAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
 
-        return db.read {
-            StaffAttendanceResponse(
-                staff = it.getStaffAttendances(unitId, HelsinkiDateTime.now()),
-                extraAttendances = it.getExternalStaffAttendances(unitId)
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                StaffAttendanceResponse(
+                    staff = it.getStaffAttendances(unitId, HelsinkiDateTime.now()),
+                    extraAttendances = it.getExternalStaffAttendances(unitId)
+                )
+            }
         }
     }
 
@@ -64,7 +66,7 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/arrival")
     fun markArrival(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: StaffArrivalRequest
     ) {
@@ -77,12 +79,14 @@ class RealtimeStaffAttendanceController(
         // todo: check that employee has access to a unit related to the group?
 
         try {
-            db.transaction {
-                it.markStaffArrival(
-                    employeeId = body.employeeId,
-                    groupId = body.groupId,
-                    arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
-                )
+            db.connect { dbc ->
+                dbc.transaction {
+                    it.markStaffArrival(
+                        employeeId = body.employeeId,
+                        groupId = body.groupId,
+                        arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                    )
+                }
             }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -95,26 +99,28 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/{attendanceId}/departure")
     fun markDeparture(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable attendanceId: StaffAttendanceId,
         @RequestBody body: StaffDepartureRequest
     ) {
         Audit.StaffAttendanceDepartureCreate.log()
 
-        // todo: convert to action auth
-        @Suppress("DEPRECATION")
-        val attendance = db.read { it.getStaffAttendance(attendanceId) }
-            ?: throw NotFound("attendance not found")
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
-        ac.verifyPinCode(attendance.employeeId, body.pinCode)
+        db.connect { dbc ->
+            // todo: convert to action auth
+            @Suppress("DEPRECATION")
+            val attendance = dbc.read { it.getStaffAttendance(attendanceId) }
+                ?: throw NotFound("attendance not found")
+            @Suppress("DEPRECATION")
+            acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
+            ac.verifyPinCode(attendance.employeeId, body.pinCode)
 
-        db.transaction {
-            it.markStaffDeparture(
-                attendanceId = attendanceId,
-                departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
-            )
+            dbc.transaction {
+                it.markStaffDeparture(
+                    attendanceId = attendanceId,
+                    departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                )
+            }
         }
     }
 
@@ -125,7 +131,7 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/arrival-external")
     fun markExternalArrival(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
@@ -133,13 +139,15 @@ class RealtimeStaffAttendanceController(
         // todo: convert to action auth
         @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
-        return db.transaction {
-            it.markExternalStaffArrival(
-                ExternalStaffArrival(
-                    name = body.name,
-                    groupId = body.groupId, arrived = HelsinkiDateTime.now().withTime(minOf(body.arrived, LocalTime.now()))
+        return db.connect { dbc ->
+            dbc.transaction {
+                it.markExternalStaffArrival(
+                    ExternalStaffArrival(
+                        name = body.name,
+                        groupId = body.groupId, arrived = HelsinkiDateTime.now().withTime(minOf(body.arrived, LocalTime.now()))
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -149,25 +157,27 @@ class RealtimeStaffAttendanceController(
     )
     @PostMapping("/departure-external")
     fun markExternalDeparture(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: ExternalStaffDepartureRequest
     ) {
         Audit.StaffAttendanceDepartureExternalCreate.log(body.attendanceId)
 
-        // todo: convert to action auth
-        val attendance = db.read { it.getExternalStaffAttendance(body.attendanceId) }
-            ?: throw NotFound("attendance not found")
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
+        db.connect { dbc ->
+            // todo: convert to action auth
+            val attendance = dbc.read { it.getExternalStaffAttendance(body.attendanceId) }
+                ?: throw NotFound("attendance not found")
+            @Suppress("DEPRECATION")
+            acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
 
-        db.transaction {
-            it.markExternalStaffDeparture(
-                ExternalStaffDeparture(
-                    id = body.attendanceId,
-                    departed = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+            dbc.transaction {
+                it.markExternalStaffDeparture(
+                    ExternalStaffDeparture(
+                        id = body.attendanceId,
+                        departed = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                    )
                 )
-            )
+            }
         }
     }
 }

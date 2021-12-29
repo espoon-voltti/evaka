@@ -20,27 +20,27 @@ class VardaDevController(
 ) {
     @PostMapping("/run-update-all")
     fun runFullVardaUpdate(
-        db: Database.DeprecatedConnection
+        db: Database
     ): ResponseEntity<Unit> {
-        vardaUpdateService.startVardaUpdate(db)
+        db.connect { dbc -> vardaUpdateService.startVardaUpdate(dbc) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/reset-children")
     fun resetChildren(
-        db: Database.DeprecatedConnection,
+        db: Database,
         @RequestParam(defaultValue = "true") addNewChildren: Boolean,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        vardaResetService.planVardaReset(db, addNewChildren = addNewChildren, maxChildren = limit)
+        db.connect { dbc -> vardaResetService.planVardaReset(dbc, addNewChildren = addNewChildren, maxChildren = limit) }
     }
 
     @PostMapping("/reset-by-report/{organizerId}")
     fun resetChildrenByReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        vardaResetService.planResetByVardaChildrenErrorReport(db, organizerId = organizerId, limit = limit)
+        db.connect { dbc -> vardaResetService.planResetByVardaChildrenErrorReport(dbc, organizerId = organizerId, limit = limit) }
     }
 }

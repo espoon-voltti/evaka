@@ -39,62 +39,64 @@ class PartnershipsController(
 ) {
     @PostMapping
     fun createPartnership(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PartnershipRequest
     ) {
         Audit.PartnerShipsCreate.log(targetId = body.person1Id)
         accessControl.requirePermissionFor(user, Action.Person.CREATE_PARTNERSHIP, body.person1Id)
 
-        db
-            .transaction { tx ->
-                partnershipService.createPartnership(
-                    tx,
-                    body.person1Id.raw,
-                    body.person2Id.raw,
-                    body.startDate,
-                    body.endDate
-                )
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            body.person1Id.raw,
-                            DateRange(body.startDate, body.endDate)
+        db.connect { dbc ->
+            dbc
+                .transaction { tx ->
+                    partnershipService.createPartnership(
+                        tx,
+                        body.person1Id.raw,
+                        body.person2Id.raw,
+                        body.startDate,
+                        body.endDate
+                    )
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forAdult(
+                                body.person1Id.raw,
+                                DateRange(body.startDate, body.endDate)
+                            )
                         )
                     )
-                )
-            }
+                }
+        }
     }
 
     @GetMapping
     fun getPartnerships(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam personId: PersonId
     ): List<Partnership> {
         Audit.PartnerShipsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_PARTNERSHIPS, personId)
 
-        return db.read { it.getPartnershipsForPerson(personId.raw, includeConflicts = true) }
+        return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId.raw, includeConflicts = true) } }
     }
 
     @GetMapping("/{partnershipId}")
     fun getPartnership(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId
     ): Partnership {
         Audit.PartnerShipsRead.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, Action.Partnership.READ, partnershipId)
 
-        return db.read { it.getPartnership(partnershipId) }
+        return db.connect { dbc -> dbc.read { it.getPartnership(partnershipId) } }
             ?: throw NotFound()
     }
 
     @PutMapping("/{partnershipId}")
     fun updatePartnership(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
@@ -102,66 +104,72 @@ class PartnershipsController(
         Audit.PartnerShipsUpdate.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, Action.Partnership.UPDATE, partnershipId)
 
-        return db
-            .transaction { tx ->
-                val partnership =
-                    partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            partnership.partners.first().id,
-                            DateRange(partnership.startDate, partnership.endDate)
+        return db.connect { dbc ->
+            dbc
+                .transaction { tx ->
+                    val partnership =
+                        partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forAdult(
+                                partnership.partners.first().id,
+                                DateRange(partnership.startDate, partnership.endDate)
+                            )
                         )
                     )
-                )
-            }
+                }
+        }
     }
 
     @PutMapping("/{partnershipId}/retry")
     fun retryPartnership(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId
     ) {
         Audit.PartnerShipsRetry.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, Action.Partnership.RETRY, partnershipId)
 
-        db.transaction { tx ->
-            partnershipService.retryPartnership(tx, partnershipId)?.let {
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            it.partners.first().id,
-                            DateRange(it.startDate, it.endDate)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                partnershipService.retryPartnership(tx, partnershipId)?.let {
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forAdult(
+                                it.partners.first().id,
+                                DateRange(it.startDate, it.endDate)
+                            )
                         )
                     )
-                )
+                }
             }
         }
     }
 
     @DeleteMapping("/{partnershipId}")
     fun deletePartnership(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable partnershipId: PartnershipId
     ) {
         Audit.PartnerShipsDelete.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, Action.Partnership.DELETE, partnershipId)
 
-        db.transaction { tx ->
-            partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
-                asyncJobRunner.plan(
-                    tx,
-                    partnership.partners.map {
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            it.id,
-                            DateRange(partnership.startDate, partnership.endDate)
-                        )
-                    }
-                )
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
+                    asyncJobRunner.plan(
+                        tx,
+                        partnership.partners.map {
+                            AsyncJob.GenerateFinanceDecisions.forAdult(
+                                it.id,
+                                DateRange(partnership.startDate, partnership.endDate)
+                            )
+                        }
+                    )
+                }
             }
         }
     }

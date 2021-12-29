@@ -28,7 +28,7 @@ import java.time.LocalDate
 class OccupancyReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/occupancy-by-unit")
     fun getOccupancyUnitReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId,
@@ -40,19 +40,21 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        return db.read { tx ->
-            tx.calculateUnitOccupancyReport(
-                LocalDate.now(),
-                careAreaId,
-                FiniteDateRange(from, to),
-                type
-            )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.calculateUnitOccupancyReport(
+                    LocalDate.now(),
+                    careAreaId,
+                    FiniteDateRange(from, to),
+                    type
+                )
+            }
         }
     }
 
     @GetMapping("/reports/occupancy-by-group")
     fun getOccupancyGroupReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId,
@@ -64,13 +66,15 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        return db.read { tx ->
-            tx.calculateGroupOccupancyReport(
-                LocalDate.now(),
-                careAreaId,
-                FiniteDateRange(from, to),
-                type
-            )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.calculateGroupOccupancyReport(
+                    LocalDate.now(),
+                    careAreaId,
+                    FiniteDateRange(from, to),
+                    type
+                )
+            }
         }
     }
 }

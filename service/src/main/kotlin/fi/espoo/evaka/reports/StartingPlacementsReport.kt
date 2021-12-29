@@ -24,14 +24,14 @@ import java.util.UUID
 class StartingPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/starting-placements")
     fun getStartingPlacementsReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int
     ): List<StartingPlacementsRow> {
         Audit.StartingPlacementsReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_STARTING_PLACEMENTS_REPORT)
-        return db.read { it.getStartingPlacementsRows(year, month) }
+        return db.connect { dbc -> dbc.read { it.getStartingPlacementsRows(year, month) } }
     }
 }
 

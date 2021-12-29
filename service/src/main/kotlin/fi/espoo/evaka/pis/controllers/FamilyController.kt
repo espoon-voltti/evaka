@@ -35,7 +35,7 @@ class FamilyController(
 ) {
     @GetMapping("/by-adult/{id}")
     fun getFamilyByPerson(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: PersonId
     ): FamilyOverview {
@@ -43,40 +43,44 @@ class FamilyController(
         accessControl.requirePermissionFor(user, Action.Person.READ_FAMILY_OVERVIEW, id)
         val includeIncome = accessControl.hasPermissionFor(user, Action.Person.READ_INCOME, id)
 
-        return db.read {
-            val overview = familyOverviewService.getFamilyByAdult(it, id)
-            if (includeIncome) overview
-            else overview?.copy(
-                headOfFamily = overview.headOfFamily.copy(income = null),
-                partner = overview.partner?.copy(income = null),
-                totalIncome = null
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                val overview = familyOverviewService.getFamilyByAdult(it, id)
+                if (includeIncome) overview
+                else overview?.copy(
+                    headOfFamily = overview.headOfFamily.copy(income = null),
+                    partner = overview.partner?.copy(income = null),
+                    totalIncome = null
+                )
+            }
         } ?: throw NotFound("No family overview found for person $id")
     }
 
     @GetMapping("/contacts")
     fun getFamilyContactSummary(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(value = "childId", required = true) childId: UUID
     ): ResponseEntity<List<FamilyContact>> {
         Audit.FamilyContactsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FAMILY_CONTACTS, childId)
-        return db
-            .read { it.fetchFamilyContacts(childId) }
+        return db.connect { dbc ->
+            dbc
+                .read { it.fetchFamilyContacts(childId) }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/contacts")
     fun updateFamilyContactPriority(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: FamilyContactUpdate
     ): ResponseEntity<Unit> {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT, body.childId)
 
-        db.transaction { it.updateFamilyContact(body.childId, body.contactPersonId, body.priority) }
+        db.connect { dbc -> dbc.transaction { it.updateFamilyContact(body.childId, body.contactPersonId, body.priority) } }
 
         return ResponseEntity.noContent().build()
     }

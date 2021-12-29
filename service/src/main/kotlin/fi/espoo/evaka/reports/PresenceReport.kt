@@ -24,7 +24,7 @@ const val MAX_NUMBER_OF_DAYS = 14
 class PresenceReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/presences")
     fun getPresenceReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
@@ -34,7 +34,7 @@ class PresenceReportController(private val accessControl: AccessControl) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
 
-        return db.read { it.getPresenceRows(from, to) }
+        return db.connect { dbc -> dbc.read { it.getPresenceRows(from, to) } }
     }
 }
 

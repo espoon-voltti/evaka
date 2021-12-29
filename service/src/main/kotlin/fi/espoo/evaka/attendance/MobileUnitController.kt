@@ -30,7 +30,7 @@ class MobileUnitController(
 ) {
     @GetMapping("/{unitId}")
     fun getUnitInfo(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId
@@ -38,12 +38,12 @@ class MobileUnitController(
         Audit.UnitRead.log(targetId = unitId)
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
-        return db.read { tx -> tx.fetchUnitInfo(unitId, evakaClock.today()) }
+        return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitInfo(unitId, evakaClock.today()) } }
     }
 
     @GetMapping("/stats")
     fun getUnitStats(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestParam unitIds: List<DaycareId>,
@@ -52,7 +52,7 @@ class MobileUnitController(
         Audit.UnitRead.log(targetId = unitIds)
         @Suppress("DEPRECATION")
         unitIds.forEach { unitId -> acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE) }
-        return db.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today(), useRealtimeStaffAttendance) }
+        return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today(), useRealtimeStaffAttendance) } }
     }
 }
 

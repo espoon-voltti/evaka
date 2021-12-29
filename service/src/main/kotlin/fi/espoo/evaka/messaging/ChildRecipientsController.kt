@@ -21,14 +21,14 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
 
     @GetMapping("/child/{childId}/recipients")
     fun getRecipients(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<Recipient> {
         Audit.MessagingBlocklistRead.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_CHILD_RECIPIENTS, childId)
 
-        return db.read { it.fetchRecipients(childId) }
+        return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }
     }
 
     data class EditRecipientRequest(
@@ -36,7 +36,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     )
     @PutMapping("/child/{childId}/recipients/{personId}")
     fun editRecipient(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @PathVariable personId: UUID,
@@ -45,11 +45,13 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
         Audit.MessagingBlocklistEdit.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_CHILD_RECIPIENT, childId)
 
-        db.transaction { tx ->
-            if (body.blocklisted) {
-                tx.addToBlocklist(childId, personId)
-            } else {
-                tx.removeFromBlocklist(childId, personId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (body.blocklisted) {
+                    tx.addToBlocklist(childId, personId)
+                } else {
+                    tx.removeFromBlocklist(childId, personId)
+                }
             }
         }
     }

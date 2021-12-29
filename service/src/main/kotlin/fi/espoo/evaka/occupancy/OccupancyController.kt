@@ -26,7 +26,7 @@ import java.time.LocalDate
 class OccupancyController(private val acl: AccessControlList) {
     @GetMapping("/by-unit/{unitId}/realtime")
     fun getRealtimeOccupancy(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
@@ -36,17 +36,19 @@ class OccupancyController(private val acl: AccessControlList) {
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
-        return db.read {
-            RealtimeOccupancy(
-                childAttendances = it.getChildOccupancyAttendances(unitId, date),
-                staffAttendances = it.getStaffOccupancyAttendances(unitId, date)
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                RealtimeOccupancy(
+                    childAttendances = it.getChildOccupancyAttendances(unitId, date),
+                    staffAttendances = it.getStaffOccupancyAttendances(unitId, date)
+                )
+            }
         }
     }
 
     @GetMapping("/by-unit/{unitId}")
     fun getOccupancyPeriods(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -58,8 +60,10 @@ class OccupancyController(private val acl: AccessControlList) {
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
-        val occupancies = db.read {
-            it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type)
+        val occupancies = db.connect { dbc ->
+            dbc.read {
+                it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type)
+            }
         }
 
         return OccupancyResponse(
@@ -71,7 +75,7 @@ class OccupancyController(private val acl: AccessControlList) {
 
     @GetMapping("/by-unit/{unitId}/groups")
     fun getOccupancyPeriodsOnGroups(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -83,8 +87,10 @@ class OccupancyController(private val acl: AccessControlList) {
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
-        val occupancies = db.read {
-            it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type)
+        val occupancies = db.connect { dbc ->
+            dbc.read {
+                it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type)
+            }
         }
 
         return occupancies.groupBy({ it.groupId }) {

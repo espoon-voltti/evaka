@@ -45,7 +45,7 @@ class ServiceVoucherValueReportController(
 
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Employee,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -53,28 +53,30 @@ class ServiceVoucherValueReportController(
     ): ServiceVoucherReport {
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
-        return db.read { tx ->
-            val snapshotTime = tx.getSnapshotDate(year, month)
-            val rows = if (snapshotTime != null) {
-                tx.getSnapshotVoucherValues(year, month, areaId = areaId, unitIds = authorization.ids)
-            } else {
-                tx.getServiceVoucherValues(year, month, areaId = areaId, unitIds = authorization.ids)
-            }
-
-            val aggregates = rows
-                .groupBy { ServiceVoucherValueUnitAggregate.UnitData(it.unitId, it.unitName, it.areaId, it.areaName) }
-                .map { (unit, rows) ->
-                    ServiceVoucherValueUnitAggregate(
-                        unit = unit,
-                        childCount = rows.map { it.childId }.distinct().size,
-                        monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount }
-                    )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val snapshotTime = tx.getSnapshotDate(year, month)
+                val rows = if (snapshotTime != null) {
+                    tx.getSnapshotVoucherValues(year, month, areaId = areaId, unitIds = authorization.ids)
+                } else {
+                    tx.getServiceVoucherValues(year, month, areaId = areaId, unitIds = authorization.ids)
                 }
 
-            ServiceVoucherReport(
-                locked = snapshotTime,
-                rows = aggregates
-            )
+                val aggregates = rows
+                    .groupBy { ServiceVoucherValueUnitAggregate.UnitData(it.unitId, it.unitName, it.areaId, it.areaName) }
+                    .map { (unit, rows) ->
+                        ServiceVoucherValueUnitAggregate(
+                            unit = unit,
+                            childCount = rows.map { it.childId }.distinct().size,
+                            monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount }
+                        )
+                    }
+
+                ServiceVoucherReport(
+                    locked = snapshotTime,
+                    rows = aggregates
+                )
+            }
         }
     }
 
@@ -87,7 +89,7 @@ class ServiceVoucherValueReportController(
 
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
         @RequestParam year: Int,
@@ -95,20 +97,22 @@ class ServiceVoucherValueReportController(
     ): ServiceVoucherUnitReport {
         accessControl.requirePermissionFor(user, Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT, unitId)
 
-        return db.read { tx ->
-            val snapshotTime = tx.getSnapshotDate(year, month)
-            val rows = if (snapshotTime != null) {
-                tx.getSnapshotVoucherValues(year, month, unitIds = setOf(unitId))
-            } else {
-                tx.getServiceVoucherValues(year, month, unitIds = setOf(unitId))
-            }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val snapshotTime = tx.getSnapshotDate(year, month)
+                val rows = if (snapshotTime != null) {
+                    tx.getSnapshotVoucherValues(year, month, unitIds = setOf(unitId))
+                } else {
+                    tx.getServiceVoucherValues(year, month, unitIds = setOf(unitId))
+                }
 
-            ServiceVoucherUnitReport(
-                locked = snapshotTime,
-                rows = rows,
-                voucherTotal = rows.sumOf { it.realizedAmount },
-                assistanceNeedCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled,
-            )
+                ServiceVoucherUnitReport(
+                    locked = snapshotTime,
+                    rows = rows,
+                    voucherTotal = rows.sumOf { it.realizedAmount },
+                    assistanceNeedCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled,
+                )
+            }
         }
     }
 }

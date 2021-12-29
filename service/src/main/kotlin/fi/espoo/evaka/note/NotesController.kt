@@ -36,18 +36,20 @@ class NotesController(
     @GetMapping("/children/{childId}/notes")
     fun getNotesByChild(
         user: AuthenticatedUser,
-        db: Database.DeprecatedConnection,
+        db: Database,
         @PathVariable childId: UUID
     ): NotesByChildResponse {
         Audit.NotesByChildRead.log(childId)
         ac.requirePermissionFor(user, Action.Child.READ_NOTES, childId)
 
-        return db.read {
-            NotesByChildResponse(
-                childDailyNote = it.getChildDailyNote(childId),
-                childStickyNotes = it.getChildStickyNotesForChild(childId),
-                groupNotes = it.getGroupNotesForChild(childId)
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                NotesByChildResponse(
+                    childDailyNote = it.getChildDailyNote(childId),
+                    childStickyNotes = it.getChildStickyNotesForChild(childId),
+                    groupNotes = it.getGroupNotesForChild(childId)
+                )
+            }
         }
     }
 
@@ -59,18 +61,20 @@ class NotesController(
     @GetMapping("/daycare-groups/{groupId}/notes")
     fun getNotesByGroup(
         user: AuthenticatedUser,
-        db: Database.DeprecatedConnection,
+        db: Database,
         @PathVariable groupId: GroupId
     ): NotesByGroupResponse {
         Audit.NotesByGroupRead.log(groupId)
         ac.requirePermissionFor(user, Action.Group.READ_NOTES, groupId)
 
-        return db.read {
-            NotesByGroupResponse(
-                childDailyNotes = it.getChildDailyNotesInGroup(groupId),
-                childStickyNotes = it.getChildStickyNotesForGroup(groupId),
-                groupNotes = it.getGroupNotesForGroup(groupId)
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                NotesByGroupResponse(
+                    childDailyNotes = it.getChildDailyNotesInGroup(groupId),
+                    childStickyNotes = it.getChildStickyNotesForGroup(groupId),
+                    groupNotes = it.getGroupNotesForGroup(groupId)
+                )
+            }
         }
     }
 }

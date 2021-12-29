@@ -34,97 +34,97 @@ import org.springframework.web.bind.annotation.RestController
 class UnitAclController(private val accessControl: AccessControl) {
     @GetMapping("/daycares/{daycareId}/acl")
     fun getAcl(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId
     ): ResponseEntity<DaycareAclResponse> {
         Audit.UnitAclRead.log()
         accessControl.requirePermissionFor(user, Action.Unit.READ_ACL, daycareId)
-        val acls = getDaycareAclRows(db, daycareId)
+        val acls = db.connect { dbc -> getDaycareAclRows(dbc, daycareId) }
         return ResponseEntity.ok(DaycareAclResponse(acls))
     }
 
     @PutMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun insertUnitSupervisor(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_UNIT_SUPERVISOR, daycareId)
-        addUnitSupervisor(db, daycareId, employeeId)
+        db.connect { dbc -> addUnitSupervisor(dbc, daycareId, employeeId) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun deleteUnitSupervisor(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_UNIT_SUPERVISOR, daycareId)
-        removeUnitSupervisor(db, daycareId, employeeId)
+        db.connect { dbc -> removeUnitSupervisor(dbc, daycareId, employeeId) }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
     fun insertSpecialEducationTeacher(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
-        addSpecialEducationTeacher(db, daycareId, employeeId)
+        db.connect { dbc -> addSpecialEducationTeacher(dbc, daycareId, employeeId) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
     fun deleteSpecialEducationTeacher(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
-        removeSpecialEducationTeacher(db, daycareId, employeeId)
+        db.connect { dbc -> removeSpecialEducationTeacher(dbc, daycareId, employeeId) }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun insertStaff(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_STAFF, daycareId)
-        addStaffMember(db, daycareId, employeeId)
+        db.connect { dbc -> addStaffMember(dbc, daycareId, employeeId) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun deleteStaff(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ): ResponseEntity<Unit> {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_STAFF, daycareId)
-        removeStaffMember(db, daycareId, employeeId)
+        db.connect { dbc -> removeStaffMember(dbc, daycareId, employeeId) }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}/groups")
     fun updateStaffGroupAcl(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -133,9 +133,11 @@ class UnitAclController(private val accessControl: AccessControl) {
         Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_GROUP_ACL, daycareId)
 
-        db.transaction {
-            it.clearDaycareGroupAcl(daycareId, employeeId)
-            it.insertDaycareGroupAcl(daycareId, employeeId, update.groupIds)
+        db.connect { dbc ->
+            dbc.transaction {
+                it.clearDaycareGroupAcl(daycareId, employeeId)
+                it.insertDaycareGroupAcl(daycareId, employeeId, update.groupIds)
+            }
         }
     }
 

@@ -22,29 +22,31 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/citizen/personal-data")
 class PersonalDataControllerCitizen {
     @PutMapping
-    fun updatePersonalData(db: Database.DeprecatedConnection, user: AuthenticatedUser.Citizen, @RequestBody body: PersonalDataUpdate) {
+    fun updatePersonalData(db: Database, user: AuthenticatedUser.Citizen, @RequestBody body: PersonalDataUpdate) {
         Audit.PersonalDataUpdate.log(targetId = user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        db.transaction {
-            val person = it.getPersonById(user.id) ?: error("User not found")
+        db.connect { dbc ->
+            dbc.transaction {
+                val person = it.getPersonById(user.id) ?: error("User not found")
 
-            val validationErrors = listOfNotNull(
-                "invalid preferredName".takeUnless { person.firstName.split(" ").contains(body.preferredName) },
-                "invalid phone".takeUnless { PHONE_PATTERN.matches(body.phone) },
-                "invalid backup phone".takeUnless {
-                    body.backupPhone.isBlank() || PHONE_PATTERN.matches(body.backupPhone)
-                },
-                "invalid email".takeUnless { body.email.isBlank() || EMAIL_PATTERN.matches(body.email) }
-            )
+                val validationErrors = listOfNotNull(
+                    "invalid preferredName".takeUnless { person.firstName.split(" ").contains(body.preferredName) },
+                    "invalid phone".takeUnless { PHONE_PATTERN.matches(body.phone) },
+                    "invalid backup phone".takeUnless {
+                        body.backupPhone.isBlank() || PHONE_PATTERN.matches(body.backupPhone)
+                    },
+                    "invalid email".takeUnless { body.email.isBlank() || EMAIL_PATTERN.matches(body.email) }
+                )
 
-            if (validationErrors.isNotEmpty()) throw BadRequest(validationErrors.joinToString(", "))
+                if (validationErrors.isNotEmpty()) throw BadRequest(validationErrors.joinToString(", "))
 
-            it.createUpdate("UPDATE person SET preferred_name = :preferredName, phone = :phone, backup_phone = :backupPhone, email = :email WHERE id = :id")
-                .bind("id", user.id)
-                .bindKotlin(body)
-                .execute()
+                it.createUpdate("UPDATE person SET preferred_name = :preferredName, phone = :phone, backup_phone = :backupPhone, email = :email WHERE id = :id")
+                    .bind("id", user.id)
+                    .bindKotlin(body)
+                    .execute()
+            }
         }
     }
 }

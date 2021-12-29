@@ -39,16 +39,16 @@ class FinanceBasicsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping("/fee-thresholds")
-    fun getFeeThresholds(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<FeeThresholdsWithId> {
+    fun getFeeThresholds(db: Database, user: AuthenticatedUser): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_FEE_THRESHOLDS)
 
-        return db.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } }
+        return db.connect { dbc -> dbc.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } } }
     }
 
     @PostMapping("/fee-thresholds")
     fun createFeeThresholds(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: FeeThresholds
     ) {
@@ -56,28 +56,30 @@ class FinanceBasicsController(
         accessControl.requirePermissionFor(user, Action.Global.CREATE_FEE_THRESHOLDS)
 
         validateFeeThresholds(body)
-        db.transaction { tx ->
-            val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
-            if (latest != null) {
-                if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring))
-                    throwDateOverlapEx()
+                if (latest != null) {
+                    if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring))
+                        throwDateOverlapEx()
 
-                if (latest.thresholds.validDuring.end == null)
-                    tx.updateFeeThresholdsValidity(
-                        latest.id,
-                        latest.thresholds.validDuring.copy(end = body.validDuring.start.minusDays(1))
-                    )
+                    if (latest.thresholds.validDuring.end == null)
+                        tx.updateFeeThresholdsValidity(
+                            latest.id,
+                            latest.thresholds.validDuring.copy(end = body.validDuring.start.minusDays(1))
+                        )
+                }
+
+                mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
+                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)))
             }
-
-            mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
-            asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)))
         }
     }
 
     @PutMapping("/fee-thresholds/{id}")
     fun updateFeeThresholds(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds
@@ -86,9 +88,11 @@ class FinanceBasicsController(
         accessControl.requirePermissionFor(user, Action.FeeThresholds.UPDATE, id)
 
         validateFeeThresholds(thresholds)
-        db.transaction { tx ->
-            mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
-            asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)))
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
+                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)))
+            }
         }
     }
 }

@@ -62,12 +62,14 @@ class ScheduledJobTriggerController(private val asyncJobRunner: AsyncJobRunner<A
     }
 
     @PostMapping
-    fun trigger(user: AuthenticatedUser, db: Database.DeprecatedConnection, @RequestBody body: TriggerBody) {
+    fun trigger(user: AuthenticatedUser, db: Database, @RequestBody body: TriggerBody) {
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        db.transaction { tx ->
-            asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1)
+            }
         }
     }
 

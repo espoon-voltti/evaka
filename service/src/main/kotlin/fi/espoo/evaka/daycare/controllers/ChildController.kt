@@ -33,10 +33,10 @@ import java.util.UUID
 @RestController
 class ChildController(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}")
-    fun getChild(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable childId: UUID): ChildResponse {
+    fun getChild(db: Database, user: AuthenticatedUser, @PathVariable childId: UUID): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ, childId)
-        val child = db.read { it.getPersonById(childId) }
+        val child = db.connect { dbc -> dbc.read { it.getPersonById(childId) } }
             ?.hideNonPermittedPersonData(
                 includeInvoiceAddress = accessControl.hasPermissionFor(
                     user,
@@ -55,22 +55,22 @@ class ChildController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
+    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ADDITIONAL_INFO, childId)
-        return db.read { it.getAdditionalInformation(childId) }.let(::ok)
+        return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }.let(::ok)
     }
 
     @PutMapping("/children/{childId}/additional-information")
     fun updateAdditionalInfo(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody data: AdditionalInformation
     ): ResponseEntity<Unit> {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_ADDITIONAL_INFO, childId)
-        db.transaction { it.upsertAdditionalInformation(childId, data) }
+        db.connect { dbc -> dbc.transaction { it.upsertAdditionalInformation(childId, data) } }
         return noContent()
     }
 

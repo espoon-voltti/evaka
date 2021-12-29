@@ -24,14 +24,14 @@ import java.util.UUID
 class MissingHeadOfFamilyReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/missing-head-of-family")
     fun getMissingHeadOfFamilyReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
     ): List<MissingHeadOfFamilyReportRow> {
         Audit.MissingHeadOfFamilyReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT)
-        return db.read { it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user)) }
+        return db.connect { dbc -> dbc.read { it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user)) } }
     }
 }
 

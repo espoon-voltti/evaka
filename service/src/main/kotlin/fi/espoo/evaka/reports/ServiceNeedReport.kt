@@ -21,13 +21,13 @@ import java.time.LocalDate
 class ServiceNeedReport(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/service-need")
     fun getServiceNeedReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ServiceNeedReportRow> {
         Audit.ServiceNeedReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_NEED_REPORT)
-        return db.read { it.getServiceNeedRows(date, acl.getAuthorizedUnits(user)) }
+        return db.connect { dbc -> dbc.read { it.getServiceNeedRows(date, acl.getAuthorizedUnits(user)) } }
     }
 }
 

@@ -31,66 +31,72 @@ class AssistanceActionController(
 ) {
     @PostMapping("/children/{childId}/assistance-actions")
     fun createAssistanceAction(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: AssistanceActionRequest
     ): ResponseEntity<AssistanceAction> {
         Audit.ChildAssistanceActionCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_ACTION, childId)
-        return assistanceActionService.createAssistanceAction(
-            db,
-            user = user,
-            childId = childId,
-            data = body
-        ).let { created(it, URI.create("/children/$childId/assistance-actions/${it.id}")) }
+        return db.connect { dbc ->
+            assistanceActionService.createAssistanceAction(
+                dbc,
+                user = user,
+                childId = childId,
+                data = body
+            )
+        }.let { created(it, URI.create("/children/$childId/assistance-actions/${it.id}")) }
     }
 
     @GetMapping("/children/{childId}/assistance-actions")
     fun getAssistanceActions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<AssistanceAction> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_ACTION, childId)
-        return assistanceActionService.getAssistanceActionsByChildId(db, childId).filter {
-            accessControl.hasPermissionFor(user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, it.id)
+        return db.connect { dbc ->
+            assistanceActionService.getAssistanceActionsByChildId(dbc, childId).filter {
+                accessControl.hasPermissionFor(user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, it.id)
+            }
         }
     }
 
     @PutMapping("/assistance-actions/{id}")
     fun updateAssistanceAction(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceActionId: AssistanceActionId,
         @RequestBody body: AssistanceActionRequest
     ): ResponseEntity<AssistanceAction> {
         Audit.ChildAssistanceActionUpdate.log(targetId = assistanceActionId)
         accessControl.requirePermissionFor(user, Action.AssistanceAction.UPDATE, assistanceActionId)
-        return assistanceActionService.updateAssistanceAction(
-            db,
-            user = user,
-            id = assistanceActionId,
-            data = body
-        ).let(::ok)
+        return db.connect { dbc ->
+            assistanceActionService.updateAssistanceAction(
+                dbc,
+                user = user,
+                id = assistanceActionId,
+                data = body
+            )
+        }.let(::ok)
     }
 
     @DeleteMapping("/assistance-actions/{id}")
     fun deleteAssistanceAction(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceActionId: AssistanceActionId
     ): ResponseEntity<Unit> {
         Audit.ChildAssistanceActionDelete.log(targetId = assistanceActionId)
         accessControl.requirePermissionFor(user, Action.AssistanceAction.DELETE, assistanceActionId)
-        assistanceActionService.deleteAssistanceAction(db, assistanceActionId)
+        db.connect { dbc -> assistanceActionService.deleteAssistanceAction(dbc, assistanceActionId) }
         return noContent()
     }
 
     @GetMapping("/assistance-action-options")
-    fun getAssistanceActionOptions(db: Database.DeprecatedConnection, user: AuthenticatedUser): List<AssistanceActionOption> {
+    fun getAssistanceActionOptions(db: Database, user: AuthenticatedUser): List<AssistanceActionOption> {
         accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
-        return assistanceActionService.getAssistanceActionOptions(db)
+        return db.connect { dbc -> assistanceActionService.getAssistanceActionOptions(dbc) }
     }
 }

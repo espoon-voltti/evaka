@@ -33,27 +33,29 @@ import java.time.LocalDate
 class ParentshipController(private val parentshipService: ParentshipService, private val accessControl: AccessControl) {
     @PostMapping
     fun createParentship(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: ParentshipRequest
     ) {
         Audit.ParentShipsCreate.log(targetId = body.headOfChildId, objectId = body.childId)
         accessControl.requirePermissionFor(user, Action.Person.CREATE_PARENTSHIP, body.headOfChildId)
 
-        db.transaction {
-            parentshipService.createParentship(
-                it,
-                body.childId.raw,
-                body.headOfChildId.raw,
-                body.startDate,
-                body.endDate
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                parentshipService.createParentship(
+                    it,
+                    body.childId.raw,
+                    body.headOfChildId.raw,
+                    body.startDate,
+                    body.endDate
+                )
+            }
         }
     }
 
     @GetMapping
     fun getParentships(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
         @RequestParam(value = "childId", required = false) childId: PersonId? = null
@@ -69,31 +71,33 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
         accessControl.requirePermissionFor(user, Action.Person.READ_PARENTSHIPS, personId)
 
-        return db.read {
-            it.getParentships(
-                headOfChildId = headOfChildId?.raw,
-                childId = childId?.raw,
-                includeConflicts = true
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                it.getParentships(
+                    headOfChildId = headOfChildId?.raw,
+                    childId = childId?.raw,
+                    includeConflicts = true
+                )
+            }
         }
     }
 
     @GetMapping("/{id}")
     fun getParentship(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId
     ): Parentship {
         Audit.ParentShipsRead.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Parentship.READ, id)
 
-        return db.read { it.getParentship(id) }
+        return db.connect { dbc -> dbc.read { it.getParentship(id) } }
             ?: throw NotFound()
     }
 
     @PutMapping("/{id}")
     fun updateParentship(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
@@ -101,39 +105,44 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         Audit.ParentShipsUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Parentship.UPDATE, id)
 
-        return db.transaction {
-            parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
+        return db.connect { dbc ->
+            dbc.transaction {
+                parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
+            }
         }
     }
 
     @PutMapping("/{id}/retry")
     fun retryPartnership(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") parentshipId: ParentshipId
     ) {
         Audit.ParentShipsRetry.log(targetId = parentshipId)
         accessControl.requirePermissionFor(user, Action.Parentship.RETRY, parentshipId)
 
-        db.transaction { parentshipService.retryParentship(it, parentshipId) }
+        db.connect { dbc -> dbc.transaction { parentshipService.retryParentship(it, parentshipId) } }
     }
 
     @DeleteMapping("/{id}")
     fun deleteParentship(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: ParentshipId
     ) {
         Audit.ParentShipsDelete.log(targetId = id)
-        val parentship = db.transaction { it.getParentship(id) }
 
-        if (parentship?.conflict == false) {
-            accessControl.requirePermissionFor(user, Action.Parentship.DELETE, id)
-        } else {
-            accessControl.requirePermissionFor(user, Action.Parentship.DELETE_CONFLICTED_PARENTSHIP, id)
+        db.connect { dbc ->
+            val parentship = dbc.transaction { it.getParentship(id) }
+
+            if (parentship?.conflict == false) {
+                accessControl.requirePermissionFor(user, Action.Parentship.DELETE, id)
+            } else {
+                accessControl.requirePermissionFor(user, Action.Parentship.DELETE_CONFLICTED_PARENTSHIP, id)
+            }
+
+            dbc.transaction { parentshipService.deleteParentship(it, id) }
         }
-
-        db.transaction { parentshipService.deleteParentship(it, id) }
     }
 
     data class ParentshipRequest(

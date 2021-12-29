@@ -31,19 +31,19 @@ import java.util.UUID
 class BackupCareController(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}/backup-cares")
     fun getForChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<ChildBackupCaresResponse> {
         Audit.ChildBackupCareRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_CARE, childId)
-        val backupCares = db.read { it.getBackupCaresForChild(childId) }
+        val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForChild(childId) } }
         return ResponseEntity.ok(ChildBackupCaresResponse(backupCares))
     }
 
     @PostMapping("/children/{childId}/backup-cares")
     fun createForChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID,
         @RequestBody body: NewBackupCare
@@ -51,7 +51,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
-            val id = db.transaction { it.createBackupCare(childId, body) }
+            val id = db.connect { dbc -> dbc.transaction { it.createBackupCare(childId, body) } }
             return ResponseEntity.ok(BackupCareCreateResponse(id))
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -60,7 +60,7 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @PostMapping("/backup-cares/{id}")
     fun update(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
@@ -68,7 +68,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
         accessControl.requirePermissionFor(user, Action.BackupCare.UPDATE, backupCareId)
         try {
-            db.transaction { it.updateBackupCare(backupCareId, body.period, body.groupId) }
+            db.connect { dbc -> dbc.transaction { it.updateBackupCare(backupCareId, body.period, body.groupId) } }
             return ResponseEntity.noContent().build()
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -77,19 +77,19 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @DeleteMapping("/backup-cares/{id}")
     fun delete(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") backupCareId: BackupCareId
     ): ResponseEntity<Unit> {
         Audit.BackupCareDelete.log(targetId = backupCareId)
         accessControl.requirePermissionFor(user, Action.BackupCare.DELETE, backupCareId)
-        db.transaction { it.deleteBackupCare(backupCareId) }
+        db.connect { dbc -> dbc.transaction { it.deleteBackupCare(backupCareId) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
     fun getForDaycare(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
@@ -97,7 +97,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     ): ResponseEntity<UnitBackupCaresResponse> {
         Audit.DaycareBackupCareRead.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_BACKUP_CARE, daycareId)
-        val backupCares = db.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) }
+        val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) } }
         return ResponseEntity.ok(UnitBackupCaresResponse(backupCares))
     }
 }

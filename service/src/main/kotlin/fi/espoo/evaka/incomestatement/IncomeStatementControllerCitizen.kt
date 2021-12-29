@@ -31,7 +31,7 @@ import java.time.LocalDate
 class IncomeStatementControllerCitizen {
     @GetMapping
     fun getIncomeStatements(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
@@ -39,40 +39,44 @@ class IncomeStatementControllerCitizen {
         Audit.IncomeStatementsOfPerson.log(user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
-        return db.read { tx ->
-            tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
+            }
         }
     }
 
     @GetMapping("/start-dates")
     fun getIncomeStatementStartDates(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen
     ): List<LocalDate> {
         Audit.IncomeStatementStartDates.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
-        return db.read { it.readIncomeStatementStartDates(user) }
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user) } }
     }
 
     @GetMapping("/{incomeStatementId}")
     fun getIncomeStatement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         Audit.IncomeStatementOfPerson.log(incomeStatementId, user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
-        return db.read { tx ->
-            tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
-                ?: throw NotFound("No such income statement")
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
+                    ?: throw NotFound("No such income statement")
+            }
         }
     }
 
     @PostMapping
     fun createIncomeStatement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         @RequestBody body: IncomeStatementBody
     ) {
@@ -81,23 +85,25 @@ class IncomeStatementControllerCitizen {
         user.requireOneOfRoles(UserRole.END_USER)
 
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
-        if (db.read { tx -> tx.incomeStatementExistsForStartDate(user, body.startDate) })
-            throw BadRequest("An income statement for this start date already exists")
+        db.connect { dbc ->
+            if (dbc.read { tx -> tx.incomeStatementExistsForStartDate(user, body.startDate) })
+                throw BadRequest("An income statement for this start date already exists")
 
-        db.transaction { tx ->
-            val incomeStatementId = tx.createIncomeStatement(user.id, body)
-            when (body) {
-                is IncomeStatementBody.Income ->
-                    tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
-                else ->
-                    Unit
+            dbc.transaction { tx ->
+                val incomeStatementId = tx.createIncomeStatement(user.id, body)
+                when (body) {
+                    is IncomeStatementBody.Income ->
+                        tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+                    else ->
+                        Unit
+                }
             }
         }
     }
 
     @PutMapping("/{incomeStatementId}")
     fun updateIncomeStatement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
@@ -106,16 +112,18 @@ class IncomeStatementControllerCitizen {
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
-        return db.transaction { tx ->
-            verifyIncomeStatementModificationsAllowed(tx, user, incomeStatementId)
-            tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
-                if (success) {
-                    tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
-                    when (body) {
-                        is IncomeStatementBody.Income ->
-                            tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
-                        else ->
-                            Unit
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                verifyIncomeStatementModificationsAllowed(tx, user, incomeStatementId)
+                tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
+                    if (success) {
+                        tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
+                        when (body) {
+                            is IncomeStatementBody.Income ->
+                                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+                            else ->
+                                Unit
+                        }
                     }
                 }
             }
@@ -124,16 +132,18 @@ class IncomeStatementControllerCitizen {
 
     @DeleteMapping("/{id}")
     fun removeIncomeStatement(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Citizen,
         @PathVariable id: IncomeStatementId
     ) {
         Audit.IncomeStatementDelete.log(id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
-        return db.transaction { tx ->
-            verifyIncomeStatementModificationsAllowed(tx, user, id)
-            tx.removeIncomeStatement(id)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                verifyIncomeStatementModificationsAllowed(tx, user, id)
+                tx.removeIncomeStatement(id)
+            }
         }
     }
 

@@ -122,7 +122,7 @@ class ApplicationControllerV2(
 ) {
     @PostMapping
     fun createPaperApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
@@ -130,35 +130,38 @@ class ApplicationControllerV2(
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         accessControl.requirePermissionFor(user, Action.Global.CREATE_PAPER_APPLICATION)
 
-        val id = db.transaction { tx ->
-            val child = tx.getPersonById(body.childId)
-                ?: throw BadRequest("Could not find the child with id ${body.childId}")
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                val child = tx.getPersonById(body.childId)
+                    ?: throw BadRequest("Could not find the child with id ${body.childId}")
 
-            val guardianId =
-                body.guardianId
-                    ?: if (!body.guardianSsn.isNullOrEmpty())
-                        personService.getOrCreatePerson(
-                            tx,
-                            user,
-                            ExternalIdentifier.SSN.getInstance(body.guardianSsn)
-                        )?.id ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
-                    else if (body.guardianToBeCreated != null)
-                        createPerson(tx, body.guardianToBeCreated)
-                    else
-                        throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
+                val guardianId =
+                    body.guardianId
+                        ?: if (!body.guardianSsn.isNullOrEmpty())
+                            personService.getOrCreatePerson(
+                                tx,
+                                user,
+                                ExternalIdentifier.SSN.getInstance(body.guardianSsn)
+                            )?.id
+                                ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
+                        else if (body.guardianToBeCreated != null)
+                            createPerson(tx, body.guardianToBeCreated)
+                        else
+                            throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
 
-            val guardian = tx.getPersonById(guardianId)
-                ?: throw BadRequest("Could not find the guardian with id $guardianId")
+                val guardian = tx.getPersonById(guardianId)
+                    ?: throw BadRequest("Could not find the guardian with id $guardianId")
 
-            val id = tx.insertApplication(
-                guardianId = guardianId,
-                childId = body.childId,
-                origin = ApplicationOrigin.PAPER,
-                hideFromGuardian = body.hideFromGuardian,
-                sentDate = body.sentDate
-            )
-            applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), id, body.type, guardian, child)
-            id
+                val id = tx.insertApplication(
+                    guardianId = guardianId,
+                    childId = body.childId,
+                    origin = ApplicationOrigin.PAPER,
+                    hideFromGuardian = body.hideFromGuardian,
+                    sentDate = body.sentDate
+                )
+                applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), id, body.type, guardian, child)
+                id
+            }
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(id)
@@ -166,7 +169,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/search")
     fun getApplicationSummaries(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchApplicationRequest
     ): ResponseEntity<Paged<ApplicationSummary>> {
@@ -191,109 +194,114 @@ class ApplicationControllerV2(
 
         val canReadServiceWorkerNotes = accessControl.hasPermissionFor(user, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
 
-        return db.read { tx ->
-            tx.fetchApplicationSummaries(
-                user = user,
-                page = body.page ?: 1,
-                pageSize = body.pageSize ?: 100,
-                sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
-                sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
-                areas = body.area?.split(",") ?: listOf(),
-                units = body.units?.split(",")?.map { parseUUID(it) } ?: listOf(),
-                basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
-                type = body.type,
-                preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
-                    ?: listOf(),
-                statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
-                dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
-                distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
-                periodStart = body.periodStart,
-                periodEnd = body.periodEnd,
-                searchTerms = body.searchTerms ?: "",
-                transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
-                voucherApplications = body.voucherApplications,
-                authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
-                authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed,
-                canReadServiceWorkerNotes = canReadServiceWorkerNotes
-            )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.fetchApplicationSummaries(
+                    user = user,
+                    page = body.page ?: 1,
+                    pageSize = body.pageSize ?: 100,
+                    sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
+                    sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
+                    areas = body.area?.split(",") ?: listOf(),
+                    units = body.units?.split(",")?.map { parseUUID(it) } ?: listOf(),
+                    basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
+                    type = body.type,
+                    preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
+                        ?: listOf(),
+                    statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
+                    dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
+                    distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
+                    periodStart = body.periodStart,
+                    periodEnd = body.periodEnd,
+                    searchTerms = body.searchTerms ?: "",
+                    transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
+                    voucherApplications = body.voucherApplications,
+                    authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
+                    authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed,
+                    canReadServiceWorkerNotes = canReadServiceWorkerNotes
+                )
+            }
         }.let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/by-guardian/{guardianId}")
     fun getGuardianApplicationSummaries(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "guardianId") guardianId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
         accessControl.requirePermissionFor(user, Action.Global.READ_PERSON_APPLICATION)
 
-        return db.read { it.fetchApplicationSummariesForGuardian(guardianId) }
+        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) } }
             .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/by-child/{childId}")
     fun getChildApplicationSummaries(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "childId") childId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_APPLICATION, childId)
 
-        return db.read { it.fetchApplicationSummariesForChild(childId) }
+        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForChild(childId) } }
             .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/{applicationId}")
     fun getApplicationDetails(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<ApplicationResponse> {
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
 
-        return db.transaction { tx ->
-            val application = tx.fetchApplicationDetails(applicationId)
-                ?: throw NotFound("Application $applicationId was not found")
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val application = tx.fetchApplicationDetails(applicationId)
+                    ?: throw NotFound("Application $applicationId was not found")
 
-            accessControl.requirePermissionFor(
-                user = user,
-                action = if (application.form.child.assistanceNeeded) Action.Application.READ_WITH_ASSISTANCE_NEED else Action.Application.READ_WITHOUT_ASSISTANCE_NEED,
-                id = applicationId
-            )
-
-            val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
-            val guardians =
-                personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
-
-            // todo: can this be refactored under Action model?
-            @Suppress("DEPRECATION")
-            val roles = acl.getRolesForApplication(user, applicationId)
-            @Suppress("DEPRECATION")
-            val attachments: List<ApplicationAttachment> = when {
-                roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
-                    tx.getApplicationAttachments(applicationId)
-                roles.hasOneOfRoles(UserRole.UNIT_SUPERVISOR) ->
-                    tx.getApplicationAttachmentsForUnitSupervisor(applicationId)
-                else -> listOf()
-            }
-
-            ResponseEntity.ok(
-                ApplicationResponse(
-                    application = application.copy(attachments = attachments),
-                    decisions = decisions,
-                    guardians = guardians,
-                    attachments = attachments
+                accessControl.requirePermissionFor(
+                    user = user,
+                    action = if (application.form.child.assistanceNeeded) Action.Application.READ_WITH_ASSISTANCE_NEED else Action.Application.READ_WITHOUT_ASSISTANCE_NEED,
+                    id = applicationId
                 )
-            )
+
+                val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
+                val guardians =
+                    personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
+
+                // todo: can this be refactored under Action model?
+                @Suppress("DEPRECATION")
+                val roles = acl.getRolesForApplication(user, applicationId)
+
+                @Suppress("DEPRECATION")
+                val attachments: List<ApplicationAttachment> = when {
+                    roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
+                        tx.getApplicationAttachments(applicationId)
+                    roles.hasOneOfRoles(UserRole.UNIT_SUPERVISOR) ->
+                        tx.getApplicationAttachmentsForUnitSupervisor(applicationId)
+                    else -> listOf()
+                }
+
+                ResponseEntity.ok(
+                    ApplicationResponse(
+                        application = application.copy(attachments = attachments),
+                        decisions = decisions,
+                        guardians = guardians,
+                        attachments = attachments
+                    )
+                )
+            }
         }
     }
 
     @PutMapping("/{applicationId}")
     fun updateApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
@@ -301,105 +309,109 @@ class ApplicationControllerV2(
         Audit.ApplicationUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.UPDATE, applicationId)
 
-        db.transaction {
-            applicationStateService.updateApplicationContentsServiceWorker(
-                it,
-                user,
-                applicationId,
-                application,
-                user.id,
-                currentDateInFinland()
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.updateApplicationContentsServiceWorker(
+                    it,
+                    user,
+                    applicationId,
+                    application,
+                    user.id,
+                    currentDateInFinland()
+                )
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/send-application")
     fun sendApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland()) }
+        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland()) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{applicationId}/placement-draft")
     fun getPlacementPlanDraft(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
-        return db.read { placementPlanService.getPlacementPlanDraft(it, applicationId) }
+        return db.connect { dbc -> dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) } }
             .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
     fun getDecisionDrafts(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<DecisionDraftJSON> {
         Audit.DecisionDraftRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_DECISION_DRAFT, applicationId)
 
-        return db.transaction { tx ->
-            val application = tx.fetchApplicationDetails(applicationId)
-                ?: throw NotFound("Application $applicationId not found")
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val application = tx.fetchApplicationDetails(applicationId)
+                    ?: throw NotFound("Application $applicationId not found")
 
-            if (application.status !== ApplicationStatus.WAITING_DECISION) {
-                throw Conflict("Cannot get decision drafts for application with status ${application.status}")
-            }
+                if (application.status !== ApplicationStatus.WAITING_DECISION) {
+                    throw Conflict("Cannot get decision drafts for application with status ${application.status}")
+                }
 
-            val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
+                val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
 
-            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
-            val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
+                val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
+                val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
 
-            val applicationGuardian = tx.getPersonById(application.guardianId)
-                ?: throw NotFound("Guardian ${application.guardianId} not found")
-            val child = tx.getPersonById(application.childId)
-                ?: throw NotFound("Child ${application.childId} not found")
-            val vtjGuardians = personService.getGuardians(tx, user, child.id)
+                val applicationGuardian = tx.getPersonById(application.guardianId)
+                    ?: throw NotFound("Guardian ${application.guardianId} not found")
+                val child = tx.getPersonById(application.childId)
+                    ?: throw NotFound("Child ${application.childId} not found")
+                val vtjGuardians = personService.getGuardians(tx, user, child.id)
 
-            val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
-            val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
+                val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
+                val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
 
-            ok(
-                DecisionDraftJSON(
-                    decisions = decisionDrafts,
-                    placementUnitName = placementUnitName,
-                    unit = unit,
-                    guardian = GuardianInfo(
-                        firstName = applicationGuardian.firstName,
-                        lastName = applicationGuardian.lastName,
-                        ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
-                        isVtjGuardian = applicationGuardianIsVtjGuardian
-                    ),
-                    child = ChildInfo(
-                        firstName = child.firstName,
-                        lastName = child.lastName,
-                        ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
-                    ),
-                    otherGuardian = otherGuardian?.let {
-                        GuardianInfo(
-                            id = it.id,
-                            firstName = it.firstName,
-                            lastName = it.lastName,
-                            ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
-                            isVtjGuardian = true
-                        )
-                    }
+                ok(
+                    DecisionDraftJSON(
+                        decisions = decisionDrafts,
+                        placementUnitName = placementUnitName,
+                        unit = unit,
+                        guardian = GuardianInfo(
+                            firstName = applicationGuardian.firstName,
+                            lastName = applicationGuardian.lastName,
+                            ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
+                            isVtjGuardian = applicationGuardianIsVtjGuardian
+                        ),
+                        child = ChildInfo(
+                            firstName = child.firstName,
+                            lastName = child.lastName,
+                            ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
+                        ),
+                        otherGuardian = otherGuardian?.let {
+                            GuardianInfo(
+                                id = it.id,
+                                firstName = it.firstName,
+                                lastName = it.lastName,
+                                ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
+                                isVtjGuardian = true
+                            )
+                        }
+                    )
                 )
-            )
+            }
         }
     }
 
     @PutMapping("/{applicationId}/decision-drafts")
     fun updateDecisionDrafts(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
@@ -407,23 +419,23 @@ class ApplicationControllerV2(
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
 
-        db.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
+        db.connect { dbc -> dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
     fun acceptPlacementProposal(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "unitId") unitId: DaycareId
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.confirmPlacementProposalChanges(it, user, unitId) }
+        db.connect { dbc -> dbc.transaction { applicationStateService.confirmPlacementProposalChanges(it, user, unitId) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/batch/actions/{action}")
     fun simpleBatchAction(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable action: String,
         @RequestBody body: SimpleBatchRequest
@@ -439,8 +451,10 @@ class ApplicationControllerV2(
         )
 
         val actionFn = simpleBatchActions[action] ?: throw NotFound("Batch action not recognized")
-        db.transaction { tx ->
-            body.applicationIds.forEach { applicationId -> actionFn.invoke(tx, user, applicationId) }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                body.applicationIds.forEach { applicationId -> actionFn.invoke(tx, user, applicationId) }
+            }
         }
 
         return ResponseEntity.noContent().build()
@@ -448,7 +462,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
@@ -456,57 +470,61 @@ class ApplicationControllerV2(
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
-        db.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) }
+        db.connect { dbc -> dbc.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")
     fun respondToPlacementProposal(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate
     ): ResponseEntity<Unit> {
-        db.transaction {
-            applicationStateService.respondToPlacementProposal(
-                it,
-                user,
-                applicationId,
-                body.status,
-                body.reason,
-                body.otherReason
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.respondToPlacementProposal(
+                    it,
+                    user,
+                    applicationId,
+                    body.status,
+                    body.reason,
+                    body.otherReason
+                )
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/accept-decision")
     fun acceptDecision(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
-        db.transaction {
-            applicationStateService.acceptDecision(it, user, applicationId, body.decisionId, body.requestedStartDate)
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.acceptDecision(it, user, applicationId, body.decisionId, body.requestedStartDate)
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/reject-decision")
     fun rejectDecision(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) }
+        db.connect { dbc -> dbc.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/{action}")
     fun simpleAction(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
@@ -525,7 +543,7 @@ class ApplicationControllerV2(
         )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
-        db.transaction { actionFn.invoke(it, user, applicationId) }
+        db.connect { dbc -> dbc.transaction { actionFn.invoke(it, user, applicationId) } }
         return ResponseEntity.noContent().build()
     }
 }

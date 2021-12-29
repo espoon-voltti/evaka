@@ -45,7 +45,7 @@ class VasuController(
 
     @PostMapping("/children/{childId}/vasu")
     fun createDocument(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: CreateDocumentRequest
@@ -53,32 +53,34 @@ class VasuController(
         Audit.VasuDocumentCreate.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_VASU_DOCUMENT, childId)
 
-        return db.transaction { tx ->
-            if (tx.getVasuDocumentSummaries(childId).any { it.documentState != VasuDocumentState.CLOSED }) {
-                throw Conflict("Cannot open a new vasu document while another is still active")
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (tx.getVasuDocumentSummaries(childId).any { it.documentState != VasuDocumentState.CLOSED }) {
+                    throw Conflict("Cannot open a new vasu document while another is still active")
+                }
+
+                val template = tx.getVasuTemplate(body.templateId)
+                    ?: throw NotFound("template ${body.templateId} not found")
+
+                if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
+                    throw BadRequest("Template is not currently valid")
+                }
+
+                tx.insertVasuDocument(childId, template)
             }
-
-            val template = tx.getVasuTemplate(body.templateId)
-                ?: throw NotFound("template ${body.templateId} not found")
-
-            if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
-                throw BadRequest("Template is not currently valid")
-            }
-
-            tx.insertVasuDocument(childId, template)
         }
     }
 
     @GetMapping("/children/{childId}/vasu-summaries")
     fun getVasuSummariesByChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<VasuDocumentSummary> {
         Audit.ChildVasuDocumentsRead.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_VASU_DOCUMENT, childId)
 
-        return db.read { tx -> tx.getVasuDocumentSummaries(childId) }
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuDocumentSummaries(childId) } }
     }
 
     data class ChangeDocumentStateRequest(
@@ -91,15 +93,17 @@ class VasuController(
     )
     @GetMapping("/vasu/{id}")
     fun getDocument(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId
     ): GetVasuDocumentResponse {
         Audit.VasuDocumentRead.log(id)
         accessControl.requirePermissionFor(user, Action.VasuDocument.READ, id)
 
-        val doc = db.read { tx ->
-            tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
+        val doc = db.connect { dbc ->
+            dbc.read { tx ->
+                tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
+            }
         }
         return GetVasuDocumentResponse(doc, accessControl.getPermittedVasuFollowupActions(user, id))
     }
@@ -108,7 +112,7 @@ class VasuController(
 
     @PutMapping("/vasu/{id}")
     fun putDocument(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
@@ -116,10 +120,12 @@ class VasuController(
         Audit.VasuDocumentUpdate.log(id)
         accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE, id)
 
-        db.transaction { tx ->
-            val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
-            validateVasuDocumentUpdate(vasu, body)
-            tx.updateVasuDocumentMaster(id, body.content, body.childLanguage)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
+                validateVasuDocumentUpdate(vasu, body)
+                tx.updateVasuDocumentMaster(id, body.content, body.childLanguage)
+            }
         }
     }
 
@@ -140,7 +146,7 @@ class VasuController(
 
     @PostMapping("/vasu/{id}/edit-followup/{entryId}")
     fun editFollowupEntry(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId,
         @PathVariable entryId: UUID,
@@ -148,22 +154,24 @@ class VasuController(
     ) {
         Audit.VasuDocumentEditFollowupEntry.log(id, entryId)
         accessControl.requirePermissionFor(user, Action.VasuDocumentFollowup.UPDATE, VasuDocumentFollowupEntryId(id, entryId))
-        db.transaction { tx ->
-            val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
 
-            val editedBy = tx.getEmployee(EmployeeId(user.id))
+                val editedBy = tx.getEmployee(EmployeeId(user.id))
 
-            tx.updateVasuDocumentMaster(
-                id,
-                vasu.content.editFollowupEntry(entryId, editedBy, body.text),
-                vasu.basics.childLanguage
-            )
+                tx.updateVasuDocumentMaster(
+                    id,
+                    vasu.content.editFollowupEntry(entryId, editedBy, body.text),
+                    vasu.basics.childLanguage
+                )
+            }
         }
     }
 
     @PostMapping("/vasu/{id}/update-state")
     fun updateDocumentState(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest
@@ -187,25 +195,27 @@ class VasuController(
             }.exhaust()
         }
 
-        db.transaction { tx ->
-            val currentState = tx.getVasuDocumentMaster(id)?.documentState
-                ?: throw NotFound("Vasu was not found")
-            validateStateTransition(eventType = body.eventType, currentState = currentState)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val currentState = tx.getVasuDocumentMaster(id)?.documentState
+                    ?: throw NotFound("Vasu was not found")
+                validateStateTransition(eventType = body.eventType, currentState = currentState)
 
-            if (events.contains(PUBLISHED)) {
-                tx.publishVasuDocument(id)
-            }
+                if (events.contains(PUBLISHED)) {
+                    tx.publishVasuDocument(id)
+                }
 
-            if (events.contains(MOVED_TO_CLOSED)) {
-                tx.freezeVasuPlacements(id)
-            }
+                if (events.contains(MOVED_TO_CLOSED)) {
+                    tx.freezeVasuPlacements(id)
+                }
 
-            events.forEach { eventType ->
-                tx.insertVasuDocumentEvent(
-                    documentId = id,
-                    eventType = eventType,
-                    employeeId = user.id
-                )
+                events.forEach { eventType ->
+                    tx.insertVasuDocumentEvent(
+                        documentId = id,
+                        eventType = eventType,
+                        employeeId = user.id
+                    )
+                }
             }
         }
     }

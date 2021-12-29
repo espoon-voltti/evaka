@@ -45,7 +45,7 @@ class PairingsController(
     }
     @PostMapping("/pairings")
     fun postPairing(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Employee,
         @RequestBody body: PostPairingReq
     ): ResponseEntity<Pairing> {
@@ -61,19 +61,21 @@ class PairingsController(
             }
         }
 
-        return db.transaction { tx ->
-            val pairing = when (body) {
-                is PostPairingReq.Unit -> tx.initPairing(unitId = body.unitId)
-                is PostPairingReq.Employee -> tx.initPairing(employeeId = body.employeeId)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val pairing = when (body) {
+                    is PostPairingReq.Unit -> tx.initPairing(unitId = body.unitId)
+                    is PostPairingReq.Employee -> tx.initPairing(employeeId = body.employeeId)
+                }
+
+                asyncJobRunner.plan(
+                    tx = tx,
+                    payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = pairing.id)),
+                    runAt = pairing.expires.plusDays(1)
+                )
+
+                pairing
             }
-
-            asyncJobRunner.plan(
-                tx = tx,
-                payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = pairing.id)),
-                runAt = pairing.expires.plusDays(1)
-            )
-
-            pairing
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -90,12 +92,14 @@ class PairingsController(
     )
     @PostMapping("/public/pairings/challenge")
     fun postPairingChallenge(
-        db: Database.DeprecatedConnection,
+        db: Database,
         @RequestBody body: PostPairingChallengeReq
     ): ResponseEntity<Pairing> {
         Audit.PairingChallenge.log(targetId = body.challengeKey)
-        return db
-            .transaction { it.challengePairing(body.challengeKey) }
+        return db.connect { dbc ->
+            dbc
+                .transaction { it.challengePairing(body.challengeKey) }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -112,32 +116,34 @@ class PairingsController(
     )
     @PostMapping("/pairings/{id}/response")
     fun postPairingResponse(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
     ): ResponseEntity<Pairing> {
         Audit.PairingResponse.log(targetId = id)
-        val (unitId, employeeId) = db.read { it.fetchPairingReferenceIds(id) }
-        try {
-            @Suppress("DEPRECATION")
-            when {
-                unitId != null -> acl.getRolesForPairing(user, id)
-                    .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-                employeeId != null ->
-                    if (EmployeeId(user.id) != employeeId) throw Forbidden()
-                else -> error("Pairing unitId and employeeId were null")
+        return db.connect { dbc ->
+            val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
+            try {
+                @Suppress("DEPRECATION")
+                when {
+                    unitId != null -> acl.getRolesForPairing(user, id)
+                        .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+                    employeeId != null ->
+                        if (EmployeeId(user.id) != employeeId) throw Forbidden()
+                    else -> error("Pairing unitId and employeeId were null")
+                }
+            } catch (e: Forbidden) {
+                throw NotFound("Pairing not found or not authorized")
             }
-        } catch (e: Forbidden) {
-            throw NotFound("Pairing not found or not authorized")
-        }
-        db.transaction { it.incrementAttempts(id, body.challengeKey) }
+            dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
 
-        return db
-            .transaction {
-                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
-            }
-            .let { ResponseEntity.ok(it) }
+            dbc
+                .transaction {
+                    it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+                }
+                .let { ResponseEntity.ok(it) }
+        }
     }
 
     /**
@@ -153,16 +159,18 @@ class PairingsController(
     )
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
-        db: Database.DeprecatedConnection,
+        db: Database,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingValidationReq
     ): MobileDeviceIdentity {
         Audit.PairingValidation.log(targetId = id)
-        db.transaction { it.incrementAttempts(id, body.challengeKey) }
+        return db.connect { dbc ->
+            dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
 
-        return db.transaction { tx ->
-            tx.validatePairing(id, body.challengeKey, body.responseKey).also {
-                tx.upsertMobileDeviceUser(it.id)
+            dbc.transaction { tx ->
+                tx.validatePairing(id, body.challengeKey, body.responseKey).also {
+                    tx.upsertMobileDeviceUser(it.id)
+                }
             }
         }
     }
@@ -178,12 +186,14 @@ class PairingsController(
     )
     @GetMapping("/public/pairings/{id}/status")
     fun getPairingStatus(
-        db: Database.DeprecatedConnection,
+        db: Database,
         @PathVariable id: PairingId
     ): ResponseEntity<PairingStatusRes> {
         Audit.PairingStatusRead.log(targetId = id)
-        return db
-            .read { it.fetchPairingStatus(id) }
+        return db.connect { dbc ->
+            dbc
+                .read { it.fetchPairingStatus(id) }
+        }
             .let { ResponseEntity.ok(PairingStatusRes(status = it)) }
     }
 }

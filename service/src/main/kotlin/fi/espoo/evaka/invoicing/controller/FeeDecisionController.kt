@@ -69,7 +69,7 @@ class FeeDecisionController(
 ) {
     @PostMapping("/search")
     fun search(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchFeeDecisionRequest
     ): ResponseEntity<Paged<FeeDecisionSummary>> {
@@ -80,92 +80,98 @@ class FeeDecisionController(
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate)
             throw BadRequest("End date cannot be before start date")
-        return db
-            .read { tx ->
-                tx.searchFeeDecisions(
-                    body.page,
-                    body.pageSize,
-                    body.sortBy ?: FeeDecisionSortParam.STATUS,
-                    body.sortDirection ?: SortDirection.DESC,
-                    body.status?.split(",")?.mapNotNull { parseEnum<FeeDecisionStatus>(it) } ?: listOf(),
-                    body.area?.split(",") ?: listOf(),
-                    body.unit?.let { parseUUID(it) },
-                    body.distinctions?.split(",")?.mapNotNull { parseEnum<DistinctiveParams>(it) } ?: listOf(),
-                    body.searchTerms ?: "",
-                    body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
-                    body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
-                    body.searchByStartDate,
-                    body.financeDecisionHandlerId
-                )
-            }
+        return db.connect { dbc ->
+            dbc
+                .read { tx ->
+                    tx.searchFeeDecisions(
+                        body.page,
+                        body.pageSize,
+                        body.sortBy ?: FeeDecisionSortParam.STATUS,
+                        body.sortDirection ?: SortDirection.DESC,
+                        body.status?.split(",")?.mapNotNull { parseEnum<FeeDecisionStatus>(it) } ?: listOf(),
+                        body.area?.split(",") ?: listOf(),
+                        body.unit?.let { parseUUID(it) },
+                        body.distinctions?.split(",")?.mapNotNull { parseEnum<DistinctiveParams>(it) } ?: listOf(),
+                        body.searchTerms ?: "",
+                        body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
+                        body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
+                        body.searchByStartDate,
+                        body.financeDecisionHandlerId
+                    )
+                }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/confirm")
-    fun confirmDrafts(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
+    fun confirmDrafts(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { tx ->
-            val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
-            asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
+                asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
+    fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { service.setSent(it, feeDecisionIds) }
+        db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/pdf/{uuid}")
-    fun getDecisionPdf(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val headers = HttpHeaders()
-        val (filename, pdf) = db.read { service.getFeeDecisionPdf(it, uuid) }
+        val (filename, pdf) = db.connect { dbc -> dbc.read { service.getFeeDecisionPdf(it, uuid) } }
         headers.add("Content-Disposition", "attachment; filename=\"$filename\"")
         headers.add("Content-Type", "application/pdf")
         return ResponseEntity(pdf, headers, HttpStatus.OK)
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
+    fun getDecision(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read { it.getFeeDecision(uuid) }
+        val res = db.connect { dbc -> dbc.read { it.getFeeDecision(uuid) } }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @GetMapping("/head-of-family/{uuid}")
     fun getHeadOfFamilyFeeDecisions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: UUID
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read {
-            it.findFeeDecisionsForHeadOfFamily(
-                uuid,
-                null,
-                null
-            )
+        val res = db.connect { dbc ->
+            dbc.read {
+                it.findFeeDecisionsForHeadOfFamily(
+                    uuid,
+                    null,
+                    null
+                )
+            }
         }
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveDecisions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
@@ -173,13 +179,13 @@ class FeeDecisionController(
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) }
+        db.connect { dbc -> dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/set-type/{uuid}")
     fun setType(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest
@@ -187,7 +193,7 @@ class FeeDecisionController(
         Audit.FeeDecisionSetType.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { service.setType(it, uuid, request.type) }
+        db.connect { dbc -> dbc.transaction { service.setType(it, uuid, request.type) } }
         return ResponseEntity.noContent().build()
     }
 }

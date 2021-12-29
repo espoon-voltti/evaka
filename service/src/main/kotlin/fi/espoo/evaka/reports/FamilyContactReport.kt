@@ -22,13 +22,13 @@ import java.util.UUID
 class FamilyContactReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/family-contacts")
     fun getFamilyContactsReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): List<FamilyContactReportRow> {
         Audit.FamilyContactReportRead.log()
         accessControl.requirePermissionFor(user, Action.Unit.READ_FAMILY_CONTACT_REPORT, unitId)
-        return db.read { it.getFamilyContacts(unitId) }
+        return db.connect { dbc -> dbc.read { it.getFamilyContacts(unitId) } }
     }
 }
 

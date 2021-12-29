@@ -34,58 +34,58 @@ class DecisionController(
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") guardianId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        val decisions = db.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
 
         return ResponseEntity.ok(DecisionListResponse(decisions))
     }
 
     @GetMapping("/by-child")
     fun getDecisionsByChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") childId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        val decisions = db.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
 
         return ResponseEntity.ok(DecisionListResponse(decisions))
     }
 
     @GetMapping("/by-application")
     fun getDecisionsByApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") applicationId: ApplicationId
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        val decisions = db.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
 
         return ResponseEntity.ok(DecisionListResponse(decisions))
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
+    fun getDecisionUnits(db: Database, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        val units = db.read { decisionDraftService.getDecisionUnits(it) }
+        val units = db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
         return ResponseEntity.ok(units)
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") decisionId: DecisionId
     ): ResponseEntity<ByteArray> {
@@ -96,21 +96,23 @@ class DecisionController(
         @Suppress("DEPRECATION")
         roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        return db.transaction { tx ->
-            val decision = tx.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
-            val application = tx.fetchApplicationDetails(decision.applicationId)
-                ?: error("Cannot find application for decision id '$decisionId'")
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val decision = tx.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
+                val application = tx.fetchApplicationDetails(decision.applicationId)
+                    ?: error("Cannot find application for decision id '$decisionId'")
 
-            val child = tx.getPersonById(application.childId)
-                ?: error("Cannot find user for child id '${application.childId}'")
+                val child = tx.getPersonById(application.childId)
+                    ?: error("Cannot find user for child id '${application.childId}'")
 
-            val guardian = tx.getPersonById(application.guardianId)
-                ?: error("Cannot find user for guardian id '${application.guardianId}'")
+                val guardian = tx.getPersonById(application.guardianId)
+                    ?: error("Cannot find user for guardian id '${application.guardianId}'")
 
-            if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin)
-                throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
+                if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin)
+                    throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
-            decisionService.getDecisionPdf(tx, decisionId)
+                decisionService.getDecisionPdf(tx, decisionId)
+            }
         }.let { document ->
             ResponseEntity.ok()
                 .header("Content-Disposition", "attachment;filename=${document.getName()}")

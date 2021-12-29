@@ -23,13 +23,13 @@ import java.time.LocalDate
 class ChildAgeLanguageReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ChildAgeLanguageReportRow> {
         Audit.ChildAgeLanguageReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT)
-        return db.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user)) }
+        return db.connect { dbc -> dbc.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user)) } }
     }
 }
 

@@ -37,119 +37,134 @@ class MessageControllerCitizen(
 
     @GetMapping("/my-account")
     fun getMyAccount(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): MessageAccountId {
         Audit.MessagingMyAccountsRead.log()
-        return requireMessageAccountAccess(db, user)
+        return db.connect { dbc -> requireMessageAccountAccess(dbc, user) }
     }
+
     @GetMapping("/unread-count")
     fun getUnreadMessages(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
-        val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getUnreadMessagesCounts(setOf(accountId)) }
+        return db.connect { dbc ->
+            val accountId = requireMessageAccountAccess(dbc, user)
+            dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
+        }
     }
 
     @PutMapping("/threads/{threadId}/read")
     fun markThreadRead(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("threadId") threadId: MessageThreadId
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
-        val accountId = requireMessageAccountAccess(db, user)
-        return db.transaction { it.markThreadRead(accountId, threadId) }
+        return db.connect { dbc ->
+            val accountId = requireMessageAccountAccess(dbc, user)
+            dbc.transaction { it.markThreadRead(accountId, threadId) }
+        }
     }
 
     @GetMapping("/received")
     fun getReceivedMessages(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log()
-        val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
+        return db.connect { dbc ->
+            val accountId = requireMessageAccountAccess(dbc, user)
+            dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
+        }
     }
 
     @GetMapping("/sent")
     fun getSentMessages(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log()
-        val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+        return db.connect { dbc ->
+            val accountId = requireMessageAccountAccess(dbc, user)
+            dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+        }
     }
 
     @GetMapping("/receivers")
     fun getReceivers(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
     ): List<MessageAccount> {
         Audit.MessagingCitizenFetchReceiversForAccount.log()
-        val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getCitizenReceivers(accountId) }
+        return db.connect { dbc ->
+            val accountId = requireMessageAccountAccess(dbc, user)
+            dbc.read { it.getCitizenReceivers(accountId) }
+        }
     }
 
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
-        val accountId = requireMessageAccountAccess(db, user)
+        return db.connect { dbc ->
+            val accountId = requireMessageAccountAccess(dbc, user)
 
-        return messageService.replyToThread(
-            db = db,
-            replyToMessageId = messageId,
-            senderAccount = accountId,
-            recipientAccountIds = body.recipientAccountIds,
-            content = body.content
-        )
+            messageService.replyToThread(
+                db = dbc,
+                replyToMessageId = messageId,
+                senderAccount = accountId,
+                recipientAccountIds = body.recipientAccountIds,
+                content = body.content
+            )
+        }
     }
 
     @PostMapping
     fun newMessage(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: CitizenMessageBody,
     ): List<MessageThreadId> {
         Audit.MessagingCitizenSendMessage.log()
-        val accountId = requireMessageAccountAccess(db, user)
-        val validReceivers = db.read { it.getCitizenReceivers(accountId) }
-        val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
-        if (allReceiversValid) {
-            return db.transaction { tx ->
-                val contentId = tx.insertMessageContent(body.content, accountId)
-                val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
-                val messageId =
-                    tx.insertMessage(
-                        contentId = contentId,
-                        threadId = threadId,
-                        sender = accountId,
-                        recipientNames = body.recipients.map { it.name }
-                    )
-                body.recipients.map {
-                    tx.insertRecipients(setOf(it.id), messageId)
-                    threadId
+        return db.connect { dbc ->
+            val accountId = requireMessageAccountAccess(dbc, user)
+            val validReceivers = dbc.read { it.getCitizenReceivers(accountId) }
+            val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
+            if (allReceiversValid) {
+                dbc.transaction { tx ->
+                    val contentId = tx.insertMessageContent(body.content, accountId)
+                    val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
+                    val messageId =
+                        tx.insertMessage(
+                            contentId = contentId,
+                            threadId = threadId,
+                            sender = accountId,
+                            recipientNames = body.recipients.map { it.name }
+                        )
+                    body.recipients.map {
+                        tx.insertRecipients(setOf(it.id), messageId)
+                        threadId
+                    }
                 }
+            } else {
+                throw Forbidden("Permission denied.")
             }
-        } else {
-            throw Forbidden("Permission denied.")
         }
     }
 
     private fun requireMessageAccountAccess(
-        db: Database.DeprecatedConnection,
+        db: Database.Connection,
         user: AuthenticatedUser
     ): MessageAccountId {
         @Suppress("DEPRECATION")

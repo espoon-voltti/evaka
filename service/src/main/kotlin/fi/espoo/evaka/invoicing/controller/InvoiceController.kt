@@ -60,7 +60,7 @@ class InvoiceController(
 ) {
     @PostMapping("/search")
     fun searchInvoices(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchInvoicesRequest
     ): ResponseEntity<Paged<InvoiceSummary>> {
@@ -69,46 +69,48 @@ class InvoiceController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        return db
-            .read { tx ->
-                tx.paginatedSearch(
-                    body.page,
-                    body.pageSize,
-                    body.sortBy ?: InvoiceSortParam.STATUS,
-                    body.sortDirection ?: SortDirection.DESC,
-                    body.status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
-                    body.area?.split(",") ?: listOf(),
-                    body.unit?.let { parseUUID(it) },
-                    body.distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
-                    body.searchTerms ?: "",
-                    body.periodStart?.let { LocalDate.parse(body.periodStart, DateTimeFormatter.ISO_DATE) },
-                    body.periodEnd?.let { LocalDate.parse(body.periodEnd, DateTimeFormatter.ISO_DATE) }
-                )
-            }
+        return db.connect { dbc ->
+            dbc
+                .read { tx ->
+                    tx.paginatedSearch(
+                        body.page,
+                        body.pageSize,
+                        body.sortBy ?: InvoiceSortParam.STATUS,
+                        body.sortDirection ?: SortDirection.DESC,
+                        body.status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
+                        body.area?.split(",") ?: listOf(),
+                        body.unit?.let { parseUUID(it) },
+                        body.distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
+                        body.searchTerms ?: "",
+                        body.periodStart?.let { LocalDate.parse(body.periodStart, DateTimeFormatter.ISO_DATE) },
+                        body.periodEnd?.let { LocalDate.parse(body.periodEnd, DateTimeFormatter.ISO_DATE) }
+                    )
+                }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/create-drafts")
-    fun createDraftInvoices(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<Unit> {
+    fun createDraftInvoices(db: Database, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { it.createAllDraftInvoices() }
+        db.connect { dbc -> dbc.transaction { it.createAllDraftInvoices() } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/delete-drafts")
-    fun deleteDraftInvoices(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { it.deleteDraftInvoices(invoiceIds) }
+        db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/send")
     fun sendInvoices(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         @RequestParam(required = false) invoiceDate: LocalDate?,
@@ -119,51 +121,55 @@ class InvoiceController(
         Audit.InvoicesSend.log(targetId = invoiceIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction {
-            service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
+        db.connect { dbc ->
+            dbc.transaction {
+                service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/send/by-date")
     fun sendInvoicesByDate(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { tx ->
-            val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
-            service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
+                service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/mark-sent")
-    fun markInvoicesSent(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { it.markManuallySent(user, invoiceIds) }
+        db.connect { dbc -> dbc.transaction { it.markManuallySent(user, invoiceIds) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{uuid}")
-    fun getInvoice(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
+    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
         Audit.InvoicesRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = db.read { it.getDetailedInvoice(parsedUuid) }
+        val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(parsedUuid) } }
             ?: throw NotFound("No invoice found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @GetMapping("/head-of-family/{uuid}")
     fun getHeadOfFamilyInvoices(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: String
     ): ResponseEntity<Wrapper<List<Invoice>>> {
@@ -171,13 +177,13 @@ class InvoiceController(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = db.read { it.getHeadOfFamilyInvoices(parsedUuid) }
+        val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(parsedUuid) } }
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @PutMapping("/{uuid}")
     fun putInvoice(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: String,
         @RequestBody invoice: Invoice
@@ -186,15 +192,15 @@ class InvoiceController(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        db.transaction { service.updateInvoice(it, parsedUuid, invoice) }
+        db.connect { dbc -> dbc.transaction { service.updateInvoice(it, parsedUuid, invoice) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/codes")
-    fun getInvoiceCodes(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
+    fun getInvoiceCodes(db: Database, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val codes = db.read { it.getInvoiceCodes() }
+        val codes = db.connect { dbc -> dbc.read { it.getInvoiceCodes() } }
         return ResponseEntity.ok(Wrapper(codes))
     }
 }

@@ -51,27 +51,29 @@ class ApplicationControllerCitizen(
 
     @GetMapping("/applications/by-guardian")
     fun getGuardianApplications(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): ResponseEntity<List<ApplicationsOfChild>> {
         Audit.ApplicationRead.log(targetId = user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
         return ResponseEntity.ok(
-            db.read { tx ->
-                val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
-                    .groupBy { it.childId }
-                    .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
+            db.connect { dbc ->
+                dbc.read { tx ->
+                    val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
+                        .groupBy { it.childId }
+                        .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
 
-                // Some children might not have applications, so add 0 application children
-                tx.getCitizenChildren(user.id).map { citizenChild ->
-                    val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.applicationSummaries
-                        ?: emptyList()
-                    ApplicationsOfChild(
-                        childId = citizenChild.childId,
-                        childName = citizenChild.childName,
-                        applicationSummaries = childApplications
-                    )
+                    // Some children might not have applications, so add 0 application children
+                    tx.getCitizenChildren(user.id).map { citizenChild ->
+                        val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.applicationSummaries
+                            ?: emptyList()
+                        ApplicationsOfChild(
+                            childId = citizenChild.childId,
+                            childName = citizenChild.childName,
+                            applicationSummaries = childApplications
+                        )
+                    }
                 }
             }
         )
@@ -79,7 +81,7 @@ class ApplicationControllerCitizen(
 
     @GetMapping("/applications/{applicationId}")
     fun getApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<ApplicationDetails> {
@@ -87,8 +89,10 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val application = db.transaction { tx ->
-            fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(user, tx, personService, applicationId)
+        val application = db.connect { dbc ->
+            dbc.transaction { tx ->
+                fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(user, tx, personService, applicationId)
+            }
         }
 
         return if (application?.guardianId == user.id && !application.hideFromGuardian)
@@ -99,7 +103,7 @@ class ApplicationControllerCitizen(
 
     @PostMapping("/applications")
     fun createApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestBody body: CreateApplicationBody
@@ -108,38 +112,40 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        return db.transaction { tx ->
-            if (
-                body.type != ApplicationType.CLUB &&
-                tx.duplicateApplicationExists(guardianId = user.id, childId = body.childId, type = body.type)
-            ) {
-                throw BadRequest("Duplicate application")
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (
+                    body.type != ApplicationType.CLUB &&
+                    tx.duplicateApplicationExists(guardianId = user.id, childId = body.childId, type = body.type)
+                ) {
+                    throw BadRequest("Duplicate application")
+                }
+
+                val guardian = tx.getPersonById(user.id)
+                    ?: throw IllegalStateException("Guardian not found")
+
+                if (tx.getGuardianChildIds(user.id).none { it == body.childId }) {
+                    throw IllegalStateException("User is not child's guardian")
+                }
+
+                val child = tx.getPersonById(body.childId)
+                    ?: throw IllegalStateException("Child not found")
+
+                val applicationId = tx.insertApplication(
+                    guardianId = user.id,
+                    childId = body.childId,
+                    origin = ApplicationOrigin.ELECTRONIC
+                )
+                applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), applicationId, body.type, guardian, child)
+
+                ResponseEntity.ok(applicationId)
             }
-
-            val guardian = tx.getPersonById(user.id)
-                ?: throw IllegalStateException("Guardian not found")
-
-            if (tx.getGuardianChildIds(user.id).none { it == body.childId }) {
-                throw IllegalStateException("User is not child's guardian")
-            }
-
-            val child = tx.getPersonById(body.childId)
-                ?: throw IllegalStateException("Child not found")
-
-            val applicationId = tx.insertApplication(
-                guardianId = user.id,
-                childId = body.childId,
-                origin = ApplicationOrigin.ELECTRONIC
-            )
-            applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), applicationId, body.type, guardian, child)
-
-            ResponseEntity.ok(applicationId)
         }
     }
 
     @GetMapping("/applications/duplicates/{childId}")
     fun getChildDuplicateApplications(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<Map<ApplicationType, Boolean>> {
@@ -147,22 +153,24 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        return db.read { tx ->
-            ApplicationType.values()
-                .map { type ->
-                    type to (
-                        type != ApplicationType.CLUB &&
-                            tx.duplicateApplicationExists(guardianId = user.id, childId = childId, type = type)
-                        )
-                }
-                .toMap()
-                .let { ResponseEntity.ok(it) }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                ApplicationType.values()
+                    .map { type ->
+                        type to (
+                            type != ApplicationType.CLUB &&
+                                tx.duplicateApplicationExists(guardianId = user.id, childId = childId, type = type)
+                            )
+                    }
+                    .toMap()
+                    .let { ResponseEntity.ok(it) }
+            }
         }
     }
 
     @GetMapping("/applications/active-placements/{childId}")
     fun getChildPlacementStatusByApplicationType(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<Map<ApplicationType, Boolean>> {
@@ -170,19 +178,21 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        return db.read { tx ->
-            ApplicationType.values()
-                .map { type ->
-                    type to tx.activePlacementExists(childId = childId, type = type)
-                }
-                .toMap()
-                .let { ResponseEntity.ok(it) }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                ApplicationType.values()
+                    .map { type ->
+                        type to tx.activePlacementExists(childId = childId, type = type)
+                    }
+                    .toMap()
+                    .let { ResponseEntity.ok(it) }
+            }
         }
     }
 
     @PutMapping("/applications/{applicationId}")
     fun updateApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
@@ -192,21 +202,23 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        db.transaction {
-            applicationStateService.updateOwnApplicationContentsCitizen(
-                it,
-                user,
-                applicationId,
-                applicationForm,
-                evakaClock.today()
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.updateOwnApplicationContentsCitizen(
+                    it,
+                    user,
+                    applicationId,
+                    applicationForm,
+                    evakaClock.today()
+                )
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/applications/{applicationId}/draft")
     fun saveApplicationAsDraft(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
@@ -216,22 +228,24 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        db.transaction {
-            applicationStateService.updateOwnApplicationContentsCitizen(
-                it,
-                user,
-                applicationId,
-                applicationForm,
-                evakaClock.today(),
-                asDraft = true
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.updateOwnApplicationContentsCitizen(
+                    it,
+                    user,
+                    applicationId,
+                    applicationForm,
+                    evakaClock.today(),
+                    asDraft = true
+                )
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/applications/{applicationId}")
     fun deleteUnprocessedApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
@@ -239,41 +253,43 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        db.transaction { tx ->
-            val application = tx.fetchApplicationDetails(applicationId)
-                ?.takeIf { it.guardianId == user.id }
-                ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val application = tx.fetchApplicationDetails(applicationId)
+                    ?.takeIf { it.guardianId == user.id }
+                    ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
-            if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
-                throw BadRequest("Only applications which are not yet being processed can be deleted")
+                if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
+                    throw BadRequest("Only applications which are not yet being processed can be deleted")
 
-            tx.deleteApplication(applicationId)
+                tx.deleteApplication(applicationId)
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/applications/{applicationId}/actions/send-application")
     fun sendApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.sendApplication(it, user, applicationId, evakaClock.today(), isEnduser = true) }
+        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, applicationId, evakaClock.today(), isEnduser = true) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/decisions")
-    fun getDecisions(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
+    fun getDecisions(db: Database, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
-        return ResponseEntity.ok(db.read { it.getOwnDecisions(user.id) })
+        return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } })
     }
 
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<Decision>> {
@@ -281,53 +297,59 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        return db.read { tx ->
-            tx.fetchApplicationDetails(applicationId)
-                ?.let { if (it.guardianId != user.id) throw Forbidden("Application not owned") }
-                ?: throw NotFound("Application not found")
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.fetchApplicationDetails(applicationId)
+                    ?.let { if (it.guardianId != user.id) throw Forbidden("Application not owned") }
+                    ?: throw NotFound("Application not found")
 
-            tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+                tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+            }
         }.let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/applications/{applicationId}/actions/accept-decision")
     fun acceptDecision(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
         // note: applicationStateService handles logging and authorization
-        db.transaction {
-            applicationStateService.acceptDecision(
-                it,
-                user,
-                applicationId,
-                body.decisionId,
-                body.requestedStartDate,
-                isEnduser = true
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.acceptDecision(
+                    it,
+                    user,
+                    applicationId,
+                    body.decisionId,
+                    body.requestedStartDate,
+                    isEnduser = true
+                )
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/applications/{applicationId}/actions/reject-decision")
     fun rejectDecision(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
         // note: applicationStateService handles logging and authorization
-        db.transaction {
-            applicationStateService.rejectDecision(it, user, applicationId, body.decisionId, isEnduser = true)
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.rejectDecision(it, user, applicationId, body.decisionId, isEnduser = true)
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/decisions/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: DecisionId
     ): ResponseEntity<ByteArray> {
@@ -335,18 +357,20 @@ class ApplicationControllerCitizen(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
 
-        return db.transaction { tx ->
-            if (!tx.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == id }) {
-                logger.warn { "Citizen ${user.id} tried to download decision $id" }
-                throw NotFound("Decision not found")
-            }
-
-            decisionService.getDecisionPdf(tx, id)
-                .let { document ->
-                    ResponseEntity.ok()
-                        .header("Content-Disposition", "attachment;filename=${document.getName()}")
-                        .body(document.getBytes())
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (!tx.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == id }) {
+                    logger.warn { "Citizen ${user.id} tried to download decision $id" }
+                    throw NotFound("Decision not found")
                 }
+
+                decisionService.getDecisionPdf(tx, id)
+                    .let { document ->
+                        ResponseEntity.ok()
+                            .header("Content-Disposition", "attachment;filename=${document.getName()}")
+                            .body(document.getBytes())
+                    }
+            }
         }
     }
 }

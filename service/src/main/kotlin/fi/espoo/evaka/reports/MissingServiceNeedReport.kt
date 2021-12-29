@@ -25,7 +25,7 @@ import java.util.UUID
 class MissingServiceNeedReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/missing-service-need")
     fun getMissingServiceNeedReport(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
@@ -34,7 +34,7 @@ class MissingServiceNeedReportController(private val acl: AccessControlList, pri
         accessControl.requirePermissionFor(user, Action.Global.READ_MISSING_SERVICE_NEED_REPORT)
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
-        return db.read { it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user)) }
+        return db.connect { dbc -> dbc.read { it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user)) } }
     }
 }
 

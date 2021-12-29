@@ -38,27 +38,29 @@ class VasuTemplateController(
 
     @PostMapping
     fun postTemplate(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: CreateTemplateRequest
     ): VasuTemplateId {
         Audit.VasuTemplateCreate.log()
         accessControl.requirePermissionFor(user, Action.Global.CREATE_VASU_TEMPLATE)
 
-        return db.transaction {
-            it.insertVasuTemplate(
-                name = body.name,
-                valid = body.valid,
-                type = body.type,
-                language = body.language,
-                content = getDefaultTemplateContent(body.type, body.language)
-            )
+        return db.connect { dbc ->
+            dbc.transaction {
+                it.insertVasuTemplate(
+                    name = body.name,
+                    valid = body.valid,
+                    type = body.type,
+                    language = body.language,
+                    content = getDefaultTemplateContent(body.type, body.language)
+                )
+            }
         }
     }
 
     @PutMapping("/{id}")
     fun editTemplate(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: VasuTemplateUpdate
@@ -66,10 +68,12 @@ class VasuTemplateController(
         Audit.VasuTemplateEdit.log()
         accessControl.requirePermissionFor(user, Action.VasuTemplate.UPDATE, id)
 
-        db.transaction { tx ->
-            val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
-            validateTemplateUpdate(template, body)
-            tx.updateVasuTemplate(id, body)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
+                validateTemplateUpdate(template, body)
+                tx.updateVasuTemplate(id, body)
+            }
         }
     }
 
@@ -80,7 +84,7 @@ class VasuTemplateController(
 
     @PostMapping("/{id}/copy")
     fun copyTemplate(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: CopyTemplateRequest
@@ -88,33 +92,35 @@ class VasuTemplateController(
         Audit.VasuTemplateCopy.log(id)
         accessControl.requirePermissionFor(user, Action.VasuTemplate.COPY, id)
 
-        return db.transaction {
-            val template = it.getVasuTemplate(id) ?: throw NotFound("template not found")
-            it.insertVasuTemplate(
-                name = body.name,
-                valid = body.valid,
-                type = template.type,
-                language = template.language,
-                content = copyTemplateContentWithCurrentlyValidOphSections(template)
-            )
+        return db.connect { dbc ->
+            dbc.transaction {
+                val template = it.getVasuTemplate(id) ?: throw NotFound("template not found")
+                it.insertVasuTemplate(
+                    name = body.name,
+                    valid = body.valid,
+                    type = template.type,
+                    language = template.language,
+                    content = copyTemplateContentWithCurrentlyValidOphSections(template)
+                )
+            }
         }
     }
 
     @GetMapping
     fun getTemplates(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
         Audit.VasuTemplateRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_VASU_TEMPLATE)
 
-        return db.read { tx -> tx.getVasuTemplates(validOnly) }
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(validOnly) } }
     }
 
     @GetMapping("/{id}")
     fun getTemplate(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
@@ -123,24 +129,24 @@ class VasuTemplateController(
         user.requireOneOfRoles(UserRole.ADMIN)
         accessControl.requirePermissionFor(user, Action.VasuTemplate.READ, id)
 
-        return db.read { tx -> tx.getVasuTemplate(id) } ?: throw NotFound("template $id not found")
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } } ?: throw NotFound("template $id not found")
     }
 
     @DeleteMapping("/{id}")
     fun deleteTemplate(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId
     ) {
         Audit.VasuTemplateDelete.log(id)
         accessControl.requirePermissionFor(user, Action.VasuTemplate.DELETE, id)
 
-        db.transaction { it.deleteUnusedVasuTemplate(id) }
+        db.connect { dbc -> dbc.transaction { it.deleteUnusedVasuTemplate(id) } }
     }
 
     @PutMapping("/{id}/content")
     fun putTemplateContent(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuTemplateId,
         @RequestBody content: VasuContent
@@ -148,10 +154,12 @@ class VasuTemplateController(
         Audit.VasuTemplateUpdate.log(id)
         accessControl.requirePermissionFor(user, Action.VasuTemplate.UPDATE, id)
 
-        db.transaction { tx ->
-            val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
-            if (template.documentCount > 0) throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
-            tx.updateVasuTemplateContent(id, content)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
+                if (template.documentCount > 0) throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
+                tx.updateVasuTemplateContent(id, content)
+            }
         }
     }
 }

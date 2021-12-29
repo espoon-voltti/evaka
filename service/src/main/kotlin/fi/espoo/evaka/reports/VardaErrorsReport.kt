@@ -19,12 +19,12 @@ import java.util.UUID
 class VardaErrorReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/varda-errors")
     fun getVardaErrors(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): List<VardaErrorReportRow> {
         Audit.VardaReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_VARDA_REPORT)
-        return db.read { it.getVardaErrors() }
+        return db.connect { dbc -> dbc.read { it.getVardaErrors() } }
     }
 }
 

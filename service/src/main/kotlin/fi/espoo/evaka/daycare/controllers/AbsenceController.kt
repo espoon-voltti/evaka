@@ -33,7 +33,7 @@ import java.util.UUID
 class AbsenceController(private val absenceService: AbsenceService, private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/{groupId}")
     fun getAbsencesByGroupAndMonth(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -41,13 +41,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Wrapper<AbsenceGroup>> {
         Audit.AbsenceRead.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.READ_ABSENCES, groupId)
-        val absences = db.read { absenceService.getAbsencesByMonth(it, groupId, year, month) }
+        val absences = db.connect { dbc -> dbc.read { absenceService.getAbsencesByMonth(it, groupId, year, month) } }
         return ResponseEntity.ok(Wrapper(absences))
     }
 
     @PostMapping("/{groupId}")
     fun upsertAbsences(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody absences: Wrapper<List<Absence>>,
         @PathVariable groupId: GroupId
@@ -58,13 +58,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
             accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, it.childId)
         }
 
-        db.transaction { absenceService.upsertAbsences(it, absences.data, user.id) }
+        db.connect { dbc -> dbc.transaction { absenceService.upsertAbsences(it, absences.data, user.id) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{groupId}/delete")
     fun deleteAbsences(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody deletions: List<AbsenceDelete>,
         @PathVariable groupId: GroupId
@@ -75,13 +75,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
             accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, it.childId)
         }
 
-        db.transaction { it.batchDeleteAbsences(deletions) }
+        db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/by-child/{childId}")
     fun getAbsencesByChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestParam year: Int,
@@ -89,19 +89,19 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Wrapper<AbsenceChildMinimal>> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ABSENCES, childId)
-        val absences = db.read { absenceService.getAbsencesByChild(it, childId, year, month) }
+        val absences = db.connect { dbc -> dbc.read { absenceService.getAbsencesByChild(it, childId, year, month) } }
         return ResponseEntity.ok(Wrapper(absences))
     }
 
     @GetMapping("/by-child/{childId}/future")
     fun getFutureAbsencesByChild(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<List<Absence>> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FUTURE_ABSENCES, childId)
-        val absences = db.read { absenceService.getFutureAbsencesByChild(it, childId) }
+        val absences = db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, childId) } }
         return ResponseEntity.ok(absences)
     }
 }

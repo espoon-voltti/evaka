@@ -32,22 +32,24 @@ import java.util.UUID
 class NoteController(private val accessControl: AccessControl) {
     @GetMapping("/application/{applicationId}")
     fun getNotes(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<NoteJSON>> {
         Audit.NoteRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_NOTES, applicationId)
 
-        val notes = db.read {
-            it.getApplicationNotes(applicationId)
+        val notes = db.connect { dbc ->
+            dbc.read {
+                it.getApplicationNotes(applicationId)
+            }
         }
         return ResponseEntity.ok(notes.map(NoteJSON.DomainMapping::toJSON))
     }
 
     @PostMapping("/application/{id}")
     fun createNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") applicationId: ApplicationId,
         @RequestBody note: NoteRequest
@@ -55,15 +57,17 @@ class NoteController(private val accessControl: AccessControl) {
         Audit.NoteCreate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.CREATE_NOTE, applicationId)
 
-        val newNote = db.transaction {
-            it.createApplicationNote(applicationId, note.text, user.id)
+        val newNote = db.connect { dbc ->
+            dbc.transaction {
+                it.createApplicationNote(applicationId, note.text, user.id)
+            }
         }
         return ResponseEntity.ok(NoteJSON.toJSON(newNote))
     }
 
     @PutMapping("/{noteId}")
     fun updateNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest
@@ -71,29 +75,33 @@ class NoteController(private val accessControl: AccessControl) {
         Audit.NoteUpdate.log(targetId = noteId)
         accessControl.requirePermissionFor(user, Action.ApplicationNote.UPDATE, noteId)
 
-        db.transaction { tx ->
-            tx.updateApplicationNote(noteId, note.text, user.id)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.updateApplicationNote(noteId, note.text, user.id)
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{noteId}")
     fun deleteNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: ApplicationNoteId
     ): ResponseEntity<Unit> {
         Audit.NoteDelete.log(targetId = noteId)
         accessControl.requirePermissionFor(user, Action.ApplicationNote.DELETE, noteId)
-        db.transaction { tx ->
-            tx.deleteApplicationNote(noteId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.deleteApplicationNote(noteId)
+            }
         }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/service-worker/application/{applicationId}")
     fun updateServiceWorkerNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest
@@ -101,8 +109,10 @@ class NoteController(private val accessControl: AccessControl) {
         Audit.ServiceWorkerNoteUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES)
 
-        db.transaction { tx ->
-            tx.updateServiceWorkerApplicationNote(applicationId, note.text)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.updateServiceWorkerApplicationNote(applicationId, note.text)
+            }
         }
     }
 }

@@ -30,19 +30,21 @@ data class GenerateDecisionsBody(
 @RequestMapping("/fee-decision-generator")
 class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     @PostMapping("/generate")
-    fun generateDecisions(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
+    fun generateDecisions(db: Database, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        generateAllStartingFrom(
-            db,
-            LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE),
-            data.targetHeads.filterNotNull().distinct()
-        )
+        db.connect { dbc ->
+            generateAllStartingFrom(
+                dbc,
+                LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE),
+                data.targetHeads.filterNotNull().distinct()
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
-    private fun generateAllStartingFrom(db: Database.DeprecatedConnection, starting: LocalDate, targetHeads: List<UUID>) {
+    private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
         db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, DateRange(starting, null), targetHeads) }
     }
 }

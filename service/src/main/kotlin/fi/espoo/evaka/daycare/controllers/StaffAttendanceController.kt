@@ -35,20 +35,20 @@ class StaffAttendanceController(
 ) {
     @GetMapping("/unit/{unitId}")
     fun getAttendancesByUnit(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
     ): ResponseEntity<UnitStaffAttendance> {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
-        val result = staffAttendanceService.getUnitAttendancesForDate(db, unitId, LocalDate.now())
+        val result = db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, LocalDate.now()) }
         return ResponseEntity.ok(result)
     }
 
     @GetMapping("/group/{groupId}")
     fun getAttendancesByGroup(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -58,13 +58,13 @@ class StaffAttendanceController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE, UserRole.SPECIAL_EDUCATION_TEACHER)
-        val result = staffAttendanceService.getGroupAttendancesByMonth(db, year, month, groupId)
+        val result = db.connect { dbc -> staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId) }
         return ResponseEntity.ok(Wrapper(result))
     }
 
     @PostMapping("/group/{groupId}")
     fun upsertStaffAttendance(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: GroupId
@@ -76,7 +76,7 @@ class StaffAttendanceController(
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }
-        staffAttendanceService.upsertStaffAttendance(db, staffAttendance.copy(groupId = groupId))
+        db.connect { dbc -> staffAttendanceService.upsertStaffAttendance(dbc, staffAttendance.copy(groupId = groupId)) }
         return ResponseEntity.noContent().build()
     }
 }

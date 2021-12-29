@@ -34,41 +34,45 @@ import java.util.UUID
 class LocationController {
     @GetMapping("/units")
     fun getApplicationUnits(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
     ): ResponseEntity<List<PublicUnit>> {
-        val units = db.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = user.isEndUser) }
+        val units = db.connect { dbc -> dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = user.isEndUser) } }
         return ResponseEntity.ok(units)
     }
 
     @GetMapping("/public/units/{applicationType}")
     fun getAllApplicableUnits(
-        db: Database.DeprecatedConnection,
+        db: Database,
         @PathVariable applicationType: ApplicationType
     ): ResponseEntity<List<PublicUnit>> {
-        return db
-            .read { it.getAllApplicableUnits(applicationType) }
+        return db.connect { dbc ->
+            dbc
+                .read { it.getAllApplicableUnits(applicationType) }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/areas")
-    fun getAreas(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
-        return db
-            .read {
-                it.createQuery("SELECT id, name, short_name FROM care_area")
-                    .mapTo<AreaJSON>()
-                    .toList()
-            }
+    fun getAreas(db: Database, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
+        return db.connect { dbc ->
+            dbc
+                .read {
+                    it.createQuery("SELECT id, name, short_name FROM care_area")
+                        .mapTo<AreaJSON>()
+                        .toList()
+                }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/filters/units")
-    fun getUnits(db: Database.DeprecatedConnection, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
+    fun getUnits(db: Database, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
-        val units = db.read { it.getUnits(areas, type) }
+        val units = db.connect { dbc -> dbc.read { it.getUnits(areas, type) } }
         return ResponseEntity.ok(units)
     }
 }

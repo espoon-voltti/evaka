@@ -24,7 +24,7 @@ class GroupNoteController(
 ) {
     @PostMapping("/daycare-groups/{groupId}/group-notes")
     fun createGroupNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupNoteBody
@@ -32,12 +32,12 @@ class GroupNoteController(
         Audit.GroupNoteCreate.log(groupId)
         ac.requirePermissionFor(user, Action.Group.CREATE_NOTE, groupId)
 
-        return db.transaction { it.createGroupNote(groupId, body) }
+        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }
     }
 
     @PutMapping("/group-notes/{noteId}")
     fun updateGroupNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable noteId: GroupNoteId,
         @RequestBody body: GroupNoteBody
@@ -45,18 +45,18 @@ class GroupNoteController(
         Audit.GroupNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, Action.GroupNote.UPDATE, noteId)
 
-        return db.transaction { it.updateGroupNote(noteId, body) }
+        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(noteId, body) } }
     }
 
     @DeleteMapping("/group-notes/{noteId}")
     fun deleteGroupNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable noteId: GroupNoteId
     ) {
         Audit.GroupNoteDelete.log(noteId)
         ac.requirePermissionFor(user, Action.GroupNote.DELETE, noteId)
 
-        return db.transaction { it.deleteGroupNote(noteId) }
+        return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }
     }
 }
