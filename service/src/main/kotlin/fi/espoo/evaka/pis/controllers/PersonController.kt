@@ -53,23 +53,23 @@ class PersonController(
     private val accessControl: AccessControl
 ) {
     @PostMapping
-    fun createEmpty(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
+    fun createEmpty(db: Database, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
-        return db.transaction { createEmptyPerson(it) }
+        return db.connect { dbc -> dbc.transaction { createEmptyPerson(it) } }
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
 
     @GetMapping("/{personId}")
     fun getPerson(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId
     ): PersonResponse {
         Audit.PersonDetailsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ, personId)
-        return db.transaction { it.getPersonById(personId.raw) }
+        return db.connect { dbc -> dbc.transaction { it.getPersonById(personId.raw) } }
             ?.let {
                 PersonResponse(
                     PersonJSON.from(it),
@@ -81,13 +81,13 @@ class PersonController(
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
     fun getPersonIdentity(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ, PersonId(personId))
-        return db.transaction { it.getPersonById(personId) }
+        return db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
             ?.hideNonPermittedPersonData(
                 includeInvoiceAddress = accessControl.hasPermissionFor(
                     user,
@@ -102,51 +102,53 @@ class PersonController(
 
     @GetMapping("/dependants/{personId}")
     fun getPersonDependants(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
-        return db.transaction { personService.getPersonWithChildren(it, user, personId) }
+        return db.connect { dbc -> dbc.transaction { personService.getPersonWithChildren(it, user, personId) } }
             ?.let { ResponseEntity.ok().body(it.children) }
             ?: ResponseEntity.notFound().build()
     }
 
     @GetMapping("/guardians/{personId}")
     fun getPersonGuardians(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") childId: UUID
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonGuardianRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_GUARDIANS, childId)
-        return db.transaction { personService.getGuardians(it, user, childId) }
+        return db.connect { dbc -> dbc.transaction { personService.getGuardians(it, user, childId) } }
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
     }
 
     @PostMapping("/search")
     fun findBySearchTerms(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchPersonBody
     ): List<PersonSummary> {
         Audit.PersonDetailsSearch.log()
         accessControl.requirePermissionFor(user, Action.Global.SEARCH_PEOPLE)
-        return db.read {
-            it.searchPeople(
-                user,
-                body.searchTerm,
-                body.orderBy,
-                body.sortDirection
-            )
+        return db.connect { dbc ->
+            dbc.read {
+                it.searchPeople(
+                    user,
+                    body.searchTerm,
+                    body.orderBy,
+                    body.sortDirection
+                )
+            }
         }
     }
 
     @PutMapping(value = ["/{personId}/contact-info"])
     fun updateContactInfo(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID,
         @RequestBody contactInfo: ContactInfo
@@ -154,7 +156,7 @@ class PersonController(
         Audit.PersonContactInfoUpdate.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
-        return if (db.transaction { it.updatePersonContactInfo(personId, contactInfo) }) {
+        return if (db.connect { dbc -> dbc.transaction { it.updatePersonContactInfo(personId, contactInfo) } }) {
             ResponseEntity.ok().body(contactInfo)
         } else {
             ResponseEntity.notFound().build()
@@ -163,7 +165,7 @@ class PersonController(
 
     @PatchMapping("/{personId}")
     fun updatePersonDetails(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID,
         @RequestBody data: PersonPatch
@@ -188,26 +190,26 @@ class PersonController(
                 else it.copy(ophPersonOid = null)
             }
 
-        return db.transaction { personService.patchUserDetails(it, personId, userEditablePersonData) }
+        return db.connect { dbc -> dbc.transaction { personService.patchUserDetails(it, personId, userEditablePersonData) } }
             .let { ResponseEntity.ok(PersonJSON.from(it)) }
     }
 
     @DeleteMapping("/{personId}")
     fun safeDeletePerson(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<Unit> {
         Audit.PersonDelete.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { mergeService.deleteEmptyPerson(it, personId) }
+        db.connect { dbc -> dbc.transaction { mergeService.deleteEmptyPerson(it, personId) } }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/{personId}/ssn")
     fun addSsn(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @RequestBody body: AddSsnRequest
@@ -218,15 +220,17 @@ class PersonController(
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
         }
-        val person = db.transaction {
-            personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+        val person = db.connect { dbc ->
+            dbc.transaction {
+                personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+            }
         }
         return ResponseEntity.ok(PersonJSON.from(person))
     }
 
     @PutMapping("/{personId}/ssn/disable")
     fun disableSsn(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @RequestBody body: DisableSsnRequest
@@ -234,12 +238,12 @@ class PersonController(
         Audit.PersonUpdate.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.DISABLE_SSN, personId)
 
-        db.transaction { personService.disableSsn(it, personId, body.disabled) }
+        db.connect { dbc -> dbc.transaction { personService.disableSsn(it, personId, body.disabled) } }
     }
 
     @PostMapping("/details/ssn")
     fun getOrCreatePersonBySsn(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: GetOrCreatePersonBySsnRequest
     ): ResponseEntity<PersonJSON> {
@@ -249,13 +253,15 @@ class PersonController(
 
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
-        val person = db.transaction {
-            personService.getOrCreatePerson(
-                it,
-                user,
-                ExternalIdentifier.SSN.getInstance(body.ssn),
-                body.readonly
-            )
+        val person = db.connect { dbc ->
+            dbc.transaction {
+                personService.getOrCreatePerson(
+                    it,
+                    user,
+                    ExternalIdentifier.SSN.getInstance(body.ssn),
+                    body.readonly
+                )
+            }
         }
 
         return person
@@ -265,7 +271,7 @@ class PersonController(
 
     @GetMapping("/get-deceased/")
     fun getDeceased(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
     ): ResponseEntity<List<PersonJSON>> {
@@ -275,35 +281,37 @@ class PersonController(
 
         return ResponseEntity.ok()
             .body(
-                db.read { it.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
+                db.connect { dbc -> dbc.read { it.getDeceasedPeople(sinceDate) } }.map { personDTO -> PersonJSON.from(personDTO) }
             )
     }
 
     @PostMapping("/merge")
     fun mergePeople(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: MergeRequest
     ): ResponseEntity<Unit> {
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { tx ->
-            mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
+            }
         }
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/create")
     fun createPerson(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: CreatePersonBody
     ): ResponseEntity<UUID> {
         Audit.PersonCreate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-        return db.transaction { createPerson(it, body) }
+        return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }
             .let { ResponseEntity.ok(it) }
     }
 

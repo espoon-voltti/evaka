@@ -31,31 +31,35 @@ class AssistanceActionController(
 ) {
     @PostMapping("/children/{childId}/assistance-actions")
     fun createAssistanceAction(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: AssistanceActionRequest
     ): ResponseEntity<AssistanceAction> {
         Audit.ChildAssistanceActionCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_ACTION, childId)
-        return assistanceActionService.createAssistanceAction(
-            db,
-            user = user,
-            childId = childId,
-            data = body
-        ).let { created(it, URI.create("/children/$childId/assistance-actions/${it.id}")) }
+        return db.connect { dbc ->
+            assistanceActionService.createAssistanceAction(
+                dbc,
+                user = user,
+                childId = childId,
+                data = body
+            )
+        }.let { created(it, URI.create("/children/$childId/assistance-actions/${it.id}")) }
     }
 
     @GetMapping("/children/{childId}/assistance-actions")
     fun getAssistanceActions(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<AssistanceAction> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_ACTION, childId)
-        return assistanceActionService.getAssistanceActionsByChildId(db, childId).filter {
-            accessControl.hasPermissionFor(user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, it.id)
+        return db.connect { dbc ->
+            assistanceActionService.getAssistanceActionsByChildId(dbc, childId).filter {
+                accessControl.hasPermissionFor(user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, it.id)
+            }
         }
     }
 

@@ -29,7 +29,7 @@ class ChildDailyNoteController(
 ) {
     @PostMapping("/children/{childId}/child-daily-notes")
     fun createChildDailyNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: ChildDailyNoteBody
@@ -38,7 +38,7 @@ class ChildDailyNoteController(
         ac.requirePermissionFor(user, Action.Child.CREATE_DAILY_NOTE, childId)
 
         try {
-            return db.transaction { it.createChildDailyNote(childId, body) }
+            return db.connect { dbc -> dbc.transaction { it.createChildDailyNote(childId, body) } }
         } catch (e: Exception) {
             val error = mapPSQLException(e)
             // monitor if there is issues with stale data or need for upsert
@@ -49,7 +49,7 @@ class ChildDailyNoteController(
 
     @PutMapping("/child-daily-notes/{noteId}")
     fun updateChildDailyNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable noteId: ChildDailyNoteId,
         @RequestBody body: ChildDailyNoteBody
@@ -57,18 +57,18 @@ class ChildDailyNoteController(
         Audit.ChildDailyNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, Action.ChildDailyNote.UPDATE, noteId)
 
-        return db.transaction { it.updateChildDailyNote(noteId, body) }
+        return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(noteId, body) } }
     }
 
     @DeleteMapping("/child-daily-notes/{noteId}")
     fun deleteChildDailyNote(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable noteId: ChildDailyNoteId
     ) {
         Audit.ChildDailyNoteDelete.log(noteId)
         ac.requirePermissionFor(user, Action.ChildDailyNote.DELETE, noteId)
 
-        return db.transaction { it.deleteChildDailyNote(noteId) }
+        return db.connect { dbc -> dbc.transaction { it.deleteChildDailyNote(noteId) } }
     }
 }

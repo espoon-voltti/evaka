@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -57,7 +58,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     fun `End user cannot end update end user's contact info`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         assertThrows<Forbidden> {
-            controller.updateContactInfo(deprecatedDb, user, UUID.randomUUID(), contactInfo)
+            controller.updateContactInfo(Database(jdbi), user, UUID.randomUUID(), contactInfo)
         }
     }
 
@@ -67,7 +68,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
-            deprecatedDb,
+            Database(jdbi),
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName} ${person.lastName}",
@@ -85,7 +86,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
-            deprecatedDb,
+            Database(jdbi),
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\t${person.lastName}",
@@ -103,7 +104,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
-            deprecatedDb,
+            Database(jdbi),
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u00A0${person.lastName}",
@@ -123,7 +124,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         // IDEOGRAPHIC SPACE, not supported by default in regexes
         // unless Java's Pattern.UNICODE_CHARACTER_CLASS-like functionality is enabled.
         val response = controller.findBySearchTerms(
-            deprecatedDb,
+            Database(jdbi),
             user,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u3000${person.lastName}",
@@ -137,7 +138,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     private fun updateContactInfo(user: AuthenticatedUser) {
         val person = createPerson()
-        val actual = controller.updateContactInfo(deprecatedDb, user, person.id, contactInfo)
+        val actual = controller.updateContactInfo(Database(jdbi), user, person.id, contactInfo)
 
         assertEquals(HttpStatus.OK, actual.statusCode)
 

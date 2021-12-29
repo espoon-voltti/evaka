@@ -35,21 +35,23 @@ import java.util.UUID
 class SystemController(private val personService: PersonService, private val accessControl: AccessControl) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         @RequestBody request: CitizenLoginRequest
     ): CitizenUser {
-        return db.transaction { tx ->
-            val citizen = tx.getCitizenUserBySsn(request.socialSecurityNumber)
-                ?: personService.getOrCreatePerson(
-                    tx,
-                    user,
-                    ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
-                )?.let { CitizenUser(PersonId(it.id)) }
-                ?: error("No person found with ssn")
-            tx.markPersonLastLogin(citizen.id)
-            tx.upsertCitizenUser(citizen.id)
-            citizen
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val citizen = tx.getCitizenUserBySsn(request.socialSecurityNumber)
+                    ?: personService.getOrCreatePerson(
+                        tx,
+                        user,
+                        ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
+                    )?.let { CitizenUser(PersonId(it.id)) }
+                    ?: error("No person found with ssn")
+                tx.markPersonLastLogin(citizen.id)
+                tx.upsertCitizenUser(citizen.id)
+                citizen
+            }
         }.also {
             Audit.CitizenLogin.log(targetId = listOf(request.socialSecurityNumber, request.lastName, request.firstName), objectId = it.id)
         }
@@ -57,22 +59,24 @@ class SystemController(private val personService: PersonService, private val acc
 
     @PostMapping("/system/employee-login")
     fun employeeLogin(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         @RequestBody request: EmployeeLoginRequest
     ): EmployeeUser {
-        return db.transaction {
-            val employee = it.getEmployeeUserByExternalId(request.externalId)
-                ?: EmployeeUser(
-                    id = it.createEmployee(request.toNewEmployee()).id,
-                    firstName = request.firstName,
-                    lastName = request.lastName,
-                    globalRoles = emptySet(),
-                    allScopedRoles = emptySet()
-                )
-            it.markEmployeeLastLogin(employee.id)
-            it.upsertEmployeeUser(employee.id)
-            employee
+        return db.connect { dbc ->
+            dbc.transaction {
+                val employee = it.getEmployeeUserByExternalId(request.externalId)
+                    ?: EmployeeUser(
+                        id = it.createEmployee(request.toNewEmployee()).id,
+                        firstName = request.firstName,
+                        lastName = request.lastName,
+                        globalRoles = emptySet(),
+                        allScopedRoles = emptySet()
+                    )
+                it.markEmployeeLastLogin(employee.id)
+                it.upsertEmployeeUser(employee.id)
+                employee
+            }
         }.also {
             Audit.EmployeeLogin.log(targetId = listOf(request.externalId, request.lastName, request.firstName, request.email), objectId = it.id)
         }
@@ -80,38 +84,42 @@ class SystemController(private val personService: PersonService, private val acc
 
     @GetMapping("/system/employee/{id}")
     fun employeeUser(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable
         id: EmployeeId
     ): EmployeeUserResponse? {
         Audit.EmployeeGetOrCreate.log(targetId = id)
-        return db.read { tx ->
-            tx.getEmployeeUser(id)?.let { employeeUser ->
-                EmployeeUserResponse(
-                    id = employeeUser.id,
-                    firstName = employeeUser.firstName,
-                    lastName = employeeUser.lastName,
-                    globalRoles = employeeUser.globalRoles,
-                    allScopedRoles = employeeUser.allScopedRoles,
-                    accessibleFeatures = accessControl.getPermittedFeatures(AuthenticatedUser.Employee(employeeUser))
-                )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.getEmployeeUser(id)?.let { employeeUser ->
+                    EmployeeUserResponse(
+                        id = employeeUser.id,
+                        firstName = employeeUser.firstName,
+                        lastName = employeeUser.lastName,
+                        globalRoles = employeeUser.globalRoles,
+                        allScopedRoles = employeeUser.allScopedRoles,
+                        accessibleFeatures = accessControl.getPermittedFeatures(AuthenticatedUser.Employee(employeeUser))
+                    )
+                }
             }
         }
     }
 
     @GetMapping("/system/mobile-identity/{token}")
     fun mobileIdentity(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable
         token: UUID
     ): MobileDeviceIdentity {
         Audit.MobileDevicesRead.log(targetId = token)
-        return db.transaction { tx ->
-            val device = tx.getDeviceByToken(token)
-            tx.upsertMobileDeviceUser(device.id)
-            device
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val device = tx.getDeviceByToken(token)
+                tx.upsertMobileDeviceUser(device.id)
+                device
+            }
         }
     }
 

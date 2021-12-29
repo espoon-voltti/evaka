@@ -122,7 +122,7 @@ class ApplicationControllerV2(
 ) {
     @PostMapping
     fun createPaperApplication(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
@@ -130,35 +130,38 @@ class ApplicationControllerV2(
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         accessControl.requirePermissionFor(user, Action.Global.CREATE_PAPER_APPLICATION)
 
-        val id = db.transaction { tx ->
-            val child = tx.getPersonById(body.childId)
-                ?: throw BadRequest("Could not find the child with id ${body.childId}")
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                val child = tx.getPersonById(body.childId)
+                    ?: throw BadRequest("Could not find the child with id ${body.childId}")
 
-            val guardianId =
-                body.guardianId
-                    ?: if (!body.guardianSsn.isNullOrEmpty())
-                        personService.getOrCreatePerson(
-                            tx,
-                            user,
-                            ExternalIdentifier.SSN.getInstance(body.guardianSsn)
-                        )?.id ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
-                    else if (body.guardianToBeCreated != null)
-                        createPerson(tx, body.guardianToBeCreated)
-                    else
-                        throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
+                val guardianId =
+                    body.guardianId
+                        ?: if (!body.guardianSsn.isNullOrEmpty())
+                            personService.getOrCreatePerson(
+                                tx,
+                                user,
+                                ExternalIdentifier.SSN.getInstance(body.guardianSsn)
+                            )?.id
+                                ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
+                        else if (body.guardianToBeCreated != null)
+                            createPerson(tx, body.guardianToBeCreated)
+                        else
+                            throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
 
-            val guardian = tx.getPersonById(guardianId)
-                ?: throw BadRequest("Could not find the guardian with id $guardianId")
+                val guardian = tx.getPersonById(guardianId)
+                    ?: throw BadRequest("Could not find the guardian with id $guardianId")
 
-            val id = tx.insertApplication(
-                guardianId = guardianId,
-                childId = body.childId,
-                origin = ApplicationOrigin.PAPER,
-                hideFromGuardian = body.hideFromGuardian,
-                sentDate = body.sentDate
-            )
-            applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), id, body.type, guardian, child)
-            id
+                val id = tx.insertApplication(
+                    guardianId = guardianId,
+                    childId = body.childId,
+                    origin = ApplicationOrigin.PAPER,
+                    hideFromGuardian = body.hideFromGuardian,
+                    sentDate = body.sentDate
+                )
+                applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), id, body.type, guardian, child)
+                id
+            }
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(id)
@@ -166,7 +169,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/search")
     fun getApplicationSummaries(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchApplicationRequest
     ): ResponseEntity<Paged<ApplicationSummary>> {
@@ -191,31 +194,33 @@ class ApplicationControllerV2(
 
         val canReadServiceWorkerNotes = accessControl.hasPermissionFor(user, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
 
-        return db.read { tx ->
-            tx.fetchApplicationSummaries(
-                user = user,
-                page = body.page ?: 1,
-                pageSize = body.pageSize ?: 100,
-                sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
-                sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
-                areas = body.area?.split(",") ?: listOf(),
-                units = body.units?.split(",")?.map { parseUUID(it) } ?: listOf(),
-                basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
-                type = body.type,
-                preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
-                    ?: listOf(),
-                statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
-                dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
-                distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
-                periodStart = body.periodStart,
-                periodEnd = body.periodEnd,
-                searchTerms = body.searchTerms ?: "",
-                transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
-                voucherApplications = body.voucherApplications,
-                authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
-                authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed,
-                canReadServiceWorkerNotes = canReadServiceWorkerNotes
-            )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.fetchApplicationSummaries(
+                    user = user,
+                    page = body.page ?: 1,
+                    pageSize = body.pageSize ?: 100,
+                    sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
+                    sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
+                    areas = body.area?.split(",") ?: listOf(),
+                    units = body.units?.split(",")?.map { parseUUID(it) } ?: listOf(),
+                    basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
+                    type = body.type,
+                    preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
+                        ?: listOf(),
+                    statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
+                    dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
+                    distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
+                    periodStart = body.periodStart,
+                    periodEnd = body.periodEnd,
+                    searchTerms = body.searchTerms ?: "",
+                    transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
+                    voucherApplications = body.voucherApplications,
+                    authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
+                    authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed,
+                    canReadServiceWorkerNotes = canReadServiceWorkerNotes
+                )
+            }
         }.let { ResponseEntity.ok(it) }
     }
 

@@ -40,23 +40,23 @@ import java.util.UUID
 class EmployeeController {
 
     @GetMapping
-    fun getEmployees(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getEmployees(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        return ResponseEntity.ok(db.read { it.getEmployees() }.sortedBy { it.email })
+        return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getEmployees() } }.sortedBy { it.email })
     }
 
     @GetMapping("/finance-decision-handler")
-    fun getFinanceDecisionHandlers(db: Database.DeprecatedConnection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-        return ResponseEntity.ok(db.read { it.getFinanceDecisionHandlers() }.sortedBy { it.email })
+        return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email })
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Employee> {
+    fun getEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Employee> {
         Audit.EmployeeRead.log(targetId = id)
         if (user.id != id.raw) {
             @Suppress("DEPRECATION")
@@ -70,7 +70,7 @@ class EmployeeController {
                 UserRole.REPORT_VIEWER,
             )
         }
-        return db.read { it.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
+        return db.connect { dbc -> dbc.read { it.getEmployee(id) } }?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
     }
 
@@ -79,7 +79,7 @@ class EmployeeController {
     )
     @PutMapping("/{id}")
     fun updateEmployee(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: UUID,
         @RequestBody body: EmployeeUpdate
@@ -88,11 +88,13 @@ class EmployeeController {
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        db.transaction {
-            it.updateEmployee(
-                id = id,
-                globalRoles = body.globalRoles
-            )
+        db.connect { dbc ->
+            dbc.transaction {
+                it.updateEmployee(
+                    id = id,
+                    globalRoles = body.globalRoles
+                )
+            }
         }
 
         return ResponseEntity.noContent().build()
@@ -100,7 +102,7 @@ class EmployeeController {
 
     @GetMapping("/{id}/details")
     fun getEmployeeDetails(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: UUID
     ): ResponseEntity<EmployeeWithDaycareRoles> {
@@ -108,39 +110,41 @@ class EmployeeController {
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        return db.read { it.getEmployeeWithRoles(id) }
+        return db.connect { dbc -> dbc.read { it.getEmployeeWithRoles(id) } }
             ?.let { ResponseEntity.ok().body(it) }
             ?: throw NotFound("employee $id not found")
     }
 
     @PostMapping("")
-    fun createEmployee(db: Database.DeprecatedConnection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
+    fun createEmployee(db: Database, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
-        return ResponseEntity.ok().body(db.transaction { it.createEmployee(employee) })
+        return ResponseEntity.ok().body(db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } })
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(db: Database.DeprecatedConnection, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Unit> {
+    fun deleteEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.deleteEmployee(id) }
+        db.connect { dbc -> dbc.transaction { it.deleteEmployee(id) } }
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/pin-code")
     fun upsertPinCode(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PinCode
     ): ResponseEntity<Unit> {
         Audit.PinCodeUpdate.log(targetId = user.id)
-        return db.transaction { tx ->
-            tx.upsertPinCode(
-                user.id, body
-            )
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.upsertPinCode(
+                    user.id, body
+                )
+            }
         }.let {
             ResponseEntity.noContent().build()
         }
@@ -148,26 +152,30 @@ class EmployeeController {
 
     @GetMapping("/pin-code/is-pin-locked")
     fun isPinLocked(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser
     ): Boolean {
         Audit.PinCodeLockedRead.log(targetId = user.id)
-        return db.read { tx ->
-            tx.isPinLocked(user.id)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.isPinLocked(user.id)
+            }
         }
     }
 
     @PostMapping("/search")
     fun searchEmployees(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchEmployeeRequest
     ): ResponseEntity<Paged<EmployeeWithDaycareRoles>> {
         Audit.EmployeesRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
-        return db.read { tx ->
-            getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
+            }
         }.let { ResponseEntity.ok(it) }
     }
 }

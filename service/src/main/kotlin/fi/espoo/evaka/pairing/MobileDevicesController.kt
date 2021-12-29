@@ -33,40 +33,44 @@ class MobileDevicesController(
 ) {
     @GetMapping("/mobile-devices")
     fun getMobileDevices(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): ResponseEntity<List<MobileDevice>> {
         Audit.MobileDevicesList.log(targetId = unitId)
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-        return db
-            .read { it.listSharedDevices(unitId) }
+        return db.connect { dbc ->
+            dbc
+                .read { it.listSharedDevices(unitId) }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/mobile-devices/personal")
     fun getMobileDevices(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.Employee,
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
-        return db.read { it.listPersonalDevices(EmployeeId(user.id)) }
+        return db.connect { dbc -> dbc.read { it.listPersonalDevices(EmployeeId(user.id)) } }
     }
 
     @GetMapping("/system/mobile-devices/{id}")
     fun getMobileDevice(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId
     ): ResponseEntity<MobileDeviceDetails> {
         Audit.MobileDevicesRead.log(targetId = id)
         user.assertSystemInternalUser()
 
-        return db
-            .read { it.getDevice(id) }
+        return db.connect { dbc ->
+            dbc
+                .read { it.getDevice(id) }
+        }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -75,7 +79,7 @@ class MobileDevicesController(
     )
     @PutMapping("/mobile-devices/{id}/name")
     fun putMobileDeviceName(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest
@@ -84,13 +88,13 @@ class MobileDevicesController(
         @Suppress("DEPRECATION")
         acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { it.renameDevice(id, body.name) }
+        db.connect { dbc -> dbc.transaction { it.renameDevice(id, body.name) } }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/mobile-devices/{id}")
     fun deleteMobileDevice(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId
     ): ResponseEntity<Unit> {
@@ -98,28 +102,30 @@ class MobileDevicesController(
         @Suppress("DEPRECATION")
         acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { it.softDeleteDevice(id) }
+        db.connect { dbc -> dbc.transaction { it.softDeleteDevice(id) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/mobile-devices/pin-login")
     fun pinLogin(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser.MobileDevice,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse {
-        return db.transaction { tx ->
-            if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
-                tx.markEmployeeLastLogin(params.employeeId)
-                tx.resetEmployeePinFailureCount(params.employeeId)
-                tx.getEmployeeUser(params.employeeId)
-                    ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.firstName, it.lastName)) }
-                    ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
-            } else {
-                if (tx.updateEmployeePinFailureCountAndCheckIfLocked(params.employeeId)) {
-                    PinLoginResponse(PinLoginStatus.PIN_LOCKED)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
+                    tx.markEmployeeLastLogin(params.employeeId)
+                    tx.resetEmployeePinFailureCount(params.employeeId)
+                    tx.getEmployeeUser(params.employeeId)
+                        ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.firstName, it.lastName)) }
+                        ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                 } else {
-                    PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                    if (tx.updateEmployeePinFailureCountAndCheckIfLocked(params.employeeId)) {
+                        PinLoginResponse(PinLoginStatus.PIN_LOCKED)
+                    } else {
+                        PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                    }
                 }
             }
         }

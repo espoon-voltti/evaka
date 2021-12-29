@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
@@ -79,9 +80,9 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
         val reqBody =
             ParentshipController.ParentshipRequest(PersonId(parent.id), PersonId(child.id), startDate, endDate)
-        controller.createParentship(deprecatedDb, user, reqBody)
+        controller.createParentship(Database(jdbi), user, reqBody)
 
-        val getResponse = controller.getParentships(deprecatedDb, user, headOfChildId = PersonId(parent.id))
+        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(parent.id))
         with(getResponse.first()) {
             assertNotNull(this.id)
             assertEquals(parent.id, this.headOfChildId)
@@ -90,7 +91,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             assertEquals(endDate, this.endDate)
         }
 
-        assertEquals(0, controller.getParentships(deprecatedDb, user, headOfChildId = PersonId(child.id)).size)
+        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(child.id)).size)
     }
 
     fun `can add a sibling parentship and fetch parentships`(user: AuthenticatedUser) {
@@ -103,9 +104,9 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
         val reqBody =
             ParentshipController.ParentshipRequest(PersonId(parent.id), PersonId(sibling.id), startDate, endDate)
-        controller.createParentship(deprecatedDb, user, reqBody)
+        controller.createParentship(Database(jdbi), user, reqBody)
 
-        val getResponse = controller.getParentships(deprecatedDb, user, headOfChildId = PersonId(parent.id))
+        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(parent.id))
         with(getResponse.first()) {
             assertNotNull(this.id)
             assertEquals(parentship.headOfChildId, this.headOfChildId)
@@ -121,7 +122,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             assertEquals(endDate, this.endDate)
         }
 
-        assertEquals(0, controller.getParentships(deprecatedDb, user, headOfChildId = PersonId(child.id)).size)
+        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(child.id)).size)
     }
 
     @Test
@@ -147,10 +148,10 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-        controller.updateParentship(deprecatedDb, user, parentship.id, requestBody)
+        controller.updateParentship(Database(jdbi), user, parentship.id, requestBody)
 
         // child1 should have new dates
-        val fetched1 = controller.getParentship(deprecatedDb, user, parentship.id)
+        val fetched1 = controller.getParentship(Database(jdbi), user, parentship.id)
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
@@ -183,7 +184,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             }
         }
 
-        controller.deleteParentship(deprecatedDb, user, parentship.id)
+        controller.deleteParentship(Database(jdbi), user, parentship.id)
         db.read { r ->
             assertEquals(1, r.getParentships(headOfChildId = parent.id, childId = null).size)
         }
@@ -201,7 +202,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
                 assertEquals(2, tx.getParentships(headOfChildId = parent.id, childId = null).size)
             }
         }
-        assertThrows<Forbidden> { controller.deleteParentship(deprecatedDb, user, parentship.id) }
+        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, parentship.id) }
     }
 
     @Test
@@ -210,7 +211,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
-        assertThrows<Forbidden> { controller.getParentships(deprecatedDb, user, headOfChildId = PersonId(parent.id)) }
+        assertThrows<Forbidden> { controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(parent.id)) }
     }
 
     @Test
@@ -222,7 +223,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-        assertThrows<Forbidden> { controller.updateParentship(deprecatedDb, user, parentship.id, requestBody) }
+        assertThrows<Forbidden> { controller.updateParentship(Database(jdbi), user, parentship.id, requestBody) }
     }
 
     @Test
@@ -231,7 +232,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parentship = db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
-        assertThrows<Forbidden> { controller.deleteParentship(deprecatedDb, user, parentship.id) }
+        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, parentship.id) }
     }
 
     @Test
@@ -243,7 +244,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             child.dateOfBirth.minusDays(1),
             child.dateOfBirth.plusYears(1)
         )
-        assertThrows<BadRequest> { controller.createParentship(deprecatedDb, user, request) }
+        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, request) }
     }
 
     @Test
@@ -255,6 +256,6 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             child.dateOfBirth,
             child.dateOfBirth.plusYears(18)
         )
-        assertThrows<BadRequest> { controller.createParentship(deprecatedDb, user, request) }
+        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, request) }
     }
 }

@@ -269,26 +269,28 @@ class AttachmentsController(
 
     @DeleteMapping(value = ["/{attachmentId}", "/citizen/{attachmentId}"])
     fun deleteAttachmentHandler(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable attachmentId: AttachmentId
     ): ResponseEntity<Unit> {
         Audit.AttachmentsDelete.log(targetId = attachmentId)
 
-        val attachment =
-            db.read { it.getAttachment(attachmentId) } ?: throw NotFound("Attachment $attachmentId not found")
+        db.connect { dbc ->
+            val attachment =
+                dbc.read { it.getAttachment(attachmentId) } ?: throw NotFound("Attachment $attachmentId not found")
 
-        val action = when (attachment.attachedTo) {
-            is AttachmentParent.Application -> Action.Attachment.DELETE_APPLICATION_ATTACHMENT
-            is AttachmentParent.IncomeStatement,
-            is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
-            is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
-            is AttachmentParent.MessageContent -> Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
-            is AttachmentParent.PedagogicalDocument -> Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
-        }.exhaust()
-        accessControl.requirePermissionFor(user, action, attachmentId)
+            val action = when (attachment.attachedTo) {
+                is AttachmentParent.Application -> Action.Attachment.DELETE_APPLICATION_ATTACHMENT
+                is AttachmentParent.IncomeStatement,
+                is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
+                is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
+                is AttachmentParent.MessageContent -> Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
+                is AttachmentParent.PedagogicalDocument -> Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
+            }.exhaust()
+            accessControl.requirePermissionFor(user, action, attachmentId)
 
-        db.transaction { deleteAttachment(it, attachmentId) }
+            dbc.transaction { deleteAttachment(it, attachmentId) }
+        }
         return ResponseEntity.noContent().build()
     }
 
