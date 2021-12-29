@@ -140,7 +140,7 @@ export default React.memo(function PedagogicalDocuments({
                   key={pedagogicalDocument.id}
                   id={pedagogicalDocument.id}
                   childId={pedagogicalDocument.childId}
-                  attachment={pedagogicalDocument.attachment}
+                  attachments={pedagogicalDocument.attachments}
                   description={pedagogicalDocument.description}
                   created={pedagogicalDocument.created}
                   updated={pedagogicalDocument.updated}

@@ -64,7 +64,7 @@ describe('Citizen pedagogical documents', () => {
       const employee = await Fixture.employee()
         .with({ roles: ['ADMIN'] })
         .save()
-      await insertPedagogicalDocumentAttachment(
+      const attachmentId = await insertPedagogicalDocumentAttachment(
         pd.data.id,
         employee.data.id,
         testFileName,
@@ -77,8 +77,7 @@ describe('Citizen pedagogical documents', () => {
       )
 
       await header.selectTab('pedagogical-documents')
-      await pedagogicalDocumentsPage.downloadAttachment(pd.data.id)
-
+      await pedagogicalDocumentsPage.downloadAttachment(attachmentId)
       await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()
     })
   })

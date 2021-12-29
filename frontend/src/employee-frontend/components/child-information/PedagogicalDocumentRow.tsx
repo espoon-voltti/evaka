@@ -29,7 +29,7 @@ import { UUID } from 'lib-common/types'
 interface Props {
   id: UUID
   childId: UUID
-  attachment: Attachment | null
+  attachments: Attachment[]
   description: string
   created: Date
   updated: Date
@@ -41,7 +41,7 @@ interface Props {
 const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   id,
   childId,
-  attachment,
+  attachments,
   description,
   created,
   updated,
@@ -54,7 +54,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     useState<PedagogicalDocument>({
       id,
       childId,
-      attachment,
+      attachments,
       description,
       created,
       updated
@@ -64,7 +64,12 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
   const [submitting, setSubmitting] = useState(false)
 
-  const updateDocument = () => {
+  const endEdit = useCallback(() => {
+    setEditMode(false)
+    clearUiMode()
+  }, [clearUiMode])
+
+  const updateDocument = useCallback(() => {
     const { childId, description } = pedagogicalDocument
     if (!description) return
     setSubmitting(true)
@@ -82,7 +87,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         })
       }
     })
-  }
+  }, [endEdit, i18n, id, onReload, pedagogicalDocument, setErrorMessage])
 
   const handleAttachmentUpload = useCallback(
     async (
@@ -94,14 +99,11 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         await savePedagogicalDocumentAttachment(id, file, onUploadProgress)
       ).map((id) => {
         setSubmitting(false)
-        setPedagogicalDocument(({ ...rest }) => ({
-          ...rest,
-          attachment: { id, name: file.name, contentType: file.type }
-        }))
+        onReload()
         return id
       })
     },
-    [id]
+    [id, onReload]
   )
 
   const handleAttachmentDelete = useCallback(
@@ -114,11 +116,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       ),
     []
   )
-
-  const endEdit = () => {
-    setEditMode(false)
-    clearUiMode()
-  }
 
   return (
     <Tr
@@ -141,16 +138,12 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         )}
       </DescriptionTd>
       <NameTd data-qa="pedagogical-document-document">
-        {
+        <AttachmentsContainer>
           <FileUpload
-            slimSingleFile
+            slim
             disabled={submitting}
-            data-qa="upload-pedagogical-document-attachment"
-            files={
-              pedagogicalDocument.attachment
-                ? [pedagogicalDocument.attachment]
-                : []
-            }
+            data-qa="upload-pedagogical-document-attachment-new"
+            files={attachments}
             i18n={i18n.fileUpload}
             onDownloadFile={getAttachmentBlob}
             onUpload={handleAttachmentUpload}
@@ -166,7 +159,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
               'audio/*'
             ]}
           />
-        }
+        </AttachmentsContainer>
       </NameTd>
       <ActionsTd data-qa="pedagogical-document-actions">
         {editMode ? (
@@ -229,4 +222,8 @@ const DescriptionTd = styled(Td)`
 
 const ActionsTd = styled(Td)`
   width: 20%;
+`
+const AttachmentsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
 `

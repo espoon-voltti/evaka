@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,55 +32,67 @@ class PedagogicalDocumentController(
 ) {
     @PostMapping
     fun createPedagogicalDocument(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
-        return db.transaction { tx ->
-            tx.createDocument(user, body).also {
-                pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+        return db.connect {
+            it.transaction { tx ->
+                tx.createDocument(user, body).also {
+                    pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+                }
             }
         }
     }
 
     @PutMapping("/{documentId}")
     fun updatePedagogicalDocument(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, documentId)
-        return db.transaction { tx ->
-            tx.updateDocument(user, body, documentId).also {
-                pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+        return db.connect {
+            it.transaction { tx ->
+                tx.updateDocument(user, body, documentId).also {
+                    pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+                }
             }
         }
     }
 
     @GetMapping("/child/{childId}")
     fun getChildPedagogicalDocuments(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
         Audit.PedagogicalDocumentRead.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId.raw)
-        return db.read { it.findPedagogicalDocumentsByChild(childId) }
+        return db.connect { dbc ->
+            dbc.read {
+                it.findPedagogicalDocumentsByChild(childId)
+            }
+        }
     }
 
     @DeleteMapping("/{documentId}")
     fun deletePedagogicalDocument(
-        db: Database.DeprecatedConnection,
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
         Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, Action.PedagogicalDocument.DELETE, documentId)
-        db.transaction { it.deleteDocument(documentId) }
+        return db.connect { dbc ->
+            dbc.transaction {
+                it.deleteDocument(documentId)
+            }
+        }
     }
 }
 
@@ -96,8 +107,7 @@ data class PedagogicalDocument(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
-    @Nested("attachment")
-    val attachment: Attachment?,
+    val attachments: List<Attachment> = emptyList(),
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime
 )
@@ -158,18 +168,15 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
                 pd.child_id,
                 pd.description,
                 pd.created,
-                pd.updated,
-                a.id attachment_id,
-                a.name attachment_name,
-                a.content_type attachment_content_type
+                pd.updated
             FROM pedagogical_document pd
-            LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
             WHERE child_id = :child_id
         """.trimIndent()
     )
         .bind("child_id", childId)
         .mapTo<PedagogicalDocument>()
         .list()
+        .map { pd -> pd.copy(attachments = getPedagogicalDocumentAttachments(pd.id)) }
 }
 
 private fun Database.Transaction.deleteDocument(

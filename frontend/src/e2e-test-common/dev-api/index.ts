@@ -838,17 +838,19 @@ export async function insertPedagogicalDocumentAttachment(
   employeeId: string,
   fileName: string,
   filePath: string
-): Promise<void> {
+): Promise<string> {
   const file = await fs.readFile(`${filePath}/${fileName}`)
   const form = new FormData()
   form.append('file', file, fileName)
   form.append('employeeId', employeeId)
   try {
-    await devClient.post(
-      `/pedagogical-document-attachment/${pedagogicalDocumentId}`,
-      form,
-      { headers: form.getHeaders() }
-    )
+    return await devClient
+      .post<string>(
+        `/pedagogical-document-attachment/${pedagogicalDocumentId}`,
+        form,
+        { headers: form.getHeaders() }
+      )
+      .then((res) => res.data)
   } catch (e) {
     throw new DevApiError(e)
   }

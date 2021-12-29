@@ -27,6 +27,12 @@ let page: Page
 let childInformationPage: ChildInformationPage
 let childId: UUID
 
+const testfile1Name = 'test_file.png'
+const testfile1Path = `src/e2e-playwright/assets/${testfile1Name}`
+
+const testfile2Name = 'test_file.jpg'
+const testfile2Path = `src/e2e-playwright/assets/${testfile2Name}`
+
 beforeEach(async () => {
   await resetDatabase()
 
@@ -64,6 +70,7 @@ describe('Child Information - Pedagogical documents', () => {
     await section.setDescription('Test description')
     await section.save()
     await waitUntilEqual(() => section.description, 'Test description')
-    await section.addAttachment(page)
+    await section.addAttachmentAndAssert(page, testfile1Name, testfile1Path)
+    await section.addAttachmentAndAssert(page, testfile2Name, testfile2Path)
   })
 })
