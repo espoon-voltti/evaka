@@ -18,7 +18,7 @@ export default class GuardianInformationPage {
 
   async waitUntilLoaded() {
     await this.page
-      .find('[data-qa="person-fridge-head-section"][data-isloading="false"]')
+      .find('[data-qa="person-info-section"][data-isloading="false"]')
       .waitUntilVisible()
     await this.page
       .find('[data-qa="family-overview-section"][data-isloading="false"]')
@@ -28,9 +28,15 @@ export default class GuardianInformationPage {
   async openCollapsible<C extends Collapsible>(
     collapsible: C
   ): Promise<SectionFor<C>> {
-    const { selector, section } = collapsibles[collapsible]
+    const { selector } = collapsibles[collapsible]
     const element = this.page.find(selector)
     await element.click()
+    return this.getCollapsible(collapsible)
+  }
+
+  getCollapsible<C extends Collapsible>(collapsible: C): SectionFor<C> {
+    const { selector, section } = collapsibles[collapsible]
+    const element = this.page.find(selector)
     return new section(this.page, element) as SectionFor<C>
   }
 }
@@ -38,6 +44,64 @@ export default class GuardianInformationPage {
 class Section extends Element {
   constructor(protected page: Page, root: Element) {
     super(root)
+  }
+}
+
+class PersonInfoSection extends Section {
+  #lastName = this.find('[data-qa="person-last-name"]')
+  #firstName = this.find('[data-qa="person-first-names"]')
+  #ssn = this.find('[data-qa="person-ssn"]')
+
+  async assertPersonInfo(lastName: string, firstName: string, ssn: string) {
+    await this.#lastName.find(`text=${lastName}`).waitUntilVisible()
+    await this.#firstName.find(`text=${firstName}`).waitUntilVisible()
+    await this.#ssn.find(`text=${ssn}`).waitUntilVisible()
+  }
+}
+
+class DependantsSection extends Section {
+  #dependantChildren = this.find('[data-qa="table-of-dependants"]')
+
+  async assertContainsDependantChild(childName: string) {
+    await this.#dependantChildren.find(`text=${childName}`).waitUntilVisible()
+  }
+}
+
+class ApplicationsSection extends Section {
+  #applicationRows = this.findAll('[data-qa="table-application-row"]')
+
+  async assertApplicationCount(n: number) {
+    await waitUntilEqual(() => this.#applicationRows.count(), n)
+  }
+
+  async assertApplicationSummary(
+    n: number,
+    childName: string,
+    unitName: string
+  ) {
+    const row = this.#applicationRows.nth(n)
+    await row.find(`text=${childName}`).waitUntilVisible()
+    await row.find(`text=${unitName}`).waitUntilVisible()
+  }
+}
+
+class DecisionsSection extends Section {
+  #decisionRows = this.findAll('[data-qa="table-decision-row"]')
+
+  async assertDecisionCount(n: number) {
+    await waitUntilEqual(() => this.#decisionRows.count(), n)
+  }
+
+  async assertDecision(
+    n: number,
+    childName: string,
+    unitName: string,
+    status: string
+  ) {
+    const row = this.#decisionRows.nth(n)
+    await row.find(`text=${childName}`).waitUntilVisible()
+    await row.find(`text=${unitName}`).waitUntilVisible()
+    await row.find(`text=${status}`).waitUntilVisible()
   }
 }
 
@@ -71,7 +135,43 @@ class FeeDecisionsSection extends Section {
   }
 }
 
+class InvoicesSection extends Section {
+  #invoiceRows = this.findAll('[data-qa="table-invoice-row"]')
+
+  async assertInvoiceCount(n: number) {
+    await waitUntilEqual(() => this.#invoiceRows.count(), n)
+  }
+
+  async assertInvoice(
+    n: number,
+    startDate: string,
+    endDate: string,
+    status: string
+  ) {
+    const row = this.#invoiceRows.nth(0)
+    await row.find(`text=${startDate}`).waitUntilVisible()
+    await row.find(`text=${endDate}`).waitUntilVisible()
+    await row.find(`text=${status}`).waitUntilVisible()
+  }
+}
+
 const collapsibles = {
+  personInfo: {
+    selector: '[data-qa="person-info-collapsible"]',
+    section: PersonInfoSection
+  },
+  dependants: {
+    selector: '[data-qa="person-dependants-collapsible"]',
+    section: DependantsSection
+  },
+  applications: {
+    selector: '[data-qa="person-applications-collapsible"]',
+    section: ApplicationsSection
+  },
+  decisions: {
+    selector: '[data-qa="person-decisions-collapsible"]',
+    section: DecisionsSection
+  },
   incomes: {
     selector: '[data-qa="person-income-collapsible"]',
     section: IncomesSection
@@ -79,6 +179,10 @@ const collapsibles = {
   feeDecisions: {
     selector: '[data-qa="person-fee-decisions-collapsible"]',
     section: FeeDecisionsSection
+  },
+  invoices: {
+    selector: '[data-qa="person-invoices-collapsible"]',
+    section: InvoicesSection
   }
 }
 

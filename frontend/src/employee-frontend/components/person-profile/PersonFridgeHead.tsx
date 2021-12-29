@@ -29,13 +29,11 @@ export default React.memo(function PersonFridgeHead() {
   }, [formatTitleName, i18n.titles.customers, person, setTitle])
 
   return (
-    <div
-      data-qa="person-fridge-head-section"
-      data-isloading={isLoading(person)}
-    >
+    <div data-qa="person-info-section" data-isloading={isLoading(person)}>
       <CollapsibleSection
         icon={faUser}
         title={i18n.personProfile.personDetails}
+        data-qa="person-info-collapsible"
       >
         {renderResult(person, (person) => (
           <PersonDetails
