@@ -218,7 +218,7 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateDaycareAcl(daycareId, body.externalId, body.role ?: UserRole.UNIT_SUPERVISOR)
-            } 
+            }
         }
     }
 
@@ -232,7 +232,7 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction {
                 groups.forEach { group -> it.insertTestDaycareGroup(group) }
-            } 
+            }
         }
     }
 
@@ -286,7 +286,7 @@ class DevApi(
                 children.forEach {
                     tx.insertTestChild(it)
                 }
-            } 
+            }
         }
     }
 
@@ -376,7 +376,7 @@ class DevApi(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationDetails(applicationId)
-            } 
+            }
         } ?: throw NotFound("application not found")
     }
 
@@ -388,7 +388,7 @@ class DevApi(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
-            } 
+            }
         }
     }
 
@@ -402,7 +402,7 @@ class DevApi(
                         tx.updateFeeDecisionSentAt(fd)
                     }
                 }
-            } 
+            }
         }
     }
 
@@ -447,7 +447,7 @@ class DevApi(
                 } else {
                     createPersonFromVtj(tx, personDTO)
                 }
-            } 
+            }
         }
     }
 
@@ -463,7 +463,7 @@ class DevApi(
                     tx.updatePersonFromVtj(dto)
                 }
                 personId
-            } 
+            }
         }
     }
 
@@ -528,7 +528,7 @@ RETURNING id
                 guardians.forEach { guardian ->
                     it.insertGuardian(guardian.guardianId, guardian.childId)
                 }
-            } 
+            }
         }
     }
 
@@ -547,7 +547,7 @@ RETURNING id
                     postOffice = body.postOffice,
                     restrictedDetailsEnabled = body.restrictedDetailsEnabled
                 )
-            ).also { id -> it.insertTestChild(DevChild(id = id)) } 
+            ).also { id -> it.insertTestChild(DevChild(id = id)) }
         }
     }
 
@@ -558,7 +558,7 @@ RETURNING id
                 tx.execute("INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING")
                 tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
                 tx.execute("INSERT INTO message_account (employee_id) SELECT id FROM employee ON CONFLICT DO NOTHING")
-            } 
+            }
         }
     }
 
@@ -585,7 +585,7 @@ RETURNING id
                     )
                     id
                 }
-            } 
+            }
         }
 
     @PostMapping("/placement-plan/{application-id}")
@@ -676,7 +676,7 @@ RETURNING id
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
                 actionFn.invoke(tx, fakeAdmin, applicationId)
-            } 
+            }
         }
     }
 
@@ -690,7 +690,7 @@ RETURNING id
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
                 applicationStateService.createPlacementPlan(tx, fakeAdmin, applicationId, body)
-            } 
+            }
         }
     }
 
@@ -905,7 +905,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
                     ),
                     file.contentType ?: "image/jpeg"
                 )
-            } 
+            }
         }.key
     }
 
@@ -931,7 +931,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
                 val template = tx.getVasuTemplate(body.templateId)
                     ?: throw NotFound("Template with id ${body.templateId} not found")
                 tx.insertVasuDocument(body.childId, template)
-            } 
+            }
         }
     }
 
@@ -979,7 +979,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
                 assistanceNeeds.forEach {
                     tx.insertTestAssistanceNeed(it)
                 }
-            } 
+            }
         }
     }
 }
