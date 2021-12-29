@@ -53,9 +53,9 @@ class PersonInfoSection extends Section {
   #ssn = this.find('[data-qa="person-ssn"]')
 
   async assertPersonInfo(lastName: string, firstName: string, ssn: string) {
-    await this.#lastName.find(`text=${lastName}`).waitUntilVisible()
-    await this.#firstName.find(`text=${firstName}`).waitUntilVisible()
-    await this.#ssn.find(`text=${ssn}`).waitUntilVisible()
+    await this.#lastName.findText(lastName).waitUntilVisible()
+    await this.#firstName.findText(firstName).waitUntilVisible()
+    await this.#ssn.findText(ssn).waitUntilVisible()
   }
 }
 
@@ -63,7 +63,7 @@ class DependantsSection extends Section {
   #dependantChildren = this.find('[data-qa="table-of-dependants"]')
 
   async assertContainsDependantChild(childName: string) {
-    await this.#dependantChildren.find(`text=${childName}`).waitUntilVisible()
+    await this.#dependantChildren.findText(childName).waitUntilVisible()
   }
 }
 
@@ -80,8 +80,8 @@ class ApplicationsSection extends Section {
     unitName: string
   ) {
     const row = this.#applicationRows.nth(n)
-    await row.find(`text=${childName}`).waitUntilVisible()
-    await row.find(`text=${unitName}`).waitUntilVisible()
+    await row.findText(childName).waitUntilVisible()
+    await row.findText(unitName).waitUntilVisible()
   }
 }
 
@@ -99,9 +99,9 @@ class DecisionsSection extends Section {
     status: string
   ) {
     const row = this.#decisionRows.nth(n)
-    await row.find(`text=${childName}`).waitUntilVisible()
-    await row.find(`text=${unitName}`).waitUntilVisible()
-    await row.find(`text=${status}`).waitUntilVisible()
+    await row.findText(childName).waitUntilVisible()
+    await row.findText(unitName).waitUntilVisible()
+    await row.findText(status).waitUntilVisible()
   }
 }
 
@@ -149,9 +149,9 @@ class InvoicesSection extends Section {
     status: string
   ) {
     const row = this.#invoiceRows.nth(0)
-    await row.find(`text=${startDate}`).waitUntilVisible()
-    await row.find(`text=${endDate}`).waitUntilVisible()
-    await row.find(`text=${status}`).waitUntilVisible()
+    await row.findText(startDate).waitUntilVisible()
+    await row.findText(endDate).waitUntilVisible()
+    await row.findText(status).waitUntilVisible()
   }
 }
 

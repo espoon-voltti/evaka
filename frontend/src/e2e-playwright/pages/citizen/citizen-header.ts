@@ -75,7 +75,7 @@ export default class CitizenHeader {
   }
 
   async assertApplyingTabHasText(text: string) {
-    await this.#applyingTab.find(`text=${text}`).waitUntilVisible()
+    await this.#applyingTab.findText(text).waitUntilVisible()
   }
 
   async checkPersonalDetailsAttentionIndicatorsAreShown() {

@@ -100,7 +100,7 @@ export default class ApplicationReadView {
   }
 
   async assertApplicationStatus(text: string) {
-    await this.#applicationStatus.find(`text=${text}`).waitUntilVisible()
+    await this.#applicationStatus.findText(text).waitUntilVisible()
   }
 
   async assertUrgentAttachmentExists(fileName: string) {

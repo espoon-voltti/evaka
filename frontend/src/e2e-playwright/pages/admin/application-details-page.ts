@@ -22,7 +22,7 @@ export default class ApplicationDetailsPage {
   #applicationStatus = this.page.find('[data-qa="application-status"]')
 
   async assertGuardianName(expectedName: string) {
-    await this.#guardianName.find(`text=${expectedName}`).waitUntilVisible()
+    await this.#guardianName.findText(expectedName).waitUntilVisible()
   }
 
   async assertNoOtherVtjGuardian() {
@@ -30,23 +30,23 @@ export default class ApplicationDetailsPage {
   }
 
   async assertVtjGuardianName(expectedName: string) {
-    await this.#vtjGuardianName.find(`text=${expectedName}`).waitUntilVisible()
+    await this.#vtjGuardianName.findText(expectedName).waitUntilVisible()
   }
 
   async assertOtherGuardianSameAddress(status: boolean) {
     await this.#otherGuardianSameAddress
-      .find(`text=${status ? 'Kyllä' : 'Ei'}`)
+      .findText(status ? 'Kyllä' : 'Ei')
       .waitUntilVisible()
   }
 
   async assertOtherGuardianAgreementStatus(_status: false) {
     const expectedText = 'Ei ole sovittu yhdessä'
     await this.#otherGuardianAgreementStatus
-      .find(`text=${expectedText}`)
+      .findText(expectedText)
       .waitUntilVisible()
   }
 
   async assertApplicationStatus(text: string) {
-    await this.#applicationStatus.find(`text=${text}`).waitUntilVisible()
+    await this.#applicationStatus.findText(text).waitUntilVisible()
   }
 }

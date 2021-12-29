@@ -62,6 +62,14 @@ export class Page {
     return new Element(this.page.locator(selector))
   }
 
+  findText(text: string | RegExp) {
+    return new Element(this.page.locator(`text=${text.toString()}`))
+  }
+
+  findTextExact(text: string) {
+    return new Element(this.page.locator(`text="${text}"`))
+  }
+
   findAll(selector: string) {
     return new ElementCollection(this.page.locator(selector))
   }
@@ -140,8 +148,12 @@ export class Element {
     return new Element(this.locator.locator(selector))
   }
 
-  findText(text: string): Element {
-    return new Element(this.locator.locator(`text=${text}`))
+  findText(text: string | RegExp): Element {
+    return new Element(this.locator.locator(`text=${text.toString()}`))
+  }
+
+  findTextExact(text: string): Element {
+    return new Element(this.locator.locator(`text="${text}"`))
   }
 
   findAll(selector: string): ElementCollection {

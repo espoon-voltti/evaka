@@ -36,11 +36,11 @@ export class CitizenChildPage {
   }
 
   async goBack() {
-    await this.page.find(`text=Palaa`).click()
+    await this.page.findText('Palaa').click()
   }
 
   async openTerminationCollapsible() {
-    await this.page.find(`text=Paikan irtisanominen`).click()
+    await this.page.findText('Paikan irtisanominen').click()
   }
 
   async assertTerminatablePlacementCount(count: number) {
@@ -56,7 +56,7 @@ export class CitizenChildPage {
   }
 
   async togglePlacement(label: string) {
-    await this.page.find(`text=${label}`).click()
+    await this.page.findText(label).click()
   }
 
   async fillTerminationDate(date: LocalDate, nth = 0) {

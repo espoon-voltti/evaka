@@ -12,10 +12,10 @@ export default class ErrorModal {
   #text = this.#modal.find('[data-qa="text"]')
 
   async ensureTitle(title: string) {
-    await this.#title.find(`text=${title}`).waitUntilVisible()
+    await this.#title.findText(title).waitUntilVisible()
   }
 
   async ensureText(title: string) {
-    await this.#text.find(`text=${title}`).waitUntilVisible()
+    await this.#text.findText(title).waitUntilVisible()
   }
 }
