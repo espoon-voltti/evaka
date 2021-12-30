@@ -53,7 +53,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
   const { id, placements, absences, backupCares } = child
 
   return (
-    <tr>
+    <tr data-qa="absence-child-row">
       <td className={'absence-child-name hover-highlight'}>
         <FixedSpaceRow spacing="xs">
           <AgeIndicatorIcon dateOfBirth={child.dob} />
@@ -65,7 +65,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           >
             <Link
               to={`/child-information/${child.id}`}
-              className={'absence-child-link'}
+              data-qa="absence-child-link"
             >
               {shortChildName(child.firstName, child.lastName, i18n)}
             </Link>

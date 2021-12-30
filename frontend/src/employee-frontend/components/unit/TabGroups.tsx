@@ -47,7 +47,7 @@ export default React.memo(function TabGroups({
     ([unitInformation, unitData, groupPermittedActions]) => (
       <FixedSpaceColumn>
         {unitData.recentlyTerminatedPlacements.length > 0 && (
-          <ContentArea opaque>
+          <ContentArea opaque data-qa="terminated-placements-section">
             <TerminatedPlacements
               recentlyTerminatedPlacements={
                 unitData.recentlyTerminatedPlacements
@@ -57,7 +57,7 @@ export default React.memo(function TabGroups({
         )}
 
         {unitData.missingGroupPlacements.length > 0 && (
-          <ContentArea opaque>
+          <ContentArea opaque data-qa="missing-placements-section">
             <MissingGroupPlacements
               groups={unitData.groups}
               missingGroupPlacements={unitData.missingGroupPlacements}

@@ -89,7 +89,7 @@ describe('Mobile employee daily notes', () => {
     await postChildDailyNote(childId, daycareDailyNote)
 
     await unitPage.navigateToUnit(daycare.data.id)
-    const group = await unitPage.openGroups()
+    const group = await unitPage.openGroupsPage()
     const groupCollapsible = await group.openGroupCollapsible(
       daycareGroup.data.id
     )
@@ -124,7 +124,7 @@ describe('Mobile employee daily notes', () => {
     await postChildDailyNote(childId1, daycareDailyNote)
 
     await unitPage.navigateToUnit(daycare.data.id)
-    const groupsSection = await unitPage.openGroups()
+    const groupsSection = await unitPage.openGroupsPage()
     const group = await groupsSection.openGroupCollapsible(daycareGroup.data.id)
     let groupNoteModal = await group.openGroupDailyNoteModal()
     await groupNoteModal.fillNote('Ryhmälle viesti')

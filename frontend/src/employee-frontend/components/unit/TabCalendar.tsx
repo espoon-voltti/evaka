@@ -84,6 +84,7 @@ export default React.memo(function TabCalendar() {
           unitId={unitId}
           selected={groupId}
           onSelect={setGroupId}
+          data-qa="calendar-group-select"
         />
       </GroupSelectorWrapper>
 

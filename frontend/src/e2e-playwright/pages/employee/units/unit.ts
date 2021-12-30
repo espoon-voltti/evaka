@@ -6,7 +6,6 @@ import {
   Checkbox,
   Combobox,
   Element,
-  Modal,
   Page,
   TextInput
 } from 'e2e-playwright/utils/page'
@@ -14,12 +13,8 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import config from '../../../../e2e-test-common/config'
-import {
-  waitUntilDefined,
-  waitUntilEqual,
-  waitUntilFalse,
-  waitUntilTrue
-} from '../../../utils'
+import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
+import { UnitGroupsPage } from './unit-groups-page'
 
 type UnitProviderType =
   | 'MUNICIPAL'
@@ -78,9 +73,9 @@ export class UnitPage {
     return new ApplicationProcessPage(this.page)
   }
 
-  async openGroups(): Promise<GroupsSection> {
+  async openGroupsPage(): Promise<UnitGroupsPage> {
     await this.#groupsTab.click()
-    const section = new GroupsSection(this.page)
+    const section = new UnitGroupsPage(this.page)
     await section.waitUntilVisible()
     return section
   }
@@ -311,14 +306,12 @@ export class UnitEditor {
   }
 }
 
-class StaffAclSection {
-  constructor(private root: Element) {}
-
-  readonly #table = this.root.find('[data-qa="acl-table"]')
+class StaffAclSection extends Element {
+  readonly #table = this.find('[data-qa="acl-table"]')
   readonly #tableRows = this.#table.findAll('[data-qa="acl-row"]')
 
-  readonly #combobox = new Combobox(this.root.find('[data-qa="acl-combobox"]'))
-  readonly #addButton = this.root.find('[data-qa="acl-add-button"]')
+  readonly #combobox = new Combobox(this.find('[data-qa="acl-combobox"]'))
+  readonly #addButton = this.find('[data-qa="acl-add-button"]')
 
   async addEmployeeAcl(employeeEmail: string, employeeId: UUID) {
     await this.#combobox.click()
@@ -350,22 +343,18 @@ class StaffAclSection {
   }
 }
 
-class StaffAclRow {
-  constructor(private root: Element) {}
-
-  readonly #editButton = this.root.find('[data-qa="edit"]')
+class StaffAclRow extends Element {
+  readonly #editButton = this.find('[data-qa="edit"]')
 
   async edit(): Promise<StaffAclRowEditor> {
     await this.#editButton.click()
-    return new StaffAclRowEditor(this.root)
+    return new StaffAclRowEditor(this)
   }
 }
 
-class StaffAclRowEditor {
-  constructor(private root: Element) {}
-
-  readonly #groupEditor = this.root.find('[data-qa="groups"]')
-  readonly #save = this.root.find('[data-qa="save"]')
+class StaffAclRowEditor extends Element {
+  readonly #groupEditor = this.find('[data-qa="groups"]')
+  readonly #save = this.find('[data-qa="save"]')
 
   async toggleStaffGroups(groupIds: UUID[]) {
     await this.#groupEditor.find('> div').click()
@@ -379,173 +368,7 @@ class StaffAclRowEditor {
 
   async save(): Promise<StaffAclRow> {
     await this.#save.click()
-    return new StaffAclRow(this.root)
-  }
-}
-
-export class GroupsSection {
-  constructor(private readonly page: Page) {}
-
-  readonly #groupCollapsible = (groupId: string) =>
-    this.page.find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
-
-  readonly #missingPlacementRow = this.page.find(
-    '[data-qa="missing-placement-row"]'
-  )
-  readonly #terminatedPlacementRow = this.page.find(
-    '[data-qa="terminated-placement-row"]'
-  )
-
-  async assertMissingGroupPlacementRowCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#missingPlacementRow.locator.count(),
-      expectedCount
-    )
-  }
-
-  async assertTerminatedPlacementRowCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#terminatedPlacementRow.locator.count(),
-      expectedCount
-    )
-  }
-
-  async openGroupCollapsible(groupId: string) {
-    const elem = this.#groupCollapsible(groupId)
-    const state = await waitUntilDefined(() => elem.getAttribute('data-status'))
-    if (state === 'closed') {
-      await elem.find('[data-qa="group-name"]').click()
-    }
-    return new GroupCollapsible(elem)
-  }
-
-  async assertGroupCollapsibleIsOpen(groupId: string) {
-    await this.#groupCollapsible(groupId)
-      .find('[data-qa="group-name"]')
-      .waitUntilVisible()
-  }
-
-  async waitUntilVisible() {
-    await this.page.find('[data-qa="groups-title-bar"]').waitUntilVisible()
-  }
-}
-
-export class GroupCollapsible extends Element {
-  #groupDailyNoteButton = this.find('[data-qa="btn-create-group-note"]')
-
-  childRow(childId: string) {
-    return new GroupCollapsibleChildRow(this, childId)
-  }
-
-  async openGroupDailyNoteModal() {
-    await this.#groupDailyNoteButton.click()
-    return new GroupDailyNoteModal(this.find('[data-qa="modal"]'))
-  }
-}
-
-export class GroupDailyNoteModal extends Modal {
-  #input = new TextInput(this.find('[data-qa="sticky-note-input"]'))
-  #save = this.find('[data-qa="sticky-note-save"]')
-  #delete = this.find('[data-qa="sticky-note-remove"]')
-
-  async fillNote(text: string) {
-    await this.#input.fill(text)
-  }
-
-  async save() {
-    await this.#save.click()
-    await this.#save.waitUntilHidden()
-  }
-
-  async deleteNote() {
-    await this.#delete.click()
-    await this.#delete.waitUntilHidden()
-  }
-}
-
-export class GroupCollapsibleChildRow extends Element {
-  constructor(self: Element, private childId: string) {
-    super(self)
-  }
-
-  #dailyNoteIcon = this.find(
-    `[data-qa="daycare-daily-note-icon-${this.childId}"]`
-  )
-  #dailyNoteTooltip = this.find(
-    `[data-qa="daycare-daily-note-hover-${this.childId}"]`
-  )
-
-  async assertDailyNoteContainsText(expectedText: string) {
-    await this.#dailyNoteIcon.hover()
-    await waitUntilTrue(async () =>
-      ((await this.#dailyNoteTooltip.textContent) ?? '').includes(expectedText)
-    )
-  }
-
-  async openDailyNoteModal() {
-    await this.#dailyNoteIcon.click()
-    return new ChildDailyNoteModal(this.find('[data-qa="modal"]'))
-  }
-}
-
-export class ChildDailyNoteModal extends Modal {
-  #noteInput = new TextInput(this.find('[data-qa="note-input"]'))
-  #sleepingHoursInput = new TextInput(
-    this.find('[data-qa="sleeping-hours-input"]')
-  )
-  #sleepingMinutesInput = new TextInput(
-    this.find('[data-qa="sleeping-minutes-input"]')
-  )
-  #reminderNoteInput = new TextInput(
-    this.find('[data-qa="reminder-note-input"]')
-  )
-  #submit = this.find('[data-qa="btn-submit"]')
-
-  async openTab(tab: 'child' | 'sticky' | 'group') {
-    await this.find(`[data-qa="tab-${tab}"]`).click()
-  }
-
-  // Child
-  async fillNote(text: string) {
-    await this.#noteInput.fill(text)
-  }
-
-  async assertNote(expectedText: string) {
-    await waitUntilEqual(() => this.#noteInput.inputValue, expectedText)
-  }
-
-  async assertSleepingHours(expectedText: string) {
-    await waitUntilEqual(
-      () => this.#sleepingHoursInput.inputValue,
-      expectedText
-    )
-  }
-
-  async assertSleepingMinutes(expectedText: string) {
-    await waitUntilEqual(
-      () => this.#sleepingMinutesInput.inputValue,
-      expectedText
-    )
-  }
-
-  async assertReminderNote(expectedText: string) {
-    await waitUntilEqual(() => this.#reminderNoteInput.inputValue, expectedText)
-  }
-
-  async submit() {
-    await this.#submit.click()
-  }
-
-  // Group
-  #groupNote = this.find('[data-qa="sticky-note-note"]')
-  #groupNoteInput = this.find('[data-qa="sticky-note"]')
-
-  async assertGroupNote(expectedText: string) {
-    await waitUntilEqual(() => this.#groupNote.textContent, expectedText)
-  }
-
-  async assertNoGroupNote() {
-    await this.#groupNoteInput.waitUntilVisible()
+    return new StaffAclRow(this)
   }
 }
 

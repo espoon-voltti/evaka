@@ -113,7 +113,7 @@ export const MessageContextProvider = React.memo(
       setNestedMessagingAccounts
     )
 
-    const loadNestedAccounts = useDebouncedCallback(getNestedAccounts, 100)
+    const [loadNestedAccounts] = useDebouncedCallback(getNestedAccounts, 100)
 
     const { groupId } = useParams<{
       groupId: UUID | 'all'

@@ -143,38 +143,33 @@ export default React.memo(function MissingGroupPlacements({
   return (
     <>
       <Title size={2}>{i18n.unit.placements.title}</Title>
-      <div
-        className="table-of-missing-groups"
-        data-qa="table-of-missing-groups"
-      >
-        <Table data-qa="table-of-missing-groups">
-          <Thead>
-            <Tr>
-              <Th>{i18n.unit.placements.name}</Th>
-              <Th>{i18n.unit.placements.birthday}</Th>
-              <Th>{i18n.unit.placements.type}</Th>
-              <Th>{i18n.unit.placements.subtype}</Th>
-              <Th>{i18n.unit.placements.placementDuration}</Th>
-              <Th>{i18n.unit.placements.missingGroup}</Th>
-              <Th />
-            </Tr>
-          </Thead>
-          <Tbody>
-            {sortedRows.map((row) =>
-              renderMissingGroupPlacementRow(
-                row,
-                () => addPlacementToGroup(row),
-                i18n,
-                row.backup
-                  ? permittedBackupCareActions[row.placementId]?.has('UPDATE')
-                  : permittedPlacementActions[row.placementId]?.has(
-                      'CREATE_GROUP_PLACEMENT'
-                    )
-              )
-            )}
-          </Tbody>
-        </Table>
-      </div>
+      <Table data-qa="table-of-missing-placements">
+        <Thead>
+          <Tr>
+            <Th>{i18n.unit.placements.name}</Th>
+            <Th>{i18n.unit.placements.birthday}</Th>
+            <Th>{i18n.unit.placements.type}</Th>
+            <Th>{i18n.unit.placements.subtype}</Th>
+            <Th>{i18n.unit.placements.placementDuration}</Th>
+            <Th>{i18n.unit.placements.missingGroup}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {sortedRows.map((row) =>
+            renderMissingGroupPlacementRow(
+              row,
+              () => addPlacementToGroup(row),
+              i18n,
+              row.backup
+                ? permittedBackupCareActions[row.placementId]?.has('UPDATE')
+                : permittedPlacementActions[row.placementId]?.has(
+                    'CREATE_GROUP_PLACEMENT'
+                  )
+            )
+          )}
+        </Tbody>
+      </Table>
       {['group-placement', 'backup-care-group'].includes(uiMode) &&
         activeMissingPlacement && (
           <GroupPlacementModal

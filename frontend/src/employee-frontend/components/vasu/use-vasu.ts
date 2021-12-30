@@ -119,7 +119,7 @@ export function useVasu(id: string): Vasu {
     },
     [save]
   )
-  const debouncedSave = useDebouncedCallback(saveNow, debounceInterval)
+  const [debouncedSave] = useDebouncedCallback(saveNow, debounceInterval)
 
   const handleEditFollowupEntryResult = useCallback(
     (res: Result<unknown>) =>

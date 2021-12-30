@@ -2,28 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import config from 'e2e-test-common/config'
 import {
   insertDefaultServiceNeedOptions,
   resetDatabase,
   terminatePlacement
 } from 'e2e-test-common/dev-api'
-import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import {
-  GroupsSection,
-  UnitPage
-} from 'e2e-playwright/pages/employee/units/unit'
+import { UnitPage } from 'e2e-playwright/pages/employee/units/unit'
 import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Page } from '../../utils/page'
 import { Child, Daycare } from '../../../e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
+import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 
 let page: Page
-let nav: EmployeeNav
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
@@ -44,14 +39,6 @@ beforeEach(async () => {
 
   await insertDefaultServiceNeedOptions()
 
-  await Fixture.employee()
-    .with({
-      id: config.unitSupervisorAad,
-      externalId: `espoo-ad:${config.unitSupervisorAad}`,
-      roles: []
-    })
-    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
-    .save()
   await Fixture.daycareGroup()
     .with({
       id: groupId,
@@ -84,23 +71,35 @@ beforeEach(async () => {
     })
     .save()
 
-  page = await Page.open()
-  await employeeLogin(page, 'UNIT_SUPERVISOR')
-  await page.goto(config.employeeUrl)
-  nav = new EmployeeNav(page)
-  await nav.openTab('units')
-  const units = new UnitsPage(page)
-  await units.navigateToUnit(fixtures.daycareFixture.id)
-  unitPage = new UnitPage(page)
+  await Fixture.employee()
+    .with({
+      id: config.unitSupervisorAad,
+      externalId: `espoo-ad:${config.unitSupervisorAad}`,
+      firstName: 'Essi',
+      lastName: 'Esimies',
+      roles: []
+    })
+    .withDaycareAcl(daycare.id, 'UNIT_SUPERVISOR')
+    .save()
 })
 
-describe('Employee - unit view', () => {
+const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
+  unitPage = new UnitPage(page)
+  await unitPage.navigateToUnit(daycare.id)
+  const groupsPage = await unitPage.openGroupsPage()
+  await groupsPage.waitUntilVisible()
+  return groupsPage
+}
+
+describe('Unit groups - unit supervisor', () => {
+  beforeEach(async () => {
+    page = await Page.open()
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+  })
+
   test('Children with a missing group placement is shown in missing placement list and disappears when placed to a group', async () => {
-    const groupsSection = await unitPage.openGroups()
-    await groupsSection.openGroupCollapsible(groupId)
-    await unitPage.openUnitInformation()
-    await unitPage.openGroups()
-    await groupsSection.assertMissingGroupPlacementRowCount(2)
+    const groupsSection = await loadUnitGroupsPage()
+    await groupsSection.missingPlacementsSection.assertRowCount(2)
 
     await Fixture.groupPlacement()
       .with({
@@ -112,16 +111,8 @@ describe('Employee - unit view', () => {
       .save()
 
     await page.reload()
-    await groupsSection.assertMissingGroupPlacementRowCount(1)
+    await groupsSection.missingPlacementsSection.assertRowCount(1)
   })
-
-  const reloadUnitGroupsView = async (): Promise<GroupsSection> => {
-    await page.reload()
-    await unitPage.openUnitInformation()
-    const groupsSection = await unitPage.openGroups()
-    await groupsSection.openGroupCollapsible(groupId)
-    return groupsSection
-  }
 
   test('Child with a terminated placement is shown in terminated placement list', async () => {
     await terminatePlacement(
@@ -130,8 +121,8 @@ describe('Employee - unit view', () => {
       LocalDate.today(),
       employeeId
     )
-    const groupsSection = await reloadUnitGroupsView()
-    await groupsSection.assertTerminatedPlacementRowCount(1)
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.terminatedPlacementsSection.assertRowCount(1)
   })
 
   test('Child with a terminated placement is shown not in terminated placement list when termination is older than 2 weeks', async () => {
@@ -149,8 +140,8 @@ describe('Employee - unit view', () => {
       employeeId
     )
 
-    const groupsSection = await reloadUnitGroupsView()
-    await groupsSection.assertTerminatedPlacementRowCount(2)
+    let groupsPage = await loadUnitGroupsPage()
+    await groupsPage.terminatedPlacementsSection.assertRowCount(2)
 
     await terminatePlacement(
       child1DaycarePlacementId,
@@ -158,61 +149,56 @@ describe('Employee - unit view', () => {
       LocalDate.today().subDays(15),
       employeeId
     )
-    await reloadUnitGroupsView()
-    await groupsSection.assertTerminatedPlacementRowCount(1)
+    groupsPage = await loadUnitGroupsPage()
+    await groupsPage.terminatedPlacementsSection.assertRowCount(1)
   })
 
   test('Open groups stay open when reloading page', async () => {
-    const groupsSection = await unitPage.openGroups()
-    await groupsSection.openGroupCollapsible(groupId)
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.openGroupCollapsible(groupId)
     await page.reload()
-    await groupsSection.assertGroupCollapsibleIsOpen(groupId)
+    await groupsPage.assertGroupCollapsibleIsOpen(groupId)
   })
 
   test('Open groups stay open when visiting other unit page tab', async () => {
-    const groupsSection = await unitPage.openGroups()
-    await groupsSection.openGroupCollapsible(groupId)
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.openGroupCollapsible(groupId)
     await unitPage.openUnitInformation()
-    await unitPage.openGroups()
-    await groupsSection.assertGroupCollapsibleIsOpen(groupId)
+    await unitPage.openGroupsPage()
+    await groupsPage.assertGroupCollapsibleIsOpen(groupId)
   })
+})
 
-  test('Staff will not see terminated placements', async () => {
+describe('Unit groups - staff', () => {
+  beforeEach(async () => {
     await Fixture.employee()
       .with({
         id: config.staffAad,
         externalId: `espoo-ad:${config.staffAad}`,
+        firstName: 'Kaisa',
+        lastName: 'Kasvattaja',
         roles: []
       })
       .withDaycareAcl(daycare.id, 'STAFF')
       .save()
 
+    page = await Page.open()
+    await employeeLogin(page, 'STAFF')
+  })
+
+  test('Staff will not see terminated placements', async () => {
     await terminatePlacement(
       child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
       employeeId
     )
-
-    await employeeLogin(page, 'STAFF')
-    await page.goto(`${config.employeeUrl}/units/${daycare.id}`)
-    const groupsSection = await reloadUnitGroupsView()
-    await groupsSection.assertTerminatedPlacementRowCount(0)
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.terminatedPlacementsSection.assertRowCount(0)
   })
 
   test('Staff will not see children with a missing group placement', async () => {
-    await Fixture.employee()
-      .with({
-        id: config.staffAad,
-        externalId: `espoo-ad:${config.staffAad}`,
-        roles: []
-      })
-      .withDaycareAcl(daycare.id, 'STAFF')
-      .save()
-
-    await employeeLogin(page, 'STAFF')
-    await page.goto(`${config.employeeUrl}/units/${daycare.id}`)
-    const groupsSection = await reloadUnitGroupsView()
-    await groupsSection.assertMissingGroupPlacementRowCount(0)
+    const groupsSection = await loadUnitGroupsPage()
+    await groupsSection.missingPlacementsSection.assertRowCount(0)
   })
 })

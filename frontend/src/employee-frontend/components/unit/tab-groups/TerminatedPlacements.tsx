@@ -57,10 +57,7 @@ export default React.memo(function TerminatedPlacements({
   return (
     <>
       <Title size={2}>{i18n.unit.termination.title}</Title>
-      <div
-        className="table-of-terminated-placements"
-        data-qa="table-of-terminated-placements"
-      >
+      <div>
         <Table data-qa="table-of-terminated-placements">
           <Thead>
             <Tr>

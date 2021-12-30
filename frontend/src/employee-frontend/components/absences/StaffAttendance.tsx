@@ -3,17 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, {
-  memo,
+  ChangeEvent,
   useCallback,
   useEffect,
-  useLayoutEffect,
-  useRef,
-  useState
+  useMemo,
+  useRef
 } from 'react'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
-import { GroupStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { DisabledCell } from './AbsenceCell'
 import { useTranslation } from '../../state/i18n'
 import { Result } from 'lib-common/api'
@@ -25,6 +23,8 @@ import styled from 'styled-components'
 import Tooltip from '../../components/common/Tooltip'
 import colors from 'lib-customizations/common'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { useDebouncedSave } from 'lib-common/utils/useDebouncedSave'
 
 type Props = {
   groupId: string
@@ -33,34 +33,29 @@ type Props = {
   operationDays: LocalDate[]
 }
 
-export default memo(function StaffAttendance({
+export default React.memo(function StaffAttendance({
   groupId,
   selectedDate,
   emptyCols,
   operationDays
 }: Props) {
-  const isMountedRef = useRef(true)
-  useEffect(
-    () => () => {
-      isMountedRef.current = false
-    },
-    []
-  )
-
-  const [attendance, refreshAttendances] = useApiState(() => {
+  const [attendance] = useApiState(() => {
     const year = selectedDate.getYear()
     const month = selectedDate.getMonth()
 
     return getStaffAttendances(groupId, { year, month })
   }, [groupId, selectedDate])
 
-  const updateAttendance = (date: LocalDate, count: number) =>
-    postStaffAttendance({
-      groupId,
-      date,
-      count,
-      countOther: null
-    }).then(refreshAttendances)
+  const updateAttendance = useCallback(
+    (date: LocalDate, count: number) =>
+      postStaffAttendance({
+        groupId,
+        date,
+        count,
+        countOther: null
+      }),
+    [groupId]
+  )
 
   const firstOfMonth = LocalDate.of(selectedDate.year, selectedDate.month, 1)
   const lastOfMonth = firstOfMonth.lastDayOfMonth()
@@ -80,12 +75,12 @@ export default memo(function StaffAttendance({
 interface StaffAttendanceRowProps {
   groupAttendances: Result<GroupStaffAttendanceForDates>
   emptyCols: number[]
-  updateAttendance: (date: LocalDate, count: number) => Promise<void>
+  updateAttendance: (date: LocalDate, count: number) => Promise<unknown>
   daysOfMonth: LocalDate[]
   operationDays: LocalDate[]
 }
 
-const StaffAttendanceRow = memo(function StaffAttendanceRow({
+const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
   emptyCols,
   groupAttendances,
   updateAttendance,
@@ -115,16 +110,15 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
         )
         return (
           <Td key={date.toString()}>
-            {!isOperational(date) ? (
+            {!isOperational(date) || !attendance.isSuccess ? (
               <DisabledCell />
             ) : !isActive(date) ? (
               <InactiveCell date={date} />
             ) : (
               <StaffAttendanceCell
-                updateAttendance={(count: number) =>
-                  updateAttendance(date, count)
-                }
-                attendance={attendance}
+                date={date}
+                initialCount={attendance.value?.count}
+                updateAttendance={updateAttendance}
               />
             )}
           </Td>
@@ -160,12 +154,14 @@ const InactiveCell = ({ date }: { date: LocalDate }) => {
 }
 
 interface StaffAttendanceCellProps {
-  attendance: Result<GroupStaffAttendance | undefined>
-  updateAttendance: (count: number) => Promise<void>
+  date: LocalDate
+  initialCount: number | undefined
+  updateAttendance: (date: LocalDate, count: number) => Promise<unknown>
 }
 
-const StaffAttendanceCell = memo(function StaffAttendanceCell({
-  attendance,
+const StaffAttendanceCell = React.memo(function StaffAttendanceCell({
+  date,
+  initialCount,
   updateAttendance
 }: StaffAttendanceCellProps) {
   const mountedRef = useRef(true)
@@ -176,57 +172,46 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
     []
   )
 
-  const initialValue = attendance
-    .map((a) => formatDecimal(a?.count) ?? '')
-    .getOrElse('')
+  const initialValue = useMemo(
+    () => formatDecimal(initialCount) ?? '',
+    [initialCount]
+  )
 
-  const [value, setValue] = useState(initialValue)
-
-  useLayoutEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  const disableInput =
-    attendance.isLoading || (attendance.isSuccess && attendance.isReloading)
-
-  const save = useCallback(() => {
-    if (value !== initialValue) {
+  const save = useCallback(
+    async (value: string) => {
       const numberValue = stringToNumber(value)
       if (numberValue !== undefined) {
-        updateAttendance(numberValue).catch(() => {
-          if (mountedRef.current) {
-            setValue(initialValue)
-          }
-        })
+        await updateAttendance(date, numberValue)
       }
-    }
-  }, [value, initialValue, updateAttendance])
+    },
+    [date, updateAttendance]
+  )
 
-  // Save after a timeout
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      void save()
-    }, 2000)
+  const { value, setValue, saveImmediately, state } = useDebouncedSave(
+    initialValue,
+    save,
+    isAutomatedTest ? 200 : 2000
+  )
 
-    return () => {
-      if (mountedRef.current) {
-        clearTimeout(handle)
-      }
-    }
-  }, [save])
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setValue(e.target.value)
+    },
+    [setValue]
+  )
 
   return (
-    <div className="field staff-attendance-cell">
+    <div
+      className="field staff-attendance-cell"
+      data-qa="staff-attendance-cell"
+      data-state={state}
+    >
       <div className="control">
         <input
           className="input"
           value={value}
-          onChange={(e) => {
-            setValue(e.target.value)
-          }}
-          onBlur={save}
-          disabled={disableInput}
-          data-qa="staff-attendance-input"
+          onChange={handleChange}
+          onBlur={saveImmediately}
         />
       </div>
     </div>
