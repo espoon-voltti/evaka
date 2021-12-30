@@ -51,19 +51,19 @@ describe('Employee application attachments', () => {
     let applicationView = await applicationsPage
       .applicationRow(applicationFixtureId)
       .openApplication()
-    await applicationView.startEditing()
+    const applicationEditView = await applicationView.startEditing()
 
-    await applicationView.setUrgent()
-    await applicationView.uploadUrgentAttachment(testFilePath)
-    await applicationView.assertUrgentAttachmentUploaded(testFileName)
+    await applicationEditView.setUrgent()
+    await applicationEditView.uploadUrgentAttachment(testFilePath)
+    await applicationEditView.assertUrgentAttachmentUploaded(testFileName)
 
-    await applicationView.setShiftCareNeeded()
-    await applicationView.uploadShiftCareAttachment(testFilePath)
-    await applicationView.assertShiftCareAttachmentUploaded(testFileName)
+    await applicationEditView.setShiftCareNeeded()
+    await applicationEditView.uploadShiftCareAttachment(testFilePath)
+    await applicationEditView.assertShiftCareAttachmentUploaded(testFileName)
 
-    await applicationView.deleteShiftCareAttachment(testFileName)
-    await applicationView.assertShiftCareAttachmentsDeleted()
-    await applicationView.saveApplication()
+    await applicationEditView.deleteShiftCareAttachment(testFileName)
+    await applicationEditView.assertShiftCareAttachmentsDeleted()
+    await applicationEditView.saveApplication()
 
     applicationView = await applicationsPage
       .applicationRow(applicationFixtureId)

@@ -24,16 +24,10 @@ import {
   enduserGuardianFixture,
   Fixture
 } from '../../../e2e-test-common/dev-api/fixtures'
-import { IncomeStatementPage } from '../../pages/employee/IncomeStatementPage'
-import { PersonProfilePage } from '../../pages/employee/person-profile'
 import { Page } from '../../utils/page'
 
 let page: Page
 let nav: EmployeeNav
-let financePage: FinancePage
-let incomeStatementsPage: IncomeStatementsPage
-let incomeStatementPage: IncomeStatementPage
-let personProfilePage: PersonProfilePage
 
 beforeEach(async () => {
   await resetDatabase()
@@ -64,44 +58,43 @@ beforeEach(async () => {
 
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
-  financePage = new FinancePage(page)
-  incomeStatementsPage = new IncomeStatementsPage(page)
-  incomeStatementPage = new IncomeStatementPage(page)
-  personProfilePage = new PersonProfilePage(page)
 })
 
 async function navigateToIncomeStatements() {
   await nav.openTab('finance')
-  await financePage.selectIncomeStatementsTab()
+  await new FinancePage(page).selectIncomeStatementsTab()
+  return new IncomeStatementsPage(page)
 }
 
 describe('Income statements', () => {
   test('Income statement can be set handled', async () => {
-    await navigateToIncomeStatements()
+    let incomeStatementsPage = await navigateToIncomeStatements()
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 2)
-    await incomeStatementsPage.openNthIncomeStatement(1)
+    const personProfilePage = await incomeStatementsPage.openNthIncomeStatement(
+      1
+    )
     await personProfilePage.waitUntilLoaded()
-    await personProfilePage.openCollapsible('person-income')
 
-    await waitUntilFalse(() => personProfilePage.isIncomeStatementHandled(0))
-    await waitUntilFalse(() => personProfilePage.isIncomeStatementHandled(1))
+    const incomesSection = await personProfilePage.openCollapsible('incomes')
+    await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(0))
+    await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(1))
 
-    await personProfilePage.openIncomeStatement(0)
+    const incomeStatementPage = await incomesSection.openIncomeStatement(0)
 
     await incomeStatementPage.typeHandlerNote('this is a note')
     await incomeStatementPage.setHandled(true)
     await incomeStatementPage.submit()
 
-    await waitUntilTrue(() => personProfilePage.isIncomeStatementHandled(0))
-    await waitUntilFalse(() => personProfilePage.isIncomeStatementHandled(1))
+    await waitUntilTrue(() => incomesSection.isIncomeStatementHandled(0))
+    await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(1))
 
     await waitUntilTrue(async () =>
       (
-        await personProfilePage.getIncomeStatementInnerText(0)
+        await incomesSection.getIncomeStatementInnerText(0)
       ).includes('this is a note')
     )
 
-    await navigateToIncomeStatements()
+    incomeStatementsPage = await navigateToIncomeStatements()
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
   })
 })

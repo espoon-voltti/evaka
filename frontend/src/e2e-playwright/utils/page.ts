@@ -62,6 +62,14 @@ export class Page {
     return new Element(this.page.locator(selector))
   }
 
+  findText(text: string | RegExp) {
+    return new Element(this.page.locator(`text=${text.toString()}`))
+  }
+
+  findTextExact(text: string) {
+    return new Element(this.page.locator(`text="${text}"`))
+  }
+
   findAll(selector: string) {
     return new ElementCollection(this.page.locator(selector))
   }
@@ -140,6 +148,14 @@ export class Element {
     return new Element(this.locator.locator(selector))
   }
 
+  findText(text: string | RegExp): Element {
+    return new Element(this.locator.locator(`text=${text.toString()}`))
+  }
+
+  findTextExact(text: string): Element {
+    return new Element(this.locator.locator(`text="${text}"`))
+  }
+
   findAll(selector: string): ElementCollection {
     return new ElementCollection(this.locator.locator(selector))
   }
@@ -164,6 +180,10 @@ export class Element {
 
   get disabled(): Promise<boolean> {
     return this.locator.isDisabled()
+  }
+
+  async hover(): Promise<void> {
+    await this.locator.hover()
   }
 
   async click(): Promise<void> {
@@ -268,10 +288,12 @@ export class Radio extends Checkable {}
 export class SelectionChip extends Checkable {}
 
 export class Select extends Element {
+  #input = this.find('select')
+
   async selectOption(
     value: string | string[] | { value: string } | { label: string }
   ) {
-    await this.locator.selectOption(value)
+    await this.#input.locator.selectOption(value)
   }
 }
 
@@ -330,5 +352,13 @@ export class Collapsible extends Element {
       }
       return this.isOpen()
     })
+  }
+}
+
+export class Modal extends Element {
+  #closeButton = this.find('[data-qa="modal-close"]')
+
+  async close() {
+    await this.#closeButton.click()
   }
 }

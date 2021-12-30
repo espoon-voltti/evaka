@@ -8,7 +8,7 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
-import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
+import ChildInformationPage from 'e2e-playwright/pages/employee/child-information'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Fixture } from 'e2e-test-common/dev-api/fixtures'
@@ -186,15 +186,18 @@ describe('Child information page sections', () => {
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
-    await childInfo.childCollapsiblesVisible({
+    await childInfo.assertCollapsiblesVisible({
       feeAlterations: true,
-      guardiansAndParents: true,
+      guardians: true,
       placements: true,
-      assistance: true,
-      backupCare: true,
+      assistanceNeed: true,
+      backupCares: true,
       familyContacts: true,
-      childApplications: true,
-      messageBlocklist: true
+      applications: true,
+      messageBlocklist: true,
+      dailyServiceTimes: true,
+      vasuAndLeops: true,
+      pedagogicalDocuments: true
     })
   })
 
@@ -203,15 +206,18 @@ describe('Child information page sections', () => {
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
-    await childInfo.childCollapsiblesVisible({
+    await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
-      guardiansAndParents: true,
+      guardians: true,
       placements: true,
-      assistance: true,
-      backupCare: true,
+      assistanceNeed: true,
+      backupCares: true,
       familyContacts: false,
-      childApplications: true,
-      messageBlocklist: false
+      applications: true,
+      messageBlocklist: false,
+      dailyServiceTimes: true,
+      vasuAndLeops: false,
+      pedagogicalDocuments: false
     })
   })
 
@@ -220,15 +226,18 @@ describe('Child information page sections', () => {
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
-    await childInfo.childCollapsiblesVisible({
+    await childInfo.assertCollapsiblesVisible({
       feeAlterations: true,
-      guardiansAndParents: true,
+      guardians: true,
       placements: true,
-      assistance: false,
-      backupCare: true,
+      assistanceNeed: false,
+      backupCares: true,
       familyContacts: false,
-      childApplications: false,
-      messageBlocklist: false
+      applications: false,
+      messageBlocklist: false,
+      dailyServiceTimes: true,
+      vasuAndLeops: false,
+      pedagogicalDocuments: false
     })
   })
 
@@ -237,15 +246,18 @@ describe('Child information page sections', () => {
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
-    await childInfo.childCollapsiblesVisible({
+    await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
-      guardiansAndParents: false,
+      guardians: false,
       placements: true,
-      assistance: false,
-      backupCare: true,
+      assistanceNeed: false,
+      backupCares: true,
       familyContacts: true,
-      childApplications: false,
-      messageBlocklist: false
+      applications: false,
+      messageBlocklist: false,
+      dailyServiceTimes: true,
+      vasuAndLeops: false,
+      pedagogicalDocuments: true
     })
   })
 
@@ -254,15 +266,18 @@ describe('Child information page sections', () => {
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
-    await childInfo.childCollapsiblesVisible({
+    await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
-      guardiansAndParents: true,
+      guardians: true,
       placements: true,
-      assistance: true,
-      backupCare: true,
+      assistanceNeed: true,
+      backupCares: true,
       familyContacts: true,
-      childApplications: false,
-      messageBlocklist: false
+      applications: false,
+      messageBlocklist: false,
+      dailyServiceTimes: true,
+      vasuAndLeops: true,
+      pedagogicalDocuments: true
     })
   })
 
@@ -271,15 +286,18 @@ describe('Child information page sections', () => {
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
-    await childInfo.childCollapsiblesVisible({
+    await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
-      guardiansAndParents: false,
+      guardians: false,
       placements: true,
-      assistance: true,
-      backupCare: true,
+      assistanceNeed: true,
+      backupCares: true,
       familyContacts: true,
-      childApplications: false,
-      messageBlocklist: false
+      applications: false,
+      messageBlocklist: false,
+      dailyServiceTimes: true,
+      vasuAndLeops: true,
+      pedagogicalDocuments: true
     })
   })
 })

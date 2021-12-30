@@ -6,6 +6,7 @@ import {
   Checkbox,
   Combobox,
   Element,
+  Modal,
   Page,
   TextInput
 } from 'e2e-playwright/utils/page'
@@ -13,7 +14,12 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import config from '../../../../e2e-test-common/config'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
+import {
+  waitUntilDefined,
+  waitUntilEqual,
+  waitUntilFalse,
+  waitUntilTrue
+} from '../../../utils'
 
 type UnitProviderType =
   | 'MUNICIPAL'
@@ -380,19 +386,8 @@ class StaffAclRowEditor {
 export class GroupsSection {
   constructor(private readonly page: Page) {}
 
-  readonly #groupCollapsible = (groupId: string, expectIsClosed = true) =>
-    this.page
-      .find(
-        `[data-qa="daycare-group-collapsible-${groupId}"][data-status="${
-          expectIsClosed ? 'closed' : 'open'
-        }"]`
-      )
-      .find('[data-qa="group-name"]')
-
-  readonly #groupCollapsibleState = (groupId: string): Promise<string | null> =>
-    this.page
-      .find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
-      .getAttribute('data-status')
+  readonly #groupCollapsible = (groupId: string) =>
+    this.page.find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
 
   #missingGroupsTable = this.page.find(
     'table[data-qa="table-of-missing-groups"]'
@@ -421,26 +416,19 @@ export class GroupsSection {
     )
   }
 
-  async assertGroupCollapsibleIsClosed(groupId: string) {
-    await this.#groupCollapsible(groupId, true).waitUntilVisible()
+  async openGroupCollapsible(groupId: string) {
+    const elem = this.#groupCollapsible(groupId)
+    const state = await waitUntilDefined(() => elem.getAttribute('data-status'))
+    if (state === 'closed') {
+      await elem.find('[data-qa="group-name"]').click()
+    }
+    return new GroupCollapsible(elem)
   }
 
   async assertGroupCollapsibleIsOpen(groupId: string) {
-    await this.#groupCollapsible(groupId, false).waitUntilVisible()
-  }
-
-  async openGroupCollapsible(groupId: string) {
-    if ((await this.#groupCollapsibleState(groupId)) === 'closed')
-      await this.#groupCollapsible(groupId).click()
-
-    await this.assertGroupCollapsibleIsOpen(groupId)
-  }
-
-  async closeGroupCollapsible(groupId: string) {
-    if ((await this.#groupCollapsibleState(groupId)) === 'open')
-      await this.#groupCollapsible(groupId, false).click()
-
-    await this.assertGroupCollapsibleIsClosed(groupId)
+    await this.#groupCollapsible(groupId)
+      .find('[data-qa="group-name"]')
+      .waitUntilVisible()
   }
 
   async waitUntilVisible() {
@@ -448,6 +436,125 @@ export class GroupsSection {
       .findAll('[data-qa="table-of-missing-groups"]')
       .nth(0)
       .waitUntilVisible()
+  }
+}
+
+export class GroupCollapsible extends Element {
+  #groupDailyNoteButton = this.find('[data-qa="btn-create-group-note"]')
+
+  childRow(childId: string) {
+    return new GroupCollapsibleChildRow(this, childId)
+  }
+
+  async openGroupDailyNoteModal() {
+    await this.#groupDailyNoteButton.click()
+    return new GroupDailyNoteModal(this.find('[data-qa="modal"]'))
+  }
+}
+
+export class GroupDailyNoteModal extends Modal {
+  #input = new TextInput(this.find('[data-qa="sticky-note-input"]'))
+  #save = this.find('[data-qa="sticky-note-save"]')
+  #delete = this.find('[data-qa="sticky-note-remove"]')
+
+  async fillNote(text: string) {
+    await this.#input.fill(text)
+  }
+
+  async save() {
+    await this.#save.click()
+    await this.#save.waitUntilHidden()
+  }
+
+  async deleteNote() {
+    await this.#delete.click()
+    await this.#delete.waitUntilHidden()
+  }
+}
+
+export class GroupCollapsibleChildRow extends Element {
+  constructor(self: Element, private childId: string) {
+    super(self)
+  }
+
+  #dailyNoteIcon = this.find(
+    `[data-qa="daycare-daily-note-icon-${this.childId}"]`
+  )
+  #dailyNoteTooltip = this.find(
+    `[data-qa="daycare-daily-note-hover-${this.childId}"]`
+  )
+
+  async assertDailyNoteContainsText(expectedText: string) {
+    await this.#dailyNoteIcon.hover()
+    await waitUntilTrue(async () =>
+      ((await this.#dailyNoteTooltip.textContent) ?? '').includes(expectedText)
+    )
+  }
+
+  async openDailyNoteModal() {
+    await this.#dailyNoteIcon.click()
+    return new ChildDailyNoteModal(this.find('[data-qa="modal"]'))
+  }
+}
+
+export class ChildDailyNoteModal extends Modal {
+  #noteInput = new TextInput(this.find('[data-qa="note-input"]'))
+  #sleepingHoursInput = new TextInput(
+    this.find('[data-qa="sleeping-hours-input"]')
+  )
+  #sleepingMinutesInput = new TextInput(
+    this.find('[data-qa="sleeping-minutes-input"]')
+  )
+  #reminderNoteInput = new TextInput(
+    this.find('[data-qa="reminder-note-input"]')
+  )
+  #submit = this.find('[data-qa="btn-submit"]')
+
+  async openTab(tab: 'child' | 'sticky' | 'group') {
+    await this.find(`[data-qa="tab-${tab}"]`).click()
+  }
+
+  // Child
+  async fillNote(text: string) {
+    await this.#noteInput.fill(text)
+  }
+
+  async assertNote(expectedText: string) {
+    await waitUntilEqual(() => this.#noteInput.inputValue, expectedText)
+  }
+
+  async assertSleepingHours(expectedText: string) {
+    await waitUntilEqual(
+      () => this.#sleepingHoursInput.inputValue,
+      expectedText
+    )
+  }
+
+  async assertSleepingMinutes(expectedText: string) {
+    await waitUntilEqual(
+      () => this.#sleepingMinutesInput.inputValue,
+      expectedText
+    )
+  }
+
+  async assertReminderNote(expectedText: string) {
+    await waitUntilEqual(() => this.#reminderNoteInput.inputValue, expectedText)
+  }
+
+  async submit() {
+    await this.#submit.click()
+  }
+
+  // Group
+  #groupNote = this.find('[data-qa="sticky-note-note"]')
+  #groupNoteInput = this.find('[data-qa="sticky-note"]')
+
+  async assertGroupNote(expectedText: string) {
+    await waitUntilEqual(() => this.#groupNote.textContent, expectedText)
+  }
+
+  async assertNoGroupNote() {
+    await this.#groupNoteInput.waitUntilVisible()
   }
 }
 

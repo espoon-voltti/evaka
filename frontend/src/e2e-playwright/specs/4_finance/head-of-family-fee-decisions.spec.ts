@@ -16,14 +16,14 @@ import {
   Fixture,
   uuidv4
 } from '../../../e2e-test-common/dev-api/fixtures'
-import { PersonProfilePage } from '../../pages/employee/person-profile'
+import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { initializeAreaAndPersonData } from '../../../e2e-test-common/dev-api/data-init'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { Page } from 'e2e-playwright/utils/page'
 
 let page: Page
-let personProfilePage: PersonProfilePage
+let guardianPage: GuardianInformationPage
 
 beforeEach(async () => {
   await resetDatabase()
@@ -41,7 +41,7 @@ beforeEach(async () => {
   await employeeLogin(page, 'FINANCE_ADMIN')
 
   await page.goto(config.employeeUrl)
-  personProfilePage = new PersonProfilePage(page)
+  guardianPage = new GuardianInformationPage(page)
 })
 
 describe('Head of family fee decisions', () => {
@@ -69,12 +69,12 @@ describe('Head of family fee decisions', () => {
     await createFeeDecisionFixture(sentAtThird)
     await createFeeDecisionFixture(sentAtSecond)
 
-    await personProfilePage.openPersonPage(enduserGuardianFixture.id)
-    await personProfilePage.waitUntilLoaded()
-    await personProfilePage.openCollapsible('person-fee-decisions')
+    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.waitUntilLoaded()
+    const feeDecisions = await guardianPage.openCollapsible('feeDecisions')
 
-    await personProfilePage.checkFeeDecisionSentAt(0, sentAtThird)
-    await personProfilePage.checkFeeDecisionSentAt(1, sentAtSecond)
-    await personProfilePage.checkFeeDecisionSentAt(2, sentAtFirst)
+    await feeDecisions.checkFeeDecisionSentAt(0, sentAtThird)
+    await feeDecisions.checkFeeDecisionSentAt(1, sentAtSecond)
+    await feeDecisions.checkFeeDecisionSentAt(2, sentAtFirst)
   })
 })

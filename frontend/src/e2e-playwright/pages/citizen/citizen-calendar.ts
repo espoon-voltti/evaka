@@ -73,9 +73,7 @@ class ReservationsModal {
 
   #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
   #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
-  #repetitionSelect = new Select(
-    this.page.find('[data-qa="repetition"] select')
-  )
+  #repetitionSelect = new Select(this.page.find('[data-qa="repetition"]'))
   #dailyStartTimeInput = new TextInput(
     this.page.find('[data-qa="daily-start-time-0"]')
   )

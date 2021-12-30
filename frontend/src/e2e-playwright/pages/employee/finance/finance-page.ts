@@ -12,6 +12,7 @@ import {
   TextInput
 } from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
+import GuardianInformationPage from '../guardian-information'
 
 export class FinancePage {
   constructor(private readonly page: Page) {}
@@ -378,5 +379,6 @@ export class IncomeStatementsPage {
 
   async openNthIncomeStatement(nth: number) {
     await this.#incomeStatementRows.nth(nth).find('a').click()
+    return new GuardianInformationPage(this.page)
   }
 }

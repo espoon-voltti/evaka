@@ -21,8 +21,8 @@ import {
 import { employeeLogin, UserRole } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
 import ChildInformationPage, {
-  ChildPlacements
-} from '../../pages/employee/child-information-page'
+  PlacementsSection
+} from '../../pages/employee/child-information'
 import { format } from 'date-fns'
 import { PlacementType } from 'lib-common/generated/enums'
 import { Page } from '../../utils/page'
@@ -32,7 +32,7 @@ let page: Page
 let childInformationPage: ChildInformationPage
 let childId: UUID
 let unitId: UUID
-let childPlacementsPage: ChildPlacements
+let childPlacements: PlacementsSection
 
 beforeEach(async () => {
   await resetDatabase()
@@ -80,8 +80,7 @@ const logUserIn = async (role: UserRole) => {
   await employeeLogin(page, role)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.placementsCollapsible.open()
-  childPlacementsPage = new ChildPlacements(page)
+  childPlacements = await childInformationPage.openCollapsible('placements')
 }
 
 describe('Child Information placement info', () => {
@@ -91,7 +90,7 @@ describe('Child Information placement info', () => {
     await setupUser(config.unitSupervisorAad)
     await logUserIn('UNIT_SUPERVISOR')
 
-    await childPlacementsPage.assertTerminatedByGuardianIsNotShown(placementId)
+    await childPlacements.assertTerminatedByGuardianIsNotShown(placementId)
 
     await terminatePlacement(
       placementId,
@@ -100,6 +99,6 @@ describe('Child Information placement info', () => {
       familyWithTwoGuardians.guardian.id
     )
     await logUserIn('UNIT_SUPERVISOR')
-    await childPlacementsPage.assertTerminatedByGuardianIsShown(placementId)
+    await childPlacements.assertTerminatedByGuardianIsShown(placementId)
   })
 })

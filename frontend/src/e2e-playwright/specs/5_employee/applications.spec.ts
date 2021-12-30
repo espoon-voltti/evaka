@@ -11,7 +11,6 @@ import {
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { applicationFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { Family } from 'e2e-test-common/dev-api/types'
-import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ApplicationsPage from 'e2e-playwright/pages/employee/applications'
@@ -57,10 +56,9 @@ describe('Applications', () => {
     ])
 
     await applicationsPage.toggleApplicationStatusFilter('ALL')
-    await waitUntilEqual(
-      () => applicationsPage.applicationRow(application.id).status.innerText,
-      'Odottaa postitusta'
-    )
+    await applicationsPage
+      .applicationRow(application.id)
+      .assertStatus('Odottaa postitusta')
   })
 
   test('Application with a dead applicant has an indicator for the date of death', async () => {
@@ -76,6 +74,6 @@ describe('Applications', () => {
     const applicationDetails = await applicationsPage
       .applicationRow(application.id)
       .openApplication()
-    await applicationDetails.applicantDeadIndicator.waitUntilVisible()
+    await applicationDetails.assertApplicantIsDead()
   })
 })

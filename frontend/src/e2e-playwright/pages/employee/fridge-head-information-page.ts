@@ -72,9 +72,7 @@ export class IncomesSection {
   }
 
   #coefficientSelect = (type: string) =>
-    new Select(
-      this.page.find(`[data-qa="income-coefficient-select-${type}"] select`)
-    )
+    new Select(this.page.find(`[data-qa="income-coefficient-select-${type}"]`))
 
   async chooseCoefficient(type: string, coefficient: string) {
     await this.#coefficientSelect(type).selectOption({ value: coefficient })

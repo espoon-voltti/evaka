@@ -65,7 +65,7 @@ export default class CitizenMessagesPage {
     await this.#inputContent.fill(content)
     await this.#receiverSelection.click()
     for (const receiver of receivers) {
-      await this.page.find(`text="${receiver}"`).click()
+      await this.page.findTextExact(receiver).click()
     }
     await this.#sendMessageButton.click()
     await waitUntilTrue(() => this.getThreadCount().then((count) => count > 0))

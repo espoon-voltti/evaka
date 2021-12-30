@@ -32,7 +32,7 @@ export default class CitizenPersonalDetails {
     email: string | null
   }) {
     await this.#startEditing.click()
-    await new Select(this.#preferredName.find('select')).selectOption({
+    await new Select(this.#preferredName).selectOption({
       label: data.preferredName
     })
     await new TextInput(this.#phone.find('input')).fill(data.phone)

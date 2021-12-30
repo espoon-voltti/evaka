@@ -19,8 +19,8 @@ import {
 import { employeeLogin, UserRole } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
 import ChildInformationPage, {
-  ChildAssistanceNeed
-} from '../../pages/employee/child-information-page'
+  AssistanceNeedSection
+} from '../../pages/employee/child-information'
 import { addDays, format, subDays } from 'date-fns'
 import { PlacementType } from 'lib-common/generated/enums'
 import { Page } from '../../utils/page'
@@ -28,7 +28,7 @@ import { ScopedRole } from 'lib-common/api-types/employee-auth'
 
 let page: Page
 let childInformationPage: ChildInformationPage
-let assistanceNeeds: ChildAssistanceNeed
+let assistanceNeeds: AssistanceNeedSection
 let childId: UUID
 let unitId: UUID
 
@@ -72,8 +72,7 @@ const logUserIn = async (role: UserRole) => {
   await employeeLogin(page, role)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.assistanceCollapsible.click()
-  assistanceNeeds = new ChildAssistanceNeed(page)
+  assistanceNeeds = await childInformationPage.openCollapsible('assistanceNeed')
 }
 
 describe('Child Information assistance need functionality for employees', () => {

@@ -7,6 +7,7 @@ import { DecisionType } from 'e2e-test-common/dev-api/types'
 import config from 'e2e-test-common/config'
 import { UUID } from 'lib-common/types'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import ApplicationEditView from './application-edit-view'
 
 export default class ApplicationReadView {
   constructor(private page: Page) {}
@@ -19,7 +20,6 @@ export default class ApplicationReadView {
   #givenOtherGuardianPhone = this.page.find('[data-qa="second-guardian-phone"]')
   #giveOtherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
   #applicationStatus = this.page.find('[data-qa="application-status"]')
-  decisionAcceptedStartDate = this.page.find('[data-qa="application-status"]')
 
   async waitUntilLoaded() {
     await this.page.find('[data-qa="application-read-view"]').waitUntilVisible()
@@ -100,7 +100,7 @@ export default class ApplicationReadView {
   }
 
   async assertApplicationStatus(text: string) {
-    await this.#applicationStatus.find(`text=${text}`).waitUntilVisible()
+    await this.#applicationStatus.findText(text).waitUntilVisible()
   }
 
   async assertUrgentAttachmentExists(fileName: string) {
@@ -140,7 +140,12 @@ export default class ApplicationReadView {
       .waitUntilVisible()
   }
 
-  async startEditing() {
+  async assertApplicantIsDead() {
+    await this.page.find('[data-qa="applicant-dead"]').waitUntilVisible()
+  }
+
+  async startEditing(): Promise<ApplicationEditView> {
     await this.#editButton.click()
+    return new ApplicationEditView(this.page)
   }
 }

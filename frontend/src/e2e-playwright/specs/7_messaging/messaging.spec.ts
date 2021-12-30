@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import CitizenMessagesPage from 'e2e-playwright/pages/citizen/citizen-messages'
-import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
+import ChildInformationPage from 'e2e-playwright/pages/employee/child-information'
 import MessagesPage from 'e2e-playwright/pages/employee/messages/messages-page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin, enduserLogin } from 'e2e-playwright/utils/user'
@@ -129,7 +129,10 @@ describe('Sending and receiving messages', () => {
       await employeeLogin(adminPage, 'ADMIN')
       await adminPage.goto(`${config.employeeUrl}/child-information/${childId}`)
       const childInformationPage = new ChildInformationPage(adminPage)
-      await childInformationPage.addParentToBlockList(
+      const blocklistSection = await childInformationPage.openCollapsible(
+        'messageBlocklist'
+      )
+      await blocklistSection.addParentToBlockList(
         fixtures.enduserGuardianFixture.id
       )
 
