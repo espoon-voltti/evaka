@@ -108,7 +108,7 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
 
   return (
     <Tr className={'staff-attendance-row'}>
-      <Td colSpan={2}>{i18n.absences.table.staffRow}</Td>
+      <Td>{i18n.absences.table.staffRow}</Td>
       {daysOfMonth.map((date) => {
         const attendance = groupAttendances.map(({ attendances }) =>
           attendances.get(date.toString())
