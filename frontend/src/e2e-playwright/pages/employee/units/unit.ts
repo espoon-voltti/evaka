@@ -389,10 +389,6 @@ export class GroupsSection {
   readonly #groupCollapsible = (groupId: string) =>
     this.page.find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
 
-  #missingGroupsTable = this.page.find(
-    'table[data-qa="table-of-missing-groups"]'
-  )
-
   readonly #missingPlacementRow = this.page.find(
     '[data-qa="missing-placement-row"]'
   )
@@ -401,8 +397,6 @@ export class GroupsSection {
   )
 
   async assertMissingGroupPlacementRowCount(expectedCount: number) {
-    await this.#missingGroupsTable.waitUntilVisible()
-
     await waitUntilEqual(
       () => this.#missingPlacementRow.locator.count(),
       expectedCount
@@ -432,10 +426,7 @@ export class GroupsSection {
   }
 
   async waitUntilVisible() {
-    await this.page
-      .findAll('[data-qa="table-of-missing-groups"]')
-      .nth(0)
-      .waitUntilVisible()
+    await this.page.find('[data-qa="groups-title-bar"]').waitUntilVisible()
   }
 }
 

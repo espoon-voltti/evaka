@@ -46,27 +46,28 @@ export default React.memo(function TabGroups({
     combine(unitInformation, unitData, groupPermittedActions),
     ([unitInformation, unitData, groupPermittedActions]) => (
       <FixedSpaceColumn>
-        {unitData.recentlyTerminatedPlacements &&
-          unitData.recentlyTerminatedPlacements.length > 0 && (
-            <ContentArea opaque>
-              <TerminatedPlacements
-                recentlyTerminatedPlacements={
-                  unitData.recentlyTerminatedPlacements
-                }
-              />
-            </ContentArea>
-          )}
+        {unitData.recentlyTerminatedPlacements.length > 0 && (
+          <ContentArea opaque>
+            <TerminatedPlacements
+              recentlyTerminatedPlacements={
+                unitData.recentlyTerminatedPlacements
+              }
+            />
+          </ContentArea>
+        )}
 
-        <ContentArea opaque>
-          <MissingGroupPlacements
-            groups={unitData.groups}
-            missingGroupPlacements={unitData.missingGroupPlacements}
-            backupCares={unitData.backupCares}
-            reloadUnitData={reloadUnitData}
-            permittedPlacementActions={unitData.permittedPlacementActions}
-            permittedBackupCareActions={unitData.permittedBackupCareActions}
-          />
-        </ContentArea>
+        {unitData.missingGroupPlacements.length > 0 && (
+          <ContentArea opaque>
+            <MissingGroupPlacements
+              groups={unitData.groups}
+              missingGroupPlacements={unitData.missingGroupPlacements}
+              backupCares={unitData.backupCares}
+              reloadUnitData={reloadUnitData}
+              permittedPlacementActions={unitData.permittedPlacementActions}
+              permittedBackupCareActions={unitData.permittedBackupCareActions}
+            />
+          </ContentArea>
+        )}
 
         <ContentArea opaque>
           <Groups
