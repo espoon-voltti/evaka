@@ -13,6 +13,7 @@ import './index.css'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/employee'
 import 'chartjs-adapter-date-fns'
+import { datadogRum } from '@datadog/browser-rum'
 
 // Load Sentry before React to make Sentry's integrations work automatically
 Sentry.init({
@@ -20,6 +21,18 @@ Sentry.init({
   dsn: appConfig.sentry?.dsn,
   environment: getEnvironment()
 })
+
+if (appConfig.datadog?.enabled === true) {
+  datadogRum.init({
+    applicationId: appConfig.datadog.applicationId,
+    clientToken: appConfig.datadog.clientToken,
+    site: 'datadoghq.com',
+    service: 'evaka-dev',
+    sampleRate: 100,
+    trackInteractions: false,
+    defaultPrivacyLevel: 'mask'
+  })
+}
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility

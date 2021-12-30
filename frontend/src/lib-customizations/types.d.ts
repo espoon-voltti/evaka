@@ -56,6 +56,11 @@ export interface BaseAppConfig {
     dsn: string
     enabled: boolean
   }
+  datadog?: {
+    applicationId: string
+    clientToken: string
+    enabled: boolean
+  }
 }
 
 export interface CommonCustomizations {

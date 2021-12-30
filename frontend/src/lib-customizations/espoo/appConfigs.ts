@@ -18,6 +18,13 @@ const employeeConfigs: AppConfigs = {
       enabled: false
     }
   },
+  dev: {
+    datadog: {
+      enabled: true,
+      applicationId: '01aa0d3e-c486-437f-b40d-7bc32b3a6cd7',
+      clientToken: 'pubacd46b5107e1cdd28e99c82f8de16ebf'
+    }
+  },
   staging: {
     sentry: {
       dsn: 'https://9b97efdb9ffc453c8cd12589367ab3b9@o318158.ingest.sentry.io/1821330',
@@ -39,6 +46,7 @@ const employeeMobileConfigs: AppConfigs = {
       enabled: false
     }
   },
+  dev: {},
   staging: {
     sentry: {
       dsn: 'https://0c9cf7b7c6f84c9ba953e2796db03cb7@o318158.ingest.sentry.io/5603170',
@@ -60,6 +68,7 @@ const citizenConfigs: AppConfigs = {
       enabled: false
     }
   },
+  dev: {},
   staging: {
     sentry: {
       dsn: 'https://040a66e1905f432b9bd3a13a22d1d16e@o318158.ingest.sentry.io/5578235',

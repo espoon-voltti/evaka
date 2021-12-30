@@ -34,6 +34,28 @@ const features: Features = {
       placementTermination: true
     }
   },
+  dev: {
+    assistanceActionOtherEnabled: true,
+    childIncomeEnabled: false,
+    daycareApplication: {
+      dailyTimesEnabled: true
+    },
+    groupsTableServiceNeedsEnabled: false,
+    evakaLogin: true,
+    financeBasicsPage: true,
+    preschoolEnabled: true,
+    urgencyAttachmentsEnabled: true,
+    adminSettingsEnabled: false,
+    experimental: {
+      ai: true,
+      messageAttachments: true,
+      realtimeStaffAttendance: false,
+      personalDetailsPage: true,
+      mobileMessages: true,
+      leops: true,
+      placementTermination: true
+    }
+  },
   staging: {
     assistanceActionOtherEnabled: true,
     childIncomeEnabled: false,
