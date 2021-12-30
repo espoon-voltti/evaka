@@ -295,6 +295,10 @@ export class Select extends Element {
   ) {
     await this.#input.locator.selectOption(value)
   }
+
+  get selectedOption(): Promise<string> {
+    return this.#input.locator.inputValue()
+  }
 }
 
 export class Combobox extends Element {
@@ -357,8 +361,13 @@ export class Collapsible extends Element {
 
 export class Modal extends Element {
   #closeButton = this.find('[data-qa="modal-close"]')
+  #submitButton = this.find('[data-qa="modal-okBtn"]')
 
   async close() {
     await this.#closeButton.click()
+  }
+
+  async submit() {
+    await this.#submitButton.click()
   }
 }

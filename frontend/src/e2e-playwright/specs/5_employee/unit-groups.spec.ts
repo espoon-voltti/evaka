@@ -2,28 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import config from 'e2e-test-common/config'
 import {
   insertDefaultServiceNeedOptions,
   resetDatabase,
   terminatePlacement
 } from 'e2e-test-common/dev-api'
-import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import {
-  GroupsSection,
-  UnitPage
-} from 'e2e-playwright/pages/employee/units/unit'
+import { UnitPage } from 'e2e-playwright/pages/employee/units/unit'
 import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Page } from '../../utils/page'
 import { Child, Daycare } from '../../../e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
+import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 
 let page: Page
-let nav: EmployeeNav
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
@@ -86,21 +81,14 @@ beforeEach(async () => {
 
   page = await Page.open()
   await employeeLogin(page, 'UNIT_SUPERVISOR')
-  await page.goto(config.employeeUrl)
-  nav = new EmployeeNav(page)
-  await nav.openTab('units')
-  const units = new UnitsPage(page)
-  await units.navigateToUnit(fixtures.daycareFixture.id)
   unitPage = new UnitPage(page)
+  await unitPage.navigateToUnit(fixtures.daycareFixture.id)
 })
 
 describe('Employee - unit view', () => {
   test('Children with a missing group placement is shown in missing placement list and disappears when placed to a group', async () => {
-    const groupsSection = await unitPage.openGroups()
-    await groupsSection.openGroupCollapsible(groupId)
-    await unitPage.openUnitInformation()
-    await unitPage.openGroups()
-    await groupsSection.assertMissingGroupPlacementRowCount(2)
+    const groupsSection = await unitPage.openGroupsPage()
+    await groupsSection.missingPlacementsSection.assertRowCount(2)
 
     await Fixture.groupPlacement()
       .with({
@@ -112,13 +100,13 @@ describe('Employee - unit view', () => {
       .save()
 
     await page.reload()
-    await groupsSection.assertMissingGroupPlacementRowCount(1)
+    await groupsSection.missingPlacementsSection.assertRowCount(1)
   })
 
-  const reloadUnitGroupsView = async (): Promise<GroupsSection> => {
+  const reloadUnitGroupsView = async (): Promise<UnitGroupsPage> => {
     await page.reload()
     await unitPage.openUnitInformation()
-    const groupsSection = await unitPage.openGroups()
+    const groupsSection = await unitPage.openGroupsPage()
     await groupsSection.openGroupCollapsible(groupId)
     return groupsSection
   }
@@ -163,17 +151,17 @@ describe('Employee - unit view', () => {
   })
 
   test('Open groups stay open when reloading page', async () => {
-    const groupsSection = await unitPage.openGroups()
+    const groupsSection = await unitPage.openGroupsPage()
     await groupsSection.openGroupCollapsible(groupId)
     await page.reload()
     await groupsSection.assertGroupCollapsibleIsOpen(groupId)
   })
 
   test('Open groups stay open when visiting other unit page tab', async () => {
-    const groupsSection = await unitPage.openGroups()
+    const groupsSection = await unitPage.openGroupsPage()
     await groupsSection.openGroupCollapsible(groupId)
     await unitPage.openUnitInformation()
-    await unitPage.openGroups()
+    await unitPage.openGroupsPage()
     await groupsSection.assertGroupCollapsibleIsOpen(groupId)
   })
 
@@ -197,6 +185,8 @@ describe('Employee - unit view', () => {
     await employeeLogin(page, 'STAFF')
     await page.goto(`${config.employeeUrl}/units/${daycare.id}`)
     const groupsSection = await reloadUnitGroupsView()
+
+    await groupsSection.missingPlacementsSection.assertRowCount(2)
     await groupsSection.assertTerminatedPlacementRowCount(0)
   })
 
@@ -213,6 +203,6 @@ describe('Employee - unit view', () => {
     await employeeLogin(page, 'STAFF')
     await page.goto(`${config.employeeUrl}/units/${daycare.id}`)
     const groupsSection = await reloadUnitGroupsView()
-    await groupsSection.assertMissingGroupPlacementRowCount(0)
+    await groupsSection.missingPlacementsSection.assertRowCount(0)
   })
 })

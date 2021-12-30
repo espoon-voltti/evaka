@@ -16,12 +16,14 @@ interface Props {
   unitId: UUID
   selected: UUID | 'no-group' | null
   onSelect: (val: UUID | 'no-group') => void
+  'data-qa'?: string
 }
 
 export default React.memo(function GroupSelector({
   unitId,
   selected,
-  onSelect
+  onSelect,
+  'data-qa': dataQa
 }: Props) {
   const { i18n } = useTranslation()
   const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
@@ -76,6 +78,7 @@ export default React.memo(function GroupSelector({
       items={options}
       getItemLabel={getItemLabel}
       onChange={(group) => onSelect(group ?? 'no-group')}
+      data-qa={dataQa}
     />
   ) : null
 })

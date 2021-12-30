@@ -1,0 +1,128 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import {
+  createDaycarePlacementFixture,
+  daycareGroupFixture,
+  Fixture,
+  uuidv4
+} from 'e2e-test-common/dev-api/fixtures'
+import { UnitPage } from '../../pages/employee/units/unit'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
+import config from 'e2e-test-common/config'
+import {
+  initializeAreaAndPersonData,
+  AreaAndPersonFixtures
+} from 'e2e-test-common/dev-api/data-init'
+import {
+  insertDaycareGroupFixtures,
+  insertDaycarePlacementFixtures,
+  insertDefaultServiceNeedOptions,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
+// import AbsencesPage from '../../pages/employee/absences/absences-page'
+import { Page } from '../../utils/page'
+import { employeeLogin } from '../../utils/user'
+
+let fixtures: AreaAndPersonFixtures
+let daycarePlacementFixture: DaycarePlacement
+let page: Page
+let unitPage: UnitPage
+
+beforeEach(async () => {
+  await resetDatabase()
+  fixtures = await initializeAreaAndPersonData()
+  await insertDefaultServiceNeedOptions()
+  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await Fixture.employee()
+    .with({
+      id: config.unitSupervisorAad,
+      externalId: `espoo-ad:${config.unitSupervisorAad}`,
+      firstName: 'Essi',
+      lastName: 'Esimies',
+      roles: []
+    })
+    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
+    .save()
+
+  daycarePlacementFixture = createDaycarePlacementFixture(
+    uuidv4(),
+    fixtures.enduserChildFixtureJari.id,
+    fixtures.daycareFixture.id
+  )
+  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+
+  page = await Page.open()
+  await employeeLogin(page, 'UNIT_SUPERVISOR')
+  unitPage = new UnitPage(page)
+})
+
+describe('Employee - Absences', () => {
+  test('User can place a child into a group and remove the child from the group', async () => {
+    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    const groupsPage = await unitPage.openGroupsPage()
+
+    const missingPlacementsSection = groupsPage.missingPlacementsSection
+    await missingPlacementsSection.createGroupPlacementForChild(0)
+
+    const groupSection = await groupsPage.openGroupCollapsible(
+      daycareGroupFixture.id
+    )
+
+    await missingPlacementsSection.assertRowCount(0)
+    await groupSection.assertChildCount(1)
+
+    await groupSection.removeGroupPlacement(0)
+    await missingPlacementsSection.assertRowCount(1)
+    await groupSection.assertChildCount(0)
+  })
+
+  test('User can open the diary page and add an absence for a child', async () => {
+    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    const groupsPage = await unitPage.openGroupsPage()
+
+    const missingPlacementsSection = groupsPage.missingPlacementsSection
+    await missingPlacementsSection.createGroupPlacementForChild(0)
+
+    const groupSection = await groupsPage.openGroupCollapsible(
+      daycareGroupFixture.id
+    )
+    const diaryPage = await groupSection.openDiary()
+    await diaryPage.assertUnitName(fixtures.daycareFixture.name)
+    await diaryPage.assertSelectedGroup(daycareGroupFixture.id)
+
+    // Can add an absence
+    await diaryPage.addAbsenceToChild(0, 'SICKLEAVE')
+    await diaryPage.childHasAbsence(0, 'SICKLEAVE')
+
+    // Can change the absence type
+    await diaryPage.addAbsenceToChild(0, 'UNKNOWN_ABSENCE')
+    await diaryPage.childHasAbsence(0, 'UNKNOWN_ABSENCE')
+
+    // Can clear an absence
+    await diaryPage.addAbsenceToChild(0, 'PRESENCE')
+    await diaryPage.childHasNoAbsence(0)
+  })
+
+  test('User can add a staff attendance', async () => {
+    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    const groupsPage = await unitPage.openGroupsPage()
+
+    const missingPlacementsSection = groupsPage.missingPlacementsSection
+    await missingPlacementsSection.createGroupPlacementForChild(0)
+
+    const groupSection = await groupsPage.openGroupCollapsible(
+      daycareGroupFixture.id
+    )
+    const diaryPage = await groupSection.openDiary()
+
+    await diaryPage.fillStaffAttendance(0, 3)
+
+    // Change to another page and back to reload data
+    await unitPage.openGroupsPage()
+    await groupSection.openDiary()
+
+    await diaryPage.assertStaffAttendance(0, 3)
+  })
+})

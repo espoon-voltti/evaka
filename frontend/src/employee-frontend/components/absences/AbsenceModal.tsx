@@ -37,12 +37,12 @@ export default React.memo(function AbsenceModal({
   return (
     <FormModal
       title=""
-      className="absence-modal"
       resolveAction={onSave}
       resolveLabel={i18n.absences.modal.saveButton}
       resolveDisabled={saveDisabled}
       rejectAction={onCancel}
       rejectLabel={i18n.absences.modal.cancelButton}
+      data-qa="absence-modal"
     >
       <FixedSpaceColumn spacing={'L'}>
         <Label>{i18n.absences.modal.absenceSectionLabel}</Label>
@@ -54,13 +54,15 @@ export default React.memo(function AbsenceModal({
               label={i18n.absences.modal.absenceTypes[absenceType]}
               checked={selectedAbsenceType === absenceType}
               onChange={() => setSelectedAbsenceType(absenceType)}
+              data-qa={`absence-type-${absenceType}`}
             />
           ))}
           <Radio
-            id={'PRESENCE'}
+            id="PRESENCE"
             label={i18n.absences.modal.absenceTypes.PRESENCE}
             checked={selectedAbsenceType === null}
             onChange={() => setSelectedAbsenceType(null)}
+            data-qa="absence-type-PRESENCE"
           />
         </FixedSpaceColumn>
 
