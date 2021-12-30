@@ -58,7 +58,8 @@ import {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   Stats,
-  Unit
+  Unit,
+  UnitChildrenCapacities
 } from '../../../../types/unit'
 import { capitalizeFirstLetter, formatPersonName } from '../../../../utils'
 import { rangesOverlap } from '../../../../utils/date'
@@ -78,6 +79,7 @@ interface Props {
   caretakers?: Stats
   confirmedOccupancy?: OccupancyResponse
   realizedOccupancy?: OccupancyResponse
+  unitChildrenCapacities: UnitChildrenCapacities[]
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void
@@ -115,6 +117,11 @@ const RowActionContainer = styled.div`
   display: flex;
 `
 
+const ChildCapacityFactorList = styled.div`
+  list-style: none;
+  white-space: nowrap;
+`
+
 function getChildMinMaxHeadcounts(
   occupancyResponse?: OccupancyResponse
 ): { min: number; max: number } | undefined {
@@ -142,7 +149,8 @@ export default React.memo(function Group({
   toggleOpen,
   permittedActions,
   permittedBackupCareActions,
-  permittedGroupPlacementActions
+  permittedGroupPlacementActions,
+  unitChildrenCapacities
 }: Props) {
   const mobileEnabled = unit.enabledPilotFeatures.includes('MOBILE')
   const { i18n } = useTranslation()
@@ -507,6 +515,7 @@ export default React.memo(function Group({
                     {showServiceNeed ? (
                       <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
+                    <Th>{i18n.unit.groups.factor}</Th>
                     <Th>{i18n.unit.groups.placementDuration}</Th>
                     <Th />
                   </Tr>
@@ -547,6 +556,13 @@ export default React.memo(function Group({
                       'type' in placement
                         ? placement.startDate
                         : placement.period.start
+
+                    const maybeCapacityFactors = unitChildrenCapacities.find(
+                      (item) => item.childId === placement.child.id
+                    )
+                    const maybeCapacity =
+                      (maybeCapacityFactors?.assistanceNeedFactor ?? 0) *
+                      (maybeCapacityFactors?.ageFactor ?? 0)
 
                     return (
                       <Tr
@@ -647,6 +663,24 @@ export default React.memo(function Group({
                             )}
                           </Td>
                         ) : null}
+                        <Td>
+                          <Tooltip
+                            tooltip={
+                              <ChildCapacityFactorList>
+                                <li>
+                                  {i18n.unit.groups.childAgeFactor}:{' '}
+                                  {maybeCapacityFactors?.ageFactor}
+                                </li>
+                                <li>
+                                  {i18n.unit.groups.childAssistanceNeedFactor}:{' '}
+                                  {maybeCapacityFactors?.assistanceNeedFactor}
+                                </li>
+                              </ChildCapacityFactorList>
+                            }
+                          >
+                            {maybeCapacity}
+                          </Tooltip>
+                        </Td>
                         <Td data-qa="placement-duration">
                           {'type' in placement
                             ? `${placement.startDate.format()}- ${placement.endDate.format()}`
