@@ -70,7 +70,7 @@ export function useDraft({
     [save]
   )
   const debounceInterval = isAutomatedTest ? 200 : 2000
-  const debouncedSave = useDebouncedCallback(saveNow, debounceInterval)
+  const [debouncedSave] = useDebouncedCallback(saveNow, debounceInterval)
 
   // save dirty draft with debounce
   useEffect(() => {

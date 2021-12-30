@@ -4,26 +4,56 @@
 
 import { useRef, useCallback } from 'react'
 
+interface PendingCall {
+  timeout: ReturnType<typeof setTimeout>
+  closure: () => void
+}
+
+/**
+ * Return a function `callback` that calls `fn` with the last provided
+ * parameters after `delay` ms has passed since the last call of `callback`.
+ *
+ * @param fn The function to call
+ * @param delay Time to wait before calling, in ms
+ * @returns [callback, cancelTimeout, runImmediately] `callback` triggers
+ *   calling the function, `cancelTimeout` cancels a queued call,
+ *   `runImmediately` runs the possible pending call immediately
+ */
 export function useDebouncedCallback<
   T extends (...args: never[]) => ReturnType<T>
->(fn: T, delay: number): (...args: Parameters<T>) => void {
-  // ref stores the timeout between renders and prevents re-renders on changes
-  const timeout = useRef<ReturnType<typeof setTimeout>>()
+>(
+  fn: T,
+  delay: number
+): [(...args: Parameters<T>) => void, () => void, () => void] {
+  const pendingCall = useRef<PendingCall>()
 
-  return useCallback(
-    (...args) => {
-      const functionToBeExecutedLater = () => {
-        if (timeout.current) {
-          clearTimeout(timeout.current)
+  const cancelTimeout = useCallback(() => {
+    if (pendingCall.current) {
+      clearTimeout(pendingCall.current.timeout)
+      pendingCall.current = undefined
+    }
+  }, [])
+
+  const callback = useCallback(
+    (...args: Parameters<T>) => {
+      cancelTimeout()
+      pendingCall.current = {
+        timeout: setTimeout(() => pendingCall.current?.closure(), delay),
+        closure: () => {
+          pendingCall.current = undefined
+          fn(...args)
         }
-        fn(...args)
       }
-
-      if (timeout.current) {
-        clearTimeout(timeout.current)
-      }
-      timeout.current = setTimeout(functionToBeExecutedLater, delay)
     },
-    [fn, delay]
+    [cancelTimeout, delay, fn]
   )
+
+  const callImmediately = useCallback(() => {
+    if (pendingCall.current) {
+      pendingCall.current.closure()
+      cancelTimeout()
+    }
+  }, [cancelTimeout])
+
+  return [callback, cancelTimeout, callImmediately]
 }
