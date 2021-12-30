@@ -101,6 +101,7 @@ describe('Employee - unit view', () => {
     await unitPage.openUnitInformation()
     await unitPage.openGroups()
     await groupsSection.assertMissingGroupPlacementRowCount(2)
+
     await Fixture.groupPlacement()
       .with({
         daycareGroupId: groupId,
@@ -176,7 +177,16 @@ describe('Employee - unit view', () => {
     await groupsSection.assertGroupCollapsibleIsOpen(groupId)
   })
 
-  test('Service worker will not see terminated placements', async () => {
+  test('Staff will not see terminated placements', async () => {
+    await Fixture.employee()
+      .with({
+        id: config.staffAad,
+        externalId: `espoo-ad:${config.staffAad}`,
+        roles: []
+      })
+      .withDaycareAcl(daycare.id, 'STAFF')
+      .save()
+
     await terminatePlacement(
       child1DaycarePlacementId,
       LocalDate.today(),
@@ -184,11 +194,25 @@ describe('Employee - unit view', () => {
       employeeId
     )
 
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, 'STAFF')
     await page.goto(`${config.employeeUrl}/units/${daycare.id}`)
     const groupsSection = await reloadUnitGroupsView()
-
-    await groupsSection.assertMissingGroupPlacementRowCount(2)
     await groupsSection.assertTerminatedPlacementRowCount(0)
+  })
+
+  test('Staff will not see children with a missing group placement', async () => {
+    await Fixture.employee()
+      .with({
+        id: config.staffAad,
+        externalId: `espoo-ad:${config.staffAad}`,
+        roles: []
+      })
+      .withDaycareAcl(daycare.id, 'STAFF')
+      .save()
+
+    await employeeLogin(page, 'STAFF')
+    await page.goto(`${config.employeeUrl}/units/${daycare.id}`)
+    const groupsSection = await reloadUnitGroupsView()
+    await groupsSection.assertMissingGroupPlacementRowCount(0)
   })
 })
