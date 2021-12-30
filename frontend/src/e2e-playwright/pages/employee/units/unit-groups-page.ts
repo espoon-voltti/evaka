@@ -12,21 +12,15 @@ export class UnitGroupsPage {
   readonly #groupCollapsible = (groupId: string) =>
     this.page.find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
 
-  readonly #terminatedPlacementRow = this.page.findAll(
-    '[data-qa="terminated-placement-row"]'
+  terminatedPlacementsSection = new TerminatedPlacementsSection(
+    this.page,
+    this.page.find('[data-qa="terminated-placements-section"]')
   )
 
   missingPlacementsSection = new MissingPlacementsSection(
     this.page,
     this.page.find('[data-qa="missing-placements-section"]')
   )
-
-  async assertTerminatedPlacementRowCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#terminatedPlacementRow.count(),
-      expectedCount
-    )
-  }
 
   async openGroupCollapsible(groupId: string) {
     const elem = this.#groupCollapsible(groupId)
@@ -44,10 +38,24 @@ export class UnitGroupsPage {
   }
 
   async waitUntilVisible() {
-    await this.page
-      .findAll('[data-qa="table-of-missing-placements"]')
-      .nth(0)
-      .waitUntilVisible()
+    await this.page.find('[data-qa="groups-title-bar"]').waitUntilVisible()
+  }
+}
+
+export class TerminatedPlacementsSection extends Element {
+  constructor(private page: Page, self: Element) {
+    super(self)
+  }
+
+  readonly #terminatedPlacementRows = this.page.findAll(
+    '[data-qa="terminated-placement-row"]'
+  )
+
+  async assertRowCount(expectedCount: number) {
+    await waitUntilEqual(
+      () => this.#terminatedPlacementRows.count(),
+      expectedCount
+    )
   }
 }
 
@@ -56,11 +64,9 @@ export class MissingPlacementsSection extends Element {
     super(self)
   }
 
-  #missingPlacementsTable = this.find('[data-qa="table-of-missing-placements"]')
   #missingPlacementRows = this.findAll('[data-qa="missing-placement-row"]')
 
   async assertRowCount(expectedCount: number) {
-    await this.#missingPlacementsTable.waitUntilVisible()
     await waitUntilEqual(
       () => this.#missingPlacementRows.count(),
       expectedCount
