@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from 'e2e-test-common/config'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -30,40 +29,25 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
-import { Application } from '../../../e2e-test-common/dev-api/types'
+import {
+  Application,
+  EmployeeDetail
+} from '../../../e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage
 let applicationReadView: ApplicationReadView
 
-const serviceWorker = {
-  id: config.serviceWorkerAad,
-  externalId: `espoo-ad:${config.serviceWorkerAad}`,
-  firstName: 'Paula',
-  lastName: 'Palveluohjaaja',
-  email: 'paula.palveluohjaaja@evaka.test',
-  roles: ['SERVICE_WORKER' as const]
-}
-
-const unitSupervisor = {
-  id: config.unitSupervisorAad,
-  externalId: `espoo-ad:${config.unitSupervisorAad}`,
-  firstName: 'Esa',
-  lastName: 'Esimies',
-  email: 'esa.esimies@evaka.test',
-  roles: []
-}
-
 let fixtures: AreaAndPersonFixtures
+let serviceWorker: EmployeeDetail
 let applicationId: string
 
 beforeEach(async () => {
   await resetDatabase()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
-
-  await Fixture.employee().with(serviceWorker).save()
+  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
 
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
@@ -88,7 +72,7 @@ describe('Application transitions', () => {
       'send-decisions-without-proposal'
     ])
 
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, serviceWorker)
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.acceptDecision('DAYCARE')
 
@@ -113,7 +97,7 @@ describe('Application transitions', () => {
       'send-decisions-without-proposal'
     ])
 
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, serviceWorker)
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.setDecisionStartDate(
       'DAYCARE',
@@ -141,7 +125,7 @@ describe('Application transitions', () => {
       'create-default-placement-plan'
     ])
 
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
     await applicationWorkbench.waitUntilLoaded()
 
@@ -171,7 +155,7 @@ describe('Application transitions', () => {
       'create-default-placement-plan'
     ])
 
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
     await applicationWorkbench.waitUntilLoaded()
 
@@ -202,7 +186,7 @@ describe('Application transitions', () => {
       'move-to-waiting-placement'
     ])
 
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
     await applicationWorkbench.waitUntilLoaded()
 
@@ -249,11 +233,10 @@ describe('Application transitions', () => {
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
 
-    await Fixture.employee()
-      .with(unitSupervisor)
-      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
-      .save()
-    await employeeLogin(page2, 'UNIT_SUPERVISOR')
+    const unitSupervisor = (
+      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
+    ).data
+    await employeeLogin(page2, unitSupervisor)
 
     // unit supervisor
     await unitPage.navigateToUnit(fixtures.daycareFixture.id)
@@ -270,7 +253,7 @@ describe('Application transitions', () => {
     await placementProposals.submitProposalRejectionReason()
 
     // service worker
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
     await applicationWorkbench.waitUntilLoaded()
 
@@ -323,7 +306,7 @@ describe('Application transitions', () => {
         employeeId: serviceWorker.id
       }
     ])
-    await employeeLogin(page, 'SERVICE_WORKER')
+    await employeeLogin(page, serviceWorker)
 
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -389,10 +372,9 @@ describe('Application transitions', () => {
     ).data.id
     await rejectDecisionByCitizen(decisionId)
 
-    await Fixture.employee()
-      .with(unitSupervisor)
-      .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
-      .save()
+    const unitSupervisor = (
+      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
+    ).data
 
     async function assertApplicationRows(
       addDays: number,
@@ -405,7 +387,7 @@ describe('Application transitions', () => {
             : undefined
       })
 
-      await employeeLogin(page, 'UNIT_SUPERVISOR')
+      await employeeLogin(page, unitSupervisor)
       const unitPage = new UnitPage(page)
       await unitPage.navigateToUnit(fixtures.daycareFixture.id)
       const waitingConfirmation = (await unitPage.openApplicationProcessTab())

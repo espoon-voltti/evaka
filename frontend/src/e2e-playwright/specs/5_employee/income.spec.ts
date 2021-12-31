@@ -13,6 +13,7 @@ import FridgeHeadInformationPage, {
 } from '../../pages/employee/fridge-head-information-page'
 import ErrorModal from '../../pages/employee/error-modal'
 import { Page } from '../../utils/page'
+import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
 
 let page: Page
 let personId: UUID
@@ -24,8 +25,10 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   personId = fixtures.enduserGuardianFixture.id
 
+  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, financeAdmin.data)
   await page.goto(config.employeeUrl + '/profile/' + personId)
 
   const fridgeHeadInformationPage = new FridgeHeadInformationPage(page)

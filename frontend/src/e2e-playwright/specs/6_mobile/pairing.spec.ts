@@ -4,11 +4,10 @@
 
 import config from 'e2e-test-common/config'
 import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  deleteEmployeeFixture,
   postPairing,
   postPairingResponse,
   resetDatabase
@@ -16,25 +15,17 @@ import {
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
 import { Page } from 'e2e-playwright/utils/page'
-import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 let page: Page
 let pairingFlow: PairingFlow
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
-  page = await Page.open({ acceptDownloads: true })
-  pairingFlow = new PairingFlow(page)
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
-  await deleteEmployeeFixture(config.supervisorExternalId)
-  await Fixture.employee()
-    .with({
-      externalId: config.supervisorExternalId,
-      roles: []
-    })
-    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
-    .save()
+
+  page = await Page.open({ acceptDownloads: true })
+  pairingFlow = new PairingFlow(page)
 })
 
 describe('Mobile pairing', () => {

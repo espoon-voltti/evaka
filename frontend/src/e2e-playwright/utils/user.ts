@@ -5,6 +5,7 @@
 import config from 'e2e-test-common/config'
 import { UUID } from 'lib-common/types'
 import { Page } from './page'
+import { EmployeeDetail } from '../../e2e-test-common/dev-api/types'
 
 export type UserRole =
   | 'ADMIN'
@@ -30,42 +31,15 @@ const devLoginRoles = [
   'ADMIN'
 ] as const
 
-function getLoginUser(role: UserRole): DevLoginUser | string {
-  switch (role) {
-    case 'ADMIN':
-      return {
-        aad: config.adminAad,
-        roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
-      }
-    case 'SERVICE_WORKER':
-      return {
-        aad: config.serviceWorkerAad,
-        roles: ['SERVICE_WORKER']
-      }
-    case 'FINANCE_ADMIN':
-      return config.financeAdminAad
-    case 'DIRECTOR':
-      return config.directorAad
-    case 'REPORT_VIEWER':
-      return config.reportViewerAad
-    case 'STAFF':
-      return config.staffAad
-    case 'UNIT_SUPERVISOR':
-      return config.unitSupervisorAad
-    case 'SPECIAL_EDUCATION_TEACHER':
-      return config.specialEducationTeacher
-  }
-}
-
 export async function enduserLogin(page: Page) {
   await page.goto(config.enduserUrl)
   await page.find('[data-qa="login-btn"]').click()
   await page.find('[data-qa="user-menu-title-desktop"]').waitUntilVisible()
 }
 
-export async function employeeLogin(page: Page, role: UserRole) {
+export async function employeeLogin(page: Page, user: EmployeeDetail) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
-  const user = getLoginUser(role)
+  const preset = user.externalId.split(':')[1]
 
   if (!page.url.startsWith(config.employeeUrl)) {
     // We must be in the correct domain to be able to fetch()
@@ -73,18 +47,9 @@ export async function employeeLogin(page: Page, role: UserRole) {
   }
 
   await page.page.evaluate(
-    ({ user, authUrl }: { user: DevLoginUser | string; authUrl: string }) => {
+    ({ preset, authUrl }: { preset: string; authUrl: string }) => {
       const params = new URLSearchParams()
-      if (typeof user === 'string') {
-        params.append('preset', user)
-      } else {
-        params.append('preset', 'custom')
-        params.append('firstName', 'Seppo')
-        params.append('lastName', 'Sorsa')
-        params.append('email', 'seppo.sorsa@evaka.test')
-        params.append('aad', user.aad)
-        user.roles.forEach((role) => params.append('roles', role))
-      }
+      params.append('preset', preset)
       return fetch(authUrl, {
         method: 'POST',
         body: params,
@@ -97,6 +62,6 @@ export async function employeeLogin(page: Page, role: UserRole) {
         }
       })
     },
-    { user, authUrl }
+    { preset, authUrl }
   )
 }

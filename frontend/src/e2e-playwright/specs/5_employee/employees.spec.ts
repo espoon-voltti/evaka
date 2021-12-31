@@ -17,17 +17,13 @@ let employeesPage: EmployeesPage
 
 beforeEach(async () => {
   await resetDatabase()
-
-  await Fixture.employee()
-    .with({
-      firstName: 'Teppo',
-      lastName: 'Testaaja',
-      roles: ['SERVICE_WORKER']
-    })
+  const admin = await Fixture.employeeAdmin().save()
+  await Fixture.employeeServiceWorker()
+    .with({ firstName: 'Teppo', lastName: 'Testaaja' })
     .save()
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
   employeesPage = new EmployeesPage(page)

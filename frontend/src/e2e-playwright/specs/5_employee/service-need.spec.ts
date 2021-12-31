@@ -44,8 +44,10 @@ beforeEach(async () => {
     .with({ validPlacementType: placement.data.type, active: false })
     .save()
 
+  const admin = await Fixture.employeeAdmin().save()
+
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
 })
 
 const openCollapsible = async () => {

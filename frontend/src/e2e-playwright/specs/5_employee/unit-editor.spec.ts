@@ -22,9 +22,10 @@ describe('Employee - unit details', () => {
     await resetDatabase()
     const fixtures = await initializeAreaAndPersonData()
     daycare1 = fixtures.daycareFixture
+    const admin = await Fixture.employeeAdmin().save()
 
     page = await Page.open()
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin.data)
     await page.goto(config.employeeUrl)
     await new EmployeeNav(page).openTab('units')
     unitsPage = new UnitsPage(page)
@@ -82,15 +83,10 @@ describe('Employee - unit editor validations and warnings', () => {
     await resetDatabase()
 
     const fixtures = await initializeAreaAndPersonData()
-    await Fixture.employee()
-      .with({
-        externalId: `espoo-ad:${config.adminExternalId}`,
-        roles: []
-      })
-      .save()
+    const admin = await Fixture.employeeAdmin().save()
 
     page = await Page.open()
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin.data)
     await page.goto(config.employeeUrl)
     nav = new EmployeeNav(page)
     await nav.openTab('units')

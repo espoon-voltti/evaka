@@ -14,6 +14,7 @@ import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
+  Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import ChildInformationPage, {
@@ -25,14 +26,18 @@ import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
 import { waitUntilEqual } from '../../utils'
+import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
 
 let page: Page
+let admin: EmployeeDetail
 let childInformationPage: ChildInformationPage
 let childId: UUID
 let templateId: UUID
 
 beforeAll(async () => {
   await resetDatabase()
+
+  admin = (await Fixture.employeeAdmin().save()).data
 
   const fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
@@ -54,7 +59,7 @@ describe('Child Information - Vasu documents section', () => {
   let section: VasuAndLeopsSection
   beforeEach(async () => {
     page = await Page.open()
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin)
     await page.goto(`${config.employeeUrl}/child-information/${childId}`)
     childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('vasuAndLeops')
@@ -93,7 +98,7 @@ describe('Vasu document page', () => {
 
   beforeEach(async () => {
     page = await Page.open()
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin)
   })
 
   describe('Fill out document', () => {
@@ -332,7 +337,7 @@ describe('Vasu document page', () => {
     describe('With a finalized document', () => {
       beforeAll(async () => {
         page = await Page.open()
-        await employeeLogin(page, 'ADMIN')
+        await employeeLogin(page, admin)
         await finalizeDocument()
       })
 

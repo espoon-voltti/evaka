@@ -16,7 +16,7 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { employeeLogin, UserRole } from 'e2e-playwright/utils/user'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
 import ChildInformationPage, {
   AssistanceNeedSection
@@ -24,7 +24,7 @@ import ChildInformationPage, {
 import { addDays, format, subDays } from 'date-fns'
 import { PlacementType } from 'lib-common/generated/enums'
 import { Page } from '../../utils/page'
-import { ScopedRole } from 'lib-common/api-types/employee-auth'
+import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
 
 let page: Page
 let childInformationPage: ChildInformationPage
@@ -57,19 +57,8 @@ const setupPlacement = async (childPlacementType: PlacementType) => {
   ])
 }
 
-const setupUser = async (id: UUID, role: ScopedRole = 'UNIT_SUPERVISOR') => {
-  await Fixture.employee()
-    .with({
-      id,
-      externalId: `espoo-ad:${id}`,
-      roles: []
-    })
-    .withDaycareAcl(unitId, role)
-    .save()
-}
-
-const logUserIn = async (role: UserRole) => {
-  await employeeLogin(page, role)
+const logUserIn = async (user: EmployeeDetail) => {
+  await employeeLogin(page, user)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
   assistanceNeeds = await childInformationPage.openCollapsible('assistanceNeed')
@@ -78,8 +67,7 @@ const logUserIn = async (role: UserRole) => {
 describe('Child Information assistance need functionality for employees', () => {
   test('assistance need can be added', async () => {
     await setupPlacement('DAYCARE')
-    await setupUser(config.unitSupervisorAad)
-    await logUserIn('UNIT_SUPERVISOR')
+    await logUserIn((await Fixture.employeeUnitSupervisor(unitId).save()).data)
     await assistanceNeeds.createNewAssistanceNeed()
     await assistanceNeeds.setAssistanceNeedMultiplier('1,5')
     await assistanceNeeds.confirmAssistanceNeed()
@@ -88,7 +76,8 @@ describe('Child Information assistance need functionality for employees', () => 
 
   test('assistance need before preschool for a child in preschool is not shown for unit supervisor', async () => {
     await setupPlacement('PRESCHOOL')
-    await setupUser(config.unitSupervisorAad)
+    const unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save())
+      .data
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
@@ -96,7 +85,7 @@ describe('Child Information assistance need functionality for employees', () => 
         endDate: new Date(),
         description:
           'Test service need to be hidden because it starts before preschool started',
-        updatedBy: config.unitSupervisorAad
+        updatedBy: unitSupervisor.id
       })
       .save()
 
@@ -107,50 +96,53 @@ describe('Child Information assistance need functionality for employees', () => 
         endDate: addDays(new Date(), 1),
         description:
           'Test service need to be shown because it starts after preschool started',
-        updatedBy: config.unitSupervisorAad
+        updatedBy: unitSupervisor.id
       })
       .save()
 
-    await logUserIn('UNIT_SUPERVISOR')
+    await logUserIn(unitSupervisor)
     await assistanceNeeds.assertAssistanceNeedCount(1)
   })
 
   test('assistance need for preschool for a child in preschool is shown for unit manager', async () => {
     await setupPlacement('PRESCHOOL')
-    await setupUser(config.unitSupervisorAad)
+    const unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save())
+      .data
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
         startDate: new Date(),
         description:
           'Test service need to be shown because it starts when preschool started',
-        updatedBy: config.unitSupervisorAad
+        updatedBy: unitSupervisor.id
       })
       .save()
 
-    await logUserIn('UNIT_SUPERVISOR')
+    await logUserIn(unitSupervisor)
     await assistanceNeeds.assertAssistanceNeedCount(1)
   })
 
   test('assistance need before preschool for a child in preschool is shown for admin', async () => {
     await setupPlacement('PRESCHOOL')
-    await setupUser(config.adminAad)
+    const admin = (await Fixture.employeeAdmin().save()).data
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
         startDate: subDays(new Date(), 1),
         description: 'Test service need to be shown because user is admin',
-        updatedBy: config.adminAad
+        updatedBy: admin.id
       })
       .save()
 
-    await logUserIn('ADMIN')
+    await logUserIn(admin)
     await assistanceNeeds.assertAssistanceNeedCount(1)
   })
 
   test('assistance need before preschool for a child in preschool is shown for Special Education Teacher', async () => {
     await setupPlacement('PRESCHOOL')
-    await setupUser(config.specialEducationTeacher, 'SPECIAL_EDUCATION_TEACHER')
+    const specialEducationTeacher = (
+      await Fixture.employeeSpecialEducationTeacher(unitId).save()
+    ).data
 
     await Fixture.assistanceNeed()
       .with({
@@ -159,7 +151,7 @@ describe('Child Information assistance need functionality for employees', () => 
         endDate: new Date(),
         description:
           'Test service need to be shown to SEO if she has acl rights to child',
-        updatedBy: config.specialEducationTeacher
+        updatedBy: specialEducationTeacher.id
       })
       .save()
 
@@ -170,11 +162,11 @@ describe('Child Information assistance need functionality for employees', () => 
         endDate: addDays(new Date(), 2),
         description:
           'Test service to be shown because it is active only during preschool period',
-        updatedBy: config.specialEducationTeacher
+        updatedBy: specialEducationTeacher.id
       })
       .save()
 
-    await logUserIn('SPECIAL_EDUCATION_TEACHER')
+    await logUserIn(specialEducationTeacher)
     await assistanceNeeds.assertAssistanceNeedCount(2)
   })
 })

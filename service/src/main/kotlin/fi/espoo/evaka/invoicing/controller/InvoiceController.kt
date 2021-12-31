@@ -66,7 +66,7 @@ class InvoiceController(
     ): ResponseEntity<Paged<InvoiceSummary>> {
         Audit.InvoicesSearch.log()
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
@@ -94,7 +94,7 @@ class InvoiceController(
     fun createDraftInvoices(db: Database, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc -> dbc.transaction { it.createAllDraftInvoices() } }
         return ResponseEntity.noContent().build()
     }
@@ -103,7 +103,7 @@ class InvoiceController(
     fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
         return ResponseEntity.noContent().build()
     }
@@ -120,7 +120,7 @@ class InvoiceController(
     ): ResponseEntity<Unit> {
         Audit.InvoicesSend.log(targetId = invoiceIds)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc ->
             dbc.transaction {
                 service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
@@ -137,7 +137,7 @@ class InvoiceController(
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
@@ -151,7 +151,7 @@ class InvoiceController(
     fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc -> dbc.transaction { it.markManuallySent(user, invoiceIds) } }
         return ResponseEntity.noContent().build()
     }
@@ -160,7 +160,7 @@ class InvoiceController(
     fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
         Audit.InvoicesRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(parsedUuid) } }
             ?: throw NotFound("No invoice found with given ID ($uuid)")
@@ -175,7 +175,7 @@ class InvoiceController(
     ): ResponseEntity<Wrapper<List<Invoice>>> {
         Audit.InvoicesRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(parsedUuid) } }
         return ResponseEntity.ok(Wrapper(res))
@@ -190,7 +190,7 @@ class InvoiceController(
     ): ResponseEntity<Unit> {
         Audit.InvoicesUpdate.log(targetId = uuid)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         db.connect { dbc -> dbc.transaction { service.updateInvoice(it, parsedUuid, invoice) } }
         return ResponseEntity.noContent().build()
@@ -199,7 +199,7 @@ class InvoiceController(
     @GetMapping("/codes")
     fun getInvoiceCodes(db: Database, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val codes = db.connect { dbc -> dbc.read { it.getInvoiceCodes() } }
         return ResponseEntity.ok(Wrapper(codes))
     }

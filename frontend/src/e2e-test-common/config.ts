@@ -68,13 +68,15 @@ const config = {
   employeeLoginUrl: `${browserUrl}/employee/login`,
   devApiGwUrl: `${baseUrl ?? 'http://localhost:3020'}/api/internal/dev-api`,
   enduserUrl: browserUrl,
+  mobileBaseUrl: browserUrl,
+  mobileUrl: `${browserUrl}/employee/mobile`,
+  enduserMessagesUrl: `${browserUrl}/messages`,
+
+  // TODO: Remove these
   supervisorAad,
   supervisorExternalId: `espoo-ad:${supervisorAad}`,
   adminAad,
   adminExternalId: `espoo-ad:${adminAad}`,
-  mobileBaseUrl: browserUrl,
-  mobileUrl: `${browserUrl}/employee/mobile`,
-  enduserMessagesUrl: `${browserUrl}/messages`,
   serviceWorkerAad,
   financeAdminAad,
   directorAad,

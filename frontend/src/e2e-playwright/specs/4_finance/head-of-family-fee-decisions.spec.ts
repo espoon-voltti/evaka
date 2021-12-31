@@ -28,17 +28,10 @@ let guardianPage: GuardianInformationPage
 beforeEach(async () => {
   await resetDatabase()
   await initializeAreaAndPersonData()
+  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })
-
-  await Fixture.employee()
-    .with({
-      id: config.financeAdminAad,
-      externalId: `espoo-ad:${config.financeAdminAad}`,
-      roles: ['FINANCE_ADMIN']
-    })
-    .save()
-  await employeeLogin(page, 'FINANCE_ADMIN')
+  await employeeLogin(page, financeAdmin.data)
 
   await page.goto(config.employeeUrl)
   guardianPage = new GuardianInformationPage(page)

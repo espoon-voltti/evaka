@@ -47,14 +47,8 @@ beforeEach(async () => {
     }
   ])
 
-  await Fixture.employee()
-    .with({
-      id: config.financeAdminAad,
-      externalId: `espoo-ad:${config.financeAdminAad}`,
-      roles: ['FINANCE_ADMIN']
-    })
-    .save()
-  await employeeLogin(page, 'FINANCE_ADMIN')
+  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  await employeeLogin(page, financeAdmin.data)
 
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)

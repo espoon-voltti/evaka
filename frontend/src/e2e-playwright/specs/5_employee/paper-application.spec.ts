@@ -6,7 +6,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import { daycareGroupFixture } from 'e2e-test-common/dev-api/fixtures'
+import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import {
   insertDaycareGroupFixtures,
   resetDatabase
@@ -28,9 +28,10 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
+  const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
 
   childInformationPage = new ChildInformationPage(page)
   await childInformationPage.navigateToChild(

@@ -17,17 +17,20 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 import config from 'e2e-test-common/config'
+import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
 
 let fixtures: AreaAndPersonFixtures
+let admin: EmployeeDetail
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+  admin = (await Fixture.employeeAdmin().save()).data
 })
 
 async function openPage() {
   const page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin)
   await page.goto(config.adminUrl)
   return new ApplicationListView(page)
 }
