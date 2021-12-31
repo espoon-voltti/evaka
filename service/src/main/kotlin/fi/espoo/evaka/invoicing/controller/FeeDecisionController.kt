@@ -75,7 +75,7 @@ class FeeDecisionController(
     ): ResponseEntity<Paged<FeeDecisionSummary>> {
         Audit.FeeDecisionSearch.log()
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate)
@@ -107,7 +107,7 @@ class FeeDecisionController(
     fun confirmDrafts(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
@@ -121,7 +121,7 @@ class FeeDecisionController(
     fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
         return ResponseEntity.noContent().build()
     }
@@ -130,7 +130,7 @@ class FeeDecisionController(
     fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val headers = HttpHeaders()
         val (filename, pdf) = db.connect { dbc -> dbc.read { service.getFeeDecisionPdf(it, uuid) } }
         headers.add("Content-Disposition", "attachment; filename=\"$filename\"")
@@ -142,7 +142,7 @@ class FeeDecisionController(
     fun getDecision(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val res = db.connect { dbc -> dbc.read { it.getFeeDecision(uuid) } }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
@@ -156,7 +156,7 @@ class FeeDecisionController(
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val res = db.connect { dbc ->
             dbc.read {
                 it.findFeeDecisionsForHeadOfFamily(
@@ -178,7 +178,7 @@ class FeeDecisionController(
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) } }
         return ResponseEntity.noContent().build()
     }
@@ -192,7 +192,7 @@ class FeeDecisionController(
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionSetType.log(targetId = uuid)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc -> dbc.transaction { service.setType(it, uuid, request.type) } }
         return ResponseEntity.noContent().build()
     }

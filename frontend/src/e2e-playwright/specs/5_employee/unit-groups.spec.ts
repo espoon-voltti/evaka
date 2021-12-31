@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from 'e2e-test-common/config'
 import {
   insertDefaultServiceNeedOptions,
   resetDatabase,
@@ -14,7 +13,11 @@ import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Page } from '../../utils/page'
-import { Child, Daycare } from '../../../e2e-test-common/dev-api/types'
+import {
+  Child,
+  Daycare,
+  EmployeeDetail
+} from '../../../e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 
@@ -27,7 +30,7 @@ let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 
 let daycare: Daycare
-const employeeId: UUID = config.unitSupervisorAad
+let unitSupervisor: EmployeeDetail
 const placementStartDate = LocalDate.today().subWeeks(4)
 const placementEndDate = LocalDate.today().addWeeks(4)
 
@@ -36,6 +39,9 @@ beforeEach(async () => {
 
   const fixtures = await initializeAreaAndPersonData()
   daycare = fixtures.daycareFixture
+
+  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
+    .data
 
   await insertDefaultServiceNeedOptions()
 
@@ -70,17 +76,6 @@ beforeEach(async () => {
       endDate: placementEndDate.format('yyyy-MM-dd')
     })
     .save()
-
-  await Fixture.employee()
-    .with({
-      id: config.unitSupervisorAad,
-      externalId: `espoo-ad:${config.unitSupervisorAad}`,
-      firstName: 'Essi',
-      lastName: 'Esimies',
-      roles: []
-    })
-    .withDaycareAcl(daycare.id, 'UNIT_SUPERVISOR')
-    .save()
 })
 
 const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
@@ -94,7 +89,7 @@ const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
 describe('Unit groups - unit supervisor', () => {
   beforeEach(async () => {
     page = await Page.open()
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await employeeLogin(page, unitSupervisor)
   })
 
   test('Children with a missing group placement is shown in missing placement list and disappears when placed to a group', async () => {
@@ -119,7 +114,7 @@ describe('Unit groups - unit supervisor', () => {
       child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
-      employeeId
+      unitSupervisor.id
     )
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.terminatedPlacementsSection.assertRowCount(1)
@@ -130,14 +125,14 @@ describe('Unit groups - unit supervisor', () => {
       child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
-      employeeId
+      unitSupervisor.id
     )
 
     await terminatePlacement(
       child2DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
-      employeeId
+      unitSupervisor.id
     )
 
     let groupsPage = await loadUnitGroupsPage()
@@ -147,7 +142,7 @@ describe('Unit groups - unit supervisor', () => {
       child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today().subDays(15),
-      employeeId
+      unitSupervisor.id
     )
     groupsPage = await loadUnitGroupsPage()
     await groupsPage.terminatedPlacementsSection.assertRowCount(1)
@@ -171,19 +166,10 @@ describe('Unit groups - unit supervisor', () => {
 
 describe('Unit groups - staff', () => {
   beforeEach(async () => {
-    await Fixture.employee()
-      .with({
-        id: config.staffAad,
-        externalId: `espoo-ad:${config.staffAad}`,
-        firstName: 'Kaisa',
-        lastName: 'Kasvattaja',
-        roles: []
-      })
-      .withDaycareAcl(daycare.id, 'STAFF')
-      .save()
+    const staff = await Fixture.employeeStaff(daycare.id).save()
 
     page = await Page.open()
-    await employeeLogin(page, 'STAFF')
+    await employeeLogin(page, staff.data)
   })
 
   test('Staff will not see terminated placements', async () => {
@@ -191,7 +177,7 @@ describe('Unit groups - staff', () => {
       child1DaycarePlacementId,
       LocalDate.today(),
       LocalDate.today(),
-      employeeId
+      unitSupervisor.id
     )
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.terminatedPlacementsSection.assertRowCount(0)

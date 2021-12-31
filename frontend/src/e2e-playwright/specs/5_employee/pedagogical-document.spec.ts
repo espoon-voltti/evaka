@@ -12,6 +12,7 @@ import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
+  Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import ChildInformationPage, {
@@ -49,8 +50,10 @@ beforeEach(async () => {
   )
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
+  const admin = await Fixture.employeeAdmin().save()
+
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
 })

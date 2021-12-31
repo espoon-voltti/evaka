@@ -296,8 +296,9 @@ describe('Child message thread', () => {
 
   test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
     // Add child's guardians to block list
+    const admin = await Fixture.employeeAdmin().save()
     const adminPage = await Page.open()
-    await employeeLogin(adminPage, 'ADMIN')
+    await employeeLogin(adminPage, admin.data)
     await adminPage.goto(`${config.employeeUrl}/child-information/${child.id}`)
     const childInformationPage = new ChildInformationPage(adminPage)
     const blocklistSection = await childInformationPage.openCollapsible(

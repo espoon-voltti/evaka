@@ -24,18 +24,12 @@ beforeEach(async () => {
   await resetDatabase()
   familyWithDeadGuardian = (await initializeAreaAndPersonData())
     .familyWithDeadGuardian
-  await Fixture.employee()
-    .with({
-      id: config.serviceWorkerAad,
-      externalId: `espoo-ad:${config.serviceWorkerAad}`,
-      roles: ['SERVICE_WORKER']
-    })
-    .save()
+  const serviceWorker = await Fixture.employeeServiceWorker().save()
 
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)
 
-  await employeeLogin(page, 'SERVICE_WORKER')
+  await employeeLogin(page, serviceWorker.data)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).applicationsTab.click()
 })

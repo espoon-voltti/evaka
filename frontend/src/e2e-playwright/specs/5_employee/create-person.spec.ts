@@ -8,15 +8,17 @@ import { employeeLogin } from 'e2e-playwright/utils/user'
 import PersonSearchPage from 'e2e-playwright/pages/employee/person-search'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
+import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
 
 let page: Page
 let personSearchPage: PersonSearchPage
 
 beforeEach(async () => {
   await resetDatabase()
+  const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
   await page.goto(`${config.employeeUrl}/search`)
   personSearchPage = new PersonSearchPage(page)
 })

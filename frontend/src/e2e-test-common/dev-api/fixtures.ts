@@ -3,32 +3,31 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { format } from 'date-fns'
-import config from '../config'
 import {
   Application,
+  AssistanceNeed,
   BackupCare,
   CareArea,
   Child,
   Daycare,
+  DaycareCaretakers,
   DaycareGroup,
+  DaycareGroupPlacement,
   DaycarePlacement,
   DecisionFixture,
+  DevIncome,
   EmployeeDetail,
+  EmployeePin,
   FeeDecision,
   FeeDecisionStatus,
   Invoice,
   OtherGuardianAgreementStatus,
+  PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
   PlacementPlan,
-  VoucherValueDecision,
-  DaycareGroupPlacement,
-  EmployeePin,
-  PedagogicalDocument,
   ServiceNeedFixture,
-  AssistanceNeed,
-  DaycareCaretakers,
-  DevIncome
+  VoucherValueDecision
 } from './types'
 import {
   insertAssistanceNeedFixtures,
@@ -59,15 +58,6 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import { UUID } from 'lib-common/types'
 import { ApplicationForm } from 'lib-common/generated/api-types/application'
-
-export const supervisor: EmployeeDetail = {
-  id: '552e5bde-92fb-4807-a388-40016f85f593',
-  externalId: config.supervisorExternalId,
-  firstName: 'Eva',
-  lastName: 'Esihenkilo',
-  email: 'eva.esihenkilo@evaka.test',
-  roles: ['SERVICE_WORKER', 'ADMIN']
-}
 
 export const careAreaFixture: CareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
@@ -977,18 +967,96 @@ export class Fixture {
     return new EmployeeBuilder({
       id: uuidv4(),
       email: `email_${id}@evaka.test`,
-      externalId: `e2etest:${uuidv4()}`,
+      externalId: `espoo-ad:${uuidv4()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,
       roles: []
     })
   }
 
+  static employeeAdmin(): EmployeeBuilder {
+    return Fixture.employee().with({
+      email: 'seppo.sorsa@evaka.test',
+      firstName: 'Seppo',
+      lastName: 'Sorsa',
+      roles: ['ADMIN']
+    })
+  }
+
+  static employeeFinanceAdmin(): EmployeeBuilder {
+    return Fixture.employee().with({
+      email: 'lasse.laskuttaja@evaka.test',
+      firstName: 'Lasse',
+      lastName: 'Laskuttaja',
+      roles: ['FINANCE_ADMIN']
+    })
+  }
+
+  static employeeDirector(): EmployeeBuilder {
+    return Fixture.employee().with({
+      email: 'hemmo.hallinto@evaka.test',
+      firstName: 'Hemmo',
+      lastName: 'Hallinto',
+      roles: ['DIRECTOR']
+    })
+  }
+
+  static employeeReportViewer(): EmployeeBuilder {
+    return Fixture.employee().with({
+      email: 'raisa.raportoija@evaka.test',
+      firstName: 'Raisa',
+      lastName: 'Raportoija',
+      roles: ['REPORT_VIEWER']
+    })
+  }
+
+  static employeeServiceWorker(): EmployeeBuilder {
+    return Fixture.employee().with({
+      email: 'paula.palveluohjaaja@evaka.test',
+      firstName: 'Paula',
+      lastName: 'Palveluohjaaja',
+      roles: ['SERVICE_WORKER']
+    })
+  }
+
+  static employeeUnitSupervisor(unitId: string): EmployeeBuilder {
+    return Fixture.employee()
+      .with({
+        email: 'essi.esimies@evaka.test',
+        firstName: 'Essi',
+        lastName: 'Esimies',
+        roles: []
+      })
+      .withDaycareAcl(unitId, 'UNIT_SUPERVISOR')
+  }
+
+  static employeeSpecialEducationTeacher(unitId: string): EmployeeBuilder {
+    return Fixture.employee()
+      .with({
+        email: 'erkki.erityisopettaja@evaka.test',
+        firstName: 'Erkki',
+        lastName: 'Erityisopettaja',
+        roles: []
+      })
+      .withDaycareAcl(unitId, 'SPECIAL_EDUCATION_TEACHER')
+  }
+
+  static employeeStaff(unitId: string): EmployeeBuilder {
+    return Fixture.employee()
+      .with({
+        email: 'kaisa.kasvattaja@evaka.test',
+        firstName: 'Kaisa',
+        lastName: 'Kasvattaja',
+        roles: []
+      })
+      .withDaycareAcl(unitId, 'STAFF')
+  }
+
   static decision(): DecisionBuilder {
     return new DecisionBuilder({
       id: uuidv4(),
       applicationId: nullUUID,
-      employeeId: supervisor.externalId,
+      employeeId: 'not set',
       unitId: nullUUID,
       type: 'DAYCARE',
       startDate: '2020-01-01',
@@ -1129,6 +1197,7 @@ abstract class FixtureBuilder<T> {
   }
 
   abstract copy(): FixtureBuilder<T>
+
   abstract save(): Promise<FixtureBuilder<T>>
 }
 

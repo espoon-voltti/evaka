@@ -21,10 +21,12 @@ import {
 import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { Page } from '../../utils/page'
+import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
 
 let unitSupervisorPage: Page
 let citizenPage: Page
 let childId: UUID
+let unitSupervisor: EmployeeDetail
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
@@ -32,16 +34,9 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
-  await Fixture.employee()
-    .with({
-      id: config.unitSupervisorAad,
-      externalId: `espoo-ad:${config.unitSupervisorAad}`,
-      firstName: 'Essi',
-      lastName: 'Esimies',
-      roles: []
-    })
-    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
-    .save()
+  unitSupervisor = (
+    await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
+  ).data
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.enduserChildFixtureJari.id
@@ -69,7 +64,7 @@ beforeEach(async () => {
 
 async function initSupervisorPage() {
   unitSupervisorPage = await Page.open()
-  await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
+  await employeeLogin(unitSupervisorPage, unitSupervisor)
 }
 
 async function initCitizenPage() {
@@ -125,8 +120,9 @@ describe('Sending and receiving messages', () => {
       const content = 'Tämän ei pitäisi mennä perille'
 
       // Add child's guardian to block list
+      const admin = await Fixture.employeeAdmin().save()
       const adminPage = await Page.open()
-      await employeeLogin(adminPage, 'ADMIN')
+      await employeeLogin(adminPage, admin.data)
       await adminPage.goto(`${config.employeeUrl}/child-information/${childId}`)
       const childInformationPage = new ChildInformationPage(adminPage)
       const blocklistSection = await childInformationPage.openCollapsible(
@@ -153,7 +149,7 @@ describe('Sending and receiving messages', () => {
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
       await citizenMessagesPage.sendNewMessage(title, content, receivers)
 
-      await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
+      await employeeLogin(unitSupervisorPage, unitSupervisor)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
       await messagesPage.openInbox(0)
@@ -170,7 +166,7 @@ describe('Sending and receiving messages', () => {
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
       await citizenMessagesPage.sendNewMessage(title, content, receivers)
 
-      await employeeLogin(unitSupervisorPage, 'UNIT_SUPERVISOR')
+      await employeeLogin(unitSupervisorPage, unitSupervisor)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
       await messagesPage.openInbox(0)

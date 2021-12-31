@@ -10,16 +10,19 @@ import { EmployeePinPage } from '../../pages/employee/employee-pin'
 import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Page } from '../../utils/page'
+import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
 
+let admin: EmployeeDetail
 let page: Page
 let nav: EmployeeNav
 let pinPage: EmployeePinPage
 
 beforeEach(async () => {
   await resetDatabase()
+  admin = (await Fixture.employeeAdmin().save()).data
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin)
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
   pinPage = new EmployeePinPage(page)
@@ -45,7 +48,7 @@ describe('Employees PIN', () => {
     await Fixture.employeePin()
       .with({
         userId: undefined,
-        employeeExternalId: config.adminExternalId,
+        employeeExternalId: admin.externalId,
         pin: '2580',
         locked: true
       })

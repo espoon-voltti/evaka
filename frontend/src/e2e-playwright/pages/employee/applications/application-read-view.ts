@@ -97,6 +97,7 @@ export default class ApplicationReadView {
 
     const submit = decision.find('[data-qa="decision-send-answer-button"]')
     await submit.click()
+    await submit.waitUntilHidden()
   }
 
   async assertApplicationStatus(text: string) {

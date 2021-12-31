@@ -6,7 +6,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
+import { applicationFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { employeeLogin } from '../../utils/user'
@@ -19,9 +19,10 @@ let applicationReadView: ApplicationReadView
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+  const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
 
   applicationReadView = new ApplicationReadView(page)
 })

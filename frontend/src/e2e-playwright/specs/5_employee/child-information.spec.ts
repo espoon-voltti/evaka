@@ -43,6 +43,7 @@ beforeEach(async () => {
 
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
+  const admin = await Fixture.employeeAdmin().save()
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -54,7 +55,7 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
   await childInformationPage.waitUntilLoaded()
@@ -65,6 +66,7 @@ describe('Child Information - edit child information', () => {
     await page.goto(
       config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
     )
+    await childInformationPage.waitUntilLoaded()
     await childInformationPage.clickEdit()
     await childInformationPage.assertOphPersonOid('')
     await childInformationPage.setOphPersonOid('1.2.3')

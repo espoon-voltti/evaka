@@ -61,7 +61,7 @@ class IncomeController(
     fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         val period = try {
             DateRange(income.validFrom, income.validTo)
         } catch (e: Exception) {
@@ -94,7 +94,7 @@ class IncomeController(
     ): ResponseEntity<Unit> {
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -118,7 +118,7 @@ class IncomeController(
     fun deleteIncome(db: Database, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -138,7 +138,7 @@ class IncomeController(
     @GetMapping("/types")
     fun getTypes(user: AuthenticatedUser): ResponseEntity<Map<String, IncomeType>> {
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         return incomeTypesProvider.get().let { ResponseEntity.ok(it) }
     }
 }

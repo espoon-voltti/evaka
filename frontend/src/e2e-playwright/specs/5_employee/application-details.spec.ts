@@ -18,7 +18,7 @@ import {
   resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
-import { Application } from 'e2e-test-common/dev-api/types'
+import { Application, EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import { Page } from '../../utils/page'
 import ApplicationDetailsPage from '../../pages/admin/application-details-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
@@ -30,6 +30,7 @@ let applicationDetailsPage: ApplicationDetailsPage
 let applicationReadView: ApplicationReadView
 
 let fixtures: AreaAndPersonFixtures
+let admin: EmployeeDetail
 
 let singleParentApplication: Application
 let familyWithTwoGuardiansApplication: Application
@@ -71,16 +72,6 @@ beforeEach(async () => {
     ),
     id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
   }
-  await Fixture.employee()
-    .with({
-      externalId: `espoo-ad:${config.unitSupervisorAad}`,
-      email: 'esa.esimies@evaka.test',
-      firstName: 'Esa',
-      lastName: 'Esimies',
-      roles: []
-    })
-    .withDaycareAcl(fixtures.preschoolFixture.id, 'UNIT_SUPERVISOR')
-    .save()
   await cleanUpMessages()
 
   await insertApplications([
@@ -90,6 +81,8 @@ beforeEach(async () => {
     restrictedDetailsGuardianApplication
   ])
 
+  admin = (await Fixture.employeeAdmin().save()).data
+
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
   applicationDetailsPage = new ApplicationDetailsPage(page)
@@ -98,7 +91,7 @@ beforeEach(async () => {
 
 describe('Application details', () => {
   test('Admin can view application details', async () => {
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     const application = await applicationWorkbench.openApplicationById(
@@ -110,7 +103,7 @@ describe('Application details', () => {
   })
 
   test('Other VTJ guardian is shown as empty if there is no other guardian', async () => {
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     const application = await applicationWorkbench.openApplicationById(
@@ -120,7 +113,7 @@ describe('Application details', () => {
   })
 
   test('Other VTJ guardian in same address is shown', async () => {
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     const application = await applicationWorkbench.openApplicationById(
@@ -133,7 +126,7 @@ describe('Application details', () => {
   })
 
   test('Other VTJ guardian in different address is shown', async () => {
-    await employeeLogin(page, 'ADMIN')
+    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     const application = await applicationWorkbench.openApplicationById(
@@ -147,6 +140,10 @@ describe('Application details', () => {
   })
 
   test('Decision is not sent automatically to the other guardian if the first guardian has restricted details enabled', async () => {
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      fixtures.daycareFixture.id
+    ).save()
+
     await execSimpleApplicationAction(
       restrictedDetailsGuardianApplication.id,
       'move-to-waiting-placement'
@@ -167,7 +164,7 @@ describe('Application details', () => {
       'send-decisions-without-proposal'
     )
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await employeeLogin(page, unitSupervisor.data)
     await applicationReadView.navigateToApplication(
       restrictedDetailsGuardianApplication.id
     )
@@ -184,6 +181,10 @@ describe('Application details', () => {
   })
 
   test('Supervisor can read an accepted application although the supervisors unit is not a preferred unit before and after accepting the decision', async () => {
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      fixtures.preschoolFixture.id
+    ).save()
+
     await execSimpleApplicationAction(
       singleParentApplication.id,
       'move-to-waiting-placement'
@@ -204,7 +205,7 @@ describe('Application details', () => {
       'send-decisions-without-proposal'
     )
 
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await employeeLogin(page, unitSupervisor.data)
     await applicationReadView.navigateToApplication(singleParentApplication.id)
     await applicationDetailsPage.assertApplicationStatus(
       'Vahvistettavana huoltajalla'

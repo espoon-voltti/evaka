@@ -18,11 +18,9 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { employeeLogin, UserRole } from 'e2e-playwright/utils/user'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
-import ChildInformationPage, {
-  PlacementsSection
-} from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { format } from 'date-fns'
 import { PlacementType } from 'lib-common/generated/enums'
 import { Page } from '../../utils/page'
@@ -32,7 +30,6 @@ let page: Page
 let childInformationPage: ChildInformationPage
 let childId: UUID
 let unitId: UUID
-let childPlacements: PlacementsSection
 
 beforeEach(async () => {
   await resetDatabase()
@@ -43,7 +40,10 @@ beforeEach(async () => {
 
   unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
+  const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
+
   page = await Page.open()
+  await employeeLogin(page, unitSupervisor.data)
 })
 
 const setupPlacement = async (
@@ -62,34 +62,19 @@ const setupPlacement = async (
   ])
 }
 
-const setupUser = async (id: UUID) => {
-  await Fixture.employee()
-    .with({
-      id,
-      externalId: `espoo-ad:${id}`,
-      email: 'essi.esimies@evaka.test',
-      firstName: 'Essi',
-      lastName: 'Esimies',
-      roles: []
-    })
-    .withDaycareAcl(unitId, 'UNIT_SUPERVISOR')
-    .save()
-}
-
-const logUserIn = async (role: UserRole) => {
-  await employeeLogin(page, role)
+async function openChildPlacements() {
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
-  childPlacements = await childInformationPage.openCollapsible('placements')
+  await childInformationPage.waitUntilLoaded()
+  return await childInformationPage.openCollapsible('placements')
 }
 
 describe('Child Information placement info', () => {
   test('A terminated placement is indicated', async () => {
     const placementId = uuidv4()
     await setupPlacement(placementId, 'DAYCARE')
-    await setupUser(config.unitSupervisorAad)
-    await logUserIn('UNIT_SUPERVISOR')
 
+    let childPlacements = await openChildPlacements()
     await childPlacements.assertTerminatedByGuardianIsNotShown(placementId)
 
     await terminatePlacement(
@@ -98,7 +83,8 @@ describe('Child Information placement info', () => {
       LocalDate.today(),
       familyWithTwoGuardians.guardian.id
     )
-    await logUserIn('UNIT_SUPERVISOR')
+
+    childPlacements = await openChildPlacements()
     await childPlacements.assertTerminatedByGuardianIsShown(placementId)
   })
 })

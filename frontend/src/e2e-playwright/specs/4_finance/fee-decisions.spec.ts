@@ -38,16 +38,10 @@ beforeEach(async () => {
   await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  page = await Page.open({ acceptDownloads: true })
+  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
-  await Fixture.employee()
-    .with({
-      id: config.financeAdminAad,
-      externalId: `espoo-ad:${config.financeAdminAad}`,
-      roles: ['FINANCE_ADMIN']
-    })
-    .save()
-  await employeeLogin(page, 'FINANCE_ADMIN')
+  page = await Page.open({ acceptDownloads: true })
+  await employeeLogin(page, financeAdmin.data)
   await page.goto(config.employeeUrl)
 })
 

@@ -10,10 +10,9 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
-import config from 'e2e-test-common/config'
 import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
   insertDaycareGroupFixtures,
@@ -35,16 +34,6 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   await insertDefaultServiceNeedOptions()
   await insertDaycareGroupFixtures([daycareGroupFixture])
-  await Fixture.employee()
-    .with({
-      id: config.unitSupervisorAad,
-      externalId: `espoo-ad:${config.unitSupervisorAad}`,
-      firstName: 'Essi',
-      lastName: 'Esimies',
-      roles: []
-    })
-    .withDaycareAcl(fixtures.daycareFixture.id, 'UNIT_SUPERVISOR')
-    .save()
 
   daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -52,9 +41,12 @@ beforeEach(async () => {
     fixtures.daycareFixture.id
   )
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  const unitSupervisor = await Fixture.employeeUnitSupervisor(
+    fixtures.daycareFixture.id
+  ).save()
 
   page = await Page.open()
-  await employeeLogin(page, 'UNIT_SUPERVISOR')
+  await employeeLogin(page, unitSupervisor.data)
   unitPage = new UnitPage(page)
 })
 

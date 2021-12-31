@@ -51,9 +51,10 @@ beforeEach(async () => {
       '2020-12-31'
     )
   ])
+  const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')
 

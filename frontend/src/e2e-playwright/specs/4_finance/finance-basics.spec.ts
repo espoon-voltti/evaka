@@ -19,16 +19,10 @@ let nav: EmployeeNav
 
 beforeEach(async () => {
   await resetDatabase()
-  await Fixture.employee()
-    .with({
-      id: config.financeAdminAad,
-      externalId: `espoo-ad:${config.financeAdminAad}`,
-      roles: ['FINANCE_ADMIN']
-    })
-    .save()
+  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })
-  await employeeLogin(page, 'FINANCE_ADMIN')
+  await employeeLogin(page, financeAdmin.data)
   await page.goto(config.employeeUrl)
 
   financeBasicsPage = new FinanceBasicsPage(page)

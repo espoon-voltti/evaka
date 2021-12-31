@@ -7,18 +7,16 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  Fixture,
-  invoiceFixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
-import {
   applicationFixture,
   createDaycarePlacementFixture,
   daycareFixture,
   daycareGroupFixture,
   decisionFixture,
+  enduserChildFixtureJari,
   enduserGuardianFixture,
-  enduserChildFixtureJari
+  Fixture,
+  invoiceFixture,
+  uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import {
   insertApplications,
@@ -31,7 +29,6 @@ import {
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-import config from '../../../e2e-test-common/config'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -41,15 +38,7 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
-  await Fixture.employee()
-    .with({
-      id: config.adminAad,
-      externalId: config.adminExternalId,
-      firstName: 'Seppo',
-      lastName: 'Sorsa',
-      roles: ['ADMIN']
-    })
-    .save()
+  const admin = await Fixture.employeeAdmin().save()
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -67,12 +56,12 @@ beforeEach(async () => {
   await insertDecisionFixtures([
     {
       ...decisionFixture(application.id, startDate, startDate),
-      employeeId: config.adminAad
+      employeeId: admin.data.id
     }
   ])
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
 })
 
 describe('Employee - Guardian Information', () => {

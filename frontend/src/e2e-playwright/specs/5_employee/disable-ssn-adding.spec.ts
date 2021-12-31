@@ -18,21 +18,16 @@ let serviceWorkerPersonSearchPage: PersonSearchPage
 beforeEach(async () => {
   await resetDatabase()
 
-  await Fixture.employee()
-    .with({
-      id: config.serviceWorkerAad,
-      externalId: `espoo-ad:${config.serviceWorkerAad}`,
-      roles: ['SERVICE_WORKER']
-    })
-    .save()
+  const admin = await Fixture.employeeAdmin().save()
+  const serviceWorker = await Fixture.employeeServiceWorker().save()
 
   adminPage = await Page.open()
-  await employeeLogin(adminPage, 'ADMIN')
+  await employeeLogin(adminPage, admin.data)
   await adminPage.goto(`${config.employeeUrl}/search`)
   adminPersonSearchPage = new PersonSearchPage(adminPage)
 
   serviceWorkerPage = await Page.open()
-  await employeeLogin(serviceWorkerPage, 'SERVICE_WORKER')
+  await employeeLogin(serviceWorkerPage, serviceWorker.data)
   await serviceWorkerPage.goto(`${config.employeeUrl}/search`)
   serviceWorkerPersonSearchPage = new PersonSearchPage(serviceWorkerPage)
 })

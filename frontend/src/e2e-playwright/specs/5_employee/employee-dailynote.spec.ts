@@ -30,6 +30,7 @@ let unitPage: UnitPage
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+  const admin = await Fixture.employeeAdmin().save()
 
   await insertDefaultServiceNeedOptions()
 
@@ -60,7 +61,7 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open()
-  await employeeLogin(page, 'ADMIN')
+  await employeeLogin(page, admin.data)
 
   unitPage = new UnitPage(page)
 })

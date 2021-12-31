@@ -172,7 +172,7 @@ class PersonController(
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
 
         val userEditablePersonData = data
             .let {
@@ -249,7 +249,7 @@ class PersonController(
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log()
         @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
