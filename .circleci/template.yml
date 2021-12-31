@@ -36,6 +36,9 @@ parameters:
   ecr:
     type: string
     default: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
+  ecr_public:
+    type: string
+    default: public.ecr.aws/p6g0g5e1
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
@@ -60,38 +63,14 @@ aliases:
   - &s3mock_image adobe/s3mock
   - &ubuntu_machine_image ubuntu-2004:202107-02
 
+  - &builder_aws_terraform_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-terraform-<< pipeline.parameters.builder_aws_type >>
+
 <%- if not is_pull -%>
   - &builder_aws_core_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-core-<< pipeline.parameters.builder_aws_type >>
   - &builder_aws_docker_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-docker-<< pipeline.parameters.builder_aws_type >>
-  - &builder_aws_terraform_image << pipeline.parameters.ecr >>/voltti/builder-aws:<< pipeline.parameters.builder_aws_version >>-terraform-<< pipeline.parameters.builder_aws_type >>
 <% else %>
   - &builder_aws_core_image << pipeline.parameters.nodejs_image >>
   - &builder_aws_docker_image << pipeline.parameters.nodejs_image >>
-  - &builder_aws_terraform_image << pipeline.parameters.nodejs_image >>
-<% end %>
-
-
-<% if is_pull %>
-  - &default_contexts
-    context: []
-  - &aws_contexts
-    context: []
-  - &aws_docker_contexts
-    context: []
-<% else %>
-  - &default_contexts
-    context:
-      - voltti-slack
-      - voltti-dockerhub
-  - &aws_contexts
-    context:
-      - voltti-slack
-      - org-global
-  - &aws_docker_contexts
-    context:
-      - voltti-dockerhub
-      - voltti-slack
-      - org-global
 <% end %>
 
   - &default_config
@@ -417,36 +396,15 @@ commands:
       - restore_repo
       - setup_remote_docker:
           version: *remote_docker_version
-          docker_layer_caching: false
-      - run:
-          name: "Setup E2E_IMAGE and store date"
-          command: |
-            echo 'export E2E_IMAGE="<< pipeline.parameters.ecr >>/evaka/e2e-<< parameters.test_runner >>:latest"' >> $BASH_ENV
-            date +%F > date
-      - restore_cache:
-          name: Restore Docker image from cache
-          key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
+          docker_layer_caching: true
       - run:
           name: Build E2E image
           working_directory: *workspace_compose
           command: |
-            docker load -i "<< pipeline.parameters.workspace_root >>/e2e-<< parameters.test_runner >>.tar" || true
-            docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
-      - run:
-          name: Package E2E << parameters.test_runner >> image
-          working_directory: << pipeline.parameters.workspace_root >>
-          command: |
-            docker save "$E2E_IMAGE" > "e2e-<< parameters.test_runner >>.tar"
-      - save_cache:
-          name: Store Docker image in cache
-          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
-          paths:
-            - "e2e-<< parameters.test_runner >>.tar"
-      - save_cache:
-          name: Store Docker image in daily cache
-          key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
-          paths:
-            - "e2e-<< parameters.test_runner >>.tar"
+            export E2E_IMAGE="<< pipeline.parameters.ecr_public >>/evaka/e2e-<< parameters.test_runner >>:latest"
+            docker build --pull -t "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
+            AWS_REGION=us-east-1 ../bin/ci-login-registry "<< pipeline.parameters.ecr_public >>"
+            docker push "$E2E_IMAGE"
       - notify_slack
 
   e2e_test:
@@ -789,24 +747,29 @@ jobs:
     executor: aws_core_executor
     steps:
       - checkout
-  <% if not is_pull %>
       - restore_repo
-      - restore_frontend_comm_deps
-      - run: . replace-credentials
-      - run:
-          name: Fetch Espoo-specific build customizations
-          working_directory: << pipeline.parameters.workspace_root >>
-          command: |
-            ./bin/fetch-espoo-build-customizations.sh
-      - run:
-          name: Fetch commercial frontend dependencies
-          working_directory: *workspace_frontend
-          command: |
-            ./init-pro-icons.sh
-      - store_frontend_comm_deps
-      - notify_slack
-  <% end %>
+      - when:
+          condition:
+            not:
+                matches:
+                  pattern: ^pull\/\d+$
+                  value: "<< pipeline.git.branch >>"
+          steps:
+            - restore_frontend_comm_deps
+            - run: . replace-credentials
+            - run:
+                name: Fetch Espoo-specific build customizations
+                working_directory: << pipeline.parameters.workspace_root >>
+                command: |
+                  ./bin/fetch-espoo-build-customizations.sh
+            - run:
+                name: Fetch commercial frontend dependencies
+                working_directory: *workspace_frontend
+                command: |
+                  ./init-pro-icons.sh
+            - store_frontend_comm_deps
       - store_repo
+      - notify_slack
 
   clone_infra_repo:
     executor: aws_terraform_executor
@@ -1181,61 +1144,48 @@ workflows:
 
   build_test_and_deploy:
     jobs:
-      - checkout_repo:
-          <<: *aws_docker_contexts
-
+      - checkout_repo
       - check_licenses:
-          <<: *default_contexts
           requires:
             - checkout_repo
 
       - lint_scripts:
-          <<: *default_contexts
           requires:
             - checkout_repo
 
       - build_base_image:
-          <<: *default_contexts
           requires:
             - checkout_repo
 
       - apigw_build_and_test:
-          <<: *default_contexts
           requires:
             - checkout_repo
       - apigw_build_and_push_image:
-          <<: *aws_contexts
           requires:
             - build_base_image
             - apigw_build_and_test
 
       - frontend_build_core:
-          <<: *aws_docker_contexts
           requires:
             - checkout_repo
 
       - frontend_build_misc_and_test:
-          <<: *default_contexts
           requires:
             - checkout_repo
 
       - e2e-build-testcafe:
-          <<: *aws_docker_contexts
           requires:
             - checkout_repo
       - e2e-build-playwright:
-          <<: *aws_docker_contexts
           requires:
             - checkout_repo
       - e2e-test-testcafe:
-          <<: *default_contexts
           requires:
             - e2e-build-testcafe
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
       - e2e-test-playwright:
-          <<: *default_contexts
           requires:
             - e2e-build-playwright
             - frontend_build_core
@@ -1243,52 +1193,25 @@ workflows:
             - service_build_and_push_image
 
       - proxy_build_and_push_image:
-          <<: *default_contexts
           requires:
             - checkout_repo
 
       - service_build:
-          <<: *default_contexts
           requires:
             - checkout_repo
       - service_build_and_push_image:
-          <<: *aws_contexts
           requires:
             - build_base_image
             - service_build
 
       - service_test:
-          <<: *default_contexts
           requires:
             - service_build
       - service_integration_test:
-          <<: *default_contexts
           requires:
             - service_build
 
-<%- if not is_pull -%>
-      - clone_infra_repo:
-          <<: *aws_contexts
-          requires:
-            - frontend_install
-          filters:
-            branches:
-              only: master
-
-      - services_deploy:
-          <<: *aws_contexts
-          name: services_deploy_<< matrix.target_env >>
-          requires:
-            - clone_infra_repo
-          filters:
-            branches:
-              only: master
-          matrix:
-            parameters:
-              target_env: [dev, test]
-
       - frontend_install:
-          <<: *aws_contexts
           name: frontend_install_<< matrix.target_env >>
           requires:
             - check_licenses
@@ -1302,9 +1225,30 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test, staging, prod]
+          filters:
+            branches:
+              ignore: /pull\/[0-9]+/
+
+      - clone_infra_repo:
+          requires:
+            - frontend_install
+          filters:
+            branches:
+              only: master
+
+      - services_deploy:
+          name: services_deploy_<< matrix.target_env >>
+          requires:
+            - clone_infra_repo
+          filters:
+            branches:
+              only: master
+          matrix:
+            parameters:
+              target_env: [dev, test]
+
 
       - frontend_deploy:
-          <<: *aws_contexts
           name: frontend_deploy_<< matrix.target_env >>
           requires:
             - clone_infra_repo
@@ -1314,4 +1258,3 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test]
-<% end %>
