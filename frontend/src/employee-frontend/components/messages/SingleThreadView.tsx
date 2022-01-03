@@ -2,10 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faReply } from '@fortawesome/free-solid-svg-icons'
+import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
+import {
+  Message,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
+import { MessageType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
-import { fontWeights, H2 } from 'lib-components/typography'
+import { Bold, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -19,24 +31,12 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import {
-  Message,
-  MessageThread
-} from 'lib-common/generated/api-types/messaging'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { getAttachmentBlob } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
-import { MessageType } from 'lib-common/generated/enums'
 import { View } from './types-view'
-import { UUID } from 'lib-common/types'
-import { faReply } from '@fortawesome/free-solid-svg-icons'
-import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 
 const MessageContainer = styled.div`
   background-color: white;
@@ -62,27 +62,17 @@ const TitleRow = styled.div`
 const StickyTitleRow = styled(TitleRow)`
   position: sticky;
   top: 0;
-  padding: 15px;
-  background: white;
+  padding: ${defaultMargins.L};
+  background: ${colors.greyscale.white};
   max-height: 100px;
   overflow: auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: ${defaultMargins.s};
 `
 
-const StickyTitleRowTitle = styled(H2)`
-  top: 0;
-  padding: 15px;
-  background: white;
-  max-height: 100px;
-`
-
-const SenderName = styled.div`
-  font-weight: ${fontWeights.semibold};
-`
-const InformationText = styled.div`
-  font-size: 14px;
-  font-weight: ${fontWeights.semibold};
-  color: ${colors.greyscale.dark};
-`
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
   white-space: pre-line;
@@ -102,7 +92,7 @@ function SingleMessage({
   return (
     <MessageContainer>
       <TitleRow>
-        <SenderName>{message.sender.name}</SenderName>
+        <Bold>{message.sender.name}</Bold>
         <InformationText>
           {formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}
         </InformationText>
@@ -235,12 +225,10 @@ export function SingleThreadView({
       </ContentArea>
       <Gap size="xs" />
       <ScrollContainer>
-        {title && type && (
-          <StickyTitleRow ref={stickyTitleRowRef}>
-            <StickyTitleRowTitle>{title}</StickyTitleRowTitle>{' '}
-            <MessageTypeChip type={type} />
-          </StickyTitleRow>
-        )}
+        <StickyTitleRow ref={stickyTitleRowRef}>
+          <H2 noMargin>{title}</H2>
+          <MessageTypeChip type={type} />
+        </StickyTitleRow>
         {messages.map((message, idx) => (
           <React.Fragment key={`${message.id}-fragment`}>
             {!replyEditorVisible && idx === messages.length - 1 && (
