@@ -127,8 +127,10 @@ LEFT JOIN LATERAL (
     AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(placement.start_date, placement.end_date, '[]')
 ) placements ON true
 WHERE decision.status = 'SENT'::voucher_value_decision_status
-AND daterange(decision.valid_from, decision.valid_to, '[]') != placements.combined_range
-AND placements.combined_range << daterange(:now, null)
+AND (placements.combined_range IS NULL OR (
+    daterange(decision.valid_from, decision.valid_to, '[]') != placements.combined_range
+    AND placements.combined_range << daterange(:now, null)
+))
 """
         ).bind("now", now).mapTo<VoucherValueDecisionId>().toList()
 
