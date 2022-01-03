@@ -2,15 +2,41 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Element, Modal, Page, TextInput } from '../../../utils/page'
+import {
+  DatePickerDeprecated,
+  Element,
+  Modal,
+  Page,
+  TextInput
+} from '../../../utils/page'
 import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
 import { UnitDiaryPage } from './unit-diary-page'
 
 export class UnitGroupsPage {
   constructor(private readonly page: Page) {}
 
-  readonly #groupCollapsible = (groupId: string) =>
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="unit-groups-page"][data-loading="false"]')
+      .waitUntilVisible()
+  }
+
+  #groupCollapsible = (groupId: string) =>
     this.page.find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
+
+  async selectPeriod(period: '1 day' | '3 months' | '6 months' | '1 year') {
+    await this.page
+      .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
+      .click()
+    await this.waitUntilLoaded()
+  }
+
+  async setFilterStartDate(date: string) {
+    await new DatePickerDeprecated(
+      this.page.find('[data-qa="unit-filter-start-date"]')
+    ).fill(date)
+    await this.waitUntilLoaded()
+  }
 
   terminatedPlacementsSection = new TerminatedPlacementsSection(
     this.page,
@@ -81,11 +107,61 @@ export class MissingPlacementsSection extends Element {
     const modal = await missingPlacementRow.addToGroup()
     await modal.submit()
   }
+
+  async assertRowFields(
+    nth: number,
+    fields: {
+      childName?: string
+      dateOfBirth?: string
+      placementDuration?: string
+      groupMissingDuration?: string
+    }
+  ) {
+    const missingPlacementRow = new MissingPlacementRow(
+      this.page,
+      this.#missingPlacementRows.nth(nth)
+    )
+    await missingPlacementRow.assertFields(fields)
+  }
 }
 
 export class MissingPlacementRow extends Element {
   constructor(private page: Page, self: Element) {
     super(self)
+  }
+
+  #childName = this.find('[data-qa="child-name"]')
+  #dateOfBirth = this.find('[data-qa="child-dob"]')
+  #placementDuration = this.find('[data-qa="placement-duration"]')
+  #groupMissingDuration = this.find('[data-qa="group-missing-duration"]')
+
+  async assertFields(fields: {
+    childName?: string
+    dateOfBirth?: string
+    placementDuration?: string
+    groupMissingDuration?: string
+  }) {
+    if (fields.childName !== undefined) {
+      await waitUntilEqual(() => this.#childName.innerText, fields.childName)
+    }
+    if (fields.dateOfBirth !== undefined) {
+      await waitUntilEqual(
+        () => this.#dateOfBirth.innerText,
+        fields.dateOfBirth
+      )
+    }
+    if (fields.placementDuration !== undefined) {
+      await waitUntilEqual(
+        () => this.#placementDuration.innerText,
+        fields.placementDuration
+      )
+    }
+    if (fields.groupMissingDuration !== undefined) {
+      await waitUntilEqual(
+        () => this.#groupMissingDuration.innerText,
+        fields.groupMissingDuration
+      )
+    }
   }
 
   #addToGroup = this.find('[data-qa="add-to-group-btn"]')
@@ -165,6 +241,24 @@ export class GroupCollapsibleChildRow extends Element {
     super(self)
   }
 
+  #childName = this.find('[data-qa="child-name"]')
+  #placementDuration = this.find('[data-qa="placement-duration"]')
+
+  async assertFields(fields: {
+    childName?: string
+    placementDuration?: string
+  }) {
+    if (fields.childName !== undefined) {
+      await waitUntilEqual(() => this.#childName.innerText, fields.childName)
+    }
+    if (fields.placementDuration !== undefined) {
+      await waitUntilEqual(
+        () => this.#placementDuration.innerText,
+        fields.placementDuration
+      )
+    }
+  }
+
   #dailyNoteIcon = this.find(
     `[data-qa="daycare-daily-note-icon-${this.childId}"]`
   )
@@ -182,6 +276,12 @@ export class GroupCollapsibleChildRow extends Element {
   async openDailyNoteModal() {
     await this.#dailyNoteIcon.click()
     return new ChildDailyNoteModal(this.find('[data-qa="modal"]'))
+  }
+
+  #removeButton = this.find('[data-qa="remove-btn"]')
+
+  async remove() {
+    await this.#removeButton.click()
   }
 }
 

@@ -132,6 +132,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           resolveDisabled={!form.child || validationErrors.length > 0}
           rejectAction={clearUiMode}
           rejectLabel={i18n.common.cancel}
+          data-qa="fridge-child-modal"
         >
           {errorStatusCode === 409 && (
             <section className="error">
@@ -162,6 +163,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
                     assignFridgeChildForm({ child: person, endDate })
                   }}
                   onlyChildren
+                  data-qa="fridge-child-person-search"
                 />
               </>
             )}
@@ -174,6 +176,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
               minDate={form.child?.dateOfBirth}
               maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
               type="full-width"
+              data-qa="fridge-child-start-date"
             />
           </section>
           <section>
@@ -184,6 +187,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
               minDate={form.child?.dateOfBirth}
               maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
               type="full-width"
+              data-qa="fridge-child-end-date"
             />
           </section>
           {validationErrors.map((error) => (

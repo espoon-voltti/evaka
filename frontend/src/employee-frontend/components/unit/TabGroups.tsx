@@ -44,8 +44,8 @@ export default React.memo(function TabGroups({
 
   return renderResult(
     combine(unitInformation, unitData, groupPermittedActions),
-    ([unitInformation, unitData, groupPermittedActions]) => (
-      <FixedSpaceColumn>
+    ([unitInformation, unitData, groupPermittedActions], isReloading) => (
+      <FixedSpaceColumn data-qa="unit-groups-page" data-loading={isReloading}>
         {unitData.recentlyTerminatedPlacements.length > 0 && (
           <ContentArea opaque data-qa="terminated-placements-section">
             <TerminatedPlacements

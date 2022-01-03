@@ -3,15 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  Page,
-  Element,
-  FileInput,
-  TextInput,
   Checkbox,
-  Radio,
   Combobox,
   DatePickerDeprecated,
-  Select
+  Element,
+  FileInput,
+  Modal,
+  Page,
+  Radio,
+  Select,
+  TextInput
 } from '../../utils/page'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Daycare } from 'e2e-test-common/dev-api/types'
@@ -455,6 +456,34 @@ export class PlacementsSection extends Section {
       .find('[data-qa="placement-details-start-date"]')
       .waitUntilVisible()
     await this.#terminatedByGuardian(placementId).waitUntilHidden()
+  }
+
+  async createNewPlacement({
+    unitName,
+    startDate,
+    endDate
+  }: {
+    unitName: string
+    startDate: string
+    endDate: string
+  }) {
+    await this.find('[data-qa="create-new-placement-button"]').click()
+
+    const modal = new Modal(this.page.find('[data-qa="modal"]'))
+    const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
+    await unitSelect.fillAndSelectFirst(unitName)
+
+    const start = new DatePickerDeprecated(
+      modal.find('[data-qa="create-placement-start-date"]')
+    )
+    await start.fill(startDate)
+
+    const end = new DatePickerDeprecated(
+      modal.find('[data-qa="create-placement-end-date"]')
+    )
+    await end.fill(endDate)
+
+    await modal.submit()
   }
 }
 

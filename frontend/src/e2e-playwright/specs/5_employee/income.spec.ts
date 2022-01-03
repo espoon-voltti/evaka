@@ -8,9 +8,9 @@ import { employeeLogin } from '../../utils/user'
 import { UUID } from 'lib-common/types'
 import config from '../../../e2e-test-common/config'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
-import FridgeHeadInformationPage, {
+import GuardianInformationPage, {
   IncomesSection
-} from '../../pages/employee/fridge-head-information-page'
+} from '../../pages/employee/guardian-information'
 import ErrorModal from '../../pages/employee/error-modal'
 import { Page } from '../../utils/page'
 import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
@@ -31,9 +31,8 @@ beforeEach(async () => {
   await employeeLogin(page, financeAdmin.data)
   await page.goto(config.employeeUrl + '/profile/' + personId)
 
-  const fridgeHeadInformationPage = new FridgeHeadInformationPage(page)
-  await fridgeHeadInformationPage.openIncomesCollapsible()
-  incomesSection = fridgeHeadInformationPage.incomesSection()
+  const guardianInformationPage = new GuardianInformationPage(page)
+  incomesSection = await guardianInformationPage.openCollapsible('incomes')
 })
 
 describe('Income', () => {

@@ -74,6 +74,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
               text={i18n.childInformation.placements.createPlacement.btn}
               onClick={() => toggleUiMode('create-new-placement')}
               disabled={uiMode === 'create-new-placement'}
+              data-qa="create-new-placement-button"
             />
           </RequireRole>
         </FlexRow>
