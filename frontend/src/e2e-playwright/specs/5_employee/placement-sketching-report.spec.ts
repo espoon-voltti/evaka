@@ -18,23 +18,24 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { format, sub } from 'date-fns'
-import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
+import { Application } from 'e2e-test-common/dev-api/types'
 import ReportsPage from '../../pages/employee/reports'
-import { ApplicationStatus } from 'lib-common/generated/enums'
 import { employeeLogin } from '../../utils/user'
 import { Page } from '../../utils/page'
 import config from 'e2e-test-common/config'
+import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
+
+const mockToday = LocalDate.of(2021, 2, 1)
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   const admin = (await Fixture.employeeAdmin().save()).data
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockToday.toSystemTzDate() })
   await employeeLogin(page, admin)
 })
 
@@ -46,27 +47,29 @@ async function openPlacementSketchingReport() {
 
 describe('Placement sketching report', () => {
   test('Not placed child shows on report', async () => {
-    const now = new Date()
-
     const fixture = applicationFixture(
       fixtures.enduserChildFixtureJari,
       fixtures.enduserGuardianFixture,
       undefined,
-      'PRESCHOOL'
+      'PRESCHOOL',
+      'AGREED'
     )
 
-    const preferredStartDate = new Date(now.getFullYear(), 7, 13)
+    const preferredStartDate = LocalDate.of(2021, 8, 13)
+    const sentDate = preferredStartDate.subMonths(4)
     const applicationId = uuidv4()
 
-    const createdApplication = {
+    const createdApplication: Application = {
       ...fixture,
       form: {
         ...fixture.form,
-        preferredStartDate: preferredStartDate.toISOString(),
-        otherGuardianAgreementStatus: 'AGREED' as OtherGuardianAgreementStatus
+        preferences: {
+          ...fixture.form.preferences,
+          preferredStartDate
+        }
       },
-      sentDate: format(sub(preferredStartDate, { months: 4 }), 'yyyy-MM-dd'),
-      status: 'SENT' as ApplicationStatus,
+      sentDate: sentDate.formatIso(),
+      status: 'SENT',
       id: applicationId
     }
 
@@ -75,6 +78,7 @@ describe('Placement sketching report', () => {
     const preferredUnit = daycareFixture
 
     const report = await openPlacementSketchingReport()
+    await page.pause()
     await report.assertRow(
       createdApplication.id,
       preferredUnit.name,
@@ -83,33 +87,35 @@ describe('Placement sketching report', () => {
   })
 
   test('Placed child shows on report', async () => {
-    const now = new Date()
-
     const fixture = applicationFixture(
       fixtures.enduserChildFixtureJari,
       fixtures.enduserGuardianFixture,
       undefined,
-      'PRESCHOOL'
+      'PRESCHOOL',
+      'AGREED'
     )
 
-    const preferredStartDate = new Date(now.getFullYear(), 7, 13)
+    const preferredStartDate = LocalDate.of(2021, 8, 13)
+    const sentDate = preferredStartDate.subMonths(4)
     const applicationId = uuidv4()
 
-    const createdApplication = {
+    const createdApplication: Application = {
       ...fixture,
       form: {
         ...fixture.form,
-        preferredStartDate: preferredStartDate.toISOString(),
-        otherGuardianAgreementStatus: 'AGREED' as OtherGuardianAgreementStatus
+        preferences: {
+          ...fixture.form.preferences,
+          preferredStartDate
+        }
       },
-      sentDate: format(sub(preferredStartDate, { months: 4 }), 'yyyy-MM-dd'),
-      status: 'SENT' as ApplicationStatus,
+      sentDate: sentDate.formatIso(),
+      status: 'SENT',
       id: applicationId
     }
 
     await insertApplications([createdApplication])
 
-    const placementStartDate = new Date(now.getFullYear(), 0, 1)
+    const placementStartDate = LocalDate.of(2021, 1, 1)
     const preferredUnit = daycareFixture
     const currentUnit = preferredUnit
 
@@ -117,7 +123,7 @@ describe('Placement sketching report', () => {
       uuidv4(),
       createdApplication.childId,
       preferredUnit.id,
-      format(placementStartDate, 'yyyy-MM-dd')
+      placementStartDate.formatIso()
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
