@@ -15,6 +15,7 @@ import { useTranslation } from '../../state/i18n'
 import { Absence } from 'lib-common/api-types/child/Absences'
 import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
+import { formatDate } from 'lib-common/date'
 
 interface AbsenceCellPartProps {
   position: string
@@ -159,8 +160,13 @@ export default React.memo(function AbsenceCell({
     () =>
       absences
         .map(
-          ({ careType, absenceType }) =>
-            `${i18n.absences.careTypes[careType]}: ${i18n.absences.absenceTypes[absenceType]}`
+          ({ careType, absenceType, modifiedAt, modifiedByType }) =>
+            `${i18n.absences.careTypes[careType]}: ${
+              i18n.absences.absenceTypes[absenceType]
+            }<br/>
+            (${formatDate(modifiedAt)} ${
+              i18n.absences.modifiedByType[modifiedByType]
+            })`
         )
         .join('<br/>'),
     [absences, i18n]

@@ -16,7 +16,9 @@ describe('absences date range', () => {
         childId: uniqueId(),
         date: LocalDate.today().addDays(1),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absences = [absence]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(1)
@@ -28,14 +30,18 @@ describe('absences date range', () => {
         childId: uniqueId(),
         date: LocalDate.today().addDays(1),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absence2: Absence = {
         id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.today().addDays(2),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absences = [absence, absence2]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
@@ -47,14 +53,18 @@ describe('absences date range', () => {
         childId: uniqueId(),
         date: LocalDate.today().addDays(1),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absence2: Absence = {
         id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.today().addDays(2),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
 
       const absence3: Absence = {
@@ -62,14 +72,18 @@ describe('absences date range', () => {
         childId: uniqueId(),
         date: LocalDate.today().addDays(7),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absence4: Absence = {
         id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.today().addDays(8),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absences = [absence3, absence2, absence, absence4]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
@@ -82,14 +96,18 @@ describe('absences date range', () => {
         childId: uniqueId(),
         date: LocalDate.today().addDays(1),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absence2: Absence = {
         id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.today().addDays(2),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
 
       const absence3: Absence = {
@@ -97,7 +115,9 @@ describe('absences date range', () => {
         childId: uniqueId(),
         date: LocalDate.today().addDays(7),
         absenceType: 'SICKLEAVE',
-        careType: 'PRESCHOOL'
+        careType: 'PRESCHOOL',
+        modifiedByType: 'CITIZEN',
+        modifiedAt: new Date()
       }
       const absences = [absence, absence2, absence3]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
