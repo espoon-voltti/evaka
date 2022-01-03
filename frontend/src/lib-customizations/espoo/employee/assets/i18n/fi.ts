@@ -2311,6 +2311,7 @@ export const fi = {
         'fridge_partner.person_id': 'Jääkaappi- puolisoja',
         'income.person_id': 'Tulo- tietoja',
         'income_statement.person_id': 'Tulo -ilmoituksia',
+        'invoice.codebtor': 'Laskuja (kanssa -velallinen)',
         'invoice.head_of_family': 'Laskuja',
         'invoice_row.child': 'Lasku- rivejä',
         'koski_study_right.child_id': 'Koski opinto- oikeuksia',

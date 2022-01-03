@@ -120,6 +120,7 @@ class PersonIntegrationTest : PureJdbiTest() {
             PersonReference("fridge_partner", "person_id"),
             PersonReference("income", "person_id"),
             PersonReference("income_statement", "person_id"),
+            PersonReference("invoice", "codebtor"),
             PersonReference("invoice", "head_of_family"),
             PersonReference("invoice_row", "child"),
             PersonReference("koski_study_right", "child_id"),

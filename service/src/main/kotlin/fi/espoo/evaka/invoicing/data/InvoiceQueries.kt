@@ -15,22 +15,18 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
-import org.jdbi.v3.core.statement.StatementContext
-import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
@@ -72,6 +68,17 @@ val invoiceDetailedQueryBase =
         head.invoicing_postal_code as head_invoicing_postal_code,
         head.invoicing_post_office as head_invoicing_post_office,
         head.restricted_details_enabled as head_restricted_details_enabled,
+        codebtor.date_of_birth as codebtor_date_of_birth,
+        codebtor.first_name as codebtor_first_name,
+        codebtor.last_name as codebtor_last_name,
+        codebtor.social_security_number as codebtor_ssn,
+        codebtor.street_address as codebtor_street_address,
+        codebtor.postal_code as codebtor_postal_code,
+        codebtor.post_office as codebtor_post_office,
+        codebtor.phone as codebtor_phone,
+        codebtor.email as codebtor_email,
+        codebtor.language as codebtor_language,
+        codebtor.restricted_details_enabled as codebtor_restricted_details_enabled,
         row.id as invoice_row_id,
         row.child,
         row.date_of_birth,
@@ -94,6 +101,7 @@ val invoiceDetailedQueryBase =
         child.restricted_details_enabled as child_restricted_details_enabled
     FROM invoice
         LEFT JOIN person as head ON invoice.head_of_family = head.id
+        LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
         LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
         LEFT JOIN person as child ON row.child = child.id
     """.trimIndent()
@@ -237,6 +245,7 @@ fun Database.Read.paginatedSearch(
             invoice.period_start as invoice_period_start,
             invoice.period_end as invoice_period_end,
             invoice.head_of_family,
+            invoice.codebtor,
             invoice.sent_at,
             invoice.sent_by,
             invoice.agreement_type,
@@ -249,6 +258,14 @@ fun Database.Read.paginatedSearch(
             head.postal_code as head_postal_code,
             head.post_office as head_post_office,
             head.restricted_details_enabled as head_restricted_details_enabled,
+            codebtor.date_of_birth as codebtor_date_of_birth,
+            codebtor.first_name as codebtor_first_name,
+            codebtor.last_name as codebtor_last_name,
+            codebtor.social_security_number as codebtor_ssn,
+            codebtor.street_address as codebtor_street_address,
+            codebtor.postal_code as codebtor_postal_code,
+            codebtor.post_office as codebtor_post_office,
+            codebtor.restricted_details_enabled as codebtor_restricted_details_enabled,
             row.id as invoice_row_id,
             row.child,
             row.amount,
@@ -261,6 +278,7 @@ fun Database.Read.paginatedSearch(
         FROM invoice_ids
             LEFT JOIN invoice as invoice ON invoice_ids.id = invoice.id
             LEFT JOIN person as head ON invoice.head_of_family = head.id
+            LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
             LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
             LEFT JOIN person as child ON row.child = child.id
         ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
@@ -413,7 +431,8 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
             due_date,
             invoice_date,
             agreement_type,
-            head_of_family
+            head_of_family,
+            codebtor
         ) VALUES (
             :id,
             :number,
@@ -423,7 +442,8 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
             :due_date,
             :invoice_date,
             :agreement_type,
-            :head_of_family
+            :head_of_family,
+            :codebtor
         ) ON CONFLICT (id) DO NOTHING
     """
 
@@ -440,6 +460,7 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
                     .bind("invoice_date", invoice.invoiceDate)
                     .bind("agreement_type", invoice.agreementType)
                     .bind("head_of_family", invoice.headOfFamily.id)
+                    .bind("codebtor", invoice.codebtor?.id)
                     .add()
             }
         }
@@ -512,97 +533,114 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
     batch.execute()
 }
 
-val toInvoice = { rs: ResultSet, _: StatementContext ->
+val toInvoice = { rv: RowView ->
     Invoice(
-        id = InvoiceId(UUID.fromString(rs.getString(rs.findColumn("id")))),
-        number = rs.getObject("number") as Long?,
-        status = InvoiceStatus.valueOf(rs.getString(rs.findColumn("status"))),
-        periodStart = rs.getDate(rs.findColumn("period_start")).toLocalDate(),
-        periodEnd = rs.getDate(rs.findColumn("period_end")).toLocalDate(),
-        dueDate = rs.getDate(rs.findColumn("due_date")).toLocalDate(),
-        invoiceDate = rs.getDate(rs.findColumn("invoice_date")).toLocalDate(),
-        agreementType = rs.getInt("agreement_type"),
-        rows = rs.getString("invoice_row_id")?.let { rowId ->
+        id = rv.mapColumn("id"),
+        number = rv.mapColumn("number"),
+        status = rv.mapColumn("status"),
+        periodStart = rv.mapColumn("period_start"),
+        periodEnd = rv.mapColumn("period_end"),
+        dueDate = rv.mapColumn("due_date"),
+        invoiceDate = rv.mapColumn("invoice_date"),
+        agreementType = rv.mapColumn("agreement_type"),
+        rows = rv.mapColumn<UUID?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRow(
-                    id = UUID.fromString(rowId),
+                    id = rowId,
                     child = PersonData.WithDateOfBirth(
-                        id = UUID.fromString(rs.getString("child")),
-                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
+                        id = rv.mapColumn("child"),
+                        dateOfBirth = rv.mapColumn("date_of_birth")
                     ),
-                    amount = rs.getInt("amount"),
-                    unitPrice = rs.getInt("unit_price"),
-                    periodStart = rs.getDate("invoice_row_period_start").toLocalDate(),
-                    periodEnd = rs.getDate("invoice_row_period_end").toLocalDate(),
-                    product = Product.valueOf(rs.getString("product")),
-                    costCenter = rs.getString("cost_center"),
-                    subCostCenter = rs.getString("sub_cost_center"),
-                    description = rs.getString("description")
+                    amount = rv.mapColumn("amount"),
+                    unitPrice = rv.mapColumn("unit_price"),
+                    periodStart = rv.mapColumn("invoice_row_period_start"),
+                    periodEnd = rv.mapColumn("invoice_row_period_end"),
+                    product = rv.mapColumn("product"),
+                    costCenter = rv.mapColumn("cost_center"),
+                    subCostCenter = rv.mapColumn("sub_cost_center"),
+                    description = rv.mapColumn("description")
                 )
             )
         } ?: listOf(),
-        headOfFamily = PersonData.JustId(UUID.fromString(rs.getString("head_of_family"))),
-        sentBy = rs.getNullableUUID("sent_by")?.let(::EvakaUserId),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+        headOfFamily = PersonData.JustId(rv.mapColumn("head_of_family")),
+        codebtor = rv.mapColumn<UUID?>("codebtor")?.let { PersonData.JustId(it) },
+        sentBy = rv.mapColumn("sent_by"),
+        sentAt = rv.mapColumn("sent_at")
     )
 }
 
-val toDetailedInvoice = { rs: ResultSet, _: StatementContext ->
+val toDetailedInvoice = { rv: RowView ->
     InvoiceDetailed(
-        id = InvoiceId(UUID.fromString(rs.getString(rs.findColumn("id")))),
-        number = rs.getObject("number") as Long?,
-        status = InvoiceStatus.valueOf(rs.getString(rs.findColumn("status"))),
-        periodStart = rs.getDate(rs.findColumn("period_start")).toLocalDate(),
-        periodEnd = rs.getDate(rs.findColumn("period_end")).toLocalDate(),
-        dueDate = rs.getDate(rs.findColumn("due_date")).toLocalDate(),
-        invoiceDate = rs.getDate(rs.findColumn("invoice_date")).toLocalDate(),
-        agreementType = rs.getInt("agreement_type"),
-        rows = rs.getString("invoice_row_id")?.let { rowId ->
+        id = rv.mapColumn("id"),
+        number = rv.mapColumn("number"),
+        status = rv.mapColumn("status"),
+        periodStart = rv.mapColumn("period_start"),
+        periodEnd = rv.mapColumn("period_end"),
+        dueDate = rv.mapColumn("due_date"),
+        invoiceDate = rv.mapColumn("invoice_date"),
+        agreementType = rv.mapColumn("agreement_type"),
+        rows = rv.mapColumn<UUID?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRowDetailed(
-                    id = UUID.fromString(rowId),
+                    id = rowId,
                     child = PersonData.Detailed(
-                        id = UUID.fromString(rs.getString("child")),
-                        dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate(),
-                        firstName = rs.getString("child_first_name"),
-                        lastName = rs.getString("child_last_name"),
-                        ssn = rs.getString("child_ssn"),
-                        streetAddress = rs.getString("child_street_address"),
-                        postalCode = rs.getString("child_postal_code"),
-                        postOffice = rs.getString("child_post_office"),
-                        restrictedDetailsEnabled = rs.getBoolean("child_restricted_details_enabled")
+                        id = rv.mapColumn("child"),
+                        dateOfBirth = rv.mapColumn("child_date_of_birth"),
+                        firstName = rv.mapColumn("child_first_name"),
+                        lastName = rv.mapColumn("child_last_name"),
+                        ssn = rv.mapColumn("child_ssn"),
+                        streetAddress = rv.mapColumn("child_street_address"),
+                        postalCode = rv.mapColumn("child_postal_code"),
+                        postOffice = rv.mapColumn("child_post_office"),
+                        restrictedDetailsEnabled = rv.mapColumn("child_restricted_details_enabled")
                     ),
-                    amount = rs.getInt("amount"),
-                    unitPrice = rs.getInt("unit_price"),
-                    periodStart = rs.getDate("invoice_row_period_start").toLocalDate(),
-                    periodEnd = rs.getDate("invoice_row_period_end").toLocalDate(),
-                    product = Product.valueOf(rs.getString("product")),
-                    costCenter = rs.getString("cost_center"),
-                    subCostCenter = rs.getString("sub_cost_center"),
-                    description = rs.getString("description")
+                    amount = rv.mapColumn("amount"),
+                    unitPrice = rv.mapColumn("unit_price"),
+                    periodStart = rv.mapColumn("invoice_row_period_start"),
+                    periodEnd = rv.mapColumn("invoice_row_period_end"),
+                    product = rv.mapColumn("product"),
+                    costCenter = rv.mapColumn("cost_center"),
+                    subCostCenter = rv.mapColumn("sub_cost_center"),
+                    description = rv.mapColumn("description")
                 )
             )
         } ?: listOf(),
         headOfFamily = PersonData.Detailed(
-            id = UUID.fromString(rs.getString("head_of_family")),
-            dateOfBirth = rs.getDate("head_date_of_birth").toLocalDate(),
-            firstName = rs.getString("head_first_name"),
-            lastName = rs.getString("head_last_name"),
-            ssn = rs.getString("head_ssn"),
-            streetAddress = rs.getString("head_street_address"),
-            postalCode = rs.getString("head_postal_code"),
-            postOffice = rs.getString("head_post_office"),
-            phone = rs.getString("head_phone"),
-            email = rs.getString("head_email"),
-            language = rs.getString("head_language"),
-            invoiceRecipientName = rs.getString("head_invoice_recipient_name"),
-            invoicingStreetAddress = rs.getString("head_invoicing_street_address"),
-            invoicingPostalCode = rs.getString("head_invoicing_postal_code"),
-            invoicingPostOffice = rs.getString("head_invoicing_post_office"),
-            restrictedDetailsEnabled = rs.getBoolean("head_restricted_details_enabled")
+            id = rv.mapColumn("head_of_family"),
+            dateOfBirth = rv.mapColumn("head_date_of_birth"),
+            firstName = rv.mapColumn("head_first_name"),
+            lastName = rv.mapColumn("head_last_name"),
+            ssn = rv.mapColumn("head_ssn"),
+            streetAddress = rv.mapColumn("head_street_address"),
+            postalCode = rv.mapColumn("head_postal_code"),
+            postOffice = rv.mapColumn("head_post_office"),
+            phone = rv.mapColumn("head_phone"),
+            email = rv.mapColumn("head_email"),
+            language = rv.mapColumn("head_language"),
+            invoiceRecipientName = rv.mapColumn("head_invoice_recipient_name"),
+            invoicingStreetAddress = rv.mapColumn("head_invoicing_street_address"),
+            invoicingPostalCode = rv.mapColumn("head_invoicing_postal_code"),
+            invoicingPostOffice = rv.mapColumn("head_invoicing_post_office"),
+            restrictedDetailsEnabled = rv.mapColumn("head_restricted_details_enabled")
         ),
-        sentBy = rs.getNullableUUID("sent_by")?.let(::EvakaUserId),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+        codebtor = rv.mapColumn<UUID?>("codebtor")?.let { id ->
+            PersonData.Detailed(
+                id = id,
+                dateOfBirth = rv.mapColumn("codebtor_date_of_birth"),
+                firstName = rv.mapColumn("codebtor_first_name"),
+                lastName = rv.mapColumn("codebtor_last_name"),
+                ssn = rv.mapColumn("codebtor_ssn"),
+                streetAddress = rv.mapColumn("codebtor_street_address"),
+                postalCode = rv.mapColumn("codebtor_postal_code"),
+                postOffice = rv.mapColumn("codebtor_post_office"),
+                phone = rv.mapColumn("codebtor_phone"),
+                email = rv.mapColumn("codebtor_email"),
+                language = rv.mapColumn("codebtor_language"),
+                restrictedDetailsEnabled = rv.mapColumn("codebtor_restricted_details_enabled")
+            )
+        },
+        sentBy = rv.mapColumn("sent_by"),
+        sentAt = rv.mapColumn("sent_at")
     )
 }
 
@@ -639,6 +677,19 @@ val toInvoiceSummary = { row: RowView ->
             postOffice = row.mapColumn("head_post_office"),
             restrictedDetailsEnabled = row.mapColumn("head_restricted_details_enabled")
         ),
+        codebtor = row.mapColumn<UUID?>("codebtor")?.let { id ->
+            PersonData.Detailed(
+                id = id,
+                dateOfBirth = row.mapColumn("codebtor_date_of_birth"),
+                firstName = row.mapColumn("codebtor_first_name"),
+                lastName = row.mapColumn("codebtor_last_name"),
+                ssn = row.mapColumn("codebtor_ssn"),
+                streetAddress = row.mapColumn("codebtor_street_address"),
+                postalCode = row.mapColumn("codebtor_postal_code"),
+                postOffice = row.mapColumn("codebtor_post_office"),
+                restrictedDetailsEnabled = row.mapColumn("codebtor_restricted_details_enabled")
+            )
+        },
         sentBy = row.mapColumn("sent_by"),
         sentAt = row.mapColumn("sent_at"),
         createdAt = row.mapColumn("created_at")

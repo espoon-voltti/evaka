@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.db.Database
@@ -53,6 +54,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 
 class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -2354,24 +2356,82 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(0, result.size)
     }
 
-    private fun initByPeriodAndPlacementType(period: DateRange, placementType: PlacementType) {
-        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+    @Test
+    fun `invoice codebtor is set when partner on decision is child's guardian`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+        }
+
+        db.transaction { it.createAllDraftInvoices(period) }
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(testAdult_2.id, invoice.codebtor?.id)
+        }
+    }
+
+    @Test
+    fun `invoice codebtor is not set when partner on decision is not child's guardian`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
+        db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
+
+        db.transaction { it.createAllDraftInvoices(period) }
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertNull(invoice.codebtor?.id)
+        }
+    }
+
+    @Test
+    fun `invoice codebtor is not set when partner on decision is not every child's guardian`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.DAYCARE, children = listOf(testChild_1, testChild_2), partner = testAdult_2.id)
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+        }
+
+        db.transaction { it.createAllDraftInvoices(period) }
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertNull(invoice.codebtor?.id)
+        }
+    }
+
+    private fun initByPeriodAndPlacementType(
+        period: DateRange,
+        placementType: PlacementType,
+        children: List<PersonData.Detailed> = listOf(testChild_1),
+        partner: UUID? = null
+    ) {
+        children.forEach { child -> db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period)) }
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
             period,
             testAdult_1.id,
-            listOf(
+            children.map { child ->
                 createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
                     placementUnitId = testDaycare.id,
                     placementType = placementType,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
                     fee = 28900
                 )
-            )
+            },
+            partnerId = partner
         )
         insertDecisionsAndPlacements(
             listOf(
