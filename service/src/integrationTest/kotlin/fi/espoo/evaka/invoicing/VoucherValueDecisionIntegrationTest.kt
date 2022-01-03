@@ -254,6 +254,27 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `value decision cleanup works when child's placement is deleted`() {
+        val placementId = createPlacement(startDate, endDate)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(testAdult_1.id, decisions.first().headOfFamily.id)
+        }
+
+        deletePlacement(placementId)
+        endDecisions(now = startDate)
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.ANNULLED, decisions.first().status)
+            assertEquals(testAdult_1.id, decisions.first().headOfFamily.id)
+        }
+    }
+
+    @Test
     fun `value decision search`() {
         createPlacement(startDate, endDate)
 
@@ -270,6 +291,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(1, searchValueDecisions(status = "SENT", searchTerms = "Ricky").total)
         assertEquals(0, searchValueDecisions(status = "SENT", searchTerms = "Foobar").total)
     }
+
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
@@ -313,6 +335,17 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .asUser(serviceWorker)
             .objectBody(body, mapper = objectMapper)
             .responseObject<Placement>(objectMapper)
+            .also { (_, res, _) ->
+                assertEquals(200, res.statusCode)
+            }
+
+        asyncJobRunner.runPendingJobsSync()
+    }
+
+    private fun deletePlacement(id: PlacementId) {
+        http.delete("/placements/$id")
+            .asUser(serviceWorker)
+            .response()
             .also { (_, res, _) ->
                 assertEquals(200, res.statusCode)
             }
