@@ -86,7 +86,7 @@ export default React.memo(function TabGroups({
             permittedGroupPlacementActions={
               unitData.permittedGroupPlacementActions
             }
-            unitChildrenCapacities={unitData.unitChildrenCapacities}
+            unitChildrenCapacityFactors={unitData.unitChildrenCapacityFactors}
             reloadUnitData={reloadUnitData}
             openGroups={openGroups}
             setOpenGroups={setOpenGroups}

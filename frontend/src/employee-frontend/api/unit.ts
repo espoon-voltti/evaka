@@ -17,7 +17,7 @@ import {
   Stats,
   TerminatedPlacement,
   Unit,
-  UnitChildrenCapacities,
+  UnitChildrenCapacityFactors,
   UnitLanguage,
   UnitManager,
   UnitTypes,
@@ -184,7 +184,7 @@ export type UnitData = {
   permittedPlacementActions: Record<UUID, Set<Action.Placement>>
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
   permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
-  unitChildrenCapacities: UnitChildrenCapacities[]
+  unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
 }
 
 export async function getUnitData(

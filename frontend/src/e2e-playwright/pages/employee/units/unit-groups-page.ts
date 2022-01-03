@@ -48,6 +48,23 @@ export class UnitGroupsPage {
     this.page.find('[data-qa="missing-placements-section"]')
   )
 
+  async assertChildOccupancyFactor(childId: string, factor: string) {
+    await waitUntilEqual(
+      () =>
+        this.page.find(`[data-qa="child-occupancy-factor-${childId}"]`)
+          .innerText,
+      factor
+    )
+  }
+
+  readonly childOccupancyFactorColumnHeading = this.page.find(
+    `[data-qa="child-occupancy-factor-heading"]`
+  )
+
+  readonly childOccupancyFactorColumnData = this.page.findAll(
+    `[data-qa="child-occupancy-factor-column"]`
+  )
+
   async openGroupCollapsible(groupId: string) {
     const elem = this.#groupCollapsible(groupId)
     const state = await waitUntilDefined(() => elem.getAttribute('data-status'))
@@ -65,6 +82,10 @@ export class UnitGroupsPage {
 
   async waitUntilVisible() {
     await this.page.find('[data-qa="groups-title-bar"]').waitUntilVisible()
+  }
+
+  async assertChildOccupancyFactorColumnNotVisible() {
+    await waitUntilEqual(() => this.childOccupancyFactorColumnData.count(), 0)
   }
 }
 

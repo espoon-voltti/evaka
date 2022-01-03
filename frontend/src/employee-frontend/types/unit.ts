@@ -238,7 +238,7 @@ export interface Occupancy {
   percentage?: number
 }
 
-export interface UnitChildrenCapacities {
+export interface UnitChildrenCapacityFactors {
   childId: UUID
   ageFactor: number
   assistanceNeedFactor: number
