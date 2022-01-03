@@ -27,15 +27,21 @@ type UnitProviderType =
 export class UnitPage {
   constructor(private readonly page: Page) {}
 
-  readonly #unitName = this.page.find('[data-qa="unit-name"]')
+  #unitName = this.page.find('[data-qa="unit-name"]')
+  #visitingAddress = this.page.find('[data-qa="unit-visiting-address"]')
 
-  readonly #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
-  readonly #groupsTab = this.page.find('[data-qa="groups-tab"]')
-  readonly #applicationProcessTab = this.page.find(
-    '[data-qa="application-process-tab"]'
-  )
+  #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
+  #groupsTab = this.page.find('[data-qa="groups-tab"]')
+  #applicationProcessTab = this.page.find('[data-qa="application-process-tab"]')
 
-  readonly #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
+  #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
+
+  static async openUnit(page: Page, id: string): Promise<UnitPage> {
+    await page.goto(`${config.employeeUrl}/units/${id}`)
+    const unitPage = new UnitPage(page)
+    await unitPage.waitUntilLoaded()
+    return unitPage
+  }
 
   async navigateToUnit(id: string) {
     await this.page.goto(`${config.employeeUrl}/units/${id}`)
@@ -50,8 +56,16 @@ export class UnitPage {
       .waitUntilVisible()
   }
 
+  occupancies = new UnitOccupanciesSection(
+    this.page.find('[data-qa="occupancies"]')
+  )
+
   async assertUnitName(expectedName: string) {
     await waitUntilEqual(() => this.#unitName.innerText, expectedName)
+  }
+
+  async assertVisitingAddress(expectedAddress: string) {
+    await waitUntilEqual(() => this.#visitingAddress.innerText, expectedAddress)
   }
 
   async openUnitInformation(): Promise<UnitInformationSection> {
@@ -76,8 +90,42 @@ export class UnitPage {
   async openGroupsPage(): Promise<UnitGroupsPage> {
     await this.#groupsTab.click()
     const section = new UnitGroupsPage(this.page)
-    await section.waitUntilVisible()
+    await section.waitUntilLoaded()
     return section
+  }
+}
+
+export class UnitOccupanciesSection extends Element {
+  #elem = (
+    which: 'minimum' | 'maximum' | 'no-valid-values',
+    type: 'confirmed' | 'planned'
+  ) => this.find(`[data-qa="occupancies-${which}-${type}"]`)
+
+  async assertNoValidValues() {
+    await this.#elem('no-valid-values', 'confirmed').waitUntilVisible()
+    await this.#elem('no-valid-values', 'planned').waitUntilVisible()
+  }
+
+  async assertConfirmed(minimum: string, maximum: string) {
+    await waitUntilEqual(
+      () => this.#elem('minimum', 'confirmed').innerText,
+      minimum
+    )
+    await waitUntilEqual(
+      () => this.#elem('maximum', 'confirmed').innerText,
+      maximum
+    )
+  }
+
+  async assertPlanned(minimum: string, maximum: string) {
+    await waitUntilEqual(
+      () => this.#elem('minimum', 'planned').innerText,
+      minimum
+    )
+    await waitUntilEqual(
+      () => this.#elem('maximum', 'planned').innerText,
+      maximum
+    )
   }
 }
 

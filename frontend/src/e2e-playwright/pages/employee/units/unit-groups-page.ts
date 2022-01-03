@@ -21,6 +21,9 @@ export class UnitGroupsPage {
       .waitUntilVisible()
   }
 
+  #groupCollapsibles = this.page.findAll(
+    `[data-qa^="daycare-group-collapsible-"]`
+  )
   #groupCollapsible = (groupId: string) =>
     this.page.find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
 
@@ -64,6 +67,10 @@ export class UnitGroupsPage {
   readonly childCapacityFactorColumnData = this.page.findAll(
     `[data-qa="child-capacity-factor-column"]`
   )
+
+  async assertGroupCount(expectedCount: number) {
+    await waitUntilEqual(() => this.#groupCollapsibles.count(), expectedCount)
+  }
 
   async openGroupCollapsible(groupId: string) {
     const elem = this.#groupCollapsible(groupId)
@@ -202,6 +209,10 @@ export class GroupCollapsible extends Element {
     super(self)
   }
 
+  #groupName = this.find('[data-qa="group-name"]')
+  #groupStartDate = this.find('[data-qa="group-start-date"]')
+  #groupEndDate = this.find('[data-qa="group-end-date"]')
+
   #diaryButton = this.find('[data-qa="open-absence-diary-button"]')
   #groupDailyNoteButton = this.find('[data-qa="btn-create-group-note"]')
 
@@ -209,6 +220,21 @@ export class GroupCollapsible extends Element {
     '[data-qa^="group-placement-row-"]'
   )
   #noChildren = this.find('[data-qa="no-children-placeholder"]')
+
+  async assertGroupName(expectedName: string) {
+    await waitUntilEqual(() => this.#groupName.innerText, expectedName)
+  }
+
+  async assertGroupStartDate(expectedStartDate: string) {
+    await waitUntilEqual(
+      () => this.#groupStartDate.innerText,
+      expectedStartDate
+    )
+  }
+
+  async assertGroupEndDate(expectedEndDate: string) {
+    await waitUntilEqual(() => this.#groupEndDate.innerText, expectedEndDate)
+  }
 
   childRow(childId: string) {
     return new GroupCollapsibleChildRow(this, childId)
@@ -234,6 +260,22 @@ export class GroupCollapsible extends Element {
   async openGroupDailyNoteModal() {
     await this.#groupDailyNoteButton.click()
     return new GroupDailyNoteModal(this.find('[data-qa="modal"]'))
+  }
+
+  #updateButton = this.find('[data-qa="btn-update-group"]')
+
+  async edit(fields: { name: string; startDate: string; endDate: string }) {
+    await this.#updateButton.click()
+
+    const modal = new Modal(this.find('[data-qa="group-update-modal"]'))
+    await new TextInput(modal.find('[data-qa="name-input"]')).fill(fields.name)
+    await new DatePickerDeprecated(
+      modal.find('[data-qa="start-date-input"]')
+    ).fill(fields.startDate)
+    await new DatePickerDeprecated(
+      modal.find('[data-qa="end-date-input"]')
+    ).fill(fields.endDate)
+    await modal.submit()
   }
 }
 
