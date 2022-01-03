@@ -49,9 +49,9 @@ class AbsenceService {
                         placementList.filter { it.childId == placement.childId }
                     ),
                     absences = absenceList.filter { it.childId == placement.childId }.groupBy { it.date }.let { absences ->
-                            range.dates()
-                                    .map { it to absences.getOrDefault(it, listOf()) }
-                                    .toMap()
+                        range.dates()
+                            .map { it to absences.getOrDefault(it, listOf()) }
+                            .toMap()
                     },
                     backupCares = composeBackupCareMap(
                         range,
@@ -213,7 +213,15 @@ data class AbsenceWithModifierInfo(
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,
     val modifiedAt: HelsinkiDateTime
-)
+) {
+    fun asAbsence(): Absence = Absence(
+        id = id,
+        childId = childId,
+        date = date,
+        careType = careType,
+        absenceType = absenceType
+    )
+}
 
 data class AbsenceBackupCare(
     val childId: UUID,

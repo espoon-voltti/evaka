@@ -164,9 +164,9 @@ export default React.memo(function AbsenceCell({
             `${i18n.absences.careTypes[careType]}: ${
               i18n.absences.absenceTypes[absenceType]
             }<br/>
-            (${formatDate(modifiedAt)} ${
+            ${formatDate(modifiedAt)} ${
               i18n.absences.modifiedByType[modifiedByType]
-            })`
+            }`
         )
         .join('<br/>'),
     [absences, i18n]
