@@ -36,7 +36,7 @@ export default React.memo(function EmptyThreadView({ inboxEmpty }: Props) {
 const EmptyThreadViewContainer = styled.div`
   text-align: center;
   width: 100%;
-  background: white;
+  background: ${colors.greyscale.white};
   padding-top: 10%;
 
   display: none;

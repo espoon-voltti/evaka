@@ -98,7 +98,7 @@ const ModalContainer = styled.div<{
   position: relative;
   width: min(500px, calc(100vw - 2 * ${defaultMargins.xxs}));
   max-height: calc(100vh - 2 * ${defaultMargins.s});
-  background: white;
+  background: ${(p) => p.theme.colors.greyscale.white};
   overflow-x: visible;
   box-shadow: 0 15px 75px 0 rgba(0, 0, 0, 0.5);
   border-radius: 2px;
@@ -163,7 +163,7 @@ const ModalIcon = styled.div<{ color?: IconColor }>`
   height: 60px;
   width: 60px;
   text-align: center;
-  color: #fff;
+  color: ${(p) => p.theme.colors.greyscale.white};
   margin: auto;
 `
 

@@ -30,7 +30,6 @@ import { UserContext } from '../state/user'
 import { MessageContext } from './messages/MessageContext'
 
 const Img = styled.img`
-  color: #0050bb;
   cursor: pointer;
   user-select: none;
   box-sizing: inherit;
@@ -61,9 +60,7 @@ const NavbarLink = styled(NavLink)`
 `
 
 const NavbarEnd = styled.div`
-  color: #6e6e6e;
-
-  @media screen and (min-width: 1024px) {
+  @media screen and (min-width: ${desktopMin}) {
     line-height: 1.5;
     box-sizing: inherit;
     align-items: stretch;
@@ -79,7 +76,6 @@ const NavbarItem = styled.div`
 
   @media screen and (max-width: 1023px) {
     box-sizing: inherit;
-    color: #6e6e6e;
     line-height: 1.5;
     position: relative;
     flex-grow: 0;
@@ -387,7 +383,6 @@ const NavbarContainer = styled.nav`
   line-height: 1.5;
   box-sizing: inherit;
   margin: 0 auto;
-  background-color: #fff;
   position: relative;
   display: flex;
   min-height: 3.25rem;
@@ -431,7 +426,7 @@ const NavbarStart = styled.div`
 `
 
 const HeaderTitle = styled.div`
-  color: #0050bb;
+  color: ${(p) => p.theme.colors.main.primary};
   cursor: pointer;
   box-sizing: inherit;
   margin: 0 auto;
@@ -457,22 +452,22 @@ const HeaderTitle = styled.div`
 
 const HeaderTitleWrapper = styled.a`
   box-sizing: inherit;
-  color: #0050bb;
   cursor: pointer;
   text-decoration: none;
 `
 
 const StyledTitle = styled(Title)`
+  display: none;
+  @media screen and (min-width: ${desktopMin}) {
+    display: block;
+  }
   font-weight: ${fontWeights.light};
   padding-top: 1.4rem;
   margin: 0;
-  @media screen and (max-width: 1023px) {
-    display: none;
-  }
 
   ::before {
     content: '|';
-    color: #c4c4c4;
+    color: ${(p) => p.theme.colors.greyscale.lighter};
     margin-right: 0.4em;
   }
 `
@@ -480,7 +475,7 @@ const StyledTitle = styled(Title)`
 const Burger = styled.a`
   box-sizing: inherit;
   text-decoration: none;
-  color: #6e6e6e;
+  color: ${(p) => p.theme.colors.greyscale.dark};
   cursor: pointer;
   display: block;
   height: 3.25rem;

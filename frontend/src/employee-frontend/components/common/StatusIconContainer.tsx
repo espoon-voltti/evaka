@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import colors from 'lib-customizations/common'
 import styled from 'styled-components'
 
 interface StatusIconContainerProps {
@@ -16,5 +17,5 @@ export const StatusIconContainer = styled.div<StatusIconContainerProps>`
   align-items: center;
   width: 30px;
   height: 30px;
-  color: white;
+  color: ${colors.greyscale.white};
 `

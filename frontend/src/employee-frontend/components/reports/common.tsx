@@ -21,7 +21,7 @@ export const TableScrollableWrapper = styled.div`
   th {
     position: sticky;
     top: 0;
-    background: white;
+    background: ${colors.greyscale.white};
     z-index: 2;
   }
 `

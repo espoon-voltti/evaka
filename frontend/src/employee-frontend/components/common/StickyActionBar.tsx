@@ -35,7 +35,7 @@ const Bar = styled.div`
   justify-content: center;
   position: sticky;
   bottom: 0;
-  background: white;
+  background: ${colors.greyscale.white};
   padding: 16px 0;
   margin: 0 -9999rem;
   margin-top: 50px;

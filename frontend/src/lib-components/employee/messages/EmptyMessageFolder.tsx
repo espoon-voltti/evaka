@@ -37,6 +37,6 @@ export default React.memo(function EmptyMessagesFolder({
 const EmptyThreadViewContainer = styled.div`
   text-align: center;
   width: 100%;
-  background: white;
+  background: ${(p) => p.theme.colors.greyscale.white};
   padding-top: 10%;
 `
