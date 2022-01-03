@@ -292,7 +292,7 @@ SELECT
     daycare_apply_period,
     preschool_apply_period
 FROM daycare
-WHERE daterange(opening_date, closing_date, '[]') @> :today AND
+WHERE daterange(null, closing_date) @> :today AND
     ($applyPeriod && daterange(:today, null, '[]') OR provider_type = 'PRIVATE')
 ORDER BY name ASC
     """.trimIndent()
