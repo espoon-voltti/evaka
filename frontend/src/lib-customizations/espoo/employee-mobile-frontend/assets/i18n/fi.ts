@@ -98,7 +98,7 @@ export const fi = {
       TEMPORARY_VISITOR: 'Varalapsi läsnä',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
-      PRESENCE: 'Ei poissaoloa'
+      NO_ABSENCE: 'Ei poissaoloa'
     },
     careTypes: {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',

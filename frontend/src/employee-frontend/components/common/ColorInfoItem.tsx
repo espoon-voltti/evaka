@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
-import { absenceColours } from 'lib-customizations/common'
+import { absenceColors } from 'lib-customizations/common'
 import { AbsenceType } from 'lib-common/generated/enums'
 
 interface InfoBallProps {
@@ -20,7 +20,7 @@ const InfoBall = styled.div<InfoBallProps>`
   margin-right: 12px;
   margin-top: 2px;
   flex-shrink: 0;
-  background: ${(p: InfoBallProps) => absenceColours[p.type] ?? 'none'}};
+  background: ${(p: InfoBallProps) => absenceColors[p.type]}};
 
   @media print {
     -webkit-print-color-adjust: exact;

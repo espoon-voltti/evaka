@@ -21,7 +21,7 @@ export type AbsenceType =
   | 'TEMPORARY_VISITOR'
   | 'PARENTLEAVE'
   | 'FORCE_MAJEURE'
-  | 'PRESENCE'
+  | 'NO_ABSENCE'
 
 const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()

@@ -2,21 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { flatMap, partition } from 'lodash'
-import colors from 'lib-customizations/common'
-import { fontWeights } from 'lib-components/typography'
+import { AbsenceType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Button from 'lib-components/atoms/buttons/Button'
-import {
-  FixedSpaceColumn,
-  FixedSpaceFlexWrap
-} from 'lib-components/layout/flex-helpers'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { fontWeights, H3 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors, { absenceColors } from 'lib-customizations/common'
+import { flatMap, partition } from 'lodash'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import styled from 'styled-components'
 import {
   deleteGroupAbsences,
   getGroupAbsences,
   postGroupAbsences
 } from '../../api/absences'
+import PeriodPicker from '../../components/absences/PeriodPicker'
 import { useTranslation } from '../../state/i18n'
+import { TitleContext, TitleState } from '../../state/title'
 import {
   AbsencePayload,
   billableCareTypes,
@@ -26,18 +32,10 @@ import {
   defaultAbsenceType,
   defaultCareTypeCategory
 } from '../../types/absence'
-import AbsenceTable from './AbsenceTable'
-import PeriodPicker from '../../components/absences/PeriodPicker'
-import { TitleContext, TitleState } from '../../state/title'
-import styled from 'styled-components'
-import { UUID } from 'lib-common/types'
-import LocalDate from 'lib-common/local-date'
-import { StaticChip } from 'lib-components/atoms/Chip'
-import { Gap } from 'lib-components/white-space'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { renderResult } from '../async-rendering'
+import { AbsenceLegend } from './AbsenceLegend'
 import AbsenceModal from './AbsenceModal'
-import { AbsenceType } from 'lib-common/generated/enums'
+import AbsenceTable from './AbsenceTable'
 
 interface Props {
   groupId: UUID
@@ -189,31 +187,12 @@ export default React.memo(function Absences({
             disabled={selectedCells.length === 0}
             text={i18n.absences.addAbsencesButton(selectedCells.length)}
           />
-          <Gap size="L" />
-          <FixedSpaceFlexWrap>
-            {/* TODO use absenceColors */}
-            <StaticChip color={colors.main.dark}>
-              {i18n.absences.absenceTypes.OTHER_ABSENCE}
-            </StaticChip>
-            <StaticChip color={colors.accents.violet}>
-              {i18n.absences.absenceTypes.SICKLEAVE}
-            </StaticChip>
-            <StaticChip color={colors.accents.successGreen}>
-              {i18n.absences.absenceTypes.UNKNOWN_ABSENCE}
-            </StaticChip>
-            <StaticChip color={colors.accents.turquoise}>
-              {i18n.absences.absenceTypes.PLANNED_ABSENCE}
-            </StaticChip>
-            <StaticChip color={colors.main.primary}>
-              {i18n.absences.absenceTypes.PARENTLEAVE}
-            </StaticChip>
-            <StaticChip color={colors.accents.dangerRed}>
-              {i18n.absences.absenceTypes.FORCE_MAJEURE}
-            </StaticChip>
-            <StaticChip color={colors.greyscale.medium}>
-              {i18n.absences.absenceTypes.PRESENCE}
-            </StaticChip>
-          </FixedSpaceFlexWrap>
+          <HorizontalLine dashed slim />
+          <H3 noMargin>{i18n.absences.legendTitle}</H3>
+          <Gap size="m" />
+          <FixedSpaceColumn spacing="xxs">
+            <AbsenceLegend />
+          </FixedSpaceColumn>
         </FixedSpaceColumn>
       ))}
     </AbsencesPage>
@@ -229,12 +208,6 @@ const AddAbsencesButton = styled(Button)`
 const cellSize = '20px'
 
 const AbsencesPage = styled.div`
-  button {
-    &:disabled {
-      color: #c4c4c4;
-    }
-  }
-
   h1,
   h2 {
     @media print {
@@ -260,7 +233,7 @@ const AbsencesPage = styled.div`
 
   .table td {
     text-align: left;
-    color: #0f0f0f;
+    color: ${colors.greyscale.darkest};
 
     &.absence-cell-wrapper {
       text-align: center;
@@ -319,7 +292,7 @@ const AbsencesPage = styled.div`
 
   .absence-cell-today,
   .table tr:hover .hover-highlight {
-    background: rgba(158, 158, 158, 0.2);
+    background-color: ${colors.greyscale.lightest};
 
     .absence-cell-selected {
       .absence-cell-left-weekend {
@@ -341,16 +314,15 @@ const AbsencesPage = styled.div`
   }
 
   tr:hover .hover-highlight:first-child {
-    box-shadow: -8px 0 0 rgba(158, 158, 158, 0.2);
+    box-shadow: -8px 0 0 ${colors.greyscale.lightest};
   }
 
   tr:hover .hover-highlight:last-child {
-    box-shadow: 8px 0 0 rgba(158, 158, 158, 0.2);
+    box-shadow: 8px 0 0 ${colors.greyscale.lightest};
   }
 
   .absence-header-today {
-    background-color: #9e9e9e;
-    color: ${colors.greyscale.white} !important;
+    background-color: ${colors.greyscale.lightest};
 
     @media print {
       background: none;
@@ -359,7 +331,7 @@ const AbsencesPage = styled.div`
     }
   }
 
-  .absence-header-weekday {
+  .absence-header-weekend {
     color: ${colors.greyscale.darkest} !important;
   }
 
@@ -386,35 +358,35 @@ const AbsencesPage = styled.div`
     border-width: ${cellSize} ${cellSize} 0 0;
 
     &-OTHER_ABSENCE {
-      border-top-color: ${colors.main.dark};
+      border-top-color: ${absenceColors.OTHER_ABSENCE};
     }
 
     &-SICKLEAVE {
-      border-top-color: ${colors.accents.violet};
+      border-top-color: ${absenceColors.SICKLEAVE};
     }
 
     &-UNKNOWN_ABSENCE {
-      border-top-color: ${colors.accents.successGreen};
+      border-top-color: ${absenceColors.UNKNOWN_ABSENCE};
     }
 
     &-PLANNED_ABSENCE {
-      border-top-color: ${colors.main.light};
+      border-top-color: ${absenceColors.PLANNED_ABSENCE};
     }
 
     &-TEMPORARY_RELOCATION {
-      border-top-color: ${colors.accents.warningOrange};
+      border-top-color: ${absenceColors.TEMPORARY_RELOCATION};
     }
 
     &-TEMPORARY_VISITOR {
-      border-top-color: ${colors.accents.peach};
+      border-top-color: ${absenceColors.TEMPORARY_VISITOR};
     }
 
     &-PARENTLEAVE {
-      border-top-color: ${colors.main.primary};
+      border-top-color: ${absenceColors.PARENTLEAVE};
     }
 
     &-FORCE_MAJEURE {
-      border-top-color: ${colors.accents.dangerRed};
+      border-top-color: ${absenceColors.FORCE_MAJEURE};
     }
 
     &-weekend {
@@ -422,7 +394,7 @@ const AbsencesPage = styled.div`
     }
 
     &-empty {
-      border-top-color: ${colors.greyscale.lighter};
+      border-top-color: ${absenceColors.NO_ABSENCE};
     }
   }
 
@@ -430,35 +402,35 @@ const AbsencesPage = styled.div`
     border-width: 0 0 ${cellSize} ${cellSize};
 
     &-OTHER_ABSENCE {
-      border-bottom-color: ${colors.main.dark};
+      border-bottom-color: ${absenceColors.OTHER_ABSENCE};
     }
 
     &-SICKLEAVE {
-      border-bottom-color: ${colors.accents.violet};
+      border-bottom-color: ${absenceColors.SICKLEAVE};
     }
 
     &-UNKNOWN_ABSENCE {
-      border-bottom-color: ${colors.accents.successGreen};
+      border-bottom-color: ${absenceColors.UNKNOWN_ABSENCE};
     }
 
     &-PLANNED_ABSENCE {
-      border-bottom-color: ${colors.main.light};
+      border-bottom-color: ${absenceColors.PLANNED_ABSENCE};
     }
 
     &-TEMPORARY_RELOCATION {
-      border-bottom-color: ${colors.accents.warningOrange};
+      border-bottom-color: ${absenceColors.TEMPORARY_RELOCATION};
     }
 
     &-TEMPORARY_VISITOR {
-      border-bottom-color: ${colors.accents.peach};
+      border-bottom-color: ${absenceColors.TEMPORARY_VISITOR};
     }
 
     &-PARENTLEAVE {
-      border-bottom-color: ${colors.main.primary};
+      border-bottom-color: ${absenceColors.PARENTLEAVE};
     }
 
     &-FORCE_MAJEURE {
-      border-bottom-color: ${colors.accents.dangerRed};
+      border-bottom-color: ${absenceColors.FORCE_MAJEURE};
     }
 
     &-weekend {
@@ -466,7 +438,7 @@ const AbsencesPage = styled.div`
     }
 
     &-empty {
-      border-bottom-color: ${colors.greyscale.lighter};
+      border-bottom-color: ${absenceColors.NO_ABSENCE};
     }
   }
 
@@ -514,8 +486,7 @@ const AbsencesPage = styled.div`
         font-size: 0.8rem;
         height: ${cellSize};
         width: ${cellSize};
-        min-height: 1.5rem;
-        border-color: #9e9e9e;
+        border-color: ${colors.greyscale.medium};
         color: ${colors.greyscale.darkest};
         display: block;
         box-shadow: none;
