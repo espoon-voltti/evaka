@@ -1,0 +1,25 @@
+{
+  "name": "evaka-keycloak-theme",
+  "version": "0.0.1",
+  "scripts": {
+    "make-pack": "npm run build && node ./scripts/pack-theme",
+    "build": "npm run build:sass",
+    "build:sass": "npm run build:sass:login && npm run build:sass:account",
+    "build:sass:hds": "node-sass sass/hds/index.scss >",
+    "build:sass:shared": "node-sass sass/shared/index.scss >",
+    "build:sass:login": "mkdirp evaka/login/resources/css && npm run build:sass:shared -- evaka/login/resources/css/shared.css && node-sass sass/login/index.scss > evaka/login/resources/css/hs-login.css",
+    "build:sass:account": "mkdirp evaka/account/resources/css && npm run build:sass:shared -- evaka/account/resources/css/shared.css && node-sass sass/account/index.scss > evaka/account/resources/css/hs-account.css",
+    "clean": "rm -rf evaka/login/resources/css evaka/account/resources/css",
+    "export-translations": "node ./scripts/export-translations",
+    "update-translations": "node ./scripts/update-translations",
+    "lint": "./node_modules/.bin/eslint ."
+  },
+  "devDependencies": {
+    "csvtojson": "^2.0.10",
+    "mkdirp": "^1.0.4",
+    "node-fetch": "^2.6.1",
+    "node-sass": "^6.0.0",
+    "properties": "^1.2.1",
+    "tar": "^6.1.9"
+  }
+}

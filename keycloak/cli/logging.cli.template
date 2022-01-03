@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2017-2022 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+embed-server --server-config=${server.config:standalone.xml} --std-out=echo
+
+set ENV=${VOLTTI_ENV}
+
+/subsystem=logging/json-formatter=JSON:add(exception-output-type=formatted,pretty-print=false,meta-data={version=1,appName=evaka-keycloak,type=app-misc,env=$ENV},key-overrides={timestamp=@timestamp,level=logLevel})
+/subsystem=logging/console-handler=CONSOLE:write-attribute(name=named-formatter,value=JSON)
+
+stop-embedded-server

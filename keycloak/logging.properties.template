@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: 2017-2022 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+loggers=com.arjuna,io.jaegertracing.Configuration,org.jboss.as.config,sun.rmi
+
+logger.level=INFO
+logger.handlers=CONSOLE
+
+logger.com.arjuna.level=WARN
+logger.com.arjuna.useParentHandlers=true
+
+logger.io.jaegertracing.Configuration.level=WARN
+logger.io.jaegertracing.Configuration.useParentHandlers=true
+
+logger.org.jboss.as.config.level=DEBUG
+logger.org.jboss.as.config.useParentHandlers=true
+
+logger.sun.rmi.level=WARN
+logger.sun.rmi.useParentHandlers=true
+
+handler.CONSOLE=org.jboss.logmanager.handlers.ConsoleHandler
+handler.CONSOLE.level=INFO
+handler.CONSOLE.formatter=json
+handler.CONSOLE.properties=autoFlush,target
+handler.CONSOLE.autoFlush=true
+handler.CONSOLE.target=SYSTEM_OUT
+
+handler.FILE=org.jboss.logmanager.handlers.PeriodicRotatingFileHandler
+handler.FILE.level=ALL
+handler.FILE.formatter=PATTERN
+handler.FILE.properties=autoFlush,append,fileName,suffix
+handler.FILE.constructorProperties=fileName,append
+handler.FILE.autoFlush=true
+handler.FILE.append=true
+handler.FILE.fileName=${org.jboss.boot.log.file:server.log}
+handler.FILE.suffix=.yyyy-MM-dd
+
+formatter.COLOR-PATTERN=org.jboss.logmanager.formatters.PatternFormatter
+formatter.COLOR-PATTERN.properties=pattern
+formatter.COLOR-PATTERN.pattern=%K{level}%d{HH\:mm\:ss,SSS} %-5p [%c] (%t) %s%e%n
+
+formatter.PATTERN=org.jboss.logmanager.formatters.PatternFormatter
+formatter.PATTERN.properties=pattern
+formatter.PATTERN.pattern=%d{yyyy-MM-dd HH\:mm\:ss,SSS} %-5p [%c] (%t) %s%e%n
+
+formatter.json=org.jboss.logmanager.formatters.JsonFormatter
+formatter.json.properties=keyOverrides,exceptionOutputType,metaData,prettyPrint,printDetails,recordDelimiter
+formatter.json.constructorProperties=keyOverrides
+formatter.json.keyOverrides=timestamp\=@timestamp,level\=logLevel
+formatter.json.exceptionOutputType=FORMATTED
+formatter.json.metaData=version\=1,appName\=evaka-keycloak,type\=app-misc,env\=${VOLTTI_ENV}
+formatter.json.prettyPrint=false
+formatter.json.printDetails=false
+formatter.json.recordDelimiter=\n

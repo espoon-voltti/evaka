@@ -1,0 +1,46 @@
+$fontsize-body-default: 16px;
+
+$font-base: Montserrat, Arial, sans-serif;
+$font-alternate: "Open Sans", Arial, sans-serif;
+
+// Fonts
+$font-family-base: $font-base;
+$fontsize-h-1: 36px;
+$fontsize-h-2: 24px;
+$fontsize-h-3: 20px;
+$fontsize-h-4: 18px;
+$fontsize-h-5: 16px;
+
+// Colors
+$page-background: #f5f5f5;
+$color-primary: #3273c9;
+$color-primary-dark: #013c8c;
+$color-error: #b85300;
+$color-black: #0f0f0f;
+$color-gray-dark: #6e6e6e;
+$color-gray-medium: #b1b1b1;
+$color-gray-lighter: "#d8d8d8";
+$color-gray-lightest: #f5f5f5;
+$color-white: #ffffff;
+
+// Breakpoints
+$breakpoint-tablet: 768px;
+
+// Spacing
+$spacing-xxs: 4px;
+$spacing-xs: 8px;
+$spacing-s: 16px;
+$spacing-m: 24px;
+$spacing-l: 32px;
+$spacing-xl: 48px;
+$spacing-xxl: 60px;
+$spacing-x3l: 80px;
+$spacing-x4l: 120px;
+
+$spacing-layout-xs: $spacing-xs;
+$spacing-layout-s: $spacing-s;
+$spacing-layout-m: $spacing-m;
+$spacing-layout-l: $spacing-l;
+$spacing-layout-xxl: $spacing-xxl;
+
+$mobile-v-whitespace: $spacing-s;

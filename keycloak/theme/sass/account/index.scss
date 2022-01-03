@@ -1,0 +1,118 @@
+@import "../theme";
+
+body {
+  background: $page-background;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: $spacing-layout-xs;
+
+  font-size: $fontsize-h-2;
+  font-weight: bold;
+}
+
+.hs-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  height: initial;
+
+  background: $color-white;
+
+  @media (min-width: $breakpoint-tablet) {
+    margin: $spacing-layout-xs auto;
+    max-width: 580px;
+  }
+}
+
+.title,
+.tabs,
+.content {
+  $mobile-padding: $spacing-layout-xs;
+  $tablet-padding: $spacing-layout-m;
+
+  padding: 0 $mobile-padding;
+
+  &:first-child {
+    padding-top: $mobile-padding;
+  }
+
+  &:last-child {
+    padding-bottom: $mobile-padding;
+  }
+
+  @media (min-width: $breakpoint-tablet) {
+    padding: 0 $tablet-padding;
+
+    &:first-child {
+      padding-top: $tablet-padding;
+    }
+
+    &:last-child {
+      padding-bottom: $tablet-padding;
+    }
+  }
+}
+
+.tabs {
+  border-bottom: 1px solid $color-gray-lighter;
+
+  & > ul {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & > ul > li {
+    &:not(:first-child) {
+      margin-left: $spacing-xs;
+
+      @media (min-width: $breakpoint-tablet) {
+        margin-left: $spacing-m;
+      }
+    }
+
+    & > a,
+    & > button {
+      position: relative;
+      display: inline-block;
+      padding: $spacing-xs;
+
+      font-size: $fontsize-body-default;
+      font-weight: bold;
+      color: $color-black;
+
+      border-bottom: none !important;
+
+      @media (min-width: $breakpoint-tablet) {
+        font-size: $fontsize-h-5;
+      }
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      &::after {
+        content: " ";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 3px;
+        background-color: transparent;
+      }
+    }
+
+    &.active > a::after,
+    &.active > button::after {
+      background-color: $color-black;
+    }
+  }
+}
+
+.content {
+  padding-top: $spacing-l;
+}

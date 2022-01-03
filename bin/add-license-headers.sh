@@ -81,12 +81,15 @@ fi
 # -> find all quoted license IDs and download them automatically
 # shellcheck disable=SC2207
 MISSING_LICENSES=($(echo "$REUSE_OUTPUT" | grep '^* Missing licenses:' | cut -d ' ' -f 4- | tr ', ' ' '))
+echo "${MISSING_LICENSES[@]}"
 for license in "${MISSING_LICENSES[@]}"; do
     if [ -z "$license" ]; then
         continue
     fi
 
-    run_reuse download "$license"
+    if [ ! -f "${REPO_ROOT}/LICENSES/${license}.txt" ]; then
+        run_reuse download "$license"
+    fi
 done
 
 # Unfortunately reuse tool doesn't provide a machine-readable output currently,
