@@ -3,18 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../../e2e-test-common/config'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilNotEqual, waitUntilTrue } from '../../utils'
 import LocalDate from 'lib-common/local-date'
 import {
   Checkbox,
+  Combobox,
+  DatePicker,
   DatePickerDeprecated,
   Element,
+  Modal,
   Page,
   Select,
   TextInput
 } from '../../utils/page'
 import { IncomeStatementPage } from './IncomeStatementPage'
 import { UUID } from 'lib-common/types'
+import { formatCents } from 'lib-common/money'
 
 export default class GuardianInformationPage {
   constructor(private readonly page: Page) {}
@@ -32,12 +36,39 @@ export default class GuardianInformationPage {
       .waitUntilVisible()
   }
 
+  #restrictedDetailsEnabledLabel = this.page.find(
+    '[data-qa="restriction-details-enabled-label"]'
+  )
+  #personStreetAddress = this.page.find(
+    '[data-qa="person-details-street-address"]'
+  )
+
+  async assertRestrictedDetails(enabled: boolean) {
+    switch (enabled) {
+      case true:
+        await this.#restrictedDetailsEnabledLabel.waitUntilVisible()
+        await waitUntilEqual(
+          () => this.#personStreetAddress.innerText,
+          'Osoite ei ole saatavilla turvakiellon vuoksi'
+        )
+        break
+      default:
+        await this.#restrictedDetailsEnabledLabel.waitUntilHidden()
+        await waitUntilNotEqual(
+          () => this.#personStreetAddress.innerText,
+          'Osoite ei ole saatavilla turvakiellon vuoksi'
+        )
+    }
+  }
+
   async openCollapsible<C extends Collapsible>(
     collapsible: C
   ): Promise<SectionFor<C>> {
     const { selector } = collapsibles[collapsible]
     const element = this.page.find(selector)
-    await element.click()
+    if ((await element.getAttribute('data-status')) === 'closed') {
+      await element.click()
+    }
     return this.getCollapsible(collapsible)
   }
 
@@ -63,6 +94,86 @@ class PersonInfoSection extends Section {
     await this.#lastName.findText(lastName).waitUntilVisible()
     await this.#firstName.findText(firstName).waitUntilVisible()
     await this.#ssn.findText(ssn).waitUntilVisible()
+  }
+}
+
+class FamilyOverviewSection extends Section {
+  async assertPerson({
+    personId,
+    age,
+    incomeCents
+  }: {
+    personId: string
+    age?: number
+    incomeCents?: number
+  }) {
+    const person = this.find(
+      `[data-qa="table-family-overview-row-${personId}"]`
+    )
+    await person.waitUntilVisible()
+
+    if (age !== undefined) {
+      const personAge = person.find('[data-qa="person-age"]')
+      await waitUntilEqual(() => personAge.textContent, age.toString())
+    }
+
+    if (incomeCents !== undefined) {
+      const personIncome = person.find('[data-qa="person-income-total"]')
+      const expectedIncome = formatCents(incomeCents)
+      await waitUntilEqual(
+        async () => ((await personIncome.textContent) ?? '').split(' ')[0],
+        expectedIncome
+      )
+    }
+  }
+}
+
+class PartnersSection extends Section {
+  #addPartnerButton = this.find('[data-qa="add-partner-button"]')
+
+  async addPartner(partnerName: string, startDate: string) {
+    await this.#addPartnerButton.click()
+    const modal = new Modal(this.page.find('[data-qa="fridge-partner-modal"]'))
+
+    const combobox = new Combobox(
+      modal.find('[data-qa="fridge-partner-person-search"]')
+    )
+    await combobox.fillAndSelectFirst(partnerName)
+
+    const startDatePicker = new DatePickerDeprecated(
+      modal.find('[data-qa="fridge-partner-start-date"]')
+    )
+    await startDatePicker.fill(startDate)
+
+    await modal.submit()
+  }
+}
+
+class ChildrenSection extends Section {
+  #addChildButton = this.find('[data-qa="add-child-button"]')
+
+  async addChild(childName: string, startDate: string) {
+    await this.#addChildButton.click()
+    const modal = new Modal(this.page.find('[data-qa="fridge-child-modal"]'))
+
+    const combobox = new Combobox(
+      modal.find('[data-qa="fridge-child-person-search"]')
+    )
+    await combobox.fillAndSelectFirst(childName)
+
+    const startDatePicker = new DatePickerDeprecated(
+      modal.find('[data-qa="fridge-child-start-date"]')
+    )
+    await startDatePicker.fill(startDate)
+
+    await modal.submit()
+  }
+
+  #childrenTableRow = this.findAll('[data-qa="table-fridge-child-row"]')
+
+  async verifyChildAge(age: number) {
+    const childAge = this.#childrenTableRow.nth(0).find('[data-qa="child-age"]')
+    await waitUntilEqual(() => childAge.textContent, age.toString())
   }
 }
 
@@ -223,7 +334,45 @@ export class IncomesSection extends Section {
 }
 
 class FeeDecisionsSection extends Section {
+  #feeDecisionTableRows = this.findAll('tbody tr')
   #feeDecisionSentAt = this.findAll(`[data-qa="fee-decision-sent-at"]`)
+
+  async assertFeeDecision(
+    n: number,
+    {
+      startDate,
+      endDate,
+      status
+    }: {
+      startDate: string
+      endDate: string
+      status: string
+    }
+  ) {
+    const decision = this.#feeDecisionTableRows.nth(n)
+    await waitUntilTrue(async () =>
+      ((await decision.textContent) ?? '').includes(
+        `Maksupäätös ${startDate} - ${endDate}`
+      )
+    )
+    await waitUntilTrue(async () =>
+      ((await decision.textContent) ?? '').includes(status)
+    )
+  }
+
+  async createRetroactiveFeeDecisions(date: string) {
+    await this.find(
+      '[data-qa="create-retroactive-fee-decision-button"]'
+    ).click()
+    const modal = new Modal(this.page.find('[data-qa="modal"]'))
+
+    const startDate = new DatePicker(
+      modal.find('[data-qa="retroactive-fee-decision-start-date"]')
+    )
+    await startDate.fill(date)
+
+    await modal.submit()
+  }
 
   async checkFeeDecisionSentAt(nth: number, expectedSentAt: LocalDate) {
     await waitUntilEqual(
@@ -257,6 +406,18 @@ const collapsibles = {
   personInfo: {
     selector: '[data-qa="person-info-collapsible"]',
     section: PersonInfoSection
+  },
+  familyOverview: {
+    selector: '[data-qa="family-overview-collapsible"]',
+    section: FamilyOverviewSection
+  },
+  partners: {
+    selector: '[data-qa="person-partners-collapsible"]',
+    section: PartnersSection
+  },
+  children: {
+    selector: '[data-qa="person-children-collapsible"]',
+    section: ChildrenSection
   },
   dependants: {
     selector: '[data-qa="person-dependants-collapsible"]',

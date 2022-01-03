@@ -168,6 +168,7 @@ const Modal = React.memo(function Modal({
           }
           hideErrorsBeforeTouched
           openAbove
+          data-qa="retroactive-fee-decision-start-date"
         />
       </FixedSpaceRow>
     </AsyncFormModal>

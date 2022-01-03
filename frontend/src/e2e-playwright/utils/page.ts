@@ -233,6 +233,15 @@ export class TextInput extends Element {
   }
 }
 
+export class DatePicker extends Element {
+  #input = new TextInput(this)
+
+  async fill(text: string) {
+    await this.#input.fill(text)
+    await this.#input.press('Enter')
+  }
+}
+
 export class DatePickerDeprecated extends Element {
   #input = new TextInput(this.find('input'))
 

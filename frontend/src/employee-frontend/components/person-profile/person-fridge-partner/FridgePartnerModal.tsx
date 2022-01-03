@@ -145,6 +145,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
       resolveDisabled={!form.partner || validationErrors.length > 0}
       rejectAction={clearUiMode}
       rejectLabel={i18n.common.cancel}
+      data-qa="fridge-partner-modal"
     >
       {errorStatusCode === 409 && (
         <section className="error">
@@ -173,6 +174,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
                 assignFridgePartnerForm({ partner: person })
               }
               onlyAdults
+              data-qa="fridge-partner-person-search"
             />
           </>
         )}
@@ -183,6 +185,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           date={form.startDate}
           onChange={(startDate) => assignFridgePartnerForm({ startDate })}
           type="full-width"
+          data-qa="fridge-partner-start-date"
         />
       </section>
       <section>

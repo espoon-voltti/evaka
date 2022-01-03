@@ -115,6 +115,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
               setSelectedPartnershipId('')
               toggleUiMode('add-fridge-partner')
             }}
+            data-qa="add-partner-button"
           />
         </TopBar>
         {renderResult(partnerships, (partnerships) => (
