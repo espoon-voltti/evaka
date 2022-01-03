@@ -38,7 +38,7 @@ License: LGPL-2.1-or-later
 License: LGPL-2.1-or-later
 
 Files: .nvmrc
-Copyright: 2017-2020 City of Espoo
+Copyright: 2017-2022 City of Espoo
 License: LGPL-2.1-or-later
 
 Files: *.gitignore
@@ -88,3 +88,12 @@ License: Apache-2.0
 Files: */gradle/wrapper/*
 Copyright: 2007-2020 The original author or authors <info@gradle.com>
 License: Apache-2.0
+
+Files: keycloak/evaka-review-profile/src/*
+Copyright: 2016-2022 The original author or authors
+License: Apache-2.0
+
+Files: keycloak/theme/*
+Copyright: 2020 City of Helsinki
+           2021-2022 City of Espoo
+License: MIT

@@ -1,0 +1,17 @@
+# OS files
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules
+
+# Built files
+evaka/login/resources/css/
+evaka/account/resources/css/
+
+# VS Code
+.vscode

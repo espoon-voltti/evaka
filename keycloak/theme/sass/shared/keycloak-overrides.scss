@@ -1,0 +1,14 @@
+@import "../theme";
+
+// Use correct whitespace for button container
+#kc-form-buttons {
+  margin-top: $spacing-layout-l;
+
+  &:not(:last-child) {
+    margin-bottom: $spacing-layout-xs;
+  }
+}
+
+#kc-info-wrapper {
+  background-color: $color-white;
+}

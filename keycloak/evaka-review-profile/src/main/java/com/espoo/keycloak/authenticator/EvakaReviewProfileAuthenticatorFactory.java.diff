@@ -1,0 +1,37 @@
+--- IdpReviewProfileAuthenticatorFactory.java.orig	2021-12-22 11:19:23.451000000 +0200
++++ EvakaReviewProfileAuthenticatorFactory.java	2021-12-22 17:33:49.671017364 +0200
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.keycloak.authentication.authenticators.broker;
++package com.espoo.keycloak.authenticator;
+ 
+ import org.keycloak.Config;
+ import org.keycloak.authentication.Authenticator;
+@@ -32,11 +32,13 @@
+ 
+ /**
+  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
++ * Modified from keycloak/services/src/main/java/org/keycloak/authentication/authenticators/broker/IdpReviewProfileAuthenticatorFactory.java
++
+  */
+-public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactory {
++public class EvakaReviewProfileAuthenticatorFactory implements AuthenticatorFactory {
+ 
+-    public static final String PROVIDER_ID = "idp-review-profile";
+-    static IdpReviewProfileAuthenticator SINGLETON = new IdpReviewProfileAuthenticator();
++    public static final String PROVIDER_ID = "evaka-review-profile";
++    static EvakaReviewProfileAuthenticator SINGLETON = new EvakaReviewProfileAuthenticator();
+ 
+     public static final String UPDATE_PROFILE_ON_FIRST_LOGIN = "update.profile.on.first.login";
+ 
+@@ -82,7 +84,7 @@
+ 
+     @Override
+     public String getDisplayType() {
+-        return "Review Profile";
++        return "Evaka Review Profile";
+     }
+ 
+     @Override
