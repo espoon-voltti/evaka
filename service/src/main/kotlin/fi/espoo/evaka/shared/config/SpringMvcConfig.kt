@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.utils.asArgumentResolver
 import fi.espoo.evaka.shared.utils.convertFrom
-import fi.espoo.evaka.shared.utils.runAfterCompletion
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
@@ -27,7 +26,6 @@ import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.context.request.WebRequest.SCOPE_REQUEST
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -53,10 +51,6 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
         resolvers.add(asArgumentResolver<AuthenticatedUser?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getDatabaseInstance() })
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getEvakaClock() })
-    }
-
-    override fun addInterceptors(registry: InterceptorRegistry) {
-        registry.addWebRequestInterceptor(runAfterCompletion { webRequest, _ -> webRequest.getConnection()?.close() })
     }
 
     override fun addFormatters(registry: FormatterRegistry) {
@@ -89,8 +83,3 @@ private const val ATTR_DB = "evaka.database"
 
 private fun WebRequest.getDatabase() = getAttribute(ATTR_DB, SCOPE_REQUEST) as Database?
 private fun WebRequest.setDatabase(db: Database) = setAttribute(ATTR_DB, db, SCOPE_REQUEST)
-
-private const val ATTR_DB_CONNECTION = "evaka.database.connection"
-
-private fun WebRequest.getConnection() = getAttribute(ATTR_DB_CONNECTION, SCOPE_REQUEST) as Database.Connection?
-private fun WebRequest.setConnection(db: Database) = db.connect { dbc -> setAttribute(ATTR_DB_CONNECTION, dbc, SCOPE_REQUEST) }
