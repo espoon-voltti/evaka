@@ -58,11 +58,11 @@ export default React.memo(function AbsenceModal({
             />
           ))}
           <Radio
-            id="PRESENCE"
-            label={i18n.absences.modal.absenceTypes.PRESENCE}
+            id="NO_ABSENCE"
+            label={i18n.absences.modal.absenceTypes.NO_ABSENCE}
             checked={selectedAbsenceType === null}
             onChange={() => setSelectedAbsenceType(null)}
-            data-qa="absence-type-PRESENCE"
+            data-qa="absence-type-NO_ABSENCE"
           />
         </FixedSpaceColumn>
 

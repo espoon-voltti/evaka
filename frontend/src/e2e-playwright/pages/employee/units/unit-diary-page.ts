@@ -35,7 +35,7 @@ export class UnitDiaryPage {
     await waitUntilEqual(() => this.#groupSelector.selectedOption, groupId)
   }
 
-  async addAbsenceToChild(n: number, type: AbsenceType | 'PRESENCE') {
+  async addAbsenceToChild(n: number, type: AbsenceType | 'NO_ABSENCE') {
     const childRow = new DiaryChildRow(this.#childRows.nth(n))
     await childRow.selectDay(0)
     await this.#addAbsencesButton.click()
@@ -93,13 +93,13 @@ export class DiaryChildRow extends Element {
 }
 
 export class AbsenceModal extends Modal {
-  #absenceTypeRadio = (type: AbsenceType | 'PRESENCE') =>
+  #absenceTypeRadio = (type: AbsenceType | 'NO_ABSENCE') =>
     new Radio(this.find(`[data-qa="absence-type-${type}"]`))
   #checkboxBillable = new Checkbox(
     this.find('[data-qa="absences-select-caretype-BILLABLE"]')
   )
 
-  async selectAbsenceType(type: AbsenceType | 'PRESENCE') {
+  async selectAbsenceType(type: AbsenceType | 'NO_ABSENCE') {
     await this.#absenceTypeRadio(type).check()
   }
 

@@ -24,18 +24,13 @@ export default function AbsenceSelector({
 }: Props) {
   const { i18n } = useTranslation()
 
-  let absenceTypes = AbsenceTypes.filter(
-    (absenceType) =>
-      absenceType !== 'PRESENCE' &&
-      absenceType !== 'PARENTLEAVE' &&
-      absenceType !== 'FORCE_MAJEURE'
+  const absenceTypes = AbsenceTypes.filter(
+    (type) =>
+      type !== 'NO_ABSENCE' &&
+      type !== 'PARENTLEAVE' &&
+      type !== 'FORCE_MAJEURE' &&
+      !(noUnknownAbsences && type === 'UNKNOWN_ABSENCE')
   )
-
-  if (noUnknownAbsences) {
-    absenceTypes = absenceTypes.filter(
-      (absenceType) => absenceType !== 'UNKNOWN_ABSENCE'
-    )
-  }
 
   return (
     <Fragment>

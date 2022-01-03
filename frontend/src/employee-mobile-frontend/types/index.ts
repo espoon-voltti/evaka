@@ -37,7 +37,7 @@ export type AbsenceType =
   | 'TEMPORARY_VISITOR'
   | 'PARENTLEAVE'
   | 'FORCE_MAJEURE'
-  | 'PRESENCE'
+  | 'NO_ABSENCE'
 
 export const AbsenceTypes: AbsenceType[] = [
   'OTHER_ABSENCE',
@@ -46,7 +46,7 @@ export const AbsenceTypes: AbsenceType[] = [
   'PLANNED_ABSENCE',
   'PARENTLEAVE',
   'FORCE_MAJEURE',
-  'PRESENCE'
+  'NO_ABSENCE'
 ]
 
 export type CareType =

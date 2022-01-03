@@ -2083,7 +2083,7 @@ export const fi = {
       TEMPORARY_VISITOR: 'Varalapsi läsnä',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
-      PRESENCE: 'Ei poissaoloa'
+      NO_ABSENCE: 'Ei poissaoloa'
     },
     careTypes: {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
@@ -2112,7 +2112,7 @@ export const fi = {
         TEMPORARY_VISITOR: 'Varalapsi läsnä',
         PARENTLEAVE: 'Isyysvapaa',
         FORCE_MAJEURE: 'Maksuton päivä (rajoitettu käyttö)',
-        PRESENCE: 'Ei poissaoloa'
+        NO_ABSENCE: 'Ei poissaoloa'
       },
       free: 'Maksuton',
       paid: 'Maksullinen',
@@ -2124,6 +2124,7 @@ export const fi = {
       staffRow: 'Henkilökuntaa paikalla',
       disabledStaffCellTooltip: 'Ryhmä ei ole olemassa valittuna päivänä'
     },
+    legendTitle: 'Merkintöjen selitykset',
     addAbsencesButton(numOfSelected: number) {
       return numOfSelected === 1
         ? 'Lisää merkintä valitulle...'

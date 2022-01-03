@@ -2,27 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
-import styled from 'styled-components'
-
+import { Absence } from 'lib-common/api-types/child/Absences'
+import { AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { faAbacus } from 'lib-icons'
-import { Absence } from 'lib-common/api-types/child/Absences'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
-
-import { formatName } from '../../utils'
+import { faAbacus } from 'lib-icons'
+import React, { useContext, useEffect, useState } from 'react'
+import styled from 'styled-components'
 import { getAbsencesByChild } from '../../api/invoicing'
+import PeriodPicker from '../../components/absences/PeriodPicker'
+import ColorInfoItem from '../../components/common/ColorInfoItem'
+import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { AbsenceTypes, billableCareTypes } from '../../types/absence'
-import ColourInfoItem from '../../components/common/ColourInfoItem'
-import Tooltip from '../../components/common/Tooltip'
-import PeriodPicker from '../../components/absences/PeriodPicker'
-import { AbsenceType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
+import { formatName } from '../../utils'
 
 const Section = styled.section``
 
@@ -163,11 +161,7 @@ export default function AbsencesModal({ child, date }: Props) {
               {AbsenceTypes.map((absenceType: AbsenceType) => (
                 <tr key={absenceType}>
                   <TableData>
-                    <ColourInfoItem
-                      type={absenceType}
-                      maxWidth={290}
-                      noMargin
-                    />
+                    <ColorInfoItem type={absenceType} maxWidth={290} noMargin />
                   </TableData>
                   <TableData>
                     <Tooltip

@@ -131,7 +131,7 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
               className={classNames({
                 'absence-header': true,
                 'absence-header-today': item.isToday(),
-                'absence-header-weekday': item.isWeekend()
+                'absence-header-weekend': item.isWeekend()
               })}
             >
               <div>{getWeekDay(item)}</div>

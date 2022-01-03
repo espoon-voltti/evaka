@@ -20,16 +20,16 @@ export const { colors } = theme
 
 const { main, greyscale, accents } = colors
 
-export const absenceColours = {
-  UNKNOWN_ABSENCE: accents.successGreen,
-  OTHER_ABSENCE: main.dark,
-  SICKLEAVE: accents.violet,
-  PLANNED_ABSENCE: main.light,
-  PARENTLEAVE: main.primary,
+export const absenceColors = {
+  UNKNOWN_ABSENCE: accents.turquoise,
+  OTHER_ABSENCE: greyscale.darkest,
+  SICKLEAVE: accents.pink,
+  PLANNED_ABSENCE: accents.successGreen,
+  PARENTLEAVE: accents.peach,
   FORCE_MAJEURE: accents.dangerRed,
   TEMPORARY_RELOCATION: accents.warningOrange,
-  TEMPORARY_VISITOR: accents.peach,
-  PRESENCE: greyscale.white
+  TEMPORARY_VISITOR: accents.warningOrange,
+  NO_ABSENCE: accents.lightBlue
 }
 
 export const attendanceColors = {

@@ -93,7 +93,7 @@ describe('Employee - Absences', () => {
     await diaryPage.childHasAbsence(0, 'UNKNOWN_ABSENCE')
 
     // Can clear an absence
-    await diaryPage.addAbsenceToChild(0, 'PRESENCE')
+    await diaryPage.addAbsenceToChild(0, 'NO_ABSENCE')
     await diaryPage.childHasNoAbsence(0)
   })
 
