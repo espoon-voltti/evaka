@@ -2,8 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faReply } from '@fortawesome/free-solid-svg-icons'
+import { formatDate } from 'lib-common/date'
+import {
+  Message,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
-import { fontWeights, H2 } from 'lib-components/typography'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
+import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
+import { fontWeights, H2, InformationText } from 'lib-components/typography'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React, {
@@ -15,26 +29,12 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
-import { useRecipients } from 'lib-components/utils/useReplyRecipients'
-import {
-  Message,
-  MessageThread
-} from 'lib-common/generated/api-types/messaging'
+import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
+import { OverlayContext } from '../overlay/state'
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageContext } from './state'
-import { formatDate } from 'lib-common/date'
-import { faReply } from '@fortawesome/free-solid-svg-icons'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { getAttachmentBlob } from '../attachments'
-import { OverlayContext } from '../overlay/state'
-import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
-import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 
 const TitleRow = styled.div`
   display: flex;
@@ -49,27 +49,19 @@ const TitleRow = styled.div`
 const StickyTitleRow = styled(TitleRow)`
   position: sticky;
   top: 0;
-  padding: 15px;
-  background: white;
+  padding: ${defaultMargins.L};
+  background: ${colors.greyscale.white};
   max-height: 100px;
   overflow: auto;
-`
 
-const StickyTitleRowTitle = styled(H2)`
-  top: 0;
-  padding: 15px;
-  background: white;
-  max-height: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: ${defaultMargins.s};
 `
 
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};
-`
-
-const SentDate = styled.div`
-  font-size: 14px;
-  font-weight: ${fontWeights.semibold};
-  color: ${colors.greyscale.dark};
 `
 
 const MessageContent = styled.div`
@@ -93,14 +85,14 @@ const SingleMessage = React.memo(function SingleMessage({
     <MessageContainer>
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
-        <SentDate>{formatDate(message.sentAt)}</SentDate>
+        <InformationText>{formatDate(message.sentAt)}</InformationText>
       </TitleRow>
-      <span>
+      <InformationText>
         {(message.recipientNames
           ? message.recipientNames
           : message.recipients.map((r) => r.name)
         ).join(', ')}
-      </span>
+      </InformationText>
       <MessageContent data-qa="thread-reader-content">
         {message.content}
       </MessageContent>
@@ -194,14 +186,12 @@ export default React.memo(function ThreadView({
   )
   return (
     <ThreadContainer>
-      {title && type && (
-        <StickyTitleRow ref={stickyTitleRowRef}>
-          <StickyTitleRowTitle data-qa="thread-reader-title">
-            {title}
-          </StickyTitleRowTitle>
-          <MessageTypeChip type={type} labels={i18n.messages.types} />
-        </StickyTitleRow>
-      )}
+      <StickyTitleRow ref={stickyTitleRowRef}>
+        <H2 noMargin data-qa="thread-reader-title">
+          {title}
+        </H2>
+        <MessageTypeChip type={type} labels={i18n.messages.types} />
+      </StickyTitleRow>
       {messages.map((message, idx) => (
         <React.Fragment key={`${message.id}-fragment`}>
           {idx === messages.length - 1 && !replyEditorVisible && (
