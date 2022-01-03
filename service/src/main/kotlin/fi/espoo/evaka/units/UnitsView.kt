@@ -29,7 +29,7 @@ import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.TerminatedPlacements
-import fi.espoo.evaka.placement.UnitChildrenCapacities
+import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
@@ -100,7 +100,9 @@ class UnitsView(private val accessControl: AccessControl) {
                         } else null
                     }.toSet()
 
-                val capacities = tx.getUnitChildrenCapacities(unitId, from)
+                val capacities = if (accessControl.hasPermissionFor(user, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId))
+                    tx.getUnitChildrenCapacities(unitId, from)
+                else listOf()
 
                 val basicData = UnitDataResponse(
                     groups = groups,
@@ -117,7 +119,7 @@ class UnitsView(private val accessControl: AccessControl) {
                             placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }
                         }
                     ),
-                    unitChildrenCapacities = capacities
+                    unitChildrenCapacityFactors = capacities
                 )
 
                 if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
@@ -171,7 +173,7 @@ data class UnitDataResponse(
     val permittedBackupCareActions: Map<BackupCareId, Set<Action.BackupCare>>,
     val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
     val permittedGroupPlacementActions: Map<GroupPlacementId, Set<Action.GroupPlacement>>,
-    val unitChildrenCapacities: List<UnitChildrenCapacities>
+    val unitChildrenCapacityFactors: List<UnitChildrenCapacityFactors>
 )
 
 data class Caretakers(

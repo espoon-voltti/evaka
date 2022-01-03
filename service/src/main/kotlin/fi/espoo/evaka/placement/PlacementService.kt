@@ -274,7 +274,7 @@ private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
     }
 }
 
-data class UnitChildrenCapacities(
+data class UnitChildrenCapacityFactors(
     val childId: PersonId,
     val assistanceNeedFactor: Double,
     val ageFactor: Double
@@ -283,7 +283,7 @@ data class UnitChildrenCapacities(
 fun Database.Read.getUnitChildrenCapacities(
     unitId: DaycareId,
     date: LocalDate
-): List<UnitChildrenCapacities> {
+): List<UnitChildrenCapacityFactors> {
     return this.createQuery(
         """
         SELECT
@@ -307,7 +307,7 @@ fun Database.Read.getUnitChildrenCapacities(
     )
         .bind("unitId", unitId)
         .bind("date", date)
-        .mapTo<UnitChildrenCapacities>()
+        .mapTo<UnitChildrenCapacityFactors>()
         .list()
 }
 
