@@ -12,6 +12,7 @@ class DevDataInitializer(jdbi: Jdbi) {
     init {
         Database(jdbi).connect { db ->
             db.transaction { tx ->
+                tx.runDevScript("lock-database-nowait.sql")
                 tx.runDevScript("reset-database.sql")
                 tx.ensureDevData()
             }
