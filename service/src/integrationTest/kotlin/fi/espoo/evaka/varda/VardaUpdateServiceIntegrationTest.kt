@@ -997,7 +997,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate(), placementType: PlacementType = PlacementType.DAYCARE, unitId: DaycareId = testDaycare.id): ServiceNeedId {
-        var serviceNeedId = ServiceNeedId(UUID.randomUUID())
+        val serviceNeedId = ServiceNeedId(UUID.randomUUID())
         db.transaction { tx ->
             FixtureBuilder(tx, HelsinkiDateTime.now().toLocalDate())
                 .addChild().usePerson(child).saveAnd {
