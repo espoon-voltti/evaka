@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from 'e2e-test-common/config'
-import { UUID } from 'lib-common/types'
 import { Page } from './page'
-import { EmployeeDetail } from '../../e2e-test-common/dev-api/types'
 
 export type UserRole =
   | 'ADMIN'
@@ -16,11 +14,6 @@ export type UserRole =
   | 'DIRECTOR'
   | 'REPORT_VIEWER'
   | 'SPECIAL_EDUCATION_TEACHER'
-
-export interface DevLoginUser {
-  aad: UUID
-  roles: DevLoginRole[]
-}
 
 export type DevLoginRole = typeof devLoginRoles[number]
 const devLoginRoles = [
@@ -37,7 +30,7 @@ export async function enduserLogin(page: Page) {
   await page.find('[data-qa="user-menu-title-desktop"]').waitUntilVisible()
 }
 
-export async function employeeLogin(page: Page, user: EmployeeDetail) {
+export async function employeeLogin(page: Page, user: { externalId: string }) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
   const preset = user.externalId.split(':')[1]
 

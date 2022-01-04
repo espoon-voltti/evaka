@@ -130,7 +130,7 @@ function AclRowEditor({
   )
 
   return (
-    <Tr data-qa="acl-row">
+    <Tr data-qa={`acl-row-${row.id}`}>
       <Td data-qa="name">{row.name}</Td>
       <Td data-qa="email">{row.email}</Td>
       <GroupMultiSelectTd>
@@ -213,7 +213,7 @@ function AclRow({
   )
 
   return (
-    <Tr data-qa="acl-row">
+    <Tr data-qa={`acl-row-${row.id}`}>
       <Td data-qa="name">{row.name}</Td>
       <Td data-qa="email">{row.email}</Td>
       {unitGroups && (
