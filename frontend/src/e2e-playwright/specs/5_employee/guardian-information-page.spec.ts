@@ -68,7 +68,6 @@ describe('Employee - Guardian Information', () => {
   test('guardian information is shown', async () => {
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
-    await guardianPage.waitUntilLoaded()
 
     const personInfoSection = guardianPage.getCollapsible('personInfo')
     await personInfoSection.assertPersonInfo(
@@ -115,7 +114,6 @@ describe('Employee - Guardian Information', () => {
 
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
-    await guardianPage.waitUntilLoaded()
 
     const invoiceSection = await guardianPage.openCollapsible('invoices')
     await invoiceSection.assertInvoiceCount(1)

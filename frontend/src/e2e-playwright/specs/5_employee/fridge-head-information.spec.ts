@@ -78,19 +78,16 @@ describe('Employee - Head of family details', () => {
     await guardianInformation.navigateToGuardian(
       fixtures.restrictedPersonFixture.id
     )
-    await guardianInformation.waitUntilLoaded()
     await guardianInformation.assertRestrictedDetails(true)
   })
 
   test('guardian does not have restriction details enabled', async () => {
     await guardianInformation.navigateToGuardian(regularPerson.id)
-    await guardianInformation.waitUntilLoaded()
     await guardianInformation.assertRestrictedDetails(false)
   })
 
   test('Zero-year-old child is shown as age 0', async () => {
     await guardianInformation.navigateToGuardian(regularPerson.id)
-    await guardianInformation.waitUntilLoaded()
     const children = await guardianInformation.openCollapsible('children')
 
     await children.addChild(

@@ -63,7 +63,6 @@ describe('Head of family fee decisions', () => {
     await createFeeDecisionFixture(sentAtSecond)
 
     await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
-    await guardianPage.waitUntilLoaded()
     const feeDecisions = await guardianPage.openCollapsible('feeDecisions')
 
     await feeDecisions.checkFeeDecisionSentAt(0, sentAtThird)
