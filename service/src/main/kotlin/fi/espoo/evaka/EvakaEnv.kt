@@ -62,15 +62,10 @@ data class EvakaEnv(
     }
 }
 
-data class JwtEnv(val publicKeysUrl: URI, val privateKeyUrl: URI) {
+data class JwtEnv(val publicKeysUrl: URI) {
     companion object {
         fun fromEnvironment(env: Environment) = JwtEnv(
             publicKeysUrl = env.lookup("evaka.jwt.public_keys_url", "fi.espoo.voltti.auth.jwks.default.url"),
-            privateKeyUrl = env.lookup(
-                "evaka.jwt.private_key_url",
-                "fi.espoo.voltti.auth.jwt.provider.private.key.file",
-                "fi.espoo.voltti.auth.jwt.provider.privateKeyFile"
-            )
         )
     }
 }

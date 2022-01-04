@@ -123,7 +123,7 @@ class SharedIntegrationTestConfig {
     fun integrationTestJwtAlgorithm(): Algorithm {
         val publicKeys =
             SecurityConfig::class.java.getResourceAsStream("/evaka-integration-test/jwks.json").use { loadPublicKeys(it) }
-        return Algorithm.RSA256(JwtKeys(privateKeyId = null, privateKey = null, publicKeys = publicKeys))
+        return Algorithm.RSA256(JwtKeys(publicKeys))
     }
 
     @Bean
