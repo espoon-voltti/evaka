@@ -69,7 +69,7 @@ dependencies {
     api(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.24.1"))
-    api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.0"))
+    api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.10"))
     api(platform("org.junit:junit-bom:5.8.1"))
     api(platform("org.springframework.boot:spring-boot-dependencies:2.6.0"))
     api(platform("software.amazon.awssdk:bom:2.17.86"))
