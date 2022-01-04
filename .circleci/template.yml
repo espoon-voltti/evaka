@@ -39,6 +39,7 @@ parameters:
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
+  - &workspace_keycloak << pipeline.parameters.workspace_root >>/keycloak
   - &workspace_apigw << pipeline.parameters.workspace_root >>/apigw
   - &workspace_frontend << pipeline.parameters.workspace_root >>/frontend
   - &workspace_proxy << pipeline.parameters.workspace_root >>/proxy
@@ -855,6 +856,19 @@ jobs:
 
   # BUILD JOBS
 
+  build_push_keycloak:
+    executor: aws_docker_executor
+    steps:
+      - restore_repo
+      - attach_root_workspace
+      - setup_remote_docker:
+          version: *remote_docker_version
+          docker_layer_caching: true
+      - build_docker_image:
+          image: evaka/keycloak
+          dir: keycloak
+      - notify_slack
+
   build_base_image:
     executor: apigw_executor
     steps:
@@ -1177,6 +1191,11 @@ workflows:
           requires:
             - checkout_repo
 
+      - build_push_keycloak:
+          <<: *default_contexts
+          requires:
+            - checkout_repo
+
       - build_base_image:
           <<: *default_contexts
           requires:
@@ -1213,6 +1232,7 @@ workflows:
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
+            - build_push_keycloak
 
       - proxy_build_and_push_image:
           <<: *default_contexts
