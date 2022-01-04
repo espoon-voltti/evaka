@@ -292,12 +292,13 @@ SELECT
     daycare_apply_period,
     preschool_apply_period
 FROM daycare
-WHERE $applyPeriod && daterange(:date, null, '[]') OR provider_type = 'PRIVATE'
+WHERE daterange(null, closing_date) @> :today AND
+    ($applyPeriod && daterange(:today, null, '[]') OR provider_type = 'PRIVATE')
 ORDER BY name ASC
     """.trimIndent()
 
     return createQuery(sql)
-        .bind("date", LocalDate.now(europeHelsinki))
+        .bind("today", LocalDate.now(europeHelsinki))
         .mapTo<PublicUnit>()
         .toList()
 }
