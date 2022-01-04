@@ -37,7 +37,7 @@ class PedagogicalDocumentControllerCitizen(
         return db.connect { dbc ->
             dbc.read {
                 it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type).filter { pd ->
-                    pd.description.isNotEmpty() || pd.attachments.size > 0
+                    pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                 }
             }
         }
