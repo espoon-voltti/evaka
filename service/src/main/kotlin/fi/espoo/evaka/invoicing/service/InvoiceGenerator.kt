@@ -196,7 +196,7 @@ internal fun generateDraftInvoice(
             }
         }
         .let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
-        .filter { row -> row.price() != 0 }
+        .filter { row -> row.price != 0 }
 
     if (rows.isEmpty()) return null
 
@@ -505,7 +505,7 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
                 .map { it.finalFee }
                 .distinct()
 
-            val invoiceRowSum = rows.sumOf { it.price() }
+            val invoiceRowSum = rows.sumOf { it.price }
 
             val roundingRow = if (uniqueChildFees.size == 1) {
                 val difference = uniqueChildFees.first() - invoiceRowSum

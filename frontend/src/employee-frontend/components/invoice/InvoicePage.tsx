@@ -18,12 +18,11 @@ import InvoiceHeadOfFamilySection from './InvoiceHeadOfFamilySection'
 import Sum from './Sum'
 import Actions from './Actions'
 import {
-  InvoiceDetailed,
   InvoiceCodes,
+  InvoiceDetailed,
   InvoiceRowDetailed
-} from '../../types/invoicing'
+} from 'lib-common/generated/api-types/invoicing'
 import { totalPrice } from '../../utils/pricing'
-import { formatName } from '../../utils'
 
 const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   const { id } = useParams<{ id: string }>()
@@ -66,14 +65,8 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
           <ContentArea opaque>
             <Title size={1}>{i18n.invoice.title[invoice.value.status]}</Title>
             <InvoiceHeadOfFamilySection
-              id={invoice.value.headOfFamily.id}
-              fullName={formatName(
-                invoice.value.headOfFamily.firstName,
-                invoice.value.headOfFamily.lastName,
-                i18n
-              )}
-              dateOfBirth={invoice.value.headOfFamily.dateOfBirth}
-              ssn={invoice.value.headOfFamily.ssn}
+              headOfFamily={invoice.value.headOfFamily}
+              codebtor={invoice.value.codebtor}
             />
             <InvoiceDetailsSection invoice={invoice.value} />
             <InvoiceRowsSection

@@ -18,8 +18,6 @@ import {
   FeeDecisionSummary,
   VoucherValueDecisionDetailed,
   Invoice,
-  InvoiceCodes,
-  InvoiceDetailed,
   VoucherValueDecisionSummary,
   InvoiceSummary
 } from '../types/invoicing'
@@ -28,6 +26,10 @@ import {
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 import { UUID } from 'lib-common/types'
+import {
+  InvoiceCodes,
+  InvoiceDetailed
+} from 'lib-common/generated/api-types/invoicing'
 
 export interface SearchParams {
   status?: string
@@ -367,6 +369,7 @@ export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
       dueDate: LocalDate.parseIso(json.dueDate),
       invoiceDate: LocalDate.parseIso(json.invoiceDate),
       headOfFamily: deserializePersonDetailed(json.headOfFamily),
+      codebtor: json.codebtor ? deserializePersonDetailed(json.codebtor) : null,
       rows: json.rows.map((rowJson) => ({
         ...rowJson,
         ...deserializePeriodic(rowJson),

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
@@ -30,7 +29,7 @@ import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
 interface RowWithPrice {
-    fun price(): Int
+    val price: Int
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -49,8 +48,8 @@ data class Invoice(
     val sentBy: EvakaUserId? = null,
     val sentAt: Instant? = null
 ) {
-    @JsonProperty("totalPrice")
-    fun totalPrice(): Int = invoiceRowTotal(rows)
+    val totalPrice
+        get() = invoiceRowTotal(rows)
 }
 
 enum class InvoiceStatus {
@@ -73,8 +72,8 @@ data class InvoiceRow(
     val subCostCenter: String?,
     val description: String = ""
 ) : RowWithPrice {
-    @JsonProperty("price")
-    override fun price(): Int = amount * unitPrice
+    override val price
+        get() = amount * unitPrice
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -94,9 +93,8 @@ data class InvoiceDetailed(
     val sentAt: Instant?
 ) {
     val account: Int = 3295
-
-    @JsonProperty("totalPrice")
-    fun totalPrice(): Int = invoiceRowTotal(rows)
+    val totalPrice
+        get() = invoiceRowTotal(rows)
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -112,8 +110,8 @@ data class InvoiceRowDetailed(
     val subCostCenter: String?,
     val description: String = ""
 ) : RowWithPrice {
-    @JsonProperty("price")
-    override fun price(): Int = amount * unitPrice
+    override val price
+        get() = amount * unitPrice
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -130,9 +128,8 @@ data class InvoiceSummary(
     val createdAt: Instant? = null
 ) {
     val account: Int = 3295
-
-    @JsonProperty("totalPrice")
-    fun totalPrice(): Int = invoiceRowTotal(rows)
+    val totalPrice
+        get() = invoiceRowTotal(rows)
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -142,8 +139,8 @@ data class InvoiceRowSummary(
     val amount: Int,
     val unitPrice: Int
 ) : RowWithPrice {
-    @JsonProperty("price")
-    override fun price(): Int = amount * unitPrice
+    override val price
+        get() = amount * unitPrice
 }
 
 enum class Product(val code: String) {
@@ -210,4 +207,4 @@ fun getFeeAlterationProduct(product: Product, feeAlterationType: FeeAlteration.T
     }
 }
 
-fun invoiceRowTotal(rows: List<RowWithPrice>): Int = rows.fold(0) { sum, row -> sum + row.price() }
+fun invoiceRowTotal(rows: List<RowWithPrice>): Int = rows.fold(0) { sum, row -> sum + row.price }

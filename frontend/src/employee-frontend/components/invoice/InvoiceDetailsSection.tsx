@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
-import LabelValueList from '../../components/common/LabelValueList'
+import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faMoneyCheck } from 'lib-icons'
+import React from 'react'
+import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import { InvoiceDetailed } from '../../types/invoicing'
 
 interface Props {
   invoice: InvoiceDetailed

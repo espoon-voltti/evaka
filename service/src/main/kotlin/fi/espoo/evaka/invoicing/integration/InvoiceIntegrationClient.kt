@@ -63,7 +63,7 @@ fun createBatchExports(
     require(agType <= 999) { "Community agreement type can be at most 3 digits long, was '$agType'" }
     return batchInvoices
         // Do not send negative or very small invoices to Community as complete refunds are not handled through Community
-        .filter { it.totalPrice() > 0.1 }
+        .filter { it.totalPrice > 0.1 }
         .let { invoices ->
             CommunityInvoiceBatch(
                 agreementType = agType,
@@ -99,7 +99,7 @@ fun createBatchExports(
                                         row.periodEnd,
                                         row.amount,
                                         row.unitPrice,
-                                        row.price(),
+                                        row.price,
                                         row.description,
                                         row.costCenter,
                                         row.subCostCenter

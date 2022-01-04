@@ -1711,7 +1711,9 @@ export const fi = {
       headOfFamily: {
         title: 'Päämies',
         fullName: 'Päämies',
-        ssn: 'Päämiehen hetu'
+        ssn: 'Päämiehen hetu',
+        codebtorName: 'Kanssavelallinen',
+        codebtorSsn: 'Kanssavelallisen hetu'
       },
       details: {
         title: 'Laskun tiedot',
