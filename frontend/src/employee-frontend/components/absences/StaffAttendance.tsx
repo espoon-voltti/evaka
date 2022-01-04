@@ -14,7 +14,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import { DisabledCell } from './AbsenceCell'
 import { useTranslation } from '../../state/i18n'
-import { Result } from 'lib-common/api'
+import { isLoading, Result } from 'lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
 import { faTimes } from 'lib-icons'
@@ -105,19 +105,21 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
     <Tr className={'staff-attendance-row'}>
       <Td>{i18n.absences.table.staffRow}</Td>
       {daysOfMonth.map((date) => {
-        const attendance = groupAttendances.map(({ attendances }) =>
-          attendances.get(date.toString())
-        )
+        const staffCount = groupAttendances
+          .map(({ attendances }) => attendances.get(date.toString()))
+          .map((attendance) => attendance?.count)
         return (
           <Td key={date.toString()}>
-            {!isOperational(date) || !attendance.isSuccess ? (
+            {!isOperational(date) ||
+            !staffCount.isSuccess ||
+            isLoading(staffCount) ? (
               <DisabledCell />
             ) : !isActive(date) ? (
               <InactiveCell date={date} />
             ) : (
               <StaffAttendanceCell
                 date={date}
-                initialCount={attendance.value?.count}
+                initialCount={staffCount.value}
                 updateAttendance={updateAttendance}
               />
             )}
