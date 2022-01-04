@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -75,9 +75,7 @@ type BottomTextProps = {
 const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => {
   return (
     <FixedSpaceColumn spacing="3px" onClick={onClick}>
-      <FixedSpaceRow justifyContent="center" marginBottom="zero">
-        {children}
-      </FixedSpaceRow>
+      <FixedSpaceRow justifyContent="center">{children}</FixedSpaceRow>
       <FixedSpaceRow justifyContent="space-evenly" alignItems="center">
         <IconText selected={selected}>{text}</IconText>
       </FixedSpaceRow>

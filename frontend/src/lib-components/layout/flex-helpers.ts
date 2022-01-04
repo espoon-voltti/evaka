@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,7 +10,6 @@ interface FixedSpaceRowProps {
   spacing?: SpacingSize | string
   justifyContent?: Property.JustifyContent
   alignItems?: Property.AlignItems
-  marginBottom?: SpacingSize | string
   fullWidth?: boolean
   maxWidth?: string
 }
@@ -20,15 +19,6 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   ${(p) => (p.justifyContent ? `justify-content: ${p.justifyContent};` : '')}
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
   ${(p) => (p.fullWidth ? `width: 100%;` : '')}
-
-  ${(p) =>
-    p.marginBottom
-      ? `margin-bottom: ${
-          isSpacingSize(p.marginBottom)
-            ? defaultMargins[p.marginBottom]
-            : p.marginBottom
-        };`
-      : ''}
 
   >* {
     margin-right: ${(p) =>
