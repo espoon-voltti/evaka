@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { Bold } from 'lib-components/typography'
+import { Bold, InformationText } from 'lib-components/typography'
 import {
   AttendanceStatus,
   Child
@@ -23,7 +23,6 @@ import { GroupNote } from 'lib-common/generated/api-types/note'
 
 const ChildBox = styled.div`
   align-items: center;
-  color: ${colors.greyscale.darkest};
   display: flex;
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-radius: 2px;
@@ -31,8 +30,8 @@ const ChildBox = styled.div`
 `
 
 const AttendanceLinkBox = styled(Link)`
-  align-items: center;
   display: flex;
+  align-items: center;
   width: 100%;
 `
 
@@ -82,9 +81,7 @@ const NameRow = styled.div`
   width: 100%;
 `
 
-const GroupName = styled.div`
-  color: ${colors.greyscale.dark};
-  font-size: 0.875em;
+const GroupName = styled(InformationText)`
   white-space: nowrap;
   text-align: right;
 `

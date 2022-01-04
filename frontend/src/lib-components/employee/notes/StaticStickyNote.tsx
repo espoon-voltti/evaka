@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,7 +7,7 @@ import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Light, P } from 'lib-components/typography'
+import { InformationText, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback } from 'react'
 import { InlineAsyncButton } from './InlineAsyncButton'
@@ -41,9 +41,9 @@ export const StaticStickyNote = React.memo(function StaticStickyNote({
         {note.note}
       </P>
       <Gap size="xs" />
-      <Light data-qa="sticky-note-expires">
+      <InformationText data-qa="sticky-note-expires">
         {labels.validTo(note.expires.format())}
-      </Light>
+      </InformationText>
       <Gap size="xs" />
       <FixedSpaceRow justifyContent="flex-end">
         <InlineButton
