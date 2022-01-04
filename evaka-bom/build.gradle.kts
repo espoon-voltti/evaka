@@ -61,9 +61,6 @@ dependencies {
         api("redis.clients:jedis:3.7.0")
         api("org.apache.logging.log4j:log4j-api:2.17.1")
         api("org.apache.logging.log4j:log4j-to-slf4j:2.17.1")
-        api("ch.qos.logback:logback-access:1.2.9")
-        api("ch.qos.logback:logback-classic:1.2.9")
-        api("ch.qos.logback:logback-core:1.2.9")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.13.1"))
@@ -73,5 +70,4 @@ dependencies {
     api(platform("org.junit:junit-bom:5.8.1"))
     api(platform("org.springframework.boot:spring-boot-dependencies:2.6.2"))
     api(platform("software.amazon.awssdk:bom:2.17.86"))
-    api(platform("io.netty:netty-bom:4.1.72.Final"))
 }
