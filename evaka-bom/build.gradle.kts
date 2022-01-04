@@ -66,7 +66,7 @@ dependencies {
         api("ch.qos.logback:logback-core:1.2.9")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.13.1"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.24.1"))
     api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.10"))
