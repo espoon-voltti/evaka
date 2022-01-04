@@ -1,17 +1,23 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import Tabs from 'lib-components/molecules/Tabs'
+import { Gap } from 'lib-components/white-space'
+import { colors } from 'lib-customizations/common'
+import React from 'react'
+import { Redirect, Route, Switch } from 'react-router-dom'
+import styled from 'styled-components'
 import Applications from '../applications/Applications'
 import requireAuth from '../auth/requireAuth'
 import { useUser } from '../auth/state'
 import Decisions from '../decisions/decisions-page/Decisions'
 import { useTranslation } from '../localization'
 import MapView from '../map/MapView'
-import Tabs from 'lib-components/molecules/Tabs'
-import { Gap } from 'lib-components/white-space'
-import React from 'react'
-import { Redirect, Route, Switch } from 'react-router-dom'
+
+const WhiteBg = styled.div`
+  background-color: ${colors.greyscale.white};
+`
 
 export default React.memo(function ApplyingRouter() {
   const t = useTranslation()
@@ -40,7 +46,9 @@ export default React.memo(function ApplyingRouter() {
       {user && (
         <>
           <Gap size="s" />
-          <Tabs tabs={tabs} dataQa="applying-subnavigation" />
+          <WhiteBg>
+            <Tabs tabs={tabs} dataQa="applying-subnavigation" />
+          </WhiteBg>
         </>
       )}
       <Switch>
