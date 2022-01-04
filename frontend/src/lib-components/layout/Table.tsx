@@ -24,6 +24,7 @@ export const Table = styled.table`
 interface ThProps {
   sticky?: boolean
   top?: string
+  hidden?: boolean
 }
 
 export const Th = styled.th<ThProps>`

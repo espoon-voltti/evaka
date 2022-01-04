@@ -29,10 +29,12 @@ import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.TerminatedPlacements
+import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
 import fi.espoo.evaka.placement.getTerminatedPlacements
+import fi.espoo.evaka.placement.getUnitChildrenCapacities
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -98,6 +100,10 @@ class UnitsView(private val accessControl: AccessControl) {
                         } else null
                     }.toSet()
 
+                val capacities = if (accessControl.hasPermissionFor(user, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId))
+                    tx.getUnitChildrenCapacities(unitId, from)
+                else listOf()
+
                 val basicData = UnitDataResponse(
                     groups = groups,
                     placements = placements,
@@ -112,7 +118,8 @@ class UnitsView(private val accessControl: AccessControl) {
                         placements.flatMap { placement ->
                             placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }
                         }
-                    )
+                    ),
+                    unitChildrenCapacityFactors = capacities
                 )
 
                 if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
@@ -166,6 +173,7 @@ data class UnitDataResponse(
     val permittedBackupCareActions: Map<BackupCareId, Set<Action.BackupCare>>,
     val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
     val permittedGroupPlacementActions: Map<GroupPlacementId, Set<Action.GroupPlacement>>,
+    val unitChildrenCapacityFactors: List<UnitChildrenCapacityFactors>
 )
 
 data class Caretakers(

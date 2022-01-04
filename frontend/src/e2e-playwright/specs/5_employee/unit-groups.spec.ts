@@ -162,6 +162,25 @@ describe('Unit groups - unit supervisor', () => {
     await unitPage.openGroupsPage()
     await groupsPage.assertGroupCollapsibleIsOpen(groupId)
   })
+
+  test('Supervisor sees child occupancy factor', async () => {
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.missingPlacementsSection.assertRowCount(2)
+
+    await Fixture.groupPlacement()
+      .with({
+        daycareGroupId: groupId,
+        daycarePlacementId: child1DaycarePlacementId,
+        startDate: placementStartDate.format('yyyy-MM-dd'),
+        endDate: placementEndDate.format('yyyy-MM-dd')
+      })
+      .save()
+
+    await page.reload()
+    await groupsPage.openGroupCollapsible(groupId)
+    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await groupsPage.assertChildCapacityFactor(child1Fixture.id, '1.00')
+  })
 })
 
 describe('Unit groups - staff', () => {
@@ -184,7 +203,22 @@ describe('Unit groups - staff', () => {
   })
 
   test('Staff will not see children with a missing group placement', async () => {
-    const groupsSection = await loadUnitGroupsPage()
-    await groupsSection.missingPlacementsSection.assertRowCount(0)
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.missingPlacementsSection.assertRowCount(0)
+  })
+
+  test('Staff does not see child occupancy factor', async () => {
+    await Fixture.groupPlacement()
+      .with({
+        daycareGroupId: groupId,
+        daycarePlacementId: child1DaycarePlacementId,
+        startDate: placementStartDate.format('yyyy-MM-dd'),
+        endDate: placementEndDate.format('yyyy-MM-dd')
+      })
+      .save()
+
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.childCapacityFactorColumnHeading.waitUntilHidden()
+    await groupsPage.assertChildOccupancyFactorColumnNotVisible()
   })
 })

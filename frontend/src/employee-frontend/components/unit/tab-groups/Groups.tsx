@@ -19,7 +19,8 @@ import {
   DaycarePlacement,
   flatMapGroupPlacements,
   Stats,
-  Unit
+  Unit,
+  UnitChildrenCapacityFactors
 } from '../../../types/unit'
 import { OccupancyResponse } from '../../../api/unit'
 import Group from '../../../components/unit/tab-groups/groups/Group'
@@ -52,6 +53,7 @@ function renderGroups(
   ) => void,
   openGroups: { [k: string]: boolean },
   setOpenGroups: React.Dispatch<React.SetStateAction<{ [k: string]: boolean }>>,
+  unitChildrenCapacities: UnitChildrenCapacityFactors[],
   confirmedOccupancies?: Record<string, OccupancyResponse>,
   realizedOccupancies?: Record<string, OccupancyResponse>
 ) {
@@ -89,6 +91,7 @@ function renderGroups(
           permittedActions={groupPermittedActions[group.id] ?? new Set()}
           permittedBackupCareActions={permittedBackupCareActions}
           permittedGroupPlacementActions={permittedGroupPlacementActions}
+          unitChildrenCapacityFactors={unitChildrenCapacities}
         />
       ))}
     </div>
@@ -112,6 +115,7 @@ type Props = {
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
   permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
+  unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
 }
 
 export default React.memo(function Groups({
@@ -130,7 +134,8 @@ export default React.memo(function Groups({
   openGroups,
   setOpenGroups,
   permittedBackupCareActions,
-  permittedGroupPlacementActions
+  permittedGroupPlacementActions,
+  unitChildrenCapacityFactors
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
@@ -246,6 +251,7 @@ export default React.memo(function Groups({
         },
         openGroups,
         setOpenGroups,
+        unitChildrenCapacityFactors,
         groupConfirmedOccupancies,
         groupRealizedOccupancies
       )}

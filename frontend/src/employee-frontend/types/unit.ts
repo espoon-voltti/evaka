@@ -237,3 +237,9 @@ export interface Occupancy {
   caretakers?: number
   percentage?: number
 }
+
+export interface UnitChildrenCapacityFactors {
+  childId: UUID
+  serviceNeedFactor: number
+  assistanceNeedFactor: number
+}

@@ -58,7 +58,8 @@ import {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   Stats,
-  Unit
+  Unit,
+  UnitChildrenCapacityFactors
 } from '../../../../types/unit'
 import { capitalizeFirstLetter, formatPersonName } from '../../../../utils'
 import { rangesOverlap } from '../../../../utils/date'
@@ -78,6 +79,7 @@ interface Props {
   caretakers?: Stats
   confirmedOccupancy?: OccupancyResponse
   realizedOccupancy?: OccupancyResponse
+  unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void
@@ -115,6 +117,11 @@ const RowActionContainer = styled.div`
   display: flex;
 `
 
+const ChildCapacityFactorList = styled.div`
+  list-style: none;
+  white-space: nowrap;
+`
+
 function getChildMinMaxHeadcounts(
   occupancyResponse?: OccupancyResponse
 ): { min: number; max: number } | undefined {
@@ -142,7 +149,8 @@ export default React.memo(function Group({
   toggleOpen,
   permittedActions,
   permittedBackupCareActions,
-  permittedGroupPlacementActions
+  permittedGroupPlacementActions,
+  unitChildrenCapacityFactors
 }: Props) {
   const mobileEnabled = unit.enabledPilotFeatures.includes('MOBILE')
   const { i18n } = useTranslation()
@@ -215,6 +223,11 @@ export default React.memo(function Group({
   const showServiceNeed =
     !unit.type.includes('CLUB') &&
     requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR')
+
+  const showChildCapacityFactor =
+    !unit.type.includes('CLUB') &&
+    unitChildrenCapacityFactors &&
+    unitChildrenCapacityFactors.length > 0
 
   const formatSleepingTooltipText = (childNote: ChildDailyNote) => {
     return [
@@ -507,6 +520,11 @@ export default React.memo(function Group({
                     {showServiceNeed ? (
                       <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
+                    {showChildCapacityFactor && (
+                      <Th data-qa={'child-capacity-factor-heading'}>
+                        {i18n.unit.groups.factor}
+                      </Th>
+                    )}
                     <Th>{i18n.unit.groups.placementDuration}</Th>
                     <Th />
                   </Tr>
@@ -547,6 +565,11 @@ export default React.memo(function Group({
                       'type' in placement
                         ? placement.startDate
                         : placement.period.start
+
+                    const { assistanceNeedFactor, serviceNeedFactor } =
+                      unitChildrenCapacityFactors.find(
+                        (item) => item.childId === placement.child.id
+                      ) ?? {}
 
                     return (
                       <Tr
@@ -647,6 +670,34 @@ export default React.memo(function Group({
                             )}
                           </Td>
                         ) : null}
+                        {showChildCapacityFactor && (
+                          <Td data-qa="child-capacity-factor-column">
+                            <Tooltip
+                              tooltip={
+                                <ChildCapacityFactorList>
+                                  <li>
+                                    {i18n.unit.groups.childServiceNeedFactor}:{' '}
+                                    {serviceNeedFactor}
+                                  </li>
+                                  <li>
+                                    {i18n.unit.groups.childAssistanceNeedFactor}
+                                    : {assistanceNeedFactor}
+                                  </li>
+                                </ChildCapacityFactorList>
+                              }
+                            >
+                              <span
+                                data-qa={`child-capacity-factor-${placement.child.id}`}
+                              >
+                                {serviceNeedFactor && assistanceNeedFactor
+                                  ? (
+                                      serviceNeedFactor * assistanceNeedFactor
+                                    ).toFixed(2)
+                                  : ''}
+                              </span>
+                            </Tooltip>
+                          </Td>
+                        )}
                         <Td data-qa="placement-duration">
                           {'type' in placement
                             ? `${placement.startDate.format()}- ${placement.endDate.format()}`

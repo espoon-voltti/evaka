@@ -16,6 +16,7 @@ import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -271,6 +272,43 @@ private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
     if (!aclAuth.isAuthorized(placement.unitId)) {
         throw Conflict("Not authorized to modify placement (placementId: ${placement.id})")
     }
+}
+
+data class UnitChildrenCapacityFactors(
+    val childId: PersonId,
+    val assistanceNeedFactor: Double,
+    val serviceNeedFactor: Double
+)
+
+fun Database.Read.getUnitChildrenCapacities(
+    unitId: DaycareId,
+    date: LocalDate
+): List<UnitChildrenCapacityFactors> {
+    return this.createQuery(
+        """
+        SELECT
+            ch.id child_id,
+            MAX(COALESCE(an.capacity_factor, 1)) assistance_need_factor,
+            MAX(CASE
+                WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
+                WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN 1.75
+                ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient, 1)
+            END) AS service_need_factor
+        FROM placement pl
+        JOIN daycare u ON u.id = pl.unit_id
+        JOIN person ch ON ch.id = pl.child_id
+        LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
+        LEFT JOIN service_need_option sno on sn.option_id = sno.id
+        LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
+        LEFT JOIN assistance_need an ON an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> :date
+        WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+        GROUP BY ch.id
+    """
+    )
+        .bind("unitId", unitId)
+        .bind("date", date)
+        .mapTo<UnitChildrenCapacityFactors>()
+        .list()
 }
 
 fun Database.Read.getDetailedDaycarePlacements(
