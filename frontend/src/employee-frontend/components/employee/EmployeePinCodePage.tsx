@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -84,8 +84,6 @@ export default React.memo(function EmployeePinCodePage() {
   return (
     <Container>
       <Prompt when={dirty} message={i18n.pinCode.unsavedDataWarning} />
-
-      <Gap size={'L'} />
       <ContentArea opaque>
         <Title>{i18n.pinCode.title}</Title>
         <P>

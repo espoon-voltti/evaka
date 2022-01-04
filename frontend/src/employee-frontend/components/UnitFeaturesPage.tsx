@@ -1,11 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { H1 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
@@ -80,7 +79,7 @@ export default React.memo(function UnitFeaturesPage() {
   }
 
   return (
-    <Container verticalMargin={defaultMargins.L}>
+    <Container>
       <ContentArea opaque>
         <H1>Yksiköille avatut toiminnot</H1>
         {renderResult(units, (units) => (

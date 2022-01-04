@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
   faChild,
@@ -65,7 +65,6 @@ function Reports() {
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.title}</Title>
         <ReportItems>

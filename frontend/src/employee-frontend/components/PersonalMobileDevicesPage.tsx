@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -55,9 +55,8 @@ export default React.memo(function PersonalMobileDevicesPage() {
 
   return (
     <Container>
-      <Gap size="L" />
-      <ContentArea opaque paddingVertical="L">
-        <H1 noMargin>{i18n.personalMobileDevices.title}</H1>
+      <ContentArea opaque>
+        <H1>{i18n.personalMobileDevices.title}</H1>
         <P>{i18n.personalMobileDevices.infoParagraph1}</P>
         <P>{i18n.personalMobileDevices.infoParagraph2}</P>
         {renderResult(mobileDevices, (devices) => {

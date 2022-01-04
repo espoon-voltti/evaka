@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,7 +9,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Pagination from 'lib-components/Pagination'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
@@ -70,7 +70,6 @@ export default function EmployeesPage() {
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ContentArea opaque>
         <Title>{i18n.employees.title}</Title>
         <TopBar>

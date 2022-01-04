@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -69,8 +69,8 @@ export default function UnitDetailsPage(): JSX.Element {
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ContentArea opaque>
+        <Gap size="xs" />
         {renderResult(
           combine(areas, unit, financeDecisionHandlerOptions),
           ([areas, unit, financeDecisionHandlerOptions]) => (

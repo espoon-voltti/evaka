@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -247,7 +247,6 @@ const ChildInformation = React.memo(function ChildInformation({
 
   return (
     <Container>
-      <Gap size={'L'} />
       <div className="child-information-wrapper" data-person-id={id}>
         <ContentArea opaque>
           <HeaderRow>

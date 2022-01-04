@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,8 +6,8 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import { useTranslation } from '../../state/i18n'
-import { defaultMargins } from 'lib-components/white-space'
-import { H1, H2 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { H2, H3 } from 'lib-components/typography'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import Absences from '../absences/Absences'
@@ -28,7 +28,6 @@ const TopRow = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: ${defaultMargins.m};
 `
 
 const GroupSelectorWrapper = styled.div`
@@ -60,7 +59,7 @@ export default React.memo(function TabCalendar() {
   return (
     <ContentArea opaque>
       <TopRow>
-        <H1 noMargin>{i18n.unit.calendar.title}</H1>
+        <H2>{i18n.unit.calendar.title}</H2>
         {reservationEnabled && (
           <FixedSpaceRow spacing="xs">
             {(['week', 'month'] as const).map((m) => (
@@ -75,10 +74,10 @@ export default React.memo(function TabCalendar() {
         )}
       </TopRow>
 
-      <H2 data-qa="calendar-unit-name">
+      <H3 noMargin data-qa="calendar-unit-name">
         {unitInformation.isSuccess ? unitInformation.value.daycare.name : ' '}
-      </H2>
-
+      </H3>
+      <Gap size="xs" />
       <GroupSelectorWrapper>
         <GroupSelector
           unitId={unitId}

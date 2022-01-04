@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,8 +12,7 @@ import { tabletMin } from '../../breakpoints'
 import { defaultMargins } from '../../white-space'
 
 export const ReturnButtonWrapper = styled.div`
-  margin-top: 32px;
-  margin-bottom: 8px;
+  margin: 8px 0;
   display: inline-block;
 
   button {

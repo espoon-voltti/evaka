@@ -169,7 +169,6 @@ export const fi = {
     validTo: (date: string) => `Voimassa ${date} saakka`
   },
   header: {
-    title: 'Varhaiskasvatus',
     applications: 'Hakemukset',
     clubApplications: 'Kerho',
     units: 'Yksiköt',

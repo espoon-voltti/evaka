@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -134,50 +134,48 @@ export default React.memo(function ApplicationsPage() {
   }, [setPage, area, units, basis, type, preschoolType, status, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, setCheckedIds])
 
   return (
-    <div data-qa="applications-page">
-      <Container>
-        <Gap size={'L'} />
-        <ContentArea opaque>
-          <ApplicationFilters />
-        </ContentArea>
-        <Gap size={'XL'} />
-        <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
-          {applicationsResult.isFailure && (
-            <PaddedDiv>
-              <H1>
-                {status === 'ALL'
-                  ? i18n.applications.list.title
-                  : i18n.application.statuses[status]}
-              </H1>
-              <ErrorSegment />
-            </PaddedDiv>
-          )}
+    <Container data-qa="applications-page">
+      <ContentArea opaque>
+        <Gap size="xs" />
+        <ApplicationFilters />
+      </ContentArea>
+      <Gap size={'XL'} />
+      <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
+        {applicationsResult.isFailure && (
+          <PaddedDiv>
+            <H1>
+              {status === 'ALL'
+                ? i18n.applications.list.title
+                : i18n.application.statuses[status]}
+            </H1>
+            <ErrorSegment />
+          </PaddedDiv>
+        )}
 
-          {applicationsResult.isLoading && (
-            <PaddedDiv>
-              <H1>
-                {status === 'ALL'
-                  ? i18n.applications.list.title
-                  : i18n.application.statuses[status]}
-              </H1>
-              <SpinnerSegment data-qa="applications-spinner" />
-            </PaddedDiv>
-          )}
+        {applicationsResult.isLoading && (
+          <PaddedDiv>
+            <H1>
+              {status === 'ALL'
+                ? i18n.applications.list.title
+                : i18n.application.statuses[status]}
+            </H1>
+            <SpinnerSegment data-qa="applications-spinner" />
+          </PaddedDiv>
+        )}
 
-          {applicationsResult.isSuccess && (
-            <ApplicationsList
-              applicationsResult={applicationsResult.value}
-              reloadApplications={loadApplications}
-              currentPage={page}
-              setPage={setPage}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              sortDirection={sortDirection}
-              setSortDirection={setSortDirection}
-            />
-          )}
-        </ContentArea>
-      </Container>
-    </div>
+        {applicationsResult.isSuccess && (
+          <ApplicationsList
+            applicationsResult={applicationsResult.value}
+            reloadApplications={loadApplications}
+            currentPage={page}
+            setPage={setPage}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+          />
+        )}
+      </ContentArea>
+    </Container>
   )
 })
