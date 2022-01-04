@@ -32,7 +32,7 @@ dependencies {
         api("com.zaxxer:HikariCP:5.0.0")
         api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.2.0")
         api("io.github.microutils:kotlin-logging-jvm:2.1.21")
-        api("io.javalin:javalin:4.1.1")
+        api("io.javalin:javalin:4.2.0")
         api("javax.annotation:javax.annotation-api:1.3.2")
         api("javax.jws:javax.jws-api:1.1")
         api("javax.xml.ws:jaxws-api:2.3.1")
