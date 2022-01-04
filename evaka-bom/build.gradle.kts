@@ -46,7 +46,7 @@ dependencies {
         api("org.apache.wss4j:wss4j-ws-security-dom:2.3.0")
         api("org.bouncycastle:bcpkix-jdk15on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk15on:${Version.bouncyCastle}")
-        api("org.flywaydb:flyway-core:8.0.5")
+        api("org.flywaydb:flyway-core:8.3.0")
         api("org.glassfish.jaxb:jaxb-runtime:2.3.2")
         api("org.jetbrains:annotations:23.0.0")
         api("org.mockito:mockito-core:${Version.mockito}")
