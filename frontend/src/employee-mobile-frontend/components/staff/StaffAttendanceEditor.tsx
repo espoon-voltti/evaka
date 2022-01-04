@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -118,11 +118,12 @@ export default React.memo(function StaffAttendanceEditor({
           <Gap size="m" />
         </>
       )}
-      <FixedSpaceRow justifyContent="center" marginBottom="s">
+      <FixedSpaceRow justifyContent="center">
         <H4 noMargin data-qa="updated">
           {updatedTime(i18n, updated)}
         </H4>
       </FixedSpaceRow>
+      <Gap size="s" />
       <FixedSpaceRow justifyContent="center">
         <H4 noMargin data-qa="realized-occupancy">
           {groupId
