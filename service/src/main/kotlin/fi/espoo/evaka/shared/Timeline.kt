@@ -78,7 +78,7 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
     }
 
     fun ranges() = this.ranges.asSequence()
-    fun gaps() = this.ranges().windowed(2).mapNotNull { pair ->
+    fun gaps() = this.ranges().windowed(2).map { pair ->
         FiniteDateRange(pair[0].end.plusDays(1), pair[1].start.minusDays(1))
     }
 
