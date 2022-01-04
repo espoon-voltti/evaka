@@ -9,9 +9,9 @@ object Version {
     object GradlePlugin {
         const val flyway = "8.3.0"
         const val kotlin = "1.6.10"
-        const val kotlinter = "3.7.0"
-        const val owasp = "6.5.0.1"
+        const val kotlinter = "3.8.0"
+        const val owasp = "6.5.2.1"
         const val springBoot = "2.6.2"
-        const val versions = "0.39.0"
+        const val versions = "0.40.0"
     }
 }
