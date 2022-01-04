@@ -240,6 +240,6 @@ export interface Occupancy {
 
 export interface UnitChildrenCapacityFactors {
   childId: UUID
-  ageFactor: number
+  serviceNeedFactor: number
   assistanceNeedFactor: number
 }

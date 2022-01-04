@@ -566,7 +566,7 @@ export default React.memo(function Group({
                         ? placement.startDate
                         : placement.period.start
 
-                    const { assistanceNeedFactor, ageFactor } =
+                    const { assistanceNeedFactor, serviceNeedFactor } =
                       unitChildrenCapacityFactors.find(
                         (item) => item.childId === placement.child.id
                       ) ?? {}
@@ -676,8 +676,8 @@ export default React.memo(function Group({
                               tooltip={
                                 <ChildCapacityFactorList>
                                   <li>
-                                    {i18n.unit.groups.childAgeFactor}:{' '}
-                                    {ageFactor}
+                                    {i18n.unit.groups.childServiceNeedFactor}:{' '}
+                                    {serviceNeedFactor}
                                   </li>
                                   <li>
                                     {i18n.unit.groups.childAssistanceNeedFactor}
@@ -689,8 +689,10 @@ export default React.memo(function Group({
                               <span
                                 data-qa={`child-occupancy-factor-${placement.child.id}`}
                               >
-                                {ageFactor && assistanceNeedFactor
-                                  ? ageFactor * assistanceNeedFactor
+                                {serviceNeedFactor && assistanceNeedFactor
+                                  ? (
+                                      serviceNeedFactor * assistanceNeedFactor
+                                    ).toFixed(2)
                                   : ''}
                               </span>
                             </Tooltip>

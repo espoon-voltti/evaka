@@ -277,7 +277,7 @@ private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
 data class UnitChildrenCapacityFactors(
     val childId: PersonId,
     val assistanceNeedFactor: Double,
-    val ageFactor: Double
+    val serviceNeedFactor: Double
 )
 
 fun Database.Read.getUnitChildrenCapacities(
@@ -293,7 +293,7 @@ fun Database.Read.getUnitChildrenCapacities(
                 WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
                 WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN 1.75
                 ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient, 1)
-            END) AS age_factor
+            END) AS service_need_factor
         FROM placement pl
         JOIN daycare u ON u.id = pl.unit_id
         JOIN person ch ON ch.id = pl.child_id

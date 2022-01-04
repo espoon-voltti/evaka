@@ -178,8 +178,8 @@ describe('Unit groups - unit supervisor', () => {
 
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
-    await groupsPage.childOccupancyFactorColumnHeading.waitUntilVisible()
-    await groupsPage.assertChildOccupancyFactor(child1Fixture.id, '1')
+    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await groupsPage.assertChildCapacityFactor(child1Fixture.id, '1.00')
   })
 })
 

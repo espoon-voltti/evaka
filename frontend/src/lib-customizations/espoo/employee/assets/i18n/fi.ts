@@ -1528,7 +1528,7 @@ export const fi = {
         single: 'lapsi',
         plural: 'lasta'
       },
-      childAgeFactor: 'Lapsen kerroin',
+      childServiceNeedFactor: 'Lapsen kerroin',
       childAssistanceNeedFactor: 'Tuen tarve',
       factor: 'Kerroin',
       maxOccupancy: 'Suurin täyttöaste',
