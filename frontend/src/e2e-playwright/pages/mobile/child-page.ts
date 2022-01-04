@@ -11,6 +11,8 @@ export default class MobileChildPage {
 
   #childName = this.page.find('[data-qa="child-name"]')
   #markPresentLink = this.page.find('[data-qa="mark-present-link"]')
+  #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
+
   #markAbsentBeforehandLink = this.page.find(
     '[data-qa="mark-absent-beforehand"]'
   )
@@ -54,6 +56,10 @@ export default class MobileChildPage {
 
   async selectMarkPresentView() {
     return this.#markPresentLink.click()
+  }
+
+  async selectMarkDepartedView() {
+    return this.#markDepartedLink.click()
   }
 
   async goBack() {

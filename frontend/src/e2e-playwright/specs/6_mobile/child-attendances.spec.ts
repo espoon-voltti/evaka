@@ -193,7 +193,50 @@ describe('Child mobile attendances', () => {
   })
 })
 
+const assertAttendanceCounts = async (
+  coming: number,
+  present: number,
+  departed: number,
+  absent: number,
+  total: number
+) =>
+  await waitUntilEqual(() => listPage.getAttendanceCounts(), {
+    coming,
+    present,
+    departed,
+    absent,
+    total
+  })
+
 describe('Child mobile attendance list', () => {
+  test('Child can be marked as present and as departed', async () => {
+    const child1 = enduserChildFixtureKaarina.id
+    await createPlacements(child1)
+    await createPlacements(enduserChildFixturePorriHatterRestricted.id)
+    await createPlacements(enduserChildFixtureJari.id, group2.id)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await assertAttendanceCounts(3, 0, 0, 0, 3)
+
+    await listPage.selectComingChildren()
+    await listPage.selectChild(child1)
+    await childPage.selectMarkPresentView()
+    await childAttendancePage.setTime('08:00')
+    await childAttendancePage.selectMarkPresent()
+
+    await assertAttendanceCounts(2, 1, 0, 0, 3)
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child1)
+    await childPage.selectMarkDepartedView()
+    await childAttendancePage.setTime('14:00')
+    await childAttendancePage.selectMarkDepartedButton()
+
+    await assertAttendanceCounts(2, 0, 1, 0, 3)
+  })
+
   test('Group selector works consistently', async () => {
     const child1 = enduserChildFixtureKaarina.id
     await createPlacements(child1)
@@ -203,44 +246,20 @@ describe('Child mobile attendance list', () => {
     const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
-    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
-      coming: 3,
-      present: 0,
-      departed: 0,
-      absent: 0,
-      total: 3
-    })
+    await assertAttendanceCounts(3, 0, 0, 0, 3)
 
     await listPage.selectChild(child1)
     await childPage.selectMarkPresentView()
     await childAttendancePage.setTime('08:00')
     await childAttendancePage.selectMarkPresent()
 
-    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
-      coming: 2,
-      present: 1,
-      departed: 0,
-      absent: 0,
-      total: 3
-    })
+    await assertAttendanceCounts(2, 1, 0, 0, 3)
 
     await listPage.selectGroup(group2.id)
-    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
-      coming: 1,
-      present: 0,
-      departed: 0,
-      absent: 0,
-      total: 1
-    })
+    await assertAttendanceCounts(1, 0, 0, 0, 1)
 
     await listPage.selectGroup('all')
-    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
-      coming: 2,
-      present: 1,
-      departed: 0,
-      absent: 0,
-      total: 3
-    })
+    await assertAttendanceCounts(2, 1, 0, 0, 3)
   })
 
   test('Group name is visible only when all-group selected', async () => {
