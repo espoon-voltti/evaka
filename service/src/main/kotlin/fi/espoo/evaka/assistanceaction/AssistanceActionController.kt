@@ -96,7 +96,7 @@ class AssistanceActionController(
 
     @GetMapping("/assistance-action-options")
     fun getAssistanceActionOptions(db: Database, user: AuthenticatedUser): List<AssistanceActionOption> {
-        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
+        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_ACTION_OPTIONS)
         return db.connect { dbc -> assistanceActionService.getAssistanceActionOptions(dbc) }
     }
 }

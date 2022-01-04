@@ -27,6 +27,7 @@ import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
@@ -200,7 +201,7 @@ internal fun generateDraftInvoice(
         }
 
     return Invoice(
-        UUID.randomUUID(),
+        id = InvoiceId(UUID.randomUUID()),
         status = InvoiceStatus.DRAFT,
         periodStart = invoicePeriod.start,
         periodEnd = invoicePeriod.end!!,

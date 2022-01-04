@@ -36,12 +36,10 @@ import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
@@ -53,7 +51,6 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
-import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -132,6 +129,16 @@ WHERE acl.employee_id = :userId
         "bc.id",
         permittedRoleActions::backupCareActions
     )
+    private val backupPickup = ActionConfig(
+        """
+SELECT bp.id, role
+FROM child_acl_view acl
+JOIN backup_pickup bp ON acl.child_id = bp.child_id
+WHERE acl.employee_id = :userId
+        """.trimIndent(),
+        "bp.id",
+        permittedRoleActions::backupPickupActions
+    )
     private val child = ActionConfig(
         """
 SELECT child_id AS id, role
@@ -151,6 +158,16 @@ WHERE employee_id = :userId
         "cdn.id",
         permittedRoleActions::childDailyNoteActions
     )
+    private val childImage = ActionConfig(
+        """
+SELECT img.id, role
+FROM child_acl_view
+JOIN child_images img ON child_acl_view.child_id = img.child_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "img.id",
+        permittedRoleActions::childImageActions
+    )
     private val childStickyNote = ActionConfig(
         """
 SELECT csn.id, role
@@ -161,15 +178,15 @@ WHERE employee_id = :userId
         "csn.id",
         permittedRoleActions::childStickyNoteActions
     )
-    private val childImage = ActionConfig(
+    private val decision = ActionConfig(
         """
-SELECT img.id, role
-FROM child_acl_view
-JOIN child_images img ON child_acl_view.child_id = img.child_id
+SELECT decision.id, role
+FROM decision
+JOIN daycare_acl_view ON decision.unit_id = daycare_acl_view.daycare_id
 WHERE employee_id = :userId
         """.trimIndent(),
-        "img.id",
-        permittedRoleActions::childImageActions
+        "decision.id",
+        permittedRoleActions::decisionActions
     )
     private val group = ActionConfig(
         """
@@ -200,6 +217,26 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "daycare_group_placement.id",
         permittedRoleActions::groupPlacementActions
+    )
+    private val mobileDevice = ActionConfig(
+        """
+SELECT d.id, role
+FROM daycare_acl_view dav
+JOIN mobile_device d ON dav.daycare_id = d.unit_id OR dav.employee_id = d.employee_id
+WHERE dav.employee_id = :userId
+        """.trimIndent(),
+        "d.id",
+        permittedRoleActions::mobileDeviceActions
+    )
+    private val pairing = ActionConfig(
+        """
+SELECT p.id, role
+FROM daycare_acl_view dav
+JOIN pairing p ON dav.daycare_id = p.unit_id OR dav.employee_id = p.employee_id
+WHERE dav.employee_id = :userId
+        """.trimIndent(),
+        "p.id",
+        permittedRoleActions::pairingActions
     )
     private val parentship = ActionConfig(
         """
@@ -250,6 +287,27 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "placement.id",
         permittedRoleActions::placementActions
+    )
+    private val serviceNeed = ActionConfig(
+        """
+SELECT service_need.id, role
+FROM service_need
+JOIN placement ON placement.id = service_need.placement_id
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "service_need.id",
+        permittedRoleActions::serviceNeedActions
+    )
+    private val vasuDocument = ActionConfig(
+        """
+SELECT curriculum_document.id AS id, role
+FROM curriculum_document
+JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+        """.trimIndent(),
+        "curriculum_document.id",
+        permittedRoleActions::vasuDocumentActions
     )
     private val unit = ActionConfig(
         """
@@ -338,56 +396,65 @@ WHERE employee_id = :userId
             .plus(UserRole.ADMIN)
     }
 
-    fun <A : Action.ScopedAction<I>, I> requirePermissionFor(user: AuthenticatedUser, action: A, id: I) {
-        if (!hasPermissionFor(user, action, id)) {
+    fun <A : Action.ScopedAction<I>, I> requirePermissionFor(user: AuthenticatedUser, action: A, vararg ids: I) {
+        if (!hasPermissionFor(user, action, *ids)) {
             throw Forbidden()
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, id: I): Boolean =
+    fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
-            is Action.Application -> hasPermissionFor(user, action, id as ApplicationId)
-            is Action.ApplicationNote -> hasPermissionFor(user, action, id as ApplicationNoteId)
-            is Action.AssistanceAction -> hasPermissionFor(user, action, id as AssistanceActionId)
-            is Action.AssistanceNeed -> hasPermissionFor(user, action, id as AssistanceNeedId)
-            is Action.Attachment -> hasPermissionFor(user, action, id as AttachmentId)
-            is Action.BackupCare -> this.backupCare.hasPermission(user, action, id as BackupCareId)
-            is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, id as ChildDailyNoteId)
-            is Action.ChildStickyNote -> this.childStickyNote.hasPermission(user, action, id as ChildStickyNoteId)
-            is Action.ChildImage -> hasPermissionFor(user, action, id as ChildImageId)
-            is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, id as GroupPlacementId)
-            is Action.Group -> this.group.hasPermission(user, action, id as GroupId)
-            is Action.GroupNote -> this.groupNote.hasPermission(user, action, id as GroupNoteId)
-            is Action.IncomeStatement -> hasPermissionFor(user, action, id as IncomeStatementId)
-            is Action.Parentship -> this.parentship.hasPermission(user, action, id as ParentshipId)
-            is Action.Partnership -> this.partnership.hasPermission(user, action, id as PartnershipId)
-            is Action.Person -> hasPermissionFor(user, action, id as PersonId)
-            is Action.Placement -> this.placement.hasPermission(user, action, id as PlacementId)
-            is Action.Unit -> this.unit.hasPermission(user, action, id as DaycareId)
-            is Action.MessageContent -> hasPermissionFor(user, action, id as MessageContentId)
-            is Action.MessageDraft -> hasPermissionFor(user, action, id as MessageDraftId)
+            is Action.Application -> ids.all { id -> hasPermissionForInternal(user, action, id as ApplicationId) }
+            is Action.ApplicationNote -> ids.all { id -> hasPermissionForInternal(user, action, id as ApplicationNoteId) }
+            is Action.AssistanceAction -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceActionId) }
+            is Action.AssistanceNeed -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceNeedId) }
+            is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
+            is Action.BackupCare -> this.backupCare.hasPermission(user, action, *ids as Array<BackupCareId>)
+            is Action.BackupPickup -> this.backupPickup.hasPermission(user, action, *ids as Array<BackupPickupId>)
+            is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, *ids as Array<ChildDailyNoteId>)
+            is Action.ChildImage -> ids.all { id -> hasPermissionForInternal(user, action, id as ChildImageId) }
+            is Action.ChildStickyNote -> this.childStickyNote.hasPermission(user, action, *ids as Array<ChildStickyNoteId>)
+            is Action.Decision -> this.decision.hasPermission(user, action, *ids as Array<DecisionId>)
+            is Action.FeeAlteration -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeAlterationActions)
+            is Action.FeeDecision -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeDecisionActions)
+            is Action.FeeThresholds -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeThresholdsActions)
+            is Action.GroupNote -> this.groupNote.hasPermission(user, action, *ids as Array<GroupNoteId>)
+            is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, *ids as Array<GroupPlacementId>)
+            is Action.Group -> this.group.hasPermission(user, action, *ids as Array<GroupId>)
+            is Action.Income -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::incomeActions)
+            is Action.IncomeStatement -> ids.all { id -> hasPermissionForInternal(user, action, id as IncomeStatementId) }
+            is Action.Invoice -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::invoiceActions)
+            is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
+            is Action.MobileDevice -> this.mobileDevice.hasPermission(user, action, *ids as Array<MobileDeviceId>)
+            is Action.Pairing -> this.pairing.hasPermission(user, action, *ids as Array<PairingId>)
+            is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
+            is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
+            is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
+            is Action.Placement -> this.placement.hasPermission(user, action, *ids as Array<PlacementId>)
+            is Action.ServiceNeed -> this.serviceNeed.hasPermission(user, action, *ids as Array<ServiceNeedId>)
+            is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
+            is Action.VasuDocument -> this.vasuDocument.hasPermission(user, action, *ids as Array<VasuDocumentId>)
+            is Action.VasuTemplate -> hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::vasuTemplateActions)
+            is Action.VoucherValueDecision -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::voucherValueDecisionActions)
             else -> error("Unsupported action type")
         }.exhaust()
 
-    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Application, id: ApplicationId) =
+    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.Application, vararg ids: ApplicationId) =
         when (user) {
             is AuthenticatedUser.Citizen -> when (action) {
                 Action.Application.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db ->
-                    db.read {
-                        it.isOwnApplication(
-                            user,
-                            id
-                        )
+                    db.read { tx ->
+                        ids.all { tx.isOwnApplication(user, it) }
                     }
                 }
                 else -> false
             }
-            is AuthenticatedUser.Employee -> this.application.hasPermission(user, action, id)
+            is AuthenticatedUser.Employee -> this.application.hasPermission(user, action, *ids)
             else -> false
         }
 
-    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.ApplicationNote, id: ApplicationNoteId) =
+    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.ApplicationNote, id: ApplicationNoteId) =
         user is AuthenticatedUser.Employee && when (action) {
             Action.ApplicationNote.UPDATE,
             Action.ApplicationNote.DELETE ->
@@ -416,7 +483,7 @@ WHERE employee_id = :userId
         )
     }
 
-    private fun hasPermissionFor(
+    private fun hasPermissionForInternal(
         user: AuthenticatedUser,
         action: Action.AssistanceAction,
         id: AssistanceActionId
@@ -446,7 +513,7 @@ WHERE employee_id = :userId
             else -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::assistanceActionActions)
         }
 
-    private fun hasPermissionFor(
+    private fun hasPermissionForInternal(
         user: AuthenticatedUser,
         action: Action.AssistanceNeed,
         id: AssistanceNeedId
@@ -476,7 +543,7 @@ WHERE employee_id = :userId
             else -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::assistanceNeedActions)
         }
 
-    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.Attachment, id: AttachmentId) =
+    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.Attachment, id: AttachmentId) =
         when (user) {
             is AuthenticatedUser.Citizen -> when (action) {
                 Action.Attachment.READ_APPLICATION_ATTACHMENT,
@@ -571,7 +638,7 @@ WHERE employee_id = :userId
             AuthenticatedUser.SystemInternalUser -> false
         }
 
-    private fun hasPermissionFor(user: AuthenticatedUser, action: Action.ChildImage, id: ChildImageId): Boolean =
+    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.ChildImage, id: ChildImageId): Boolean =
         when (user) {
             is AuthenticatedUser.WeakCitizen -> false
             is AuthenticatedUser.Citizen -> when (action) {
@@ -588,15 +655,6 @@ WHERE employee_id = :userId
         user: AuthenticatedUser,
         ids: Collection<BackupCareId>
     ): Map<BackupCareId, Set<Action.BackupCare>> = this.backupCare.getPermittedActions(user, ids)
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.BackupPickup, id: BackupPickupId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForBackupPickup(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::backupPickupActions
-        )
-    }
 
     private fun requirePinLogin(user: AuthenticatedUser) {
         if (user is AuthenticatedUser.MobileDevice && user.employeeId == null) throw Forbidden(
@@ -640,17 +698,8 @@ WHERE employee_id = :userId
         ids: Collection<PersonId>
     ): Map<PersonId, Set<Action.Person>> = ids.associateWith { personId ->
         Action.Person.values()
-            .filter { action -> hasPermissionFor(user, action, personId) }
+            .filter { action -> hasPermissionForInternal(user, action, personId) }
             .toSet()
-    }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Decision, id: DecisionId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForDecision(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::decisionActions
-        )
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.PedagogicalDocument, id: PedagogicalDocumentId) {
@@ -685,14 +734,6 @@ WHERE employee_id = :userId
         }
     }
 
-    fun requirePermissionFor(
-        user: AuthenticatedUser,
-        action: Action.FeeThresholds,
-        @Suppress("UNUSED_PARAMETER") id: FeeThresholdsId
-    ) {
-        assertPermissionUsingAllRoles(user, action, permittedRoleActions::feeThresholdsActions)
-    }
-
     fun getPermittedGroupActions(
         user: AuthenticatedUser,
         ids: Collection<GroupId>
@@ -703,7 +744,7 @@ WHERE employee_id = :userId
         ids: Collection<GroupPlacementId>
     ): Map<GroupPlacementId, Set<Action.GroupPlacement>> = this.groupPlacement.getPermittedActions(user, ids)
 
-    private fun hasPermissionFor(
+    private fun hasPermissionForInternal(
         user: AuthenticatedUser,
         action: Action.IncomeStatement,
         id: IncomeStatementId
@@ -719,7 +760,7 @@ WHERE employee_id = :userId
             else -> false
         }
 
-    private fun hasPermissionFor(
+    private fun hasPermissionForInternal(
         user: AuthenticatedUser,
         action: Action.MessageDraft,
         id: MessageDraftId
@@ -739,7 +780,7 @@ WHERE employee_id = :userId
             else -> false
         }
 
-    private fun hasPermissionFor(
+    private fun hasPermissionForInternal(
         user: AuthenticatedUser,
         action: Action.Person,
         id: PersonId
@@ -778,51 +819,15 @@ WHERE employee_id = :userId
             else -> throw Forbidden()
         }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.MobileDevice, id: MobileDeviceId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForMobileDevice(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::mobileDeviceActions
-        )
-    }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Pairing, id: PairingId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForPairing(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::pairingActions
-        )
-    }
-
     fun getPermittedPlacementActions(
         user: AuthenticatedUser,
         ids: Collection<PlacementId>
     ): Map<PlacementId, Set<Action.Placement>> = this.placement.getPermittedActions(user, ids)
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.ServiceNeed, id: ServiceNeedId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForServiceNeed(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::serviceNeedActions
-        )
-    }
-
     fun getPermittedUnitActions(
         user: AuthenticatedUser,
         ids: Collection<DaycareId>
     ): Map<DaycareId, Set<Action.Unit>> = this.unit.getPermittedActions(user, ids)
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocument, id: VasuDocumentId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForVasuDocument(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::vasuDocumentActions
-        )
-    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
         if (action != Action.VasuDocumentFollowup.UPDATE) {
@@ -881,15 +886,6 @@ WHERE employee_id = :userId
         }
     }
 
-    fun requirePermissionFor(
-        user: AuthenticatedUser,
-        action: Action.VasuTemplate,
-        @Suppress("UNUSED_PARAMETER") id: VasuTemplateId
-    ) {
-        // VasuTemplate actions in Espoo are global so the id parameter is ignored
-        assertPermissionUsingAllRoles(user, action, permittedRoleActions::vasuTemplateActions)
-    }
-
     private inline fun <reified A, reified I> ActionConfig<A>.getPermittedActions(
         user: AuthenticatedUser,
         ids: Collection<I>
@@ -932,19 +928,16 @@ WHERE employee_id = :userId
     private inline fun <reified A, reified I> ActionConfig<A>.hasPermission(
         user: AuthenticatedUser,
         action: A,
-        id: I
+        vararg ids: I
     ): Boolean where A : Action.ScopedAction<I>, A : Enum<A> {
         if (hasPermissionThroughGlobalRole(user, action)) return true
         return Database(jdbi).connect { db ->
-            db.read { getRolesFor(it, user, id) }.any { mapping(it).contains(action) }
+            db.read { tx ->
+                val idToRoles = getRolesForAll(tx, user, *ids)
+                ids.all { id -> (idToRoles[id] ?: emptySet()).any { mapping(it).contains(action) } }
+            }
         }
     }
-
-    private inline fun <reified A : Action.ScopedAction<I>, reified I> ActionConfig<A>.getRolesFor(
-        tx: Database.Read,
-        user: AuthenticatedUser,
-        id: I
-    ): Set<UserRole> = getRolesForAll(tx, user, id)[id]!!
 
     private inline fun <reified A : Action.ScopedAction<I>, reified I> ActionConfig<A>.getRolesForAll(
         tx: Database.Read,

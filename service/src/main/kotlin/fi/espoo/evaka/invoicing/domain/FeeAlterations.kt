@@ -8,13 +8,14 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.shared.FeeAlterationId
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeAlteration(
-    val id: UUID? = null,
+    val id: FeeAlterationId? = null,
     val personId: UUID,
     val type: Type,
     val amount: Int,

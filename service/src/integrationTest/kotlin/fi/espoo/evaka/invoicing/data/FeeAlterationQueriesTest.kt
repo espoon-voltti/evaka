@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.testChild_1
@@ -38,7 +39,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
 
     private val personId = testChild_1.id
     private val testFeeAlteration = FeeAlteration(
-        id = UUID.randomUUID(),
+        id = FeeAlterationId(UUID.randomUUID()),
         personId = personId,
         type = FeeAlteration.Type.DISCOUNT,
         amount = 50,
@@ -93,7 +94,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
     @Test
     fun `getFeeAlteration with no fee alteration`() {
         db.transaction { tx ->
-            val result = tx.getFeeAlteration(UUID.randomUUID())
+            val result = tx.getFeeAlteration(FeeAlterationId(UUID.randomUUID()))
 
             assertNull(result)
         }
@@ -128,7 +129,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
             with(testFeeAlteration) {
                 tx.upsertFeeAlteration(
                     this.copy(
-                        id = UUID.randomUUID(),
+                        id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(1),
                         validTo = validTo!!.plusYears(1)
                     )
@@ -137,7 +138,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
             with(testFeeAlteration) {
                 tx.upsertFeeAlteration(
                     this.copy(
-                        id = UUID.randomUUID(),
+                        id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(2),
                         validTo = validTo!!.plusYears(2)
                     )
@@ -180,10 +181,10 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
     fun `update with multiple fee alterations only updates one of them`() {
         db.transaction { tx ->
             val secondFeeAlteration = with(testFeeAlteration) {
-                this.copy(id = UUID.randomUUID(), validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
+                this.copy(id = FeeAlterationId(UUID.randomUUID()), validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
             }
             val thirdFeeAlteration = with(testFeeAlteration) {
-                this.copy(id = UUID.randomUUID(), validFrom = validFrom.plusYears(2), validTo = validTo!!.plusYears(2))
+                this.copy(id = FeeAlterationId(UUID.randomUUID()), validFrom = validFrom.plusYears(2), validTo = validTo!!.plusYears(2))
             }
 
             tx.upsertFeeAlteration(testFeeAlteration)
@@ -207,7 +208,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
             tx.upsertFeeAlteration(testFeeAlteration)
             tx.upsertFeeAlteration(
                 testFeeAlteration.copy(
-                    id = UUID.randomUUID(),
+                    id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
                     validTo = testFeeAlteration.validTo!!.plusYears(1)
                 )
@@ -228,7 +229,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
             tx.upsertFeeAlteration(testFeeAlteration)
             tx.upsertFeeAlteration(
                 testFeeAlteration.copy(
-                    id = UUID.randomUUID(),
+                    id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
                     validTo = testFeeAlteration.validTo!!.plusYears(1)
                 )
@@ -249,7 +250,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
             tx.upsertFeeAlteration(testFeeAlteration)
             tx.upsertFeeAlteration(
                 testFeeAlteration.copy(
-                    id = UUID.randomUUID(),
+                    id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
                     validTo = testFeeAlteration.validTo!!.plusYears(1)
                 )

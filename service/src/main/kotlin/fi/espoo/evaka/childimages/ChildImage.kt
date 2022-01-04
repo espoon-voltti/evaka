@@ -8,14 +8,16 @@ import fi.espoo.evaka.s3.ContentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.getAndCheckFileContentType
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 data class ChildImage(
-    val id: UUID,
-    val childId: UUID,
+    val id: ChildImageId,
+    val childId: ChildId,
     val updated: HelsinkiDateTime
 )
 
@@ -32,7 +34,7 @@ fun replaceImage(
 ) {
     val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
 
-    var deletedId: UUID? = null
+    var deletedId: ChildImageId? = null
     db.transaction { tx ->
         deletedId = tx.deleteChildImage(childId)
         val imageId = tx.insertChildImage(childId)

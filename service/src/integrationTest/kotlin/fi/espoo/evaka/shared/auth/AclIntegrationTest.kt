@@ -112,8 +112,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(aclAuth, acl.getAuthorizedUnits(user))
 
         assertEquals(aclRoles, acl.getRolesForUnit(user, daycareId))
-        assertEquals(aclRoles, acl.getRolesForDecision(user, decisionId))
-        assertEquals(aclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(aclRoles, acl.getRolesForUnitGroup(user, groupId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
@@ -132,8 +130,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(negativeAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(negativeAclAuth, acl.getAuthorizedUnits(user))
         assertEquals(negativeAclRoles, acl.getRolesForUnit(user, daycareId))
-        assertEquals(negativeAclRoles, acl.getRolesForDecision(user, decisionId))
-        assertEquals(negativeAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(negativeAclRoles, acl.getRolesForUnitGroup(user, groupId))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
@@ -143,8 +139,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(positiveAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))
         assertEquals(positiveAclRoles, acl.getRolesForUnit(user, daycareId))
-        assertEquals(positiveAclRoles, acl.getRolesForDecision(user, decisionId))
-        assertEquals(positiveAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(positiveAclRoles, acl.getRolesForUnitGroup(user, groupId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
@@ -161,8 +155,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(expectedAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(expectedAclAuth, acl.getAuthorizedUnits(user))
         assertEquals(expectedAclRoles, acl.getRolesForUnit(user, daycareId))
-        assertEquals(expectedAclRoles, acl.getRolesForDecision(user, decisionId))
-        assertEquals(expectedAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(expectedAclRoles, acl.getRolesForUnitGroup(user, groupId))
     }
 }

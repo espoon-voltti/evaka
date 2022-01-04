@@ -11,22 +11,35 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
@@ -68,6 +81,21 @@ sealed interface Action {
         READ_FEE_THRESHOLDS(FINANCE_ADMIN),
         CREATE_FEE_THRESHOLDS(FINANCE_ADMIN),
 
+        SEARCH_FEE_DECISIONS(FINANCE_ADMIN),
+        GENERATE_FEE_DECISIONS(FINANCE_ADMIN),
+
+        SEARCH_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
+
+        READ_FINANCE_DECISION_HANDLERS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+
+        TRIGGER_SCHEDULED_JOBS,
+
+        READ_PERSONAL_MOBILE_DEVICES(UNIT_SUPERVISOR),
+        CREATE_PERSONAL_MOBILE_DEVICE_PAIRING(UNIT_SUPERVISOR),
+
+        SEARCH_INVOICES(FINANCE_ADMIN),
+        CREATE_DRAFT_INVOICES(FINANCE_ADMIN),
+
         READ_ASSISTANCE_ACTION_OPTIONS(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
         READ_ASSISTANCE_BASIS_OPTIONS(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
         READ_SERVICE_NEED_OPTIONS(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
@@ -76,7 +104,9 @@ sealed interface Action {
         READ_UNITS(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         CREATE_UNIT(),
 
-        READ_APPLCIATIONS_REPORT(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
+        READ_DECISION_UNITS(SERVICE_WORKER, UNIT_SUPERVISOR),
+
+        READ_APPLICATIONS_REPORT(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
         READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         READ_CHILD_AGE_AND_LANGUAGE_REPORT(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER, SPECIAL_EDUCATION_TEACHER),
         READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT(SERVICE_WORKER, FINANCE_ADMIN),
@@ -97,6 +127,9 @@ sealed interface Action {
         READ_VARDA_REPORT(),
 
         UPDATE_SETTINGS(ADMIN),
+
+        READ_INCOME_TYPES(FINANCE_ADMIN),
+        READ_INVOICE_CODES(FINANCE_ADMIN),
 
         READ_UNIT_FEATURES(),
         READ_OWN_CHILDREN(END_USER),
@@ -196,7 +229,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class BackupPickup(private val roles: EnumSet<UserRole>) : Action {
+    enum class BackupPickup(private val roles: EnumSet<UserRole>) : ScopedAction<BackupPickupId> {
         UPDATE(UNIT_SUPERVISOR, STAFF),
         DELETE(UNIT_SUPERVISOR, STAFF);
 
@@ -247,6 +280,7 @@ sealed interface Action {
 
         READ_GUARDIANS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
 
+        CREATE_FEE_ALTERATION(FINANCE_ADMIN),
         READ_FEE_ALTERATIONS(FINANCE_ADMIN),
 
         READ_CHILD_RECIPIENTS(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
@@ -275,6 +309,13 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+    enum class ChildImage(private val roles: EnumSet<UserRole>) : ScopedAction<ChildImageId> {
+        DOWNLOAD(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF, MOBILE);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class ChildStickyNote(private val roles: EnumSet<UserRole>) : ScopedAction<ChildStickyNoteId> {
         UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
         DELETE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE);
@@ -283,21 +324,33 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class ChildImage(private val roles: EnumSet<UserRole>) : ScopedAction<ChildImageId> {
-        DOWNLOAD(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF, MOBILE);
-
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
-        override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
-    }
-    enum class Decision(private val roles: EnumSet<UserRole>) : Action {
+    enum class Decision(private val roles: EnumSet<UserRole>) : ScopedAction<DecisionId> {
+        DOWNLOAD_PDF(SERVICE_WORKER, UNIT_SUPERVISOR)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class FeeThresholds(private val roles: EnumSet<UserRole>) : Action {
+    enum class FeeAlteration(private val roles: EnumSet<UserRole>) : ScopedAction<FeeAlterationId> {
+        UPDATE(FINANCE_ADMIN),
+        DELETE(FINANCE_ADMIN)
+        ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class FeeDecision(private val roles: EnumSet<UserRole>) : ScopedAction<FeeDecisionId> {
+        READ(FINANCE_ADMIN),
+        UPDATE(FINANCE_ADMIN)
+        ;
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class FeeThresholds(private val roles: EnumSet<UserRole>) : ScopedAction<FeeThresholdsId> {
         UPDATE(FINANCE_ADMIN)
         ;
 
@@ -312,6 +365,9 @@ sealed interface Action {
         CREATE_ABSENCES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         READ_ABSENCES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         DELETE_ABSENCES(UNIT_SUPERVISOR, STAFF),
+
+        READ_STAFF_ATTENDANCES(FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, MOBILE, SPECIAL_EDUCATION_TEACHER),
+        UPDATE_STAFF_ATTENDANCES(UNIT_SUPERVISOR, STAFF, MOBILE),
 
         READ_CARETAKERS(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
         CREATE_CARETAKERS(UNIT_SUPERVISOR),
@@ -342,9 +398,28 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
+    enum class Income(private val roles: EnumSet<UserRole>) : ScopedAction<IncomeId> {
+        UPDATE(FINANCE_ADMIN),
+        DELETE(FINANCE_ADMIN);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
     enum class IncomeStatement(private val roles: EnumSet<UserRole>) : ScopedAction<IncomeStatementId> {
         UPDATE_HANDLED(FINANCE_ADMIN),
         UPLOAD_ATTACHMENT(FINANCE_ADMIN);
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+    enum class Invoice(private val roles: EnumSet<UserRole>) : ScopedAction<InvoiceId> {
+        READ(FINANCE_ADMIN),
+        UPDATE(FINANCE_ADMIN),
+        SEND(FINANCE_ADMIN),
+        DELETE(FINANCE_ADMIN),
+        ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
@@ -365,14 +440,17 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class MobileDevice(private val roles: EnumSet<UserRole>) : Action {
+    enum class MobileDevice(private val roles: EnumSet<UserRole>) : ScopedAction<MobileDeviceId> {
+        UPDATE_NAME(UNIT_SUPERVISOR),
+        DELETE(UNIT_SUPERVISOR)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Pairing(private val roles: EnumSet<UserRole>) : Action {
+    enum class Pairing(private val roles: EnumSet<UserRole>) : ScopedAction<PairingId> {
+        POST_RESPONSE(UNIT_SUPERVISOR)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
@@ -412,17 +490,23 @@ sealed interface Action {
     }
     enum class Person(private val roles: EnumSet<UserRole>) : ScopedAction<PersonId> {
         ADD_SSN(SERVICE_WORKER, FINANCE_ADMIN),
+        CREATE_INCOME(FINANCE_ADMIN),
         CREATE_PARENTSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         CREATE_PARTNERSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         DISABLE_SSN(),
-        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        GENERATE_RETROACTIVE_FEE_DECISIONS(FINANCE_ADMIN),
+        GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
         READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
+        READ_FEE_DECISIONS(FINANCE_ADMIN),
         READ_INCOME(FINANCE_ADMIN),
         READ_INCOME_STATEMENTS(FINANCE_ADMIN),
+        READ_INVOICES(FINANCE_ADMIN),
         READ_INVOICE_ADDRESS(FINANCE_ADMIN),
         READ_OPH_OID(DIRECTOR, UNIT_SUPERVISOR),
         READ_PARENTSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
         READ_PARTNERSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
+        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
+        READ_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
         UPDATE(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR),
         UPDATE_INVOICE_ADDRESS(FINANCE_ADMIN),
         UPDATE_OPH_OID(DIRECTOR, UNIT_SUPERVISOR);
@@ -446,7 +530,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class ServiceNeed(private val roles: EnumSet<UserRole>) : Action {
+    enum class ServiceNeed(private val roles: EnumSet<UserRole>) : ScopedAction<ServiceNeedId> {
         UPDATE(UNIT_SUPERVISOR),
         DELETE(UNIT_SUPERVISOR);
 
@@ -463,6 +547,10 @@ sealed interface Action {
         READ_CHILD_CAPACITY_FACTORS(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
         UPDATE(),
 
+        READ_STAFF_ATTENDANCES(MOBILE),
+
+        READ_OCCUPANCIES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, MOBILE),
+
         READ_ATTENDANCE_RESERVATIONS(UNIT_SUPERVISOR, STAFF),
 
         READ_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF),
@@ -475,6 +563,12 @@ sealed interface Action {
         ACCEPT_PLACEMENT_PROPOSAL(SERVICE_WORKER, UNIT_SUPERVISOR),
 
         CREATE_GROUP(UNIT_SUPERVISOR),
+
+        READ_MOBILE_STATS(MOBILE),
+        READ_MOBILE_INFO(MOBILE),
+
+        READ_MOBILE_DEVICES(UNIT_SUPERVISOR),
+        CREATE_MOBILE_DEVICE_PAIRING(UNIT_SUPERVISOR),
 
         READ_ACL(UNIT_SUPERVISOR),
         INSERT_ACL_UNIT_SUPERVISOR(),
@@ -497,7 +591,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class VasuDocument(private val roles: EnumSet<UserRole>) : Action {
+    enum class VasuDocument(private val roles: EnumSet<UserRole>) : ScopedAction<VasuDocumentId> {
         READ(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         UPDATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
         EVENT_PUBLISHED(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
@@ -522,11 +616,21 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
 
-    enum class VasuTemplate(private val roles: EnumSet<UserRole>) : Action {
+    enum class VasuTemplate(private val roles: EnumSet<UserRole>) : ScopedAction<VasuTemplateId> {
         READ(),
         COPY(),
         UPDATE(),
         DELETE();
+
+        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        override fun toString(): String = "${javaClass.name}.$name"
+        override fun defaultRoles(): Set<UserRole> = roles
+    }
+
+    enum class VoucherValueDecision(private val roles: EnumSet<UserRole>) : ScopedAction<VoucherValueDecisionId> {
+        READ(FINANCE_ADMIN),
+        UPDATE(FINANCE_ADMIN)
+        ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

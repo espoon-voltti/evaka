@@ -27,7 +27,7 @@ import java.util.UUID
 
 @RestController
 class ChildImageController(
-    private val ac: AccessControl,
+    private val accessControl: AccessControl,
     private val documentClient: DocumentService,
     env: BucketEnv
 ) {
@@ -42,7 +42,7 @@ class ChildImageController(
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<Unit> {
         Audit.ChildImageUpload.log(targetId = childId)
-        ac.requirePermissionFor(user, Action.Child.UPLOAD_IMAGE, childId)
+        accessControl.requirePermissionFor(user, Action.Child.UPLOAD_IMAGE, childId)
 
         db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file) }
 
@@ -56,7 +56,7 @@ class ChildImageController(
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildImageDelete.log(targetId = childId)
-        ac.requirePermissionFor(user, Action.Child.DELETE_IMAGE, childId)
+        accessControl.requirePermissionFor(user, Action.Child.DELETE_IMAGE, childId)
 
         db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
 
@@ -70,8 +70,7 @@ class ChildImageController(
         @PathVariable imageId: ChildImageId
     ): ResponseEntity<Any> {
         Audit.ChildImageDownload.log(targetId = imageId)
-
-        ac.requirePermissionFor(user, Action.ChildImage.DOWNLOAD, imageId)
+        accessControl.requirePermissionFor(user, Action.ChildImage.DOWNLOAD, imageId)
 
         val key = "$childImagesBucketPrefix$imageId"
         val presignedUrl = documentClient.presignedGetUrl(bucket, key)

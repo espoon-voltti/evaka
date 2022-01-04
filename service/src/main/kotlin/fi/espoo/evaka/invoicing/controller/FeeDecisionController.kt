@@ -17,13 +17,15 @@ import fi.espoo.evaka.invoicing.service.FeeDecisionService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -65,6 +67,7 @@ enum class DistinctiveParams {
 class FeeDecisionController(
     private val service: FeeDecisionService,
     private val generator: FinanceDecisionGenerator,
+    private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/search")
@@ -74,8 +77,7 @@ class FeeDecisionController(
         @RequestBody body: SearchFeeDecisionRequest
     ): ResponseEntity<Paged<FeeDecisionSummary>> {
         Audit.FeeDecisionSearch.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.SEARCH_FEE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate)
@@ -106,8 +108,7 @@ class FeeDecisionController(
     @PostMapping("/confirm")
     fun confirmDrafts(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
@@ -120,8 +121,7 @@ class FeeDecisionController(
     @PostMapping("/mark-sent")
     fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
         return ResponseEntity.noContent().build()
     }
@@ -129,8 +129,7 @@ class FeeDecisionController(
     @GetMapping("/pdf/{uuid}")
     fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.READ, uuid)
         val headers = HttpHeaders()
         val (filename, pdf) = db.connect { dbc -> dbc.read { service.getFeeDecisionPdf(it, uuid) } }
         headers.add("Content-Disposition", "attachment; filename=\"$filename\"")
@@ -141,8 +140,7 @@ class FeeDecisionController(
     @GetMapping("/{uuid}")
     fun getDecision(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.READ, uuid)
         val res = db.connect { dbc -> dbc.read { it.getFeeDecision(uuid) } }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
@@ -155,8 +153,7 @@ class FeeDecisionController(
         @PathVariable uuid: UUID
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.READ_FEE_DECISIONS, PersonId(uuid))
         val res = db.connect { dbc ->
             dbc.read {
                 it.findFeeDecisionsForHeadOfFamily(
@@ -177,8 +174,7 @@ class FeeDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS, PersonId(id))
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) } }
         return ResponseEntity.noContent().build()
     }
@@ -191,8 +187,7 @@ class FeeDecisionController(
         @RequestBody request: FeeDecisionTypeRequest
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionSetType.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { service.setType(it, uuid, request.type) } }
         return ResponseEntity.noContent().build()
     }

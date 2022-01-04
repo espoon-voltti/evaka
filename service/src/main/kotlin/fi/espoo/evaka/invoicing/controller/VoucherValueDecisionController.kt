@@ -27,16 +27,18 @@ import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.http.HttpHeaders
@@ -59,6 +61,7 @@ import java.util.UUID
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
     private val generator: FinanceDecisionGenerator,
+    private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/search")
@@ -68,8 +71,7 @@ class VoucherValueDecisionController(
         @RequestBody body: SearchVoucherValueDecisionRequest
     ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionSearch.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
@@ -102,8 +104,7 @@ class VoucherValueDecisionController(
         @PathVariable id: VoucherValueDecisionId
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, id)
         val res = db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
@@ -116,8 +117,7 @@ class VoucherValueDecisionController(
         @PathVariable headOfFamilyId: UUID
     ): ResponseEntity<List<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.READ_VOUCHER_VALUE_DECISIONS, PersonId(headOfFamilyId))
         val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
         return ResponseEntity.ok(res)
     }
@@ -125,8 +125,7 @@ class VoucherValueDecisionController(
     @PostMapping("/send")
     fun sendDrafts(db: Database, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *decisionIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction {
                 sendVoucherValueDecisions(
@@ -144,8 +143,7 @@ class VoucherValueDecisionController(
     @PostMapping("/mark-sent")
     fun markSent(db: Database, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *ids.toTypedArray())
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decisions = tx.getValueDecisionsByIds(ids)
@@ -160,8 +158,7 @@ class VoucherValueDecisionController(
     @GetMapping("/pdf/{id}")
     fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, id)
         val (filename, pdf) = db.connect { dbc -> dbc.read { valueDecisionService.getDecisionPdf(it, id) } }
         val headers = HttpHeaders().apply {
             add("Content-Disposition", "attachment; filename=\"$filename\"")
@@ -178,8 +175,7 @@ class VoucherValueDecisionController(
         @RequestBody request: VoucherValueDecisionTypeRequest
     ): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { valueDecisionService.setType(it, uuid, request.type) } }
         return ResponseEntity.noContent().build()
     }
@@ -192,8 +188,7 @@ class VoucherValueDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, PersonId(id))
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, id, body.from) } }
     }
 }

@@ -9,9 +9,10 @@ import fi.espoo.evaka.invoicing.messaging.planFinanceDecisionGeneration
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -28,12 +29,14 @@ data class GenerateDecisionsBody(
 
 @RestController
 @RequestMapping("/fee-decision-generator")
-class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class FeeDecisionGeneratorController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     @PostMapping("/generate")
     fun generateDecisions(db: Database, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.GENERATE_FEE_DECISIONS)
         db.connect { dbc ->
             generateAllStartingFrom(
                 dbc,

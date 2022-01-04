@@ -32,12 +32,14 @@ sealed interface DatabaseTable {
     sealed class Decision : DatabaseTable
     sealed class Employee : DatabaseTable
     sealed class EvakaUser : DatabaseTable
+    sealed class FeeAlteration : DatabaseTable
     sealed class FeeDecision : DatabaseTable
     sealed class FeeThresholds : DatabaseTable
     sealed class Group : DatabaseTable
     sealed class GroupPlacement : DatabaseTable
     sealed class Income : DatabaseTable
     sealed class IncomeStatement : DatabaseTable
+    sealed class Invoice : DatabaseTable
     sealed class Message : DatabaseTable
     sealed class MessageAccount : DatabaseTable
     sealed class MessageContent : DatabaseTable
@@ -83,12 +85,14 @@ typealias GroupNoteId = Id<DatabaseTable.GroupNote>
 typealias DecisionId = Id<DatabaseTable.Decision>
 typealias EmployeeId = Id<DatabaseTable.Employee>
 typealias EvakaUserId = Id<DatabaseTable.EvakaUser>
+typealias FeeAlterationId = Id<DatabaseTable.FeeAlteration>
 typealias FeeDecisionId = Id<DatabaseTable.FeeDecision>
 typealias FeeThresholdsId = Id<DatabaseTable.FeeThresholds>
 typealias GroupId = Id<DatabaseTable.Group>
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 typealias IncomeId = Id<DatabaseTable.Income>
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
+typealias InvoiceId = Id<DatabaseTable.Invoice>
 typealias MessageId = Id<DatabaseTable.Message>
 typealias MessageAccountId = Id<DatabaseTable.MessageAccount>
 typealias MessageContentId = Id<DatabaseTable.MessageContent>

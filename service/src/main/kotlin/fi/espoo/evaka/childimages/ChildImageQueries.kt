@@ -10,21 +10,21 @@ import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Transaction.insertChildImage(childId: UUID): UUID {
+fun Database.Transaction.insertChildImage(childId: UUID): ChildImageId {
     // language=sql
     val sql = """
         INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id;
     """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo<UUID>()
+        .mapTo<ChildImageId>()
         .one()
 }
 
-fun Database.Transaction.deleteChildImage(childId: UUID): UUID? {
+fun Database.Transaction.deleteChildImage(childId: UUID): ChildImageId? {
     return createQuery("DELETE FROM child_images WHERE child_id = :childId RETURNING id")
         .bind("childId", childId)
-        .mapTo<UUID>()
+        .mapTo<ChildImageId>()
         .firstOrNull()
 }
 

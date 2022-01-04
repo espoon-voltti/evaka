@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.shared.InvoiceId
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
@@ -13,7 +14,7 @@ class InvoicesTest {
     @Test
     fun `Invoice has correct default due date calculated from period end date`() {
         val invoice = Invoice(
-            id = UUID.randomUUID(),
+            id = InvoiceId(UUID.randomUUID()),
             status = InvoiceStatus.DRAFT,
             periodStart = LocalDate.of(2019, 1, 1),
             periodEnd = LocalDate.of(2019, 1, 31),
@@ -28,7 +29,7 @@ class InvoicesTest {
     @Test
     fun `Invoice has correct default due date when last day of month is saturday`() {
         val invoice = Invoice(
-            id = UUID.randomUUID(),
+            id = InvoiceId(UUID.randomUUID()),
             status = InvoiceStatus.DRAFT,
             periodStart = LocalDate.of(2019, 7, 1),
             periodEnd = LocalDate.of(2019, 7, 31),
@@ -43,7 +44,7 @@ class InvoicesTest {
     @Test
     fun `Invoice has correct default due date when last day of month is sunday`() {
         val invoice = Invoice(
-            id = UUID.randomUUID(),
+            id = InvoiceId(UUID.randomUUID()),
             status = InvoiceStatus.DRAFT,
             periodStart = LocalDate.of(2019, 5, 1),
             periodEnd = LocalDate.of(2019, 5, 31),
@@ -58,7 +59,7 @@ class InvoicesTest {
     @Test
     fun `Invoice has correct default invoice date`() {
         val invoice = Invoice(
-            id = UUID.randomUUID(),
+            id = InvoiceId(UUID.randomUUID()),
             status = InvoiceStatus.DRAFT,
             periodStart = LocalDate.of(2019, 1, 1),
             periodEnd = LocalDate.of(2019, 1, 31),

@@ -10,10 +10,11 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,7 +27,8 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/mobile/units")
 class MobileUnitController(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
 ) {
     @GetMapping("/{unitId}")
     fun getUnitInfo(
@@ -36,8 +38,7 @@ class MobileUnitController(
         @PathVariable unitId: DaycareId
     ): UnitInfo {
         Audit.UnitRead.log(targetId = unitId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_INFO, unitId)
         return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitInfo(unitId, evakaClock.today()) } }
     }
 
@@ -50,8 +51,7 @@ class MobileUnitController(
         @RequestParam useRealtimeStaffAttendance: Boolean
     ): List<UnitStats> {
         Audit.UnitRead.log(targetId = unitIds)
-        @Suppress("DEPRECATION")
-        unitIds.forEach { unitId -> acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE) }
+        accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_STATS, *unitIds.toTypedArray())
         return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today(), useRealtimeStaffAttendance) } }
     }
 }

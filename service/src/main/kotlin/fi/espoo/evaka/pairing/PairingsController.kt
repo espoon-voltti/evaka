@@ -11,12 +11,12 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,7 +28,7 @@ import java.util.UUID
 
 @RestController
 class PairingsController(
-    private val acl: AccessControlList,
+    private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     /**
@@ -51,12 +51,11 @@ class PairingsController(
     ): ResponseEntity<Pairing> {
         Audit.PairingInit.log(targetId = body.id)
         @Suppress("DEPRECATION")
-        @Suppress("DEPRECATION")
         when (body) {
             is PostPairingReq.Unit ->
-                acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+                accessControl.requirePermissionFor(user, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
             is PostPairingReq.Employee -> {
-                user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+                accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
                 if (EmployeeId(user.id) != body.employeeId) throw Forbidden()
             }
         }
@@ -125,10 +124,8 @@ class PairingsController(
         return db.connect { dbc ->
             val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
             try {
-                @Suppress("DEPRECATION")
                 when {
-                    unitId != null -> acl.getRolesForPairing(user, id)
-                        .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+                    unitId != null -> accessControl.requirePermissionFor(user, Action.Pairing.POST_RESPONSE, id)
                     employeeId != null ->
                         if (EmployeeId(user.id) != employeeId) throw Forbidden()
                     else -> error("Pairing unitId and employeeId were null")

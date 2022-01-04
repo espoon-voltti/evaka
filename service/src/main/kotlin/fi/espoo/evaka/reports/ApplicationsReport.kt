@@ -28,7 +28,7 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<ApplicationsReportRow> {
         Audit.ApplicationsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_APPLCIATIONS_REPORT)
+        accessControl.requirePermissionFor(user, Action.Global.READ_APPLICATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
         return db.connect { dbc -> dbc.read { it.getApplicationsRows(from, to) } }

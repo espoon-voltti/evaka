@@ -12,11 +12,11 @@ import fi.espoo.evaka.daycare.service.StaffAttendanceUpdate
 import fi.espoo.evaka.daycare.service.UnitStaffAttendance
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -31,7 +31,7 @@ import java.time.LocalDate
 @RequestMapping("/staff-attendances")
 class StaffAttendanceController(
     private val staffAttendanceService: StaffAttendanceService,
-    private val acl: AccessControlList
+    private val accessControl: AccessControl
 ) {
     @GetMapping("/unit/{unitId}")
     fun getAttendancesByUnit(
@@ -40,8 +40,7 @@ class StaffAttendanceController(
         @PathVariable unitId: DaycareId
     ): ResponseEntity<UnitStaffAttendance> {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
         val result = db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, LocalDate.now()) }
         return ResponseEntity.ok(result)
     }
@@ -55,9 +54,7 @@ class StaffAttendanceController(
         @PathVariable groupId: GroupId
     ): ResponseEntity<Wrapper<StaffAttendanceForDates>> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE, UserRole.SPECIAL_EDUCATION_TEACHER)
+        accessControl.requirePermissionFor(user, Action.Group.READ_STAFF_ATTENDANCES, groupId)
         val result = db.connect { dbc -> staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId) }
         return ResponseEntity.ok(Wrapper(result))
     }
@@ -70,9 +67,7 @@ class StaffAttendanceController(
         @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Group.UPDATE_STAFF_ATTENDANCES, groupId)
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }

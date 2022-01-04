@@ -27,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.InputStream
 import java.net.URL
-import java.util.UUID
 import javax.xml.bind.DatatypeConverter
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -79,7 +78,7 @@ class ChildImageTest : FullApplicationTest() {
             it
                 .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
                 .bind("childId", testChild_1.id)
-                .mapTo<UUID>()
+                .mapTo<ChildImageId>()
                 .one()
         }
 
@@ -118,7 +117,7 @@ class ChildImageTest : FullApplicationTest() {
             it
                 .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
                 .bind("childId", testChild_1.id)
-                .mapTo<UUID>()
+                .mapTo<ChildImageId>()
                 .one()
         }
 

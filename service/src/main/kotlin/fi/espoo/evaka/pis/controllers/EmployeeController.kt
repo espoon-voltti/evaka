@@ -24,6 +24,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,7 +39,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/employee")
-class EmployeeController {
+class EmployeeController(private val accessControl: AccessControl) {
 
     @GetMapping
     fun getEmployees(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
@@ -50,8 +52,7 @@ class EmployeeController {
     @GetMapping("/finance-decision-handler")
     fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_FINANCE_DECISION_HANDLERS)
         return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email })
     }
 

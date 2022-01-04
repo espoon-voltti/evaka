@@ -18,12 +18,16 @@ import fi.espoo.evaka.invoicing.service.InvoiceService
 import fi.espoo.evaka.invoicing.service.createAllDraftInvoices
 import fi.espoo.evaka.invoicing.service.getInvoiceCodes
 import fi.espoo.evaka.invoicing.service.markManuallySent
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -56,7 +60,8 @@ enum class InvoiceSortParam {
 @RestController
 @RequestMapping("/invoices")
 class InvoiceController(
-    private val service: InvoiceService
+    private val service: InvoiceService,
+    private val accessControl: AccessControl
 ) {
     @PostMapping("/search")
     fun searchInvoices(
@@ -65,8 +70,7 @@ class InvoiceController(
         @RequestBody body: SearchInvoicesRequest
     ): ResponseEntity<Paged<InvoiceSummary>> {
         Audit.InvoicesSearch.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.SEARCH_INVOICES)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
@@ -79,7 +83,7 @@ class InvoiceController(
                         body.sortDirection ?: SortDirection.DESC,
                         body.status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
                         body.area?.split(",") ?: listOf(),
-                        body.unit?.let { parseUUID(it) },
+                        body.unit,
                         body.distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
                         body.searchTerms ?: "",
                         body.periodStart?.let { LocalDate.parse(body.periodStart, DateTimeFormatter.ISO_DATE) },
@@ -93,17 +97,15 @@ class InvoiceController(
     @PostMapping("/create-drafts")
     fun createDraftInvoices(db: Database, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_DRAFT_INVOICES)
         db.connect { dbc -> dbc.transaction { it.createAllDraftInvoices() } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/delete-drafts")
-    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Invoice.DELETE, *invoiceIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
         return ResponseEntity.noContent().build()
     }
@@ -116,11 +118,10 @@ class InvoiceController(
         @RequestParam(required = false) invoiceDate: LocalDate?,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         @RequestParam(required = false) dueDate: LocalDate?,
-        @RequestBody invoiceIds: List<UUID>
+        @RequestBody invoiceIds: List<InvoiceId>
     ): ResponseEntity<Unit> {
         Audit.InvoicesSend.log(targetId = invoiceIds)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Invoice.SEND, *invoiceIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction {
                 service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
@@ -136,11 +137,10 @@ class InvoiceController(
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
+                accessControl.requirePermissionFor(user, Action.Invoice.SEND, *invoiceIds.toTypedArray())
                 service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
             }
         }
@@ -148,22 +148,19 @@ class InvoiceController(
     }
 
     @PostMapping("/mark-sent")
-    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, *invoiceIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { it.markManuallySent(user, invoiceIds) } }
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping("/{uuid}")
-    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
-        Audit.InvoicesRead.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
-        val parsedUuid = parseUUID(uuid)
-        val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(parsedUuid) } }
-            ?: throw NotFound("No invoice found with given ID ($uuid)")
+    @GetMapping("/{id}")
+    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable id: InvoiceId): ResponseEntity<Wrapper<InvoiceDetailed>> {
+        Audit.InvoicesRead.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.Invoice.READ, id)
+        val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(id) } }
+            ?: throw NotFound("No invoice found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
     }
 
@@ -171,35 +168,30 @@ class InvoiceController(
     fun getHeadOfFamilyInvoices(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable uuid: String
+        @PathVariable uuid: UUID
     ): ResponseEntity<Wrapper<List<Invoice>>> {
         Audit.InvoicesRead.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
-        val parsedUuid = parseUUID(uuid)
-        val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(parsedUuid) } }
+        accessControl.requirePermissionFor(user, Action.Person.READ_INVOICES, PersonId(uuid))
+        val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } }
         return ResponseEntity.ok(Wrapper(res))
     }
 
-    @PutMapping("/{uuid}")
+    @PutMapping("/{id}")
     fun putInvoice(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable uuid: String,
+        @PathVariable id: InvoiceId,
         @RequestBody invoice: Invoice
     ): ResponseEntity<Unit> {
-        Audit.InvoicesUpdate.log(targetId = uuid)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
-        val parsedUuid = parseUUID(uuid)
-        db.connect { dbc -> dbc.transaction { service.updateInvoice(it, parsedUuid, invoice) } }
+        Audit.InvoicesUpdate.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, id)
+        db.connect { dbc -> dbc.transaction { service.updateInvoice(it, id, invoice) } }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/codes")
     fun getInvoiceCodes(db: Database, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.READ_INVOICE_CODES)
         val codes = db.connect { dbc -> dbc.read { it.getInvoiceCodes() } }
         return ResponseEntity.ok(Wrapper(codes))
     }
@@ -214,7 +206,7 @@ data class SearchInvoicesRequest(
     val sortDirection: SortDirection?,
     val status: String?,
     val area: String?,
-    val unit: String?,
+    val unit: DaycareId?,
     val distinctions: String?,
     val searchTerms: String?,
     val periodStart: String?,
