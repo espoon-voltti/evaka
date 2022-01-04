@@ -224,7 +224,7 @@ export default React.memo(function Group({
     !unit.type.includes('CLUB') &&
     requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR')
 
-  const showChildOccupancyFactor =
+  const showChildCapacityFactor =
     !unit.type.includes('CLUB') &&
     unitChildrenCapacityFactors &&
     unitChildrenCapacityFactors.length > 0
@@ -520,8 +520,8 @@ export default React.memo(function Group({
                     {showServiceNeed ? (
                       <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
-                    {showChildOccupancyFactor && (
-                      <Th data-qa={'child-occupancy-factor-heading'}>
+                    {showChildCapacityFactor && (
+                      <Th data-qa={'child-capacity-factor-heading'}>
                         {i18n.unit.groups.factor}
                       </Th>
                     )}
@@ -670,8 +670,8 @@ export default React.memo(function Group({
                             )}
                           </Td>
                         ) : null}
-                        {showChildOccupancyFactor && (
-                          <Td data-qa="child-occupancy-factor-column">
+                        {showChildCapacityFactor && (
+                          <Td data-qa="child-capacity-factor-column">
                             <Tooltip
                               tooltip={
                                 <ChildCapacityFactorList>
@@ -687,7 +687,7 @@ export default React.memo(function Group({
                               }
                             >
                               <span
-                                data-qa={`child-occupancy-factor-${placement.child.id}`}
+                                data-qa={`child-capacity-factor-${placement.child.id}`}
                               >
                                 {serviceNeedFactor && assistanceNeedFactor
                                   ? (

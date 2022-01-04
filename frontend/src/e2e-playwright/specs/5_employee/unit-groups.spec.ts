@@ -218,7 +218,7 @@ describe('Unit groups - staff', () => {
       .save()
 
     const groupsPage = await loadUnitGroupsPage()
-    await groupsPage.childOccupancyFactorColumnHeading.waitUntilHidden()
+    await groupsPage.childCapacityFactorColumnHeading.waitUntilHidden()
     await groupsPage.assertChildOccupancyFactorColumnNotVisible()
   })
 })
