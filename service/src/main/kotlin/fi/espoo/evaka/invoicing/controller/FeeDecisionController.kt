@@ -108,7 +108,7 @@ class FeeDecisionController(
     @PostMapping("/confirm")
     fun confirmDrafts(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_UPDATE_FEE_DECISIONS)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
@@ -121,7 +121,7 @@ class FeeDecisionController(
     @PostMapping("/mark-sent")
     fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_UPDATE_FEE_DECISIONS)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
         return ResponseEntity.noContent().build()
     }

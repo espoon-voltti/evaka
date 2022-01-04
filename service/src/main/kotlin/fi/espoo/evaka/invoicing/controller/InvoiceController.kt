@@ -105,7 +105,7 @@ class InvoiceController(
     @PostMapping("/delete-drafts")
     fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_DELETE_DRAFT_INVOICES)
+        accessControl.requirePermissionFor(user, Action.Invoice.DELETE, *invoiceIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
         return ResponseEntity.noContent().build()
     }
@@ -121,7 +121,7 @@ class InvoiceController(
         @RequestBody invoiceIds: List<InvoiceId>
     ): ResponseEntity<Unit> {
         Audit.InvoicesSend.log(targetId = invoiceIds)
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_SEND_INVOICES)
+        accessControl.requirePermissionFor(user, Action.Invoice.SEND, *invoiceIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction {
                 service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
@@ -137,10 +137,10 @@ class InvoiceController(
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_SEND_INVOICES)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
+                accessControl.requirePermissionFor(user, Action.Invoice.SEND, *invoiceIds.toTypedArray())
                 service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
             }
         }
@@ -150,7 +150,7 @@ class InvoiceController(
     @PostMapping("/mark-sent")
     fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_UPDATE_INVOICES)
+        accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, *invoiceIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { it.markManuallySent(user, invoiceIds) } }
         return ResponseEntity.noContent().build()
     }

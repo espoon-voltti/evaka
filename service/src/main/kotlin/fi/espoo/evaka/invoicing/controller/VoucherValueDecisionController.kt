@@ -125,7 +125,7 @@ class VoucherValueDecisionController(
     @PostMapping("/send")
     fun sendDrafts(db: Database, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_UPDATE_VOUCHER_VALUE_DECISIONS)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *decisionIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction {
                 sendVoucherValueDecisions(
@@ -143,7 +143,7 @@ class VoucherValueDecisionController(
     @PostMapping("/mark-sent")
     fun markSent(db: Database, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
-        accessControl.requirePermissionFor(user, Action.Global.BATCH_UPDATE_VOUCHER_VALUE_DECISIONS)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *ids.toTypedArray())
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decisions = tx.getValueDecisionsByIds(ids)
