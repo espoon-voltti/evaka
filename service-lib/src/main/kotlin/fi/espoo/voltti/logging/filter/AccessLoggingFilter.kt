@@ -9,9 +9,9 @@ import ch.qos.logback.core.filter.Filter
 import ch.qos.logback.core.spi.FilterReply
 
 class AccessLoggingFilter : Filter<IAccessEvent>() {
-    override fun decide(event: IAccessEvent): FilterReply = when {
-        event.request.requestURI == "/health" -> FilterReply.DENY
-        event.request.requestURI == "/actuator/health" -> FilterReply.DENY
+    override fun decide(event: IAccessEvent): FilterReply = when (event.request.requestURI) {
+        "/health" -> FilterReply.DENY
+        "/actuator/health" -> FilterReply.DENY
         else -> FilterReply.NEUTRAL
     }
 }
