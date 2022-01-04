@@ -71,7 +71,7 @@ const Menu = styled.div`
   top: 0;
   right: 40px;
   z-index: 2;
-  background: white;
+  background: ${colors.greyscale.white};
   box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;

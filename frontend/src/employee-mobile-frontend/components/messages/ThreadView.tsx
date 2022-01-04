@@ -142,22 +142,22 @@ const RoundIconButton = styled.button`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: ${colors.greyscale.white};
   &:disabled {
     background: ${colors.greyscale.lighter};
   }
 `
 
-const MessageContainer = styled.div`
+const MessageContainer = styled.div<{ ours: boolean }>`
   border-radius: ${defaultMargins.s};
   max-width: 90%;
-  ${(p: { ours: boolean }) =>
+  ${(p) =>
     p.ours
       ? `
       border-bottom-right-radius: 2px;
       align-self: flex-end;
       background-color: ${colors.main.primary};
-      color: white;
+      color: ${colors.greyscale.white};
     `
       : `
       border-bottom-left-radius: 2px;
@@ -168,11 +168,10 @@ const MessageContainer = styled.div`
   margin: ${defaultMargins.xs};
 `
 
-const SentDate = styled.div`
+const SentDate = styled.div<{ white: boolean }>`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
-  color: ${(p: { white: boolean }) =>
-    p.white ? colors.greyscale.white : colors.greyscale.dark};
+  color: ${(p) => (p.white ? colors.greyscale.white : colors.greyscale.dark)};
 `
 
 const TitleRow = styled.div`

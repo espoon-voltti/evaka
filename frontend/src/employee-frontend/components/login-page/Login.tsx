@@ -25,10 +25,9 @@ const LoginButton = styled.a`
   padding: 0 27px;
   width: fit-content;
   min-width: 100px;
-  display: block;
   text-align: center;
   overflow-x: hidden;
-  border: 1px solid #3273c9;
+  border: 1px solid ${(p) => p.theme.colors.main.primary};
   border-radius: 2px;
   outline: none;
   cursor: pointer;
@@ -39,13 +38,23 @@ const LoginButton = styled.a`
   text-transform: uppercase;
   white-space: nowrap;
   letter-spacing: 0.2px;
-  color: #ffffff;
-  background: #3273c9;
+  color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.main.primary};
   margin-right: 0;
   text-decoration: none;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  :hover {
+    background-color: ${(p) => p.theme.colors.main.primaryHover};
+  }
+  :focus {
+    background-color: ${(p) => p.theme.colors.main.primaryFocus};
+  }
+  :active {
+    background-color: ${(p) => p.theme.colors.main.primaryActive};
+  }
 `
 
 const Center = styled.div`

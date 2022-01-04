@@ -332,7 +332,7 @@ const UnitDetails = styled.div`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   line-height: 21px;
-  color: #6e6e6e;
+  color: ${colors.greyscale.dark};
 `
 
 const UnitDetailsLeft = styled.div`

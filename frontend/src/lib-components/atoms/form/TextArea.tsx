@@ -125,7 +125,7 @@ const StyledTextArea = styled(TextareaAutosize)`
 
   font-size: 1rem;
   font-family: 'Open Sans', Arial, sans-serif;
-  color: #0f0f0f;
+  color: ${(p) => p.theme.colors.greyscale.darkest};
   line-height: 1.5;
   overflow: hidden;
   overflow-wrap: break-word;

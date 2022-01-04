@@ -39,7 +39,7 @@ import { MessageTypeChip } from './MessageTypeChip'
 import { View } from './types-view'
 
 const MessageContainer = styled.div`
-  background-color: white;
+  background-color: ${colors.greyscale.white};
   padding: ${defaultMargins.L};
   margin-top: ${defaultMargins.s};
 

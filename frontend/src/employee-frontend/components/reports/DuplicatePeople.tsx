@@ -9,6 +9,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { colors } from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import { Link } from 'react-router-dom'
 import { Loading, Result } from 'lib-common/api'
@@ -29,7 +30,7 @@ interface RowProps {
 }
 
 const StyledRow = styled(Tr)<RowProps>`
-  ${(props) => (props.odd ? `background: #F1F7FF;` : '')}
+  ${(props) => (props.odd ? `background: ${colors.main.lighter};` : '')}
 `
 const NoWrapTd = styled(Td)`
   white-space: nowrap;

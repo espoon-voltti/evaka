@@ -30,9 +30,9 @@ const MarginBox = styled.div`
 
 const Card = styled.div<{ active: boolean }>`
   margin: 2rem 1rem;
-  border: 1px solid gainsboro;
-  border-top: 5px solid gainsboro;
-  background: white;
+  border: 1px solid ${colors.greyscale.lightest};
+  border-top-width: 5px;
+  background: ${colors.greyscale.white};
   padding: 2rem;
   flex: 1 0 30%;
   max-width: calc(33% - 2rem);

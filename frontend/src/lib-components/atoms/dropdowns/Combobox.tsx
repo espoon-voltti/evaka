@@ -34,7 +34,7 @@ interface MenuItemProps<T> {
 const InputWrapper = styled.div`
   display: flex;
   align-items: center;
-  background-color: white;
+  background-color: ${(p) => p.theme.colors.greyscale.white};
   ${borderStyles};
   &.active {
     border-color: transparent;
@@ -59,9 +59,9 @@ const Menu = styled.div`
     display: none;
   }
 
-  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
+  border: 1px solid ${(p) => p.theme.colors.greyscale.dark};
   border-radius: ${borderRadius};
-  background-color: white;
+  background-color: ${(p) => p.theme.colors.greyscale.white};
   max-height: 300px;
   overflow-y: auto;
 `
@@ -75,7 +75,7 @@ const MenuItem = styled.div`
   padding: 8px 10px;
 
   &.highlighted {
-    background-color: ${({ theme: { colors } }) => colors.main.lighter};
+    background-color: ${(p) => p.theme.colors.main.lighter};
   }
 
   &.clickable {
@@ -93,29 +93,29 @@ const Input = styled.input`
   outline: 0;
 
   &:read-only {
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.greyscale.dark};
   }
 `
 
 const Separator = styled.div`
   width: 1px;
   margin: 5px 0 5px;
-  border-left: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
+  border-left: 1px solid ${(p) => p.theme.colors.greyscale.lighter};
 `
 
 const Button = styled.button`
-  color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.greyscale.dark};
 
   &:hover {
-    color: ${({ theme: { colors } }) => colors.main.primaryHover};
+    color: ${(p) => p.theme.colors.main.primaryHover};
   }
 
   &:active {
-    color: ${({ theme: { colors } }) => colors.main.primaryActive};
+    color: ${(p) => p.theme.colors.main.primaryActive};
   }
 
   &:disabled {
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.greyscale.dark};
     cursor: not-allowed;
   }
 

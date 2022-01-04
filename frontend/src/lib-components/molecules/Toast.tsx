@@ -42,7 +42,7 @@ const ToastRoot = styled.div`
   right: 16px;
   width: 360px;
   padding: 16px;
-  background: #ffffff;
+  background-color: ${(p) => p.theme.colors.greyscale.white};
   border-radius: 16px;
   box-shadow: 4px 4px 8px rgba(15, 15, 15, 0.15),
     -2px 0 4px rgba(15, 15, 15, 0.15);

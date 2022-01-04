@@ -69,7 +69,7 @@ const SpinnerOverlayRoot = styled.div`
   left: 0;
   bottom: 0;
   min-height: 80px;
-  background-color: white;
+  background-color: ${(p) => p.theme.colors.greyscale.white};
   opacity: 0.8;
   z-index: ${spinnerOverlayZIndex};
   display: flex;
