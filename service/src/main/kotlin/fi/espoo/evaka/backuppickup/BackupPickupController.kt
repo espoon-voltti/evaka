@@ -6,7 +6,6 @@ package fi.espoo.evaka.backuppickup
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.BackupPickupId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
@@ -24,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class BackupPickupController(
-    private val accessControl: AccessControl,
-    private val acl: AccessControlList
-) {
+class BackupPickupController(private val accessControl: AccessControl) {
     @PostMapping("/children/{childId}/backup-pickups")
     fun createForChild(
         db: Database,

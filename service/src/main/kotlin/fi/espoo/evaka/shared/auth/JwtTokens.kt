@@ -4,19 +4,10 @@
 
 package fi.espoo.evaka.shared.auth
 
-import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTCreator
-import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import fi.espoo.evaka.shared.EmployeeId
-import java.time.Clock
-import java.time.Duration
-import java.time.ZonedDateTime
-import java.util.Date
 import java.util.UUID
-
-private const val tokenIssuer = "evaka-service"
-private val tokenExpiration = Duration.ofHours(1)
 
 fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { subject ->
     val id = UUID.fromString(subject)
@@ -52,19 +43,3 @@ fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder = 
             it.withClaim("evaka_employee_id", employeeId.toString())
         }
     }
-
-fun encodeSignedJwtToken(
-    algorithm: Algorithm,
-    user: AuthenticatedUser,
-    clock: Clock = Clock.systemDefaultZone()
-): String {
-    val issuedAt = ZonedDateTime.now(clock)
-    val expiresAt = issuedAt.plus(tokenExpiration)
-
-    val jwt = JWT.create()
-        .withIssuer(tokenIssuer)
-        .withIssuedAt(Date.from(issuedAt.toInstant()))
-        .withExpiresAt(Date.from(expiresAt.toInstant()))
-    user.applyToJwt(jwt)
-    return jwt.sign(algorithm)
-}

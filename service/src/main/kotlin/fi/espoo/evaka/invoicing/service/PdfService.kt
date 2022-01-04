@@ -83,12 +83,6 @@ class PDFService(
         return os.toByteArray()
     }
 
-    fun renderHtml(page: String): ByteArray {
-        val os = ByteArrayOutputStream()
-        renderHtmlPages(page, os)
-        return os.toByteArray()
-    }
-
     private fun getResourceFile(fileName: String): File {
         val res = javaClass.classLoader.getResource(fileName)
         return Paths.get(res.toURI()).toFile()

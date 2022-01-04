@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class FamilyContactReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
+class FamilyContactReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/family-contacts")
     fun getFamilyContactsReport(
         db: Database,

@@ -22,7 +22,6 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testVoucherDaycare
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -35,14 +34,6 @@ val defaultPreferredUnit = PreferredUnit(
 fun getValidDaycareApplication(preferredUnit: PreferredUnit = defaultPreferredUnit, shiftCare: Boolean = false) = applicationDetails(preferredUnit, shiftCare = shiftCare)
 
 val validDaycareApplication = getValidDaycareApplication()
-
-val validVoucherApplication =
-    applicationDetails(
-        PreferredUnit(
-            id = testVoucherDaycare.id,
-            name = testVoucherDaycare.name
-        )
-    )
 
 private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: Boolean = false) = ApplicationDetails(
     id = ApplicationId(UUID.randomUUID()),

@@ -10,7 +10,6 @@ import com.google.common.hash.HashCode
 import com.google.common.hash.Hashing
 import fi.espoo.evaka.pis.EmployeeUser
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.domain.Forbidden
 import java.util.UUID
 
 @JsonSerialize(using = AuthenticatedUserJsonSerializer::class)
@@ -25,12 +24,6 @@ sealed class AuthenticatedUser : RoleContainer {
 
     val idHash: HashCode
         get() = Hashing.sha256().hashString(id.toString(), Charsets.UTF_8)
-
-    fun assertSystemInternalUser() {
-        if (!this.isSystemInternalUser) {
-            throw Forbidden("Only accessible to the system internal user")
-        }
-    }
 
     data class Citizen(override val id: UUID) : AuthenticatedUser() {
         override val roles: Set<UserRole> = setOf(UserRole.END_USER)

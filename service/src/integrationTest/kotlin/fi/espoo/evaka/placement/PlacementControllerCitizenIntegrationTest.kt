@@ -40,7 +40,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     final val authenticatedParent = AuthenticatedUser.Citizen(parent.id)
 
     final val daycareId = testDaycare.id
-    final val daycareName = testDaycare.name
     final val testDaycareGroup = DevDaycareGroup(daycareId = daycareId)
     final val groupId = testDaycareGroup.id
 

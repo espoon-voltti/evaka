@@ -7,11 +7,8 @@ package fi.espoo.evaka.shared.utils
 import org.springframework.core.MethodParameter
 import org.springframework.core.convert.TypeDescriptor
 import org.springframework.core.convert.converter.GenericConverter
-import org.springframework.ui.ModelMap
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
-import org.springframework.web.context.request.WebRequest
-import org.springframework.web.context.request.WebRequestInterceptor
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
@@ -26,13 +23,6 @@ inline fun <reified T> asArgumentResolver(crossinline f: (parameter: MethodParam
             webRequest: NativeWebRequest,
             binderFactory: WebDataBinderFactory?
         ) = f(parameter, webRequest)
-    }
-
-fun runAfterCompletion(f: (request: WebRequest, ex: Exception?) -> Unit): WebRequestInterceptor =
-    object : WebRequestInterceptor {
-        override fun preHandle(request: WebRequest) {}
-        override fun postHandle(request: WebRequest, model: ModelMap?) {}
-        override fun afterCompletion(request: WebRequest, ex: Exception?) = f(request, ex)
     }
 
 inline fun <reified I, reified O> convertFrom(crossinline f: (source: I) -> O): GenericConverter =

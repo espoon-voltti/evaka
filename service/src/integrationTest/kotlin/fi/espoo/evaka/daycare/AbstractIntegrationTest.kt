@@ -16,12 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter
 import org.springframework.boot.context.TypeExcludeFilter
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
-import redis.clients.jedis.JedisPool
-import javax.sql.DataSource
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(SharedIntegrationTestConfig::class)
@@ -34,13 +31,6 @@ import javax.sql.DataSource
     ]
 )
 abstract class AbstractIntegrationTest {
-
-    @MockBean
-    lateinit var redisPool: JedisPool
-
-    @Autowired
-    lateinit var dataSource: DataSource
-
     @Autowired
     lateinit var jdbi: Jdbi
 
