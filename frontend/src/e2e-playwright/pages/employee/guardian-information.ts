@@ -25,6 +25,7 @@ export default class GuardianInformationPage {
 
   async navigateToGuardian(personId: UUID) {
     await this.page.goto(config.employeeUrl + '/profile/' + personId)
+    await this.waitUntilLoaded()
   }
 
   async waitUntilLoaded() {

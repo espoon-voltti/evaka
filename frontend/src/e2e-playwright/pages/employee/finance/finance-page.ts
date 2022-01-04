@@ -379,6 +379,8 @@ export class IncomeStatementsPage {
 
   async openNthIncomeStatement(nth: number) {
     await this.#incomeStatementRows.nth(nth).find('a').click()
-    return new GuardianInformationPage(this.page)
+    const page = new GuardianInformationPage(this.page)
+    await page.waitUntilLoaded()
+    return page
   }
 }

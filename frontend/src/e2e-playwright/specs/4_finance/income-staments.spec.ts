@@ -67,7 +67,6 @@ describe('Income statements', () => {
     const personProfilePage = await incomeStatementsPage.openNthIncomeStatement(
       1
     )
-    await personProfilePage.waitUntilLoaded()
 
     const incomesSection = await personProfilePage.openCollapsible('incomes')
     await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(0))
