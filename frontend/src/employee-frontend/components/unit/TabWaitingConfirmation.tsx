@@ -158,7 +158,7 @@ export default React.memo(function TabWaitingConfirmation() {
                   <Td data-qa="application-link">
                     <CenteredDiv>
                       <a
-                        href={`${getEmployeeUrlPrefix()} / employee / applications /${
+                        href={`${getEmployeeUrlPrefix()}/employee/applications/${
                           p.applicationId
                         }`}
                         target="_blank"
