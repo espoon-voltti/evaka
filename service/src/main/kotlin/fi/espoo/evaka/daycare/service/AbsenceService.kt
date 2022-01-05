@@ -15,6 +15,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUserType
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -46,10 +48,11 @@ class AbsenceService {
                         range,
                         placementList.filter { it.childId == placement.childId }
                     ),
-                    absences = composeAbsenceMap(
-                        range,
-                        absenceList.filter { it.childId == placement.childId }
-                    ),
+                    absences = absenceList.filter { it.childId == placement.childId }.groupBy { it.date }.let { absences ->
+                        range.dates()
+                            .map { it to absences.getOrDefault(it, listOf()) }
+                            .toMap()
+                    },
                     backupCares = composeBackupCareMap(
                         range,
                         backupCareList.filter { it.childId == placement.childId }
@@ -181,7 +184,7 @@ data class AbsenceChild(
     val lastName: String,
     val dob: LocalDate,
     val placements: Map<LocalDate, List<AbsenceCareType>>,
-    val absences: Map<LocalDate, List<Absence>>,
+    val absences: Map<LocalDate, List<AbsenceWithModifierInfo>>,
     val backupCares: Map<LocalDate, AbsenceBackupCare?>
 )
 
@@ -201,6 +204,24 @@ data class Absence(
     var careType: AbsenceCareType,
     val absenceType: AbsenceType
 )
+
+data class AbsenceWithModifierInfo(
+    val id: UUID? = null,
+    val childId: UUID,
+    val date: LocalDate,
+    var careType: AbsenceCareType,
+    val absenceType: AbsenceType,
+    val modifiedByType: EvakaUserType,
+    val modifiedAt: HelsinkiDateTime
+) {
+    fun asAbsence(): Absence = Absence(
+        id = id,
+        childId = childId,
+        date = date,
+        careType = careType,
+        absenceType = absenceType
+    )
+}
 
 data class AbsenceBackupCare(
     val childId: UUID,
@@ -349,12 +370,13 @@ fun Database.Read.getPlacementsByRange(groupId: GroupId, range: FiniteDateRange)
         .list()
 }
 
-fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): List<Absence> {
+fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): List<AbsenceWithModifierInfo> {
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type
+        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
         FROM absence a
+        LEFT JOIN evaka_user eu ON eu.id = a.modified_by 
         WHERE child_id IN (
           SELECT child_id
           FROM daycare_group_placement AS gp
@@ -375,7 +397,7 @@ fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): 
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("range", range)
-        .mapTo<Absence>()
+        .mapTo<AbsenceWithModifierInfo>()
         .list()
 }
 

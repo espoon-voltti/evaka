@@ -6,6 +6,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
+import { EvakaUserType } from '../../generated/api-types/user'
 
 export interface Absence {
   id: UUID
@@ -13,9 +14,12 @@ export interface Absence {
   date: LocalDate
   absenceType: AbsenceType
   careType: AbsenceCareType
+  modifiedByType: EvakaUserType
+  modifiedAt: Date
 }
 
 export const deserializeAbsence = (absence: JsonOf<Absence>): Absence => ({
   ...absence,
-  date: LocalDate.parseIso(absence.date)
+  date: LocalDate.parseIso(absence.date),
+  modifiedAt: new Date(absence.modifiedAt)
 })

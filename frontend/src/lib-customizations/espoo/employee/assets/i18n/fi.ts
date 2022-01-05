@@ -2102,6 +2102,13 @@ export const fi = {
         'Esiopetus, valmistava, 5-vuotiaiden varhaiskasvatus tai kerhotoiminta',
       BILLABLE: 'Varhaiskasvatus (maksullinen)'
     },
+    modifiedByType: {
+      CITIZEN: 'Huoltaja',
+      EMPLOYEE: 'Henkilökunta',
+      SYSTEM: '?',
+      MOBILE_DEVICE: '?',
+      UNKNOWN: '?'
+    },
     modal: {
       absenceSectionLabel: 'Poissaolon syy',
       placementSectionLabel: 'Toimintamuoto, jota poissaolo koskee',

@@ -7,7 +7,8 @@ export function formatDecimal(
   decimal: number | undefined | null
 ): string | undefined
 export function formatDecimal(decimal?: number | null): string | undefined {
-  return decimal?.toString().replace('.', ',')
+  if (decimal == null || decimal == undefined) return undefined
+  return decimal.toString().replace('.', ',')
 }
 
 export function round(num: number, scale = 0) {

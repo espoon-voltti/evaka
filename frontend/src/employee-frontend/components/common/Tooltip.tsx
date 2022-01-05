@@ -14,6 +14,7 @@ interface Props {
   place: 'left' | 'right' | 'top' | 'bottom' | undefined
   className?: string
   delayShow?: number
+  dataQa?: string
 }
 
 const ContentWrapper = styled.div`
@@ -54,11 +55,16 @@ function Tooltip({
   tooltipId,
   place,
   className,
-  delayShow
+  delayShow,
+  dataQa
 }: Props) {
   return (
     <>
-      <ContentWrapper data-for={tooltipId} data-tip={tooltipText}>
+      <ContentWrapper
+        data-for={tooltipId}
+        data-tip={tooltipText}
+        data-qa={dataQa}
+      >
         {children}
         <ReactTooltip
           id={tooltipId}

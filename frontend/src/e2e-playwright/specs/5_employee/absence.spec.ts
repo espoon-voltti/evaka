@@ -23,6 +23,7 @@ import {
 // import AbsencesPage from '../../pages/employee/absences/absences-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
+import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
 let daycarePlacementFixture: DaycarePlacement
@@ -91,6 +92,12 @@ describe('Employee - Absences', () => {
     // Can change the absence type
     await diaryPage.addAbsenceToChild(0, 'UNKNOWN_ABSENCE')
     await diaryPage.childHasAbsence(0, 'UNKNOWN_ABSENCE')
+
+    // Hover shows type and who is the absence maker
+    await diaryPage.assertTooltipContains(0, [
+      'Varhaiskasvatus: Ilmoittamaton poissaolo',
+      `${LocalDate.today().formatIso()} Henkilökunta)`
+    ])
 
     // Can clear an absence
     await diaryPage.addAbsenceToChild(0, 'NO_ABSENCE')

@@ -51,6 +51,12 @@ export class UnitDiaryPage {
     await childRow.assertAbsenceType(0, type)
   }
 
+  async assertTooltipContains(n: number, expectedTexts: string[]) {
+    const childRow = new DiaryChildRow(this.#childRows.nth(n))
+    const tooltipText = await childRow.hoverAndGetTooltip(n)
+    return expectedTexts.every((text) => tooltipText.includes(text))
+  }
+
   async childHasNoAbsence(n: number) {
     const childRow = new DiaryChildRow(this.#childRows.nth(n))
     await childRow.assertNoAbsence(0)
@@ -89,6 +95,12 @@ export class DiaryChildRow extends Element {
       .nth(n)
       .find(`.absence-cell-right-empty`)
       .waitUntilVisible()
+  }
+
+  async hoverAndGetTooltip(n: number): Promise<string> {
+    const cell = this.#absenceCells.nth(n)
+    await cell.hover()
+    return (await cell.find('[data-id="tooltip"]').textContent) || ''
   }
 }
 

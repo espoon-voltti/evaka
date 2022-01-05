@@ -336,7 +336,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val absence = result.children[0].absences.getValue(absenceDate)[0]
 
         val newAbsenceType = AbsenceType.UNKNOWN_ABSENCE
-        val updatedAbsence = absence.copy(absenceType = newAbsenceType)
+        val updatedAbsence = absence.copy(absenceType = newAbsenceType).asAbsence()
 
         result = db.transaction { tx ->
             absenceService.upsertAbsences(tx, listOf(updatedAbsence), testUserId)
