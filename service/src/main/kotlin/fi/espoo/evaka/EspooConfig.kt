@@ -96,7 +96,7 @@ data class EspooInvoiceIntegrationEnv(
             url = env.lookup("espoo.integration.invoice.url", "fi.espoo.integration.invoice.url"),
             username = env.lookup("espoo.integration.invoice.username", "fi.espoo.integration.invoice.username"),
             password = Sensitive(env.lookup("espoo.integration.invoice.password", "fi.espoo.integration.invoice.password")),
-            sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor")
+            sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false
         )
     }
 }
