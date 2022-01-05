@@ -74,13 +74,12 @@ fun createBatchExports(
                         if (invoice.headOfFamily.language == "sv") CommunityLang.SV
                         else CommunityLang.FI
 
-                    CommunityInvoice(
+                    val integrtionInvoice = CommunityInvoice(
                         invoiceNumber = invoice.number!!,
                         date = invoice.invoiceDate,
                         dueDate = invoice.dueDate,
                         client = asClient(invoice.headOfFamily, lang),
                         recipient = asRecipient(invoice.headOfFamily),
-                        codebtor = if (sendCodebtor) asCodebtor(invoice.codebtor) else null,
                         rows = invoice.rows
                             .groupBy { it.child }
                             .toList()
@@ -108,6 +107,9 @@ fun createBatchExports(
                                 listOf(nameRow) + rowsWithContent + listOf(emptyRow())
                             }
                     )
+
+                    if (sendCodebtor) integrtionInvoice.withCodebtor(asCodebtor(invoice.codebtor))
+                    else integrtionInvoice
                 }
             )
         }
@@ -266,24 +268,57 @@ data class CommunityInvoiceBatch(
     val agreementType: Int,
     val batchDate: LocalDate,
     val batchNumber: Int,
-    val invoices: List<CommunityInvoice>
+    val invoices: List<IntegrationInvoice>
 ) {
     val currency = "EUR"
     val systemId = "EPH"
     val sourcePrinted = false
 }
 
-data class CommunityInvoice(
-    val invoiceNumber: Long,
-    val date: LocalDate,
-    val dueDate: LocalDate,
-    val client: CommunityClient,
-    val recipient: CommunityRecipient,
-    val codebtor: CommunityCodebtor?,
+interface IntegrationInvoice {
+    val invoiceNumber: Long
+    val date: LocalDate
+    val dueDate: LocalDate
+    val client: CommunityClient
+    val recipient: CommunityRecipient
     val rows: List<CommunityInvoiceRow>
-) {
-    val useInvoiceNumber = false
-    val printDate = null
+    val useInvoiceNumber: Boolean
+    val printDate: LocalDate?
+}
+
+data class CommunityInvoice(
+    override val invoiceNumber: Long,
+    override val date: LocalDate,
+    override val dueDate: LocalDate,
+    override val client: CommunityClient,
+    override val recipient: CommunityRecipient,
+    override val rows: List<CommunityInvoiceRow>
+) : IntegrationInvoice {
+    override val useInvoiceNumber = false
+    override val printDate = null
+
+    fun withCodebtor(codebtor: CommunityCodebtor?) = CommunityInvoiceWithCodebtor(
+        invoiceNumber = this.invoiceNumber,
+        date = this.date,
+        dueDate = this.dueDate,
+        client = this.client,
+        recipient = this.recipient,
+        rows = this.rows,
+        codebtor = codebtor
+    )
+}
+
+data class CommunityInvoiceWithCodebtor(
+    override val invoiceNumber: Long,
+    override val date: LocalDate,
+    override val dueDate: LocalDate,
+    override val client: CommunityClient,
+    override val recipient: CommunityRecipient,
+    override val rows: List<CommunityInvoiceRow>,
+    val codebtor: CommunityCodebtor?,
+) : IntegrationInvoice {
+    override val useInvoiceNumber = false
+    override val printDate = null
 }
 
 data class CommunityClient(
