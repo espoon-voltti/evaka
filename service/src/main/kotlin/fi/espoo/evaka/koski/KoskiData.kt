@@ -117,6 +117,7 @@ data class KoskiActiveDataRaw(
     val type: OpiskeluoikeudenTyyppiKoodi,
     val approverName: String,
     val personOid: String?,
+    val lastOfChild: Boolean,
     val placementRanges: List<FiniteDateRange> = emptyList(),
     val holidays: Set<LocalDate> = emptySet(),
     @Json
@@ -141,27 +142,25 @@ data class KoskiActiveDataRaw(
     fun toKoskiData(sourceSystem: String, ophOrganizationOid: String, today: LocalDate): KoskiData? {
         val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
-        val isTerminated = today.isAfter(placementSpan.end)
-        val isQualifiedByDate = when (placementSpan.end.month) {
-            Month.MAY, Month.JUNE -> true
-            else -> false
-        }
-        val isQualified = isTerminated && when (type) {
-            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> isQualifiedByDate
-            OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
-                // We intentionally only include here absence ranges longer than one week
-                // So, it doesn't matter even if the child is randomly absent for 31 or more individual days
-                // if they don't form long enough continuous absence ranges
-                val totalAbsences = studyRightTimelines.plannedAbsence.addAll(studyRightTimelines.unknownAbsence)
-                    .ranges().map { it.durationInDays() }.sum()
-                isQualifiedByDate && totalAbsences <= 30
+        val termination = if (today.isAfter(placementSpan.end)) {
+            val canBeQualified = lastOfChild && when (placementSpan.end.month) {
+                Month.MAY, Month.JUNE -> true
+                else -> false
             }
-        }
-        val termination = when {
-            isQualified -> StudyRightTermination.Qualified(placementSpan.end)
-            isTerminated -> StudyRightTermination.Resigned(placementSpan.end)
-            else -> null
-        }
+            val isQualified = when (type) {
+                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> canBeQualified
+                OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
+                    // We intentionally only include here absence ranges longer than one week
+                    // So, it doesn't matter even if the child is randomly absent for 31 or more individual days
+                    // if they don't form long enough continuous absence ranges
+                    val totalAbsences = studyRightTimelines.plannedAbsence.addAll(studyRightTimelines.unknownAbsence)
+                        .ranges().map { it.durationInDays() }.sum()
+                    canBeQualified && totalAbsences <= 30
+                }
+            }
+            if (isQualified) StudyRightTermination.Qualified(placementSpan.end)
+            else StudyRightTermination.Resigned(placementSpan.end)
+        } else null
 
         return KoskiData(
             oppija = Oppija(

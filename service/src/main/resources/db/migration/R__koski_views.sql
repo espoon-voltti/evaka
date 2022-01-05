@@ -8,24 +8,29 @@ DROP FUNCTION IF EXISTS koski_placement(today date);
 CREATE FUNCTION koski_placement(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    full_range daterange, placement_ranges daterange[], all_placements_in_past bool
+    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, last_of_child bool
 ) AS $$
     SELECT
         child_id, unit_id, type,
         daterange(min(start_date), max(end_date), '[]') AS full_range,
         array_agg(daterange(start_date, end_date, '[]') ORDER BY start_date ASC) AS placement_ranges,
-        (max(end_date) < today) AS all_placements_in_past
+        (max(end_date) < today) AS all_placements_in_past,
+        bool_or(last_of_child) AS last_of_child
     FROM (
-        SELECT child_id, unit_id, start_date, end_date, (CASE placement.type
-            WHEN 'PRESCHOOL' THEN 'PRESCHOOL'
-            WHEN 'PRESCHOOL_DAYCARE' THEN 'PRESCHOOL'
-            WHEN 'PREPARATORY' THEN 'PREPARATORY'
-            WHEN 'PREPARATORY_DAYCARE' THEN 'PREPARATORY'
-        END)::koski_study_right_type AS type
+        SELECT
+            child_id, unit_id, start_date, end_date,
+            end_date = max(end_date) OVER child AS last_of_child,
+            (CASE placement.type
+                WHEN 'PRESCHOOL' THEN 'PRESCHOOL'
+                WHEN 'PRESCHOOL_DAYCARE' THEN 'PRESCHOOL'
+                WHEN 'PREPARATORY' THEN 'PREPARATORY'
+                WHEN 'PREPARATORY_DAYCARE' THEN 'PREPARATORY'
+            END)::koski_study_right_type AS type
         FROM placement
         WHERE start_date <= today
+        AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PREPARATORY', 'PREPARATORY_DAYCARE')
+        WINDOW child AS (PARTITION BY child_id)
     ) p
-    WHERE type IS NOT NULL
     GROUP BY child_id, unit_id, type
 $$ LANGUAGE SQL STABLE;
 
@@ -33,7 +38,7 @@ CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organizer_oid text,
-    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, preparatory_absences jsonb,
+    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
     developmental_disability_1 daterange[], developmental_disability_2 daterange[],
     extended_compulsory_education daterange, transport_benefit daterange,
     special_assistance_decision_with_group daterange[], special_assistance_decision_without_group daterange[]
@@ -47,6 +52,7 @@ TABLE (
         full_range,
         placement_ranges,
         all_placements_in_past,
+        last_of_child,
         preparatory_absences,
         developmental_disability_1,
         developmental_disability_2,

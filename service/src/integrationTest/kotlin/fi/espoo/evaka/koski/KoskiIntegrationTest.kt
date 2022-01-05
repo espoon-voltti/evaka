@@ -747,6 +747,41 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(setOf(studyRightOid), koskiServer.getPersonStudyRights(personOid))
     }
 
+    @Test
+    fun `if a child switches daycares in May, one study right is marked resigned and only one is marked qualified`() {
+        val firstPlacement = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 5))
+        val secondPlacement = FiniteDateRange(LocalDate.of(2020, 5, 6), LocalDate.of(2020, 6, 1))
+        insertPlacement(
+            period = firstPlacement,
+            type = PlacementType.PRESCHOOL,
+            daycareId = testDaycare.id
+        )
+        insertPlacement(
+            period = secondPlacement,
+            type = PlacementType.PRESCHOOL,
+            daycareId = testDaycare2.id
+        )
+
+        koskiTester.triggerUploads(today = LocalDate.of(2020, 7, 1))
+
+        val studyRights = koskiServer.getStudyRights().values.sortedBy { it.opiskeluoikeus.suoritukset[0].toimipiste.oid }
+        assertEquals(2, studyRights.size)
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(firstPlacement.start),
+                Opiskeluoikeusjakso.eronnut(firstPlacement.end)
+            ),
+            studyRights[0].opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(secondPlacement.start),
+                Opiskeluoikeusjakso.valmistunut(secondPlacement.end)
+            ),
+            studyRights[1].opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+    }
+
     private fun insertPlacement(
         child: PersonData.Detailed = testChild_1,
         daycareId: DaycareId = testDaycare.id,
