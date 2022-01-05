@@ -5,7 +5,6 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.Test
@@ -17,6 +16,7 @@ AA = absence
 HH = holiday
  */
 class KoskiTest {
+    private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
     /*
          Mo Tu We Th Fr Sa Su
 Week 12  AA AA AA AA AA 27 28

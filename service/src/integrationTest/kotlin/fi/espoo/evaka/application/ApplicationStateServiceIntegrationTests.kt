@@ -29,7 +29,6 @@ import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
-import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
@@ -105,8 +104,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private val applicationId = ApplicationId(UUID.randomUUID())
-    private val mainPeriod = preschoolTerm2020
-    private val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(12), preschoolTerm2020.end.plusDays(15))
+    private val mainPeriod = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
+    private val connectedPeriod = FiniteDateRange(mainPeriod.start.minusDays(12), mainPeriod.end.plusDays(15))
 
     private val today: LocalDate = LocalDate.of(2020, 2, 16)
     private val now: Instant = today.atTime(12, 0, 0).toInstant(ZoneOffset.ofHours(2))

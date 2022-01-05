@@ -10,10 +10,10 @@ import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -28,6 +28,8 @@ import java.time.LocalDate
 class KoskiPayloadIntegrationTest : FullApplicationTest() {
     private lateinit var koskiServer: MockKoskiServer
     private lateinit var koskiTester: KoskiTester
+
+    private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
 
     @BeforeAll
     fun initDependencies() {
