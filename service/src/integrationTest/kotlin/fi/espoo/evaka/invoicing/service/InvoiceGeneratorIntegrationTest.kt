@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.db.Database
@@ -53,6 +54,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 
 class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -100,7 +102,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(areaCode, invoice.agreementType)
-            assertEquals(2900, invoice.totalPrice())
+            assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
@@ -109,7 +111,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(2900, invoiceRow.price())
+                assertEquals(2900, invoiceRow.price)
             }
         }
     }
@@ -128,14 +130,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(1500, invoice.totalPrice())
+            assertEquals(1500, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
-                assertEquals(1500, invoiceRow.price())
+                assertEquals(1500, invoiceRow.price)
             }
         }
     }
@@ -154,14 +156,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(8700, invoice.totalPrice())
+            assertEquals(8700, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(8700, invoiceRow.price())
+                assertEquals(8700, invoiceRow.price)
             }
         }
     }
@@ -193,21 +195,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(7300, invoice.totalPrice())
+            assertEquals(7300, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(5800, invoiceRow.price())
+                assertEquals(5800, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
-                assertEquals(1500, invoiceRow.price())
+                assertEquals(1500, invoiceRow.price)
             }
         }
     }
@@ -229,21 +231,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(4400, invoice.totalPrice())
+            assertEquals(4400, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(2900, invoiceRow.price())
+                assertEquals(2900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
-                assertEquals(1500, invoiceRow.price())
+                assertEquals(1500, invoiceRow.price)
             }
         }
     }
@@ -265,21 +267,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(2300, invoice.totalPrice())
+            assertEquals(2300, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
-                assertEquals(1500, invoiceRow.price())
+                assertEquals(1500, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(800, invoiceRow.unitPrice)
-                assertEquals(800, invoiceRow.price())
+                assertEquals(800, invoiceRow.price)
             }
         }
     }
@@ -312,26 +314,26 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(2, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(2900, invoice.totalPrice())
+            assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(2900, invoiceRow.price())
+                assertEquals(2900, invoiceRow.price)
             }
         }
         result.last().let { invoice ->
             assertEquals(testAdult_2.id, invoice.headOfFamily.id)
-            assertEquals(2900, invoice.totalPrice())
+            assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(2900, invoiceRow.price())
+                assertEquals(2900, invoiceRow.price)
             }
         }
     }
@@ -365,14 +367,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(5800, invoice.totalPrice())
+            assertEquals(5800, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(5800, invoiceRow.price())
+                assertEquals(5800, invoiceRow.price)
                 assertEquals(temporaryPeriod.start, invoiceRow.periodStart)
                 assertEquals(temporaryPeriod.end, invoiceRow.periodEnd)
             }
@@ -414,14 +416,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -469,21 +471,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(23120, invoice.totalPrice())
+            assertEquals(23120, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
-                assertEquals(-5780, invoiceRow.price())
+                assertEquals(-5780, invoiceRow.price)
             }
         }
     }
@@ -538,21 +540,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(40103, invoice.totalPrice())
+            assertEquals(40103, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
-                assertEquals(11203, invoiceRow.price())
+                assertEquals(11203, invoiceRow.price)
             }
         }
     }
@@ -607,28 +609,28 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(4, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
-                assertEquals(5256, invoiceRow.price())
+                assertEquals(5256, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(18, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
-                assertEquals(23652, invoiceRow.price())
+                assertEquals(23652, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-8, invoiceRow.unitPrice)
-                assertEquals(-8, invoiceRow.price())
+                assertEquals(-8, invoiceRow.price)
             }
         }
     }
@@ -683,28 +685,28 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
-                assertEquals(6880, invoiceRow.price())
+                assertEquals(6880, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(16, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
-                assertEquals(22016, invoiceRow.price())
+                assertEquals(22016, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(4, invoiceRow.unitPrice)
-                assertEquals(4, invoiceRow.price())
+                assertEquals(4, invoiceRow.price)
             }
         }
     }
@@ -759,21 +761,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
-                assertEquals(7225, invoiceRow.price())
+                assertEquals(7225, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(15, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
-                assertEquals(21675, invoiceRow.price())
+                assertEquals(21675, invoiceRow.price)
             }
         }
     }
@@ -828,28 +830,28 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(39930, invoice.totalPrice())
+            assertEquals(39930, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
-                assertEquals(3295, invoiceRow.price())
+                assertEquals(3295, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(455, invoiceRow.unitPrice)
-                assertEquals(7735, invoiceRow.price())
+                assertEquals(7735, invoiceRow.price)
             }
         }
     }
@@ -892,21 +894,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(23120, invoice.totalPrice())
+            assertEquals(23120, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
-                assertEquals(-5780, invoiceRow.price())
+                assertEquals(-5780, invoiceRow.price)
             }
         }
     }
@@ -955,21 +957,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(32420, invoice.totalPrice())
+            assertEquals(32420, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
-                assertEquals(-5780, invoiceRow.price())
+                assertEquals(-5780, invoiceRow.price)
             }
 
             invoice.rows.last().let { invoiceRow ->
@@ -977,7 +979,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(Product.DAYCARE_INCREASE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(9300, invoiceRow.unitPrice)
-                assertEquals(9300, invoiceRow.price())
+                assertEquals(9300, invoiceRow.price)
             }
         }
     }
@@ -1020,21 +1022,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(1445, invoice.totalPrice())
+            assertEquals(1445, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-27455, invoiceRow.unitPrice)
-                assertEquals(-27455, invoiceRow.price())
+                assertEquals(-27455, invoiceRow.price)
             }
         }
     }
@@ -1080,14 +1082,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -1134,7 +1136,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(6570, invoice.totalPrice())
+            assertEquals(6570, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
@@ -1143,7 +1145,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(Product.DAYCARE, invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
-                assertEquals(6570, invoiceRow.price())
+                assertEquals(6570, invoiceRow.price)
             }
         }
     }
@@ -1165,18 +1167,18 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(0, invoice.totalPrice())
+            assertEquals(0, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(Product.SICK_LEAVE_100, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-28900, invoiceRow.unitPrice)
-                assertEquals(-28900, invoiceRow.price())
+                assertEquals(-28900, invoiceRow.price)
             }
         }
     }
@@ -1199,18 +1201,18 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(14450, invoice.totalPrice())
+            assertEquals(14450, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-14450, invoiceRow.unitPrice)
-                assertEquals(-14450, invoiceRow.price())
+                assertEquals(-14450, invoiceRow.price)
             }
         }
     }
@@ -1233,12 +1235,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -1260,18 +1262,18 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(14450, invoice.totalPrice())
+            assertEquals(14450, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(Product.ABSENCE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-14450, invoiceRow.unitPrice)
-                assertEquals(-14450, invoiceRow.price())
+                assertEquals(-14450, invoiceRow.price)
             }
         }
     }
@@ -1294,18 +1296,18 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(24958, invoice.totalPrice())
+            assertEquals(24958, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(-1314, invoiceRow.unitPrice)
-                assertEquals(-3942, invoiceRow.price())
+                assertEquals(-3942, invoiceRow.price)
             }
         }
     }
@@ -1333,24 +1335,24 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(12479, invoice.totalPrice())
+            assertEquals(12479, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(-1314, invoiceRow.unitPrice)
-                assertEquals(-3942, invoiceRow.price())
+                assertEquals(-3942, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-12479, invoiceRow.unitPrice)
-                assertEquals(-12479, invoiceRow.price())
+                assertEquals(-12479, invoiceRow.price)
             }
         }
     }
@@ -1372,12 +1374,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -1400,12 +1402,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -1436,37 +1438,37 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(11262, invoice.totalPrice())
+            assertEquals(11262, invoice.totalPrice)
             assertEquals(5, invoice.rows.size)
 
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
-                assertEquals(10512, invoiceRow.price())
+                assertEquals(10512, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(-657, invoiceRow.unitPrice)
-                assertEquals(-5256, invoiceRow.price())
+                assertEquals(-5256, invoiceRow.price)
             }
 
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
-                assertEquals(18396, invoiceRow.price())
+                assertEquals(18396, invoiceRow.price)
             }
             invoice.rows[3].let { invoiceRow ->
                 assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-455, invoiceRow.unitPrice)
-                assertEquals(-6370, invoiceRow.price())
+                assertEquals(-6370, invoiceRow.price)
             }
             invoice.rows[4].let { invoiceRow ->
                 assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-430, invoiceRow.unitPrice)
-                assertEquals(-6020, invoiceRow.price())
+                assertEquals(-6020, invoiceRow.price)
             }
         }
     }
@@ -1498,37 +1500,37 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(18647, invoice.totalPrice())
+            assertEquals(18647, invoice.totalPrice)
             assertEquals(5, invoice.rows.size)
 
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
-                assertEquals(10512, invoiceRow.price())
+                assertEquals(10512, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-1314, invoiceRow.unitPrice)
-                assertEquals(-1314, invoiceRow.price())
+                assertEquals(-1314, invoiceRow.price)
             }
 
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
-                assertEquals(18396, invoiceRow.price())
+                assertEquals(18396, invoiceRow.price)
             }
             invoice.rows[3].let { invoiceRow ->
                 assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-455, invoiceRow.unitPrice)
-                assertEquals(-6370, invoiceRow.price())
+                assertEquals(-6370, invoiceRow.price)
             }
             invoice.rows[4].let { invoiceRow ->
                 assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(-859, invoiceRow.unitPrice)
-                assertEquals(-2577, invoiceRow.price())
+                assertEquals(-2577, invoiceRow.price)
             }
         }
     }
@@ -1551,18 +1553,18 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(0, invoice.totalPrice())
+            assertEquals(0, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-28900, invoiceRow.unitPrice)
-                assertEquals(-28900, invoiceRow.price())
+                assertEquals(-28900, invoiceRow.price)
             }
         }
     }
@@ -1628,12 +1630,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(15210, invoice.totalPrice())
+            assertEquals(15210, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(10, invoiceRow.amount)
                 assertEquals(1521, invoiceRow.unitPrice)
-                assertEquals(15210, invoiceRow.price())
+                assertEquals(15210, invoiceRow.price)
             }
         }
     }
@@ -1668,12 +1670,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(3042, invoice.totalPrice())
+            assertEquals(3042, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(1521, invoiceRow.unitPrice)
-                assertEquals(3042, invoiceRow.price())
+                assertEquals(3042, invoiceRow.price)
             }
         }
     }
@@ -1708,12 +1710,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -1748,12 +1750,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -1788,12 +1790,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(6084, invoice.totalPrice())
+            assertEquals(6084, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(4, invoiceRow.amount)
                 assertEquals(1521, invoiceRow.unitPrice)
-                assertEquals(6084, invoiceRow.price())
+                assertEquals(6084, invoiceRow.price)
             }
         }
     }
@@ -1847,22 +1849,22 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(1521, invoiceRow.unitPrice)
-                assertEquals(12168, invoiceRow.price())
+                assertEquals(12168, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(11, invoiceRow.amount)
                 assertEquals(1521, invoiceRow.unitPrice)
-                assertEquals(16731, invoiceRow.price())
+                assertEquals(16731, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1, invoiceRow.unitPrice)
-                assertEquals(1, invoiceRow.price())
+                assertEquals(1, invoiceRow.price)
             }
         }
     }
@@ -1918,22 +1920,22 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice())
+            assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(1521, invoiceRow.unitPrice)
-                assertEquals(12168, invoiceRow.price())
+                assertEquals(12168, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(11, invoiceRow.amount)
                 assertEquals(1521, invoiceRow.unitPrice)
-                assertEquals(16731, invoiceRow.price())
+                assertEquals(16731, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1, invoiceRow.unitPrice)
-                assertEquals(1, invoiceRow.price())
+                assertEquals(1, invoiceRow.price)
             }
         }
     }
@@ -1981,17 +1983,17 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(27379, invoice.totalPrice())
+            assertEquals(27379, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-1521, invoiceRow.unitPrice)
-                assertEquals(-1521, invoiceRow.price())
+                assertEquals(-1521, invoiceRow.price)
             }
         }
     }
@@ -2039,17 +2041,17 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(27379, invoice.totalPrice())
+            assertEquals(27379, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-1521, invoiceRow.unitPrice)
-                assertEquals(-1521, invoiceRow.price())
+                assertEquals(-1521, invoiceRow.price)
             }
         }
     }
@@ -2100,17 +2102,17 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(0, invoice.totalPrice())
+            assertEquals(0, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price())
+                assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-28900, invoiceRow.unitPrice)
-                assertEquals(-28900, invoiceRow.price())
+                assertEquals(-28900, invoiceRow.price)
             }
         }
     }
@@ -2354,24 +2356,82 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(0, result.size)
     }
 
-    private fun initByPeriodAndPlacementType(period: DateRange, placementType: PlacementType) {
-        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+    @Test
+    fun `invoice codebtor is set when partner on decision is child's guardian`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+        }
+
+        db.transaction { it.createAllDraftInvoices(period) }
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(testAdult_2.id, invoice.codebtor?.id)
+        }
+    }
+
+    @Test
+    fun `invoice codebtor is not set when partner on decision is not child's guardian`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
+        db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
+
+        db.transaction { it.createAllDraftInvoices(period) }
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertNull(invoice.codebtor?.id)
+        }
+    }
+
+    @Test
+    fun `invoice codebtor is not set when partner on decision is not every child's guardian`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.DAYCARE, children = listOf(testChild_1, testChild_2), partner = testAdult_2.id)
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+        }
+
+        db.transaction { it.createAllDraftInvoices(period) }
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertNull(invoice.codebtor?.id)
+        }
+    }
+
+    private fun initByPeriodAndPlacementType(
+        period: DateRange,
+        placementType: PlacementType,
+        children: List<PersonData.Detailed> = listOf(testChild_1),
+        partner: UUID? = null
+    ) {
+        children.forEach { child -> db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period)) }
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
             period,
             testAdult_1.id,
-            listOf(
+            children.map { child ->
                 createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
                     placementUnitId = testDaycare.id,
                     placementType = placementType,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
                     fee = 28900
                 )
-            )
+            },
+            partnerId = partner
         )
         insertDecisionsAndPlacements(
             listOf(

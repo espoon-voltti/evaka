@@ -24,7 +24,7 @@ interface InvoiceIntegrationClient {
         val sentBatches = mutableListOf<CommunityInvoiceBatch>()
 
         override fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
-            val batch = createBatchExports(invoices, agreementType)
+            val batch = createBatchExports(invoices, agreementType, sendCodebtor = true)
             logger.info("Mock invoice integration client got batch ${objectMapper.writeValueAsString(batch)}")
             sentBatches.add(batch)
             return true
@@ -36,7 +36,7 @@ interface InvoiceIntegrationClient {
         private val objectMapper: ObjectMapper
     ) : InvoiceIntegrationClient {
         override fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
-            val batch = createBatchExports(invoices, agreementType)
+            val batch = createBatchExports(invoices, agreementType, sendCodebtor = env.sendCodebtor)
             val payload = objectMapper.writeValueAsString(batch)
             logger.debug("Sending invoice batch ${batch.batchNumber} to integration, payload: $payload")
             val (_, _, result) = Fuel.post("${env.url}/invoice-batches")
@@ -57,12 +57,13 @@ interface InvoiceIntegrationClient {
 
 fun createBatchExports(
     batchInvoices: List<InvoiceDetailed>,
-    agType: Int
+    agType: Int,
+    sendCodebtor: Boolean
 ): CommunityInvoiceBatch {
     require(agType <= 999) { "Community agreement type can be at most 3 digits long, was '$agType'" }
     return batchInvoices
         // Do not send negative or very small invoices to Community as complete refunds are not handled through Community
-        .filter { it.totalPrice() > 0.1 }
+        .filter { it.totalPrice > 0.1 }
         .let { invoices ->
             CommunityInvoiceBatch(
                 agreementType = agType,
@@ -79,6 +80,7 @@ fun createBatchExports(
                         dueDate = invoice.dueDate,
                         client = asClient(invoice.headOfFamily, lang),
                         recipient = asRecipient(invoice.headOfFamily),
+                        codebtor = if (sendCodebtor) asCodebtor(invoice.codebtor) else null,
                         rows = invoice.rows
                             .groupBy { it.child }
                             .toList()
@@ -97,7 +99,7 @@ fun createBatchExports(
                                         row.periodEnd,
                                         row.amount,
                                         row.unitPrice,
-                                        row.price(),
+                                        row.price,
                                         row.description,
                                         row.costCenter,
                                         row.subCostCenter
@@ -189,6 +191,21 @@ private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
     return CommunityRecipient(lastname.take(communityLastNameMaxLength), firstnames.take(communityFirstNameMaxLength), street, post, postalCode)
 }
 
+private fun asCodebtor(codebtor: PersonData.Detailed?): CommunityCodebtor? {
+    if (codebtor?.ssn == null) {
+        return null
+    }
+
+    return CommunityCodebtor(
+        ssn = codebtor.ssn,
+        firstnames = codebtor.firstName,
+        lastname = codebtor.lastName,
+        street = codebtor.streetAddress,
+        postalCode = codebtor.postalCode,
+        post = codebtor.postOffice
+    )
+}
+
 const val communityProductCodeLength = 12
 const val communitySubCostCenterLength = 2
 
@@ -262,6 +279,7 @@ data class CommunityInvoice(
     val dueDate: LocalDate,
     val client: CommunityClient,
     val recipient: CommunityRecipient,
+    val codebtor: CommunityCodebtor?,
     val rows: List<CommunityInvoiceRow>
 ) {
     val useInvoiceNumber = false
@@ -292,6 +310,15 @@ data class CommunityRecipient(
     val street: String?,
     val post: String?,
     val postalCode: String?
+)
+
+data class CommunityCodebtor(
+    val ssn: String,
+    val lastname: String,
+    val firstnames: String,
+    val street: String,
+    val post: String,
+    val postalCode: String
 )
 
 data class CommunityInvoiceRow(

@@ -162,6 +162,7 @@ val testInvoice = Invoice(
     periodEnd = LocalDate.of(2019, 5, 31),
     agreementType = 100,
     headOfFamily = testDecision1.headOfFamily,
+    codebtor = null,
     rows = listOf(testInvoiceRow)
 )
 
@@ -309,6 +310,7 @@ fun createInvoiceFixture(
     number = number,
     agreementType = agreementType,
     headOfFamily = PersonData.JustId(headOfFamilyId),
+    codebtor = null,
     periodStart = period.start,
     periodEnd = period.end!!,
     rows = rows

@@ -52,10 +52,10 @@ private fun Database.Read.getInvoiceReportWithRows(period: DateRange): InvoiceRe
             InvoiceReportRow(
                 areaCode = agreementType,
                 amountOfInvoices = invoices.size,
-                totalSumCents = invoices.sumOf { it.totalPrice() },
+                totalSumCents = invoices.sumOf { it.totalPrice },
                 amountWithoutSSN = invoices.count { it.headOfFamily.ssn.isNullOrBlank() },
                 amountWithoutAddress = invoices.count { withoutAddress(it) },
-                amountWithZeroPrice = invoices.count { it.totalPrice() == 0 }
+                amountWithZeroPrice = invoices.count { it.totalPrice == 0 }
             )
         }
         .sortedBy { it.areaCode }

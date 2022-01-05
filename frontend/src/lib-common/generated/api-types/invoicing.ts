@@ -179,6 +179,7 @@ export type IncomeEffect =
 */
 export interface Invoice {
   agreementType: number
+  codebtor: JustId | null
   dueDate: LocalDate
   headOfFamily: JustId
   id: UUID
@@ -190,6 +191,7 @@ export interface Invoice {
   sentAt: Date | null
   sentBy: UUID | null
   status: InvoiceStatus
+  totalPrice: number
 }
 
 /**
@@ -208,6 +210,7 @@ export interface InvoiceCodes {
 export interface InvoiceDetailed {
   account: number
   agreementType: number
+  codebtor: Detailed | null
   dueDate: LocalDate
   headOfFamily: Detailed
   id: UUID
@@ -219,6 +222,7 @@ export interface InvoiceDetailed {
   sentAt: Date | null
   sentBy: UUID | null
   status: InvoiceStatus
+  totalPrice: number
 }
 
 /**
@@ -243,6 +247,7 @@ export interface InvoiceRow {
   id: UUID | null
   periodEnd: LocalDate
   periodStart: LocalDate
+  price: number
   product: Product
   subCostCenter: string | null
   unitPrice: number
@@ -259,6 +264,7 @@ export interface InvoiceRowDetailed {
   id: UUID
   periodEnd: LocalDate
   periodStart: LocalDate
+  price: number
   product: Product
   subCostCenter: string | null
   unitPrice: number
@@ -271,6 +277,7 @@ export interface InvoiceRowSummary {
   amount: number
   child: Basic
   id: UUID
+  price: number
   unitPrice: number
 }
 
@@ -300,6 +307,7 @@ export type InvoiceStatus =
 */
 export interface InvoiceSummary {
   account: number
+  codebtor: Detailed | null
   createdAt: Date | null
   headOfFamily: Detailed
   id: UUID
@@ -309,6 +317,7 @@ export interface InvoiceSummary {
   sentAt: Date | null
   sentBy: UUID | null
   status: InvoiceStatus
+  totalPrice: number
 }
 
 /**

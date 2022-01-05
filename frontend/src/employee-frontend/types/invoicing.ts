@@ -107,13 +107,6 @@ export const deserializePersonDetailed = (
   dateOfDeath: LocalDate.parseNullableIso(json.dateOfDeath)
 })
 
-export interface InvoiceCodes {
-  products: Product[]
-  agreementTypes: number[]
-  subCostCenters: string[]
-  costCenters: string[]
-}
-
 export interface Unit {
   id: UUID
   name: string
@@ -136,18 +129,6 @@ export interface InvoiceSummary extends Periodic {
   createdAt: Date | null
 }
 
-export interface InvoiceRowDetailed extends Periodic {
-  id: UUID | null
-  child: PersonDetailed
-  amount: number
-  unitPrice: number
-  product: Product
-  costCenter: string
-  subCostCenter: string | null
-  description: string
-  price: number
-}
-
 /**
  * TODO: Update /invoices/head-of-family/{uuid} to return InvoiceSummary instead and ditch this type
  */
@@ -155,20 +136,6 @@ export interface Invoice extends Periodic {
   id: UUID
   status: InvoiceStatus
   sentAt: Date | null
-  totalPrice: number
-}
-
-export interface InvoiceDetailed extends Periodic {
-  id: UUID
-  status: InvoiceStatus
-  dueDate: LocalDate
-  invoiceDate: LocalDate
-  agreementType: number
-  headOfFamily: PersonDetailed
-  rows: InvoiceRowDetailed[]
-  number: string | null
-  sentAt: Date | null
-  account: number
   totalPrice: number
 }
 

@@ -97,6 +97,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
     invoiceDate = invoice.invoiceDate,
     agreementType = invoice.agreementType,
     headOfFamily = allAdults.find { it.id == invoice.headOfFamily.id }!!,
+    codebtor = allAdults.find { it.id == invoice.codebtor?.id },
     rows = invoice.rows.map { row ->
         InvoiceRowDetailed(
             id = row.id!!,
@@ -122,6 +123,7 @@ fun toSummary(invoice: Invoice): InvoiceSummary = InvoiceSummary(
     periodStart = invoice.periodStart,
     periodEnd = invoice.periodEnd,
     headOfFamily = allAdults.find { it.id == invoice.headOfFamily.id }!!,
+    codebtor = allAdults.find { it.id == invoice.codebtor?.id },
     rows = invoice.rows.map { row ->
         InvoiceRowSummary(
             id = row.id!!,

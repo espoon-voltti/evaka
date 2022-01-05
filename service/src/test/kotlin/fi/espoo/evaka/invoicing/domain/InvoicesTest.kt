@@ -20,6 +20,7 @@ class InvoicesTest {
             periodEnd = LocalDate.of(2019, 1, 31),
             agreementType = 100,
             headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            codebtor = null,
             rows = listOf()
         )
 
@@ -35,6 +36,7 @@ class InvoicesTest {
             periodEnd = LocalDate.of(2019, 7, 31),
             agreementType = 100,
             headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            codebtor = null,
             rows = listOf()
         )
 
@@ -50,6 +52,7 @@ class InvoicesTest {
             periodEnd = LocalDate.of(2019, 5, 31),
             agreementType = 100,
             headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            codebtor = null,
             rows = listOf()
         )
 
@@ -65,6 +68,7 @@ class InvoicesTest {
             periodEnd = LocalDate.of(2019, 1, 31),
             agreementType = 100,
             headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            codebtor = null,
             rows = listOf()
         )
 

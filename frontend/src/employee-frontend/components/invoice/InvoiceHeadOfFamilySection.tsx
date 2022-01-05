@@ -2,60 +2,72 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { Link } from 'react-router-dom'
-
-import LabelValueList from '../../components/common/LabelValueList'
+import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faUserFriends } from 'lib-icons'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import LocalDate from 'lib-common/local-date'
+import { formatName } from '../../utils'
 
 interface Props {
-  id: string
-  fullName: string
-  dateOfBirth: LocalDate
-  ssn: string | null
+  headOfFamily: InvoiceDetailed['headOfFamily']
+  codebtor: InvoiceDetailed['codebtor']
 }
 
-const InvoiceHeadOfFamilySection = React.memo(
-  function InvoiceHeadOfFamilySection({
-    id,
-    fullName,
-    dateOfBirth,
-    ssn
-  }: Props) {
-    const { i18n } = useTranslation()
+export default React.memo(function InvoiceHeadOfFamilySection({
+  headOfFamily,
+  codebtor
+}: Props) {
+  const { i18n } = useTranslation()
 
-    return (
-      <CollapsibleSection
-        title={i18n.invoice.form.headOfFamily.title}
-        icon={faUserFriends}
-        startCollapsed={false}
-      >
-        <LabelValueList
-          spacing="small"
-          contents={[
-            {
-              label: i18n.invoice.form.headOfFamily.fullName,
-              value: (
-                <Link
-                  to={`/profile/${id}`}
-                  data-qa="invoice-details-head-of-family"
-                >
-                  {fullName}
-                </Link>
-              )
-            },
-            {
-              label: i18n.invoice.form.headOfFamily.ssn,
-              value: ssn || dateOfBirth.format()
-            }
-          ]}
-        />
-      </CollapsibleSection>
-    )
-  }
-)
-
-export default InvoiceHeadOfFamilySection
+  return (
+    <CollapsibleSection
+      title={i18n.invoice.form.headOfFamily.title}
+      icon={faUserFriends}
+      startCollapsed={false}
+    >
+      <LabelValueList
+        spacing="small"
+        contents={[
+          {
+            label: i18n.invoice.form.headOfFamily.fullName,
+            value: (
+              <Link
+                to={`/profile/${headOfFamily.id}`}
+                data-qa="invoice-details-head-of-family"
+              >
+                {formatName(
+                  headOfFamily.firstName,
+                  headOfFamily.lastName,
+                  i18n
+                )}
+              </Link>
+            )
+          },
+          {
+            label: i18n.invoice.form.headOfFamily.ssn,
+            value: headOfFamily.ssn || headOfFamily.dateOfBirth.format()
+          },
+          ...(codebtor
+            ? [
+                {
+                  label: i18n.invoice.form.headOfFamily.codebtorName,
+                  value: (
+                    <Link to={`/profile/${codebtor.id}`}>
+                      {formatName(codebtor.firstName, codebtor.lastName, i18n)}
+                    </Link>
+                  )
+                },
+                {
+                  label: i18n.invoice.form.headOfFamily.codebtorSsn,
+                  value: codebtor.ssn || codebtor.dateOfBirth.format()
+                }
+              ]
+            : [])
+        ]}
+      />
+    </CollapsibleSection>
+  )
+})

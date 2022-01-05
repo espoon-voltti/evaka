@@ -122,7 +122,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { row ->
                 assertEquals(testChild_2.id, row.child.id)
-                assertEquals(28900, row.price())
+                assertEquals(28900, row.price)
             }
         }
     }

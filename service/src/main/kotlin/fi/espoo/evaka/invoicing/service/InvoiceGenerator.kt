@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
+import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -67,6 +68,8 @@ fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMo
             getFreeJulyChildren(range.start.year)
         } else emptyList()
 
+    val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(this, decisions) }
+
     val invoices =
         generateDraftInvoices(
             unhandledDecisions,
@@ -75,7 +78,8 @@ fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMo
             daycareCodes,
             operationalDays,
             absences,
-            freeChildren
+            freeChildren,
+            codebtors
         )
 
     deleteDraftInvoicesByDateRange(range)
@@ -89,7 +93,8 @@ internal fun generateDraftInvoices(
     daycareCodes: Map<DaycareId, DaycareCodes>,
     operationalDays: OperationalDays,
     absences: List<AbsenceStub> = listOf(),
-    freeChildren: List<UUID> = listOf()
+    freeChildren: List<UUID> = listOf(),
+    codebtors: Map<UUID, PersonData.JustId?> = mapOf()
 ): List<Invoice> {
     return placements.keys.mapNotNull { headOfFamilyId ->
         try {
@@ -100,7 +105,8 @@ internal fun generateDraftInvoices(
                 daycareCodes,
                 operationalDays,
                 absences,
-                freeChildren
+                freeChildren,
+                codebtors
             )
         } catch (e: Exception) {
             error("Failed to generate invoice for head of family $headOfFamilyId: $e")
@@ -122,7 +128,8 @@ internal fun generateDraftInvoice(
     daycareCodes: Map<DaycareId, DaycareCodes>,
     operationalDays: OperationalDays,
     absences: List<AbsenceStub>,
-    freeChildren: List<UUID>
+    freeChildren: List<UUID>,
+    codebtors: Map<UUID, PersonData.JustId?>
 ): Invoice? {
     val headOfFamily = placements.first().headOfFamily
 
@@ -189,7 +196,7 @@ internal fun generateDraftInvoice(
             }
         }
         .let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
-        .filter { row -> row.price() != 0 }
+        .filter { row -> row.price != 0 }
 
     if (rows.isEmpty()) return null
 
@@ -206,9 +213,23 @@ internal fun generateDraftInvoice(
         periodStart = invoicePeriod.start,
         periodEnd = invoicePeriod.end!!,
         agreementType = agreementType,
-        headOfFamily = PersonData.JustId(headOfFamily.id),
+        headOfFamily = headOfFamily,
+        codebtor = codebtors[headOfFamily.id],
         rows = rows
     )
+}
+
+private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonData.JustId? {
+    val partners = decisions.map { it.partner }.distinct()
+    if (partners.size != 1) return null
+
+    val familyCompositions = decisions.map { Triple(it.headOfFamily, it.partner, it.children.map { it.child }) }
+    return partners.first().takeIf {
+        familyCompositions.all { (head, partner, children) ->
+            if (partner == null) false
+            else tx.isElementaryFamily(head.id, partner.id, children.map { it.id })
+        }
+    }
 }
 
 internal fun calculateDailyPriceForInvoiceRow(price: Int, operationalDays: Int): Int {
@@ -484,7 +505,7 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
                 .map { it.finalFee }
                 .distinct()
 
-            val invoiceRowSum = rows.sumOf { it.price() }
+            val invoiceRowSum = rows.sumOf { it.price }
 
             val roundingRow = if (uniqueChildFees.size == 1) {
                 val difference = uniqueChildFees.first() - invoiceRowSum
