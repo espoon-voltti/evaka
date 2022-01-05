@@ -9,7 +9,11 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../../e2e-test-common/dev-api/data-init'
-import { Fixture, uuidv4 } from '../../../e2e-test-common/dev-api/fixtures'
+import {
+  DaycareBuilder,
+  DaycareGroupBuilder,
+  Fixture
+} from '../../../e2e-test-common/dev-api/fixtures'
 import { PersonDetail } from '../../../e2e-test-common/dev-api/types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -23,53 +27,40 @@ let listPage: MobileListPage
 let childPage: MobileChildPage
 let notePage: MobileNotePage
 
-let fixtures: AreaAndPersonFixtures
-let child: PersonDetail
-
-beforeEach(async () => {
-  await resetDatabase()
-  fixtures = await initializeAreaAndPersonData()
-  child = fixtures.enduserChildFixtureJari
-  const unit = fixtures.daycareFixture
-
-  const employeeId = uuidv4()
-  await Fixture.employee()
-    .with({
-      id: employeeId,
-      externalId: `espooad: ${employeeId}`,
-      firstName: 'Yrjö',
-      lastName: 'Yksikkö',
-      email: 'yy@example.com',
-      roles: []
-    })
-    .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
-    .save()
-
-  const daycareGroup = await Fixture.daycareGroup()
-    .with({ daycareId: unit.id })
-    .save()
-  const placementFixture = await Fixture.placement()
-    .with({ childId: child.id, unitId: unit.id })
-    .save()
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placementFixture)
-    .save()
-
-  page = await Page.open()
-
-  const mobileSignupUrl = await pairMobileDevice(unit.id)
-  await page.goto(mobileSignupUrl)
-
-  listPage = new MobileListPage(page)
-  await listPage.selectChild(child.id)
-  childPage = new MobileChildPage(page)
-  await childPage.openNotes()
-
-  notePage = new MobileNotePage(page)
-})
-
 describe('Child and group notes', () => {
+  let fixtures: AreaAndPersonFixtures
+  let child: PersonDetail
+
+  beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+    child = fixtures.enduserChildFixtureJari
+    const unit = fixtures.daycareFixture
+
+    const daycareGroup = await Fixture.daycareGroup()
+      .with({ daycareId: unit.id })
+      .save()
+    const placementFixture = await Fixture.placement()
+      .with({ childId: child.id, unitId: unit.id })
+      .save()
+    await Fixture.groupPlacement()
+      .withGroup(daycareGroup)
+      .withPlacement(placementFixture)
+      .save()
+
+    page = await Page.open()
+
+    const mobileSignupUrl = await pairMobileDevice(unit.id)
+    await page.goto(mobileSignupUrl)
+
+    listPage = new MobileListPage(page)
+    await listPage.selectChild(child.id)
+    childPage = new MobileChildPage(page)
+    await childPage.openNotes()
+
+    notePage = new MobileNotePage(page)
+  })
+
   test('Child daily note can be created and deleted', async () => {
     const childDailyNote: ChildDailyNoteBody = {
       note: 'Testiviesti',
@@ -121,5 +112,84 @@ describe('Child and group notes', () => {
 
     await notePage.removeStickyNote(0)
     await notePage.assertStickyNote('Foobar', 0)
+  })
+})
+
+describe('Child and group notes (backup care)', () => {
+  let fixtures: AreaAndPersonFixtures
+  let child: PersonDetail
+  let backupCareDaycareGroup: DaycareGroupBuilder
+  let backupCareDaycare: DaycareBuilder
+
+  beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+    child = fixtures.enduserChildFixtureJari
+    const unit = fixtures.daycareFixture
+
+    const daycareGroup = await Fixture.daycareGroup()
+      .with({ daycareId: unit.id })
+      .save()
+    const placementFixture = await Fixture.placement()
+      .with({ childId: child.id, unitId: unit.id })
+      .save()
+    await Fixture.groupPlacement()
+      .withGroup(daycareGroup)
+      .withPlacement(placementFixture)
+      .save()
+
+    const careArea = await Fixture.careArea().save()
+    backupCareDaycare = await Fixture.daycare().careArea(careArea).save()
+    backupCareDaycareGroup = await Fixture.daycareGroup()
+      .daycare(backupCareDaycare)
+      .save()
+    await Fixture.backupCare()
+      .with({ childId: child.id })
+      .withGroup(backupCareDaycareGroup)
+      .save()
+
+    page = await Page.open()
+
+    const mobileSignupUrl = await pairMobileDevice(backupCareDaycare.data.id)
+    await page.goto(mobileSignupUrl)
+
+    listPage = new MobileListPage(page)
+    await listPage.selectChild(child.id)
+    childPage = new MobileChildPage(page)
+    await childPage.openNotes()
+
+    notePage = new MobileNotePage(page)
+  })
+
+  test('Child daily note can be created and deleted', async () => {
+    const childDailyNote: ChildDailyNoteBody = {
+      note: 'Testiviesti',
+      feedingNote: 'MEDIUM',
+      sleepingMinutes: 65,
+      sleepingNote: 'NONE',
+      reminders: ['DIAPERS'],
+      reminderNote: 'Näki painajaisia'
+    }
+
+    await notePage.fillNote(childDailyNote)
+    await notePage.saveChildDailyNote()
+    await childPage.assertNotesExist()
+    await childPage.openNotes()
+    await notePage.assertNote(childDailyNote)
+
+    await page.goto(config.mobileUrl)
+    await listPage.openChildNotes(child.id)
+    await notePage.deleteChildDailyNote()
+    await listPage.assertChildNoteDoesntExist(child.id)
+
+    await page.pause()
+  })
+
+  test('Child group note can be created', async () => {
+    const groupNote = 'Testiryhmäviesti'
+
+    await notePage.selectTab('group')
+    await notePage.typeAndSaveStickyNote(groupNote)
+    await notePage.assertStickyNote(groupNote)
   })
 })
