@@ -5,148 +5,99 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
+import { desktopMin } from '../breakpoints'
 import Container from '../layout/Container'
 import { fontWeights, NavLinkText } from '../typography'
+import { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
-interface CommonProps {
+interface Tab {
+  id: string
+  link: string
+  label: string | JSX.Element
+  counter?: number
+}
+
+interface Props extends BaseProps {
   mobile?: boolean
-  dataQa?: string
+  tabs: Tab[]
 }
 
-interface LinkTabProps extends CommonProps {
-  tabs: Array<{
-    id: string
-    link: string
-    label: string | JSX.Element
-    counter?: number
-  }>
-  type?: 'links'
-}
-
-interface ButtonTabProps extends CommonProps {
-  tabs: Array<{
-    id: string
-    onClick: () => void
-    label: string | JSX.Element
-    active: boolean
-    counter?: number
-  }>
-  type: 'buttons'
-}
-
-type Props = LinkTabProps | ButtonTabProps
-
-function usesButtons(props: Props): props is ButtonTabProps {
-  return props.type === 'buttons'
-}
-
-export default React.memo(function Tabs(props: Props) {
-  const { mobile, dataQa } = props
-  const maxWidth = mobile ? `${100 / props.tabs.length}vw` : undefined
+export default React.memo(function Tabs({
+  mobile,
+  'data-qa': dataQa,
+  tabs
+}: Props) {
+  const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
     <Container>
-      <TabsContainer data-qa={dataQa}>
-        {usesButtons(props)
-          ? props.tabs.map(({ id, onClick, active, label, counter }) => (
-              <TabButtonContainer
-                key={id}
-                onClick={onClick}
-                data-qa={`${id}-tab`}
-                $maxWidth={maxWidth}
-                $mobile={mobile}
-                className={active ? 'active' : undefined}
-              >
-                <NavLinkText>{label}</NavLinkText>
-                {counter ? <TabCounter>{counter}</TabCounter> : null}
-              </TabButtonContainer>
-            ))
-          : props.tabs.map(({ id, link, label, counter }) => (
-              <TabLinkContainer
-                key={id}
-                to={link}
-                data-qa={`${id}-tab`}
-                $maxWidth={maxWidth}
-                $mobile={mobile}
-              >
-                <NavLinkText>{label}</NavLinkText>
-                {counter ? <TabCounter>{counter}</TabCounter> : null}
-              </TabLinkContainer>
-            ))}
+      <TabsContainer data-qa={dataQa} shadow={mobile}>
+        {tabs.map(({ id, link, label, counter }) => (
+          <TabLinkContainer
+            key={id}
+            to={link}
+            data-qa={`${id}-tab`}
+            $maxWidth={maxWidth}
+            $mobile={mobile}
+          >
+            <NavLinkText>{label}</NavLinkText>
+            {counter ? <TabCounter>{counter}</TabCounter> : null}
+          </TabLinkContainer>
+        ))}
       </TabsContainer>
     </Container>
   )
 })
 
-const TabsContainer = styled.div`
+const TabsContainer = styled.div<{ shadow?: boolean }>`
   display: flex;
   flex-direction: row;
+  ${(p) =>
+    p.shadow
+      ? `
+      box-shadow: 0 2px 6px 0 ${p.theme.colors.greyscale.lighter};
+      margin-bottom: ${defaultMargins.xxs};
+      `
+      : ''}
 `
 
-interface TabContainerProps {
+const TabLinkContainer = styled(NavLink)<{
   $maxWidth?: string
   $mobile?: boolean
-}
-
-const TabLinkContainer = styled(NavLink)<TabContainerProps>`
+}>`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-content: center;
+  align-items: center;
   padding: 12px;
   flex-basis: content;
   flex-grow: 1;
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
-  font-family: ${(p) =>
-    p.$mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
-  font-size: ${(p) => (p.$mobile ? '14px' : '15px')};
+  background-color: ${(p) => p.theme.colors.greyscale.white};
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  max-width: ${(p) => p.$maxWidth ?? 'none'};
+  max-width: ${(p) => p.$maxWidth ?? 'unset'};
+
+  min-height: 60px;
+  @media (min-width: ${desktopMin}) {
+    min-height: 48px;
+  }
+
+  border-bottom: ${(p) => (p.$mobile ? '3px solid transparent' : 'unset')};
 
   &.active {
     background-color: ${({ theme: { colors }, ...p }) =>
       p.$mobile ? colors.greyscale.white : `${colors.main.light}33`};
     border-bottom: ${({ theme: { colors }, ...p }) =>
-      p.$mobile ? `3px solid ${colors.main.dark}` : 'none'};
+      p.$mobile ? `3px solid ${colors.main.dark}` : 'unset'};
 
     ${NavLinkText} {
       color: ${(p) => p.theme.colors.main.dark};
       font-weight: ${fontWeights.bold};
     }
   }
-`
 
-const TabButtonContainer = styled.button<TabContainerProps>`
-  outline: none !important;
-  border: none;
-
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-content: center;
-  padding: 12px;
-  flex-basis: content;
-  flex-grow: 1;
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
-  font-family: ${(p) =>
-    p.$mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
-  font-size: ${(p) => (p.$mobile ? '14px' : '15px')};
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  max-width: ${(p) => (p.$maxWidth ? p.$maxWidth : 'none')};
-
-  &.active {
-    background-color: ${({ theme: { colors }, ...p }) =>
-      p.$mobile ? colors.greyscale.white : `${colors.main.light}33`};
-    border-bottom: ${({ theme: { colors }, ...p }) =>
-      p.$mobile ? `3px solid ${colors.main.dark}` : 'none'};
-
+  :hover {
     ${NavLinkText} {
       color: ${(p) => p.theme.colors.main.dark};
-      font-weight: ${fontWeights.bold};
     }
   }
 `

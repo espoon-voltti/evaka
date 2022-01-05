@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,9 +7,8 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Tabs from 'lib-components/molecules/Tabs'
-import { Bold } from 'lib-components/typography'
 import { faPlus } from 'lib-icons'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
@@ -27,24 +26,26 @@ const StaticIconContainer = styled.div`
   right: 8px;
 `
 
+type StatusTab = 'present' | 'absent'
+
 export default React.memo(function StaffAttendancesPage() {
   const history = useHistory()
-  const { unitId, groupId } = useParams<{
+  const { unitId, groupId, tab } = useParams<{
     unitId: string
     groupId: string
+    tab: StatusTab
   }>()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
   const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
-  const [showPresent, setShowPresent] = useState(false)
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       history.push(
-        `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance`
+        `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance/${tab}`
       )
     },
-    [history, unitId]
+    [history, tab, unitId]
   )
 
   const navigateToExternalMemberArrival = useCallback(
@@ -73,29 +74,27 @@ export default React.memo(function StaffAttendancesPage() {
     () => [
       {
         id: 'not-present',
-        onClick: () => setShowPresent(false),
-        active: !showPresent,
-        label: <Bold>{i18n.attendances.types.ABSENT}</Bold>
+        link: `/units/${unitId}/groups/${groupId}/staff-attendance/absent`,
+        label: i18n.attendances.types.ABSENT
       },
       {
         id: 'present',
-        onClick: () => setShowPresent(true),
-        active: showPresent,
+        link: `/units/${unitId}/groups/${groupId}/staff-attendance/present`,
         label: (
-          <Bold>
+          <>
             {i18n.attendances.types.PRESENT}
             <br />({presentStaffCounts.getOrElse(' ')})
-          </Bold>
+          </>
         )
       }
     ],
-    [i18n.attendances.types, presentStaffCounts, setShowPresent, showPresent]
+    [groupId, i18n, presentStaffCounts, unitId]
   )
 
   const filteredStaff = useMemo(
     () =>
       staffAttendanceResponse.map((res) =>
-        showPresent
+        tab === 'present'
           ? groupId === 'all'
             ? [
                 ...res.staff.filter((s) => s.present !== null),
@@ -111,7 +110,7 @@ export default React.memo(function StaffAttendancesPage() {
                 (groupId === 'all' || s.groupIds.includes(groupId))
             )
       ),
-    [groupId, showPresent, staffAttendanceResponse]
+    [groupId, tab, staffAttendanceResponse]
   )
 
   const selectedGroup = useMemo(
@@ -130,7 +129,8 @@ export default React.memo(function StaffAttendancesPage() {
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
       />
-      <Tabs tabs={tabs} mobile type="buttons" />
+
+      <Tabs tabs={tabs} mobile />
       {renderResult(filteredStaff, (staff) => (
         <FixedSpaceColumn spacing="zero">
           {staff.map((staffMember) => {

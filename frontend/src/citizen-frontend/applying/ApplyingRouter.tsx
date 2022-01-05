@@ -47,7 +47,7 @@ export default React.memo(function ApplyingRouter() {
         <>
           <Gap size="s" />
           <WhiteBg>
-            <Tabs tabs={tabs} dataQa="applying-subnavigation" />
+            <Tabs tabs={tabs} data-qa="applying-subnavigation" />
           </WhiteBg>
         </>
       )}

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,6 +18,7 @@ import GroupSelector, { CountInfo } from './GroupSelector'
 const GroupContainer = styled.div`
   display: block;
   min-height: 48px;
+  margin-bottom: ${defaultMargins.xs};
 `
 
 const GroupSelectorButtonRow = styled.div`
