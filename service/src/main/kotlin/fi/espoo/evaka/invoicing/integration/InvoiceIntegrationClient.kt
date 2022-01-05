@@ -99,9 +99,9 @@ fun createBatchExports(
                                         row.amount,
                                         row.unitPrice,
                                         row.price,
-                                        row.description,
-                                        row.costCenter,
-                                        row.subCostCenter
+                                        row.description.trim(),
+                                        row.costCenter.trim(),
+                                        row.subCostCenter?.trim()
                                     )
                                 }
                                 listOf(nameRow) + rowsWithContent + listOf(emptyRow())
@@ -115,9 +115,9 @@ fun createBatchExports(
         }
 }
 
-private fun addressIsValid(streetAddress: String?, postalCode: String?, postOffice: String?): Boolean {
+private fun addressIsValid(streetAddress: String, postalCode: String, postOffice: String): Boolean {
     // some part of address information is empty
-    if (streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()) {
+    if (streetAddress.isBlank() || postalCode.isBlank() || postOffice.isBlank()) {
         return false
     }
 
@@ -141,9 +141,9 @@ const val fallbackPostOffice = "ESPOON KAUPUNKI"
 
 private fun asClient(headOfFamily: PersonData.Detailed, lang: CommunityLang): CommunityClient {
     val addressIsUseable = addressIsValid(
-        headOfFamily.streetAddress,
-        headOfFamily.postalCode,
-        headOfFamily.postOffice
+        headOfFamily.streetAddress.trim(),
+        headOfFamily.postalCode.trim(),
+        headOfFamily.postOffice.trim()
     )
     return CommunityClient(
         ssn = headOfFamily.ssn!!,
@@ -162,14 +162,14 @@ private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
         else headOfFamily.lastName to headOfFamily.firstName
 
     val addressIsUseable = addressIsValid(
-        headOfFamily.streetAddress,
-        headOfFamily.postalCode,
-        headOfFamily.postOffice
+        headOfFamily.streetAddress.trim(),
+        headOfFamily.postalCode.trim(),
+        headOfFamily.postOffice.trim()
     )
     val shouldUseInvoicingAddress = addressIsValid(
-        headOfFamily.invoicingStreetAddress,
-        headOfFamily.invoicingPostalCode,
-        headOfFamily.invoicingPostOffice
+        headOfFamily.invoicingStreetAddress.trim(),
+        headOfFamily.invoicingPostalCode.trim(),
+        headOfFamily.invoicingPostOffice.trim()
     )
 
     val (street, postalCode, post) = when {
@@ -229,7 +229,7 @@ private fun invoiceRow(
     require(productCode.length <= communityProductCodeLength) {
         "Community product code can be at most $communityProductCodeLength characters long, was '$productCode'"
     }
-    require(subCostC?.length ?: 0 <= communitySubCostCenterLength) {
+    require((subCostC?.length ?: 0) <= communitySubCostCenterLength) {
         "Community sub cost center should be at most $communitySubCostCenterLength characters long, was '$subCostC'"
     }
 
