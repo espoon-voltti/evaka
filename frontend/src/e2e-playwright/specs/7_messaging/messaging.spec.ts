@@ -174,6 +174,25 @@ describe('Sending and receiving messages', () => {
       await messagesPage.openInbox(1)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
     })
+
+    test('Citizen can discard message', async () => {
+      const title = 'Otsikko'
+      const content = 'Testiviestin sisältö'
+
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.sendNewMessage(title, content)
+
+      await citizenPage.goto(config.enduserMessagesUrl)
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThreadReplyEditor()
+      await citizenMessagesPage.discardMessageButton.waitUntilVisible()
+      await citizenMessagesPage.fillReplyContent(content)
+      await citizenMessagesPage.discardReplyEditor()
+      await citizenMessagesPage.discardMessageButton.waitUntilHidden()
+      await citizenMessagesPage.openFirstThreadReplyEditor()
+      await citizenMessagesPage.assertReplyContentIsEmpty()
+    })
   })
 
   describe('Drafts', () => {

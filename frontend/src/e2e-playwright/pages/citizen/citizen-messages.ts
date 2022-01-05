@@ -25,6 +25,8 @@ export default class CitizenMessagesPage {
   #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
   #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
 
+  discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
+
   async getMessageCount() {
     return this.#threadContent.count()
   }
@@ -49,6 +51,23 @@ export default class CitizenMessagesPage {
 
   async isEditorVisible() {
     return this.page.find('[data-qa="input-content"]').visible
+  }
+
+  async openFirstThreadReplyEditor() {
+    await this.#threadListItem.click()
+    await this.#openReplyEditorButton.click()
+  }
+
+  async discardReplyEditor() {
+    await this.discardMessageButton.click()
+  }
+
+  async fillReplyContent(content: string) {
+    await this.#messageReplyContent.fill(content)
+  }
+
+  async assertReplyContentIsEmpty() {
+    return waitUntilEqual(() => this.#messageReplyContent.textContent, '')
   }
 
   async replyToFirstThread(content: string) {
