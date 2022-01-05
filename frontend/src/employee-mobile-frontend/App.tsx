@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -186,7 +186,11 @@ function StaffAttendanceRouter() {
   return (
     <StaffAttendanceContextProvider>
       <Switch>
-        <Route exact path={path} component={StaffAttendancesPage} />
+        <Route
+          exact
+          path={`${path}/:tab(absent|present)`}
+          component={StaffAttendancesPage}
+        />
         <Route
           exact
           path={`${path}/external`}
@@ -208,7 +212,7 @@ function StaffAttendanceRouter() {
           path={`${path}/:employeeId/mark-departed`}
           component={StaffMarkDepartedPage}
         />
-        <Redirect to={path} />
+        <Redirect to={`${path}/absent`} />
       </Switch>
     </StaffAttendanceContextProvider>
   )

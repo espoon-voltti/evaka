@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -60,7 +60,7 @@ export default React.memo(function AttendancePageWrapper() {
       history.push(
         `/units/${unitId}/groups/${
           group?.id ?? 'all'
-        }/child-attendance/${attendanceStatus}/list`
+        }/child-attendance/list/${attendanceStatus}`
       )
     },
     [history, unitId, attendanceStatus]

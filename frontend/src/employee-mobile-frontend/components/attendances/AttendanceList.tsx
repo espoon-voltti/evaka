@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,7 +9,6 @@ import {
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
-import { Bold } from 'lib-components/typography'
 import React, { useMemo } from 'react'
 import { useTranslation } from '../../state/i18n'
 import ChildList from './ChildList'
@@ -60,12 +59,12 @@ export default React.memo(function AttendanceList({
     const url = `/units/${unitId}/groups/${groupId}/child-attendance/list`
 
     const getLabel = (title: string, count: number) => (
-      <Bold>
+      <>
         {title}
         <br />
         <span data-qa="count">{count}</span>/
         <span data-qa="total">{totalAttendances}</span>
-      </Bold>
+      </>
     )
 
     return [

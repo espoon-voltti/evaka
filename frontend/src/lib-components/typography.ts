@@ -209,7 +209,7 @@ export const NavLinkText = styled.span`
   font-family: Montserrat, sans-serif;
   font-weight: ${fontWeights.medium};
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 16px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
