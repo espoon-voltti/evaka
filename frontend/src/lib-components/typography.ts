@@ -173,8 +173,13 @@ export const Bold = styled.span`
   font-weight: ${fontWeights.semibold};
 `
 
+export const Italic = styled.span`
+  font-style: italic;
+`
+
 export const Light = styled.span`
   font-style: italic;
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `
 
 export const Title = styled.span`

@@ -29,7 +29,7 @@ import {
 } from 'lib-components/layout/Table'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import Pagination from 'lib-components/Pagination'
-import { Bold, H1, Light } from 'lib-components/typography'
+import { Bold, H1, Italic, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
 import {
@@ -338,10 +338,10 @@ const ApplicationsList = React.memo(function Applications({
                   <p key={`unit-pref-${i}`}>{unit.name}</p>
                 ))}
                 {application.currentPlacementUnit && (
-                  <Light>
+                  <Italic>
                     {i18n.applications.list.currentUnit}{' '}
                     {application.currentPlacementUnit.name}
-                  </Light>
+                  </Italic>
                 )}
               </div>
             }
