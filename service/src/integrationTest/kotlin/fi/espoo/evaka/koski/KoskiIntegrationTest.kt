@@ -214,7 +214,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(OpiskeluoikeudenTyyppiKoodi.PREPARATORY, studyRight.tyyppi.koodiarvo)
         assertEquals(
             listOf(
-                Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start),
+                Opiskeluoikeusjakso.läsnä(august2019),
                 Opiskeluoikeusjakso.valmistunut(preschoolTerm2019.end)
             ),
             studyRight.tila.opiskeluoikeusjaksot
@@ -527,29 +527,6 @@ class KoskiIntegrationTest : FullApplicationTest() {
             ),
             qualified = true
         )
-    }
-
-    @Test
-    fun `if all placements are outside the term, a study right row is stored but nothing is sent`() {
-        insertPlacement(
-            testChild_1,
-            period = FiniteDateRange(
-                start = preschoolTerm2019.start.minusDays(10),
-                end = preschoolTerm2019.start.minusDays(2)
-            )
-        )
-        val today = preschoolTerm2019.end.plusDays(1)
-        koskiTester.triggerUploads(today)
-
-        val stored = db.read { it.getStoredResults() }.single()
-        assertNull(stored.studyRightOid)
-        assertNull(stored.personOid)
-        assertEquals("{}", stored.payload)
-
-        assertTrue(koskiServer.getStudyRights().isEmpty())
-
-        // The study right should now be ignored by the diffing mechanism, so it won't be tried again unless input data changes
-        assertTrue(db.read { it.getPendingStudyRights(today) }.isEmpty())
     }
 
     @Test

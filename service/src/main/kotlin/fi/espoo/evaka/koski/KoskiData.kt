@@ -6,7 +6,6 @@ package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.derivePreschoolTerm
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.isWeekend
@@ -14,6 +13,7 @@ import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
+import java.time.Month
 import java.util.UUID
 
 data class KoskiData(
@@ -118,7 +118,7 @@ data class KoskiActiveDataRaw(
     val approverName: String,
     val personOid: String?,
     val placementRanges: List<FiniteDateRange> = emptyList(),
-    val holidays: List<LocalDate> = emptyList(),
+    val holidays: Set<LocalDate> = emptySet(),
     @Json
     val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
     val developmentalDisability1: List<FiniteDateRange> = emptyList(),
@@ -130,27 +130,21 @@ data class KoskiActiveDataRaw(
     val studyRightId: UUID,
     val studyRightOid: String?
 ) {
-    // Some children are in preschool for 2 years, so they might have multiple placements in different terms
-    private val startTerm = derivePreschoolTerm(placementRanges.first().start)
-    private val endTerm = derivePreschoolTerm(placementRanges.last().start)
-
-    private val studyRightTimelines = FiniteDateRange(startTerm.start, endTerm.end).let { clampRange ->
-        calculateStudyRightTimelines(
-            placementRanges = placementRanges.asSequence().mapNotNull { it.intersection(clampRange) },
-            holidays = holidays.asSequence().filter { clampRange.includes(it) }.toSet(),
-            absences = preparatoryAbsences.asSequence().filter { clampRange.includes(it.date) }
-        )
-    }
+    private val studyRightTimelines = calculateStudyRightTimelines(
+        placementRanges = placementRanges.asSequence(),
+        holidays = holidays,
+        absences = preparatoryAbsences.asSequence(),
+    )
 
     private val approverTitle = "Esiopetusyksikön johtaja"
 
     fun toKoskiData(sourceSystem: String, ophOrganizationOid: String, today: LocalDate): KoskiData? {
-        // It's possible clamping to preschool term has removed all placements -> no study right can be created
         val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
         val isTerminated = today.isAfter(placementSpan.end)
-        val isQualifiedByDate = placementSpan.end.let {
-            it.isAfter(LocalDate.of(endTerm.end.year, 4, 30))
+        val isQualifiedByDate = when (placementSpan.end.month) {
+            Month.MAY, Month.JUNE -> true
+            else -> false
         }
         val isQualified = isTerminated && when (type) {
             OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> isQualifiedByDate
