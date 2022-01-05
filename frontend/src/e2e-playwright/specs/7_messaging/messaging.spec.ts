@@ -115,6 +115,31 @@ describe('Sending and receiving messages', () => {
       )
     })
 
+    test('Employee can discard thread reply', async () => {
+      const title = 'Otsikko'
+      const content = 'Testiviestin sisältö'
+      const reply = 'Testivastaus testiviestiin'
+
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.sendNewMessage(title, content)
+
+      await citizenPage.goto(config.enduserMessagesUrl)
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.assertThreadContent(title, content)
+      await citizenMessagesPage.replyToFirstThread(reply)
+
+      await messagesPage.openInbox(0)
+
+      await messagesPage.openFirstThreadReplyEditor()
+      await messagesPage.discardMessageButton.waitUntilVisible()
+      await messagesPage.fillReplyContent(content)
+      await messagesPage.discardReplyEditor()
+      await messagesPage.discardMessageButton.waitUntilHidden()
+      await messagesPage.openReplyEditor()
+      await messagesPage.assertReplyContentIsEmpty()
+    })
+
     test('Admin sends a message and blocked guardian does not get it', async () => {
       const title = 'Kielletty viesti'
       const content = 'Tämän ei pitäisi mennä perille'
