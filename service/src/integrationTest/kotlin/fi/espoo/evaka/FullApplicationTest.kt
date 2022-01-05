@@ -60,7 +60,7 @@ abstract class FullApplicationTest {
 
     @Autowired
     protected lateinit var env: Environment
-    @SpyBean
+    @Autowired
     protected lateinit var evakaEnv: EvakaEnv
     @Autowired
     protected lateinit var vardaEnv: VardaEnv

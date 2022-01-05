@@ -942,7 +942,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Test
     fun `confirmDrafts returns bad request when some decisions being in the future`() {
         val draftWithFutureDates = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-            .copy(validDuring = DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusYears(1)))
+            .copy(validDuring = DateRange(LocalDate.now().plusDays(2), LocalDate.now().plusYears(1)))
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
         val (_, response, _) = http.post("/decisions/confirm")
@@ -958,7 +958,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts when decision at last possible confirmation date exists`() {
-        doReturn(1L).whenever(evakaEnv).nrOfDaysFeeDecisionCanBeSentInAdvance
         val now = HelsinkiDateTime.now()
         val draftWithFutureDates = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
             .copy(validDuring = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusYears(1)))
