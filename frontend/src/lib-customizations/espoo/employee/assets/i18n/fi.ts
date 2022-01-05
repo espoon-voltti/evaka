@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -170,7 +170,6 @@ export const fi = {
   },
   header: {
     applications: 'Hakemukset',
-    clubApplications: 'Kerho',
     units: 'Yksiköt',
     search: 'Asiakastiedot',
     finance: 'Talous',
@@ -181,6 +180,11 @@ export const fi = {
     reports: 'Raportit',
     messages: 'Viestit',
     logout: 'Kirjaudu ulos'
+  },
+  footer: {
+    cityLabel: 'Espoon kaupunki',
+    linkLabel: 'Espoon varhaiskasvatus',
+    linkHref: 'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus'
   },
   language: {
     fi: 'Suomi',

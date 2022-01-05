@@ -21,6 +21,7 @@ import {
 } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import { footerHeight } from '../Footer'
 import { headerHeight } from '../Header'
 import { MessageContext } from './MessageContext'
 import ReceiverSelection from './ReceiverSelection'
@@ -29,7 +30,9 @@ import MessageList from './ThreadListContainer'
 import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
 
 const PanelContainer = styled.div`
-  height: calc(100vh - ${headerHeight} - ${defaultMargins.m});
+  height: calc(
+    100vh - ${headerHeight} - ${footerHeight} - ${defaultMargins.XL}
+  );
   display: flex;
 `
 
