@@ -18,12 +18,12 @@ The user interface is split into three applications, by user functionality:
 
 There are also some internal subprojects:
 
-- `e2e-test` - E2E tests
 - `lib-common` - Common code usable in all frontends and E2E tests
 - `lib-components` - Common React components usable in all frontends
 - `lib-customizations` - Customizable code and assets for eVaka forks, e.g. localizations
 - `lib-icons` - Icon set, switchable between free and pro Font Awesome
 - `maintenance-page-frontend` - Static website to be shown during maintenance instead of the other frontends
+- `e2e-playwright` - E2E tests
 
 **NOTE:** This project is currently under very active development.
 At this point, it is not yet adviced to start developing or running your custom
@@ -54,7 +54,7 @@ The code is organised into `src/` directory as follows:
 src/
   |- *-frontend/
   |- lib-*/
-  |- e2e-test
+  |- e2e-playwright
 ```
 
 ## Font Awesome icon library
@@ -174,8 +174,7 @@ yarn test
 
 ### E2E tests
 
-E2E tests are written using Typescript and Testcafe, see
-the [documentation](https://devexpress.github.io/testcafe/documentation/test-api/).
+E2E tests are written using Typescript, Jest and Playwright.
 
 **NOTE:** For all test scripts, you can override the target URL with:
 
@@ -187,36 +186,15 @@ BASE_URL=http://localhost:9999 yarn <cmd>
 
 - Create a new test under the right test folder (= enduser)
 - Name test file clearly to represent test case
-- Oraganize tests into categories ([Fixtures](https://devexpress.github.io/testcafe/documentation/test-api/test-code-structure.html#fixtures))
-- Write test cases under the fixtures ([Test](https://devexpress.github.io/testcafe/documentation/test-api/test-code-structure.html#tests))
-- Create [Page model](https://devexpress.github.io/testcafe/documentation/recipes/use-page-model.html) for test cases
-
-#### Automatic test cases
-
-- **Smoke:** Used for test critical and simple service basic functionality (etc. login tests)
-- **Regression:** Browser tests to test the largest functionality of the service (etc. creating and sending applications)
-
-**HOX! Remember to include correct fixture type for tests (smoke and regression) depending on test case**
-
-Example of simple smoke test case:
-
-```typescript
-fixture('Running application')
-    .meta({ type: 'smoke', subType: 'start-application' })
-    .page(https://www.example.com)
-test('Application main page is visible', async (t) => {
-    const application = Selector('#application-wrapper'),
-    await t.expect(application.visible).ok()
-})
-```
+- Oraganize tests into categories ([describe](https://jestjs.io/docs/api#describename-fn))
+- Create [Page objects](https://playwright.dev/docs/pom) for pages/views that are tested
 
 #### Run all tests locally
 
-E2E-tests are implemented using testcafe (legacy) and playwright.
-Testcafe tests can be run via the following command:
+All E2E tests can be run with the following command:
 
 ```sh
-yarn e2e
+yarn e2e-playwright
 ```
 
 If you don't want to wipe data from your dev environment,
@@ -226,12 +204,6 @@ the `service` directory before running the playwright tests:
 ```sh
 pm2 stop service
 ./gradlew bootRunTest
-```
-
-Playwright tests can be started with:
-
-```sh
-yarn e2e-playwright
 ```
 
 You can run a single spec by specifying the corresponding subdirectory. For example,
@@ -249,18 +221,6 @@ trace in the Playwright trace viewer:
 yarn playwright show-trace traces/<filename>.zip
 ```
 
-#### Run tests by fixture or test meta data
-
-```sh
-yarn e2e --fixture-meta type=smoke
-```
-
-```sh
-yarn e2e --test-meta type=regression,subType=application
-```
-
-Read more about test meta datas from [Testcafe documentation](https://devexpress.github.io/testcafe/documentation/test-api/test-code-structure.html#specifying-testing-metadata)
-
 #### Scheduled CircleCI run for wip branch
 
 ```yaml
@@ -269,19 +229,19 @@ e2e_test_wip:
     - schedule:
         # Test servers are up 6-20. Using UTC time, taking into account daylight saving time
         # your own timestamps here
-        cron: "0,10,20,30,40,50 4-18 * * 1-5"
+        cron: '0,10,20,30,40,50 4-18 * * 1-5'
         filters:
           branches:
             only:
               - EVAKA-111-your-branch-name-here
   jobs:
-      - lint
-      - e2e-smoke:
-          requires:
-            - lint
-      - e2e-regression:
-          requires:
-            - e2e-smoke
+    - lint
+    - e2e-smoke:
+        requires:
+          - lint
+    - e2e-regression:
+        requires:
+          - e2e-smoke
 ```
 
 [The cron schedule expression editor](https://crontab.guru/)
@@ -291,8 +251,6 @@ e2e_test_wip:
 - Some selectors still use IDs/classes instead of data-qa attributes
 - Should replace for loops by selector's visibilitycheck option
 - Tests aren't run against multiple different browsers
-- Test data isn't cleared from local DB on test failure when running with `--stop-on-first-fail`
-- Testcafe issue: `Fixture.after` isn't called when using the option (unlike `.afterEach`)
 
 ### Tips & tricks
 
@@ -313,13 +271,13 @@ Configuration is split into two categories:
 
 1. App configuration: global app (and optionally environment) specific configs
 1. Feature flags: generally global toggles (and optionally environment and/or
-  app specific toggles) to enable eVaka features
+   app specific toggles) to enable eVaka features
 
 and feature flags are further split into:
 
 1. Optional features that are considered production ready
 1. Optional in-development (`experimental.*`) features that can be enabled
-  in eVaka customizations to test in e.g. non-production environments
+   in eVaka customizations to test in e.g. non-production environments
 
 Customizations make no assumptions and provide no direct tooling for ways to
 make environment specific configurations (though examples may be provided

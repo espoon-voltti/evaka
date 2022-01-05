@@ -411,7 +411,6 @@ commands:
       test_runner:
         type: enum
         enum:
-          - testcafe
           - playwright
     steps:
       - restore_repo
@@ -457,7 +456,6 @@ commands:
       test_runner:
         type: enum
         enum:
-          - testcafe
           - playwright
     steps:
       - restore_repo
