@@ -29,6 +29,7 @@ import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
+import fi.espoo.evaka.preschoolTerms
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
@@ -176,6 +177,51 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
             assertNotNull(application.form.preferences.serviceNeed?.serviceNeedOption)
+        }
+    }
+
+    @Test
+    fun `preschool application initialization uses correct term's start as default preferred start date`() {
+        db.transaction { tx ->
+            tx.insertApplication(
+                appliedType = PlacementType.DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
+        }
+
+        val (_, secondTerm) = preschoolTerms.sortedBy { it.extendedTerm.start }
+
+        db.transaction { tx ->
+            val applicationDate = secondTerm.applicationPeriod.start.minusWeeks(1)
+            service.initializeApplicationForm(
+                tx,
+                AuthenticatedUser.Citizen(testAdult_1.id),
+                applicationDate,
+                applicationId,
+                ApplicationType.PRESCHOOL,
+                tx.getPersonById(testChild_1.id)!!,
+                tx.getPersonById(testAdult_1.id)!!
+            )
+
+            val result = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(null, result.form.preferences.preferredStartDate)
+        }
+
+        db.transaction { tx ->
+            val applicationDate = secondTerm.applicationPeriod.start
+            service.initializeApplicationForm(
+                tx,
+                AuthenticatedUser.Citizen(testAdult_1.id),
+                applicationDate,
+                applicationId,
+                ApplicationType.PRESCHOOL,
+                tx.getPersonById(testChild_1.id)!!,
+                tx.getPersonById(testAdult_1.id)!!
+            )
+
+            val result = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(secondTerm.extendedTerm.start, result.form.preferences.preferredStartDate)
         }
     }
 

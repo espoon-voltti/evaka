@@ -19,6 +19,7 @@ import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalId
@@ -49,6 +50,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -604,48 +606,47 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertAssistanceBasisOptions()
 }
 
+val preschoolTerms = listOf(
+    // 2020-2021
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 8, 18), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20))
+    ),
+    // 2021-2022
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 8, 13), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20))
+    ),
+    // 2022-2023
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 1, 10), LocalDate.of(2022, 1, 21))
+    ),
+    // 2023-2024
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
+        FiniteDateRange(LocalDate.of(2023, 8, 13), LocalDate.of(2024, 6, 6)),
+        FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 6)),
+        FiniteDateRange(LocalDate.of(2023, 1, 8), LocalDate.of(2023, 1, 20))
+    )
+)
+
 fun Database.Transaction.insertPreschoolTerms() {
-    //language=SQL
-    val sql =
+    prepareBatch(
         """
--- 2020-2021
 INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
-VALUES (
-    '[2020-08-13,2021-06-04]',
-    '[2020-08-18,2021-06-04]',
-    '[2020-08-01,2021-06-04]',
-    '[2020-01-08,2020-01-20]'
-);
-
--- 2021-2022
-INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
-VALUES (
-    '[2021-08-11,2022-06-03]',
-    '[2021-08-13,2022-06-03]',
-    '[2021-08-01,2022-06-03]',
-    '[2021-01-08,2021-01-20]'
-);
-
--- 2022-2023
-INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
-VALUES (
-    '[2022-08-11,2023-06-03]',
-    '[2022-08-13,2023-06-03]',
-    '[2022-08-01,2023-06-03]',
-    '[2022-01-08,2023-01-20]'
-);
-
--- 2023-2024
-INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
-VALUES (
-    '[2023-08-11,2024-06-03]',
-    '[2023-08-13,2024-06-06]',
-    '[2023-08-01,2024-06-06]',
-    '[2023-01-08,2024-01-20]'
-);
-        """.trimIndent()
-
-    createUpdate(sql).execute()
+VALUES (:finnishPreschool, :swedishPreschool, :extendedTerm, :applicationPeriod)
+"""
+    ).let { batch ->
+        preschoolTerms.forEach { term -> batch.bindKotlin(term).add() }
+        batch.execute()
+    }
 }
 
 fun Database.Transaction.insertClubTerms() {

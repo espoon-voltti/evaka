@@ -95,7 +95,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     fun `can add a sibling parentship and fetch parentships`(user: AuthenticatedUser) {
-        val parentship = db.transaction { tx ->
+        db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
 
@@ -107,20 +107,17 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         controller.createParentship(Database(jdbi), user, reqBody)
 
         val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(parent.id))
-        with(getResponse.first()) {
-            assertNotNull(this.id)
-            assertEquals(parentship.headOfChildId, this.headOfChildId)
-            assertEquals(parentship.child.id, this.childId)
-            assertEquals(parentship.startDate, this.startDate)
-            assertEquals(parentship.endDate, this.endDate)
-        }
-        with(getResponse.last()) {
-            assertNotNull(this.id)
-            assertEquals(parent.id, this.headOfChildId)
-            assertEquals(sibling.id, this.childId)
-            assertEquals(startDate, this.startDate)
-            assertEquals(endDate, this.endDate)
-        }
+        assertEquals(2, getResponse.size)
+        getResponse
+            .find { it.childId == sibling.id }
+            .let {
+                assertNotNull(it)
+                assertNotNull(it.id)
+                assertEquals(parent.id, it.headOfChildId)
+                assertEquals(sibling.id, it.childId)
+                assertEquals(startDate, it.startDate)
+                assertEquals(endDate, it.endDate)
+            }
 
         assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(child.id)).size)
     }

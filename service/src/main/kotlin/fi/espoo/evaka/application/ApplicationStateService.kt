@@ -130,9 +130,11 @@ class ApplicationStateService(
         form: ApplicationForm
     ): ApplicationForm {
         val startDate = when (type) {
-            ApplicationType.PRESCHOOL -> tx.getPreschoolTerms().firstOrNull { it.extendedTerm.start.isAfter(today) }
+            ApplicationType.PRESCHOOL -> tx.getPreschoolTerms()
+                .find { it.applicationPeriod.start <= today && today < it.extendedTerm.start }
                 ?.extendedTerm?.start
-            ApplicationType.CLUB -> tx.getClubTerms().firstOrNull { it.term.start.isAfter(today) }
+            ApplicationType.CLUB -> tx.getClubTerms()
+                .find { it.applicationPeriod.start <= today && today < it.term.start }
                 ?.term?.start
             else -> null
         }
