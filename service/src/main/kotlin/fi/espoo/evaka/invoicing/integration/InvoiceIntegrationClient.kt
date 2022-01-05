@@ -74,13 +74,12 @@ fun createBatchExports(
                         if (invoice.headOfFamily.language == "sv") CommunityLang.SV
                         else CommunityLang.FI
 
-                    CommunityInvoice(
+                    val integrtionInvoice = CommunityInvoice(
                         invoiceNumber = invoice.number!!,
                         date = invoice.invoiceDate,
                         dueDate = invoice.dueDate,
                         client = asClient(invoice.headOfFamily, lang),
                         recipient = asRecipient(invoice.headOfFamily),
-                        codebtor = if (sendCodebtor) asCodebtor(invoice.codebtor) else null,
                         rows = invoice.rows
                             .groupBy { it.child }
                             .toList()
@@ -100,22 +99,25 @@ fun createBatchExports(
                                         row.amount,
                                         row.unitPrice,
                                         row.price,
-                                        row.description,
-                                        row.costCenter,
-                                        row.subCostCenter
+                                        row.description.trim(),
+                                        row.costCenter.trim(),
+                                        row.subCostCenter?.trim()
                                     )
                                 }
                                 listOf(nameRow) + rowsWithContent + listOf(emptyRow())
                             }
                     )
+
+                    if (sendCodebtor) integrtionInvoice.withCodebtor(asCodebtor(invoice.codebtor))
+                    else integrtionInvoice
                 }
             )
         }
 }
 
-private fun addressIsValid(streetAddress: String?, postalCode: String?, postOffice: String?): Boolean {
+private fun addressIsValid(streetAddress: String, postalCode: String, postOffice: String): Boolean {
     // some part of address information is empty
-    if (streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()) {
+    if (streetAddress.isBlank() || postalCode.isBlank() || postOffice.isBlank()) {
         return false
     }
 
@@ -139,9 +141,9 @@ const val fallbackPostOffice = "ESPOON KAUPUNKI"
 
 private fun asClient(headOfFamily: PersonData.Detailed, lang: CommunityLang): CommunityClient {
     val addressIsUseable = addressIsValid(
-        headOfFamily.streetAddress,
-        headOfFamily.postalCode,
-        headOfFamily.postOffice
+        headOfFamily.streetAddress.trim(),
+        headOfFamily.postalCode.trim(),
+        headOfFamily.postOffice.trim()
     )
     return CommunityClient(
         ssn = headOfFamily.ssn!!,
@@ -160,14 +162,14 @@ private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
         else headOfFamily.lastName to headOfFamily.firstName
 
     val addressIsUseable = addressIsValid(
-        headOfFamily.streetAddress,
-        headOfFamily.postalCode,
-        headOfFamily.postOffice
+        headOfFamily.streetAddress.trim(),
+        headOfFamily.postalCode.trim(),
+        headOfFamily.postOffice.trim()
     )
     val shouldUseInvoicingAddress = addressIsValid(
-        headOfFamily.invoicingStreetAddress,
-        headOfFamily.invoicingPostalCode,
-        headOfFamily.invoicingPostOffice
+        headOfFamily.invoicingStreetAddress.trim(),
+        headOfFamily.invoicingPostalCode.trim(),
+        headOfFamily.invoicingPostOffice.trim()
     )
 
     val (street, postalCode, post) = when {
@@ -227,7 +229,7 @@ private fun invoiceRow(
     require(productCode.length <= communityProductCodeLength) {
         "Community product code can be at most $communityProductCodeLength characters long, was '$productCode'"
     }
-    require(subCostC?.length ?: 0 <= communitySubCostCenterLength) {
+    require((subCostC?.length ?: 0) <= communitySubCostCenterLength) {
         "Community sub cost center should be at most $communitySubCostCenterLength characters long, was '$subCostC'"
     }
 
@@ -266,24 +268,57 @@ data class CommunityInvoiceBatch(
     val agreementType: Int,
     val batchDate: LocalDate,
     val batchNumber: Int,
-    val invoices: List<CommunityInvoice>
+    val invoices: List<IntegrationInvoice>
 ) {
     val currency = "EUR"
     val systemId = "EPH"
     val sourcePrinted = false
 }
 
-data class CommunityInvoice(
-    val invoiceNumber: Long,
-    val date: LocalDate,
-    val dueDate: LocalDate,
-    val client: CommunityClient,
-    val recipient: CommunityRecipient,
-    val codebtor: CommunityCodebtor?,
+interface IntegrationInvoice {
+    val invoiceNumber: Long
+    val date: LocalDate
+    val dueDate: LocalDate
+    val client: CommunityClient
+    val recipient: CommunityRecipient
     val rows: List<CommunityInvoiceRow>
-) {
-    val useInvoiceNumber = false
-    val printDate = null
+    val useInvoiceNumber: Boolean
+    val printDate: LocalDate?
+}
+
+data class CommunityInvoice(
+    override val invoiceNumber: Long,
+    override val date: LocalDate,
+    override val dueDate: LocalDate,
+    override val client: CommunityClient,
+    override val recipient: CommunityRecipient,
+    override val rows: List<CommunityInvoiceRow>
+) : IntegrationInvoice {
+    override val useInvoiceNumber = false
+    override val printDate = null
+
+    fun withCodebtor(codebtor: CommunityCodebtor?) = CommunityInvoiceWithCodebtor(
+        invoiceNumber = this.invoiceNumber,
+        date = this.date,
+        dueDate = this.dueDate,
+        client = this.client,
+        recipient = this.recipient,
+        rows = this.rows,
+        codebtor = codebtor
+    )
+}
+
+data class CommunityInvoiceWithCodebtor(
+    override val invoiceNumber: Long,
+    override val date: LocalDate,
+    override val dueDate: LocalDate,
+    override val client: CommunityClient,
+    override val recipient: CommunityRecipient,
+    override val rows: List<CommunityInvoiceRow>,
+    val codebtor: CommunityCodebtor?,
+) : IntegrationInvoice {
+    override val useInvoiceNumber = false
+    override val printDate = null
 }
 
 data class CommunityClient(
