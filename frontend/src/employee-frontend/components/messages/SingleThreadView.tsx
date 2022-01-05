@@ -190,6 +190,11 @@ export function SingleThreadView({
       accountId
     })
 
+  const onDiscard = useCallback(() => {
+    setReplyContent(threadId, '')
+    setReplyEditorVisible(false)
+  }, [setReplyContent, setReplyEditorVisible, threadId])
+
   const canReply = type === 'MESSAGE'
   const editorLabels = useMemo(
     () => ({
@@ -197,7 +202,8 @@ export function SingleThreadView({
       message: i18n.messages.messageEditor.message,
       recipients: i18n.messages.messageEditor.receivers,
       send: i18n.messages.messageEditor.send,
-      sending: i18n.messages.messageEditor.sending
+      sending: i18n.messages.messageEditor.sending,
+      discard: i18n.messages.messageEditor.discard
     }),
     [i18n]
   )
@@ -254,6 +260,7 @@ export function SingleThreadView({
               <MessageReplyEditor
                 replyState={replyState}
                 onSubmit={onSubmitReply}
+                onDiscard={onDiscard}
                 onUpdateContent={onUpdateContent}
                 recipients={recipients}
                 onToggleRecipient={onToggleRecipient}
