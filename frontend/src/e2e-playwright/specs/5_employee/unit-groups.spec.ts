@@ -13,11 +13,7 @@ import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Page } from '../../utils/page'
-import {
-  Child,
-  Daycare,
-  EmployeeDetail
-} from '../../../e2e-test-common/dev-api/types'
+import { Child, Daycare, EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 

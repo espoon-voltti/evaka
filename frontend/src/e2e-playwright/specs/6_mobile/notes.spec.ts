@@ -4,23 +4,23 @@
 
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
-import { resetDatabase } from '../../../e2e-test-common/dev-api'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../../e2e-test-common/dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   DaycareBuilder,
   DaycareGroupBuilder,
   Fixture
-} from '../../../e2e-test-common/dev-api/fixtures'
-import { PersonDetail } from '../../../e2e-test-common/dev-api/types'
+} from 'e2e-test-common/dev-api/fixtures'
+import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
-import config from '../../../e2e-test-common/config'
+import config from 'e2e-test-common/config'
 
 let page: Page
 let listPage: MobileListPage

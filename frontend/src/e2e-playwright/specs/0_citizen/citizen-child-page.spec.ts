@@ -12,13 +12,13 @@ import LocalDate from 'lib-common/local-date'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../../e2e-test-common/dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
   uuidv4
-} from '../../../e2e-test-common/dev-api/fixtures'
-import { DaycarePlacement } from '../../../e2e-test-common/dev-api/types'
+} from 'e2e-test-common/dev-api/fixtures'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
   CitizenChildPage,
   CitizenChildrenPage

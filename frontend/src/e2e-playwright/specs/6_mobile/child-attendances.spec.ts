@@ -24,7 +24,7 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DaycarePlacement } from '../../../e2e-test-common/dev-api/types'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'

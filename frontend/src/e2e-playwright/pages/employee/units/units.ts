@@ -5,7 +5,7 @@
 import { UUID } from 'lib-common/types'
 import { Checkbox, Element, Page, TextInput } from '../../../utils/page'
 import { UnitEditor, UnitPage } from './unit'
-import config from '../../../../e2e-test-common/config'
+import config from 'e2e-test-common/config'
 import { waitUntilEqual } from '../../../utils'
 
 export default class UnitsPage {

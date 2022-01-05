@@ -7,10 +7,10 @@ import { waitUntilEqual } from 'e2e-playwright/utils'
 import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
-import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Page } from '../../utils/page'
-import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 
 let admin: EmployeeDetail
 let page: Page

@@ -27,7 +27,7 @@ import {
 } from 'e2e-playwright/pages/employee/finance/finance-page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { employeeLogin } from 'e2e-playwright/utils/user'
-import { PersonDetail } from '../../../e2e-test-common/dev-api/types'
+import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import { Page } from '../../utils/page'
 
 let page: Page

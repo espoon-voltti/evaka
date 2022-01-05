@@ -23,7 +23,7 @@ import LocalDate from 'lib-common/local-date'
 import {
   enduserGuardianFixture,
   Fixture
-} from '../../../e2e-test-common/dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import { Page } from '../../utils/page'
 
 let page: Page

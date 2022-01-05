@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from '../../../e2e-test-common/config'
+import config from 'e2e-test-common/config'
 import { waitUntilEqual, waitUntilNotEqual, waitUntilTrue } from '../../utils'
 import LocalDate from 'lib-common/local-date'
 import {

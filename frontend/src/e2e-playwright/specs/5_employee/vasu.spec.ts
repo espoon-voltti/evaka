@@ -26,7 +26,7 @@ import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
 import { waitUntilEqual } from '../../utils'
-import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 
 let page: Page
 let admin: EmployeeDetail

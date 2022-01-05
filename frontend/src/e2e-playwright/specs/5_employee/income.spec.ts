@@ -6,14 +6,14 @@ import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin } from '../../utils/user'
 import { UUID } from 'lib-common/types'
-import config from '../../../e2e-test-common/config'
+import config from 'e2e-test-common/config'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import GuardianInformationPage, {
   IncomesSection
 } from '../../pages/employee/guardian-information'
 import ErrorModal from '../../pages/employee/error-modal'
 import { Page } from '../../utils/page'
-import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 let page: Page
 let personId: UUID
