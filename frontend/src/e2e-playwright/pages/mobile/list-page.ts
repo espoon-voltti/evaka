@@ -12,6 +12,10 @@ export default class MobileListPage {
     `[data-qa="unread-messages-indicator"]`
   )
 
+  comingChildrenTab = this.page.find('[data-qa="coming-tab"]')
+  presentChildrenTab = this.page.find('[data-qa="present-tab"]')
+  departedChildrenTab = this.page.find('[data-qa="departed-tab"]')
+
   async readChildGroupName(childId: UUID) {
     const elem = this.page.find(`[data-qa="child-group-name-${childId}"]`)
     return elem.innerText
@@ -54,5 +58,17 @@ export default class MobileListPage {
     await this.#groupSelectorButton.click()
     await this.groupChipElement(id).click()
     await this.selectedGroupElement(id).waitUntilVisible()
+  }
+
+  async selectComingChildren() {
+    await this.comingChildrenTab.click()
+  }
+
+  async selectPresentChildren() {
+    await this.presentChildrenTab.click()
+  }
+
+  async selectDepartedChildren() {
+    await this.departedChildrenTab.click()
   }
 }
