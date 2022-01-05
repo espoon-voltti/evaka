@@ -83,7 +83,7 @@ export default React.memo(function StaffAttendancesPage() {
         label: (
           <>
             {i18n.attendances.types.PRESENT}
-            <br />({presentStaffCounts.getOrElse(' ')})
+            <br />({presentStaffCounts.getOrElse('0')})
           </>
         )
       }
@@ -140,7 +140,11 @@ export default React.memo(function StaffAttendancesPage() {
         </FixedSpaceColumn>
       ))}
       <StaticIconContainer>
-        <Button primary onClick={navigateToExternalMemberArrival}>
+        <Button
+          primary
+          onClick={navigateToExternalMemberArrival}
+          data-qa={'add-external-member-btn'}
+        >
           <FontAwesomeIcon icon={faPlus} size="sm" />{' '}
           {i18n.attendances.staff.externalPerson}
         </Button>
