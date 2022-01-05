@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,7 +16,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import React, { useCallback, useEffect, useState } from 'react'
 import { client } from '../api/client'
 import { renderResult } from './async-rendering'
@@ -73,7 +73,7 @@ export default React.memo(function SettingsPage() {
   )
 
   return (
-    <Container verticalMargin={defaultMargins.L}>
+    <Container>
       <ContentArea opaque>
         <H1>{i18n.settings.title}</H1>
         {renderResult(settings, (settings) => (

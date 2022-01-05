@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -14,7 +14,6 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
@@ -188,7 +187,6 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
 
   return (
     <>
-      <Gap size={'L'} />
       <Container>
         <ReturnButton label={i18n.common.goBack} data-qa="close-application" />
         <FixedSpaceRow>

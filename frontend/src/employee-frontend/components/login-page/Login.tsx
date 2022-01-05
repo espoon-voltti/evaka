@@ -69,7 +69,6 @@ function Login({ error }: Props) {
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ContentArea opaque>
         <Title size={1} centered>
           {i18n.login.title}

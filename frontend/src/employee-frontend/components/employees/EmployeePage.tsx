@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -46,7 +46,6 @@ export default function EmployeePage() {
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         {employee.isLoading && <SpinnerSegment />}

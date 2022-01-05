@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -25,7 +25,7 @@ import styled from 'styled-components'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import { useTranslation } from '../state/i18n'
 import CircularLabel from '../components/common/CircularLabel'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { UUID } from 'lib-common/types'
 
 export const NameTd = styled(Td)`
@@ -120,7 +120,6 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ContentArea opaque>
         <div className="person-profile-wrapper" data-person-id={id}>
           <HeaderRow>

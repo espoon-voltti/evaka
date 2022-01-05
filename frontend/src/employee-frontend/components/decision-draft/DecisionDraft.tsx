@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,7 +17,6 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Title from 'lib-components/atoms/Title'
-import { Gap } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
 import Loader from 'lib-components/atoms/Loader'
 import { fontWeights } from 'lib-components/typography'
@@ -261,7 +260,6 @@ const Decision = React.memo(function Decision({
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ContentArea opaque>
         <Title size={1}>{i18n.decisionDraft.title}</Title>
         <InfoContainer>

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,7 +13,7 @@ import Spinner from 'lib-components/atoms/state/Spinner'
 import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Dimmed } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { DynamicSections } from './sections/DynamicSections'
 import { VasuEvents } from './sections/VasuEvents'
@@ -87,11 +87,10 @@ export default React.memo(function VasuEditPage({
 
   return (
     <VasuContainer
-      gapSize={'s'}
+      gapSize="s"
       data-qa="vasu-container"
       data-status={status.state}
     >
-      <Gap size={'L'} />
       {vasu && (
         <>
           <VasuHeader document={vasu} />

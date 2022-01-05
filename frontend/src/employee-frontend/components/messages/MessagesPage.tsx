@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,6 +10,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import { headerHeight } from '../Header'
 import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
 import { MessageContext } from './MessageContext'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
@@ -27,19 +28,8 @@ import {
 } from '../../api/attachments'
 import { featureFlags } from 'lib-customizations/employee'
 
-// TODO is fixed header height possible?
-// If not, replace with a stretching flex container with scrollable children
-const approximatedHeaderHeight = `164px`
-const MessagesPageContainer = styled(Container)`
-  height: calc(100vh - ${approximatedHeaderHeight});
-`
-
 const PanelContainer = styled.div`
-  position: absolute;
-  top: ${defaultMargins.L};
-  right: 0;
-  bottom: 0;
-  left: 0;
+  height: calc(100vh - ${headerHeight} - ${defaultMargins.m});
   display: flex;
 `
 
@@ -132,7 +122,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <MessagesPageContainer>
+    <Container>
       <PanelContainer>
         <Sidebar
           setSelectedReceivers={setSelectedReceivers}
@@ -183,6 +173,6 @@ export default function MessagesPage() {
             />
           )}
       </PanelContainer>
-    </MessagesPageContainer>
+    </Container>
   )
 }

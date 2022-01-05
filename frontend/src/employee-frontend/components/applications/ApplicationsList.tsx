@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -428,7 +428,7 @@ const ApplicationsList = React.memo(function Applications({
   return (
     <div data-qa="applications-list">
       <TitleRowContainer>
-        <H1 fitted>
+        <H1 fitted noMargin>
           {status === 'ALL'
             ? i18n.applications.list.title
             : i18n.application.statuses[status]}

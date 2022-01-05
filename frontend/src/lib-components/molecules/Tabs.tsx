@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -45,44 +45,38 @@ export default React.memo(function Tabs(props: Props) {
   const { mobile, dataQa } = props
   const maxWidth = mobile ? `${100 / props.tabs.length}vw` : undefined
   return (
-    <Background>
-      <Container>
-        <TabsContainer data-qa={dataQa}>
-          {usesButtons(props)
-            ? props.tabs.map(({ id, onClick, active, label, counter }) => (
-                <TabButtonContainer
-                  key={id}
-                  onClick={onClick}
-                  data-qa={`${id}-tab`}
-                  $maxWidth={maxWidth}
-                  $mobile={mobile}
-                  className={active ? 'active' : undefined}
-                >
-                  <NavLinkText>{label}</NavLinkText>
-                  {counter ? <TabCounter>{counter}</TabCounter> : null}
-                </TabButtonContainer>
-              ))
-            : props.tabs.map(({ id, link, label, counter }) => (
-                <TabLinkContainer
-                  key={id}
-                  to={link}
-                  data-qa={`${id}-tab`}
-                  $maxWidth={maxWidth}
-                  $mobile={mobile}
-                >
-                  <NavLinkText>{label}</NavLinkText>
-                  {counter ? <TabCounter>{counter}</TabCounter> : null}
-                </TabLinkContainer>
-              ))}
-        </TabsContainer>
-      </Container>
-    </Background>
+    <Container>
+      <TabsContainer data-qa={dataQa}>
+        {usesButtons(props)
+          ? props.tabs.map(({ id, onClick, active, label, counter }) => (
+              <TabButtonContainer
+                key={id}
+                onClick={onClick}
+                data-qa={`${id}-tab`}
+                $maxWidth={maxWidth}
+                $mobile={mobile}
+                className={active ? 'active' : undefined}
+              >
+                <NavLinkText>{label}</NavLinkText>
+                {counter ? <TabCounter>{counter}</TabCounter> : null}
+              </TabButtonContainer>
+            ))
+          : props.tabs.map(({ id, link, label, counter }) => (
+              <TabLinkContainer
+                key={id}
+                to={link}
+                data-qa={`${id}-tab`}
+                $maxWidth={maxWidth}
+                $mobile={mobile}
+              >
+                <NavLinkText>{label}</NavLinkText>
+                {counter ? <TabCounter>{counter}</TabCounter> : null}
+              </TabLinkContainer>
+            ))}
+      </TabsContainer>
+    </Container>
   )
 })
-
-const Background = styled.div`
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
-`
 
 const TabsContainer = styled.div`
   display: flex;

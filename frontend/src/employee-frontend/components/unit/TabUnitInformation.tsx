@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -49,7 +49,7 @@ export default React.memo(function TabUnitInformation() {
         data-isloading={isLoading(unitData)}
       >
         <H2 data-qa="unit-name">{unitInformation.daycare.name}</H2>
-        <Gap size="s" />
+        <Gap size="xxs" />
         <H3>{i18n.unit.occupancies}</H3>
         <Gap size="s" />
         <FixedSpaceRow alignItems="center">

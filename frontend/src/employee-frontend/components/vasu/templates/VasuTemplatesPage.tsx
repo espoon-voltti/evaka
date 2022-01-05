@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,7 +16,6 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { Gap } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { deleteVasuTemplate, getVasuTemplateSummaries } from './api'
@@ -41,7 +40,6 @@ export default React.memo(function VasuTemplatesPage() {
 
   return (
     <Container>
-      <Gap size={'L'} />
       <ContentArea opaque>
         <H1>{t.title}</H1>
 

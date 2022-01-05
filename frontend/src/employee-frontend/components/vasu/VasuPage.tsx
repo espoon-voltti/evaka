@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -34,8 +34,7 @@ export default React.memo(function VasuPage({
   const dynamicSectionsOffset = 1
 
   return (
-    <VasuContainer gapSize={'zero'} data-qa="vasu-preview">
-      <Gap size={'L'} />
+    <VasuContainer gapSize="zero" data-qa="vasu-preview">
       {vasu && (
         <>
           <VasuHeader document={vasu} />
