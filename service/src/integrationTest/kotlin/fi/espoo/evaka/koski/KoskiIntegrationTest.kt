@@ -14,8 +14,6 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.preschoolTerm2019
-import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
@@ -782,6 +780,9 @@ class KoskiIntegrationTest : FullApplicationTest() {
 }
 
 private fun Database.Transaction.clearKoskiInputCache() = createUpdate("UPDATE koski_study_right SET input_data = NULL").execute()
+
+private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
+private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
 
 private fun testPeriod(offsets: Pair<Long, Long?>) = FiniteDateRange(
     preschoolTerm2019.start.plusDays(offsets.first),
