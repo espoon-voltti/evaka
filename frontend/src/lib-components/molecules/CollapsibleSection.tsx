@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faAngleUp } from 'lib-icons'
+import { desktopMin } from '../breakpoints'
 import { H3 } from '../typography'
 import { defaultMargins } from '../white-space'
 import { BaseProps } from '../utils'
@@ -58,9 +59,11 @@ const ToggleWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 40px;
-  width: 20px;
-  font-size: 40px;
+  margin-left: ${defaultMargins.s};
+  font-size: 24px;
+  @media screen and (min-width: ${desktopMin}) {
+    font-size: 32px;
+  }
 `
 
 const Content = styled.div`
@@ -89,6 +92,9 @@ export default React.memo(function CollapsibleSection({
 }: CollapsibleSectionProps) {
   const { colors } = useTheme()
   const [collapsed, setCollapsed] = useState<boolean>(startCollapsed)
+  const toggleCollapse = useCallback(() => {
+    setCollapsed((prev) => !prev)
+  }, [])
 
   return (
     <Wrapper
@@ -97,7 +103,7 @@ export default React.memo(function CollapsibleSection({
       data-status={collapsed ? 'closed' : 'open'}
     >
       <Row
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={toggleCollapse}
         className={classNames(className, { fitted })}
       >
         {icon && (
@@ -108,10 +114,7 @@ export default React.memo(function CollapsibleSection({
         <H3 fitted noMargin={fitted}>
           {title}
         </H3>
-        <ToggleWrapper
-          onClick={() => setCollapsed(!collapsed)}
-          data-qa="collapsible-trigger"
-        >
+        <ToggleWrapper data-qa="collapsible-trigger">
           <FontAwesomeIcon
             icon={collapsed ? faAngleDown : faAngleUp}
             color={colors.main.primary}
