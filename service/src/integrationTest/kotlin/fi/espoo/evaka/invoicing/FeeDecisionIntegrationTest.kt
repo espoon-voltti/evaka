@@ -4,25 +4,11 @@
 
 package fi.espoo.evaka.invoicing
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.snDaycareFullDay35
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
-import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
 import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
@@ -44,14 +30,23 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
+import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.withMockedTime
-import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
@@ -970,7 +965,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .response()
         assertEquals(204, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2 )
+        asyncJobRunner.runPendingJobsSync(2)
 
         val (_, _, result) = http.get("/decisions/${draftWithFutureDates.id}")
             .asUser(user)
