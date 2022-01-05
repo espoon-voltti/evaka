@@ -59,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
 class InvoiceIntegrationTest : FullApplicationTest() {
@@ -927,6 +928,39 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             assertEquals(testAdult_1.postOffice, invoice.client.post)
             assertEquals(testAdult_1.streetAddress, invoice.recipient.street)
             assertEquals(testAdult_1.postalCode, invoice.recipient.postalCode)
+            assertEquals(testAdult_1.postOffice, invoice.recipient.post)
+        }
+    }
+
+    @Test
+    fun `sending an invoice trims whitespace from recipient's address`() {
+        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
+        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
+        val postalCodeWithWhiteSpace = " 56789 "
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE person SET postal_code = :postalCode WHERE id = :id")
+                .bind("id", testAdult_1.id)
+                .bind("postalCode", postalCodeWithWhiteSpace)
+                .execute()
+        }
+
+        val (_, response, _) = http.post("/invoices/send")
+            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .asUser(testUser)
+            .responseString()
+        assertEquals(204, response.statusCode)
+
+        val sentBatch = (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches[0]
+
+        assertEquals(1, sentBatch.invoices.size)
+        sentBatch.invoices.first().let { invoice ->
+            assertEquals(testAdult_1.streetAddress, invoice.client.street)
+            assertNotEquals(postalCodeWithWhiteSpace, invoice.client.postalCode)
+            assertEquals(postalCodeWithWhiteSpace.trim(), invoice.client.postalCode)
+            assertEquals(testAdult_1.postOffice, invoice.client.post)
+            assertEquals(testAdult_1.streetAddress, invoice.recipient.street)
+            assertNotEquals(postalCodeWithWhiteSpace, invoice.recipient.postalCode)
+            assertEquals(postalCodeWithWhiteSpace.trim(), invoice.recipient.postalCode)
             assertEquals(testAdult_1.postOffice, invoice.recipient.post)
         }
     }
