@@ -500,7 +500,7 @@ WHERE employee_id = :userId
                                     val preschoolPlacements = it.getPlacementsForChild(assistanceAction.childId).filter {
                                         (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
                                     }
-                                    preschoolPlacements.size == 0 ||
+                                    preschoolPlacements.isEmpty() ||
                                         preschoolPlacements.any { placement ->
                                             placement.startDate.isBefore(assistanceAction.startDate) || placement.startDate.equals(assistanceAction.startDate)
                                         }
@@ -530,7 +530,7 @@ WHERE employee_id = :userId
                                     val preschoolPlacements = it.getPlacementsForChild(assistanceNeed.childId).filter {
                                         (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
                                     }
-                                    preschoolPlacements.size == 0 ||
+                                    preschoolPlacements.isEmpty() ||
                                         preschoolPlacements.any { placement ->
                                             placement.startDate.isBefore(assistanceNeed.startDate) || placement.startDate.equals(assistanceNeed.startDate)
                                         }

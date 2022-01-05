@@ -179,7 +179,7 @@ class DvvModificationsService(
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
                 if (addressDvvInfoGroup.muutosattribuutti.equals("LISATTY") || (
-                    addressDvvInfoGroup.muutosattribuutti.equals("MUUTETTU") && it.streetAddress.isNullOrEmpty()
+                    addressDvvInfoGroup.muutosattribuutti.equals("MUUTETTU") && it.streetAddress.isEmpty()
                     )
                 ) {
                     logger.info("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.muutosattribuutti}")

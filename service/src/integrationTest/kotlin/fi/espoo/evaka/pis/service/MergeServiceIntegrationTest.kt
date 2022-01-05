@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pis.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageNotificationEmailService
@@ -17,7 +16,6 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
@@ -50,7 +48,6 @@ import kotlin.test.assertEquals
 class MergeServiceIntegrationTest : PureJdbiTest() {
     lateinit var mergeService: MergeService
 
-    private val objectMapper: ObjectMapper = defaultObjectMapper()
     private lateinit var asyncJobRunnerMock: AsyncJobRunner<AsyncJob>
     private val messageNotificationEmailService = Mockito.mock(MessageNotificationEmailService::class.java)
     private val messageService: MessageService = MessageService(messageNotificationEmailService)

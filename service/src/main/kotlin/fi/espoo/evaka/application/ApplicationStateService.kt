@@ -66,7 +66,6 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -87,7 +86,6 @@ private val logger = KotlinLogging.logger { }
 
 @Service
 class ApplicationStateService(
-    private val acl: AccessControlList,
     private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService,
     private val decisionService: DecisionService,

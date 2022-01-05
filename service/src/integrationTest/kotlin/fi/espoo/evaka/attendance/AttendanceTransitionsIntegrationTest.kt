@@ -563,7 +563,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun returnToComingAssertOkOneChild(): Child {
-        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
+        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
             .asUser(mobileUser)
             .response()
 
@@ -599,7 +599,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun markDepartedAssertOkOneChild(departed: LocalTime, absenceType: AbsenceType?): Child {
-        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
+        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
             .asUser(mobileUser)
             .response()
@@ -620,7 +620,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun returnToPresentAssertOkOneChild(): Child {
-        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present")
+        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present")
             .asUser(mobileUser)
             .response()
 
@@ -639,7 +639,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun markFullDayAbsenceAssertOkOneChild(absenceType: AbsenceType): Child {
-        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
+        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
             .asUser(mobileUser)
             .response()

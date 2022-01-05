@@ -13,7 +13,6 @@ import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
@@ -30,7 +29,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/absences")
-class AbsenceController(private val absenceService: AbsenceService, private val acl: AccessControlList, private val accessControl: AccessControl) {
+class AbsenceController(private val absenceService: AbsenceService, private val accessControl: AccessControl) {
     @GetMapping("/{groupId}")
     fun getAbsencesByGroupAndMonth(
         db: Database,

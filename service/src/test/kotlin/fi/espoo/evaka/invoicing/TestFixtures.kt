@@ -166,8 +166,6 @@ val testInvoice = Invoice(
     rows = listOf(testInvoiceRow)
 )
 
-val testPisFridgeParentId = UUID.randomUUID()
-
 val testIncome = Income(
     id = IncomeId(UUID.randomUUID()),
     personId = UUID.randomUUID(),

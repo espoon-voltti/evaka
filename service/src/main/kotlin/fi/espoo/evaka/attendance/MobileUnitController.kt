@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -26,10 +25,7 @@ import java.time.LocalDate
 
 @RestController
 @RequestMapping("/mobile/units")
-class MobileUnitController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl
-) {
+class MobileUnitController(private val accessControl: AccessControl) {
     @GetMapping("/{unitId}")
     fun getUnitInfo(
         db: Database,
