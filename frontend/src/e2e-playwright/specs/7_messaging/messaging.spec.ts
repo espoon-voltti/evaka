@@ -21,7 +21,7 @@ import {
 import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { Page } from '../../utils/page'
-import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 
 let unitSupervisorPage: Page
 let citizenPage: Page

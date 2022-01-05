@@ -29,10 +29,7 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
-import {
-  Application,
-  EmployeeDetail
-} from '../../../e2e-test-common/dev-api/types'
+import { Application, EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 let page: Page

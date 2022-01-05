@@ -34,4 +34,3 @@ src/lib-customizations/**/*
 !src/lib-customizations/*.tsx
 
 playwright-filenames.txt
-testcafe-fixture-regex.txt

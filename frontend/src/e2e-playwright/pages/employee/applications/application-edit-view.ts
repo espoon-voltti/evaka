@@ -13,7 +13,7 @@ import {
 } from '../../../utils/page'
 import { waitUntilEqual, waitUntilFalse } from '../../../utils'
 import ApplicationReadView from './application-read-view'
-import { OtherGuardianAgreementStatus } from '../../../../e2e-test-common/dev-api/types'
+import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
 
 export default class ApplicationEditView {
   constructor(private readonly page: Page) {}

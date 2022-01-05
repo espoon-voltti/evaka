@@ -18,7 +18,7 @@ if [ "${DEBUG:-X}" = "true" ]; then
 fi
 
 if [ "${1:-X}" = "X" ]; then
-  echo "Usage: $0 <testcafe|playwright>"
+  echo "Usage: $0 playwright"
   exit 1
 fi
 
@@ -40,30 +40,11 @@ if [ "$SKIP_SPLIT" != 'true' ]; then
         | circleci tests split --split-by=timings --timings-type=filename)
     printf '%s\n' 'Spec files selected for node:' "${FILENAMES[@]}"
     printf "%s\n" "${FILENAMES[@]}" > playwright-filenames.txt
-  elif [ "$TEST_RUNNER" = "testcafe" ]; then
-    # NOTE: Currently testcafe-reporter-junit doesn't provide
-    # filenames in its output so they can't be used for splitting
-    # -> use fixture names instead.
-    mapfile -t FIXTURE_NAMES < <(git grep '^\w*fixture(' -- src/e2e-test/specs/ \
-      | awk -F "'" '{print $2}' \
-      | sort -h | uniq \
-      | circleci tests split --split-by=timings --timings-type classname)
-    printf '%s\n' 'Fixtures selected for node:' "${FIXTURE_NAMES[@]}"
-    # NOTE: This is extremely brittle but necessary as Testcafe
-    # doesn't support multiple --fixture arguments (+ the above
-    # report issue) -> everything must be a single regex.
-    TESTCAFE_FIXTURE_REGEX=$(printf '%s\n' "${FIXTURE_NAMES[@]}" | sed 's/[^-A-Za-z0-9_]/\\&/g' | awk '{print "^"$0"$"}' | tr '\n' '|')
-    # Strip the last "|"
-    TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
-    echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
-    echo "$TESTCAFE_FIXTURE_REGEX" > testcafe-fixture-regex.txt
   else
     echo "ERROR: Invalid test_runner: $TEST_RUNNER"
     exit 1
   fi
   popd
-else
-  rm -f frontend/testcafe-fixture-regex.txt
 fi
 
 pushd compose

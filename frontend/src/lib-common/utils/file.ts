@@ -34,7 +34,7 @@ export const downloadBlobAsFile = (fileName: string, blobPart: BlobPart) => {
   const link = createLink(url)
 
   link.setAttribute('download', fileName)
-  // Safari and Testcafe think _blank anchors are pop-ups.
+  // Safari thinks _blank anchors are pop-ups.
   // We only want to set _blank target if the browser does not support the HTML5
   // download attribute. This allows you to download files in desktop safari if
   // pop up blocking is enabled.

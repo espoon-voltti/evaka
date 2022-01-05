@@ -24,7 +24,7 @@ import ChildInformationPage, {
 import { addDays, format, subDays } from 'date-fns'
 import { PlacementType } from 'lib-common/generated/enums'
 import { Page } from '../../utils/page'
-import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 
 let page: Page
 let childInformationPage: ChildInformationPage

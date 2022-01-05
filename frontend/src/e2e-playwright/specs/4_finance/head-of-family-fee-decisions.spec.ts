@@ -15,9 +15,9 @@ import {
   feeDecisionsFixture,
   Fixture,
   uuidv4
-} from '../../../e2e-test-common/dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { initializeAreaAndPersonData } from '../../../e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { Page } from 'e2e-playwright/utils/page'

@@ -4,7 +4,7 @@
 
 # Use this compose file to extend docker-compose.yml when you want to run
 # the latest published versions, e.g. for E2E testing.
-version: '3.5'
+version: "3.5"
 
 services:
   playwright:
@@ -16,19 +16,5 @@ services:
       - ..:/repo
     ipc: host
     environment:
-      CI: ${CI:-false}
-      DEBUG: ${DEBUG:-}
-
-  testcafe:
-    image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-testcafe:${COMPOSE_TAG:-latest}
-    build:
-      context: ./e2e
-      dockerfile: ./testcafe.Dockerfile
-    volumes:
-      - ..:/repo
-    ipc: host
-    environment:
-      REPO_UID: "${UID}"
-      REPO_GID: "${GID}"
       CI: ${CI:-false}
       DEBUG: ${DEBUG:-}

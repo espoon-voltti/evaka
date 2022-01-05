@@ -3,7 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 function isRelativeLibImport(node) {
-  return node.source.type === 'Literal' && node.source.value.includes('./lib-')
+  return (
+    node.source.type === 'Literal' &&
+    (node.source.value.includes('./lib-') ||
+      node.source.value.includes('./e2e-test-common/'))
+  )
 }
 
 function toAbsoluteImport(str) {

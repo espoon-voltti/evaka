@@ -7,7 +7,7 @@ import {
   insertDaycarePlacementFixtures,
   insertPedagogicalDocumentAttachment,
   resetDatabase
-} from '../../../e2e-test-common/dev-api'
+} from 'e2e-test-common/dev-api'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { enduserLogin } from '../../utils/user'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
@@ -15,11 +15,11 @@ import {
   createDaycarePlacementFixture,
   Fixture,
   uuidv4
-} from '../../../e2e-test-common/dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../../e2e-test-common/dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import { Page } from '../../utils/page'
 
 let fixtures: AreaAndPersonFixtures

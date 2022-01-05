@@ -17,7 +17,7 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 import config from 'e2e-test-common/config'
-import { EmployeeDetail } from '../../../e2e-test-common/dev-api/types'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 
 let fixtures: AreaAndPersonFixtures
 let admin: EmployeeDetail

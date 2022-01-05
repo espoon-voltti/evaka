@@ -13,10 +13,10 @@ import {
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
-import config from '../../../../e2e-test-common/config'
+import config from 'e2e-test-common/config'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 import { UnitGroupsPage } from './unit-groups-page'
-import { postPairingChallenge } from '../../../../e2e-test-common/dev-api'
+import { postPairingChallenge } from 'e2e-test-common/dev-api'
 
 type UnitProviderType =
   | 'MUNICIPAL'

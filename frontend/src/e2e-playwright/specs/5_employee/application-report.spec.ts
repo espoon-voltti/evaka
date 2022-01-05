@@ -11,7 +11,7 @@ import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import ReportsPage, { ApplicationsReport } from '../../pages/employee/reports'
 import { employeeLogin } from '../../utils/user'
 import { Page } from '../../utils/page'
-import config from '../../../e2e-test-common/config'
+import config from 'e2e-test-common/config'
 import LocalDate from 'lib-common/local-date'
 import EmployeeNav from '../../pages/employee/employee-nav'
 

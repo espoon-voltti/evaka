@@ -9,7 +9,6 @@
     { "path": "./src/citizen-frontend" },
     { "path": "./src/lib-common" },
     { "path": "./src/lib-components" },
-    { "path": "./src/e2e-test" },
     { "path": "./src/e2e-playwright" },
     { "path": "./src/e2e-test-common" },
     { "path": "./src/employee-frontend" },
