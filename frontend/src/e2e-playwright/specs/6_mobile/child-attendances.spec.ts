@@ -234,7 +234,77 @@ describe('Child mobile attendance list', () => {
     await childAttendancePage.setTime('14:00')
     await childAttendancePage.selectMarkDepartedButton()
 
+    await page.pause()
     await assertAttendanceCounts(2, 0, 1, 0, 3)
+
+    await listPage.selectDepartedChildren()
+    await listPage.assertChildExists(child1)
+  })
+
+  test('Child can be marked as absent for the whole day', async () => {
+    const child = enduserChildFixtureKaarina.id
+    await createPlacements(child)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await listPage.selectChild(child)
+    await childPage.selectMarkAbsentView()
+    await childAttendancePage.selectMarkAbsentByType('OTHER_ABSENCE')
+    await childAttendancePage.selectMarkAbsentButton()
+    await childPage.goBack()
+    await listPage.selectAbsentChildren()
+    await listPage.assertChildExists(child)
+  })
+
+  test('Child can be marked present and returned to coming', async () => {
+    const child = enduserChildFixtureKaarina.id
+    await createPlacements(child)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await listPage.selectChild(child)
+    await childPage.selectMarkPresentView()
+    await childAttendancePage.setTime('08:00')
+    await childAttendancePage.selectMarkPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child)
+    await childPage.returnToComing()
+
+    await listPage.selectComingChildren()
+    await listPage.assertChildExists(child)
+  })
+
+  test('User can undo the whole flow of marking present at 08:30 and leaving at 16:00', async () => {
+    const child = enduserChildFixtureKaarina.id
+    await createPlacements(child)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await listPage.selectChild(child)
+    await childPage.selectMarkPresentView()
+    await childAttendancePage.setTime('08:30')
+    await childAttendancePage.selectMarkPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child)
+    await childPage.selectMarkDepartedView()
+    await childAttendancePage.setTime('16:00')
+    await childAttendancePage.selectMarkDepartedButton()
+
+    await listPage.selectDepartedChildren()
+    await listPage.selectChild(child)
+    await childPage.returnToPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child)
+    await childPage.returnToComing()
+
+    await listPage.selectComingChildren()
+    await listPage.assertChildExists(child)
   })
 
   test('Group selector works consistently', async () => {

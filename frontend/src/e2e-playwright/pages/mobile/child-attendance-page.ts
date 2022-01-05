@@ -14,6 +14,7 @@ export default class ChildAttendancePage {
   #childLink = (n: number) => this.page.findAll('[data-qa="child-name"]').nth(n)
   #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
   #markDepartedButton = this.page.find('[data-qa="mark-departed-btn"]')
+  #markAbsentButton = this.page.find('[data-qa="mark-absent-btn"]')
   #markDepartedWithAbsenceButton = this.page.find(
     '[data-qa="mark-departed-with-absence-btn"]'
   )
@@ -53,6 +54,10 @@ export default class ChildAttendancePage {
 
   async selectMarkAbsentByType(type: AbsenceType) {
     await this.#markAbsentByTypeButton(type).click()
+  }
+
+  async selectMarkAbsentButton() {
+    await this.#markAbsentButton.click()
   }
 
   async assertMarkAbsenceTypeButtonsNotShown() {

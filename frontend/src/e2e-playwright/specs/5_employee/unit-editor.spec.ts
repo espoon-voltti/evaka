@@ -8,7 +8,7 @@ import { resetDatabase } from 'e2e-test-common/dev-api'
 import { Page } from '../../utils/page'
 import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { UnitPage, UnitEditor } from 'e2e-playwright/pages/employee/units/unit'
+import { UnitEditor, UnitPage } from 'e2e-playwright/pages/employee/units/unit'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { Daycare } from 'e2e-test-common/dev-api/types'
@@ -75,7 +75,6 @@ describe('Employee - unit details', () => {
 
 describe('Employee - unit editor validations and warnings', () => {
   let page: Page
-  let nav: EmployeeNav
   let unitPage: UnitPage
   let unitEditorPage: UnitEditor
 
@@ -87,13 +86,7 @@ describe('Employee - unit editor validations and warnings', () => {
 
     page = await Page.open()
     await employeeLogin(page, admin.data)
-    await page.goto(config.employeeUrl)
-    nav = new EmployeeNav(page)
-    await nav.openTab('units')
-    const units = new UnitsPage(page)
-    await units.navigateToUnit(fixtures.daycareFixture.id)
-    unitPage = new UnitPage(page)
-    await unitPage.openUnitInformation()
+    unitPage = await UnitPage.openUnit(page, fixtures.daycareFixture.id)
     const unitDetailsPage = await unitPage.openUnitDetails()
     unitEditorPage = await unitDetailsPage.edit()
   })

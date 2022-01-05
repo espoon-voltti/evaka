@@ -6,6 +6,7 @@ import {
   Checkbox,
   Combobox,
   Element,
+  Modal,
   Page,
   TextInput
 } from 'e2e-playwright/utils/page'
@@ -15,6 +16,7 @@ import { UUID } from 'lib-common/types'
 import config from '../../../../e2e-test-common/config'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 import { UnitGroupsPage } from './unit-groups-page'
+import { postPairingChallenge } from '../../../../e2e-test-common/dev-api'
 
 type UnitProviderType =
   | 'MUNICIPAL'
@@ -27,15 +29,21 @@ type UnitProviderType =
 export class UnitPage {
   constructor(private readonly page: Page) {}
 
-  readonly #unitName = this.page.find('[data-qa="unit-name"]')
+  #unitName = this.page.find('[data-qa="unit-name"]')
+  #visitingAddress = this.page.find('[data-qa="unit-visiting-address"]')
 
-  readonly #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
-  readonly #groupsTab = this.page.find('[data-qa="groups-tab"]')
-  readonly #applicationProcessTab = this.page.find(
-    '[data-qa="application-process-tab"]'
-  )
+  #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
+  #groupsTab = this.page.find('[data-qa="groups-tab"]')
+  #applicationProcessTab = this.page.find('[data-qa="application-process-tab"]')
 
-  readonly #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
+  #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
+
+  static async openUnit(page: Page, id: string): Promise<UnitPage> {
+    await page.goto(`${config.employeeUrl}/units/${id}`)
+    const unitPage = new UnitPage(page)
+    await unitPage.waitUntilLoaded()
+    return unitPage
+  }
 
   async navigateToUnit(id: string) {
     await this.page.goto(`${config.employeeUrl}/units/${id}`)
@@ -50,16 +58,38 @@ export class UnitPage {
       .waitUntilVisible()
   }
 
+  occupancies = new UnitOccupanciesSection(
+    this.page.find('[data-qa="occupancies"]')
+  )
+
   async assertUnitName(expectedName: string) {
     await waitUntilEqual(() => this.#unitName.innerText, expectedName)
   }
 
-  async openUnitInformation(): Promise<UnitInformationSection> {
-    await this.#unitInfoTab.click()
-    const section = new UnitInformationSection(this.page)
-    await section.waitUntilVisible()
-    return section
+  async assertVisitingAddress(expectedAddress: string) {
+    await waitUntilEqual(() => this.#visitingAddress.innerText, expectedAddress)
   }
+
+  async openUnitInformation() {
+    await this.#unitInfoTab.click()
+  }
+
+  supervisorAcl = new AclSection(
+    this.page,
+    this.page.find('[data-qa="daycare-acl-supervisors"]')
+  )
+  specialEducationTeacherAcl = new AclSection(
+    this.page,
+    this.page.find('[data-qa="daycare-acl-set"]')
+  )
+  staffAcl = new StaffAclSection(
+    this.page,
+    this.page.find('[data-qa="daycare-acl-staff"]')
+  )
+  mobileAcl = new MobileDevicesSection(
+    this.page,
+    this.page.find('[data-qa="daycare-mobile-devices"]')
+  )
 
   async openUnitDetails(): Promise<UnitDetailsPage> {
     await this.#unitDetailsLink.click()
@@ -76,8 +106,42 @@ export class UnitPage {
   async openGroupsPage(): Promise<UnitGroupsPage> {
     await this.#groupsTab.click()
     const section = new UnitGroupsPage(this.page)
-    await section.waitUntilVisible()
+    await section.waitUntilLoaded()
     return section
+  }
+}
+
+export class UnitOccupanciesSection extends Element {
+  #elem = (
+    which: 'minimum' | 'maximum' | 'no-valid-values',
+    type: 'confirmed' | 'planned'
+  ) => this.find(`[data-qa="occupancies-${which}-${type}"]`)
+
+  async assertNoValidValues() {
+    await this.#elem('no-valid-values', 'confirmed').waitUntilVisible()
+    await this.#elem('no-valid-values', 'planned').waitUntilVisible()
+  }
+
+  async assertConfirmed(minimum: string, maximum: string) {
+    await waitUntilEqual(
+      () => this.#elem('minimum', 'confirmed').innerText,
+      minimum
+    )
+    await waitUntilEqual(
+      () => this.#elem('maximum', 'confirmed').innerText,
+      maximum
+    )
+  }
+
+  async assertPlanned(minimum: string, maximum: string) {
+    await waitUntilEqual(
+      () => this.#elem('minimum', 'planned').innerText,
+      minimum
+    )
+    await waitUntilEqual(
+      () => this.#elem('maximum', 'planned').innerText,
+      maximum
+    )
   }
 }
 
@@ -110,18 +174,6 @@ export class UnitDetailsPage {
   async edit() {
     await this.#editUnitButton.click()
     return new UnitEditor(this.page)
-  }
-}
-
-export class UnitInformationSection {
-  constructor(private readonly page: Page) {}
-
-  readonly staffAcl = new StaffAclSection(
-    this.page.find('[data-qa="daycare-acl-staff"]')
-  )
-
-  async waitUntilVisible() {
-    await this.page.find('[data-qa="unit-name"]').waitUntilVisible()
   }
 }
 
@@ -306,40 +358,128 @@ export class UnitEditor {
   }
 }
 
-class StaffAclSection extends Element {
-  readonly #table = this.find('[data-qa="acl-table"]')
-  readonly #tableRows = this.#table.findAll('[data-qa="acl-row"]')
+class AclSection extends Element {
+  constructor(private page: Page, root: Element) {
+    super(root)
+  }
 
-  readonly #combobox = new Combobox(this.find('[data-qa="acl-combobox"]'))
-  readonly #addButton = this.find('[data-qa="acl-add-button"]')
+  #table = this.find('[data-qa="acl-table"]')
+  #tableRows = this.#table.findAll(`[data-qa^="acl-row-"]`)
+  #tableRow = (id: UUID) => this.#table.find(`[data-qa="acl-row-${id}"]`)
 
-  async addEmployeeAcl(employeeEmail: string, employeeId: UUID) {
-    await this.#combobox.click()
-    await this.#combobox.fillAndSelectItem(employeeEmail, employeeId)
+  #combobox = new Combobox(this.find('[data-qa="acl-combobox"]'))
+  #addButton = this.find('[data-qa="acl-add-button"]')
+
+  async addAcl(email: string) {
+    await this.#combobox.fillAndSelectFirst(email)
     await this.#addButton.click()
     await this.#table.waitUntilVisible()
   }
 
-  get rows() {
-    return this.#tableRows.evaluateAll((rows) =>
-      rows.map((row) => ({
-        name: row.querySelector('[data-qa="name"]')?.textContent ?? '',
-        email: row.querySelector('[data-qa="email"]')?.textContent ?? '',
-        groups: Array.from(
-          row.querySelectorAll('[data-qa="groups"] > div')
-        ).map((element) => element.textContent ?? '')
-      }))
+  async deleteAcl(id: UUID) {
+    await this.#tableRow(id).find('[data-qa="delete"]').click()
+    await new Modal(this.page.find('[data-qa="modal"]')).submit()
+  }
+
+  async assertRowFields(fields: { id: UUID; name: string; email: string }) {
+    const row = this.#tableRow(fields.id)
+    await waitUntilEqual(
+      () => row.find('[data-qa="name"]').innerText,
+      fields.name
+    )
+    await waitUntilEqual(
+      () => row.find('[data-qa="email"]').innerText,
+      fields.email
     )
   }
 
-  async getRow(name: string): Promise<StaffAclRow> {
-    const rowIndex = (await this.rows).findIndex((row) => row.name === name)
-    if (rowIndex < 0) {
-      throw new Error(`Row with name ${name} not found`)
-    }
-    return new StaffAclRow(
-      this.#table.find(`tbody tr:nth-child(${rowIndex + 1})[data-qa="acl-row"]`)
+  async assertRows(rows: { id: UUID; name: string; email: string }[]) {
+    await waitUntilEqual(() => this.#tableRows.count(), rows.length)
+    await Promise.all(rows.map((fields) => this.assertRowFields(fields)))
+  }
+}
+
+class StaffAclSection extends AclSection {
+  #table = this.find('[data-qa="acl-table"]')
+  #tableRow = (id: UUID) => this.#table.find(`[data-qa="acl-row-${id}"]`)
+
+  async assertRowFields(fields: {
+    id: UUID
+    name: string
+    email: string
+    groups: string[]
+  }) {
+    const row = this.#tableRow(fields.id)
+    await waitUntilEqual(
+      () => row.find('[data-qa="name"]').innerText,
+      fields.name
     )
+    await waitUntilEqual(
+      () => row.find('[data-qa="email"]').innerText,
+      fields.email
+    )
+    await waitUntilEqual(
+      () => row.find('[data-qa="groups"] > div').findAll('div').allInnerTexts(),
+      fields.groups
+    )
+  }
+
+  async assertRows(
+    rows: { id: UUID; name: string; email: string; groups: string[] }[]
+  ) {
+    await Promise.all(rows.map((fields) => this.assertRowFields(fields)))
+  }
+
+  getRow(id: UUID) {
+    return new StaffAclRow(this.#table.find(`[data-qa="acl-row-${id}"]`))
+  }
+}
+
+class MobileDevicesSection extends Element {
+  constructor(private page: Page, root: Element) {
+    super(root)
+  }
+
+  #rows = this.findAll('[data-qa="device-row"]')
+  #startPairingButton = this.find('[data-qa="start-mobile-pairing"]')
+
+  async assertDeviceExists(deviceName: string) {
+    await waitUntilEqual(
+      () => this.#rows.find('[data-qa="name"]').innerText,
+      deviceName
+    )
+  }
+
+  async addMobileDevice(deviceName: string) {
+    await this.#startPairingButton.click()
+
+    const phase1 = new Modal(
+      this.page.find('[data-qa="mobile-pairing-modal-phase-1"]')
+    )
+
+    const challengeKey = await phase1.find('[data-qa="challenge-key"]')
+      .innerText
+    const { responseKey } = await postPairingChallenge(challengeKey)
+    if (!responseKey) {
+      throw new Error(
+        `Did not get responseKey when posting pairing challenge with key ${challengeKey}`
+      )
+    }
+
+    const phase2 = new Modal(
+      this.page.find('[data-qa="mobile-pairing-modal-phase-2"]')
+    )
+    await new TextInput(phase2.find('[data-qa="response-key-input"]')).fill(
+      responseKey
+    )
+
+    const phase3 = new Modal(
+      this.page.find('[data-qa="mobile-pairing-modal-phase-3"]')
+    )
+    await new TextInput(
+      phase3.find('[data-qa="mobile-device-name-input"]')
+    ).fill(deviceName)
+    await phase3.submit()
   }
 }
 

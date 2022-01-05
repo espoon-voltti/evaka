@@ -12,18 +12,37 @@ export default class MobileListPage {
     `[data-qa="unread-messages-indicator"]`
   )
 
-  comingChildrenTab = this.page.find('[data-qa="coming-tab"]')
-  presentChildrenTab = this.page.find('[data-qa="present-tab"]')
-  departedChildrenTab = this.page.find('[data-qa="departed-tab"]')
+  #comingChildrenTab = this.page.find('[data-qa="coming-tab"]')
+  #presentChildrenTab = this.page.find('[data-qa="present-tab"]')
+  #departedChildrenTab = this.page.find('[data-qa="departed-tab"]')
+  #absentChildrenTab = this.page.find('[data-qa="absent-tab"]')
+
+  #childRow = (childId: UUID) => this.page.find(`[data-qa="child-${childId}"]`)
 
   async readChildGroupName(childId: UUID) {
     const elem = this.page.find(`[data-qa="child-group-name-${childId}"]`)
     return elem.innerText
   }
 
+  async assertChildExists(childId: UUID) {
+    await this.#childRow(childId).waitUntilVisible()
+  }
+
   async selectChild(childId: UUID) {
-    const elem = this.page.find(`[data-qa="child-${childId}"]`)
-    return elem.click()
+    await this.#childRow(childId).click()
+  }
+
+  async openChildNotes(childId: UUID) {
+    await this.#childRow(childId)
+      .find('[data-qa="link-child-daycare-daily-note"]')
+      .click()
+  }
+
+  async assertChildNoteDoesntExist(childId: UUID) {
+    await this.#childRow(childId).waitUntilVisible()
+    await this.#childRow(childId)
+      .find('[data-qa="link-child-daycare-daily-note"]')
+      .waitUntilHidden()
   }
 
   async gotoMessages() {
@@ -61,14 +80,18 @@ export default class MobileListPage {
   }
 
   async selectComingChildren() {
-    await this.comingChildrenTab.click()
+    await this.#comingChildrenTab.click()
   }
 
   async selectPresentChildren() {
-    await this.presentChildrenTab.click()
+    await this.#presentChildrenTab.click()
   }
 
   async selectDepartedChildren() {
-    await this.departedChildrenTab.click()
+    await this.#departedChildrenTab.click()
+  }
+
+  async selectAbsentChildren() {
+    await this.#absentChildrenTab.click()
   }
 }

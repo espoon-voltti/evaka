@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput } from 'e2e-playwright/utils/page'
+import { Modal, Page, TextInput } from 'e2e-playwright/utils/page'
 import {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
@@ -24,6 +24,7 @@ export default class MobileNotePage {
   }
 
   #createNoteButton = this.page.find('[data-qa="create-daily-note-btn"]')
+  #deleteNoteButton = this.page.find('[data-qa="open-delete-dialog-btn"]')
   #note = {
     dailyNote: new TextInput(
       this.page.find('[data-qa="daily-note-note-input"]')
@@ -107,6 +108,11 @@ export default class MobileNotePage {
 
   async saveChildDailyNote() {
     await this.#createNoteButton.click()
+  }
+
+  async deleteChildDailyNote() {
+    await this.#deleteNoteButton.click()
+    await new Modal(this.page.find('[data-qa="modal"]')).submit()
   }
 
   async assertNote(expected: ChildDailyNoteBody) {

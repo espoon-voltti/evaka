@@ -12,6 +12,9 @@ export default class MobileChildPage {
   #childName = this.page.find('[data-qa="child-name"]')
   #markPresentLink = this.page.find('[data-qa="mark-present-link"]')
   #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
+  #markAbsentLink = this.page.find('[data-qa="mark-absent-link"]')
+  #returnToComingButton = this.page.find('[data-qa="return-to-coming-btn"]')
+  #returnToPresentButton = this.page.find('[data-qa="return-to-present-btn"]')
 
   #markAbsentBeforehandLink = this.page.find(
     '[data-qa="mark-absent-beforehand"]'
@@ -51,17 +54,28 @@ export default class MobileChildPage {
   }
 
   async markFutureAbsences() {
-    return this.#markAbsentBeforehandLink.click()
+    await this.#markAbsentBeforehandLink.click()
   }
 
   async selectMarkPresentView() {
-    return this.#markPresentLink.click()
+    await this.#markPresentLink.click()
   }
 
   async selectMarkDepartedView() {
-    return this.#markDepartedLink.click()
+    await this.#markDepartedLink.click()
   }
 
+  async selectMarkAbsentView() {
+    await this.#markAbsentLink.click()
+  }
+
+  async returnToComing() {
+    await this.#returnToComingButton.click()
+  }
+
+  async returnToPresent() {
+    await this.#returnToPresentButton.click()
+  }
   async goBack() {
     await this.#goBack.click()
   }

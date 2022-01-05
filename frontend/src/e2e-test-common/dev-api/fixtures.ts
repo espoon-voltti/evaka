@@ -31,6 +31,7 @@ import {
 } from './types'
 import {
   insertAssistanceNeedFixtures,
+  insertBackupCareFixtures,
   insertCareAreaFixtures,
   insertChildFixtures,
   insertDaycareCaretakerFixtures,
@@ -1101,6 +1102,19 @@ export class Fixture {
     })
   }
 
+  static backupCare(): BackupCareBuilder {
+    return new BackupCareBuilder({
+      id: uuidv4(),
+      childId: 'not set',
+      unitId: 'not set',
+      groupId: 'not set',
+      period: {
+        start: LocalDate.today().formatIso(),
+        end: LocalDate.today().formatIso()
+      }
+    })
+  }
+
   static serviceNeed(): ServiceNeedBuilder {
     return new ServiceNeedBuilder({
       id: uuidv4(),
@@ -1398,6 +1412,35 @@ export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement>
   // Note: shallow copy
   copy() {
     return new GroupPlacementBuilder({ ...this.data })
+  }
+}
+
+export class BackupCareBuilder extends FixtureBuilder<BackupCare> {
+  withChild(child: ChildBuilder) {
+    this.data = {
+      ...this.data,
+      childId: child.data.id
+    }
+    return this
+  }
+
+  withGroup(group: DaycareGroupBuilder) {
+    this.data = {
+      ...this.data,
+      groupId: group.data.id,
+      unitId: group.data.daycareId
+    }
+    return this
+  }
+
+  async save() {
+    await insertBackupCareFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new BackupCareBuilder({ ...this.data })
   }
 }
 
