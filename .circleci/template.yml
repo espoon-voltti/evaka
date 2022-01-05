@@ -953,26 +953,11 @@ jobs:
 
   # E2E JOBS
 
-  e2e-build-testcafe:
-    executor: aws_docker_executor
-    steps:
-      - e2e_build:
-          test_runner: testcafe
-      - notify_slack
-
   e2e-build-playwright:
     executor: aws_docker_executor
     steps:
       - e2e_build:
           test_runner: playwright
-      - notify_slack
-
-  e2e-test-testcafe:
-    executor: e2e_executor
-    parallelism: 1
-    steps:
-      - e2e_test:
-          test_runner: testcafe
       - notify_slack
 
   e2e-test-playwright:
@@ -1219,21 +1204,10 @@ workflows:
           requires:
             - checkout_repo
 
-      - e2e-build-testcafe:
-          <<: *aws_docker_contexts
-          requires:
-            - checkout_repo
       - e2e-build-playwright:
           <<: *aws_docker_contexts
           requires:
             - checkout_repo
-      - e2e-test-testcafe:
-          <<: *default_contexts
-          requires:
-            - e2e-build-testcafe
-            - frontend_build_core
-            - apigw_build_and_push_image
-            - service_build_and_push_image
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
@@ -1294,7 +1268,6 @@ workflows:
             - check_licenses
             - lint_scripts
             - frontend_build_misc_and_test
-            - e2e-test-testcafe
             - e2e-test-playwright
             - apigw_build_and_push_image
             - proxy_build_and_push_image
