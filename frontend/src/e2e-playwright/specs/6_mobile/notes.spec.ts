@@ -16,8 +16,10 @@ import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
+import config from '../../../e2e-test-common/config'
 
 let page: Page
+let listPage: MobileListPage
 let childPage: MobileChildPage
 let notePage: MobileNotePage
 
@@ -59,7 +61,8 @@ beforeEach(async () => {
   const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 
-  await new MobileListPage(page).selectChild(child.id)
+  listPage = new MobileListPage(page)
+  await listPage.selectChild(child.id)
   childPage = new MobileChildPage(page)
   await childPage.openNotes()
 
@@ -67,7 +70,7 @@ beforeEach(async () => {
 })
 
 describe('Child and group notes', () => {
-  test('Child daily note can be created', async () => {
+  test('Child daily note can be created and deleted', async () => {
     const childDailyNote: ChildDailyNoteBody = {
       note: 'Testiviesti',
       feedingNote: 'MEDIUM',
@@ -82,6 +85,11 @@ describe('Child and group notes', () => {
     await childPage.assertNotesExist()
     await childPage.openNotes()
     await notePage.assertNote(childDailyNote)
+
+    await page.goto(config.mobileUrl)
+    await listPage.openChildNotes(child.id)
+    await notePage.deleteChildDailyNote()
+    await listPage.assertChildNoteDoesntExist(child.id)
   })
 
   test('Child group note can be created', async () => {
@@ -92,7 +100,7 @@ describe('Child and group notes', () => {
     await notePage.assertStickyNote(groupNote)
   })
 
-  test('Sticky notes can be created, edited and removed', async () => {
+  test('Sticky notes can be created, edited and deleted', async () => {
     const note = 'tahmea viesti'
     const note2 = 'erittäin tahmea viesti'
 
