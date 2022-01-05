@@ -140,19 +140,20 @@ const val fallbackPostalCode = "02070"
 const val fallbackPostOffice = "ESPOON KAUPUNKI"
 
 private fun asClient(headOfFamily: PersonData.Detailed, lang: CommunityLang): CommunityClient {
-    val addressIsUseable = addressIsValid(
+    val (streetAddress, postalCode, postOffice) = Triple(
         headOfFamily.streetAddress.trim(),
         headOfFamily.postalCode.trim(),
         headOfFamily.postOffice.trim()
     )
+    val addressIsUseable = addressIsValid(streetAddress, postalCode, postOffice)
     return CommunityClient(
         ssn = headOfFamily.ssn!!,
         lastname = headOfFamily.lastName.take(communityLastNameMaxLength),
         firstnames = headOfFamily.firstName.take(communityFirstNameMaxLength),
         language = lang.value,
-        street = headOfFamily.streetAddress.takeIf { addressIsUseable },
-        postalCode = headOfFamily.postalCode.takeIf { addressIsUseable },
-        post = headOfFamily.postOffice.takeIf { addressIsUseable }
+        street = streetAddress.takeIf { addressIsUseable },
+        postalCode = postalCode.takeIf { addressIsUseable },
+        post = postOffice.takeIf { addressIsUseable }
     )
 }
 
@@ -161,28 +162,20 @@ private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
         if (headOfFamily.invoiceRecipientName.isNotBlank()) headOfFamily.invoiceRecipientName to ""
         else headOfFamily.lastName to headOfFamily.firstName
 
-    val addressIsUseable = addressIsValid(
+    val address = Triple(
         headOfFamily.streetAddress.trim(),
         headOfFamily.postalCode.trim(),
         headOfFamily.postOffice.trim()
     )
-    val shouldUseInvoicingAddress = addressIsValid(
+    val invoiceAddress = Triple(
         headOfFamily.invoicingStreetAddress.trim(),
         headOfFamily.invoicingPostalCode.trim(),
         headOfFamily.invoicingPostOffice.trim()
     )
 
     val (street, postalCode, post) = when {
-        shouldUseInvoicingAddress -> Triple(
-            headOfFamily.invoicingStreetAddress,
-            headOfFamily.invoicingPostalCode,
-            headOfFamily.invoicingPostOffice
-        )
-        addressIsUseable -> Triple(
-            headOfFamily.streetAddress,
-            headOfFamily.postalCode,
-            headOfFamily.postOffice
-        )
+        addressIsValid(invoiceAddress.first, invoiceAddress.second, invoiceAddress.third) -> invoiceAddress
+        addressIsValid(address.first, address.second, address.third) -> address
         else -> Triple(
             fallbackStreetAddress,
             fallbackPostalCode,
