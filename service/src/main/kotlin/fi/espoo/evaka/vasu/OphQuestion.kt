@@ -605,6 +605,47 @@ fun getDefaultLeopsContent() = VasuContent(
             )
         ),
         VasuSection(
+            name = "Tiedonsaajatahot",
+            questions = listOf(
+                VasuQuestion.MultiSelectQuestion(
+                    name = "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla:",
+                    options = listOf(
+                        QuestionOption(
+                            key = "Tulevaan esiopetusryhmään",
+                            name = "Tulevaan esiopetusryhmään"
+                        ),
+                        QuestionOption(
+                            key = "Neuvolaan",
+                            name = "Neuvolaan"
+                        ),
+                        QuestionOption(
+                            key = "Lasten terapiapalveluihin",
+                            name = "Lasten terapiapalveluihin"
+                        ),
+                        QuestionOption(
+                            key = "Erikoissairaanhoitoon",
+                            name = "Erikoissairaanhoitoon"
+                        )
+                    ),
+                    minSelections = 0,
+                    maxSelections = null,
+                    value = emptyList()
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Muualle, minne?",
+                    multiline = false,
+                    value = ""
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Päiväykset ja allekirjoitukset",
+                    info = "Allekirjoittamalla annan suostumuksen tämän oppimissuunnitelman siirtämiseen yllämainituille tahoille",
+                    keys = listOf(Field("Päiväys"), Field("Huoltajan allekirjoitus"), Field("Nimenselvennys")),
+                    value = listOf(listOf("", "", ""))
+                )
+            ),
+        ),
+
+        VasuSection(
             name = "Perusopetukseen siirtyminen",
             hideBeforeReady = true,
             questions = listOf(
