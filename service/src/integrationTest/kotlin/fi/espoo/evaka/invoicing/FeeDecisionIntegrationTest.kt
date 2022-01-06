@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
