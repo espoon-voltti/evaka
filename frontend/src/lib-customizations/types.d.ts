@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -51,6 +51,11 @@ export type UnitProviderType =
   | 'PRIVATE_SERVICE_VOUCHER'
   | 'EXTERNAL_PURCHASED'
 
+interface ImgProps {
+  src: string
+  alt: string
+}
+
 export interface BaseAppConfig {
   sentry?: {
     dsn: string
@@ -66,14 +71,8 @@ export interface CitizenCustomizations {
   appConfig: BaseAppConfig
   langs: LangCitizen[]
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
-  cityLogo: {
-    src: string
-    alt: string
-  }
-  footerLogo?: {
-    src: string
-    alt: string
-  }
+  cityLogo: ImgProps
+  footerLogo?: ImgProps
   routeLinkRootUrl: string
   mapConfig: MapConfig
   featureFlags: FeatureFlags
@@ -129,6 +128,8 @@ interface BaseFeatureFlags {
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
 
+type CityLogo = JSX.Element | ImgProps
+
 export interface EmployeeCustomizations {
   appConfig: BaseAppConfig
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
@@ -136,10 +137,7 @@ export interface EmployeeCustomizations {
     VasuLangEmployee,
     DeepPartial<VasuTranslationsEmployee>
   >
-  cityLogo: {
-    src: string
-    alt: string
-  }
+  cityLogo: CityLogo
   featureFlags: FeatureFlags
   placementTypes: PlacementType[]
   assistanceMeasures: AssistanceMeasure[]

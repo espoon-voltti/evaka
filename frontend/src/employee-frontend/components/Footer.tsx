@@ -39,11 +39,15 @@ export const Footer = React.memo(function Footer() {
     <footer>
       <Container>
         <FooterContainer>
-          <img
-            src={cityLogo.src}
-            alt={cityLogo.alt}
-            data-qa="footer-city-logo"
-          />
+          {'src' in cityLogo ? (
+            <img
+              src={cityLogo.src}
+              alt={cityLogo.alt}
+              data-qa="footer-city-logo"
+            />
+          ) : (
+            cityLogo
+          )}
           <Content>
             <span data-qa="footer-city-label">
               &copy; {i18n.footer.cityLabel}
