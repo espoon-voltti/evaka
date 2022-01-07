@@ -191,3 +191,4 @@ V190__drop_authors_and_discussion_content_columns.sql
 V191__service_need_option_active_flag.sql
 V192__terminate_placement.sql
 V193__invoice_codebtor.sql
+V194__evaka_user_for_paper_application_guardians.sql
