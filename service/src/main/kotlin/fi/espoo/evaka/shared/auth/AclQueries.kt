@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
-import java.util.UUID
 
 data class DaycareAclRow(
     @Nested
@@ -55,7 +54,7 @@ fun Database.Read.hasDaycareAclRowForAnyUnit(employeeId: EmployeeId, role: UserR
 
 fun Database.Transaction.insertDaycareAclRow(
     daycareId: DaycareId,
-    employeeId: UUID,
+    employeeId: EmployeeId,
     role: UserRole
 ) = createUpdate(
     // language=SQL

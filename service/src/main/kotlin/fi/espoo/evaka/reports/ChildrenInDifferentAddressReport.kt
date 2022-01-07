@@ -5,7 +5,9 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -16,7 +18,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class ChildrenInDifferentAddressReportController(
@@ -83,11 +84,11 @@ private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: Acl
                 careAreaName = rs.getString("care_area_name"),
                 unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
-                parentId = rs.getUUID("person_id_parent"),
+                parentId = PersonId(rs.getUUID("person_id_parent")),
                 firstNameParent = rs.getString("first_name_parent"),
                 lastNameParent = rs.getString("last_name_parent"),
                 addressParent = rs.getString("street_address_parent"),
-                childId = rs.getUUID("person_id_child"),
+                childId = ChildId(rs.getUUID("person_id_child")),
                 firstNameChild = rs.getString("first_name_child"),
                 lastNameChild = rs.getString("last_name_child"),
                 addressChild = rs.getString("street_address_child")
@@ -100,11 +101,11 @@ data class ChildrenInDifferentAddressReportRow(
     val careAreaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val parentId: UUID,
+    val parentId: PersonId,
     val firstNameParent: String?,
     val lastNameParent: String?,
     val addressParent: String,
-    val childId: UUID,
+    val childId: ChildId,
     val firstNameChild: String?,
     val lastNameChild: String?,
     val addressChild: String

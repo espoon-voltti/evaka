@@ -5,6 +5,7 @@
 package fi.espoo.evaka.assistanceneed
 
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -14,11 +15,10 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
-    fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+    fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, childId: ChildId, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction { tx ->
                 validateBases(data, tx.getAssistanceBasisOptions().map { it.value })
@@ -35,7 +35,7 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun getAssistanceNeedsByChildId(db: Database.Connection, childId: UUID): List<AssistanceNeed> {
+    fun getAssistanceNeedsByChildId(db: Database.Connection, childId: ChildId): List<AssistanceNeed> {
         return db.transaction { it.getAssistanceNeedsByChild(childId) }
     }
 

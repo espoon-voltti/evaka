@@ -11,13 +11,13 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaDecision(
@@ -99,7 +99,7 @@ data class VardaFeeDataResponse(
 )
 
 data class VardaGuardianWithId(
-    val id: UUID,
+    val id: PersonId,
     val henkilotunnus: String?,
     val henkilo_oid: String?,
     val etunimet: String,
@@ -139,7 +139,7 @@ data class ChangedChildServiceNeed(
 )
 
 data class FeeDataByServiceNeed(
-    val evakaChildId: UUID,
+    val evakaChildId: ChildId,
     val serviceNeedId: ServiceNeedId,
     val feeDecisionIds: List<FeeDecisionId> = emptyList(),
     val voucherValueDecisionIds: List<VoucherValueDecisionId> = emptyList()

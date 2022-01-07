@@ -28,7 +28,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest() {
-    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id.raw)
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach

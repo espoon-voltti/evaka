@@ -52,14 +52,14 @@ class IncomeController(
         Audit.PersonIncomeRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME, personId)
 
-        val incomes = db.connect { dbc -> dbc.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId.raw) } }
+        val incomes = db.connect { dbc -> dbc.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId) } }
         return Wrapper(incomes)
     }
 
     @PostMapping
     fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
-        accessControl.requirePermissionFor(user, Action.Person.CREATE_INCOME, PersonId(income.personId))
+        accessControl.requirePermissionFor(user, Action.Person.CREATE_INCOME, income.personId)
         val period = try {
             DateRange(income.validFrom, income.validTo)
         } catch (e: Exception) {
@@ -74,7 +74,7 @@ class IncomeController(
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income.copy(id = id), incomeTypes)
                 tx.splitEarlierIncome(validIncome.personId, period)
-                tx.upsertIncome(mapper, validIncome, user.id)
+                tx.upsertIncome(mapper, validIncome, user.evakaUserId)
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
                 id
             }
@@ -98,7 +98,7 @@ class IncomeController(
                 val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
-                tx.upsertIncome(mapper, validIncome, user.id)
+                tx.upsertIncome(mapper, validIncome, user.evakaUserId)
 
                 val expandedPeriod = existing?.let {
                     DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))

@@ -9,8 +9,8 @@ import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.ParentshipId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -43,7 +43,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     private val person = testAdult_1
     private val partner = testAdult_2
 
-    private val unitSupervisorId = UUID.randomUUID()
+    private val unitSupervisorId = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     fun init() {
@@ -84,7 +84,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `unit supervisor can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR))
+            AuthenticatedUser.Employee(unitSupervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR))
         )
     }
 
@@ -102,10 +102,10 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
         val reqBody =
-            PartnershipsController.PartnershipRequest(PersonId(person.id), PersonId(partner.id), startDate, endDate)
+            PartnershipsController.PartnershipRequest(person.id, partner.id, startDate, endDate)
         controller.createPartnership(Database(jdbi), user, reqBody)
 
-        val getResponse = controller.getPartnerships(Database(jdbi), user, PersonId(person.id))
+        val getResponse = controller.getPartnerships(Database(jdbi), user, person.id)
         assertEquals(1, getResponse.size)
         with(getResponse.first()) {
             assertNotNull(this.id)
@@ -122,7 +122,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `unit supervisor can delete partnerships`() {
-        canDeletePartnership(AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR)))
+        canDeletePartnership(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
@@ -156,7 +156,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `unit supervisor can update partnerships`() {
-        canUpdatePartnershipDuration(AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
@@ -217,7 +217,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         }
 
         assertThrows<Forbidden> {
-            controller.getPartnerships(Database(jdbi), user, PersonId(person.id))
+            controller.getPartnerships(Database(jdbi), user, person.id)
         }
     }
 
@@ -227,7 +227,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
         val reqBody =
-            PartnershipsController.PartnershipRequest(PersonId(person.id), PersonId(partner.id), startDate, endDate)
+            PartnershipsController.PartnershipRequest(person.id, partner.id, startDate, endDate)
 
         assertThrows<Forbidden> {
             controller.createPartnership(Database(jdbi), user, reqBody)

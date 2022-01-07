@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.controllers.SearchPersonBody
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -58,7 +59,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     fun `End user cannot end update end user's contact info`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         assertThrows<Forbidden> {
-            controller.updateContactInfo(Database(jdbi), user, UUID.randomUUID(), contactInfo)
+            controller.updateContactInfo(Database(jdbi), user, PersonId(UUID.randomUUID()), contactInfo)
         }
     }
 

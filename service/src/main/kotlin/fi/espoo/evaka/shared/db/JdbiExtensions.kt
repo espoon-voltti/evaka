@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -216,7 +217,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
         decisionType = FeeDecisionType.valueOf(rs.getString("decision_type")),
         validDuring = ctx.mapColumn(rs, "valid_during"),
         headOfFamily = PersonData.Detailed(
-            id = UUID.fromString(rs.getString("head_of_family_id")),
+            id = PersonId(UUID.fromString(rs.getString("head_of_family_id"))),
             dateOfBirth = rs.getDate("head_date_of_birth").toLocalDate(),
             firstName = rs.getString("head_first_name"),
             lastName = rs.getString("head_last_name"),
@@ -230,7 +231,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
         ),
         partner = rs.getString("partner_id")?.let { id ->
             PersonData.Detailed(
-                id = UUID.fromString(id),
+                id = PersonId(UUID.fromString(id)),
                 dateOfBirth = rs.getDate("partner_date_of_birth").toLocalDate(),
                 firstName = rs.getString("partner_first_name"),
                 lastName = rs.getString("partner_last_name"),
@@ -250,7 +251,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
             listOf(
                 FeeDecisionChildDetailed(
                     child = PersonData.Detailed(
-                        id = UUID.fromString(rs.getString("child_id")),
+                        id = PersonId(UUID.fromString(rs.getString("child_id"))),
                         dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate(),
                         firstName = rs.getString("child_first_name"),
                         lastName = rs.getString("child_last_name"),
@@ -303,7 +304,7 @@ val feeDecisionSummaryRowMapper: RowMapper<FeeDecisionSummary> = RowMapper { rs,
         decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
         validDuring = ctx.mapColumn(rs, "valid_during"),
         headOfFamily = PersonData.Basic(
-            id = rs.getUUID("head_of_family_id"),
+            id = PersonId(rs.getUUID("head_of_family_id")),
             dateOfBirth = rs.getObject("head_date_of_birth", LocalDate::class.java),
             firstName = rs.getString("head_first_name"),
             lastName = rs.getString("head_last_name"),
@@ -313,7 +314,7 @@ val feeDecisionSummaryRowMapper: RowMapper<FeeDecisionSummary> = RowMapper { rs,
         children = rs.getString("child_id")?.let {
             listOf(
                 PersonData.Basic(
-                    id = rs.getUUID("child_id"),
+                    id = PersonId(rs.getUUID("child_id")),
                     dateOfBirth = rs.getObject("child_date_of_birth", LocalDate::class.java),
                     firstName = rs.getString("child_first_name"),
                     lastName = rs.getString("child_last_name"),

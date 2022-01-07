@@ -44,8 +44,8 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
             dbc.transaction {
                 parentshipService.createParentship(
                     it,
-                    body.childId.raw,
-                    body.headOfChildId.raw,
+                    body.childId,
+                    body.headOfChildId,
                     body.startDate,
                     body.endDate
                 )
@@ -74,8 +74,8 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         return db.connect { dbc ->
             dbc.read {
                 it.getParentships(
-                    headOfChildId = headOfChildId?.raw,
-                    childId = childId?.raw,
+                    headOfChildId = headOfChildId,
+                    childId = childId,
                     includeConflicts = true
                 )
             }

@@ -9,7 +9,9 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -58,7 +60,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             )
             tx.insertTestDaycareGroup(testDaycareGroup)
             testPlacement = tx.getDaycarePlacements(daycareId, null, null, null).first()
-            tx.updateDaycareAclWithEmployee(daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
+            tx.updateDaycareAclWithEmployee(daycareId, EmployeeId(unitSupervisor.id), UserRole.UNIT_SUPERVISOR)
         }
     }
 
@@ -493,7 +495,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
                 startDate = newEnd,
                 endDate = newEnd.plusMonths(2)
             ).also {
-                tx.updateDaycareAclWithEmployee(testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
+                tx.updateDaycareAclWithEmployee(testDaycare2.id, EmployeeId(unitSupervisor.id), UserRole.UNIT_SUPERVISOR)
             }
         }
 
@@ -521,7 +523,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `staff can't modify placements`() {
         db.transaction { tx ->
-            tx.updateDaycareAclWithEmployee(daycareId, staff.id, UserRole.STAFF)
+            tx.updateDaycareAclWithEmployee(daycareId, EmployeeId(staff.id), UserRole.STAFF)
         }
         val newStart = placementStart.plusDays(1)
         val newEnd = placementEnd.minusDays(2)
@@ -558,7 +560,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             .response()
     }
 
-    private fun getGroupPlacements(childId: UUID, daycareId: DaycareId): List<DaycareGroupPlacement> {
+    private fun getGroupPlacements(childId: ChildId, daycareId: DaycareId): List<DaycareGroupPlacement> {
         return http.get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)

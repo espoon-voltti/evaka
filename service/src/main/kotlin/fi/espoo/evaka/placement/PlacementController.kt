@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class PlacementController(
@@ -51,7 +51,7 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = false) daycareId: DaycareId? = null,
-        @RequestParam(value = "childId", required = false) childId: UUID? = null,
+        @RequestParam(value = "childId", required = false) childId: ChildId? = null,
         @RequestParam(
             value = "from",
             required = false
@@ -243,7 +243,7 @@ class PlacementController(
 
 data class PlacementCreateRequestBody(
     val type: PlacementType,
-    val childId: UUID,
+    val childId: ChildId,
     val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate

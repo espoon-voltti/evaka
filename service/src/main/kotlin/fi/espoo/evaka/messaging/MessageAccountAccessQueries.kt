@@ -6,10 +6,10 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
 fun Database.Read.hasPermissionForMessageDraft(user: AuthenticatedUser.Employee, draftId: MessageDraftId): Boolean =
     this.createQuery(
@@ -28,7 +28,7 @@ WHERE
         .any()
 
 private fun Database.Read.hasCitizenPermissionForAttachmentThroughMessageContent(
-    personId: UUID,
+    personId: PersonId,
     attachmentId: AttachmentId
 ) = this.createQuery(
     """
@@ -47,9 +47,9 @@ WHERE att.id = :attachmentId AND ma.person_id = :personId
     .any()
 
 fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Citizen, attachmentId: AttachmentId): Boolean =
-    hasCitizenPermissionForAttachmentThroughMessageContent(user.id, attachmentId)
+    hasCitizenPermissionForAttachmentThroughMessageContent(PersonId(user.id), attachmentId)
 fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.WeakCitizen, attachmentId: AttachmentId): Boolean =
-    hasCitizenPermissionForAttachmentThroughMessageContent(user.id, attachmentId)
+    hasCitizenPermissionForAttachmentThroughMessageContent(PersonId(user.id), attachmentId)
 
 fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Employee, attachmentId: AttachmentId): Boolean =
     this.createQuery(

@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -29,7 +30,6 @@ import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -297,7 +297,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     private fun givenServiceNeed(start: Int, end: Int, placementId: PlacementId, optionId: ServiceNeedOptionId = snDefaultDaycare.id): ServiceNeedId {
         return db.transaction { tx ->
             tx.insertTestServiceNeed(
-                confirmedBy = unitSupervisor.id,
+                confirmedBy = unitSupervisor.evakaUserId,
                 placementId = placementId,
                 period = FiniteDateRange(testDate(start), testDate(end)),
                 optionId = optionId
@@ -314,7 +314,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun getServiceNeeds(childId: UUID, placementId: PlacementId): List<ServiceNeed> {
+    private fun getServiceNeeds(childId: ChildId, placementId: PlacementId): List<ServiceNeed> {
         val (_, res, result) = http.get("/placements?childId=$childId")
             .asUser(unitSupervisor)
             .responseObject<List<DaycarePlacementWithDetails>>(objectMapper)

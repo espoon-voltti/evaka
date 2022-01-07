@@ -11,9 +11,12 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -51,10 +54,10 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     private val unitId = testDaycare.id
     private val secondUnitId = testDaycare2.id
 
-    private val supervisorId = UUID.randomUUID()
-    private val supervisor1 = AuthenticatedUser.Employee(supervisorId, setOf(UserRole.UNIT_SUPERVISOR))
-    private val supervisor2Id = UUID.randomUUID()
-    private val supervisor2 = AuthenticatedUser.Employee(supervisor2Id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val supervisorId = EmployeeId(UUID.randomUUID())
+    private val supervisor1 = AuthenticatedUser.Employee(supervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR))
+    private val supervisor2Id = EmployeeId(UUID.randomUUID())
+    private val supervisor2 = AuthenticatedUser.Employee(supervisor2Id.raw, setOf(UserRole.UNIT_SUPERVISOR))
     private val guardianPerson = testAdult_6
     private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -65,8 +68,8 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
 
     private fun insertChildToUnit(
         tx: Database.Transaction,
-        childId: UUID,
-        guardianId: UUID,
+        childId: ChildId,
+        guardianId: PersonId,
         unitId: DaycareId
     ): PlacementId {
         tx.insertGuardian(guardianId, childId)
@@ -82,8 +85,8 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
 
     private fun insertChildToGroup(
         tx: Database.Transaction,
-        childId: UUID,
-        guardianId: UUID,
+        childId: ChildId,
+        guardianId: PersonId,
         groupId: GroupId,
         unitId: DaycareId
     ) {

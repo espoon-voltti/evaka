@@ -12,6 +12,8 @@ import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.db.Database
@@ -52,7 +54,7 @@ class OccupancyTest : PureJdbiTest() {
     val familyGroup1: GroupId = GroupId(UUID.randomUUID())
     val familyGroup2: GroupId = GroupId(UUID.randomUUID())
 
-    val employeeId: UUID = UUID.randomUUID()
+    val employeeId = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
@@ -248,7 +250,7 @@ class OccupancyTest : PureJdbiTest() {
                 .addChild().withAge(6, 5).saveAnd {
                     // a valid PRESCHOOL_DAYCARE service need would have occupancy 1.0
                     addPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).saveAnd {
-                        addServiceNeed().createdBy(employeeId).withOption(snDefaultPartDayDaycare.id).save()
+                        addServiceNeed().createdBy(EvakaUserId(employeeId.raw)).withOption(snDefaultPartDayDaycare.id).save()
                     }
                 }
         }
@@ -264,7 +266,7 @@ class OccupancyTest : PureJdbiTest() {
             FixtureBuilder(tx, today)
                 .addChild().withAge(3).saveAnd {
                     addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(0).toDay(1).save()
-                    addAssistanceNeed().createdBy(employeeId).withFactor(2.0).fromDay(1).toDay(1).save()
+                    addAssistanceNeed().createdBy(EvakaUserId(employeeId.raw)).withFactor(2.0).fromDay(1).toDay(1).save()
                 }
         }
 

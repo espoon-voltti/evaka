@@ -6,9 +6,9 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Read.applicationFlags(application: ApplicationDetails): ApplicationFlags {
     return applicationFlags(
@@ -20,7 +20,7 @@ fun Database.Read.applicationFlags(application: ApplicationDetails): Application
 }
 
 fun Database.Read.applicationFlags(
-    childId: UUID,
+    childId: ChildId,
     formType: ApplicationType,
     startDate: LocalDate,
     connectedDaycare: Boolean

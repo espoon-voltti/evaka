@@ -13,6 +13,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -41,19 +42,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
-    private val employeeId = UUID.randomUUID()
-    private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
+    private val employeeId = EmployeeId(UUID.randomUUID())
+    private val employee = AuthenticatedUser.Employee(employeeId.raw, setOf(UserRole.ADMIN))
 
-    private val supervisorId = UUID.randomUUID()
-    private val supervisor = AuthenticatedUser.Employee(supervisorId, setOf())
+    private val supervisorId = EmployeeId(UUID.randomUUID())
+    private val supervisor = AuthenticatedUser.Employee(supervisorId.raw, setOf())
 
-    private val staffId = UUID.randomUUID()
-    private val staff = AuthenticatedUser.Employee(staffId, setOf())
+    private val staffId = EmployeeId(UUID.randomUUID())
+    private val staff = AuthenticatedUser.Employee(staffId.raw, setOf())
 
-    private val groupStaffId = UUID.randomUUID()
-    private val groupStaff = AuthenticatedUser.Employee(groupStaffId, setOf())
+    private val groupStaffId = EmployeeId(UUID.randomUUID())
+    private val groupStaff = AuthenticatedUser.Employee(groupStaffId.raw, setOf())
 
-    private val guardian = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val guardian = AuthenticatedUser.Citizen(testAdult_1.id.raw)
 
     val groupId = GroupId(UUID.randomUUID())
 
@@ -91,7 +92,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun createDocumentAsUser(childId: UUID, user: AuthenticatedUser) = http.post("/pedagogical-document")
+    private fun createDocumentAsUser(childId: ChildId, user: AuthenticatedUser) = http.post("/pedagogical-document")
         .jsonBody("""{"childId": "$childId", "description": ""}""")
         .asUser(user)
         .responseString()
@@ -103,7 +104,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
             .responseString()
             .second
 
-    private fun getPedagogicalDocumentAsUser(childId: UUID, user: AuthenticatedUser) = http.get("/pedagogical-document/child/$childId")
+    private fun getPedagogicalDocumentAsUser(childId: ChildId, user: AuthenticatedUser) = http.get("/pedagogical-document/child/$childId")
         .asUser(user)
         .responseString()
 
@@ -121,7 +122,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
 
         assertNotNull(deserializePostResult(result.get()).id)
         assertEquals(
-            ChildId(testChild_1.id),
+            testChild_1.id,
             deserializePostResult(result.get()).childId
         )
     }
@@ -259,8 +260,8 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `staff from another daycare can't read pedagogical document or attachment`() {
-        val staff2Id = UUID.randomUUID()
-        val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
+        val staff2Id = EmployeeId(UUID.randomUUID())
+        val staff2 = AuthenticatedUser.Employee(staff2Id.raw, setOf())
         db.transaction {
             it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
             it.updateDaycareAclWithEmployee(testDaycare2.id, staff2Id, UserRole.STAFF)
@@ -279,8 +280,8 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `staff from another group can't read pedagogical document or attachment`() {
-        val staff2Id = UUID.randomUUID()
-        val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
+        val staff2Id = EmployeeId(UUID.randomUUID())
+        val staff2 = AuthenticatedUser.Employee(staff2Id.raw, setOf())
         db.transaction {
             it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
 

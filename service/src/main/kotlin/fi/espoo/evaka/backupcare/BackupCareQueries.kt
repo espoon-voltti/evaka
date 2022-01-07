@@ -5,15 +5,15 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
-fun Database.Read.getBackupCaresForChild(childId: UUID): List<ChildBackupCare> = createQuery(
+fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> = createQuery(
     // language=SQL
     """
 SELECT
@@ -73,7 +73,7 @@ AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
     .mapTo<UnitBackupCare>()
     .list()
 
-fun Database.Transaction.createBackupCare(childId: UUID, backupCare: NewBackupCare): BackupCareId = createUpdate(
+fun Database.Transaction.createBackupCare(childId: ChildId, backupCare: NewBackupCare): BackupCareId = createUpdate(
     // language=SQL
     """
 INSERT INTO backup_care (child_id, unit_id, group_id, start_date, end_date)

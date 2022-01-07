@@ -15,7 +15,6 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.updatePreferredName
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -28,12 +27,11 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class ChildController(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}")
-    fun getChild(db: Database, user: AuthenticatedUser, @PathVariable childId: UUID): ChildResponse {
+    fun getChild(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ, childId)
         val child = db.connect { dbc -> dbc.read { it.getPersonById(childId) } }
@@ -41,21 +39,21 @@ class ChildController(private val accessControl: AccessControl) {
                 includeInvoiceAddress = accessControl.hasPermissionFor(
                     user,
                     Action.Person.READ_INVOICE_ADDRESS,
-                    PersonId(childId)
+                    childId
                 ),
-                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, PersonId(childId))
+                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, childId)
             )
             ?: throw NotFound("Child $childId not found")
         return ChildResponse(
             person = PersonJSON.from(child),
-            permittedActions = accessControl.getPermittedChildActions(user, listOf(ChildId(childId))).values.first(),
-            permittedPersonActions = accessControl.getPermittedPersonActions(user, listOf(PersonId(childId)))
+            permittedActions = accessControl.getPermittedChildActions(user, listOf(childId)).values.first(),
+            permittedPersonActions = accessControl.getPermittedPersonActions(user, listOf(childId))
                 .values.first()
         )
     }
 
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
+    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ADDITIONAL_INFO, childId)
         return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }.let(::ok)
@@ -65,7 +63,7 @@ class ChildController(private val accessControl: AccessControl) {
     fun updateAdditionalInfo(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody data: AdditionalInformation
     ): ResponseEntity<Unit> {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
@@ -81,7 +79,7 @@ class ChildController(private val accessControl: AccessControl) {
     )
 }
 
-fun Database.Read.getAdditionalInformation(childId: UUID): AdditionalInformation {
+fun Database.Read.getAdditionalInformation(childId: ChildId): AdditionalInformation {
     val child = getChild(childId)
     return if (child != null) {
         AdditionalInformation(
@@ -94,7 +92,7 @@ fun Database.Read.getAdditionalInformation(childId: UUID): AdditionalInformation
     } else AdditionalInformation()
 }
 
-fun Database.Transaction.upsertAdditionalInformation(childId: UUID, data: AdditionalInformation) {
+fun Database.Transaction.upsertAdditionalInformation(childId: ChildId, data: AdditionalInformation) {
     updatePreferredName(childId, data.preferredName)
     val child = getChild(childId)
     if (child != null) {
@@ -110,7 +108,7 @@ fun Database.Transaction.upsertAdditionalInformation(childId: UUID, data: Additi
 }
 
 data class Child(
-    val id: UUID,
+    val id: ChildId,
     @Nested val additionalInformation: AdditionalInformation
 )
 

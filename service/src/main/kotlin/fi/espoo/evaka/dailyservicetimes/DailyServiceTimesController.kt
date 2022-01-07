@@ -5,6 +5,7 @@
 package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class DailyServiceTimesController(
@@ -31,7 +31,7 @@ class DailyServiceTimesController(
     fun getDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): ResponseEntity<DailyServiceTimesResponse> {
         Audit.ChildDailyServiceTimesRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_DAILY_SERVICE_TIMES, childId)
@@ -49,7 +49,7 @@ class DailyServiceTimesController(
     fun putDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: DailyServiceTimes
     ): ResponseEntity<Unit> {
         Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
@@ -64,7 +64,7 @@ class DailyServiceTimesController(
     fun deleteDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): ResponseEntity<Unit> {
         Audit.ChildDailyServiceTimesDelete.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.DELETE_DAILY_SERVICE_TIMES, childId)

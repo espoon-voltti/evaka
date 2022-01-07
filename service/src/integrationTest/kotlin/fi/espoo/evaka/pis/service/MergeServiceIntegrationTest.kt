@@ -13,7 +13,11 @@ import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.messaging.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.DevChild
@@ -64,7 +68,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `empty person can be deleted`() {
-        val id = UUID.randomUUID()
+        val id = ChildId(UUID.randomUUID())
         db.transaction {
             it.insertTestPerson(DevPerson(id = id))
             it.insertTestChild(DevChild(id))
@@ -87,7 +91,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `cannot delete person with data - placement`() {
-        val id = UUID.randomUUID()
+        val id = ChildId(UUID.randomUUID())
         db.transaction {
             it.insertTestPerson(DevPerson(id = id))
             it.insertTestChild(DevChild(id))
@@ -104,9 +108,9 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `merging adult moves incomes and sends update event`() {
-        val adultId = UUID.randomUUID()
-        val adultIdDuplicate = UUID.randomUUID()
-        val childId = UUID.randomUUID()
+        val adultId = PersonId(UUID.randomUUID())
+        val adultIdDuplicate = PersonId(UUID.randomUUID())
+        val childId = ChildId(UUID.randomUUID())
         val validFrom = LocalDate.of(2010, 1, 1)
         val validTo = LocalDate.of(2020, 12, 30)
         db.transaction {
@@ -124,7 +128,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
                     adultIdDuplicate,
                     validFrom = validFrom,
                     validTo = validTo,
-                    updatedBy = testDecisionMaker_1.id
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id)
                 )
             )
         }
@@ -156,8 +160,8 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `merging child moves placements`() {
-        val childId = UUID.randomUUID()
-        val childIdDuplicate = UUID.randomUUID()
+        val childId = ChildId(UUID.randomUUID())
+        val childIdDuplicate = ChildId(UUID.randomUUID())
         db.transaction {
             it.insertTestPerson(DevPerson(id = childId))
             it.insertTestPerson(DevPerson(id = childIdDuplicate))
@@ -197,13 +201,13 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `merging a person moves sent messages`() {
-        val employeeId = UUID.randomUUID()
+        val employeeId = EmployeeId(UUID.randomUUID())
         val receiverAccount = db.transaction {
             it.insertTestEmployee(DevEmployee(id = employeeId))
             it.upsertEmployeeMessageAccount(employeeId)
         }
-        val senderId = UUID.randomUUID()
-        val senderIdDuplicate = UUID.randomUUID()
+        val senderId = PersonId(UUID.randomUUID())
+        val senderIdDuplicate = PersonId(UUID.randomUUID())
         val (senderAccount, senderDuplicateAccount) = db.transaction { tx ->
             listOf(senderId, senderIdDuplicate).map {
                 tx.insertTestPerson(DevPerson(id = it))
@@ -244,14 +248,14 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `merging a person moves received messages`() {
-        val employeeId = UUID.randomUUID()
+        val employeeId = EmployeeId(UUID.randomUUID())
         val senderAccount = db.transaction {
             it.insertTestEmployee(DevEmployee(id = employeeId))
             it.upsertEmployeeMessageAccount(employeeId)
         }
 
-        val receiverId = UUID.randomUUID()
-        val receiverIdDuplicate = UUID.randomUUID()
+        val receiverId = PersonId(UUID.randomUUID())
+        val receiverIdDuplicate = PersonId(UUID.randomUUID())
         val (receiverAccount, receiverDuplicateAccount) = db.transaction { tx ->
             listOf(receiverId, receiverIdDuplicate).map {
                 tx.insertTestPerson(DevPerson(id = it))
@@ -291,9 +295,9 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `merging child sends update event to head of child`() {
-        val adultId = UUID.randomUUID()
-        val childId = UUID.randomUUID()
-        val childIdDuplicate = UUID.randomUUID()
+        val adultId = PersonId(UUID.randomUUID())
+        val childId = ChildId(UUID.randomUUID())
+        val childIdDuplicate = ChildId(UUID.randomUUID())
         db.transaction {
             it.insertTestPerson(DevPerson(id = adultId))
             it.insertTestPerson(DevPerson(id = childId))

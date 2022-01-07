@@ -15,7 +15,6 @@ import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -221,7 +220,7 @@ class PlacementPlanService(
     }
 
     private fun resolveServiceNeedFromApplication(tx: Database.Transaction, application: ApplicationDetails): ApplicationServiceNeed? {
-        val serviceNeedOptionId = application.form.preferences.serviceNeed?.serviceNeedOption?.id?.let(::ServiceNeedOptionId) ?: return null
+        val serviceNeedOptionId = application.form.preferences.serviceNeed?.serviceNeedOption?.id ?: return null
         if (tx.findServiceNeedOptionById(serviceNeedOptionId) == null) {
             logger.warn { "Application ${application.id} has non-existing service need option: $serviceNeedOptionId" }
             return null

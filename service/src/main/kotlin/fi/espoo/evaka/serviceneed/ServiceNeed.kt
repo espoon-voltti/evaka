@@ -6,6 +6,8 @@ package fi.espoo.evaka.serviceneed
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -22,7 +24,6 @@ import org.jdbi.v3.core.mapper.PropagateNull
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 data class ServiceNeed(
     val id: ServiceNeedId,
@@ -39,7 +40,7 @@ data class ServiceNeed(
 )
 
 data class ServiceNeedChildRange(
-    val childId: UUID,
+    val childId: ChildId,
     val dateRange: FiniteDateRange
 )
 
@@ -53,7 +54,7 @@ data class ServiceNeedOptionSummary(
 
 data class ServiceNeedConfirmation(
     @PropagateNull
-    val userId: UUID,
+    val userId: EvakaUserId,
     val name: String,
     val at: HelsinkiDateTime?
 )
@@ -145,7 +146,7 @@ fun createServiceNeed(
         endDate = endDate,
         optionId = optionId,
         shiftCare = shiftCare,
-        confirmedBy = user.id,
+        confirmedBy = user.evakaUserId,
         confirmedAt = confirmedAt
     )
 }
@@ -175,7 +176,7 @@ fun updateServiceNeed(
         endDate = endDate,
         optionId = optionId,
         shiftCare = shiftCare,
-        confirmedBy = user.id,
+        confirmedBy = user.evakaUserId,
         confirmedAt = confirmedAt
     )
 }

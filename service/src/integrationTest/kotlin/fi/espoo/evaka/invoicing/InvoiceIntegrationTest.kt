@@ -30,9 +30,11 @@ import fi.espoo.evaka.invoicing.integration.fallbackPostOffice
 import fi.espoo.evaka.invoicing.integration.fallbackPostalCode
 import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -1083,15 +1085,15 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             decision.children.forEach { part ->
                 tx.insertTestPlacement(
                     DevPlacement(
-                        childId = part.child.id,
+                        childId = ChildId(part.child.id),
                         unitId = part.placement.unit.id,
                         startDate = decision.validFrom,
                         endDate = decision.validTo!!
                     )
                 )
                 tx.insertTestParentship(
-                    headOfChild = decision.headOfFamily.id,
-                    childId = part.child.id,
+                    headOfChild = PersonId(decision.headOfFamily.id),
+                    childId = ChildId(part.child.id),
                     startDate = decision.validFrom,
                     endDate = decision.validTo!!
                 )

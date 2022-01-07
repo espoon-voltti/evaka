@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.koski
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.db.Database
@@ -15,7 +16,7 @@ import java.util.UUID
 
 internal data class KoskiStudyRightRaw(
     val id: UUID,
-    val childId: UUID,
+    val childId: ChildId,
     val unitId: DaycareId,
     val type: OpiskeluoikeudenTyyppiKoodi,
     val version: Int,

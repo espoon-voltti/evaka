@@ -163,15 +163,15 @@ class AttachmentsController(
     private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser) {
         val count = db.read {
             when (attachTo) {
-                AttachmentParent.None -> it.userUnparentedAttachmentCount(user.id)
-                is AttachmentParent.Application -> it.userApplicationAttachmentCount(attachTo.applicationId, user.id)
+                AttachmentParent.None -> it.userUnparentedAttachmentCount(user.evakaUserId)
+                is AttachmentParent.Application -> it.userApplicationAttachmentCount(attachTo.applicationId, user.evakaUserId)
                 is AttachmentParent.IncomeStatement -> it.userIncomeStatementAttachmentCount(
                     attachTo.incomeStatementId,
-                    user.id
+                    user.evakaUserId
                 )
                 is AttachmentParent.PedagogicalDocument -> it.userPedagogicalDocumentCount(
                     attachTo.pedagogicalDocumentId,
-                    user.id
+                    user.evakaUserId
                 )
                 is AttachmentParent.MessageDraft,
                 is AttachmentParent.MessageContent -> 0

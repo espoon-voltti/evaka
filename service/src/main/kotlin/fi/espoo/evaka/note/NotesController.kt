@@ -14,6 +14,7 @@ import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForGroup
 import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.note.group.getGroupNotesForChild
 import fi.espoo.evaka.note.group.getGroupNotesForGroup
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -22,7 +23,6 @@ import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class NotesController(
@@ -37,7 +37,7 @@ class NotesController(
     fun getNotesByChild(
         user: AuthenticatedUser,
         db: Database,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): NotesByChildResponse {
         Audit.NotesByChildRead.log(childId)
         ac.requirePermissionFor(user, Action.Child.READ_NOTES, childId)

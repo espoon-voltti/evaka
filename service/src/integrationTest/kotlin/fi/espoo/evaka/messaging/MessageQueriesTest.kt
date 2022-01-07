@@ -8,11 +8,13 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -52,10 +54,10 @@ import kotlin.test.assertTrue
 
 class MessageQueriesTest : PureJdbiTest() {
 
-    private val person1Id: UUID = UUID.randomUUID()
-    private val person2Id: UUID = UUID.randomUUID()
-    private val employee1Id: UUID = UUID.randomUUID()
-    private val employee2Id: UUID = UUID.randomUUID()
+    private val person1Id = PersonId(UUID.randomUUID())
+    private val person2Id = PersonId(UUID.randomUUID())
+    private val employee1Id = EmployeeId(UUID.randomUUID())
+    private val employee2Id = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {

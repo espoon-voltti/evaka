@@ -14,6 +14,9 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.service.FamilyOverview
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -34,7 +37,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 
 class FamilyOverviewTest : FullApplicationTest() {
@@ -147,7 +149,7 @@ class FamilyOverviewTest : FullApplicationTest() {
 
     private val financeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
-    private fun fetchAndParseFamilyDetails(personId: UUID, user: AuthenticatedUser = financeUser): FamilyOverview {
+    private fun fetchAndParseFamilyDetails(personId: PersonId, user: AuthenticatedUser = financeUser): FamilyOverview {
         val (_, response, result) = http.get("/family/by-adult/$personId")
             .asUser(user)
             .responseString()
@@ -184,7 +186,7 @@ class FamilyOverviewTest : FullApplicationTest() {
         }
     }
 
-    private fun initializeUnitSupervisorUserAndRights(childId: UUID): AuthenticatedUser {
+    private fun initializeUnitSupervisorUserAndRights(childId: ChildId): AuthenticatedUser {
         val externalId = ExternalId.of("test", "id")
         val unitSupervisor = DevEmployee(externalId = externalId)
         db.transaction {
@@ -197,10 +199,10 @@ class FamilyOverviewTest : FullApplicationTest() {
             it.insertTestEmployee(unitSupervisor)
             it.updateDaycareAcl(testDaycare.id, externalId, UserRole.UNIT_SUPERVISOR)
         }
-        return AuthenticatedUser.Employee(unitSupervisor.id, setOf())
+        return AuthenticatedUser.Employee(unitSupervisor.id.raw, setOf())
     }
 
-    private fun addIncome(personId: UUID): Int {
+    private fun addIncome(personId: PersonId): Int {
         val incomeTotal = 500000
         db.transaction {
             it.insertTestIncome(
@@ -208,7 +210,7 @@ class FamilyOverviewTest : FullApplicationTest() {
                     personId = personId,
                     effect = IncomeEffect.INCOME,
                     data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
-                    updatedBy = testDecisionMaker_1.id
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id)
                 )
             )
         }

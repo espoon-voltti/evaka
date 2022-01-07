@@ -5,11 +5,11 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.controllers.Child
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
-fun Database.Read.getChild(id: UUID): Child? {
+fun Database.Read.getChild(id: ChildId): Child? {
     // language=SQL
     val sql = "SELECT child.*, person.preferred_name FROM child JOIN person ON child.id = person.id WHERE child.id = :id"
 

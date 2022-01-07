@@ -7,18 +7,18 @@ package fi.espoo.evaka.application.notes
 import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
-fun Database.Read.getApplicationNoteCreatedBy(id: ApplicationNoteId): UUID {
+fun Database.Read.getApplicationNoteCreatedBy(id: ApplicationNoteId): EvakaUserId {
     // language=SQL
     val sql = "SELECT created_by FROM application_note WHERE id = :id"
 
     return createQuery(sql)
         .bind("id", id)
-        .mapTo<UUID>()
+        .mapTo<EvakaUserId>()
         .first()
 }
 
@@ -41,7 +41,7 @@ ORDER BY n.created
         .toList()
 }
 
-fun Database.Transaction.createApplicationNote(applicationId: ApplicationId, content: String, createdBy: UUID): ApplicationNote {
+fun Database.Transaction.createApplicationNote(applicationId: ApplicationId, content: String, createdBy: EvakaUserId): ApplicationNote {
     // language=SQL
     val sql =
         """
@@ -71,7 +71,7 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
         .first()
 }
 
-fun Database.Transaction.updateApplicationNote(id: ApplicationNoteId, content: String, updatedBy: UUID): ApplicationNote {
+fun Database.Transaction.updateApplicationNote(id: ApplicationNoteId, content: String, updatedBy: EvakaUserId): ApplicationNote {
     // language=SQL
     val sql =
         """

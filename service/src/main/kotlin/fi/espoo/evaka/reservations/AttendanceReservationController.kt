@@ -10,7 +10,9 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -115,7 +117,7 @@ data class UnitAttendanceReservations(
 
     data class ReservationGroup(
         @PropagateNull
-        val id: UUID,
+        val id: GroupId,
         val name: String
     )
 
@@ -147,7 +149,7 @@ data class UnitAttendanceReservations(
     )
 
     data class Child(
-        val id: UUID,
+        val id: ChildId,
         val firstName: String,
         val lastName: String,
         val dateOfBirth: LocalDate,
@@ -230,7 +232,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     .toList()
 
 // currently queried separately to be able to use existing mapper
-private fun Database.Read.getDailyServiceTimes(childIds: Set<UUID>) = createQuery(
+private fun Database.Read.getDailyServiceTimes(childIds: Set<ChildId>) = createQuery(
     """
 SELECT
     child_id,
@@ -256,11 +258,11 @@ WHERE child_id = ANY(:childIds)
     """.trimIndent()
 )
     .bind("childIds", childIds.toTypedArray())
-    .map { row -> toDailyServiceTimes(row)?.let { row.mapColumn<UUID>("child_id") to it } }
+    .map { row -> toDailyServiceTimes(row)?.let { row.mapColumn<ChildId>("child_id") to it } }
     .filterNotNull()
     .toMap()
 
-private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<UUID, DailyServiceTimes>): List<UnitAttendanceReservations.ChildReservations> {
+private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, DailyServiceTimes>): List<UnitAttendanceReservations.ChildReservations> {
     return rows
         .groupBy { it.child }
         .map { (child, rowsByChild) ->

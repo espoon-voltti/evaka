@@ -22,6 +22,8 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -69,8 +71,8 @@ enum class ApplicationSortDirection {
 }
 
 fun Database.Transaction.insertApplication(
-    guardianId: UUID,
-    childId: UUID,
+    guardianId: PersonId,
+    childId: ChildId,
     origin: ApplicationOrigin,
     hideFromGuardian: Boolean = false,
     sentDate: LocalDate? = null
@@ -95,8 +97,8 @@ fun Database.Transaction.insertApplication(
 }
 
 fun Database.Read.duplicateApplicationExists(
-    childId: UUID,
-    guardianId: UUID,
+    childId: ChildId,
+    guardianId: PersonId,
     type: ApplicationType
 ): Boolean {
     // language=sql
@@ -121,7 +123,7 @@ fun Database.Read.duplicateApplicationExists(
 }
 
 fun Database.Read.activePlacementExists(
-    childId: UUID,
+    childId: ChildId,
     type: ApplicationType
 ): Boolean {
     val placementTypes = when (type) {
@@ -155,7 +157,7 @@ fun Database.Read.fetchApplicationSummaries(
     sortBy: ApplicationSortColumn,
     sortDir: ApplicationSortDirection,
     areas: List<String>,
-    units: List<UUID>,
+    units: List<DaycareId>,
     basis: List<ApplicationBasis>,
     type: ApplicationTypeToggle,
     preschoolType: List<ApplicationPreschoolTypeToggle>,
@@ -362,9 +364,9 @@ fun Database.Read.fetchApplicationSummaries(
                 dateOfBirth = row.mapColumn<String?>("date_of_birth")?.let { LocalDate.parse(it) },
                 type = row.mapColumn("type"),
                 placementType = mapRequestedPlacementType(row, "document"),
-                serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
+                serviceNeed = row.mapColumn<ServiceNeedOptionId?>("serviceNeedId")?.let {
                     ServiceNeedOption(
-                        UUID.fromString(it),
+                        it,
                         row.mapColumn("serviceNeedNameFi"),
                         row.mapColumn("serviceNeedNameSv"),
                         row.mapColumn("serviceNeedNameEn")
@@ -435,7 +437,7 @@ fun Database.Read.fetchApplicationSummaries(
     )
 }
 
-fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: UUID): List<PersonApplicationSummary> {
+fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: PersonId): List<PersonApplicationSummary> {
     // language=SQL
     val sql =
         """
@@ -461,7 +463,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: UUID): List<P
         .toList()
 }
 
-fun Database.Read.fetchApplicationSummariesForChild(childId: UUID): List<PersonApplicationSummary> {
+fun Database.Read.fetchApplicationSummariesForChild(childId: ChildId): List<PersonApplicationSummary> {
     // language=SQL
     val sql =
         """
@@ -487,7 +489,7 @@ fun Database.Read.fetchApplicationSummariesForChild(childId: UUID): List<PersonA
         .toList()
 }
 
-fun Database.Read.fetchApplicationSummariesForCitizen(citizenId: UUID): List<CitizenApplicationSummary> {
+fun Database.Read.fetchApplicationSummariesForCitizen(citizenId: PersonId): List<CitizenApplicationSummary> {
     // language=SQL
     val sql =
         """
@@ -516,9 +518,9 @@ fun Database.Read.fetchApplicationSummariesForCitizen(citizenId: UUID): List<Cit
         .toList()
 }
 
-data class CitizenChildren(val childId: UUID, val childName: String)
+data class CitizenChildren(val childId: ChildId, val childName: String)
 
-fun Database.Read.getCitizenChildren(citizenId: UUID): List<CitizenChildren> {
+fun Database.Read.getCitizenChildren(citizenId: PersonId): List<CitizenChildren> {
     //language=sql
     val sql =
         """
@@ -536,8 +538,8 @@ fun Database.Read.getCitizenChildren(citizenId: UUID): List<CitizenChildren> {
 private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonApplicationSummary = { rs, _ ->
     PersonApplicationSummary(
         applicationId = ApplicationId(rs.getUUID("id")),
-        childId = rs.getUUID("childId"),
-        guardianId = rs.getUUID("guardianId"),
+        childId = ChildId(rs.getUUID("childId")),
+        guardianId = PersonId(rs.getUUID("guardianId")),
         preferredUnitId = DaycareId(rs.getUUID("preferredUnit")),
         preferredUnitName = rs.getString("daycareName"),
         childName = rs.getString("childName"),
@@ -721,9 +723,9 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                 guardianPhone = row.mapColumn("guardian_phone"),
                 guardianEmail = row.mapColumn("guardian_email"),
                 requestedPlacementType = mapRequestedPlacementType(row, "document"),
-                serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
+                serviceNeed = row.mapColumn<ServiceNeedOptionId?>("serviceNeedId")?.let {
                     ServiceNeedOption(
-                        UUID.fromString(it),
+                        it,
                         row.mapColumn("serviceNeedNameFi"),
                         row.mapColumn("serviceNeedNameSv"),
                         row.mapColumn("serviceNeedNameEn")
@@ -853,7 +855,7 @@ fun Database.Transaction.updateApplicationFlags(id: ApplicationId, applicationFl
         .execute()
 }
 
-fun Database.Transaction.updateApplicationOtherGuardian(applicationId: ApplicationId, otherGuardianId: UUID?) {
+fun Database.Transaction.updateApplicationOtherGuardian(applicationId: ApplicationId, otherGuardianId: PersonId?) {
     // language=SQL
     val sql = "UPDATE application SET other_guardian_id = :otherGuardianId WHERE id = :applicationId"
 
@@ -892,7 +894,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
     val applicationIds =
         createQuery("""SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
             .bind("thresholdDays", thresholdDays)
-            .mapTo<UUID>()
+            .mapTo<ApplicationId>()
             .toList()
 
     if (applicationIds.isNotEmpty()) {

@@ -10,6 +10,8 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @Deprecated("Use PersonController instead")
 @RestController
@@ -31,13 +32,13 @@ class VtjController(private val personService: PersonService, private val access
     internal fun getDetails(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID
+        @PathVariable(value = "personId") personId: PersonId
     ): CitizenUserDetails {
         Audit.VtjRequest.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
         val notFound = { throw NotFound("Person not found") }
-        if (user.id != personId) {
+        if (user.id != personId.raw) {
             notFound()
         }
 
@@ -56,14 +57,14 @@ class VtjController(private val personService: PersonService, private val access
     }
 
     internal data class Child(
-        val id: UUID,
+        val id: ChildId,
         val firstName: String,
         val lastName: String,
         val socialSecurityNumber: String,
     ) {
         companion object {
             fun from(person: VtjPersonDTO): Child = Child(
-                id = person.id,
+                id = ChildId(person.id),
                 firstName = person.firstName,
                 lastName = person.lastName,
                 socialSecurityNumber = person.socialSecurityNumber,
@@ -79,7 +80,7 @@ class VtjController(private val personService: PersonService, private val access
     }
 
     internal data class CitizenUserDetails(
-        val id: UUID,
+        val id: PersonId,
         val firstName: String,
         val lastName: String,
         val preferredName: String,

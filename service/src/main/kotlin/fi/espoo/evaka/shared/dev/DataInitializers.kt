@@ -22,20 +22,34 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AttendanceId
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -138,7 +152,7 @@ fun Database.Transaction.updateDaycareAcl(daycareId: DaycareId, externalId: Exte
         .execute()
 }
 
-fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: DaycareId, employeeId: UUID, role: UserRole) {
+fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: DaycareId, employeeId: EmployeeId, role: UserRole) {
     createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (:employeeId, :daycare_id, :role)")
         .bind("daycare_id", daycareId)
         .bind("employeeId", employeeId)
@@ -146,14 +160,14 @@ fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: DaycareId, empl
         .execute()
 }
 
-fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, employeeId: UUID) {
+fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, employeeId: EmployeeId) {
     createUpdate("INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (:employeeId, :daycare_group_id)")
         .bind("daycare_group_id", groupId)
         .bind("employeeId", employeeId)
         .execute()
 }
 
-fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: DaycareId, name: String = "Nimeämätön laite") {
+fun Database.Transaction.createMobileDeviceToUnit(id: MobileDeviceId, unitId: DaycareId, name: String = "Nimeämätön laite") {
     // language=sql
     val sql =
         """
@@ -176,7 +190,7 @@ INSERT INTO employee (id, first_name, last_name, email, external_id, roles, last
 VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :lastLogin)
 RETURNING id
 """
-).also { upsertEmployeeUser(EmployeeId(it)) }
+).let(::EmployeeId).also { upsertEmployeeUser(it) }
 
 fun Database.Transaction.insertTestMobileDevice(device: DevMobileDevice) = insertTestDataRow(
     device,
@@ -185,7 +199,7 @@ INSERT INTO mobile_device (id, unit_id, name, deleted, long_term_token)
 VALUES (:id, :unitId, :name, :deleted, :longTermToken)
 RETURNING id
     """
-)
+).let(::MobileDeviceId)
 
 fun Database.Transaction.insertTestPerson(person: DevPerson) = insertTestDataRow(
     person.copy(updatedFromVtj = if (person.ssn != null) HelsinkiDateTime.now() else null),
@@ -201,11 +215,11 @@ INSERT INTO person (
 )
 RETURNING id
 """
-)
+).let(::PersonId)
 
 fun Database.Transaction.insertTestParentship(
-    headOfChild: UUID,
-    childId: UUID,
+    headOfChild: PersonId,
+    childId: ChildId,
     id: ParentshipId = ParentshipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
@@ -242,8 +256,8 @@ fun Database.Transaction.insertTestParentship(parentship: DevParentship): DevPar
 }
 
 fun Database.Transaction.insertTestPartnership(
-    adult1: UUID,
-    adult2: UUID,
+    adult1: PersonId,
+    adult2: PersonId,
     id: PartnershipId = PartnershipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null
@@ -288,9 +302,9 @@ fun Database.Transaction.insertTestApplication(
     sentDate: LocalDate? = LocalDate.of(2019, 1, 1),
     dueDate: LocalDate? = LocalDate.of(2019, 5, 1),
     status: ApplicationStatus = ApplicationStatus.SENT,
-    guardianId: UUID,
-    childId: UUID,
-    otherGuardianId: UUID? = null,
+    guardianId: PersonId,
+    childId: ChildId,
+    otherGuardianId: PersonId? = null,
     hideFromGuardian: Boolean = false,
     transferApplication: Boolean = false
 ): ApplicationId {
@@ -395,7 +409,7 @@ RETURNING id
 
 fun Database.Transaction.insertTestPlacement(
     id: PlacementId = PlacementId(UUID.randomUUID()),
-    childId: UUID = UUID.randomUUID(),
+    childId: ChildId = ChildId(UUID.randomUUID()),
     unitId: DaycareId = DaycareId(UUID.randomUUID()),
     type: PlacementType = PlacementType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
@@ -441,7 +455,7 @@ fun Database.Transaction.insertTestHoliday(
 }
 
 fun Database.Transaction.insertTestServiceNeed(
-    confirmedBy: UUID,
+    confirmedBy: EvakaUserId,
     placementId: PlacementId,
     period: FiniteDateRange,
     optionId: ServiceNeedOptionId,
@@ -495,18 +509,18 @@ ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
 }
 
 data class DevIncome(
-    val personId: UUID,
-    val id: UUID = UUID.randomUUID(),
+    val personId: PersonId,
+    val id: IncomeId = IncomeId(UUID.randomUUID()),
     val validFrom: LocalDate = LocalDate.of(2019, 1, 1),
     val validTo: LocalDate? = null,
     @Json
     val data: Map<String, IncomeValue> = mapOf(),
     val effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
     val updatedAt: Instant = Instant.now(),
-    val updatedBy: UUID
+    val updatedBy: EvakaUserId
 )
 
-fun Database.Transaction.insertTestIncome(income: DevIncome): UUID {
+fun Database.Transaction.insertTestIncome(income: DevIncome): IncomeId {
     createUpdate(
         """
             INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, updated_at, updated_by)
@@ -519,8 +533,8 @@ fun Database.Transaction.insertTestIncome(income: DevIncome): UUID {
 }
 
 fun Database.Transaction.insertTestFeeAlteration(
-    childId: UUID,
-    id: UUID = UUID.randomUUID(),
+    childId: ChildId,
+    id: FeeAlterationId = FeeAlterationId(UUID.randomUUID()),
     type: FeeAlteration.Type = FeeAlteration.Type.DISCOUNT,
     amount: Double = 50.0,
     isAbsolute: Boolean = false,
@@ -528,8 +542,8 @@ fun Database.Transaction.insertTestFeeAlteration(
     validTo: LocalDate? = null,
     notes: String = "",
     updatedAt: Instant = Instant.now(),
-    updatedBy: UUID
-): UUID {
+    updatedBy: EvakaUserId
+): FeeAlterationId {
     createUpdate(
         """
             INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
@@ -561,7 +575,7 @@ INSERT INTO fee_thresholds (valid_during, min_income_threshold_2, min_income_thr
 VALUES (:validDuring, :minIncomeThreshold2, :minIncomeThreshold3, :minIncomeThreshold4, :minIncomeThreshold5, :minIncomeThreshold6, :incomeMultiplier2, :incomeMultiplier3, :incomeMultiplier4, :incomeMultiplier5, :incomeMultiplier6, :maxIncomeThreshold2, :maxIncomeThreshold3, :maxIncomeThreshold4, :maxIncomeThreshold5, :maxIncomeThreshold6, :incomeThresholdIncrease6Plus, :siblingDiscount2, :siblingDiscount2Plus, :maxFee, :minFee)
 RETURNING id
     """.trimIndent()
-)
+).let(::FeeThresholdsId)
 
 fun Database.Transaction.insertTestVoucherValue(voucherValue: VoucherValue) = insertTestDataRow(
     voucherValue,
@@ -605,7 +619,7 @@ fun Database.Transaction.insertTestDaycareGroupPlacement(
 fun Database.Transaction.insertTestPlacementPlan(
     applicationId: ApplicationId,
     unitId: DaycareId,
-    id: UUID = UUID.randomUUID(),
+    id: PlacementPlanId = PlacementPlanId(UUID.randomUUID()),
     type: PlacementType = PlacementType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
@@ -613,7 +627,7 @@ fun Database.Transaction.insertTestPlacementPlan(
     preschoolDaycareEndDate: LocalDate? = null,
     updated: Instant = Instant.now(),
     deleted: Boolean? = false
-): UUID {
+): PlacementPlanId {
     createUpdate(
         """
             INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
@@ -639,7 +653,7 @@ fun Database.Transaction.insertTestPlacementPlan(
 }
 
 data class TestDecision(
-    val createdBy: UUID,
+    val createdBy: EvakaUserId,
     val sentDate: LocalDate = LocalDate.now(),
     val unitId: DaycareId,
     val applicationId: ApplicationId,
@@ -717,7 +731,7 @@ fun Database.Transaction.insertTestCaretakers(
 }
 
 fun Database.Transaction.insertTestStaffAttendance(
-    id: UUID = UUID.randomUUID(),
+    id: StaffAttendanceId = StaffAttendanceId(UUID.randomUUID()),
     groupId: GroupId,
     date: LocalDate,
     count: Double
@@ -741,12 +755,12 @@ fun Database.Transaction.insertTestStaffAttendance(
 }
 
 fun Database.Transaction.insertTestAbsence(
-    id: UUID = UUID.randomUUID(),
-    childId: UUID,
+    id: AbsenceId = AbsenceId(UUID.randomUUID()),
+    childId: ChildId,
     date: LocalDate,
     careType: AbsenceCareType,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
-    modifiedBy: UUID = AuthenticatedUser.SystemInternalUser.id
+    modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
 ) {
     //language=sql
     val sql =
@@ -769,8 +783,8 @@ fun Database.Transaction.insertTestAbsence(
 }
 
 fun Database.Transaction.insertTestChildAttendance(
-    id: UUID = UUID.randomUUID(),
-    childId: UUID,
+    id: AttendanceId = AttendanceId(UUID.randomUUID()),
+    childId: ChildId,
     unitId: DaycareId,
     arrived: HelsinkiDateTime,
     departed: HelsinkiDateTime?
@@ -795,12 +809,12 @@ fun Database.Transaction.insertTestChildAttendance(
 }
 
 fun Database.Transaction.insertTestBackUpCare(
-    childId: UUID,
+    childId: ChildId,
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
     groupId: GroupId? = null,
-    id: UUID = UUID.randomUUID()
+    id: BackupCareId = BackupCareId(UUID.randomUUID())
 ) {
     //language=sql
     val sql =
@@ -896,8 +910,8 @@ WHERE application_id = :applicationId AND revision < :revision
 
 data class DevFamilyContact(
     val id: UUID,
-    val childId: UUID,
-    val contactPersonId: UUID,
+    val childId: ChildId,
+    val contactPersonId: PersonId,
     val priority: Int
 )
 
@@ -911,8 +925,8 @@ RETURNING id
 )
 
 data class DevBackupPickup(
-    val id: UUID,
-    val childId: UUID,
+    val id: BackupPickupId,
+    val childId: ChildId,
     val name: String,
     val phone: String
 )
@@ -928,8 +942,8 @@ RETURNING id
 
 data class DevFridgeChild(
     val id: ParentshipId = ParentshipId(UUID.randomUUID()),
-    val childId: UUID,
-    val headOfChild: UUID,
+    val childId: ChildId,
+    val headOfChild: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
@@ -946,7 +960,7 @@ RETURNING id
 data class DevFridgePartner(
     val partnershipId: PartnershipId,
     val indx: Int,
-    val personId: UUID,
+    val personId: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
@@ -962,7 +976,7 @@ RETURNING partnership_id
 
 data class DevEmployeePin(
     val id: UUID,
-    val userId: UUID? = null,
+    val userId: EmployeeId? = null,
     val employeeExternalId: String? = null,
     val pin: String,
     val locked: Boolean? = false
@@ -988,7 +1002,7 @@ RETURNING id
 
 fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) = createQuery("SELECT id FROM employee WHERE external_id = :id")
     .bind("id", externalId)
-    .mapTo<UUID>()
+    .mapTo<EmployeeId>()
     .first()
 
 fun Database.Transaction.insertTestDaycareGroupAcl(aclRow: DevDaycareGroupAcl) = createUpdate(
@@ -1008,8 +1022,8 @@ RETURNING evaka_service_need_id
 )
 
 data class DevPedagogicalDocument(
-    val id: UUID,
-    val childId: UUID,
+    val id: PedagogicalDocumentId,
+    val childId: ChildId,
     val description: String
 )
 
@@ -1020,4 +1034,4 @@ INSERT INTO pedagogical_document (id, child_id, description)
 VALUES (:id, :childId, :description)
 RETURNING id
     """
-)
+).let(::PedagogicalDocumentId)

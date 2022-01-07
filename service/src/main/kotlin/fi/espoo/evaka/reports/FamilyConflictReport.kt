@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -16,7 +17,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class FamilyConflictReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
@@ -79,7 +79,7 @@ private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization):
                 careAreaName = rs.getString("care_area_name"),
                 unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
-                id = rs.getUUID("id"),
+                id = PersonId(rs.getUUID("id")),
                 firstName = rs.getString("first_name"),
                 lastName = rs.getString("last_name"),
                 socialSecurityNumber = rs.getString("social_security_number"),
@@ -94,7 +94,7 @@ data class FamilyConflictReportRow(
     val careAreaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val id: UUID,
+    val id: PersonId,
     val firstName: String?,
     val lastName: String?,
     val socialSecurityNumber: String?,

@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.createInvoiceFixture
 import fi.espoo.evaka.invoicing.createInvoiceRowFixture
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.getInvoicedHeadsOfFamily
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
@@ -176,7 +177,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
 
             val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
             assertEquals(1, result.size)
-            assertEquals(listOf(testInvoices[0].headOfFamily.id), result)
+            assertEquals(listOf(PersonId(testInvoices[0].headOfFamily.id)), result)
         }
     }
 

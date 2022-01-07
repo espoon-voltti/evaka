@@ -6,11 +6,11 @@ package fi.espoo.evaka.sensitive
 
 import fi.espoo.evaka.attendance.ContactInfo
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import java.time.LocalDate
-import java.util.UUID
 
 data class ChildSensitiveInformation(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val preferredName: String,

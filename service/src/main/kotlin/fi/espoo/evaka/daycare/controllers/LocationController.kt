@@ -14,6 +14,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getAllApplicableUnits
 import fi.espoo.evaka.daycare.getApplicationUnits
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -82,7 +83,7 @@ enum class ApplicationUnitType {
 }
 
 data class PublicUnit(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val type: Set<CareType>,
     val providerType: ProviderType,
@@ -102,7 +103,7 @@ data class PublicUnit(
 )
 
 data class AreaJSON(
-    val id: UUID,
+    val id: AreaId,
     val name: String,
     val shortName: String
 )

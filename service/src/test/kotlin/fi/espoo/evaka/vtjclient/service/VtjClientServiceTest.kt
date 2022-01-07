@@ -13,6 +13,7 @@ import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.vtjclient.config.SoapRequestAdapter
 import fi.espoo.evaka.vtjclient.mapper.VTJResponseMapper
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType
@@ -98,7 +99,7 @@ class VtjClientServiceTest {
 
         val ssn = "050482-9741"
         val requestedBy = createPerson(externalId = SSN.getInstance(ssn))
-        val query = VTJQuery(requestingUserId = requestedBy.id, type = HUOLTAJA_HUOLLETTAVA, ssn = ssn)
+        val query = VTJQuery(requestingUserId = requestedBy.id.raw, type = HUOLTAJA_HUOLLETTAVA, ssn = ssn)
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         // see: NB1
@@ -192,7 +193,7 @@ class VtjClientServiceTest {
 
         val ssn = "130894-917N"
         val requestedBy = createPerson()
-        val query = VTJQuery(requestingUserId = requestedBy.id, type = PERUSSANOMA3, ssn = ssn)
+        val query = VTJQuery(requestingUserId = requestedBy.id.raw, type = PERUSSANOMA3, ssn = ssn)
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         // NB1: we don't actually care about the mock callback equalling here but mockito returns null
@@ -223,7 +224,7 @@ class VtjClientServiceTest {
 
         val requestedBy = createPerson()
         val query = VTJQuery(
-            requestingUserId = requestedBy.id,
+            requestingUserId = requestedBy.id.raw,
             type = HUOLTAJA_HUOLLETTAVA,
             ssn = requestedBy.identity.toString()
         )
@@ -242,7 +243,7 @@ class VtjClientServiceTest {
 
         val requestedBy = createPerson()
         val query = VTJQuery(
-            requestingUserId = requestedBy.id,
+            requestingUserId = requestedBy.id.raw,
             type = HUOLTAJA_HUOLLETTAVA,
             ssn = requestedBy.identity.toString()
         )
@@ -271,7 +272,7 @@ class VtjClientServiceTest {
     }
 
     private fun createPerson(
-        id: UUID = UUID.randomUUID(),
+        id: PersonId = PersonId(UUID.randomUUID()),
         externalId: ExternalIdentifier = SSN.getInstance(DEFAULT_PERSON_SSN),
         firstName: String = "Tomi",
         lastName: String = "Testing",
@@ -315,7 +316,7 @@ class VtjClientServiceTest {
         type: RequestType = HUOLTAJA_HUOLLETTAVA
     ): VTJQuery {
         val requestedBy = createPerson(externalId = SSN.getInstance(ssn))
-        return VTJQuery(requestingUserId = requestedBy.id, type = type, ssn = ssn)
+        return VTJQuery(requestingUserId = requestedBy.id.raw, type = type, ssn = ssn)
     }
 
     private fun ILoggingEvent.assertLogArgumentsContain(query: VTJQuery, status: String) {

@@ -6,7 +6,9 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -24,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class ReservationControllerCitizen(
@@ -50,11 +51,11 @@ class ReservationControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val children = tx.getReservationChildren(user.id, range)
+                val children = tx.getReservationChildren(PersonId(user.id), range)
                 val includeWeekends = children.any {
                     it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
                 }
-                val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
+                val reservations = tx.getReservationsCitizen(PersonId(user.id), range, includeWeekends)
                 val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours).let { reservableDays ->
                     val maxPlacementEnd = children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
                     if (reservableDays.start > maxPlacementEnd) null
@@ -90,7 +91,7 @@ class ReservationControllerCitizen(
                 if (body.any { !reservableDays.includes(it.date) }) {
                     throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
                 }
-                createReservationsAsCitizen(tx, user.id, body)
+                createReservationsAsCitizen(tx, PersonId(user.id), body)
             }
         }
     }
@@ -116,7 +117,7 @@ class ReservationControllerCitizen(
                         body.dateRange.dates().map { childId to it }
                     }
                 )
-                tx.insertAbsences(user.id, body)
+                tx.insertAbsences(PersonId(user.id), body)
             }
         }
     }
@@ -138,7 +139,7 @@ data class DailyReservationData(
 
 @Json
 data class ChildDailyData(
-    val childId: UUID,
+    val childId: ChildId,
     val absence: AbsenceType?,
     val reservations: List<Reservation>
 )
@@ -150,7 +151,7 @@ data class Reservation(
 )
 
 data class ReservationChild(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val preferredName: String?,
     val placementMinStart: LocalDate,
@@ -160,13 +161,13 @@ data class ReservationChild(
 )
 
 data class AbsenceRequest(
-    val childIds: Set<UUID>,
+    val childIds: Set<ChildId>,
     val dateRange: FiniteDateRange,
     val absenceType: AbsenceType
 )
 
 fun Database.Read.getReservationsCitizen(
-    guardianId: UUID,
+    guardianId: PersonId,
     range: FiniteDateRange,
     includeWeekends: Boolean
 ): List<DailyReservationData> {
@@ -216,7 +217,7 @@ GROUP BY date, is_holiday
         .toList()
 }
 
-private fun Database.Read.getReservationChildren(guardianId: UUID, range: FiniteDateRange): List<ReservationChild> {
+private fun Database.Read.getReservationChildren(guardianId: PersonId, range: FiniteDateRange): List<ReservationChild> {
     return createQuery(
         """
 SELECT ch.id, ch.first_name, ch.preferred_name, p.placement_min_start, p.placement_max_end, p.max_operational_days, p.in_shift_care_unit
@@ -274,13 +275,13 @@ fun getReservableDays(now: HelsinkiDateTime, thresholdHours: Long): FiniteDateRa
     return FiniteDateRange(nextReservableMonday, lastReservableDay)
 }
 
-fun createReservationsAsCitizen(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
+fun createReservationsAsCitizen(tx: Database.Transaction, userId: PersonId, reservations: List<DailyReservationRequest>) {
     tx.clearOldAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
     tx.clearOldReservations(reservations.map { it.childId to it.date })
     tx.insertValidReservations(userId, reservations)
 }
 
-private fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
+private fun Database.Transaction.insertValidReservations(userId: PersonId, requests: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
         INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by)
@@ -322,7 +323,7 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, requests:
     batch.execute()
 }
 
-private fun Database.Transaction.insertAbsences(userId: UUID, request: AbsenceRequest) {
+private fun Database.Transaction.insertAbsences(userId: PersonId, request: AbsenceRequest) {
     val batch = prepareBatch(
         """
         INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)

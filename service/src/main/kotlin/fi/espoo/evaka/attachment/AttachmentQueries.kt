@@ -6,10 +6,12 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -17,7 +19,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.lang.IllegalArgumentException
-import java.util.UUID
 
 fun Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
@@ -133,7 +134,7 @@ fun Database.Transaction.deleteAttachment(id: AttachmentId) {
 fun Database.Transaction.deleteAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
     type: AttachmentType,
-    userId: UUID
+    userId: EvakaUserId
 ): List<AttachmentId> {
     return this.createQuery(
         """
@@ -152,7 +153,7 @@ fun Database.Transaction.deleteAttachmentsByApplicationAndType(
 }
 
 fun Database.Transaction.associateAttachments(
-    personId: UUID,
+    personId: PersonId,
     incomeStatementId: IncomeStatementId,
     attachmentIds: List<AttachmentId>
 ) {
@@ -175,7 +176,7 @@ fun Database.Transaction.associateAttachments(
 }
 
 fun Database.Transaction.dissociateAllPersonsAttachments(
-    personId: UUID,
+    personId: PersonId,
     incomeStatementId: IncomeStatementId,
 ) {
     createUpdate(
@@ -190,7 +191,7 @@ fun Database.Transaction.dissociateAllPersonsAttachments(
         .execute()
 }
 
-fun Database.Read.userUnparentedAttachmentCount(userId: UUID): Int {
+fun Database.Read.userUnparentedAttachmentCount(userId: EvakaUserId): Int {
     return this.createQuery(
         """
         SELECT COUNT(*) FROM attachment
@@ -204,7 +205,7 @@ fun Database.Read.userUnparentedAttachmentCount(userId: UUID): Int {
         .first()
 }
 
-fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, userId: UUID): Int {
+fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, userId: EvakaUserId): Int {
     return this.createQuery("SELECT COUNT(*) FROM attachment WHERE application_id = :applicationId AND uploaded_by = :userId")
         .bind("applicationId", applicationId)
         .bind("userId", userId)
@@ -212,7 +213,7 @@ fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, u
         .first()
 }
 
-fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeStatementId, userId: UUID): Int {
+fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeStatementId, userId: EvakaUserId): Int {
     return this.createQuery("SELECT COUNT(*) FROM attachment WHERE income_statement_id = :incomeStatementId AND uploaded_by = :userId")
         .bind("incomeStatementId", incomeStatementId)
         .bind("userId", userId)
@@ -220,7 +221,7 @@ fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeSt
         .first()
 }
 
-fun Database.Read.userPedagogicalDocumentCount(pedagogicalDocumentId: PedagogicalDocumentId, userId: UUID): Int {
+fun Database.Read.userPedagogicalDocumentCount(pedagogicalDocumentId: PedagogicalDocumentId, userId: EvakaUserId): Int {
     return this.createQuery("SELECT COUNT(*) FROM attachment WHERE pedagogical_document_id = :pedagogicalDocumentId AND uploaded_by = :userId")
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .bind("userId", userId)

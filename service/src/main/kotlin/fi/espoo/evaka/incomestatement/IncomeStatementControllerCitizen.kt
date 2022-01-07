@@ -9,6 +9,7 @@ import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.attachment.dissociateAllPersonsAttachments
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -41,7 +42,7 @@ class IncomeStatementControllerCitizen {
         user.requireOneOfRoles(UserRole.END_USER)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
+                tx.readIncomeStatementsForPerson(PersonId(user.id), includeEmployeeContent = false, page = page, pageSize = pageSize)
             }
         }
     }
@@ -68,7 +69,7 @@ class IncomeStatementControllerCitizen {
         user.requireOneOfRoles(UserRole.END_USER)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
+                tx.readIncomeStatementForPerson(PersonId(user.id), incomeStatementId, includeEmployeeContent = false)
                     ?: throw NotFound("No such income statement")
             }
         }
@@ -90,10 +91,10 @@ class IncomeStatementControllerCitizen {
                 throw BadRequest("An income statement for this start date already exists")
 
             dbc.transaction { tx ->
-                val incomeStatementId = tx.createIncomeStatement(user.id, body)
+                val incomeStatementId = tx.createIncomeStatement(PersonId(user.id), body)
                 when (body) {
                     is IncomeStatementBody.Income ->
-                        tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+                        tx.associateAttachments(PersonId(user.id), incomeStatementId, body.attachmentIds)
                     else ->
                         Unit
                 }
@@ -115,12 +116,12 @@ class IncomeStatementControllerCitizen {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 verifyIncomeStatementModificationsAllowed(tx, user, incomeStatementId)
-                tx.updateIncomeStatement(user.id, incomeStatementId, body).also { success ->
+                tx.updateIncomeStatement(PersonId(user.id), incomeStatementId, body).also { success ->
                     if (success) {
-                        tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
+                        tx.dissociateAllPersonsAttachments(PersonId(user.id), incomeStatementId)
                         when (body) {
                             is IncomeStatementBody.Income ->
-                                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
+                                tx.associateAttachments(PersonId(user.id), incomeStatementId, body.attachmentIds)
                             else ->
                                 Unit
                         }
@@ -152,7 +153,7 @@ class IncomeStatementControllerCitizen {
         user: AuthenticatedUser,
         id: IncomeStatementId
     ) {
-        val incomeStatement = tx.readIncomeStatementForPerson(user.id, id, includeEmployeeContent = false)
+        val incomeStatement = tx.readIncomeStatementForPerson(PersonId(user.id), id, includeEmployeeContent = false)
             ?: throw NotFound("Income statement not found")
         if (incomeStatement.handled) {
             throw Forbidden("Handled income statement cannot be modified or removed")

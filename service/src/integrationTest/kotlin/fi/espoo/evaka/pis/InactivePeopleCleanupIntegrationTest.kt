@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -29,7 +30,6 @@ import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 
 class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
@@ -218,7 +218,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
         assertCleanedUpPeople(testDate, setOf())
     }
 
-    private fun assertCleanedUpPeople(queryDate: LocalDate, cleanedUpPeople: Set<UUID>) {
+    private fun assertCleanedUpPeople(queryDate: LocalDate, cleanedUpPeople: Set<PersonId>) {
         val result = db.transaction { cleanUpInactivePeople(it, queryDate) }
 
         assertEquals(cleanedUpPeople, result)

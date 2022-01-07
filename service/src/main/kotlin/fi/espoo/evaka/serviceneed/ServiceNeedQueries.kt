@@ -5,7 +5,9 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -15,10 +17,9 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Read.getServiceNeedsByChild(
-    childId: UUID
+    childId: ChildId
 ): List<ServiceNeed> {
     // language=SQL
     val sql =
@@ -107,7 +108,7 @@ fun Database.Transaction.insertServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
-    confirmedBy: UUID?,
+    confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ): ServiceNeedId {
     // language=sql
@@ -134,7 +135,7 @@ fun Database.Transaction.updateServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
-    confirmedBy: UUID?,
+    confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ) {
     // language=sql

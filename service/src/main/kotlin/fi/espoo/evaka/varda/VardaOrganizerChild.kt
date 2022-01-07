@@ -8,10 +8,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 import kotlin.Exception
 
 fun getOrCreateVardaChildByOrganizer(
@@ -249,7 +249,7 @@ fun insertVardaOrganizerChild(
 }
 
 data class VardaPerson(
-    val id: UUID,
+    val id: PersonId,
     val firstName: String,
     val lastName: String,
     val nickName: String,
@@ -268,7 +268,7 @@ data class VardaPerson(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaPersonRequest(
-    val id: UUID,
+    val id: PersonId,
     val etunimet: String,
     val sukunimi: String,
     val kutsumanimi: String,

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class EndedPlacementsReportController(private val accessControl: AccessControl) {
@@ -62,7 +62,7 @@ private fun Database.Read.getEndedPlacementsRows(from: LocalDate, to: LocalDate)
         .bind("to", to)
         .map { rs, _ ->
             EndedPlacementsReportRow(
-                childId = rs.getUUID("child_id"),
+                childId = ChildId(rs.getUUID("child_id")),
                 firstName = rs.getString("first_name"),
                 lastName = rs.getString("last_name"),
                 ssn = rs.getString("social_security_number"),
@@ -74,7 +74,7 @@ private fun Database.Read.getEndedPlacementsRows(from: LocalDate, to: LocalDate)
 }
 
 data class EndedPlacementsReportRow(
-    val childId: UUID,
+    val childId: ChildId,
     val firstName: String?,
     val lastName: String?,
     val ssn: String?,

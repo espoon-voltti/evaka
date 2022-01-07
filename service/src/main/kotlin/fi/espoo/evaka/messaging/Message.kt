@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -16,7 +17,6 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
-import java.util.UUID
 
 data class Message(
     val id: MessageId,
@@ -62,7 +62,7 @@ data class MessageReceiversResponse(
 )
 
 data class MessageReceiver(
-    val childId: UUID,
+    val childId: ChildId,
     val childFirstName: String,
     val childLastName: String,
     val childDateOfBirth: LocalDate,
@@ -83,7 +83,7 @@ data class MessageAccount(
 
 data class Group(
     @PropagateNull
-    val id: UUID,
+    val id: GroupId,
     val name: String,
     val unitId: DaycareId,
     val unitName: String,

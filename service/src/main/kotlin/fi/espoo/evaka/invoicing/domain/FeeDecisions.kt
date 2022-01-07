@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.DateRange
@@ -358,7 +359,7 @@ fun feeAlterationEffect(fee: Int, feeAlteration: FeeAlteration): Int {
 // Current flat increase for children with a parent working at ECHA
 const val ECHAIncrease = 93
 
-fun getECHAIncrease(childId: UUID, period: DateRange) = FeeAlteration(
+fun getECHAIncrease(childId: ChildId, period: DateRange) = FeeAlteration(
     personId = childId,
     type = FeeAlteration.Type.INCREASE,
     amount = ECHAIncrease,

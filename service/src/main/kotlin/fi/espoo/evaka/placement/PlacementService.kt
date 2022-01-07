@@ -13,6 +13,7 @@ import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.serviceneed.insertServiceNeed
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -33,7 +34,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
-import java.util.UUID
 
 data class ApplicationServiceNeed(
     val optionId: ServiceNeedOptionId,
@@ -43,7 +43,7 @@ data class ApplicationServiceNeed(
 fun createPlacement(
     tx: Database.Transaction,
     type: PlacementType,
-    childId: UUID,
+    childId: ChildId,
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
@@ -197,7 +197,7 @@ fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, group
     createGroupPlacement(groupPlacement.daycarePlacementId, groupId, startDate, groupPlacement.endDate)
 }
 
-private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, excludePlacement: PlacementId? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
+private fun Database.Transaction.clearOldPlacements(childId: ChildId, from: LocalDate, to: LocalDate, excludePlacement: PlacementId? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
     getPlacementsForChildDuring(childId, from, to)
@@ -313,7 +313,7 @@ fun Database.Read.getUnitChildrenCapacities(
 
 fun Database.Read.getDetailedDaycarePlacements(
     daycareId: DaycareId?,
-    childId: UUID?,
+    childId: ChildId?,
     startDate: LocalDate?,
     endDate: LocalDate?
 ): Set<DaycarePlacementWithDetails> {
@@ -384,7 +384,7 @@ private fun addMissingGroupPlacements(daycarePlacement: DaycarePlacementWithDeta
     return daycarePlacement.copy(groupPlacements = groupPlacements)
 }
 
-private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: UUID, type: PlacementType, startDate: LocalDate, endDate: LocalDate): List<Pair<FiniteDateRange, PlacementType>> {
+private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: ChildId, type: PlacementType, startDate: LocalDate, endDate: LocalDate): List<Pair<FiniteDateRange, PlacementType>> {
     val (normalPlacementType, fiveYearOldPlacementType) = when (type) {
         PlacementType.DAYCARE, PlacementType.DAYCARE_FIVE_YEAR_OLDS ->
             PlacementType.DAYCARE to PlacementType.DAYCARE_FIVE_YEAR_OLDS
@@ -428,7 +428,7 @@ fun getMissingGroupPlacements(
         val placementId: PlacementId,
         val placementType: PlacementType?,
         val placementRange: FiniteDateRange,
-        val childId: UUID,
+        val childId: ChildId,
         @Json
         val serviceNeeds: Set<ServiceNeed>,
         val gapRange: FiniteDateRange
@@ -440,7 +440,7 @@ fun getMissingGroupPlacements(
         val id: PlacementId,
         val type: PlacementType,
         val range: FiniteDateRange,
-        val childId: UUID,
+        val childId: ChildId,
         @Json
         val serviceNeeds: Set<ServiceNeed>,
         val groupPlacementRanges: List<FiniteDateRange>
@@ -601,7 +601,7 @@ data class MissingGroupPlacement(
     val placementType: PlacementType?, // null for backup care
     val backup: Boolean,
     val placementPeriod: FiniteDateRange,
-    val childId: UUID,
+    val childId: ChildId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
@@ -610,7 +610,7 @@ data class MissingGroupPlacement(
 )
 
 data class ChildBasics(
-    val id: UUID,
+    val id: ChildId,
     val socialSecurityNumber: String? = null,
     val firstName: String = "",
     val lastName: String = "",

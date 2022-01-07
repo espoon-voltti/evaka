@@ -7,6 +7,7 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
@@ -520,7 +521,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 endDate = oldPlacement.endDate
             )
             it.insertTestServiceNeed(
-                confirmedBy = testDecisionMaker_1.id,
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id),
                 placementId = oldPlacement.id,
                 period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
                 optionId = snDefaultDaycare.id
@@ -577,7 +578,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 endDate = oldPlacement.endDate
             )
             it.insertTestServiceNeed(
-                confirmedBy = testDecisionMaker_1.id,
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id),
                 placementId = oldPlacement.id,
                 period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
                 optionId = snDefaultDaycare.id

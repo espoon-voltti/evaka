@@ -37,7 +37,7 @@ class PedagogicalDocumentController(
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId.raw)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId)
         return db.connect {
             it.transaction { tx ->
                 tx.createDocument(user, body).also {
@@ -72,7 +72,7 @@ class PedagogicalDocumentController(
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
         Audit.PedagogicalDocumentRead.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId.raw)
+        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId)
         return db.connect { dbc ->
             dbc.read {
                 it.findPedagogicalDocumentsByChild(childId)

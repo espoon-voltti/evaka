@@ -9,7 +9,10 @@ import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -22,7 +25,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
-import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
@@ -76,7 +78,7 @@ class AbsenceService {
         return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays)
     }
 
-    fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, userId: UUID) {
+    fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, userId: EvakaUserId) {
         try {
             tx.upsertAbsences(absences, userId)
         } catch (e: Exception) {
@@ -85,7 +87,7 @@ class AbsenceService {
         }
     }
 
-    fun getAbsencesByChild(tx: Database.Read, childId: UUID, year: Int, month: Int): AbsenceChildMinimal {
+    fun getAbsencesByChild(tx: Database.Read, childId: ChildId, year: Int, month: Int): AbsenceChildMinimal {
         val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
         val absenceList = tx.getAbsencesByChildByRange(childId, range)
@@ -107,7 +109,7 @@ class AbsenceService {
         )
     }
 
-    fun getFutureAbsencesByChild(tx: Database.Read, childId: UUID): List<Absence> {
+    fun getFutureAbsencesByChild(tx: Database.Read, childId: ChildId): List<Absence> {
         val period = DateRange(LocalDate.now().plusDays(1), null)
         return tx.getAbsencesByChildByRange(childId, period)
     }
@@ -179,7 +181,7 @@ data class AbsenceGroup(
 
 @ExcludeCodeGen
 data class AbsenceChild(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val dob: LocalDate,
@@ -190,7 +192,7 @@ data class AbsenceChild(
 
 @ExcludeCodeGen
 data class AbsenceChildMinimal(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val absences: Map<LocalDate, List<Absence>>,
@@ -198,16 +200,16 @@ data class AbsenceChildMinimal(
 )
 
 data class Absence(
-    val id: UUID? = null,
-    val childId: UUID,
+    val id: AbsenceId? = null,
+    val childId: ChildId,
     val date: LocalDate,
     var careType: AbsenceCareType,
     val absenceType: AbsenceType
 )
 
 data class AbsenceWithModifierInfo(
-    val id: UUID? = null,
-    val childId: UUID,
+    val id: AbsenceId? = null,
+    val childId: ChildId,
     val date: LocalDate,
     var careType: AbsenceCareType,
     val absenceType: AbsenceType,
@@ -224,7 +226,7 @@ data class AbsenceWithModifierInfo(
 }
 
 data class AbsenceBackupCare(
-    val childId: UUID,
+    val childId: ChildId,
     val date: LocalDate
 )
 
@@ -244,7 +246,7 @@ enum class AbsenceType {
 }
 
 data class AbsencePlacement(
-    val childId: UUID,
+    val childId: ChildId,
     val firstName: String,
     val lastName: String,
     val type: PlacementType,
@@ -254,7 +256,7 @@ data class AbsencePlacement(
 )
 
 // database functions
-private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifiedBy: UUID) {
+private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifiedBy: EvakaUserId) {
     //language=SQL
     val sql =
         """
@@ -279,7 +281,7 @@ private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifie
 }
 
 data class AbsenceDelete(
-    val childId: UUID,
+    val childId: ChildId,
     val date: LocalDate,
     var careType: AbsenceCareType
 )
@@ -401,7 +403,7 @@ fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): 
         .list()
 }
 
-fun Database.Read.getAbsencesByChildByRange(childId: UUID, range: FiniteDateRange): List<Absence> {
+fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: FiniteDateRange): List<Absence> {
     //language=SQL
     val sql =
         """
@@ -418,7 +420,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: UUID, range: FiniteDateRang
         .list()
 }
 
-fun Database.Read.getAbsencesByChildByRange(childId: UUID, range: DateRange): List<Absence> {
+fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: DateRange): List<Absence> {
     //language=SQL
     val sql =
         """
@@ -455,7 +457,7 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
         .mapTo<GroupBackupCare>()
         .list()
 
-private fun Database.Read.getBackupCaresAffectingChild(childId: UUID, period: FiniteDateRange): List<GroupBackupCare> =
+private fun Database.Read.getBackupCaresAffectingChild(childId: ChildId, period: FiniteDateRange): List<GroupBackupCare> =
     createQuery(
         // language=SQL
         """

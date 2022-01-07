@@ -11,14 +11,18 @@ import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
+import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class ApplicationUpdate(
     val form: ApplicationFormUpdate,
@@ -26,7 +30,7 @@ data class ApplicationUpdate(
 )
 
 data class ApplicationSummary(
-    val id: UUID,
+    val id: ApplicationId,
     val firstName: String,
     val lastName: String,
     val socialSecurityNumber: String? = null,
@@ -65,8 +69,8 @@ data class PlacementProposalStatus(
 
 data class PersonApplicationSummary(
     val applicationId: ApplicationId,
-    val childId: UUID,
-    val guardianId: UUID,
+    val childId: ChildId,
+    val guardianId: PersonId,
     val preferredUnitId: DaycareId?,
     val preferredUnitName: String?,
     val childName: String?,
@@ -87,9 +91,9 @@ data class ApplicationDetails(
     val status: ApplicationStatus,
     val origin: ApplicationOrigin,
 
-    val childId: UUID,
-    val guardianId: UUID,
-    val otherGuardianId: UUID?,
+    val childId: ChildId,
+    val guardianId: PersonId,
+    val otherGuardianId: PersonId?,
     val otherGuardianLivesInSameAddress: Boolean?,
     val childRestricted: Boolean,
     val guardianRestricted: Boolean,
@@ -107,14 +111,14 @@ data class ApplicationDetails(
 )
 
 data class ApplicationAttachment(
-    val id: UUID,
+    val id: AttachmentId,
     val name: String,
     val contentType: String,
     val updated: OffsetDateTime,
     val receivedAt: OffsetDateTime,
     val type: AttachmentType,
-    val uploadedByEmployee: UUID?,
-    val uploadedByPerson: UUID?
+    val uploadedByEmployee: EmployeeId?,
+    val uploadedByPerson: PersonId?
 )
 
 enum class ApplicationType {
@@ -150,9 +154,9 @@ data class ApplicationNote(
     val id: ApplicationNoteId,
     val applicationId: ApplicationId,
     val content: String,
-    val createdBy: UUID,
+    val createdBy: EvakaUserId,
     val createdByName: String,
-    val updatedBy: UUID,
+    val updatedBy: EvakaUserId,
     val updatedByName: String,
     val created: Instant,
     val updated: Instant
@@ -177,7 +181,7 @@ data class ApplicationUnitSummary(
 data class CitizenApplicationSummary(
     val applicationId: ApplicationId,
     val type: String,
-    val childId: UUID,
+    val childId: ChildId,
     val childName: String?,
     val preferredUnitName: String?,
     val allPreferredUnitNames: List<String>,

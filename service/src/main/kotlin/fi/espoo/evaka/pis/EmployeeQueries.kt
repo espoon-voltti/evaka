@@ -21,7 +21,6 @@ import org.jdbi.v3.json.Json
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 data class NewEmployee(
     val firstName: String,
@@ -46,7 +45,7 @@ data class DaycareRole(
 )
 
 data class EmployeeWithDaycareRoles(
-    val id: UUID,
+    val id: EmployeeId,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
     val firstName: String,
@@ -80,7 +79,7 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
     .mapTo<Employee>()
     .asSequence()
 
-private fun Database.Read.searchFinanceDecisionHandlers(id: UUID? = null) = createQuery(
+private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) = createQuery(
     // language=SQL
     """
 SELECT DISTINCT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
@@ -127,7 +126,7 @@ fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeU
     .mapTo<EmployeeUser>()
     .singleOrNull()
 
-fun Database.Read.getEmployeeWithRoles(id: UUID): EmployeeWithDaycareRoles? {
+fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles? {
     // language=SQL
     val sql = """
 SELECT
@@ -155,7 +154,7 @@ WHERE id = :id
 }
 
 fun Database.Transaction.updateEmployee(
-    id: UUID,
+    id: EmployeeId,
     globalRoles: List<UserRole>
 ) {
     // language=SQL
@@ -230,7 +229,7 @@ WHERE id = :employeeId
     .execute()
 
 fun Database.Transaction.upsertPinCode(
-    userId: UUID,
+    userId: EmployeeId,
     pinCode: PinCode
 ) {
     // Note: according to spec, setting a pin resets the failure and opens a locked pin
@@ -294,7 +293,7 @@ RETURNING locked
     .mapTo<Boolean>()
     .firstOrNull() ?: false
 
-fun Database.Read.isPinLocked(employeeId: UUID): Boolean =
+fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
     createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
         .bind("id", employeeId)
         .mapTo<Boolean>()

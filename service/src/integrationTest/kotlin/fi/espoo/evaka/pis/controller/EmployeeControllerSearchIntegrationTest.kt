@@ -44,11 +44,11 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
         assertEquals(3, body.total)
         assertEquals(1, body.pages)
 
-        val decisionMaker = body.data.find { it.id == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
+        val decisionMaker = body.data.find { it.id.raw == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
         assertEquals(listOf(UserRole.SERVICE_WORKER), decisionMaker.globalRoles)
         assertEquals(0, decisionMaker.daycareRoles.size)
 
-        val supervisor = body.data.find { it.id == unitSupervisorOfTestDaycare.id } ?: fail("supervisor not found")
+        val supervisor = body.data.find { it.id.raw == unitSupervisorOfTestDaycare.id } ?: fail("supervisor not found")
         assertEquals(0, supervisor.globalRoles.size)
         assertEquals(
             listOf(DaycareRole(daycareId = testDaycare.id, daycareName = testDaycare.name, role = UserRole.UNIT_SUPERVISOR)),

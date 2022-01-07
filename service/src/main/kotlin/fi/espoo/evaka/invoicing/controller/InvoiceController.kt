@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 enum class InvoiceDistinctiveParams {
     MISSING_ADDRESS
@@ -168,10 +167,10 @@ class InvoiceController(
     fun getHeadOfFamilyInvoices(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable uuid: UUID
+        @PathVariable uuid: PersonId
     ): ResponseEntity<Wrapper<List<Invoice>>> {
         Audit.InvoicesRead.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.Person.READ_INVOICES, PersonId(uuid))
+        accessControl.requirePermissionFor(user, Action.Person.READ_INVOICES, uuid)
         val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } }
         return ResponseEntity.ok(Wrapper(res))
     }

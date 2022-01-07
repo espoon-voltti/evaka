@@ -367,12 +367,12 @@ WHERE employee_id = :userId
             .hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 
-    fun requireGuardian(user: AuthenticatedUser, childIds: Set<UUID>) {
+    fun requireGuardian(user: AuthenticatedUser, childIds: Set<ChildId>) {
         val dependants = Database(jdbi).connect { db ->
             db.read {
                 it.createQuery(
                     "SELECT child_id FROM guardian g WHERE g.guardian_id = :userId"
-                ).bind("userId", user.id).mapTo<UUID>().list()
+                ).bind("userId", user.id).mapTo<ChildId>().list()
             }
         }
 
@@ -462,7 +462,7 @@ WHERE employee_id = :userId
                 user.hasOneOfRoles(
                     UserRole.ADMIN,
                     UserRole.SERVICE_WORKER
-                ) || Database(jdbi).connect { db -> db.read { it.getApplicationNoteCreatedBy(id) == user.id } }
+                ) || Database(jdbi).connect { db -> db.read { it.getApplicationNoteCreatedBy(id) == user.evakaUserId } }
         }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
@@ -663,7 +663,7 @@ WHERE employee_id = :userId
         )
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: UUID) {
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: ChildId) {
         when (user) {
             is AuthenticatedUser.Employee,
             is AuthenticatedUser.MobileDevice -> {
@@ -805,7 +805,7 @@ WHERE employee_id = :userId
                         val childId = it.read { tx ->
                             tx.createQuery("SELECT child_id FROM placement WHERE id = :id")
                                 .bind("id", id)
-                                .mapTo<UUID>()
+                                .mapTo<ChildId>()
                                 .one()
                         }
                         requireGuardian(user, setOf(childId))

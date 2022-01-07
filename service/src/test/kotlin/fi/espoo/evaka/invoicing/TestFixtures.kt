@@ -29,10 +29,12 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
@@ -168,7 +170,7 @@ val testInvoice = Invoice(
 
 val testIncome = Income(
     id = IncomeId(UUID.randomUUID()),
-    personId = UUID.randomUUID(),
+    personId = PersonId(UUID.randomUUID()),
     validFrom = LocalDate.of(2000, 1, 1),
     validTo = null,
     effect = IncomeEffect.INCOME,
@@ -195,7 +197,7 @@ fun createFeeDecisionAlterationFixture(
     FeeAlterationWithEffect(type, amount, isAbsolute, effect)
 
 fun createFeeDecisionChildFixture(
-    childId: UUID,
+    childId: ChildId,
     dateOfBirth: LocalDate,
     placementUnitId: DaycareId,
     placementType: PlacementType,
@@ -205,7 +207,7 @@ fun createFeeDecisionChildFixture(
     fee: Int = 28900,
     feeAlterations: List<FeeAlterationWithEffect> = listOf(),
 ) = FeeDecisionChild(
-    child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    child = PersonData.WithDateOfBirth(id = childId.raw, dateOfBirth = dateOfBirth),
     placement = FeeDecisionPlacement(UnitData.JustId(placementUnitId), placementType),
     serviceNeed = serviceNeed,
     baseFee = baseFee,
@@ -219,9 +221,9 @@ fun createFeeDecisionFixture(
     status: FeeDecisionStatus,
     decisionType: FeeDecisionType,
     period: DateRange,
-    headOfFamilyId: UUID,
+    headOfFamilyId: PersonId,
     children: List<FeeDecisionChild>,
-    partnerId: UUID? = null,
+    partnerId: PersonId? = null,
     feeThresholds: FeeDecisionThresholds = testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
@@ -229,8 +231,8 @@ fun createFeeDecisionFixture(
     status = status,
     decisionType = decisionType,
     validDuring = period,
-    headOfFamily = PersonData.JustId(headOfFamilyId),
-    partner = if (partnerId != null) PersonData.JustId(partnerId) else null,
+    headOfFamily = PersonData.JustId(headOfFamilyId.raw),
+    partner = if (partnerId != null) PersonData.JustId(partnerId.raw) else null,
     headOfFamilyIncome = headOfFamilyIncome,
     partnerIncome = null,
     familySize = children.size + 1,
@@ -242,8 +244,8 @@ fun createVoucherValueDecisionFixture(
     status: VoucherValueDecisionStatus,
     validFrom: LocalDate,
     validTo: LocalDate?,
-    headOfFamilyId: UUID,
-    childId: UUID,
+    headOfFamilyId: PersonId,
+    childId: ChildId,
     dateOfBirth: LocalDate,
     unitId: DaycareId,
     familySize: Int = 2,
@@ -263,13 +265,13 @@ fun createVoucherValueDecisionFixture(
     decisionType = VoucherValueDecisionType.NORMAL,
     validFrom = validFrom,
     validTo = validTo,
-    headOfFamily = PersonData.JustId(headOfFamilyId),
+    headOfFamily = PersonData.JustId(headOfFamilyId.raw),
     partner = null,
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = familySize,
     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
-    child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    child = PersonData.WithDateOfBirth(id = childId.raw, dateOfBirth = dateOfBirth),
     placement = VoucherValueDecisionPlacement(UnitData.JustId(unitId), placementType),
     serviceNeed = serviceNeed,
     baseValue = baseValue,
@@ -283,9 +285,9 @@ fun createVoucherValueDecisionFixture(
     finalCoPayment = coPayment + feeAlterations.sumOf { it.effect }
 )
 
-fun createInvoiceRowFixture(childId: UUID) = InvoiceRow(
+fun createInvoiceRowFixture(childId: ChildId) = InvoiceRow(
     id = UUID.randomUUID(),
-    child = PersonData.WithDateOfBirth(childId, LocalDate.of(2017, 1, 1)),
+    child = PersonData.WithDateOfBirth(childId.raw, LocalDate.of(2017, 1, 1)),
     amount = 1,
     unitPrice = 28900,
     product = Product.DAYCARE,
@@ -297,7 +299,7 @@ fun createInvoiceRowFixture(childId: UUID) = InvoiceRow(
 
 fun createInvoiceFixture(
     status: InvoiceStatus,
-    headOfFamilyId: UUID,
+    headOfFamilyId: PersonId,
     agreementType: Int,
     number: Long? = null,
     period: DateRange = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
@@ -307,7 +309,7 @@ fun createInvoiceFixture(
     status = status,
     number = number,
     agreementType = agreementType,
-    headOfFamily = PersonData.JustId(headOfFamilyId),
+    headOfFamily = PersonData.JustId(headOfFamilyId.raw),
     codebtor = null,
     periodStart = period.start,
     periodEnd = period.end!!,

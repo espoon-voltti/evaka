@@ -5,14 +5,14 @@
 package fi.espoo.evaka.assistanceneed
 
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
-fun Database.Transaction.insertAssistanceNeed(user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+fun Database.Transaction.insertAssistanceNeed(user: AuthenticatedUser, childId: ChildId, data: AssistanceNeedRequest): AssistanceNeed {
     //language=sql
     val sql =
         """
@@ -74,7 +74,7 @@ fun Database.Read.getAssistanceNeedById(id: AssistanceNeedId): AssistanceNeed {
     return createQuery(sql).bind("id", id).mapTo(AssistanceNeed::class.java).first()
 }
 
-fun Database.Read.getAssistanceNeedsByChild(childId: UUID): List<AssistanceNeed> {
+fun Database.Read.getAssistanceNeedsByChild(childId: ChildId): List<AssistanceNeed> {
     //language=sql
     val sql =
         """
@@ -92,7 +92,7 @@ fun Database.Read.getAssistanceNeedsByChild(childId: UUID): List<AssistanceNeed>
         .list()
 }
 
-fun Database.Read.getCapacityFactorsByChild(childId: UUID): List<AssistanceNeedCapacityFactor> {
+fun Database.Read.getCapacityFactorsByChild(childId: ChildId): List<AssistanceNeedCapacityFactor> {
     return createQuery(
         """
          SELECT 
@@ -135,7 +135,7 @@ fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: Assis
     return getAssistanceNeedById(id)
 }
 
-fun Database.Transaction.shortenOverlappingAssistanceNeed(user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate) {
+fun Database.Transaction.shortenOverlappingAssistanceNeed(user: AuthenticatedUser, childId: ChildId, startDate: LocalDate, endDate: LocalDate) {
     //language=sql
     val sql =
         """

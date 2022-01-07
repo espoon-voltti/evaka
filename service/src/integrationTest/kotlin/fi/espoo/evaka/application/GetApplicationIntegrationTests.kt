@@ -13,6 +13,8 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -53,7 +55,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     lateinit var scheduledJobs: ScheduledJobs
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw)
     private val testDaycareSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf())
     private val testRoundTheClockDaycareSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
     private val testRoundTheClockDaycareSupervisor = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
@@ -67,7 +69,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
             tx.insertGeneralTestFixtures()
             tx.insertTestEmployee(
                 DevEmployee(
-                    id = testRoundTheClockDaycareSupervisor.id,
+                    id = EmployeeId(testRoundTheClockDaycareSupervisor.id),
                     externalId = testRoundTheClockDaycareSupervisorExternalId
                 )
             )
@@ -298,7 +300,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         val applicationId = db.transaction { tx ->
             val applicationId = tx.insertTestApplication(
                 childId = testChild_1.id,
-                guardianId = endUser.id,
+                guardianId = PersonId(endUser.id),
                 status = ApplicationStatus.CREATED
             )
             tx.insertTestApplicationForm(

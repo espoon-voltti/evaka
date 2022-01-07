@@ -6,13 +6,13 @@ package fi.espoo.evaka.children
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.GroupId
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
-import java.util.UUID
 
 data class Group(
     @PropagateNull
-    val id: UUID,
+    val id: GroupId,
     val name: String
 )
 

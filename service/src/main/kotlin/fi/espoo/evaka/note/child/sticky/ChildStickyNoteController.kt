@@ -5,6 +5,7 @@
 package fi.espoo.evaka.note.child.sticky
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class ChildStickyNoteController(
@@ -29,7 +29,7 @@ class ChildStickyNoteController(
     fun createChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
         Audit.ChildStickyNoteCreate.log(childId)

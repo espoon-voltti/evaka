@@ -10,7 +10,9 @@ import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.retryParentship
 import fi.espoo.evaka.pis.updateParentshipDuration
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -21,7 +23,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
@@ -29,8 +30,8 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
 
     fun createParentship(
         tx: Database.Transaction,
-        childId: UUID,
-        headOfChildId: UUID,
+        childId: ChildId,
+        headOfChildId: PersonId,
         startDate: LocalDate,
         endDate: LocalDate
     ): Parentship {
@@ -89,7 +90,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    private fun Database.Transaction.sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate) {
+    private fun Database.Transaction.sendFamilyUpdatedMessage(adultId: PersonId, startDate: LocalDate, endDate: LocalDate) {
         logger.info("Sending update family message with adult $adultId")
         asyncJobRunner.plan(this, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))))
     }
@@ -107,9 +108,9 @@ private fun validateDates(childDateOfBirth: LocalDate, startDate: LocalDate, end
 
 data class Parentship(
     val id: ParentshipId,
-    val childId: UUID,
+    val childId: ChildId,
     val child: PersonJSON,
-    val headOfChildId: UUID,
+    val headOfChildId: PersonId,
     val headOfChild: PersonJSON,
     val startDate: LocalDate,
     val endDate: LocalDate,

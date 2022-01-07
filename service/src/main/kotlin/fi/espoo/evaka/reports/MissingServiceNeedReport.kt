@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class MissingServiceNeedReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
@@ -94,7 +94,7 @@ private fun Database.Read.getMissingServiceNeedRows(
                 careAreaName = rs.getString("care_area_name"),
                 unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
-                childId = rs.getUUID("child_id"),
+                childId = ChildId(rs.getUUID("child_id")),
                 firstName = rs.getString("first_name"),
                 lastName = rs.getString("last_name"),
                 daysWithoutServiceNeed = rs.getInt("days_without_sn")
@@ -106,7 +106,7 @@ data class MissingServiceNeedReportRow(
     val careAreaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val childId: UUID,
+    val childId: ChildId,
     val firstName: String?,
     val lastName: String?,
     val daysWithoutServiceNeed: Int

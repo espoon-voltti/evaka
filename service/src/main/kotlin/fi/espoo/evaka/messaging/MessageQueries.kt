@@ -6,7 +6,9 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -21,7 +23,6 @@ import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Set<UnreadCountByAccount> {
     // language=SQL
@@ -564,7 +565,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
 }
 
 data class MessageReceiversResult(
-    val childId: UUID,
+    val childId: ChildId,
     val groupId: GroupId,
     val groupName: String,
     val childFirstName: String,
@@ -576,7 +577,7 @@ data class MessageReceiversResult(
 )
 
 fun Database.Read.getReceiversForNewMessage(
-    employeeId: UUID,
+    employeeId: EmployeeId,
     unitId: DaycareId
 ): List<MessageReceiversResponse> {
     // language=sql
@@ -649,7 +650,7 @@ fun Database.Read.getReceiversForNewMessage(
         }
 }
 
-fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: UUID, accountIds: Set<MessageAccountId>): Boolean {
+fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: EmployeeId, accountIds: Set<MessageAccountId>): Boolean {
     // language=SQL
     val sql = """
         WITH children AS (

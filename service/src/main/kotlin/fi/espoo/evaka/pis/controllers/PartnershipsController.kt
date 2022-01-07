@@ -51,8 +51,8 @@ class PartnershipsController(
                 .transaction { tx ->
                     partnershipService.createPartnership(
                         tx,
-                        body.person1Id.raw,
-                        body.person2Id.raw,
+                        body.person1Id,
+                        body.person2Id,
                         body.startDate,
                         body.endDate
                     )
@@ -60,7 +60,7 @@ class PartnershipsController(
                         tx,
                         listOf(
                             AsyncJob.GenerateFinanceDecisions.forAdult(
-                                body.person1Id.raw,
+                                body.person1Id,
                                 DateRange(body.startDate, body.endDate)
                             )
                         )
@@ -78,7 +78,7 @@ class PartnershipsController(
         Audit.PartnerShipsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_PARTNERSHIPS, personId)
 
-        return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId.raw, includeConflicts = true) } }
+        return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) } }
     }
 
     @GetMapping("/{partnershipId}")

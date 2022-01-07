@@ -5,7 +5,10 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -90,7 +93,7 @@ WHERE id = :id
         .firstOrNull()
 }
 
-fun Database.Read.getFeeAlterationsForPerson(personId: UUID): List<FeeAlteration> {
+fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> {
     return createQuery(
         """
 SELECT
@@ -114,7 +117,7 @@ ORDER BY valid_from DESC, valid_to DESC
         .toList()
 }
 
-fun Database.Read.getFeeAlterationsFrom(personIds: List<UUID>, from: LocalDate): List<FeeAlteration> {
+fun Database.Read.getFeeAlterationsFrom(personIds: List<ChildId>, from: LocalDate): List<FeeAlteration> {
     if (personIds.isEmpty()) return emptyList()
 
     return createQuery(
@@ -152,7 +155,7 @@ fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {
 val toFeeAlteration = { rs: ResultSet, _: StatementContext ->
     FeeAlteration(
         id = FeeAlterationId(UUID.fromString(rs.getString("id"))),
-        personId = UUID.fromString(rs.getString("person_id")),
+        personId = PersonId(UUID.fromString(rs.getString("person_id"))),
         type = FeeAlteration.Type.valueOf(rs.getString("type")),
         amount = rs.getInt("amount"),
         isAbsolute = rs.getBoolean("is_absolute"),
@@ -160,6 +163,6 @@ val toFeeAlteration = { rs: ResultSet, _: StatementContext ->
         validTo = rs.getDate("valid_to")?.toLocalDate(),
         notes = rs.getString("notes"),
         updatedAt = rs.getTimestamp("updated_at").toInstant(),
-        updatedBy = UUID.fromString((rs.getString("updated_by")))
+        updatedBy = EvakaUserId(UUID.fromString((rs.getString("updated_by"))))
     )
 }

@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class PlacementControllerCitizen(
@@ -116,7 +115,7 @@ class PlacementControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
     ): ChildPlacementResponse {
         Audit.PlacementSearch.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_PLACEMENT, childId)
@@ -147,7 +146,7 @@ class PlacementControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: PlacementTerminationRequestBody
     ) {
         Audit.PlacementTerminate.log(body.unitId, body.type)
@@ -185,12 +184,12 @@ class PlacementControllerCitizen(
                                     endDate = placement.endDate
                                 )
                             } else {
-                                tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, user.id)
+                                tx.terminatePlacementFrom(clock.today(), placement.id, body.terminationDate, user.evakaUserId)
                             }
                         }
                     }
 
-                tx.cancelAllActiveTransferApplicationsAfterDate(ChildId(childId), body.terminationDate)
+                tx.cancelAllActiveTransferApplicationsAfterDate(childId, body.terminationDate)
             }
         }
     }

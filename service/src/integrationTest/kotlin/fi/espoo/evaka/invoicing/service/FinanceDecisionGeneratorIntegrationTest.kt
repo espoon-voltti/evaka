@@ -15,7 +15,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -34,7 +36,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 
 class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
@@ -101,12 +102,12 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(43400, decision.totalFee())
             assertEquals(2, decision.children.size)
             decision.children.first().let { part ->
-                assertEquals(testChild_3.id, part.child.id)
+                assertEquals(testChild_3.id.raw, part.child.id)
                 assertEquals(testDaycare.id, part.placement.unit.id)
                 assertEquals(28900, part.fee)
             }
             decision.children.last().let { part ->
-                assertEquals(testChild_1.id, part.child.id)
+                assertEquals(testChild_1.id.raw, part.child.id)
                 assertEquals(testDaycare.id, part.placement.unit.id)
                 assertEquals(14500, part.fee)
             }
@@ -118,7 +119,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(testChild_2.id.raw, decision.child.id)
             assertEquals(testVoucherDaycare.id, decision.placement.unit.id)
             assertEquals(5800, decision.coPayment)
             assertEquals(87000, decision.baseValue)
@@ -128,7 +129,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertPlacement(childId: UUID, period: DateRange, type: PlacementType, daycareId: DaycareId): PlacementId {
+    private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType, daycareId: DaycareId): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -140,7 +141,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertFamilyRelations(headOfFamilyId: UUID, childIds: List<UUID>, period: DateRange) {
+    private fun insertFamilyRelations(headOfFamilyId: PersonId, childIds: List<ChildId>, period: DateRange) {
         db.transaction { tx ->
             childIds.forEach { childId ->
                 tx.insertTestParentship(headOfFamilyId, childId, startDate = period.start, endDate = period.end!!)

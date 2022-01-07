@@ -14,6 +14,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -22,7 +23,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -98,7 +98,7 @@ class DvvModificationsService(
                     personService.getOrCreatePerson(tx, AuthenticatedUser.SystemInternalUser, ExternalIdentifier.SSN.getInstance(ssn))
                 }?.let {
                     logger.info("Refreshing all VTJ information for person ${it.id}")
-                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id, AuthenticatedUser.SystemInternalUser.id))
+                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id, AuthenticatedUser.SystemInternalUser.evakaUserId))
                 }
             }
 
@@ -122,7 +122,7 @@ class DvvModificationsService(
         }
     }
 
-    private fun endFamilyRelations(tx: Database.Transaction, personId: UUID, dateOfDeath: LocalDate) {
+    private fun endFamilyRelations(tx: Database.Transaction, personId: PersonId, dateOfDeath: LocalDate) {
         tx
             .getPartnersForPerson(personId, includeConflicts = true, period = DateRange(dateOfDeath, dateOfDeath))
             .forEach { tx.updatePartnershipDuration(it.partnershipId, it.startDate, dateOfDeath) }

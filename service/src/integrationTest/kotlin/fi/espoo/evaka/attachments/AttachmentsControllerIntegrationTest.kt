@@ -28,7 +28,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AttachmentsControllerIntegrationTest : FullApplicationTest() {
-    private val user = AuthenticatedUser.Citizen(testAdult_5.id)
+    private val user = AuthenticatedUser.Citizen(testAdult_5.id.raw)
 
     @BeforeEach
     private fun beforeEach() {

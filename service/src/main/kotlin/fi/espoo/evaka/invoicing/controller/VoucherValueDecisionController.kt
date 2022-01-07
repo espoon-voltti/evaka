@@ -26,6 +26,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -54,7 +57,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 @RestController
 @RequestMapping("/value-decisions")
@@ -85,7 +87,7 @@ class VoucherValueDecisionController(
                         body.status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
                             ?: throw BadRequest("Status is a mandatory parameter"),
                         body.area?.split(",") ?: listOf(),
-                        body.unit?.let { parseUUID(it) },
+                        body.unit,
                         body.searchTerms ?: "",
                         body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
                         body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
@@ -114,10 +116,10 @@ class VoucherValueDecisionController(
     fun getHeadOfFamilyDecisions(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable headOfFamilyId: UUID
+        @PathVariable headOfFamilyId: PersonId
     ): ResponseEntity<List<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_VOUCHER_VALUE_DECISIONS, PersonId(headOfFamilyId))
+        accessControl.requirePermissionFor(user, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
         val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
         return ResponseEntity.ok(res)
     }
@@ -184,11 +186,11 @@ class VoucherValueDecisionController(
     fun generateRetroactiveDecisions(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, PersonId(id))
+        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, id, body.from) } }
     }
 }
@@ -214,9 +216,9 @@ fun sendVoucherValueDecisions(
 
     val conflicts = decisions
         .flatMap {
-            tx.lockValueDecisionsForChild(it.child.id)
+            tx.lockValueDecisionsForChild(ChildId(it.child.id))
             tx.findValueDecisionsForChild(
-                it.child.id,
+                ChildId(it.child.id),
                 DateRange(it.validFrom, it.validTo),
                 listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
             )
@@ -235,7 +237,7 @@ fun sendVoucherValueDecisions(
     tx.updateVoucherValueDecisionStatusAndDates(updatedConflicts)
 
     val validIds = decisions.map { it.id }
-    tx.approveValueDecisionDraftsForSending(validIds, user.id, now)
+    tx.approveValueDecisionDraftsForSending(validIds, EmployeeId(user.id), now)
     asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
 }
 
@@ -251,9 +253,9 @@ data class SearchVoucherValueDecisionRequest(
     val sortDirection: SortDirection?,
     val status: String?,
     val area: String?,
-    val unit: String?,
+    val unit: DaycareId?,
     val searchTerms: String?,
-    val financeDecisionHandlerId: UUID?,
+    val financeDecisionHandlerId: EmployeeId?,
     val startDate: String?,
     val endDate: String?,
     val searchByStartDate: Boolean = false

@@ -5,6 +5,8 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -13,7 +15,6 @@ import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class VardaErrorReport(private val accessControl: AccessControl) {
@@ -51,11 +52,11 @@ ORDER BY vsn.updated DESC
     .toList()
 
 data class VardaErrorReportRow(
-    val serviceNeedId: UUID,
+    val serviceNeedId: ServiceNeedId,
     val serviceNeedStartDate: String,
     val serviceNeedEndDate: String,
     val serviceNeedOptionName: String,
-    val childId: UUID,
+    val childId: ChildId,
     val updated: HelsinkiDateTime,
     val created: HelsinkiDateTime,
     val errors: List<String>

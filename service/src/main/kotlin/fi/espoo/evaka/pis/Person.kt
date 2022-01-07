@@ -7,10 +7,10 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import java.util.UUID
 
-fun createPerson(tx: Database.Transaction, person: CreatePersonBody): UUID {
+fun createPerson(tx: Database.Transaction, person: CreatePersonBody): PersonId {
     val personId = tx.createPerson(person)
     tx.createPersonMessageAccount(personId)
     return personId

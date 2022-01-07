@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.messaging
 
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -12,7 +13,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -48,14 +48,14 @@ fun planFinanceDecisionGeneration(
     tx: Database.Transaction,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     dateRange: DateRange,
-    targetHeadsOfFamily: List<UUID>
+    targetHeadsOfFamily: List<PersonId>
 ) {
     val heads = targetHeadsOfFamily.ifEmpty {
         tx.createQuery(
             "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && :dateRange AND conflict = false"
         )
             .bind("dateRange", dateRange)
-            .mapTo<UUID>()
+            .mapTo<PersonId>()
             .list()
     }
 

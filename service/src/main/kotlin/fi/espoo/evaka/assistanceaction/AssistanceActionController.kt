@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
-import java.util.UUID
 
 @RestController
 class AssistanceActionController(
@@ -33,7 +33,7 @@ class AssistanceActionController(
     fun createAssistanceAction(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: AssistanceActionRequest
     ): ResponseEntity<AssistanceAction> {
         Audit.ChildAssistanceActionCreate.log(targetId = childId)
@@ -52,7 +52,7 @@ class AssistanceActionController(
     fun getAssistanceActions(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): List<AssistanceAction> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_ACTION, childId)

@@ -25,7 +25,9 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
@@ -99,7 +101,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
         assertEquals(0, countChildrenToBeReset())
 
-        db.transaction { it.setToBeReset(listOf(ChildId(testChild_1.id))) }
+        db.transaction { it.setToBeReset(listOf(testChild_1.id)) }
         assertEquals(1, countChildrenToBeReset())
     }
 
@@ -107,7 +109,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     fun `hasVardaServiceNeeds works`() {
         val since = HelsinkiDateTime.now()
         val snId = createServiceNeed(db, since, option = snDefaultDaycare)
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
 
         assertEquals(false, db.read { it.hasVardaServiceNeeds(childId) })
 
@@ -223,7 +225,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.insertTestPerson(
                 DevPerson(
-                    id = childId.raw,
+                    id = childId,
                     dateOfBirth = since.plusYears(-5).toLocalDate(),
                     ssn = "260718A384E"
                 )
@@ -300,7 +302,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData created related varda decision data when evaka service need is added`() {
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         db.transaction { it.insertVardaChild(childId) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
@@ -345,7 +347,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData does not react to new evaka service need for non varda placement`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL)
@@ -356,7 +358,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData does not react to new evaka service need for unit which does not send child info to varda`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL, testGhostUnitDaycare.id!!)
@@ -367,7 +369,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends service need without fee data if unit is not invoiced by evaka`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.DAYCARE, testDaycareNotInvoiced.id)
@@ -378,7 +380,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getServiceNeedsForVardaByChild for non varda unit handles placement types`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.minusDays(100).toLocalDate(), since.minusDays(81).toLocalDate(), PlacementType.DAYCARE, testDaycareNotInvoiced.id)
         createServiceNeed(db, since, snDefaultPreschool, testChild_1, since.minusDays(80).toLocalDate(), since.minusDays(61).toLocalDate(), PlacementType.PRESCHOOL, testDaycareNotInvoiced.id)
@@ -390,7 +392,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getServiceNeedsForVardaByChild finds current service needs`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
         val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
@@ -400,7 +402,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getServiceNeedsForVardaByChild ignores future service needs`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.plusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
         val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
@@ -409,7 +411,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getServiceNeedsForVardaByChild ignores 0 hour service needs`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         createServiceNeed(db, since, snDefaultDaycare.copy(daycareHoursPerWeek = 0), testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
         val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
@@ -418,7 +420,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData removes all related varda data when service need is removed from evaka`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
@@ -437,7 +439,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends child service need to varda only when SENT fee decision is created in evaka`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
@@ -476,7 +478,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends child service need to varda only when voucher value decision is created in evaka`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
@@ -521,7 +523,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                 .bindList("ids", listOf(testAdult_1.id, testAdult_2.id))
                 .execute()
 
-            it.insertVardaChild(ChildId(testChild_1.id))
+            it.insertVardaChild(testChild_1.id)
         }
 
         val since = HelsinkiDateTime.now()
@@ -543,7 +545,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData doesn't send blank guardian oid as empty string`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
@@ -577,7 +579,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                 .bindList("ids", listOf(testAdult_1.id))
                 .execute()
 
-            it.insertVardaChild(ChildId(testChild_1.id))
+            it.insertVardaChild(testChild_1.id)
         }
 
         val since = HelsinkiDateTime.now()
@@ -599,7 +601,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends child service need to varda without the fee data if head of family is not a guardian`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
@@ -623,7 +625,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.createUpdate("DELETE FROM guardian")
                 .execute()
-            it.insertVardaChild(ChildId(testChild_1.id))
+            it.insertVardaChild(testChild_1.id)
         }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
@@ -643,7 +645,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends child service need to varda without the fee data if service need ends before the fee data handling started in evaka`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val tenDaysAgoFeeDecisionMinDate = since.minusDays(10)
         val serviceNeedPeriod = DateRange(tenDaysAgoFeeDecisionMinDate.minusDays(10).toLocalDate(), tenDaysAgoFeeDecisionMinDate.minusDays(1).toLocalDate())
@@ -659,7 +661,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends new voucher fee data to varda`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
@@ -683,7 +685,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends new fee decision data to varda`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
@@ -707,7 +709,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData sends all fee decisions related to service need`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
 
@@ -727,7 +729,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData does not send fee decisions related to service need if daycare is not a varda daycare`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
@@ -743,7 +745,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateChildData retries failed service need addition`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
@@ -864,7 +866,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getEvakaServiceNeedInfoForVarda handles extrnal purchased`() {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val snId = createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.DAYCARE, testExternalPurchasedDaycare.id)
@@ -904,7 +906,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertServiceNeedWithFeeDecision(): ServiceNeedId {
-        db.transaction { it.insertVardaChild(ChildId(testChild_1.id)) }
+        db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
@@ -1005,7 +1007,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                         addServiceNeed()
                             .withId(serviceNeedId)
                             .withUpdated(updated)
-                            .createdBy(testDecisionMaker_1.id)
+                            .createdBy(EvakaUserId(testDecisionMaker_1.id))
                             .withOption(option)
                             .save()
                     }
@@ -1014,7 +1016,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         return serviceNeedId
     }
 
-    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT, daycareId: DaycareId = testDaycare.id): FeeDecisionId {
+    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: PersonId, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT, daycareId: DaycareId = testDaycare.id): FeeDecisionId {
         val fd = createFeeDecisionFixture(
             status,
             FeeDecisionType.NORMAL,
@@ -1045,7 +1047,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         unitId: DaycareId,
         value: Int,
         coPayment: Int,
-        adultId: UUID,
+        adultId: PersonId,
         child: PersonData.Detailed,
         sentAt: Instant,
         status: VoucherValueDecisionStatus = VoucherValueDecisionStatus.DRAFT

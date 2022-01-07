@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
@@ -148,7 +149,7 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
         .firstOrNull()
 }
 
-fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: UUID): List<Invoice> {
+fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invoice> {
     val sql =
         """
         $invoiceQueryBase
@@ -623,7 +624,7 @@ val toDetailedInvoice = { rv: RowView ->
             invoicingPostOffice = rv.mapColumn("head_invoicing_post_office"),
             restrictedDetailsEnabled = rv.mapColumn("head_restricted_details_enabled")
         ),
-        codebtor = rv.mapColumn<UUID?>("codebtor")?.let { id ->
+        codebtor = rv.mapColumn<PersonId?>("codebtor")?.let { id ->
             PersonData.Detailed(
                 id = id,
                 dateOfBirth = rv.mapColumn("codebtor_date_of_birth"),
@@ -655,7 +656,7 @@ val toInvoiceSummary = { row: RowView ->
                 InvoiceRowSummary(
                     id = rowId,
                     child = PersonData.Basic(
-                        id = UUID.fromString(row.mapColumn("child")),
+                        id = row.mapColumn("child"),
                         dateOfBirth = row.mapColumn("child_date_of_birth"),
                         firstName = row.mapColumn("child_first_name"),
                         lastName = row.mapColumn("child_last_name"),
@@ -677,7 +678,7 @@ val toInvoiceSummary = { row: RowView ->
             postOffice = row.mapColumn("head_post_office"),
             restrictedDetailsEnabled = row.mapColumn("head_restricted_details_enabled")
         ),
-        codebtor = row.mapColumn<UUID?>("codebtor")?.let { id ->
+        codebtor = row.mapColumn<PersonId?>("codebtor")?.let { id ->
             PersonData.Detailed(
                 id = id,
                 dateOfBirth = row.mapColumn("codebtor_date_of_birth"),

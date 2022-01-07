@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -175,7 +174,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(testAdult_1.id, decisions.first().headOfFamily.id)
+            assertEquals(testAdult_1.id.raw, decisions.first().headOfFamily.id)
         }
 
         changeHeadOfFamily(testChild_1, testAdult_2.id)
@@ -185,10 +184,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             assertEquals(2, decisions.size)
             val annulled = decisions.find { it.status == VoucherValueDecisionStatus.ANNULLED }
             assertNotNull(annulled)
-            assertEquals(testAdult_1.id, annulled.headOfFamily.id)
+            assertEquals(testAdult_1.id.raw, annulled.headOfFamily.id)
             val sent = decisions.find { it.status == VoucherValueDecisionStatus.SENT }
             assertNotNull(sent)
-            assertEquals(testAdult_2.id, sent.headOfFamily.id)
+            assertEquals(testAdult_2.id.raw, sent.headOfFamily.id)
         }
     }
 
@@ -261,7 +260,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(testAdult_1.id, decisions.first().headOfFamily.id)
+            assertEquals(testAdult_1.id.raw, decisions.first().headOfFamily.id)
         }
 
         deletePlacement(placementId)
@@ -270,7 +269,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.ANNULLED, decisions.first().status)
-            assertEquals(testAdult_1.id, decisions.first().headOfFamily.id)
+            assertEquals(testAdult_1.id.raw, decisions.first().headOfFamily.id)
         }
     }
 
@@ -353,12 +352,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         asyncJobRunner.runPendingJobsSync()
     }
 
-    private fun changeHeadOfFamily(child: PersonData.Detailed, headOfFamilyId: UUID) {
+    private fun changeHeadOfFamily(child: PersonData.Detailed, headOfFamilyId: PersonId) {
         db.transaction { it.execute("DELETE FROM fridge_child WHERE child_id = ?", child.id) }
 
         val body = ParentshipController.ParentshipRequest(
-            childId = PersonId(child.id),
-            headOfChildId = PersonId(headOfFamilyId),
+            childId = child.id,
+            headOfChildId = headOfFamilyId,
             startDate = child.dateOfBirth,
             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
         )

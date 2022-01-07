@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
@@ -41,7 +42,7 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
         .firstOrNull()
 }
 
-fun Database.Read.getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean = false): List<Partnership> {
+fun Database.Read.getPartnershipsForPerson(personId: PersonId, includeConflicts: Boolean = false): List<Partnership> {
     // language=SQL
     val sql =
         """
@@ -67,7 +68,7 @@ fun Database.Read.getPartnershipsForPerson(personId: UUID, includeConflicts: Boo
         .toList()
 }
 
-fun Database.Read.getPartnersForPerson(personId: UUID, includeConflicts: Boolean, period: DateRange? = null): List<Partner> {
+fun Database.Read.getPartnersForPerson(personId: PersonId, includeConflicts: Boolean, period: DateRange? = null): List<Partner> {
     // language=SQL
     val sql =
         """
@@ -92,8 +93,8 @@ fun Database.Read.getPartnersForPerson(personId: UUID, includeConflicts: Boolean
 }
 
 fun Database.Transaction.createPartnership(
-    personId1: UUID,
-    personId2: UUID,
+    personId1: PersonId,
+    personId2: PersonId,
     startDate: LocalDate,
     endDate: LocalDate?,
     conflict: Boolean = false

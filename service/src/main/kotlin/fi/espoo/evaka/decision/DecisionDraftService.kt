@@ -10,6 +10,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
@@ -85,7 +86,7 @@ class DecisionDraftService {
     }
 
     data class DecisionDraftUpdate(
-        val id: UUID,
+        val id: DecisionId,
         val unitId: DaycareId,
         val startDate: LocalDate,
         val endDate: LocalDate,
@@ -120,7 +121,7 @@ class DecisionDraftService {
     private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
         return listOf(
             DecisionDraft(
-                id = UUID.randomUUID(), // placeholder
+                id = DecisionId(UUID.randomUUID()), // placeholder
                 unitId = plan.unitId,
                 type = DecisionType.CLUB,
                 startDate = plan.period.start,
@@ -137,7 +138,7 @@ class DecisionDraftService {
 
         return listOf(
             DecisionDraft(
-                id = UUID.randomUUID(), // placeholder
+                id = DecisionId(UUID.randomUUID()), // placeholder
                 unitId = plan.unitId,
                 type = type,
                 startDate = plan.period.start,
@@ -151,7 +152,7 @@ class DecisionDraftService {
         val primaryType = if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE)) DecisionType.PREPARATORY_EDUCATION else DecisionType.PRESCHOOL
 
         val primary = DecisionDraft(
-            id = UUID.randomUUID(), // placeholder
+            id = DecisionId(UUID.randomUUID()), // placeholder
             unitId = plan.unitId,
             type = primaryType,
             startDate = plan.period.start,
@@ -160,7 +161,7 @@ class DecisionDraftService {
         )
 
         val connected = DecisionDraft(
-            id = UUID.randomUUID(), // placeholder
+            id = DecisionId(UUID.randomUUID()), // placeholder
             unitId = plan.unitId,
             type = DecisionType.PRESCHOOL_DAYCARE,
             startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,

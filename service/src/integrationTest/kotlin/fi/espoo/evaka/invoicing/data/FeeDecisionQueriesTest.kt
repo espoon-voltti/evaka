@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -116,7 +117,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
             tx.upsertFeeDecisions(listOf(draft))
-            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now())
+            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), EmployeeId(testDecisionMaker_1.id), approvedAt = Instant.now())
 
             val result = tx.getFeeDecision(testDecisions[0].id)!!
             assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
@@ -138,7 +139,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
             )
             tx.upsertFeeDecisions(decisions)
 
-            tx.approveFeeDecisionDraftsForSending(decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = Instant.now())
+            tx.approveFeeDecisionDraftsForSending(decisions.map { it.id }, EmployeeId(testDecisionMaker_1.id), approvedAt = Instant.now())
 
             val result = tx.getFeeDecisionsByIds(decisions.map { it.id }).sortedBy { it.decisionNumber }
             with(result[0]) {

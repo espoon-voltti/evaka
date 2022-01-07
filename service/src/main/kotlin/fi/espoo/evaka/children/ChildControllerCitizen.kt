@@ -5,6 +5,7 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 data class ChildrenResponse(val children: List<Child>)
 
@@ -30,9 +30,9 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/{id}")
-    fun getChild(db: Database, user: AuthenticatedUser.Citizen, @PathVariable id: UUID): Child {
+    fun getChild(db: Database, user: AuthenticatedUser.Citizen, @PathVariable id: ChildId): Child {
         Audit.CitizenChildRead.log(id)
         accessControl.requirePermissionFor(user, Action.Child.READ, id)
-        return db.connect { dbc -> dbc.read { it.getChild(PersonId(id)) } } ?: throw NotFound()
+        return db.connect { dbc -> dbc.read { it.getChild(id) } } ?: throw NotFound()
     }
 }

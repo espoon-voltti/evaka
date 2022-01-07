@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.pis.getTransferablePersonReferences
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -15,11 +16,10 @@ import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
-    fun mergePeople(tx: Database.Transaction, master: UUID, duplicate: UUID) {
+    fun mergePeople(tx: Database.Transaction, master: PersonId, duplicate: PersonId) {
         // language=sql
         val feeAffectingDatesSQL =
             """
@@ -95,14 +95,14 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 """.trimIndent()
             tx.createQuery(parentsSQL)
                 .bind("id", master)
-                .map { rs, _ -> rs.getUUID("head_of_child") }
+                .map { rs, _ -> PersonId(rs.getUUID("head_of_child")) }
                 .forEach { parentId ->
                     sendFamilyUpdatedMessage(tx, parentId, feeAffectingDateRange)
                 }
         }
     }
 
-    fun deleteEmptyPerson(tx: Database.Transaction, id: UUID) {
+    fun deleteEmptyPerson(tx: Database.Transaction, id: PersonId) {
         val personReferences = tx.getTransferablePersonReferences()
 
         // language=sql
@@ -137,7 +137,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         tx.createUpdate(sql2).bind("id", id).execute()
     }
 
-    private fun sendFamilyUpdatedMessage(tx: Database.Transaction, adultId: UUID, dateRange: DateRange) {
+    private fun sendFamilyUpdatedMessage(tx: Database.Transaction, adultId: PersonId, dateRange: DateRange) {
         asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, dateRange)))
     }
 }

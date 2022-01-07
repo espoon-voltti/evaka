@@ -10,8 +10,10 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -84,7 +86,7 @@ class FixtureBuilder(
             return fixtureBuilder
         }
 
-        private fun doInsert(): UUID {
+        private fun doInsert(): ChildId {
             val childId = person?.id ?: tx.insertTestPerson(
                 DevPerson(
                     dateOfBirth = dateOfBirth ?: throw IllegalStateException("date of birth not set")
@@ -99,7 +101,7 @@ class FixtureBuilder(
     class ChildFixture(
         private val tx: Database.Transaction,
         private val today: LocalDate,
-        val childId: UUID
+        val childId: ChildId
     ) {
         fun addAssistanceNeed() = AssistanceNeedBuilder(tx, today, this)
         fun addPlacementPlan() = PlacementPlanBuilder(tx, today, this)
@@ -116,7 +118,7 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate = today
         private var to: LocalDate = today
-        private var employeeId: UUID? = null
+        private var employeeId: EvakaUserId? = null
         private var factor: Double = 1.0
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
@@ -124,7 +126,7 @@ class FixtureBuilder(
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun withFactor(factor: Double) = this.apply { this.factor = factor }
-        fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
+        fun createdBy(employeeId: EvakaUserId) = this.apply { this.employeeId = employeeId }
 
         fun save(): ChildFixture {
             tx.insertTestAssistanceNeed(
@@ -332,7 +334,7 @@ class FixtureBuilder(
         private var to: LocalDate? = null
         private var optionId: ServiceNeedOptionId? = null
         private var serviceNeedOption: ServiceNeedOption? = null
-        private var employeeId: UUID? = null
+        private var employeeId: EvakaUserId? = null
         private var updated: HelsinkiDateTime = HelsinkiDateTime.now()
         private var id: ServiceNeedId? = null
 
@@ -342,7 +344,7 @@ class FixtureBuilder(
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun withOption(id: ServiceNeedOptionId) = this.apply { this.optionId = id }
         fun withOption(serviceNeedOption: ServiceNeedOption) = this.apply { this.serviceNeedOption = serviceNeedOption }
-        fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
+        fun createdBy(employeeId: EvakaUserId) = this.apply { this.employeeId = employeeId }
         fun withUpdated(updated: HelsinkiDateTime) = this.apply { this.updated = updated }
         fun withId(id: ServiceNeedId) = this.apply { this.id = id }
 
@@ -437,8 +439,8 @@ class FixtureBuilder(
 
         private fun doInsert(): EmployeeId {
             val employee = DevEmployee(roles = globalRoles, firstName = firstName, lastName = lastName)
-            val employeeId = tx.insertTestEmployee(employee).let { EmployeeId(it) }
-            unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId.raw, role) }
+            val employeeId = tx.insertTestEmployee(employee)
+            unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId, role) }
             groups.forEach { (unitId, groupId) -> tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId)) }
             return employeeId
         }

@@ -12,7 +12,9 @@ import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getNullableUUID
@@ -24,7 +26,7 @@ import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, updatedBy: UUID) {
+fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, updatedBy: EvakaUserId) {
     val sql =
         """
         INSERT INTO income (
@@ -106,7 +108,7 @@ fun Database.Read.getIncome(mapper: ObjectMapper, incomeTypesProvider: IncomeTyp
 fun Database.Read.getIncomesForPerson(
     mapper: ObjectMapper,
     incomeTypesProvider: IncomeTypesProvider,
-    personId: UUID,
+    personId: PersonId,
     validAt: LocalDate? = null
 ): List<Income> {
     val sql =
@@ -129,7 +131,7 @@ fun Database.Read.getIncomesForPerson(
 fun Database.Read.getIncomesFrom(
     mapper: ObjectMapper,
     incomeTypesProvider: IncomeTypesProvider,
-    personIds: List<UUID>,
+    personIds: List<PersonId>,
     from: LocalDate
 ): List<Income> {
     val sql =
@@ -156,7 +158,7 @@ fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
     handlingExceptions { update.execute() }
 }
 
-fun Database.Transaction.splitEarlierIncome(personId: UUID, period: DateRange) {
+fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRange) {
     val sql =
         """
         UPDATE income
@@ -178,7 +180,7 @@ fun Database.Transaction.splitEarlierIncome(personId: UUID, period: DateRange) {
 fun toIncome(objectMapper: ObjectMapper, incomeTypes: Map<String, IncomeType>) = { rs: ResultSet, _: StatementContext ->
     Income(
         id = IncomeId(rs.getUUID("id")),
-        personId = UUID.fromString(rs.getString("person_id")),
+        personId = PersonId(UUID.fromString(rs.getString("person_id"))),
         effect = IncomeEffect.valueOf(rs.getString("effect")),
         data = parseIncomeDataJson(rs.getString("data"), objectMapper, incomeTypes),
         isEntrepreneur = rs.getBoolean("is_entrepreneur"),

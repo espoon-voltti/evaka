@@ -17,6 +17,7 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -41,7 +42,6 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 val preschoolStart: LocalTime = LocalTime.of(9, 0)
 val preschoolEnd: LocalTime = LocalTime.of(13, 0)
@@ -89,7 +89,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: ArrivalRequest
     ) {
         Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
@@ -120,7 +120,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ) {
         Audit.ChildAttendancesReturnToComing.log(targetId = childId)
         @Suppress("DEPRECATION")
@@ -152,7 +152,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): List<AbsenceThreshold> {
         Audit.ChildAttendancesDepartureRead.log(targetId = childId)
         @Suppress("DEPRECATION")
@@ -192,7 +192,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: DepartureRequest
     ) {
         Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
@@ -251,7 +251,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ) {
         Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
         @Suppress("DEPRECATION")
@@ -286,7 +286,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: FullDayAbsenceRequest
     ) {
         Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
@@ -325,7 +325,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: AbsenceRangeRequest
     ) {
         Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
@@ -354,7 +354,7 @@ class ChildAttendanceController(
     fun deleteAbsenceRange(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
@@ -370,7 +370,7 @@ data class ChildPlacementBasics(
     val dateOfBirth: LocalDate
 )
 
-private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: DaycareId): ChildPlacementBasics {
+private fun Database.Read.fetchChildPlacementBasics(childId: ChildId, unitId: DaycareId): ChildPlacementBasics {
     // language=sql
     val sql =
         """
@@ -398,7 +398,7 @@ data class PlacementTypeDate(
 )
 
 private fun Database.Read.fetchChildPlacementTypeDates(
-    childId: UUID,
+    childId: ChildId,
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate
@@ -563,7 +563,7 @@ private fun daycareAbsenceThreshold(placementType: PlacementType, arrived: Local
 }
 
 private fun Database.Read.childHasPaidServiceNeedToday(
-    childId: UUID
+    childId: ChildId
 ): Boolean = createQuery(
     """
 SELECT EXISTS(

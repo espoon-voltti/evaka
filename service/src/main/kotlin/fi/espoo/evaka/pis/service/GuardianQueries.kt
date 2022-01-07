@@ -4,18 +4,20 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import java.util.UUID
+import org.jdbi.v3.core.kotlin.mapTo
 
-private data class GuardianChildPair(val guardianId: UUID, val childId: UUID)
+private data class GuardianChildPair(val guardianId: PersonId, val childId: ChildId)
 
-fun Database.Transaction.insertGuardian(guardianId: UUID, childId: UUID) =
+fun Database.Transaction.insertGuardian(guardianId: PersonId, childId: ChildId) =
     insertGuardians(listOf(GuardianChildPair(guardianId, childId)))
 
-fun Database.Transaction.insertGuardianChildren(guardianId: UUID, childIds: List<UUID>) =
+fun Database.Transaction.insertGuardianChildren(guardianId: PersonId, childIds: List<ChildId>) =
     insertGuardians(childIds.map { GuardianChildPair(guardianId, it) })
 
-fun Database.Transaction.insertChildGuardians(childId: UUID, guardianIds: List<UUID>) =
+fun Database.Transaction.insertChildGuardians(childId: ChildId, guardianIds: List<PersonId>) =
     insertGuardians(guardianIds.map { GuardianChildPair(it, childId) })
 
 private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<GuardianChildPair>) {
@@ -26,7 +28,7 @@ private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<Gu
     batch.execute()
 }
 
-fun Database.Read.getChildGuardians(childId: UUID): List<UUID> {
+fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
     //language=sql
     val sql =
         """
@@ -37,11 +39,11 @@ fun Database.Read.getChildGuardians(childId: UUID): List<UUID> {
 
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo(UUID::class.java)
+        .mapTo<PersonId>()
         .list()
 }
 
-fun Database.Read.getGuardianChildIds(guardianId: UUID): List<UUID> {
+fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
     //language=sql
     val sql =
         """
@@ -52,11 +54,11 @@ fun Database.Read.getGuardianChildIds(guardianId: UUID): List<UUID> {
 
     return createQuery(sql)
         .bind("guardianId", guardianId)
-        .mapTo(UUID::class.java)
+        .mapTo<ChildId>()
         .list()
 }
 
-fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: UUID): Int {
+fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId): Int {
     //language=sql
     val sql =
         """
@@ -69,7 +71,7 @@ fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: UUID): Int
         .execute()
 }
 
-fun Database.Transaction.deleteChildGuardianRelationships(childId: UUID): Int {
+fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId): Int {
     //language=sql
     val sql =
         """

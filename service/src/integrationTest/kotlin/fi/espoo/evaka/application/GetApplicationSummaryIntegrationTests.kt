@@ -79,7 +79,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
         }
 
         if (attachment) {
-            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id))
+            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id.raw))
         }
     }
 }

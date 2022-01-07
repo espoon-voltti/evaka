@@ -360,7 +360,7 @@ export interface SearchFeeDecisionRequest {
   sortDirection: SortDirection | null
   startDate: string | null
   status: string | null
-  unit: string | null
+  unit: UUID | null
 }
 
 /**
@@ -395,7 +395,7 @@ export interface SearchVoucherValueDecisionRequest {
   sortDirection: SortDirection | null
   startDate: string | null
   status: string | null
-  unit: string | null
+  unit: UUID | null
 }
 
 /**

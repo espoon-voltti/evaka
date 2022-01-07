@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.FamilyContactRole.LOCAL_GUARDIAN
 import fi.espoo.evaka.pis.FamilyContactRole.REMOTE_GUARDIAN
 import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.pis.service.FamilyOverviewService
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/family")
@@ -60,7 +60,7 @@ class FamilyController(
     fun getFamilyContactSummary(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam(value = "childId", required = true) childId: UUID
+        @RequestParam(value = "childId", required = true) childId: ChildId
     ): ResponseEntity<List<FamilyContact>> {
         Audit.FamilyContactsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FAMILY_CONTACTS, childId)
@@ -87,12 +87,12 @@ class FamilyController(
 }
 
 data class FamilyContactUpdate(
-    val childId: UUID,
-    val contactPersonId: UUID,
+    val childId: ChildId,
+    val contactPersonId: PersonId,
     val priority: Int?
 )
 
-private fun Database.Transaction.updateFamilyContact(childId: UUID, contactPersonId: UUID, priority: Int?) {
+private fun Database.Transaction.updateFamilyContact(childId: ChildId, contactPersonId: PersonId, priority: Int?) {
     this.execute("SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED")
 
     this.createUpdate(
@@ -123,7 +123,7 @@ INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (:chil
         .execute()
 }
 
-fun Database.Read.fetchFamilyContacts(childId: UUID): List<FamilyContact> {
+fun Database.Read.fetchFamilyContacts(childId: ChildId): List<FamilyContact> {
     // language=sql
     val sql =
         """

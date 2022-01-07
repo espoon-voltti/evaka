@@ -10,20 +10,20 @@ import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.retryPartnership
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class PartnershipService {
     fun createPartnership(
         tx: Database.Transaction,
-        personId1: UUID,
-        personId2: UUID,
+        personId1: PersonId,
+        personId2: PersonId,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {

@@ -6,6 +6,7 @@ package fi.espoo.evaka.backuppickup
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class BackupPickupController(private val accessControl: AccessControl) {
@@ -28,7 +28,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
     fun createForChild(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable("childId") childId: UUID,
+        @PathVariable("childId") childId: ChildId,
         @RequestBody body: ChildBackupPickupContent
     ): ResponseEntity<ChildBackupPickupCreateResponse> {
         Audit.ChildBackupPickupCreate.log(targetId = childId)
@@ -46,7 +46,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
     fun getForChild(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable("childId") childId: UUID
+        @PathVariable("childId") childId: ChildId
     ): ResponseEntity<List<ChildBackupPickup>> {
         Audit.ChildBackupPickupRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_PICKUP, childId)
@@ -94,7 +94,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
 }
 
 fun Database.Transaction.createBackupPickup(
-    childId: UUID,
+    childId: ChildId,
     data: ChildBackupPickupContent
 ): BackupPickupId {
     // language=sql
@@ -112,7 +112,7 @@ fun Database.Transaction.createBackupPickup(
         .one()
 }
 
-fun Database.Read.getBackupPickupsForChild(childId: UUID): List<ChildBackupPickup> {
+fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> {
     return createQuery("SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = :id")
         .bind("id", childId)
         .mapTo<ChildBackupPickup>()
@@ -152,7 +152,7 @@ data class ChildBackupPickupContent(
 
 data class ChildBackupPickup(
     val id: BackupPickupId,
-    val childId: UUID,
+    val childId: ChildId,
     val name: String,
     val phone: String
 )

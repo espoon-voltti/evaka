@@ -6,11 +6,11 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
-import java.util.UUID
 
 data class Decision(
     val id: DecisionId,
@@ -20,7 +20,7 @@ data class Decision(
     val endDate: LocalDate,
     val unit: DecisionUnit,
     val applicationId: ApplicationId,
-    val childId: UUID,
+    val childId: ChildId,
     val childName: String,
     val documentKey: String?,
     val otherGuardianDocumentKey: String?,

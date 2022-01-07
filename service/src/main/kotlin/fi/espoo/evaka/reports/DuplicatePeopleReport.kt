@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.getTransferablePersonReferences
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
@@ -15,7 +16,6 @@ import org.jdbi.v3.json.Json
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class DuplicatePeopleReportController(private val accessControl: AccessControl) {
@@ -115,7 +115,7 @@ data class ReferenceCount(
 data class DuplicatePeopleReportRow(
     val groupIndex: Int,
     val duplicateNumber: Int,
-    val id: UUID,
+    val id: PersonId,
     val firstName: String?,
     val lastName: String?,
     val socialSecurityNumber: String?,

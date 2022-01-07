@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -39,7 +40,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
             dateOfBirth = dateOfBirth,
             ssn = ssn
         )
-        val personWithoutSsn = personWithSsn.copy(id = UUID.randomUUID(), ssn = null)
+        val personWithoutSsn = personWithSsn.copy(id = PersonId(UUID.randomUUID()), ssn = null)
         db.transaction {
             it.insertTestPerson(personWithSsn)
             it.insertTestPerson(personWithoutSsn)
@@ -66,7 +67,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
             ssn = ssn
         )
         val personWithoutSsn =
-            personWithSsn.copy(id = UUID.randomUUID(), firstName = firstName.split(" ")[0], ssn = null)
+            personWithSsn.copy(id = PersonId(UUID.randomUUID()), firstName = firstName.split(" ")[0], ssn = null)
         db.transaction {
             it.insertTestPerson(personWithSsn)
             it.insertTestPerson(personWithoutSsn)
@@ -93,7 +94,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
             ssn = ssn
         )
         val personWithoutSsn =
-            personWithSsn.copy(id = UUID.randomUUID(), ssn = null, dateOfBirth = dateOfBirth.plusDays(1))
+            personWithSsn.copy(id = PersonId(UUID.randomUUID()), ssn = null, dateOfBirth = dateOfBirth.plusDays(1))
         db.transaction {
             it.insertTestPerson(personWithSsn)
             it.insertTestPerson(personWithoutSsn)
@@ -119,7 +120,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
             ssn = ssn1
         )
         val ssn2 = "010170-1124"
-        val personWithSsn2 = personWithSsn1.copy(id = UUID.randomUUID(), ssn = ssn2)
+        val personWithSsn2 = personWithSsn1.copy(id = PersonId(UUID.randomUUID()), ssn = ssn2)
         db.transaction {
             it.insertTestPerson(personWithSsn1)
             it.insertTestPerson(personWithSsn2)

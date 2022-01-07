@@ -26,15 +26,15 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
     decisionNumber = feeDecision.decisionNumber,
     decisionType = feeDecision.decisionType,
     validDuring = feeDecision.validDuring,
-    headOfFamily = allAdults.find { it.id == feeDecision.headOfFamily.id }!!,
-    partner = allAdults.find { it.id == feeDecision.partner?.id },
+    headOfFamily = allAdults.find { it.id.raw == feeDecision.headOfFamily.id }!!,
+    partner = allAdults.find { it.id.raw == feeDecision.partner?.id },
     headOfFamilyIncome = feeDecision.headOfFamilyIncome,
     partnerIncome = feeDecision.partnerIncome,
     familySize = feeDecision.familySize,
     feeThresholds = feeDecision.feeThresholds,
     children = feeDecision.children.map { child ->
         FeeDecisionChildDetailed(
-            child = allChildren.find { it.id == child.child.id }!!,
+            child = allChildren.find { it.id.raw == child.child.id }!!,
             placementType = child.placement.type,
             placementUnit = allDaycares.find { it.id == child.placement.unit.id }!!,
             serviceNeedFeeCoefficient = child.serviceNeed.feeCoefficient,
@@ -63,7 +63,7 @@ fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary = FeeDecisionSummary
     status = feeDecision.status,
     decisionNumber = feeDecision.decisionNumber,
     validDuring = feeDecision.validDuring,
-    headOfFamily = allAdults.find { it.id == feeDecision.headOfFamily.id }!!.let {
+    headOfFamily = allAdults.find { it.id.raw == feeDecision.headOfFamily.id }!!.let {
         PersonData.Basic(
             id = it.id,
             dateOfBirth = it.dateOfBirth,
@@ -73,7 +73,7 @@ fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary = FeeDecisionSummary
         )
     },
     children = feeDecision.children.map { child ->
-        allChildren.find { it.id == child.child.id }!!.let {
+        allChildren.find { it.id.raw == child.child.id }!!.let {
             PersonData.Basic(
                 id = it.id,
                 dateOfBirth = it.dateOfBirth,
@@ -96,12 +96,12 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
     dueDate = invoice.dueDate,
     invoiceDate = invoice.invoiceDate,
     agreementType = invoice.agreementType,
-    headOfFamily = allAdults.find { it.id == invoice.headOfFamily.id }!!,
-    codebtor = allAdults.find { it.id == invoice.codebtor?.id },
+    headOfFamily = allAdults.find { it.id.raw == invoice.headOfFamily.id }!!,
+    codebtor = allAdults.find { it.id.raw == invoice.codebtor?.id },
     rows = invoice.rows.map { row ->
         InvoiceRowDetailed(
             id = row.id!!,
-            child = allChildren.find { it.id == row.child.id }!!,
+            child = allChildren.find { it.id.raw == row.child.id }!!,
             amount = row.amount,
             unitPrice = row.unitPrice,
             periodStart = row.periodStart,
@@ -122,12 +122,12 @@ fun toSummary(invoice: Invoice): InvoiceSummary = InvoiceSummary(
     status = invoice.status,
     periodStart = invoice.periodStart,
     periodEnd = invoice.periodEnd,
-    headOfFamily = allAdults.find { it.id == invoice.headOfFamily.id }!!,
-    codebtor = allAdults.find { it.id == invoice.codebtor?.id },
+    headOfFamily = allAdults.find { it.id.raw == invoice.headOfFamily.id }!!,
+    codebtor = allAdults.find { it.id.raw == invoice.codebtor?.id },
     rows = invoice.rows.map { row ->
         InvoiceRowSummary(
             id = row.id!!,
-            child = allBasicChildren.find { it.id == row.child.id }!!,
+            child = allBasicChildren.find { it.id.raw == row.child.id }!!,
             amount = row.amount,
             unitPrice = row.unitPrice
         )

@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -61,7 +62,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest() {
     @Autowired
     private lateinit var applicationStateService: ApplicationStateService
 
-    private val decisionId = UUID.randomUUID()
+    private val decisionId = DecisionId(UUID.randomUUID())
 
     @BeforeEach
     private fun beforeEach() {
@@ -365,7 +366,7 @@ WHERE id = :unitId
 
         val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).list() }
         rows.forEach { row ->
-            assertEquals(serviceWorker.id, row.createdBy)
+            assertEquals(serviceWorker.evakaUserId, row.createdBy)
             assertEquals(DecisionStatus.PENDING, row.status)
             assertNull(row.requestedStartDate)
             assertNull(row.resolved)

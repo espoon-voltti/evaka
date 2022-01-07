@@ -7,7 +7,10 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
@@ -16,7 +19,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId>) {
     execute(
@@ -137,7 +139,7 @@ fun Database.Read.getPlacementPlans(
         val endDate: LocalDate,
         val preschoolDaycareStartDate: LocalDate?,
         val preschoolDaycareEndDate: LocalDate?,
-        val childId: UUID,
+        val childId: ChildId,
         val firstName: String,
         val lastName: String,
         val dateOfBirth: LocalDate,
@@ -225,7 +227,7 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
         .execute()
 }
 
-fun Database.Read.getPlacementDraftChild(childId: UUID): PlacementDraftChild? {
+fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild? {
     return createQuery(
         // language=SQL
         """
@@ -240,7 +242,7 @@ fun Database.Read.getPlacementDraftChild(childId: UUID): PlacementDraftChild? {
         .singleOrNull()
 }
 
-fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
+fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
     return createQuery(
         // language=SQL
         """
@@ -255,7 +257,7 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
         .singleOrNull()
 }
 
-fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: UUID?) {
+fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: EvakaUserId?) {
     createUpdate(
         //language=SQL
         """

@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.db.Database
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -95,7 +95,7 @@ class VardaResetService(
     }
 }
 
-private fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: UUID, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
+private fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: ChildId, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
     if (deleteChildDataFromVardaAndDb(db, client, childId)) {
         try {
             val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
@@ -112,7 +112,7 @@ private fun resetVardaChild(db: Database.Connection, client: VardaClient, childI
     }
 }
 
-fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaClient, evakaChildId: UUID): Boolean {
+fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaClient, evakaChildId: ChildId): Boolean {
     val vardaChildIds = getVardaChildIdsByEvakaChildId(db, evakaChildId)
 
     logger.info("VardaUpdate: deleting all varda data for evaka child $evakaChildId, varda child ids: ${vardaChildIds.joinToString(",")}")
@@ -165,7 +165,7 @@ fun deleteChildDataFromVardaAndDbByVardaId(db: Database.Connection, vardaClient:
     logger.info("VardaUpdate: successfully deleted data for child $vardaChildId")
 }
 
-private fun getVardaChildIdsByEvakaChildId(db: Database.Connection, evakaChildId: UUID): List<Long> {
+private fun getVardaChildIdsByEvakaChildId(db: Database.Connection, evakaChildId: ChildId): List<Long> {
     return db.read {
         it.createQuery(
             """

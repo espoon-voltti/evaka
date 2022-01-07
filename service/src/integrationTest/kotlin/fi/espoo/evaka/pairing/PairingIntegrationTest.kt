@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -36,7 +37,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
-            tx.updateDaycareAclWithEmployee(testUnitId, user.id, UserRole.UNIT_SUPERVISOR)
+            tx.updateDaycareAclWithEmployee(testUnitId, EmployeeId(user.id), UserRole.UNIT_SUPERVISOR)
         }
     }
 

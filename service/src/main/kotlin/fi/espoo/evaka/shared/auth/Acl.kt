@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.auth
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -16,7 +17,6 @@ import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
 data class AclAppliedRoles(override val roles: Set<UserRole>) : RoleContainer
 sealed class AclAuthorization {
@@ -104,7 +104,7 @@ WHERE employee_id = :userId AND daycare_group_id = :groupId
     )
 
     @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForChild(user: AuthenticatedUser, childId: UUID): AclAppliedRoles = AclAppliedRoles(
+    fun getRolesForChild(user: AuthenticatedUser, childId: ChildId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {
                 it.createQuery(

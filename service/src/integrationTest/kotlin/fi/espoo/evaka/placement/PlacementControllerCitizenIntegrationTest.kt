@@ -13,6 +13,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -37,7 +38,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     final val child = testChild_1
     final val child2 = testChild_2
     final val parent = testAdult_1
-    final val authenticatedParent = AuthenticatedUser.Citizen(parent.id)
+    final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw)
 
     final val daycareId = testDaycare.id
     final val testDaycareGroup = DevDaycareGroup(daycareId = daycareId)
@@ -322,7 +323,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     private fun terminatePlacements(
-        childId: UUID,
+        childId: ChildId,
         termination: PlacementControllerCitizen.PlacementTerminationRequestBody
     ) {
         http.post("/citizen/children/$childId/placements/terminate")
@@ -332,7 +333,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
             .also { assertEquals(200, it.second.statusCode) }
     }
 
-    private fun getChildPlacements(childId: UUID): List<PlacementControllerCitizen.TerminatablePlacementGroup> {
+    private fun getChildPlacements(childId: ChildId): List<PlacementControllerCitizen.TerminatablePlacementGroup> {
         return http.get("/citizen/children/$childId/placements")
             .asUser(authenticatedParent)
             .responseObject<PlacementControllerCitizen.ChildPlacementResponse>(objectMapper)

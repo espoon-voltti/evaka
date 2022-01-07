@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -23,7 +24,6 @@ import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.security.cert.X509Certificate
-import java.util.UUID
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
@@ -115,7 +115,7 @@ class DvvIntegrationTestPersonService(personDetailsService: IPersonDetailsServic
     override fun getPersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: UUID,
+        id: PersonId,
         forceRefresh: Boolean
     ): PersonWithChildrenDTO? {
         return super.getPersonWithChildren(tx, user, id, forceRefresh)?.let {

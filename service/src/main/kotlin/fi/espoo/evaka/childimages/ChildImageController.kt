@@ -7,6 +7,7 @@ package fi.espoo.evaka.childimages
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
 
 @RestController
 class ChildImageController(
@@ -38,7 +38,7 @@ class ChildImageController(
     fun putImage(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<Unit> {
         Audit.ChildImageUpload.log(targetId = childId)
@@ -53,7 +53,7 @@ class ChildImageController(
     fun deleteImage(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): ResponseEntity<Unit> {
         Audit.ChildImageDelete.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.DELETE_IMAGE, childId)
