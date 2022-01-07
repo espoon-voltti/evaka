@@ -108,13 +108,16 @@ export const H4 = styled.h4<HeadingProps>`
 
 interface LabelProps {
   inputRow?: boolean
+  primary?: boolean
   white?: boolean
 }
 
 export const Label = styled.label<LabelProps>`
   font-weight: ${fontWeights.semibold};
   color: ${(p) =>
-    p.white
+    p.primary
+      ? p.theme.colors.main.dark
+      : p.white
       ? p.theme.colors.greyscale.white
       : p.theme.colors.greyscale.darkest};
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
@@ -182,9 +185,10 @@ export const Light = styled.span`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `
 
-export const Title = styled.span`
+export const Title = styled.span<{ primary?: boolean }>`
   font-family: Montserrat, sans-serif;
-  color: ${(p) => p.theme.colors.main.dark};
+  color: ${(p) =>
+    p.primary ? p.theme.colors.main.dark : p.theme.colors.greyscale.darkest};
   font-size: 20px;
   font-weight: ${fontWeights.semibold};
 `

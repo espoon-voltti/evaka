@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,8 +13,11 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { desktopMin } from 'lib-components/breakpoints'
 import { ContentArea } from 'lib-components/layout/Container'
+import {
+  Desktop,
+  MobileAndTablet
+} from 'lib-components/layout/responsive-layout'
 import { Gap } from 'lib-components/white-space'
 import Footer from '../Footer'
 import { useUser } from '../auth/state'
@@ -103,7 +106,7 @@ export default React.memo(function CalendarPage() {
       <UnwrapResult result={data}>
         {(response) => (
           <>
-            <MobileOnly>
+            <MobileAndTablet>
               <ContentArea
                 opaque
                 paddingVertical="zero"
@@ -116,7 +119,7 @@ export default React.memo(function CalendarPage() {
                   dayIsReservable={dayIsReservable}
                 />
               </ContentArea>
-            </MobileOnly>
+            </MobileAndTablet>
             <DesktopOnly>
               <Gap size="s" />
               <CalendarGridView
@@ -160,16 +163,6 @@ export default React.memo(function CalendarPage() {
   )
 })
 
-const MobileOnly = styled.div`
-  display: none;
-  @media (max-width: ${desktopMin}) {
-    display: block;
-  }
-`
-
-const DesktopOnly = styled.div`
+const DesktopOnly = styled(Desktop)`
   position: relative;
-  @media (max-width: ${desktopMin}) {
-    display: none;
-  }
 `

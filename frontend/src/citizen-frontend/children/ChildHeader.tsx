@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { Child } from 'lib-common/generated/api-types/children'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import { desktopMin } from 'lib-components/breakpoints'
-import { H1, Strong } from 'lib-components/typography'
+import { H1, Title } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -49,7 +49,7 @@ export default React.memo(function ChildHeader({
         <H1 noMargin data-qa={'child-name'}>
           {firstName} {lastName}
         </H1>
-        <Strong>{group?.name}</Strong>
+        {group && <Title>{group.name}</Title>}
       </div>
     </ChildHeaderContainer>
   )

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,7 +13,18 @@ import { RoundImage } from 'lib-components/atoms/RoundImage'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { desktopMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { H1, H2, P } from 'lib-components/typography'
+import {
+  Desktop,
+  MobileAndTablet
+} from 'lib-components/layout/responsive-layout'
+import {
+  Bold,
+  H1,
+  H2,
+  InformationText,
+  Label,
+  P
+} from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { renderResult } from '../async-rendering'
@@ -63,6 +74,7 @@ function ChildItem({ child }: { child: Child }) {
     [history, child.id]
   )
 
+  const name = `${child.firstName} ${child.lastName}`
   return (
     <ChildContainer onClick={navigateToChild} opaque data-qa="child">
       <RoundImage
@@ -76,12 +88,20 @@ function ChildItem({ child }: { child: Child }) {
         fallbackContent={faUser}
         fallbackColor={colors.greyscale.lighter}
       />
-      <NameAndGroup>
-        <H2 primary noMargin>
-          {child.firstName} {child.lastName}
-        </H2>
-        {child.group && <span>{child.group.name}</span>}
-      </NameAndGroup>
+      <MobileAndTablet>
+        <NameAndGroup>
+          <Label primary>{name}</Label>
+          {child.group && <InformationText>{child.group.name}</InformationText>}
+        </NameAndGroup>
+      </MobileAndTablet>
+      <Desktop>
+        <NameAndGroup>
+          <H2 primary noMargin>
+            {name}
+          </H2>
+          {child.group && <Bold>{child.group.name}</Bold>}
+        </NameAndGroup>
+      </Desktop>
       <ChevronContainer>
         <IconButton icon={faChevronRight} />
       </ChevronContainer>
