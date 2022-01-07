@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { UUID } from '../../types'
+import { EvakaUser } from './user'
+import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
-import { PilotFeature } from './shared'
-import { EvakaUser } from './user'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.placement.ChildBasics

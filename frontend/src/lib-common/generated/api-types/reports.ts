@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { UUID } from '../../types'
-import { AssistanceActionOption } from './assistanceaction'
-import { AssistanceMeasure } from './assistanceaction'
-import { AssistanceBasisOption } from './assistanceneed'
 import { AbsenceType } from './daycare'
-import { ProviderType } from './daycare'
+import { AssistanceActionOption } from './assistanceaction'
+import { AssistanceBasisOption } from './assistanceneed'
+import { AssistanceMeasure } from './assistanceaction'
 import { PlacementType } from './placement'
+import { ProviderType } from './daycare'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.reports.ApplicationsReportRow

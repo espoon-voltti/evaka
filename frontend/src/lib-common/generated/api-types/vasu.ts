@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
-import { VasuQuestion } from '../../api-types/vasu'
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { UUID } from '../../types'
+import { VasuQuestion } from '../../api-types/vasu'
 
 /**
 * Generated from fi.espoo.evaka.vasu.VasuController.ChangeDocumentStateRequest

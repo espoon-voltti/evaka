@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { UUID } from '../../types'
 import { AttachmentType } from './attachment'
+import { CreatePersonBody } from './pis'
 import { Decision } from './decision'
 import { DecisionDraft } from './decision'
 import { DecisionStatus } from './decision'
 import { DecisionType } from './decision'
 import { DecisionUnit } from './decision'
-import { CreatePersonBody } from './pis'
 import { PersonJSON } from './pis'
 import { PlacementPlanConfirmationStatus } from './placement'
 import { PlacementPlanRejectReason } from './placement'
 import { PlacementType } from './placement'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.application.AcceptDecisionRequest

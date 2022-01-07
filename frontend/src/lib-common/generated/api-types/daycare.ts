@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
 import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { UUID } from '../../types'
 import { Action } from '../action'
-import { PersonJSON } from './pis'
 import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
+import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.Absence

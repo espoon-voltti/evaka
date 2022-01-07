@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
 import LocalDate from '../../local-date'
-import { UUID } from '../../types'
 import { ContactInfo } from './attendance'
 import { PlacementType } from './placement'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.sensitive.ChildSensitiveInformation

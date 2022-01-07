@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
-import { UUID } from '../../types'
 import { CitizenFeatures } from './shared'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.vtjclient.controllers.VtjController.Child
