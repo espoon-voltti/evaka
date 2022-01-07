@@ -111,8 +111,7 @@ export class StaffAttendancePage {
   }
 
   async setArrivedInfo(time: string, name: string, groupName: string) {
-    await this.#arrivedInput.clear()
-    await this.#arrivedInput.type(time)
+    await this.#arrivedInput.fill(time)
 
     await this.#nameInput.type(name)
 
