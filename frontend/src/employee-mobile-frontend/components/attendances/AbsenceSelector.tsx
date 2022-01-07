@@ -42,7 +42,7 @@ export default function AbsenceSelector({
               onChange={() => setSelectedAbsenceType(absenceType)}
               data-qa={`mark-absent-${absenceType}`}
             />
-            <Gap horizontal size={'xxs'} />
+            <Gap horizontal size="xxs" />
           </Fragment>
         ))}
       </ChipWrapper>

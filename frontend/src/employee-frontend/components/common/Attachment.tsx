@@ -57,12 +57,12 @@ function Attachment({ attachment, 'data-qa': dataQa, receivedAt }: Props) {
   const { setErrorMessage } = useContext(UIContext)
 
   return (
-    <AttachmentContainer className={`attachment`} data-qa={dataQa}>
-      <FixedSpaceRow spacing={'xs'} alignItems={'center'}>
+    <AttachmentContainer className="attachment" data-qa={dataQa}>
+      <FixedSpaceRow spacing="xs" alignItems="center">
         <FontAwesomeIcon
           icon={contentTypeIcon(attachment.contentType)}
-          className={'attachment-icon'}
-          color={'Dodgerblue'}
+          className="attachment-icon"
+          color="Dodgerblue"
         />
         <FileDownloadButton
           file={attachment}
@@ -75,9 +75,9 @@ function Attachment({ attachment, 'data-qa': dataQa, receivedAt }: Props) {
               resolveLabel: i18n.common.ok
             })
           }
-          data-qa={'attachment-download'}
+          data-qa="attachment-download"
         />
-        <ReceivedAtText data-qa={`attachment-received-at`}>
+        <ReceivedAtText data-qa="attachment-received-at">
           {attachment.uploadedByEmployee
             ? i18n.application.attachments.receivedByPaperAt
             : i18n.application.attachments.receivedAt}{' '}

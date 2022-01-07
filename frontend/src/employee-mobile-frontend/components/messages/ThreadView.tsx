@@ -77,7 +77,7 @@ export const ThreadView = React.memo(function ThreadView({
   }, [messages])
 
   return (
-    <ThreadViewMobile data-qa={'thread-view-mobile'}>
+    <ThreadViewMobile data-qa="thread-view-mobile">
       <TopBar title={title} onBack={onBack} invertedColors />
       {messages.map((message) => (
         <SingleMessage
@@ -94,15 +94,15 @@ export const ThreadView = React.memo(function ThreadView({
           <TextArea
             value={replyContent}
             onChange={onUpdateContent}
-            className={'thread-view-input'}
-            wrapperClassName={'thread-view-input-wrapper'}
+            className="thread-view-input"
+            wrapperClassName="thread-view-input-wrapper"
             placeholder={i18n.messages.inputPlaceholder}
-            data-qa={'thread-reply-input'}
+            data-qa="thread-reply-input"
           />
           <RoundIconButton
             onClick={onSubmitReply}
             disabled={replyContent.length === 0}
-            data-qa={'thread-reply-button'}
+            data-qa="thread-reply-button"
           >
             <FontAwesomeIcon icon={faArrowRight} />
           </RoundIconButton>
@@ -114,9 +114,9 @@ export const ThreadView = React.memo(function ThreadView({
 
 function SingleMessage({ message, ours }: { message: Message; ours: boolean }) {
   return (
-    <MessageContainer ours={ours} data-qa={'single-message'}>
+    <MessageContainer ours={ours} data-qa="single-message">
       <TitleRow>
-        <SenderName data-qa={'single-message-sender-name'}>
+        <SenderName data-qa="single-message-sender-name">
           {message.sender.name}
         </SenderName>
         <SentDate white={ours}>{formatDateOrTime(message.sentAt)}</SentDate>

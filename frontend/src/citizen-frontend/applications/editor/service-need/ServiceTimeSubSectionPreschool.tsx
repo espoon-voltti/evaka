@@ -93,7 +93,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
       <Checkbox
         checked={formData.connectedDaycare}
-        data-qa={'connectedDaycare-input'}
+        data-qa="connectedDaycare-input"
         label={t.applications.editor.serviceNeed.dailyTime.connectedDaycare}
         onChange={(checked) =>
           updateFormData({
@@ -104,7 +104,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
       {formData.connectedDaycare && (
         <>
-          <Gap size={'m'} />
+          <Gap size="m" />
 
           <ExpandingInfo
             info={
@@ -120,17 +120,17 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
             </Label>
           </ExpandingInfo>
 
-          <Gap size={'s'} />
+          <Gap size="s" />
 
-          <FixedSpaceRow spacing={'m'}>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'daily-time-starts'}>
+          <FixedSpaceRow spacing="m">
+            <FixedSpaceColumn spacing="xs">
+              <Label htmlFor="daily-time-starts">
                 {t.applications.editor.serviceNeed.dailyTime.starts}
               </Label>
               <TimeInput
-                id={'daily-time-starts'}
+                id="daily-time-starts"
                 value={formData.startTime}
-                data-qa={'startTime-input'}
+                data-qa="startTime-input"
                 onChange={(value) => updateFormData({ startTime: value })}
                 info={errorToInputInfo(errors.startTime, t.validationErrors)}
                 hideErrorsBeforeTouched={!verificationRequested}
@@ -139,14 +139,14 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
             <Hyphenbox>-</Hyphenbox>
 
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'daily-time-ends'}>
+            <FixedSpaceColumn spacing="xs">
+              <Label htmlFor="daily-time-ends">
                 {t.applications.editor.serviceNeed.dailyTime.ends}
               </Label>
               <TimeInput
-                id={'daily-time-ends'}
+                id="daily-time-ends"
                 value={formData.endTime}
-                data-qa={'endTime-input'}
+                data-qa="endTime-input"
                 onChange={(value) => updateFormData({ endTime: value })}
                 info={errorToInputInfo(errors.endTime, t.validationErrors)}
                 hideErrorsBeforeTouched={!verificationRequested}
@@ -154,7 +154,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
             </FixedSpaceColumn>
           </FixedSpaceRow>
 
-          <Gap size={'L'} />
+          <Gap size="L" />
 
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.shiftCare.instructions}
@@ -163,7 +163,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
           >
             <Checkbox
               checked={formData.shiftCare}
-              data-qa={'shiftCare-input'}
+              data-qa="shiftCare-input"
               label={t.applications.editor.serviceNeed.shiftCare.label}
               onChange={(checked) =>
                 updateFormData({
@@ -175,7 +175,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
           {formData.shiftCare && (
             <>
-              <Gap size={'s'} />
+              <Gap size="s" />
 
               <P fitted>
                 {
@@ -184,7 +184,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 }
               </P>
 
-              <Gap size={'s'} />
+              <Gap size="s" />
 
               <strong>
                 {
@@ -193,7 +193,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 }
               </strong>
 
-              <Gap size={'s'} />
+              <Gap size="s" />
 
               <FileUpload
                 files={formData.shiftCareAttachments}

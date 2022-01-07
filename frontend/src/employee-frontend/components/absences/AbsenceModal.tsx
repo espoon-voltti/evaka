@@ -44,9 +44,9 @@ export default React.memo(function AbsenceModal({
       rejectLabel={i18n.absences.modal.cancelButton}
       data-qa="absence-modal"
     >
-      <FixedSpaceColumn spacing={'L'}>
+      <FixedSpaceColumn spacing="L">
         <Label>{i18n.absences.modal.absenceSectionLabel}</Label>
-        <FixedSpaceColumn spacing={'xs'}>
+        <FixedSpaceColumn spacing="xs">
           {AbsenceTypes.map((absenceType, index) => (
             <Radio
               key={index}
@@ -67,7 +67,7 @@ export default React.memo(function AbsenceModal({
         </FixedSpaceColumn>
 
         <Label>{i18n.absences.modal.placementSectionLabel}</Label>
-        <FixedSpaceColumn spacing={'xs'}>
+        <FixedSpaceColumn spacing="xs">
           {CareTypeCategories.map((careTypeCategory, index) => (
             <Checkbox
               key={index}

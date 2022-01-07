@@ -80,7 +80,7 @@ export default function EmployeesPage() {
               placeholder={i18n.employees.findByName}
               onChange={setSearchTerm}
               icon={faSearch}
-              width={'L'}
+              width="L"
             />
           </SearchBar>
           <PaginationContainer>

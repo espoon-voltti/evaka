@@ -97,7 +97,7 @@ function Search() {
             </ButtonsContainer>
           </RequireRole>
         </TopBar>
-        <Gap size={'XL'} />
+        <Gap size="XL" />
 
         {/* TODO: move this to a component */}
         <div className="table-of-units">
@@ -192,7 +192,7 @@ function Search() {
             </Tbody>
           </Table>
         </div>
-        <Gap size={'XXL'} />
+        <Gap size="XXL" />
       </ContentArea>
       {showAddPersonFromVTJModal ? (
         <AddVTJPersonModal

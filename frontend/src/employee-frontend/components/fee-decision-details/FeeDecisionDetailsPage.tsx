@@ -119,7 +119,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
       {confirmingBack && (
         <InfoModal
           title={i18n.feeDecision.modal.title}
-          iconColor={'orange'}
+          iconColor="orange"
           icon={faQuestion}
           reject={{ action: goBack, label: i18n.feeDecision.modal.cancel }}
           resolve={{

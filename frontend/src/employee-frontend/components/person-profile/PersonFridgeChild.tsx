@@ -68,7 +68,7 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
         />
       ) : uiMode === `remove-fridge-child-${selectedParentshipId}` ? (
         <InfoModal
-          iconColor={'orange'}
+          iconColor="orange"
           title={i18n.personProfile.fridgeChild.removeChild}
           text={i18n.personProfile.fridgeChild.confirmText}
           icon={faQuestion}

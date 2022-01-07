@@ -60,7 +60,7 @@ export default React.memo(function PreferredUnitBox({
       <MainColLeft>{n}</MainColLeft>
       <MainColCenter>
         <FixedSpaceColumn>
-          <FixedSpaceColumn spacing={'xxs'}>
+          <FixedSpaceColumn spacing="xxs">
             <H4 noMargin>{unit.name}</H4>
             <span>{unit.streetAddress}</span>
             {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
@@ -73,7 +73,7 @@ export default React.memo(function PreferredUnitBox({
               />
             )}
           </FixedSpaceColumn>
-          <FixedSpaceFlexWrap horizontalSpacing={'xs'} verticalSpacing={'xs'}>
+          <FixedSpaceFlexWrap horizontalSpacing="xs" verticalSpacing="xs">
             {unit.language === 'sv' ? (
               <StaticChip color={colors.accents.peach}>
                 {t.applications.editor.unitPreference.units.preferences.sv}
@@ -87,8 +87,8 @@ export default React.memo(function PreferredUnitBox({
               {providerTypeText.toLowerCase()}
             </StaticChip>
           </FixedSpaceFlexWrap>
-          <Gap size={'xs'} />
-          <FixedSpaceFlexWrap verticalSpacing={'xs'}>
+          <Gap size="xs" />
+          <FixedSpaceFlexWrap verticalSpacing="xs">
             <InlineButton
               text={
                 t.applications.editor.unitPreference.units.preferences.moveUp

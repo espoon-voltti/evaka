@@ -482,7 +482,7 @@ const DeleteConfirmationModal = React.memo(function DeleteConfirmationModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColor={'orange'}
+      iconColor="orange"
       title={i18n.unit.accessControl.removeConfirmation}
       icon={faQuestion}
       reject={{ action: onClose, label: i18n.common.cancel }}
@@ -502,7 +502,7 @@ const DeleteMobileDeviceConfirmationModal = React.memo(
     const { i18n } = useTranslation()
     return (
       <InfoModal
-        iconColor={'orange'}
+        iconColor="orange"
         title={i18n.unit.accessControl.mobileDevices.removeConfirmation}
         icon={faQuestion}
         reject={{ action: onClose, label: i18n.common.cancel }}
@@ -524,7 +524,7 @@ const EditMobileDeviceModal = React.memo(function EditMobileDeviceModal({
 
   return (
     <InfoModal
-      iconColor={'blue'}
+      iconColor="blue"
       title={i18n.unit.accessControl.mobileDevices.editName}
       icon={faQuestion}
       reject={{ action: onClose, label: i18n.common.cancel }}
@@ -535,7 +535,7 @@ const EditMobileDeviceModal = React.memo(function EditMobileDeviceModal({
           value={name}
           onChange={setName}
           placeholder={i18n.unit.accessControl.mobileDevices.editPlaceholder}
-          width={'m'}
+          width="m"
         />
       </Flex>
     </InfoModal>

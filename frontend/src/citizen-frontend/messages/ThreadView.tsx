@@ -113,7 +113,7 @@ const SingleMessage = React.memo(function SingleMessage({
                   })
                 }
                 icon
-                data-qa={'attachment'}
+                data-qa="attachment"
               />
             ))}
           </FixedSpaceColumn>
@@ -221,14 +221,14 @@ export default React.memo(function ThreadView({
           </MessageContainer>
         ) : (
           <>
-            <Gap size={'s'} />
+            <Gap size="s" />
             <ReplyToThreadButton
               icon={faReply}
               onClick={() => setReplyEditorVisible(true)}
               data-qa="message-reply-editor-btn"
               text={i18n.messages.replyToThread}
             />
-            <Gap size={'m'} />
+            <Gap size="m" />
           </>
         ))}
       {replyEditorVisible && <span ref={autoScrollRef} />}

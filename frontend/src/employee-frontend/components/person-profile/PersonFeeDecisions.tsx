@@ -92,7 +92,7 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
                   <Td>{formatCents(feeDecision.totalFee)}</Td>
                   <Td>{feeDecision.decisionNumber}</Td>
                   <DateTd>{formatDate(feeDecision.created)}</DateTd>
-                  <DateTd data-qa={`fee-decision-sent-at`}>
+                  <DateTd data-qa="fee-decision-sent-at">
                     {formatDate(feeDecision.sentAt)}
                   </DateTd>
                   <StatusTd>

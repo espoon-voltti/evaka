@@ -164,7 +164,7 @@ export default React.memo(function PlacementProposalRow({
             <FixedSpaceRow spacing="m">
               <div>
                 <CheckIconButton
-                  data-qa={'accept-button'}
+                  data-qa="accept-button"
                   onClick={() =>
                     confirmationState === 'ACCEPTED'
                       ? onChange('PENDING')
@@ -175,7 +175,7 @@ export default React.memo(function PlacementProposalRow({
               </div>
               <div>
                 <CrossIconButton
-                  data-qa={'reject-button'}
+                  data-qa="reject-button"
                   onClick={() =>
                     confirmationState === 'REJECTED_NOT_CONFIRMED'
                       ? onChange('PENDING')

@@ -159,7 +159,7 @@ export default React.memo(function DecisionResponse({
         <Label>{t.decisions.applicationDecisions.sentDate}</Label>
         <span data-qa="decision-sent-date">{sentDate.format()}</span>
         <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
-        <Status data-qa={'decision-status'}>
+        <Status data-qa="decision-status">
           <RoundIcon
             content={decisionStatusIcon[status].icon}
             color={decisionStatusIcon[status].color}
@@ -219,7 +219,7 @@ export default React.memo(function DecisionResponse({
                 }
                 ariaLabel={`${t.decisions.applicationDecisions.response.accept1} ${requestedStartDate} ${t.decisions.applicationDecisions.response.accept2}`}
                 disabled={blocked || submitting}
-                data-qa={'radio-accept'}
+                data-qa="radio-accept"
               />
             </FixedSpaceRow>
             <Radio
@@ -229,7 +229,7 @@ export default React.memo(function DecisionResponse({
               name={`${decision.id}-reject`}
               label={t.decisions.applicationDecisions.response.reject}
               disabled={blocked || submitting}
-              data-qa={'radio-reject'}
+              data-qa="radio-reject"
             />
           </FixedSpaceColumn>
           {blocked ? (
@@ -259,7 +259,7 @@ export default React.memo(function DecisionResponse({
                 (dateErrorMessage !== '' && acceptChecked) ||
                 submitting
               }
-              data-qa={'submit-response'}
+              data-qa="submit-response"
             />
             <Button
               text={t.decisions.applicationDecisions.response.cancel}
@@ -276,7 +276,7 @@ export default React.memo(function DecisionResponse({
             t.decisions.applicationDecisions.warnings.doubleRejectWarning.title
           }
           icon={faExclamation}
-          iconColor={'orange'}
+          iconColor="orange"
           text={
             t.decisions.applicationDecisions.warnings.doubleRejectWarning.text
           }
@@ -291,7 +291,7 @@ export default React.memo(function DecisionResponse({
               .rejectLabel
           }
           rejectAction={() => setDisplayCascadeWarning(false)}
-          data-qa={'cascade-warning-modal'}
+          data-qa="cascade-warning-modal"
         />
       )}
     </div>

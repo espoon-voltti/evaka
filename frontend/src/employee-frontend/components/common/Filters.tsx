@@ -205,7 +205,7 @@ export function FreeTextSearch({
         data-qa="free-text-search-input"
         background={background}
       />
-      <CustomIconButton icon={faTimes} onClick={clear} size={'m'} />
+      <CustomIconButton icon={faTimes} onClick={clear} size="m" />
     </SearchInputContainer>
   )
 }
@@ -229,7 +229,7 @@ export function AreaFilter({
     <>
       <Label>{i18n.filters.area}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         {areas
           .sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0))
           .map(({ name, shortName }) => (
@@ -246,7 +246,7 @@ export function AreaFilter({
             label={i18n.common.all}
             checked={toggled.includes('All')}
             onChange={toggle('All')}
-            data-qa={`area-filter-All`}
+            data-qa="area-filter-All"
           />
         )}
       </FixedSpaceColumn>
@@ -346,7 +346,7 @@ export function FeeDecisionStatusFilter({
     <>
       <Label>{i18n.filters.status}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         {statuses.map((id) => (
           <Radio
             key={id}
@@ -383,7 +383,7 @@ export function FeeDecisionDistinctionsFilter({
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         {distinctiveDetails.map((id) => (
           <Checkbox
             key={id}
@@ -453,7 +453,7 @@ export function FeeDecisionDateFilter({
         label={i18n.filters.searchByStartDate}
         checked={searchByStartDate}
         onChange={setSearchByStartDate}
-        data-qa={`fee-decision-search-by-start-date`}
+        data-qa="fee-decision-search-by-start-date"
       />
     </>
   )
@@ -481,7 +481,7 @@ export const ValueDecisionStatusFilter = React.memo(
       <>
         <Label>{i18n.filters.status}</Label>
         <Gap size="xs" />
-        <FixedSpaceColumn spacing={'xs'}>
+        <FixedSpaceColumn spacing="xs">
           {statuses.map((id) => (
             <Radio
               key={id}
@@ -555,7 +555,7 @@ export function ValueDecisionDateFilter({
         label={i18n.filters.searchByStartDate}
         checked={searchByStartDate}
         onChange={setSearchByStartDate}
-        data-qa={`value-decision-search-by-start-date`}
+        data-qa="value-decision-search-by-start-date"
       />
     </>
   )
@@ -578,7 +578,7 @@ export function InvoiceStatusFilter({
     <>
       <Label>{i18n.filters.status}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         {statuses.map((id) => (
           <Radio
             key={id}
@@ -653,7 +653,7 @@ export function InvoiceDateFilter({
         label={i18n.filters.invoiceSearchByStartDate}
         checked={searchByStartDate}
         onChange={setUseCustomDatesForInvoiceSending}
-        data-qa={`invoice-search-by-start-date`}
+        data-qa="invoice-search-by-start-date"
       />
     </>
   )
@@ -732,7 +732,7 @@ export function ApplicationTypeFilter({
     <>
       <Label>{i18n.applications.list.type}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         {types.map((id) => {
           return id != 'PRESCHOOL' ? (
             <Radio
@@ -752,7 +752,7 @@ export function ApplicationTypeFilter({
                     {i18n.applications.types[id]}
                     <ApplicationOpenIcon
                       icon={toggled === id ? faAngleUp : faAngleDown}
-                      size={'lg'}
+                      size="lg"
                       color={colors.greyscale.dark}
                     />
                   </>
@@ -764,7 +764,7 @@ export function ApplicationTypeFilter({
                 small
               />
               {toggled === id && (
-                <CustomDiv spacing={'xs'}>
+                <CustomDiv spacing="xs">
                   {preschoolTypes.map((type) => (
                     <Checkbox
                       key={type}
@@ -838,7 +838,7 @@ export function ApplicationStatusFilter({
     <>
       <Label>{i18n.application.state.title}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         {statuses.map((id: ApplicationSummaryStatusOptions) => (
           <Radio
             key={id}
@@ -848,7 +848,7 @@ export function ApplicationStatusFilter({
                 {id === 'ALL' ? (
                   <ApplicationOpenIcon
                     icon={toggled === id ? faAngleUp : faAngleDown}
-                    size={'lg'}
+                    size="lg"
                     color={colors.greyscale.dark}
                   />
                 ) : undefined}
@@ -863,7 +863,7 @@ export function ApplicationStatusFilter({
         ))}
       </FixedSpaceColumn>
       {toggled === 'ALL' && (
-        <CustomDivWithMargin spacing={'xs'}>
+        <CustomDivWithMargin spacing="xs">
           {allStatuses.map((id) => (
             <Checkbox
               key={id}
@@ -906,7 +906,7 @@ export function ApplicationDateFilter({
     <>
       <Label>{i18n.common.date}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         {dates.map((dateType) => (
           <Checkbox
             label={i18n.application.date[dateType]}
@@ -977,10 +977,10 @@ export function ApplicationBasisFilter({
       <Gap size="xs" />
       <FixedSpaceRow spacing="xxs">
         <Tooltip
-          tooltipId={'application-basis-ADDITIONAL_INFO'}
+          tooltipId="application-basis-ADDITIONAL_INFO"
           tooltipText={i18n.applications.basisTooltip.ADDITIONAL_INFO}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -992,10 +992,10 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId={'application-basis-SIBLING_BASIS'}
+          tooltipId="application-basis-SIBLING_BASIS"
           tooltipText={i18n.applications.basisTooltip.SIBLING_BASIS}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1007,10 +1007,10 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId={'application-basis-ASSISTANCE_NEED'}
+          tooltipId="application-basis-ASSISTANCE_NEED"
           tooltipText={i18n.applications.basisTooltip.ASSISTANCE_NEED}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1022,10 +1022,10 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId={'application-basis-CLUB_CARE'}
+          tooltipId="application-basis-CLUB_CARE"
           tooltipText={i18n.applications.basisTooltip.CLUB_CARE}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1037,10 +1037,10 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId={'application-basis-DAYCARE'}
+          tooltipId="application-basis-DAYCARE"
           tooltipText={i18n.applications.basisTooltip.DAYCARE}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1052,10 +1052,10 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId={'application-basis-EXTENDED_CARE'}
+          tooltipId="application-basis-EXTENDED_CARE"
           tooltipText={i18n.applications.basisTooltip.EXTENDED_CARE}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1067,10 +1067,10 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId={'application-basis-DUPLICATE_APPLICATION'}
+          tooltipId="application-basis-DUPLICATE_APPLICATION"
           tooltipText={i18n.applications.basisTooltip.DUPLICATE_APPLICATION}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1084,8 +1084,8 @@ export function ApplicationBasisFilter({
         <Tooltip
           tooltipId="application-basis-URGENT"
           tooltipText={i18n.applications.basisTooltip.URGENT}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1099,8 +1099,8 @@ export function ApplicationBasisFilter({
         <Tooltip
           tooltipId="application-basis-HAS_ATTACHMENTS"
           tooltipText={i18n.applications.basisTooltip.HAS_ATTACHMENTS}
-          place={'top'}
-          className={'application-basis-tooltip'}
+          place="top"
+          className="application-basis-tooltip"
           delayShow={750}
         >
           <RoundIcon
@@ -1185,17 +1185,17 @@ export function ApplicationDistinctionsFilter({
     <Fragment>
       {disableSecondary ? (
         <Tooltip
-          tooltipId={'application-distinctions-SECONDARY'}
+          tooltipId="application-distinctions-SECONDARY"
           tooltipText={i18n.applications.secondaryTooltip}
-          place={'top'}
-          className={'application-distinctions-SECONDARY-tooltip'}
+          place="top"
+          className="application-distinctions-SECONDARY-tooltip"
           delayShow={250}
         >
           <Checkbox
             label={i18n.applications.distinctiveDetails['SECONDARY']}
             checked={toggled.includes('SECONDARY')}
             onChange={toggle('SECONDARY')}
-            data-qa={'application-distiction-SECONDARY'}
+            data-qa="application-distiction-SECONDARY"
             disabled
           />
         </Tooltip>
@@ -1204,7 +1204,7 @@ export function ApplicationDistinctionsFilter({
           label={i18n.applications.distinctiveDetails['SECONDARY']}
           checked={toggled.includes('SECONDARY')}
           onChange={toggle('SECONDARY')}
-          data-qa={'application-distiction-SECONDARY'}
+          data-qa="application-distiction-SECONDARY"
         />
       )}
     </Fragment>
@@ -1225,7 +1225,7 @@ export function TransferApplicationsFilter({
     <>
       <Label>{i18n.applications.list.transferFilter.title}</Label>
       <Gap size="xs" />
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         <Radio
           data-qa="filter-transfer-only"
           label={i18n.applications.list.transferFilter.transferOnly}

@@ -76,7 +76,7 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
               editable={editable}
             />
             <Sum
-              title={'familyTotal'}
+              title="familyTotal"
               sum={
                 editable
                   ? totalPrice(invoice.value.rows)

@@ -144,7 +144,7 @@ function BaseDateRangeInput({
         date={start}
         onChange={setStartValue}
         data-qa="date-range-input-start-date"
-        type={'short'}
+        type="short"
       />
       <Gap size="xs" horizontal />
       -
@@ -153,7 +153,7 @@ function BaseDateRangeInput({
         date={end}
         onChange={setEndValue}
         data-qa="date-range-input-end-date"
-        type={'short'}
+        type="short"
       />
     </Container>
   )

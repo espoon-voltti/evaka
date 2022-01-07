@@ -70,7 +70,7 @@ export default React.memo(function TabUnitInformation() {
         <DataList>
           <div>
             <label>{i18n.unit.info.caretakers.titleLabel}</label>
-            <span data-qa={'unit-total-caretaker-count'}>
+            <span data-qa="unit-total-caretaker-count">
               <Caretakers unitData={unitData} />
             </span>
           </div>

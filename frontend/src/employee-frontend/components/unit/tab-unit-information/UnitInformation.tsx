@@ -32,15 +32,15 @@ function UnitInformation({ unit, permittedActions }: Props) {
       <DataList>
         <div>
           <Label>{i18n.unit.manager.name}</Label>
-          <span data-qa={'unit-manager-name'}>{unitManager?.name}</span>
+          <span data-qa="unit-manager-name">{unitManager?.name}</span>
         </div>
         <div>
           <Label>{i18n.unit.manager.email}</Label>
-          <span data-qa={'unit-manager-email'}>{unitManager?.email}</span>
+          <span data-qa="unit-manager-email">{unitManager?.email}</span>
         </div>
         <div>
           <Label>{i18n.unit.manager.phone}</Label>
-          <span data-qa={'unit-manager-phone'}>{unitManager?.phone}</span>
+          <span data-qa="unit-manager-phone">{unitManager?.phone}</span>
         </div>
       </DataList>
     )
@@ -69,15 +69,15 @@ function UnitInformation({ unit, permittedActions }: Props) {
         </div>
         <div>
           <label>{i18n.unit.info.visitingAddress}</label>
-          <span data-qa={'unit-visiting-address'}>{streetAddress}</span>
+          <span data-qa="unit-visiting-address">{streetAddress}</span>
         </div>
         <div>
           <label>{i18n.unit.info.mailingAddress}</label>
-          <span data-qa={'unit-mailing-address'}>{mailingAddress}</span>
+          <span data-qa="unit-mailing-address">{mailingAddress}</span>
         </div>
         <div>
           <label>{i18n.unit.info.phone}</label>
-          <span data-qa={'unit-phone'}>{unit.phone}</span>
+          <span data-qa="unit-phone">{unit.phone}</span>
         </div>
       </DataList>
 
@@ -88,10 +88,10 @@ function UnitInformation({ unit, permittedActions }: Props) {
 
       {permittedActions.has('UPDATE') && (
         <>
-          <Gap size={'L'} />
+          <Gap size="L" />
           <DetailsLink
             to={`/units/${unit.id}/details`}
-            data-qa={'unit-details-link'}
+            data-qa="unit-details-link"
           >
             {i18n.unit.openDetails}
           </DetailsLink>

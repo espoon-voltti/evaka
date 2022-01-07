@@ -344,7 +344,7 @@ export default React.memo(function Group({
 
   return (
     <DaycareGroup
-      className={'daycare-group-collapsible'}
+      className="daycare-group-collapsible"
       data-qa={`daycare-group-collapsible-${group.id}`}
       data-status={open ? 'open' : 'closed'}
     >
@@ -521,7 +521,7 @@ export default React.memo(function Group({
                       <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
                     {showChildCapacityFactor && (
-                      <Th data-qa={'child-capacity-factor-heading'}>
+                      <Th data-qa="child-capacity-factor-heading">
                         {i18n.unit.groups.factor}
                       </Th>
                     )}
@@ -574,7 +574,7 @@ export default React.memo(function Group({
                     return (
                       <Tr
                         key={placement.id || ''}
-                        className={'group-placement-row'}
+                        className="group-placement-row"
                         data-qa={`group-placement-row-${placement.child.id}`}
                       >
                         {mobileEnabled &&

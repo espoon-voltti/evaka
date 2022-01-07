@@ -27,7 +27,7 @@ export default function requireAuth<T>(
         <WrappedComponent {...props} />
       )
     ) : requireStrong ? (
-      <Redirect to={'/'} />
+      <Redirect to="/" />
     ) : (
       refreshRedirect(getWeakLoginUri(props.location.pathname))
     )

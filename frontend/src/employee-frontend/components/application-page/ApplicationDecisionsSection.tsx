@@ -71,14 +71,14 @@ export default React.memo(function ApplicationDecisionsSection({
                     rel="noreferrer"
                     data-qa="application-decision-download-available"
                   >
-                    <FixedSpaceRow spacing={'xs'} alignItems={'center'}>
+                    <FixedSpaceRow spacing="xs" alignItems="center">
                       <FontAwesomeIcon icon={faFilePdf} />
                       <span>{i18n.application.decisions.download}</span>
                     </FixedSpaceRow>
                   </a>
                 ) : (
                   <span data-qa="application-decision-download-pending">
-                    <FixedSpaceRow spacing={'xs'} alignItems={'center'}>
+                    <FixedSpaceRow spacing="xs" alignItems="center">
                       <FontAwesomeIcon icon={fasExclamationTriangle} />
                       <span>{i18n.application.decisions.downloadPending}</span>
                     </FixedSpaceRow>

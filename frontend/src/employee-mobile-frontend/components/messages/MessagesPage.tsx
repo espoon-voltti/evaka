@@ -49,9 +49,9 @@ export default function MessagesPage() {
     <ContentArea
       opaque
       fullHeight
-      paddingHorizontal={'zero'}
-      paddingVertical={'zero'}
-      data-qa={`messages-page-content-area`}
+      paddingHorizontal="zero"
+      paddingVertical="zero"
+      data-qa="messages-page-content-area"
     >
       <ThreadView
         thread={selectedThread}
@@ -79,9 +79,9 @@ export default function MessagesPage() {
       {renderResult(receivedMessages, (messages) => (
         <ContentArea
           opaque
-          paddingVertical={'zero'}
-          paddingHorizontal={'zero'}
-          data-qa={`messages-page-content-area`}
+          paddingVertical="zero"
+          paddingHorizontal="zero"
+          data-qa="messages-page-content-area"
         >
           <HeaderContainer>
             <H1 noMargin={true}>{i18n.messages.title}</H1>
@@ -119,16 +119,16 @@ export default function MessagesPage() {
     renderResult(unitInfoResponse, (unit) => (
       <ContentArea
         opaque
-        paddingVertical={'zero'}
-        paddingHorizontal={'zero'}
-        data-qa={`messages-page-content-area`}
+        paddingVertical="zero"
+        paddingHorizontal="zero"
+        data-qa="messages-page-content-area"
       >
         <TopBar title={unit.name} />
         <HeaderContainer>
           <H1 noMargin={true}>{i18n.messages.title}</H1>
         </HeaderContainer>
         {groupAccounts.length === 0 ? (
-          <NoAccounts data-qa={'info-no-account-access'}>
+          <NoAccounts data-qa="info-no-account-access">
             {i18n.messages.noAccountAccess}
           </NoAccounts>
         ) : (

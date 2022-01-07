@@ -67,7 +67,7 @@ export default React.memo(function Heading({
       <TypeSelect
         changeDecisionType={changeDecisionType}
         selected={newDecisionType}
-        type={'FEE_DECISION'}
+        type="FEE_DECISION"
       />
     ) : (
       i18n.feeDecision.type[decisionType]

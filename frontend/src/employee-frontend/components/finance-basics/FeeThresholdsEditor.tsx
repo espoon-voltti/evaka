@@ -150,7 +150,7 @@ export default React.memo(function FeeThresholdsEditor({
               }))
             }
             placeholder="0"
-            symbol={'€'}
+            symbol="€"
             info={validationErrorInfo('maxFee')}
             hideErrorsBeforeTouched
             data-qa="max-fee"
@@ -169,7 +169,7 @@ export default React.memo(function FeeThresholdsEditor({
               }))
             }
             placeholder="0"
-            symbol={'€'}
+            symbol="€"
             info={validationErrorInfo('minFee')}
             hideErrorsBeforeTouched
             data-qa="min-fee"
@@ -210,7 +210,7 @@ export default React.memo(function FeeThresholdsEditor({
                         [`minIncomeThreshold${n}`]: value
                       }))
                     }
-                    symbol={'€'}
+                    symbol="€"
                     info={
                       validationErrorInfo(`minIncomeThreshold${n}` as const) ??
                       maxFeeErrorInputInfo
@@ -229,7 +229,7 @@ export default React.memo(function FeeThresholdsEditor({
                         [`incomeMultiplier${n}`]: value
                       }))
                     }
-                    symbol={'%'}
+                    symbol="%"
                     info={
                       validationErrorInfo(`incomeMultiplier${n}` as const) ??
                       maxFeeErrorInputInfo
@@ -248,7 +248,7 @@ export default React.memo(function FeeThresholdsEditor({
                         [`maxIncomeThreshold${n}`]: value
                       }))
                     }
-                    symbol={'€'}
+                    symbol="€"
                     info={
                       validationErrorInfo(`maxIncomeThreshold${n}` as const) ??
                       maxFeeErrorInputInfo
@@ -287,7 +287,7 @@ export default React.memo(function FeeThresholdsEditor({
             }))
           }
           placeholder="0"
-          symbol={'€'}
+          symbol="€"
           info={validationErrorInfo('incomeThresholdIncrease6Plus')}
           hideErrorsBeforeTouched
           data-qa="income-threshold-increase"
@@ -308,7 +308,7 @@ export default React.memo(function FeeThresholdsEditor({
                 siblingDiscount2
               }))
             }
-            symbol={'%'}
+            symbol="%"
             info={validationErrorInfo('siblingDiscount2')}
             hideErrorsBeforeTouched
             data-qa="sibling-discount-2"
@@ -327,7 +327,7 @@ export default React.memo(function FeeThresholdsEditor({
                 siblingDiscount2Plus
               }))
             }
-            symbol={'%'}
+            symbol="%"
             info={validationErrorInfo('siblingDiscount2Plus')}
             hideErrorsBeforeTouched
             data-qa="sibling-discount-2-plus"

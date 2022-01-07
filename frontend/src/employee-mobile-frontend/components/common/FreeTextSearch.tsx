@@ -96,7 +96,7 @@ export default function FreeTextSearch({
         showClose={searchResults.length > 1}
       />
       {searchResults.length > 1 && (
-        <CustomIconButton icon={faTimes} onClick={clear} size={'m'} />
+        <CustomIconButton icon={faTimes} onClick={clear} size="m" />
       )}
     </SearchInputContainer>
   )

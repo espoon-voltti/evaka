@@ -61,7 +61,7 @@ export default React.memo(function DatePickerInput({
   return (
     <>
       <InputField
-        placeholder={'pp.kk.vvvv'}
+        placeholder="pp.kk.vvvv"
         value={date}
         onChange={changeHandler}
         aria-describedby={ariaId}

@@ -75,7 +75,7 @@ export default React.memo(function SiblingBasisSubSection({
                     t.applications.editor.unitPreference.siblingBasis
                       .otherSibling
                   }
-                  data-qa={'other-sibling'}
+                  data-qa="other-sibling"
                   onChange={() =>
                     updateFormData({
                       vtjSiblings: formData.vtjSiblings.map((s) => ({
@@ -90,22 +90,22 @@ export default React.memo(function SiblingBasisSubSection({
           )}
           {!formData.vtjSiblings.find((s) => s.selected) && (
             <>
-              <Gap size={'s'} />
-              <AdaptiveFlex horizontalSpacing={'L'} breakpoint="1060px">
-                <FixedSpaceColumn spacing={'xs'}>
-                  <Label htmlFor={'sibling-names'}>
+              <Gap size="s" />
+              <AdaptiveFlex horizontalSpacing="L" breakpoint="1060px">
+                <FixedSpaceColumn spacing="xs">
+                  <Label htmlFor="sibling-names">
                     {t.applications.editor.unitPreference.siblingBasis.names} *
                   </Label>
                   <InputField
                     value={formData.siblingName}
-                    data-qa={'siblingName-input'}
+                    data-qa="siblingName-input"
                     onChange={(value) => updateFormData({ siblingName: value })}
-                    width={'XL'}
+                    width="XL"
                     placeholder={
                       t.applications.editor.unitPreference.siblingBasis
                         .namesPlaceholder
                     }
-                    id={'sibling-names'}
+                    id="sibling-names"
                     info={errorToInputInfo(
                       errors.siblingName,
                       t.validationErrors
@@ -113,13 +113,13 @@ export default React.memo(function SiblingBasisSubSection({
                     hideErrorsBeforeTouched={!verificationRequested}
                   />
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing={'xs'}>
-                  <Label htmlFor={'sibling-ssn'}>
+                <FixedSpaceColumn spacing="xs">
+                  <Label htmlFor="sibling-ssn">
                     {t.applications.editor.unitPreference.siblingBasis.ssn} *
                   </Label>
                   <InputField
                     value={formData.siblingSsn}
-                    data-qa={'siblingSsn-input'}
+                    data-qa="siblingSsn-input"
                     onChange={(value) =>
                       updateFormData({ siblingSsn: value.toUpperCase() })
                     }
@@ -127,7 +127,7 @@ export default React.memo(function SiblingBasisSubSection({
                       t.applications.editor.unitPreference.siblingBasis
                         .ssnPlaceholder
                     }
-                    id={'sibling-ssn'}
+                    id="sibling-ssn"
                     width="m"
                     info={errorToInputInfo(
                       errors.siblingSsn,

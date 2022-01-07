@@ -458,7 +458,7 @@ export default React.memo(function FileUpload({
             onKeyDown={onKeyDown}
           >
             <InlineButton
-              className={'file-input-button'}
+              className="file-input-button"
               disabled={disabled}
               icon={faPlus}
               text={i18n.upload.input.title}
@@ -499,7 +499,7 @@ export default React.memo(function FileUpload({
       {uploadedFiles.length > 0 && (
         <>
           <Gap horizontal size={slimSingleFile ? 'zero' : 's'} />
-          <UploadedFiles data-qa={'uploaded-files'}>
+          <UploadedFiles data-qa="uploaded-files">
             {uploadedFiles.map((file) => (
               <File key={file.key}>
                 <FileIcon icon={fileIcon(file)} />
@@ -514,10 +514,10 @@ export default React.memo(function FileUpload({
                         onFileUnavailable={() =>
                           setUnavailableModalVisible(true)
                         }
-                        data-qa={'file-download-button'}
+                        data-qa="file-download-button"
                       />
                     ) : (
-                      <span data-qa={'file-download-unavailable-text'}>
+                      <span data-qa="file-download-unavailable-text">
                         {file.name}
                       </span>
                     )}

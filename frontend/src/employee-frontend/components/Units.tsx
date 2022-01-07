@@ -116,7 +116,7 @@ function Units() {
                 setFilter(value)
               }}
               icon={faSearch}
-              width={'L'}
+              width="L"
             />
             <Gap size="s" />
             <Checkbox
@@ -179,7 +179,7 @@ function Units() {
         </div>
         {units.isLoading && <Loader />}
         {units.isFailure && <div>{i18n.common.loadingFailed}</div>}
-        <Gap size={'XXL'} />
+        <Gap size="XXL" />
       </ContentArea>
     </Container>
   )

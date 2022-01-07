@@ -44,7 +44,7 @@ export default React.memo(function InvoicesPage() {
       <ContentArea opaque>
         <InvoiceFilters />
       </ContentArea>
-      <Gap size={'XL'} />
+      <Gap size="XL" />
       <ContentArea opaque>
         <Invoices
           actions={actions}
@@ -104,7 +104,7 @@ const Modal = React.memo(function Modal({
 
   return (
     <AsyncFormModal
-      iconColor={'blue'}
+      iconColor="blue"
       title={i18n.invoices.sendModal.title}
       icon={faEnvelope}
       resolveAction={() => sendInvoices({ invoiceDate, dueDate })}

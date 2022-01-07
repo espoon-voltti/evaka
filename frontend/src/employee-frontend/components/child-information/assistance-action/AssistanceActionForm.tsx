@@ -251,7 +251,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                     <ExpandingInfo
                       key={option.value}
                       info={option.descriptionFi}
-                      ariaLabel={''}
+                      ariaLabel=""
                       fullWidth={true}
                     >
                       <CheckboxRow>
@@ -331,7 +331,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                         i18n.childInformation.assistanceAction.fields
                           .measureTypes[`${measure}_INFO`]
                       )}
-                      ariaLabel={''}
+                      ariaLabel=""
                       fullWidth={true}
                     >
                       <CheckboxRow key={measure}>

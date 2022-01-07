@@ -181,8 +181,8 @@ export default React.memo(function AbsenceCell({
     <Tooltip
       tooltipId={`tooltip_absence-${date.formatIso()}-${childId}`}
       tooltipText={tooltipText}
-      place={'top'}
-      className={'absence-tooltip'}
+      place="top"
+      className="absence-tooltip"
       delayShow={750}
     >
       <Cell

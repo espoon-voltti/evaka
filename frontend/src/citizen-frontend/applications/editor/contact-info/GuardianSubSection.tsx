@@ -33,39 +33,39 @@ export default React.memo(function GuardianSubSection({
       <H3>{t.applications.editor.contactInfo.guardianInfoTitle}</H3>
 
       <AdaptiveFlex breakpoint="1060px" horizontalSpacing="XL">
-        <FixedSpaceColumn spacing={'xs'}>
+        <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
           <span>{formData.guardianFirstName}</span>
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing={'xs'}>
+        <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
           <span>{formData.guardianLastName}</span>
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing={'xs'}>
+        <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianSSN}</Label>
           <span>{formData.guardianSSN}</span>
         </FixedSpaceColumn>
       </AdaptiveFlex>
 
-      <Gap size={'s'} />
+      <Gap size="s" />
 
-      <FixedSpaceColumn spacing={'xs'}>
+      <FixedSpaceColumn spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
         <span>{formData.guardianHomeAddress}</span>
       </FixedSpaceColumn>
 
-      <Gap size={'s'} />
+      <Gap size="s" />
 
-      <FixedSpaceRow spacing={'XL'}>
+      <FixedSpaceRow spacing="XL">
         <AdaptiveFlex breakpoint="860px">
-          <FixedSpaceColumn spacing={'xs'}>
-            <Label htmlFor={'guardian-phone'}>
+          <FixedSpaceColumn spacing="xs">
+            <Label htmlFor="guardian-phone">
               {t.applications.editor.contactInfo.phone + ' *'}
             </Label>
             <InputField
-              id={'guardian-phone'}
+              id="guardian-phone"
               value={formData.guardianPhone}
-              data-qa={'guardianPhone-input'}
+              data-qa="guardianPhone-input"
               onChange={(value) => updateFormData({ guardianPhone: value })}
               info={errorToInputInfo(errors.guardianPhone, t.validationErrors)}
               hideErrorsBeforeTouched={!verificationRequested}
@@ -76,34 +76,34 @@ export default React.memo(function GuardianSubSection({
           </FixedSpaceColumn>
         </AdaptiveFlex>
       </FixedSpaceRow>
-      <Gap size={'m'} />
+      <Gap size="m" />
 
       <EmailRow breakpoint="860px" verticalSpacing="zero">
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label htmlFor={'guardian-email'}>
+        <FixedSpaceColumn spacing="xs">
+          <Label htmlFor="guardian-email">
             {t.applications.editor.contactInfo.email + ' *'}
           </Label>
           <InputField
-            id={'guardian-email'}
+            id="guardian-email"
             value={formData.guardianEmail}
-            data-qa={'guardianEmail-input'}
+            data-qa="guardianEmail-input"
             onChange={(value) =>
               updateFormData({ guardianEmail: value, noGuardianEmail: false })
             }
             info={errorToInputInfo(errors.guardianEmail, t.validationErrors)}
             hideErrorsBeforeTouched={!verificationRequested}
             placeholder={t.applications.editor.contactInfo.email}
-            width={'L'}
+            width="L"
             required={true}
           />
           <Gap size="xs" />
-          <Label htmlFor={'verify-guardian-email'}>
+          <Label htmlFor="verify-guardian-email">
             {t.applications.editor.contactInfo.verifyEmail + ' *'}
           </Label>
           <InputField
-            id={'verify-guardian-email'}
+            id="verify-guardian-email"
             value={formData.guardianEmailVerification}
-            data-qa={'guardianEmailVerification-input'}
+            data-qa="guardianEmailVerification-input"
             onChange={(value) =>
               updateFormData({
                 guardianEmailVerification: value,
@@ -116,7 +116,7 @@ export default React.memo(function GuardianSubSection({
             )}
             hideErrorsBeforeTouched={!verificationRequested}
             placeholder={t.applications.editor.contactInfo.verifyEmail}
-            width={'L'}
+            width="L"
             required={true}
           />
         </FixedSpaceColumn>
@@ -125,7 +125,7 @@ export default React.memo(function GuardianSubSection({
           <Checkbox
             label={t.applications.editor.contactInfo.noEmail}
             checked={formData.noGuardianEmail}
-            data-qa={'noGuardianEmail-input'}
+            data-qa="noGuardianEmail-input"
             onChange={(checked) =>
               updateFormData({
                 guardianEmail: '',
@@ -136,10 +136,10 @@ export default React.memo(function GuardianSubSection({
           />
         </div>
       </EmailRow>
-      <Gap size={'m'} />
+      <Gap size="m" />
 
       <P>{t.applications.editor.contactInfo.emailInfoText}</P>
-      <Gap size={'m'} />
+      <Gap size="m" />
 
       <ExpandingInfo
         data-qa="guardian-future-address-info"
@@ -150,7 +150,7 @@ export default React.memo(function GuardianSubSection({
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}
           checked={formData.guardianFutureAddressExists}
-          data-qa={'guardianFutureAddressExists-input'}
+          data-qa="guardianFutureAddressExists-input"
           onChange={(checked) => {
             updateFormData({
               guardianFutureAddressExists: checked
@@ -160,7 +160,7 @@ export default React.memo(function GuardianSubSection({
       </ExpandingInfo>
       {formData.guardianFutureAddressExists && (
         <>
-          <Gap size={'m'} />
+          <Gap size="m" />
           {formData.childFutureAddressExists && (
             <>
               <Checkbox
@@ -169,7 +169,7 @@ export default React.memo(function GuardianSubSection({
                     .guardianFutureAddressEqualsChildFutureAddress
                 }
                 checked={formData.guardianFutureAddressEqualsChild}
-                data-qa={'guardianFutureAddressEqualsChild-input'}
+                data-qa="guardianFutureAddressEqualsChild-input"
                 onChange={(checked) => {
                   updateFormData({
                     guardianFutureAddressEqualsChild: checked
@@ -184,14 +184,14 @@ export default React.memo(function GuardianSubSection({
                   }
                 }}
               />
-              <Gap size={'m'} />
+              <Gap size="m" />
             </>
           )}
-          <FixedSpaceColumn spacing={'xs'}>
+          <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
             <DatePicker
               date={formData.guardianMoveDate}
-              data-qa={'guardianMoveDate-input'}
+              data-qa="guardianMoveDate-input"
               onChange={(value) => updateFormData({ guardianMoveDate: value })}
               locale={lang}
               info={errorToInputInfo(
@@ -201,17 +201,17 @@ export default React.memo(function GuardianSubSection({
               hideErrorsBeforeTouched={!verificationRequested}
             />
           </FixedSpaceColumn>
-          <Gap size={'s'} />
-          <FixedSpaceRow spacing={'XL'}>
+          <Gap size="s" />
+          <FixedSpaceRow spacing="XL">
             <AdaptiveFlex breakpoint="1060px">
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'guardian-future-street'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="guardian-future-street">
                   {t.applications.editor.contactInfo.street + ' *'}
                 </Label>
                 <InputField
-                  id={'guardian-future-street'}
+                  id="guardian-future-street"
                   value={formData.guardianFutureStreet}
-                  data-qa={'guardianFutureStreet-input'}
+                  data-qa="guardianFutureStreet-input"
                   onChange={(value) =>
                     updateFormData({
                       guardianFutureStreet: value
@@ -226,17 +226,17 @@ export default React.memo(function GuardianSubSection({
                     t.applications.editor.contactInfo.streetPlaceholder
                   }
                   readonly={formData.guardianFutureAddressEqualsChild}
-                  width={'L'}
+                  width="L"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'guardian-future-postal-code'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="guardian-future-postal-code">
                   {t.applications.editor.contactInfo.postalCode + ' *'}
                 </Label>
                 <InputField
-                  id={'guardian-future-postal-code'}
+                  id="guardian-future-postal-code"
                   value={formData.guardianFuturePostalCode}
-                  data-qa={'guardianFuturePostalCode-input'}
+                  data-qa="guardianFuturePostalCode-input"
                   onChange={(value) =>
                     updateFormData({
                       guardianFuturePostalCode: value
@@ -254,14 +254,14 @@ export default React.memo(function GuardianSubSection({
                   width="m"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'guardian-future-post-office'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="guardian-future-post-office">
                   {t.applications.editor.contactInfo.postOffice + ' *'}
                 </Label>
                 <InputField
-                  id={'guardian-future-post-office'}
+                  id="guardian-future-post-office"
                   value={formData.guardianFuturePostOffice}
-                  data-qa={'guardianFuturePostOffice-input'}
+                  data-qa="guardianFuturePostOffice-input"
                   onChange={(value) =>
                     updateFormData({
                       guardianFuturePostOffice: value

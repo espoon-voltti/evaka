@@ -149,7 +149,7 @@ function VoucherServiceProviders() {
 
   return (
     <Container>
-      <ReturnButton label={i18n.common.goBack} data-qa={'return-button'} />
+      <ReturnButton label={i18n.common.goBack} data-qa="return-button" />
       <ContentArea opaque>
         <H2>{i18n.reports.voucherServiceProviders.title}</H2>
         <Gap size="m" />
@@ -252,7 +252,7 @@ function VoucherServiceProviders() {
                 areaOptions.find((area) => area.id === filters.areaId)?.name ??
                   ''
               )}
-              data-qa={'download-csv'}
+              data-qa="download-csv"
             />
             <TableScrollable>
               <Thead>
@@ -268,7 +268,7 @@ function VoucherServiceProviders() {
                   <Tr
                     key={row.unitId}
                     data-qa={row.unitId}
-                    className={'reportRow'}
+                    className="reportRow"
                   >
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
@@ -278,10 +278,8 @@ function VoucherServiceProviders() {
                         {row.unitName}
                       </Link>
                     </StyledTd>
-                    <StyledTd data-qa={'child-count'}>
-                      {row.childCount}
-                    </StyledTd>
-                    <StyledTd data-qa={'child-sum'}>{row.sum}</StyledTd>
+                    <StyledTd data-qa="child-count">{row.childCount}</StyledTd>
+                    <StyledTd data-qa="child-sum">{row.sum}</StyledTd>
                   </Tr>
                 ))}
               </Tbody>

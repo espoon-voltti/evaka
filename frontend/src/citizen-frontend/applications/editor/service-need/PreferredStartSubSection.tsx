@@ -139,7 +139,7 @@ export default React.memo(function PreferredStartSubSection({
               terms
             )
           }
-          data-qa={'preferredStartDate-input'}
+          data-qa="preferredStartDate-input"
           id={labelId}
           required={true}
         />
@@ -149,7 +149,7 @@ export default React.memo(function PreferredStartSubSection({
             <Gap size="xs" />
             <AlertBox
               message={t.applications.creation.daycare4monthWarning}
-              data-qa={'daycare-processing-time-warning'}
+              data-qa="daycare-processing-time-warning"
             />
           </>
         ) : null}
@@ -160,7 +160,7 @@ export default React.memo(function PreferredStartSubSection({
 
             <Checkbox
               checked={formData.urgent}
-              data-qa={'urgent-input'}
+              data-qa="urgent-input"
               label={t.applications.editor.serviceNeed.urgent.label}
               onChange={(checked) =>
                 updateFormData({
@@ -168,12 +168,12 @@ export default React.memo(function PreferredStartSubSection({
                 })
               }
             />
-            <Gap size={'s'} />
+            <Gap size="s" />
             {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
 
             {formData.urgent && featureFlags.urgencyAttachmentsEnabled && (
               <>
-                <Gap size={'s'} />
+                <Gap size="s" />
 
                 <strong>
                   {
@@ -190,7 +190,7 @@ export default React.memo(function PreferredStartSubSection({
                   onDelete={deleteUrgencyAttachment}
                   onDownloadFile={getAttachmentBlob}
                   i18n={{ upload: t.fileUpload, download: t.fileDownload }}
-                  data-qa={'urgent-file-upload'}
+                  data-qa="urgent-file-upload"
                 />
               </>
             )}
@@ -207,11 +207,11 @@ export default React.memo(function PreferredStartSubSection({
               }
               ariaLabel={t.common.openExpandingInfo}
               margin="xs"
-              data-qa={'wasOnDaycare-info'}
+              data-qa="wasOnDaycare-info"
             >
               <Checkbox
                 checked={formData.wasOnDaycare}
-                data-qa={'wasOnDaycare-input'}
+                data-qa="wasOnDaycare-input"
                 label={
                   t.applications.editor.serviceNeed.clubDetails.wasOnDaycare
                 }
@@ -224,7 +224,7 @@ export default React.memo(function PreferredStartSubSection({
             </ExpandingInfo>
             <Gap size="m" />
             <ExpandingInfo
-              data-qa={'wasOnClubCare-info'}
+              data-qa="wasOnClubCare-info"
               info={
                 t.applications.editor.serviceNeed.clubDetails.wasOnClubCareInfo
               }
@@ -233,7 +233,7 @@ export default React.memo(function PreferredStartSubSection({
             >
               <Checkbox
                 checked={formData.wasOnClubCare}
-                data-qa={'wasOnClubCare-input'}
+                data-qa="wasOnClubCare-input"
                 label={
                   t.applications.editor.serviceNeed.clubDetails.wasOnClubCare
                 }

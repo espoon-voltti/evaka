@@ -44,7 +44,7 @@ export default React.memo(function ChildList({
 
   return (
     <FixedSpaceColumn>
-      <OrderedList spacing={'zero'}>
+      <OrderedList spacing="zero">
         {attendanceChildren.length > 0 ? (
           attendanceChildren.map((ac) => (
             <Li key={ac.id}>
@@ -58,7 +58,7 @@ export default React.memo(function ChildList({
             </Li>
           ))
         ) : (
-          <NoChildrenOnList data-qa={'no-children-indicator'}>
+          <NoChildrenOnList data-qa="no-children-indicator">
             {i18n.mobile.emptyList(type || 'ABSENT')}
           </NoChildrenOnList>
         )}

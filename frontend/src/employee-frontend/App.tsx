@@ -476,22 +476,22 @@ function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)
 
   if (!loggedIn) {
-    return <Redirect to={'/login'} />
+    return <Redirect to="/login" />
   }
 
   if (
     hasRole(roles, 'SERVICE_WORKER') ||
     hasRole(roles, 'SPECIAL_EDUCATION_TEACHER')
   ) {
-    return <Redirect to={'/applications'} />
+    return <Redirect to="/applications" />
   } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
-    return <Redirect to={'/units'} />
+    return <Redirect to="/units" />
   } else if (hasRole(roles, 'DIRECTOR') || hasRole(roles, 'REPORT_VIEWER')) {
-    return <Redirect to={'/reports'} />
+    return <Redirect to="/reports" />
   } else if (roles.length === 0) {
-    return <Redirect to={'/welcome'} />
+    return <Redirect to="/welcome" />
   } else {
-    return <Redirect to={'/search'} />
+    return <Redirect to="/search" />
   }
 }
 

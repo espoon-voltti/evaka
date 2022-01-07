@@ -92,7 +92,7 @@ export default React.memo(function UnitsSubSection({
         newTab
       />
 
-      <Gap size={'s'} />
+      <Gap size="s" />
 
       {!preferredStartDate ? (
         <div>
@@ -107,7 +107,7 @@ export default React.memo(function UnitsSubSection({
           <Label>
             {t.applications.editor.unitPreference.units.languageFilter.label}
           </Label>
-          <Gap size={'xs'} />
+          <Gap size="xs" />
           <FixedSpaceRow>
             <SelectionChip
               text={
@@ -125,18 +125,18 @@ export default React.memo(function UnitsSubSection({
             />
           </FixedSpaceRow>
 
-          <Gap size={'m'} />
+          <Gap size="m" />
 
           <UnwrapResult result={units}>
             {(units, _isReloading) => (
-              <FixedSpaceFlexWrap horizontalSpacing={'L'} verticalSpacing={'s'}>
+              <FixedSpaceFlexWrap horizontalSpacing="L" verticalSpacing="s">
                 <FixedWidthDiv>
                   <Label htmlFor="unit-selector">
                     {t.applications.editor.unitPreference.units.select.label} *
                   </Label>
-                  <Gap size={'xs'} />
+                  <Gap size="xs" />
                   <MultiSelect
-                    data-qa={'preferredUnits-input'}
+                    data-qa="preferredUnits-input"
                     inputId="unit-selector"
                     value={units.filter(
                       (u) =>
@@ -189,7 +189,7 @@ export default React.memo(function UnitsSubSection({
                         .label
                     }
                   </Label>
-                  <Gap size={'xs'} />
+                  <Gap size="xs" />
                   {!verificationRequested &&
                     formData.preferredUnits.length === 0 && (
                       <Info>
@@ -208,7 +208,7 @@ export default React.memo(function UnitsSubSection({
                         thin
                       />
                     )}
-                  <FixedSpaceColumn spacing={'s'}>
+                  <FixedSpaceColumn spacing="s">
                     {formData.preferredUnits
                       .map((u) => units.find((u2) => u.id === u2.id))
                       .map((unit, i) =>

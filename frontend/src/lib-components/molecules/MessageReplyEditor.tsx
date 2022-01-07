@@ -137,7 +137,7 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
           placeholder={i18n.messagePlaceholder}
           value={replyContent}
           onChange={(value) => onUpdateContent(value)}
-          data-qa={'message-reply-content'}
+          data-qa="message-reply-content"
         />
       </EditorRow>
       <EditorRow>

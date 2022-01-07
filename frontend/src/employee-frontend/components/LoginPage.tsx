@@ -15,7 +15,7 @@ function LoginPage({ location }: RouteComponentProps) {
   const loginError = queryParams.get('loginError') || undefined
 
   if (loggedIn) {
-    return <Redirect to={'/'} />
+    return <Redirect to="/" />
   }
 
   return <Login error={error || loginError} />

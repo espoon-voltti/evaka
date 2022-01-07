@@ -287,10 +287,10 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
         )}
         {popupVisible && (
           <UserPopup>
-            <FixedSpaceColumn spacing={'m'}>
+            <FixedSpaceColumn spacing="m">
               {user?.accessibleFeatures.employees && (
                 <Link
-                  to={`/employees`}
+                  to="/employees"
                   onClick={closeUserPopup}
                   data-qa="user-popup-employees"
                 >
@@ -345,7 +345,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 </Link>
               )}
               <Link
-                to={`/pin-code`}
+                to="/pin-code"
                 onClick={closeUserPopup}
                 data-qa="user-popup-pin-code"
               >

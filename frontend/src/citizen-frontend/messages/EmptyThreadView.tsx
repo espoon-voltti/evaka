@@ -21,7 +21,7 @@ export default React.memo(function EmptyThreadView({ inboxEmpty }: Props) {
     <EmptyThreadViewContainer data-qa="inbox-empty">
       <FontAwesomeIcon
         icon={faInbox}
-        size={'7x'}
+        size="7x"
         color={colors.greyscale.medium}
       />
       <H3>{i18n.messages.emptyInbox}</H3>

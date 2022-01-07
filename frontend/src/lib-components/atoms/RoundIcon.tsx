@@ -206,7 +206,7 @@ function WithLabel({
   number
 }: WithLabelProps) {
   return (
-    <FixedSpaceColumnRelative spacing={'xxs'} alignItems={'center'}>
+    <FixedSpaceColumnRelative spacing="xxs" alignItems="center">
       <RoundIcon
         content={content}
         color={color}

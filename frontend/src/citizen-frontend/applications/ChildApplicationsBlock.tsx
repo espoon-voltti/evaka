@@ -245,7 +245,7 @@ export default React.memo(function ChildApplicationsBlock({
                       }
                       size="m"
                     />
-                    <Gap size={'xs'} horizontal={true} />
+                    <Gap size="xs" horizontal={true} />
                     <Status data-qa={`application-status-${applicationId}`}>
                       {t.applicationsList.status[applicationStatus]}
                     </Status>

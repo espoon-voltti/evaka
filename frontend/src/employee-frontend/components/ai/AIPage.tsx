@@ -88,9 +88,9 @@ export default React.memo(function AIPage() {
         {status.isSuccess && (
           <div>
             {status.value.running ? (
-              <Button text={'Lopeta'} primary onClick={stop} />
+              <Button text="Lopeta" primary onClick={stop} />
             ) : (
-              <Button text={'Käynnistä'} primary onClick={start} />
+              <Button text="Käynnistä" primary onClick={start} />
             )}
 
             <Gap />

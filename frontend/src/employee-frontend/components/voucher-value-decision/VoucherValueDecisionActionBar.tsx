@@ -65,7 +65,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
           />
           <AsyncButton
             primary
-            data-qa={'button-send-decision'}
+            data-qa="button-send-decision"
             disabled={modified}
             text="Lähetä"
             onClick={() =>
@@ -91,9 +91,9 @@ export default React.memo(function VoucherValueDecisionActionBar({
         </>
       )}
       {isWaiting && (
-        <StickyActionBar align={'right'}>
+        <StickyActionBar align="right">
           <AsyncButton
-            data-qa={'button-mark-decision-sent'}
+            data-qa="button-mark-decision-sent"
             primary
             text={i18n.valueDecisions.buttons.markSent}
             onClick={() => markVoucherValueDecisionSent([decision.id])}

@@ -26,7 +26,7 @@ export default React.memo(function EmptyMessagesFolder({
         <Loader />
       ) : (
         <>
-          <FontAwesomeIcon icon={faFolderOpen} size={'7x'} color={iconColor} />
+          <FontAwesomeIcon icon={faFolderOpen} size="7x" color={iconColor} />
           <H3>{text}</H3>
         </>
       )}

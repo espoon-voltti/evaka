@@ -45,7 +45,7 @@ export default React.memo(function AdditionalDetailsSection({
         <Label>{t.applications.editor.additionalDetails.otherInfoLabel}</Label>
         <NarrowTextArea
           value={formData.otherInfo}
-          data-qa={'otherInfo-input'}
+          data-qa="otherInfo-input"
           onChange={(value) => updateFormData({ otherInfo: value })}
           placeholder={
             t.applications.editor.additionalDetails.otherInfoPlaceholder
@@ -67,7 +67,7 @@ export default React.memo(function AdditionalDetailsSection({
             </ExpandingInfo>
             <NarrowTextArea
               value={formData.diet}
-              data-qa={'diet-input'}
+              data-qa="diet-input"
               onChange={(value) => updateFormData({ diet: value })}
               placeholder={
                 t.applications.editor.additionalDetails.dietPlaceholder
@@ -88,7 +88,7 @@ export default React.memo(function AdditionalDetailsSection({
             </ExpandingInfo>
             <NarrowTextArea
               value={formData.allergies}
-              data-qa={'allergies-input'}
+              data-qa="allergies-input"
               onChange={(value) => updateFormData({ allergies: value })}
               placeholder={
                 t.applications.editor.additionalDetails.allergiesPlaceholder

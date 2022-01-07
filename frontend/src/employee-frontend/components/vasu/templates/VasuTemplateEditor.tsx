@@ -272,7 +272,7 @@ export default React.memo(function VasuTemplateEditor() {
         {question.multiline ? (
           <TextArea value={question.value} />
         ) : (
-          <InputField value={question.value} width={'L'} />
+          <InputField value={question.value} width="L" />
         )}
       </React.Fragment>
     )
@@ -473,7 +473,7 @@ export default React.memo(function VasuTemplateEditor() {
                             if (e.key === 'Enter') setSectionNameEdit(null)
                           }}
                           readonly={readonly}
-                          width={'L'}
+                          width="L"
                         />
                         <Gap size="xs" />
                         <Checkbox

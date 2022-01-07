@@ -87,13 +87,13 @@ export default React.memo(function GroupModal({ unitId, reload }: Props) {
       rejectAction={clearUiMode}
       rejectLabel={i18n.unit.groups.createModal.cancelButton}
     >
-      <FixedSpaceColumn spacing={'m'}>
+      <FixedSpaceColumn spacing="m">
         <div>
           <Label>{i18n.unit.groups.createModal.name}</Label>
           <InputField
             value={form.name}
             onChange={(value) => assignForm({ name: value })}
-            data-qa={'new-group-name-input'}
+            data-qa="new-group-name-input"
             info={
               !validationResult.fields.name
                 ? {
@@ -116,13 +116,13 @@ export default React.memo(function GroupModal({ unitId, reload }: Props) {
           <Label>{i18n.unit.groups.createModal.initialCaretakers}</Label>
           <InputField
             value={form.initialCaretakers.toString()}
-            type={'number'}
+            type="number"
             min={0}
             step={1}
             onChange={(value) =>
               assignForm({ initialCaretakers: Number(value) })
             }
-            data-qa={'new-group-name-input'}
+            data-qa="new-group-name-input"
           />
         </div>
       </FixedSpaceColumn>

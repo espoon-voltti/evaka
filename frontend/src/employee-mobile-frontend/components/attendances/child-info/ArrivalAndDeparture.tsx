@@ -32,7 +32,7 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
     : arrivalDate.format('d.M.')
 
   return (
-    <FixedSpaceRow justifyContent={'center'}>
+    <FixedSpaceRow justifyContent="center">
       {arrival ? (
         <ArrivalTime>
           <span>{i18n.attendances.arrivalTime}</span>

@@ -139,8 +139,8 @@ export default React.memo(function ApplicationsPage() {
         <Gap size="xs" />
         <ApplicationFilters />
       </ContentArea>
-      <Gap size={'XL'} />
-      <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
+      <Gap size="XL" />
+      <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
         {applicationsResult.isFailure && (
           <PaddedDiv>
             <H1>

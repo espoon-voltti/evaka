@@ -103,7 +103,7 @@ export default React.memo(function OccupancyCard({
           <Tooltip
             tooltipId={`occupancy-${type}-min-date`}
             tooltipText={data.min.period.start.format()}
-            place={'right'}
+            place="right"
           >
             <DataMinMaxContainer>
               <IconContainer>
@@ -120,7 +120,7 @@ export default React.memo(function OccupancyCard({
           <Tooltip
             tooltipId={`occupancy-${type}-max-date`}
             tooltipText={data.max.period.start.format()}
-            place={'right'}
+            place="right"
           >
             <DataMinMaxContainer>
               <IconContainer>

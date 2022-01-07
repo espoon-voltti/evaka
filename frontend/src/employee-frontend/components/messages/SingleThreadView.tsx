@@ -116,7 +116,7 @@ function SingleMessage({
                 fileFetchFn={getAttachmentBlob}
                 onFileUnavailable={onAttachmentUnavailable}
                 icon
-                data-qa={'attachment'}
+                data-qa="attachment"
               />
             ))}
           </FixedSpaceColumn>
@@ -263,14 +263,14 @@ export function SingleThreadView({
             </MessageContainer>
           ) : (
             <>
-              <Gap size={'s'} />
+              <Gap size="s" />
               <ReplyToThreadButton
                 icon={faReply}
                 onClick={() => setReplyEditorVisible(true)}
                 data-qa="message-reply-editor-btn"
                 text={i18n.messages.replyToThread}
               />
-              <Gap size={'m'} />
+              <Gap size="m" />
             </>
           ))}
         {replyEditorVisible && <span ref={autoScrollRef} />}

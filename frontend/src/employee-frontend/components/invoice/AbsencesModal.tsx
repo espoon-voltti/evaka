@@ -167,8 +167,8 @@ export default function AbsencesModal({ child, date }: Props) {
                     <Tooltip
                       tooltipId={`tooltip_free-${absenceType}`}
                       tooltipText={createTooltipText(absenceType, 'free')}
-                      place={'left'}
-                      className={'absence-tooltip'}
+                      place="left"
+                      className="absence-tooltip"
                       delayShow={1}
                     >
                       {calculateAbsences(absences, absenceType, 'free')}
@@ -178,8 +178,8 @@ export default function AbsencesModal({ child, date }: Props) {
                     <Tooltip
                       tooltipId={`tooltip_paid-${absenceType}`}
                       tooltipText={createTooltipText(absenceType, 'paid')}
-                      place={'right'}
-                      className={'absence-tooltip'}
+                      place="right"
+                      className="absence-tooltip"
                       delayShow={1}
                     >
                       {calculateAbsences(absences, absenceType, 'paid')}

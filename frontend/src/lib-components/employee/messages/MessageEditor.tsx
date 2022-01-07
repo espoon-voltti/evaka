@@ -372,12 +372,12 @@ export default React.memo(function MessageEditor({
       </TopBarMobile>
       <ScrollableFormArea>
         <Bold>{i18n.sender}</Bold>
-        <Gap size={'xs'} />
+        <Gap size="xs" />
         {message.sender.label}
         <div>
-          <Gap size={'s'} />
+          <Gap size="s" />
           <Bold>{i18n.receivers}</Bold>
-          <Gap size={'xs'} />
+          <Gap size="xs" />
         </div>
         {receiverOptions.length > 1 ? (
           <MultiSelect
@@ -393,12 +393,12 @@ export default React.memo(function MessageEditor({
         ) : (
           message.recipientNames.join(', ')
         )}
-        <Gap size={'s'} />
+        <Gap size="s" />
         <Bold>{i18n.title}</Bold>
         <InputField
           value={message.title ?? ''}
           onChange={(title) => updateMessage({ title })}
-          data-qa={'input-title'}
+          data-qa="input-title"
         />
         <Gap size="m" />
         <Bold>{i18n.message}</Bold>
@@ -408,7 +408,7 @@ export default React.memo(function MessageEditor({
           onChange={(e) => updateMessage({ content: e.target.value })}
           data-qa="input-content"
         />
-        <Gap size={'L'} />
+        <Gap size="L" />
       </ScrollableFormArea>
       <BottomBarMobile>
         {draftId ? (
@@ -448,7 +448,7 @@ export default React.memo(function MessageEditor({
                 icon={faDownLeftAndUpRightToCenter}
                 onClick={toggleExpandedView}
                 white
-                size={'s'}
+                size="s"
                 data-qa="collapse-view-btn"
               />
             ) : (
@@ -456,7 +456,7 @@ export default React.memo(function MessageEditor({
                 icon={faUpRightAndDownLeftFromCenter}
                 onClick={toggleExpandedView}
                 white
-                size={'s'}
+                size="s"
                 data-qa="expand-view-btn"
               />
             )}
@@ -464,14 +464,14 @@ export default React.memo(function MessageEditor({
               icon={faTimes}
               onClick={onCloseHandler}
               white
-              size={'m'}
+              size="m"
               data-qa="close-message-editor-btn"
             />
           </HeaderButtonContainer>
         </TopBar>
         <ScrollableFormArea>
           <Bold>{i18n.sender}</Bold>
-          <Gap size={'xs'} />
+          <Gap size="xs" />
           <Combobox
             items={senderOptions}
             onChange={(sender) =>
@@ -483,9 +483,9 @@ export default React.memo(function MessageEditor({
             fullWidth
           />
           <div>
-            <Gap size={'s'} />
+            <Gap size="s" />
             <Bold>{i18n.receivers}</Bold>
-            <Gap size={'xs'} />
+            <Gap size="xs" />
           </div>
           <MultiSelect
             placeholder={i18n.search}
@@ -497,9 +497,9 @@ export default React.memo(function MessageEditor({
             getOptionLabel={({ label }) => label}
             data-qa="select-receiver"
           />
-          <Gap size={'s'} />
+          <Gap size="s" />
           <Bold>{i18n.type.label}</Bold>
-          <Gap size={'xs'} />
+          <Gap size="xs" />
           <FixedSpaceRow>
             <Radio
               label={i18n.type.message}
@@ -512,12 +512,12 @@ export default React.memo(function MessageEditor({
               onChange={() => updateMessage({ type: 'BULLETIN' })}
             />
           </FixedSpaceRow>
-          <Gap size={'s'} />
+          <Gap size="s" />
           <Bold>{i18n.title}</Bold>
           <InputField
             value={message.title ?? ''}
             onChange={(title) => updateMessage({ title })}
-            data-qa={'input-title'}
+            data-qa="input-title"
           />
           <Gap size="m" />
           <Bold>{i18n.message}</Bold>
@@ -539,7 +539,7 @@ export default React.memo(function MessageEditor({
               onDelete={handleAttachmentDelete}
             />
           )}
-          <Gap size={'L'} />
+          <Gap size="L" />
         </ScrollableFormArea>
         <BottomBar>
           {draftId ? (

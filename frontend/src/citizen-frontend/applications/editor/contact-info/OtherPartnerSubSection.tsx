@@ -27,11 +27,11 @@ export default React.memo(function OtherPartnerSubSection({
   return (
     <>
       <H3>{t.applications.editor.contactInfo.otherPartnerTitle}</H3>
-      <Gap size={'s'} />
+      <Gap size="s" />
       <Checkbox
         label={t.applications.editor.contactInfo.otherPartnerCheckboxLabel}
         checked={formData.otherPartnerExists}
-        data-qa={'otherPartnerExists-input'}
+        data-qa="otherPartnerExists-input"
         onChange={(checked) => {
           updateFormData({
             otherPartnerExists: checked
@@ -40,17 +40,17 @@ export default React.memo(function OtherPartnerSubSection({
       />
       {formData.otherPartnerExists && (
         <>
-          <Gap size={'m'} />
-          <FixedSpaceRow spacing={'XL'}>
+          <Gap size="m" />
+          <FixedSpaceRow spacing="XL">
             <AdaptiveFlex breakpoint="1060px">
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'other-partner-first-name'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="other-partner-first-name">
                   {t.applications.editor.contactInfo.personFirstName + ' *'}
                 </Label>
                 <InputField
-                  id={'other-partner-first-name'}
+                  id="other-partner-first-name"
                   value={formData.otherPartnerFirstName}
-                  data-qa={'otherPartnerFirstName-input'}
+                  data-qa="otherPartnerFirstName-input"
                   onChange={(value) =>
                     updateFormData({
                       otherPartnerFirstName: value
@@ -64,17 +64,17 @@ export default React.memo(function OtherPartnerSubSection({
                   placeholder={
                     t.applications.editor.contactInfo.firstNamePlaceholder
                   }
-                  width={'L'}
+                  width="L"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'other-partner-last-name'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="other-partner-last-name">
                   {t.applications.editor.contactInfo.personLastName + ' *'}
                 </Label>
                 <InputField
-                  id={'other-partner-last-name'}
+                  id="other-partner-last-name"
                   value={formData.otherPartnerLastName}
-                  data-qa={'otherPartnerLastName-input'}
+                  data-qa="otherPartnerLastName-input"
                   onChange={(value) =>
                     updateFormData({
                       otherPartnerLastName: value
@@ -88,17 +88,17 @@ export default React.memo(function OtherPartnerSubSection({
                   placeholder={
                     t.applications.editor.contactInfo.lastNamePlaceholder
                   }
-                  width={'m'}
+                  width="m"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'other-partner-ssn'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="other-partner-ssn">
                   {t.applications.editor.contactInfo.personSSN + ' *'}
                 </Label>
                 <InputField
-                  id={'other-partner-ssn'}
+                  id="other-partner-ssn"
                   value={formData.otherPartnerSSN}
-                  data-qa={'otherPartnerSSN-input'}
+                  data-qa="otherPartnerSSN-input"
                   onChange={(value) =>
                     updateFormData({
                       otherPartnerSSN: value.toUpperCase()

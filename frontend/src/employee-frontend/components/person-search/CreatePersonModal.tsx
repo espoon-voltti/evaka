@@ -69,7 +69,7 @@ export default React.memo(function CreatePersonModal({
 
   return (
     <FormModal
-      iconColor={'blue'}
+      iconColor="blue"
       icon={faPlus}
       title={i18n.personSearch.createNewPerson.title}
       resolveAction={onConfirm}

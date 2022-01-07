@@ -66,8 +66,8 @@ export default React.memo(function MarkPresent() {
   return (
     <TallContentArea
       opaque={false}
-      paddingHorizontal={'zero'}
-      paddingVertical={'zero'}
+      paddingHorizontal="zero"
+      paddingVertical="zero"
     >
       {renderResult(combine(child, groupNote), ([child, groupNote]) => (
         <>
@@ -85,14 +85,14 @@ export default React.memo(function MarkPresent() {
           <ContentArea
             shadow
             opaque={true}
-            paddingHorizontal={'s'}
-            paddingVertical={'m'}
+            paddingHorizontal="s"
+            paddingVertical="m"
           >
             <TimeWrapper>
               <CustomTitle>{i18n.attendances.actions.markPresent}</CustomTitle>
               <TimeInput onChange={setTime} value={time} data-qa="set-time" />
             </TimeWrapper>
-            <Gap size={'xs'} />
+            <Gap size="xs" />
             <Actions>
               <FixedSpaceRow fullWidth>
                 <Button
@@ -113,12 +113,12 @@ export default React.memo(function MarkPresent() {
               </FixedSpaceRow>
             </Actions>
           </ContentArea>
-          <Gap size={'s'} />
+          <Gap size="s" />
           <ContentArea
             shadow
             opaque={true}
-            paddingHorizontal={'s'}
-            paddingVertical={'s'}
+            paddingHorizontal="s"
+            paddingVertical="s"
             blue
           >
             <DailyNotes>
@@ -126,7 +126,7 @@ export default React.memo(function MarkPresent() {
                 <RoundIcon
                   content={farStickyNote}
                   color={colors.main.dark}
-                  size={'m'}
+                  size="m"
                 />
               </span>
               <DailyNote

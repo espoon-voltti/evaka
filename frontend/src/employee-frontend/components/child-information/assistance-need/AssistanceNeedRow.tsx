@@ -44,7 +44,7 @@ export default React.memo(function AssistanceNeedRow({
 
   const renderDeleteConfirmation = () => (
     <InfoModal
-      iconColor={'orange'}
+      iconColor="orange"
       title={i18n.childInformation.assistanceNeed.removeConfirmation}
       text={`${
         i18n.common.period
@@ -73,7 +73,7 @@ export default React.memo(function AssistanceNeedRow({
         } ${assistanceNeed.startDate.format()} - ${assistanceNeed.endDate.format()}`}
         onToggle={() => setToggled((prev) => !prev)}
         open={toggled}
-        data-qa={'assistance-need-row'}
+        data-qa="assistance-need-row"
         toolbar={
           <Toolbar
             dateRange={assistanceNeed}
@@ -119,10 +119,10 @@ export default React.memo(function AssistanceNeedRow({
                       i18n.childInformation.assistanceNeed.fields
                         .capacityFactorInfo
                     }
-                    ariaLabel={''}
+                    ariaLabel=""
                     fullWidth={true}
                   >
-                    <span data-qa={'assistance-need-multiplier'}>
+                    <span data-qa="assistance-need-multiplier">
                       {formatDecimal(assistanceNeed.capacityFactor)}
                     </span>
                   </ExpandingInfo>

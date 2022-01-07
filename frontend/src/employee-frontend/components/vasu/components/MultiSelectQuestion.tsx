@@ -35,7 +35,7 @@ export function MultiSelectQuestion({
       </QuestionInfo>
       {onChange ? (
         <>
-          <Gap size={'m'} />
+          <Gap size="m" />
           <FixedSpaceColumn>
             {options.map((option) => {
               return (

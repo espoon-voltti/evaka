@@ -24,17 +24,17 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
   return (
     <DailyNoteWrapper>
       <NotesTitle size={2}>{i18n.attendances.notes.dailyNotes}</NotesTitle>
-      <Gap size={'xs'} />
+      <Gap size="xs" />
       {child && child.dailyNote ? (
-        <FixedSpaceColumn spacing={'xs'}>
+        <FixedSpaceColumn spacing="xs">
           {child.dailyNote.note && (
-            <FixedSpaceColumn spacing={'xxs'}>
+            <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.note}</Label>
               <span>{child.dailyNote.note}</span>
             </FixedSpaceColumn>
           )}
           {child.dailyNote.feedingNote && (
-            <FixedSpaceColumn spacing={'xxs'}>
+            <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
               <span>
                 {
@@ -46,7 +46,7 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
             </FixedSpaceColumn>
           )}
           {child.dailyNote.sleepingNote && (
-            <FixedSpaceColumn spacing={'xxs'}>
+            <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
               <span>
                 {
@@ -68,7 +68,7 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
           )}
           {(child.dailyNote.reminderNote ||
             child.dailyNote.reminders.length > 0) && (
-            <FixedSpaceColumn spacing={'xxs'}>
+            <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
               <span>
                 {child.dailyNote.reminders.map((reminder) => (
@@ -81,14 +81,14 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
             </FixedSpaceColumn>
           )}
           {groupNote && (
-            <FixedSpaceColumn spacing={'xxs'}>
+            <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.groupNotesHeader}</Label>
               <span>{groupNote.note}</span>
             </FixedSpaceColumn>
           )}
         </FixedSpaceColumn>
       ) : groupNote ? (
-        <FixedSpaceColumn spacing={'xxs'}>
+        <FixedSpaceColumn spacing="xxs">
           <Label>{i18n.attendances.notes.labels.groupNotesHeader}</Label>
           <span>{groupNote.note}</span>
         </FixedSpaceColumn>

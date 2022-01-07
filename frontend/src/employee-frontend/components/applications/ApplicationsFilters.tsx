@@ -181,7 +181,7 @@ export default React.memo(function ApplicationFilters() {
             units={allUnits.getOrElse([])}
             selectedUnits={units}
             onChange={changeUnits}
-            data-qa={'unit-selector'}
+            data-qa="unit-selector"
           />
           <Gap size="m" />
           <ApplicationDistinctionsFilter

@@ -76,7 +76,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
         />
       ) : uiMode === `remove-fridge-partner-${selectedPartnershipId}` ? (
         <InfoModal
-          iconColor={'orange'}
+          iconColor="orange"
           title={i18n.personProfile.fridgePartner.removePartner}
           text={i18n.personProfile.fridgePartner.confirmText}
           icon={faQuestion}

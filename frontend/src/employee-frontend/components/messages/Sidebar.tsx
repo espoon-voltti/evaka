@@ -215,12 +215,12 @@ export default React.memo(function Sidebar({
   return (
     <Container>
       <AccountContainer>
-        <Gap size={'s'} />
+        <Gap size="s" />
         <HeaderContainer>
           <H1 noMargin>{i18n.messages.inboxTitle}</H1>
         </HeaderContainer>
         <DashedLine />
-        <Gap size={'s'} />
+        <Gap size="s" />
         <HeaderContainer>
           <Button
             primary

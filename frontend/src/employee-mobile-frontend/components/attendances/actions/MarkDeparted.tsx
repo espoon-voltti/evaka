@@ -135,8 +135,8 @@ export default React.memo(function MarkDeparted() {
   return (
     <TallContentArea
       opaque={false}
-      paddingHorizontal={'zero'}
-      paddingVertical={'zero'}
+      paddingHorizontal="zero"
+      paddingVertical="zero"
     >
       {renderResult(
         combine(child, groupNote, absentFrom, timeError),
@@ -156,8 +156,8 @@ export default React.memo(function MarkDeparted() {
             <ContentArea
               shadow
               opaque={true}
-              paddingHorizontal={'s'}
-              paddingVertical={'m'}
+              paddingHorizontal="s"
+              paddingVertical="m"
             >
               <TimeWrapper>
                 <CustomTitle>
@@ -181,7 +181,7 @@ export default React.memo(function MarkDeparted() {
                     selectedAbsenceType={selectedAbsenceType}
                     setSelectedAbsenceType={setSelectedAbsenceType}
                   />
-                  <Actions data-qa={'absence-actions'}>
+                  <Actions data-qa="absence-actions">
                     <FixedSpaceRow fullWidth>
                       <Button
                         text={i18n.common.cancel}
@@ -211,7 +211,7 @@ export default React.memo(function MarkDeparted() {
                   </Actions>
                 </FixedSpaceColumn>
               ) : (
-                <Actions data-qa={'non-absence-actions'}>
+                <Actions data-qa="non-absence-actions">
                   <FixedSpaceRow fullWidth>
                     <Button
                       text={i18n.common.cancel}
@@ -232,12 +232,12 @@ export default React.memo(function MarkDeparted() {
                 </Actions>
               )}
             </ContentArea>
-            <Gap size={'s'} />
+            <Gap size="s" />
             <ContentArea
               shadow
               opaque={true}
-              paddingHorizontal={'s'}
-              paddingVertical={'s'}
+              paddingHorizontal="s"
+              paddingVertical="s"
               blue
             >
               <DailyNotes>
@@ -245,7 +245,7 @@ export default React.memo(function MarkDeparted() {
                   <RoundIcon
                     content={farStickyNote}
                     color={colors.main.dark}
-                    size={'m'}
+                    size="m"
                   />
                 </span>
                 <DailyNote

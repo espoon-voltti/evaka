@@ -34,7 +34,7 @@ export default React.memo(function ServiceNeedSection({
     <div>
       <H2>{t.applications.editor.verification.serviceNeed.title}</H2>
 
-      <Gap size={'s'} />
+      <Gap size="s" />
       <H3>
         {t.applications.editor.verification.serviceNeed.startDate.title[type]}
       </H3>
@@ -76,7 +76,7 @@ export default React.memo(function ServiceNeedSection({
         )}
       </ListGrid>
 
-      <Gap size={'s'} />
+      <Gap size="s" />
 
       {type === 'PRESCHOOL' && (
         <ServiceNeedConnectedDaycare formData={formData} />
@@ -95,7 +95,7 @@ export default React.memo(function ServiceNeedSection({
         )}
       </ListGrid>
 
-      <Gap size={'s'} />
+      <Gap size="s" />
       <H3>
         {t.applications.editor.verification.serviceNeed.assistanceNeed.title}
       </H3>

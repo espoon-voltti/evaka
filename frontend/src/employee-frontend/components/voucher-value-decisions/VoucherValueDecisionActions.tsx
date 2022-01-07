@@ -33,7 +33,7 @@ const Actions = React.memo(function Actions({
   const [error, setError] = useState<string>()
 
   return status === 'DRAFT' ? (
-    <StickyActionBar align={'right'}>
+    <StickyActionBar align="right">
       {error ? <ErrorMessage>{error}</ErrorMessage> : null}
       {checkedIds.length > 0 ? (
         <CheckedRowsInfo>

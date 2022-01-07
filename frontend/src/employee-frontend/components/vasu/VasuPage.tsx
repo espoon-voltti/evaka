@@ -51,7 +51,7 @@ export default React.memo(function VasuPage({
             state={vasu.documentState}
             translations={translations}
           />
-          <Gap size={'s'} />
+          <Gap size="s" />
           <VasuEvents document={vasu} content={content} />
         </>
       )}

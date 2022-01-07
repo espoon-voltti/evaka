@@ -23,7 +23,7 @@ export default React.memo(function ActionsMenu({ actions }: Props) {
       {actions.length > 0 && (
         <>
           <IconButton
-            size={'m'}
+            size="m"
             icon={faEllipsisVAlt}
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               setShowMenu((value) => !value)
