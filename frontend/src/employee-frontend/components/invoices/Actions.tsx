@@ -47,7 +47,7 @@ const Actions = React.memo(function Actions({
   const checkedIds = Object.keys(checkedInvoices)
 
   return status === 'DRAFT' ? (
-    <StickyActionBar align={'right'}>
+    <StickyActionBar align="right">
       {error ? (
         <>
           <ErrorMessage>{error}</ErrorMessage>

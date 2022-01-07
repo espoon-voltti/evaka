@@ -33,7 +33,7 @@ export default React.memo(function CalendarListView({
 
   return (
     <>
-      <FixedSpaceColumn spacing={'zero'}>
+      <FixedSpaceColumn spacing="zero">
         {weeklyData.map((w) => (
           <WeekElem
             {...w}

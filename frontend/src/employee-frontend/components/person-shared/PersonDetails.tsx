@@ -198,7 +198,7 @@ export default React.memo(function PersonDetails({
             valueWidth: '100%',
             value: powerEditing ? (
               <InputField
-                width={'L'}
+                width="L"
                 value={form.lastName}
                 onChange={(value) => updateForm({ lastName: value })}
                 data-qa="input-last-name"
@@ -213,7 +213,7 @@ export default React.memo(function PersonDetails({
             valueWidth: '100%',
             value: powerEditing ? (
               <InputField
-                width={'L'}
+                width="L"
                 value={form.firstName}
                 onChange={(value) => updateForm({ firstName: value })}
                 data-qa="input-first-name"
@@ -312,7 +312,7 @@ export default React.memo(function PersonDetails({
             value: powerEditing ? (
               <>
                 <InputField
-                  width={'L'}
+                  width="L"
                   value={form.streetAddress}
                   placeholder={i18n.common.form.streetAddress}
                   onChange={(value) =>
@@ -357,7 +357,7 @@ export default React.memo(function PersonDetails({
                     permittedActions.has('UPDATE_OPH_OID') ? (
                       <>
                         <InputField
-                          width={'L'}
+                          width="L"
                           value={form.ophPersonOid}
                           placeholder={i18n.common.form.ophPersonOid}
                           onChange={(value) =>
@@ -452,7 +452,7 @@ export default React.memo(function PersonDetails({
                             forceManualFeeDecisions: true
                           })
                         }
-                        data-qa={`force-manual-fee-decisions-true`}
+                        data-qa="force-manual-fee-decisions-true"
                       />
                       <Radio
                         label={
@@ -464,7 +464,7 @@ export default React.memo(function PersonDetails({
                             forceManualFeeDecisions: false
                           })
                         }
-                        data-qa={`force-manual-fee-decisions-false`}
+                        data-qa="force-manual-fee-decisions-false"
                       />
                     </FixedSpaceColumn>
                   ) : person.forceManualFeeDecisions ? (

@@ -66,13 +66,13 @@ export default React.memo(function ThreadList({
         </MobileOnly>
       )}
       <Container className={selectedThread ? 'desktop-only' : undefined}>
-        <Gap size={'s'} />
+        <Gap size="s" />
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
         </HeaderContainer>
-        <Gap size={'xs'} />
+        <Gap size="xs" />
         <DottedLine />
-        <Gap size={'s'} />
+        <Gap size="s" />
         <HeaderContainer>
           <Button
             text={t.messages.messageEditor.newMessage}
@@ -82,13 +82,13 @@ export default React.memo(function ThreadList({
             disabled={!newMessageButtonEnabled}
           />
         </HeaderContainer>
-        <Gap size={'s'} />
+        <Gap size="s" />
 
         {threadLoadingResult.isSuccess && threads.length === 0 && (
           <>
             <SolidLine />
             <ThreadListContainer>
-              <Gap size={'s'} />
+              <Gap size="s" />
               <span style={{ color: `${colors.greyscale.dark}` }}>
                 {t.messages.noMessagesInfo}
               </span>

@@ -26,7 +26,7 @@ export default React.memo(function AssistanceNeedSubSection({
     <>
       <H3>{t.applications.editor.serviceNeed.assistanceNeed}</H3>
 
-      <Gap size={'s'} />
+      <Gap size="s" />
 
       {type === 'PRESCHOOL' && (
         <>
@@ -37,7 +37,7 @@ export default React.memo(function AssistanceNeedSubSection({
           >
             <Checkbox
               checked={formData.preparatory}
-              data-qa={'preparatory-input'}
+              data-qa="preparatory-input"
               label={t.applications.editor.serviceNeed.preparatory}
               onChange={(checked) =>
                 updateFormData({
@@ -46,7 +46,7 @@ export default React.memo(function AssistanceNeedSubSection({
               }
             />
           </ExpandingInfo>
-          <Gap size={'m'} />
+          <Gap size="m" />
         </>
       )}
 
@@ -60,7 +60,7 @@ export default React.memo(function AssistanceNeedSubSection({
       >
         <Checkbox
           checked={formData.assistanceNeeded}
-          data-qa={'assistanceNeeded-input'}
+          data-qa="assistanceNeeded-input"
           label={t.applications.editor.serviceNeed.assistanceNeeded}
           onChange={(checked) =>
             updateFormData({
@@ -72,13 +72,13 @@ export default React.memo(function AssistanceNeedSubSection({
 
       {formData.assistanceNeeded && (
         <>
-          <Gap size={'s'} />
+          <Gap size="s" />
           <Label>
             {t.applications.editor.serviceNeed.assistanceNeedLabel + ' *'}
           </Label>
           <NarrowTextArea
             value={formData.assistanceDescription}
-            data-qa={'assistanceDescription-input'}
+            data-qa="assistanceDescription-input"
             onChange={(value) =>
               updateFormData({ assistanceDescription: value })
             }

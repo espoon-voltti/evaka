@@ -120,10 +120,10 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     return (
       <FixedSpaceColumn>
         <Radio
-          id={`service-need-part-time-true`}
+          id="service-need-part-time-true"
           label={t.applications.editor.serviceNeed.partTime.true}
           checked={formData.partTime}
-          data-qa={'partTime-input-true'}
+          data-qa="partTime-input-true"
           onChange={() =>
             updateFormData({
               partTime: true,
@@ -133,7 +133,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         />
         {formData.partTime && partTimeOptions.length > 0 && (
           <SubRadios>
-            <FixedSpaceColumn spacing={'xs'}>
+            <FixedSpaceColumn spacing="xs">
               {partTimeOptions.map((opt) => (
                 <Radio
                   key={opt.id}
@@ -152,15 +152,15 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           </SubRadios>
         )}
         <Radio
-          id={`service-need-part-time-false`}
+          id="service-need-part-time-false"
           label={t.applications.editor.serviceNeed.partTime.false}
           checked={!formData.partTime}
-          data-qa={'partTime-input-false'}
+          data-qa="partTime-input-false"
           onChange={() => updateServiceNeed(false)}
         />
         {!formData.partTime && fullTimeOptions.length > 0 && (
           <SubRadios>
-            <FixedSpaceColumn spacing={'xs'}>
+            <FixedSpaceColumn spacing="xs">
               {fullTimeOptions.map((opt) => (
                 <Radio
                   key={opt.id}
@@ -200,17 +200,17 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             </Label>
           </ExpandingInfo>
 
-          <Gap size={'s'} />
+          <Gap size="s" />
 
-          <FixedSpaceRow spacing={'m'}>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'daily-time-starts'}>
+          <FixedSpaceRow spacing="m">
+            <FixedSpaceColumn spacing="xs">
+              <Label htmlFor="daily-time-starts">
                 {t.applications.editor.serviceNeed.dailyTime.starts}
               </Label>
               <TimeInput
-                id={'daily-time-starts'}
+                id="daily-time-starts"
                 value={formData.startTime}
-                data-qa={'startTime-input'}
+                data-qa="startTime-input"
                 onChange={(value) => updateFormData({ startTime: value })}
                 info={errorToInputInfo(errors.startTime, t.validationErrors)}
                 hideErrorsBeforeTouched={!verificationRequested}
@@ -219,14 +219,14 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
             <Hyphenbox>-</Hyphenbox>
 
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'daily-time-ends'}>
+            <FixedSpaceColumn spacing="xs">
+              <Label htmlFor="daily-time-ends">
                 {t.applications.editor.serviceNeed.dailyTime.ends}
               </Label>
               <TimeInput
-                id={'daily-time-ends'}
+                id="daily-time-ends"
                 value={formData.endTime}
-                data-qa={'endTime-input'}
+                data-qa="endTime-input"
                 onChange={(value) => updateFormData({ endTime: value })}
                 info={errorToInputInfo(errors.endTime, t.validationErrors)}
                 hideErrorsBeforeTouched={!verificationRequested}
@@ -244,15 +244,15 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         {t.applications.editor.serviceNeed.dailyTime.label[applicationType]}
       </H3>
 
-      <Gap size={'s'} />
+      <Gap size="s" />
 
       {renderServiceNeedSelection()}
 
-      <Gap size={'m'} />
+      <Gap size="m" />
 
       {renderServiceNeedDailyTimeSelection()}
 
-      <Gap size={'L'} />
+      <Gap size="L" />
 
       <ExpandingInfo
         data-qa="shiftcare-instructions"
@@ -262,7 +262,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       >
         <Checkbox
           checked={formData.shiftCare}
-          data-qa={'shiftCare-input'}
+          data-qa="shiftCare-input"
           label={t.applications.editor.serviceNeed.shiftCare.label}
           onChange={(checked) =>
             updateFormData({
@@ -274,7 +274,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
       {formData.shiftCare && (
         <>
-          <Gap size={'s'} />
+          <Gap size="s" />
 
           <P fitted data-qa="shiftcare-attachments-message">
             {
@@ -283,7 +283,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             }
           </P>
 
-          <Gap size={'s'} />
+          <Gap size="s" />
 
           <strong>
             {
@@ -292,7 +292,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             }
           </strong>
 
-          <Gap size={'s'} />
+          <Gap size="s" />
 
           <FileUpload
             files={formData.shiftCareAttachments}

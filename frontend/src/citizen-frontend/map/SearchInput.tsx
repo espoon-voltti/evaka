@@ -203,7 +203,7 @@ const OptionContents = React.memo(function Option({
   isUnit: boolean
 }) {
   return (
-    <FixedSpaceRow alignItems={'center'}>
+    <FixedSpaceRow alignItems="center">
       {isUnit && (
         <FontAwesomeIcon
           icon={fasMapMarkerAlt}

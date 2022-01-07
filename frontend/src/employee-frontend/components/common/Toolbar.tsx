@@ -87,7 +87,7 @@ function Toolbar({
         <Tooltip
           tooltipId={warning?.tooltipId}
           tooltipText={warning?.text}
-          place={'right'}
+          place="right"
         >
           <FontAwesomeIcon
             icon={faExclamationTriangle}

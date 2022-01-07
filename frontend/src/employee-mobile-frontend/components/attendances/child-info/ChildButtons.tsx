@@ -36,15 +36,15 @@ export default React.memo(function ChildButtons({
   return renderResult(unitInfoResponse, (unit) => (
     <IconWrapper>
       <FixedSpaceRow
-        spacing={'52px'}
+        spacing="52px"
         fullWidth
-        maxWidth={'56px'}
-        justifyContent={'center'}
+        maxWidth="56px"
+        justifyContent="center"
       >
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
             to={`/units/${unitId}/groups/${groupId}/messages/${child.id}/new-message`}
-            data-qa={'link-new-message'}
+            data-qa="link-new-message"
           >
             <RoundIcon
               content={faComments}
@@ -58,7 +58,7 @@ export default React.memo(function ChildButtons({
         )}
         <Link
           to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
-          data-qa={'link-child-daycare-daily-note'}
+          data-qa="link-child-daycare-daily-note"
         >
           <RoundIcon
             content={faPen}
@@ -66,12 +66,12 @@ export default React.memo(function ChildButtons({
             size="XL"
             label={i18n.common.dailyNotes}
             bubble={noteFound}
-            data-qa={'daily-note-icon'}
+            data-qa="daily-note-icon"
           />
         </Link>
         <Link
           to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/info`}
-          data-qa={'link-child-sensitive-info'}
+          data-qa="link-child-sensitive-info"
         >
           <RoundIcon
             content={faChild}

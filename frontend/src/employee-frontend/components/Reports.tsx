@@ -202,7 +202,7 @@ function Reports() {
                   content={faFileAlt}
                 />
                 <LinkTitle
-                  data-qa={'report-applications'}
+                  data-qa="report-applications"
                   to="/reports/applications"
                 >
                   {i18n.reports.applications.title}
@@ -221,7 +221,7 @@ function Reports() {
                   color={colors.main.primary}
                   content={faGavel}
                 />
-                <LinkTitle data-qa={'report-decisions'} to="/reports/decisions">
+                <LinkTitle data-qa="report-decisions" to="/reports/decisions">
                   {i18n.reports.decisions.title}
                 </LinkTitle>
               </TitleRow>
@@ -400,7 +400,7 @@ function Reports() {
                   content={faMoneyBillWave}
                 />
                 <LinkTitle
-                  data-qa={'report-voucher-service-providers'}
+                  data-qa="report-voucher-service-providers"
                   to="/reports/voucher-service-providers"
                 >
                   {i18n.reports.voucherServiceProviders.title}
@@ -436,7 +436,7 @@ function Reports() {
                 />
                 <LinkTitle
                   to="/reports/placement-sketching"
-                  data-qa={'report-placement-sketching'}
+                  data-qa="report-placement-sketching"
                 >
                   {i18n.reports.placementSketching.title}
                 </LinkTitle>
@@ -456,7 +456,7 @@ function Reports() {
                 />
                 <LinkTitle
                   to="/reports/varda-errors"
-                  data-qa={'report-varda-errors'}
+                  data-qa="report-varda-errors"
                 >
                   {i18n.reports.vardaErrors.title}
                 </LinkTitle>

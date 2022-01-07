@@ -210,7 +210,7 @@ export default React.memo(function CreateQuestionModal({
               type="number"
               step={1}
               min={0}
-              width={'s'}
+              width="s"
             />
           </FixedSpaceColumn>
         )}

@@ -297,14 +297,14 @@ export default React.memo(function PlacementDraft({
                 {placementDraft.guardianHasRestrictedDetails && (
                   <FloatRight>
                     <Tooltip
-                      tooltipId={`tooltip_warning`}
+                      tooltipId="tooltip_warning"
                       tooltipText={i18n.placementDraft.restrictedDetailsTooltip}
-                      place={'top'}
+                      place="top"
                       delayShow={750}
                     >
                       <WarningLabel
                         text={i18n.placementDraft.restrictedDetails}
-                        data-qa={`restricted-details-warning`}
+                        data-qa="restricted-details-warning"
                       />
                     </Tooltip>
                   </FloatRight>

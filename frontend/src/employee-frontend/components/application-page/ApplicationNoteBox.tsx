@@ -144,7 +144,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
 
   const renderDeleteConfirmation = () => (
     <InfoModal
-      iconColor={'orange'}
+      iconColor="orange"
       title={i18n.application.notes.confirmDelete}
       icon={faQuestion}
       reject={{

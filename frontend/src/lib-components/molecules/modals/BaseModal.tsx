@@ -51,7 +51,7 @@ export default React.memo(function BaseModal(props: Props) {
                 <ModalIcon color={props.iconColor}>
                   <FontAwesomeIcon icon={props.icon} />
                 </ModalIcon>
-                <Gap size={'m'} />
+                <Gap size="m" />
               </>
             )}
             {props.title && (

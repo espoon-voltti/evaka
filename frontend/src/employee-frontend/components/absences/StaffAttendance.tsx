@@ -102,7 +102,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
     operationDays.some((operationDay) => operationDay.isEqual(date))
 
   return (
-    <Tr className={'staff-attendance-row'}>
+    <Tr className="staff-attendance-row">
       <Td>{i18n.absences.table.staffRow}</Td>
       {daysOfMonth.map((date) => {
         const staffCount = groupAttendances
@@ -143,11 +143,11 @@ const DisabledStaffIcon = styled(FontAwesomeIcon)`
 const InactiveCell = ({ date }: { date: LocalDate }) => {
   const { i18n } = useTranslation()
   return (
-    <div className={'absence-cell disabled-staff-cell-container'}>
+    <div className="absence-cell disabled-staff-cell-container">
       <Tooltip
         tooltipId={`tooltip_disabled-staff-cell-${date.formatIso()}`}
         tooltipText={i18n.absences.table.disabledStaffCellTooltip}
-        place={'top'}
+        place="top"
       >
         <DisabledStaffIcon icon={faTimes} />
       </Tooltip>

@@ -37,7 +37,7 @@ export function RadioGroupQuestion({
 
       {onChange ? (
         <>
-          <Gap size={'m'} />
+          <Gap size="m" />
           <FixedSpaceColumn>
             {options.map((option) => (
               <Radio

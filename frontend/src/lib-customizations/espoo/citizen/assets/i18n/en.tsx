@@ -451,14 +451,14 @@ const en: Translations = {
           <P>
             <strong>The application has not yet been sent.</strong> Please check
             the information you provided and send the application by clicking{' '}
-            {'"'}Send the application{'"'} button in the end of the form.
+            &ldquo;Send the application&ldquo; button in the end of the form.
           </P>
         ),
         notYetSaved: (
           <P>
             <strong>The changes have not been saved yet.</strong> Please check
             the information you provided and send the application by clicking
-            {'"'}Save changes{'"'} button at the end of the form.
+            &ldquo;Save changes&ldquo; button at the end of the form.
           </P>
         ),
         no: 'No',
@@ -878,8 +878,8 @@ const en: Translations = {
                   desired location increases by giving more than one option.
                 </P>
                 <P>
-                  You can display the unit locations by choosing {"'"}Unit map
-                  view{"'"}.
+                  You can display the unit locations by choosing &lsquo;Unit map
+                  view&lsquo;.
                 </P>
                 <P>
                   Apply for a service voucher by selecting the service voucher
@@ -898,8 +898,8 @@ const en: Translations = {
                   desired location increases by giving more than one option.
                 </P>
                 <P>
-                  You can display the unit locations by choosing {"'"}Unit map
-                  view{"'"}.
+                  You can display the unit locations by choosing &lsquo;Unit map
+                  view&lsquo;.
                 </P>
                 <P>
                   Apply for a service voucher by selecting the service voucher
@@ -918,8 +918,8 @@ const en: Translations = {
                   desired location increases by giving more than one option.
                 </P>
                 <P>
-                  You can display the unit locations by choosing {"'"}Unit map
-                  view{"'"}.
+                  You can display the unit locations by choosing &lsquo;Unit map
+                  view&lsquo;.
                 </P>
               </>
             )
@@ -1049,10 +1049,10 @@ const en: Translations = {
             separate field in the application. Add a future address for both the
             child and guardian. The address information will be official only
             when it has been updated to the database of the Digital and
-            Population Data Services Agency. Decisions on the child{"'"}s early
-            childhood or pre-primary education place will be automatically sent
-            to another guardian who lives at a different address based on the
-            Population Information System.
+            Population Data Services Agency. Decisions on the child&lsquo;s
+            early childhood or pre-primary education place will be automatically
+            sent to another guardian who lives at a different address based on
+            the Population Information System.
           </P>
         ),
         emailInfoText:
@@ -1142,7 +1142,7 @@ const en: Translations = {
     title: 'Decisions',
     summary: (
       <P width="800px">
-        This page displays the received decisions regarding child{"'"}s early
+        This page displays the received decisions regarding child&lsquo;s early
         childhood education, pre-primary education and club applications. Upon
         receiving a new decision, you are required to respond in two weeks,
         whether you accept or reject it.

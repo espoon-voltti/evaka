@@ -52,11 +52,7 @@ export default React.memo(function Pagination({
       <span>{label}:</span>
 
       {firstPageToShow > 1 && (
-        <PageItem
-          key={1}
-          onClick={() => setPage(1)}
-          data-qa={`page-selector-1`}
-        >
+        <PageItem key={1} onClick={() => setPage(1)} data-qa="page-selector-1">
           {1}
         </PageItem>
       )}

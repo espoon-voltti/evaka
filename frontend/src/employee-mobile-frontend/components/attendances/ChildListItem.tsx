@@ -157,7 +157,7 @@ export default React.memo(function ChildListItem({
               {child.dailyNote && (
                 <Link
                   to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
-                  data-qa={'link-child-daycare-daily-note'}
+                  data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
                     content={farStickyNote}
@@ -169,7 +169,7 @@ export default React.memo(function ChildListItem({
               {groupNote && (
                 <Link
                   to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
-                  data-qa={'link-child-daycare-daily-note'}
+                  data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
                     content={farUsers}

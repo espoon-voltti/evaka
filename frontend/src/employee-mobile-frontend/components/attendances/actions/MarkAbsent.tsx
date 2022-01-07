@@ -76,8 +76,8 @@ export default React.memo(function MarkAbsent() {
   return (
     <TallContentArea
       opaque={false}
-      paddingHorizontal={'zero'}
-      paddingVertical={'zero'}
+      paddingHorizontal="zero"
+      paddingVertical="zero"
     >
       {renderResult(combine(child, groupNote), ([child, groupNote]) => (
         <>
@@ -91,20 +91,20 @@ export default React.memo(function MarkAbsent() {
           <ContentArea
             shadow
             opaque={true}
-            paddingHorizontal={'s'}
-            paddingVertical={'m'}
+            paddingHorizontal="s"
+            paddingVertical="m"
           >
             <AbsenceWrapper>
               <CustomTitle>{i18n.attendances.actions.markAbsent}</CustomTitle>
-              <Gap size={'m'} />
-              <FixedSpaceColumn spacing={'s'}>
+              <Gap size="m" />
+              <FixedSpaceColumn spacing="s">
                 <AbsenceSelector
                   selectedAbsenceType={selectedAbsenceType}
                   setSelectedAbsenceType={setSelectedAbsenceType}
                 />
               </FixedSpaceColumn>
             </AbsenceWrapper>
-            <Gap size={'m'} />
+            <Gap size="m" />
             <Actions>
               <FixedSpaceRow fullWidth>
                 <Button
@@ -128,12 +128,12 @@ export default React.memo(function MarkAbsent() {
               </FixedSpaceRow>
             </Actions>
           </ContentArea>
-          <Gap size={'s'} />
+          <Gap size="s" />
           <ContentArea
             shadow
             opaque={true}
-            paddingHorizontal={'s'}
-            paddingVertical={'s'}
+            paddingHorizontal="s"
+            paddingVertical="s"
             blue
           >
             <DailyNotes>
@@ -141,7 +141,7 @@ export default React.memo(function MarkAbsent() {
                 <RoundIcon
                   content={farStickyNote}
                   color={colors.main.dark}
-                  size={'m'}
+                  size="m"
                 />
               </span>
               <DailyNote

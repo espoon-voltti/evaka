@@ -67,13 +67,13 @@ export default React.memo(function MessageEditor({
         {user && (
           <>
             <Bold>{i18n.messages.sender}</Bold>
-            <Gap size={'xs'} />
+            <Gap size="xs" />
             <P noMargin>{`${user.firstName} ${user.lastName}`}</P>
           </>
         )}
         <div>
           <Bold>{i18n.messages.messageEditor.recipients}</Bold>
-          <Gap size={'xs'} />
+          <Gap size="xs" />
         </div>
         <MultiSelect
           placeholder={i18n.messages.messageEditor.search}
@@ -90,19 +90,19 @@ export default React.memo(function MessageEditor({
           getOptionLabel={({ name }) => name}
           data-qa="select-receiver"
         />
-        <Gap size={'s'} />
+        <Gap size="s" />
         <Bold>{i18n.messages.messageEditor.subject}</Bold>
         <InputField
           value={message.title ?? ''}
           onChange={(updated) =>
             setMessage((message) => ({ ...message, title: updated }))
           }
-          data-qa={'input-title'}
+          data-qa="input-title"
         />
-        <Gap size={'s'} />
+        <Gap size="s" />
 
         <Bold>{i18n.messages.messageEditor.message}</Bold>
-        <Gap size={'s'} />
+        <Gap size="s" />
         <StyledTextArea
           value={message.content}
           onChange={(updated) =>
@@ -111,9 +111,9 @@ export default React.memo(function MessageEditor({
               content: updated.target.value
             }))
           }
-          data-qa={'input-content'}
+          data-qa="input-content"
         />
-        <Gap size={'s'} />
+        <Gap size="s" />
         {displaySendError && (
           <ErrorMessage>
             {i18n.messages.messageEditor.messageSendError}

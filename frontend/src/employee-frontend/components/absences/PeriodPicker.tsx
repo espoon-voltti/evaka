@@ -34,11 +34,11 @@ export default React.memo(function PeriodPicker({ onChange, date }: Props) {
         icon={faChevronLeft}
         gray
       />
-      <Gap horizontal size={'L'} />
+      <Gap horizontal size="L" />
       <PeriodTitle data-qa="period-picker-month" noMargin>
         {i18n.datePicker.months[date.getMonth() - 1]} {date.getYear()}
       </PeriodTitle>
-      <Gap horizontal size={'L'} />
+      <Gap horizontal size="L" />
       <IconButton
         onClick={increase}
         data-qa="period-picker-next-month"

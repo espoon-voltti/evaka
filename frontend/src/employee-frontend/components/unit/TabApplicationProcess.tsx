@@ -26,11 +26,11 @@ export default React.memo(function TabApplicationProcess({
       <ContentArea opaque>
         <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
       </ContentArea>
-      <Gap size={'m'} />
+      <Gap size="m" />
       <TabWaitingConfirmation />
-      <Gap size={'m'} />
+      <Gap size="m" />
       <TabPlacementProposals reloadUnitData={reloadUnitData} />
-      <Gap size={'m'} />
+      <Gap size="m" />
       <TabApplications />
     </div>
   )

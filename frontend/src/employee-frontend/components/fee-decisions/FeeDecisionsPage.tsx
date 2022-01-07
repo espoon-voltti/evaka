@@ -107,7 +107,7 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
       <ContentArea opaque>
         <FeeDecisionFilters />
       </ContentArea>
-      <Gap size={'XL'} />
+      <Gap size="XL" />
       <ContentArea opaque>
         <FeeDecisions
           decisions={decisions[page]}

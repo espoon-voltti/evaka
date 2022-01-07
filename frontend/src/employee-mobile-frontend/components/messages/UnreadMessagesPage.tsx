@@ -36,8 +36,8 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
       <ContentArea
         opaque
         fullHeight
-        paddingHorizontal={'zero'}
-        paddingVertical={'zero'}
+        paddingHorizontal="zero"
+        paddingVertical="zero"
       >
         <TopBar title={unit.name} />
         <HeaderContainer>

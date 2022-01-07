@@ -73,7 +73,7 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
                       label={formatPersonName(recipient, i18n, true)}
                       hiddenLabel
                       checked={!recipient.blocklisted}
-                      data-qa={'blocklist-checkbox'}
+                      data-qa="blocklist-checkbox"
                       disabled={!permittedActions.has('UPDATE_CHILD_RECIPIENT')}
                       onChange={(checked) =>
                         onChange(recipient.personId, checked)

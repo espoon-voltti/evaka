@@ -215,19 +215,19 @@ function PlacementSketching() {
                     key={`${row.applicationId}`}
                     data-qa={`${row.applicationId}`}
                   >
-                    <Td data-qa={'requested-unit'}>
+                    <Td data-qa="requested-unit">
                       <Link to={`/units/${row.requestedUnitId}`}>
                         {row.requestedUnitName}
                       </Link>
                     </Td>
-                    <Td data-qa={'current-unit'}>
+                    <Td data-qa="current-unit">
                       {row.currentUnitId && (
                         <Link to={`/units/${row.currentUnitId}`}>
                           {row.currentUnitName}
                         </Link>
                       )}
                     </Td>
-                    <Td data-qa={'child-name'}>
+                    <Td data-qa="child-name">
                       <Link to={`/child-information/${row.childId}`}>
                         {row.childLastName} {row.childFirstName}
                       </Link>
@@ -242,14 +242,14 @@ function PlacementSketching() {
                     <Td>{yesNo(row.siblingBasis)}</Td>
                     <Td>{yesNo(row.connectedDaycare)}</Td>
                     <Td>{row.sentDate.format()}</Td>
-                    <Td data-qa={'application'}>
+                    <Td data-qa="application">
                       <Link to={`/applications/${row.applicationId}`}>
                         <FontAwesomeIcon icon={faFileAlt} />
                       </Link>
                     </Td>
                     <Td>{row.preferredStartDate.format()}</Td>
-                    <Td data-qa={'area-name'}>{row.areaName}</Td>
-                    <Td data-qa={'other-preferred-units'}>
+                    <Td data-qa="area-name">{row.areaName}</Td>
+                    <Td data-qa="other-preferred-units">
                       {formatOtherPreferredUnits(row)}
                     </Td>
                   </Tr>

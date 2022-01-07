@@ -42,7 +42,7 @@ export default React.memo(function FormModal({
           data-qa="modal-cancelBtn"
           text={rejectLabel}
         />
-        <Gap horizontal size={'xs'} />
+        <Gap horizontal size="xs" />
         <Button
           primary
           type="submit"
@@ -86,7 +86,7 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
           data-qa="modal-cancelBtn"
           text={rejectLabel}
         />
-        <Gap horizontal size={'xs'} />
+        <Gap horizontal size="xs" />
         <AsyncButton
           primary
           text={resolveLabel}

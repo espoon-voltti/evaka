@@ -79,7 +79,7 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
         />
         {incomeStatement.handlerNote && (
           <>
-            <Gap size={'xxs'} />
+            <Gap size="xxs" />
             <Dimmed>{incomeStatement.handlerNote}</Dimmed>
           </>
         )}

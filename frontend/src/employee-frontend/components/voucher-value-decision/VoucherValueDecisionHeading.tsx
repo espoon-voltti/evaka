@@ -75,7 +75,7 @@ export default React.memo(function VoucherValueDecisionHeading({
       <TypeSelect
         changeDecisionType={changeDecisionType}
         selected={newDecisionType}
-        type={'VALUE_DECISION'}
+        type="VALUE_DECISION"
       />
     ) : (
       i18n.valueDecision.type[decisionType]

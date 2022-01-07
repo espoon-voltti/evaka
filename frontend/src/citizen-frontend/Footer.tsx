@@ -19,7 +19,7 @@ export const FooterContent = React.memo(function FooterContent() {
       <FooterItem>
         <FooterLink
           href={t.footer.privacyPolicyLink}
-          data-qa={'footer-policy-link'}
+          data-qa="footer-policy-link"
         >
           {t.footer.privacyPolicy}
         </FooterLink>
@@ -27,7 +27,7 @@ export const FooterContent = React.memo(function FooterContent() {
       <FooterItem>
         <FooterLink
           href={t.footer.sendFeedbackLink}
-          data-qa={'footer-feedback-link'}
+          data-qa="footer-feedback-link"
         >
           {t.footer.sendFeedback}
         </FooterLink>

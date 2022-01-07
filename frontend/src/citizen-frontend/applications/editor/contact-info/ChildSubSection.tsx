@@ -30,36 +30,36 @@ export default React.memo(function ChildSubSection({
 
   return (
     <>
-      <Gap size={'m'} />
+      <Gap size="m" />
       {fullFamily ? t.applications.editor.contactInfo.familyInfo : null}
       {t.applications.editor.contactInfo.info}
       <H3>{t.applications.editor.contactInfo.childInfoTitle}</H3>
-      <Gap size={'xs'} />
-      <FixedSpaceRow spacing={'XL'}>
+      <Gap size="xs" />
+      <FixedSpaceRow spacing="XL">
         <AdaptiveFlex breakpoint="1060px">
-          <FixedSpaceColumn spacing={'xs'}>
+          <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childFirstName}</Label>
             <span>{formData.childFirstName}</span>
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing={'xs'}>
+          <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childLastName}</Label>
             <span>{formData.childLastName}</span>
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing={'xs'}>
+          <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childSSN}</Label>
             <span>{formData.childSSN}</span>
           </FixedSpaceColumn>
         </AdaptiveFlex>
       </FixedSpaceRow>
-      <Gap size={'s'} />
-      <FixedSpaceColumn spacing={'xs'}>
+      <Gap size="s" />
+      <FixedSpaceColumn spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        <span data-qa={'child-street-address'}>{formData.childStreet}</span>
+        <span data-qa="child-street-address">{formData.childStreet}</span>
       </FixedSpaceColumn>
-      <Gap size={'m'} />
+      <Gap size="m" />
 
       <ExpandingInfo
-        data-qa={'child-future-address-info'}
+        data-qa="child-future-address-info"
         info={t.applications.editor.contactInfo.futureAddressInfo}
         ariaLabel={t.common.openExpandingInfo}
         margin="xs"
@@ -67,7 +67,7 @@ export default React.memo(function ChildSubSection({
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}
           checked={formData.childFutureAddressExists}
-          data-qa={'childFutureAddressExists-input'}
+          data-qa="childFutureAddressExists-input"
           onChange={(checked) => {
             updateFormData({
               childFutureAddressExists: checked
@@ -83,12 +83,12 @@ export default React.memo(function ChildSubSection({
 
       {formData.childFutureAddressExists && (
         <>
-          <Gap size={'m'} />
-          <FixedSpaceColumn spacing={'xs'}>
+          <Gap size="m" />
+          <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
             <DatePicker
               date={formData.childMoveDate}
-              data-qa={'childMoveDate-input'}
+              data-qa="childMoveDate-input"
               onChange={(value) =>
                 formData.guardianFutureAddressEqualsChild
                   ? updateFormData({
@@ -102,17 +102,17 @@ export default React.memo(function ChildSubSection({
               hideErrorsBeforeTouched={!verificationRequested}
             />
           </FixedSpaceColumn>
-          <Gap size={'s'} />
-          <FixedSpaceRow spacing={'XL'}>
+          <Gap size="s" />
+          <FixedSpaceRow spacing="XL">
             <AdaptiveFlex breakpoint="1060px">
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'child-future-street'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="child-future-street">
                   {t.applications.editor.contactInfo.street + ' *'}
                 </Label>
                 <InputField
-                  id={'child-future-street'}
+                  id="child-future-street"
                   value={formData.childFutureStreet}
-                  data-qa={'childFutureStreet-input'}
+                  data-qa="childFutureStreet-input"
                   onChange={(value) =>
                     formData.guardianFutureAddressEqualsChild
                       ? updateFormData({
@@ -131,17 +131,17 @@ export default React.memo(function ChildSubSection({
                   placeholder={
                     t.applications.editor.contactInfo.streetPlaceholder
                   }
-                  width={'L'}
+                  width="L"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'child-future-postal-code'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="child-future-postal-code">
                   {t.applications.editor.contactInfo.postalCode + ' *'}
                 </Label>
                 <InputField
-                  id={'child-future-postal-code'}
+                  id="child-future-postal-code"
                   value={formData.childFuturePostalCode}
-                  data-qa={'childFuturePostalCode-input'}
+                  data-qa="childFuturePostalCode-input"
                   onChange={(value) =>
                     formData.guardianFutureAddressEqualsChild
                       ? updateFormData({
@@ -161,14 +161,14 @@ export default React.memo(function ChildSubSection({
                   width="m"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing={'xs'}>
-                <Label htmlFor={'child-future-post-office'}>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="child-future-post-office">
                   {t.applications.editor.contactInfo.postOffice + ' *'}
                 </Label>
                 <InputField
-                  id={'child-future-post-office'}
+                  id="child-future-post-office"
                   value={formData.childFuturePostOffice}
-                  data-qa={'childFuturePostOffice-input'}
+                  data-qa="childFuturePostOffice-input"
                   onChange={(value) =>
                     formData.guardianFutureAddressEqualsChild
                       ? updateFormData({

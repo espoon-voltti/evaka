@@ -244,6 +244,10 @@
           ]
         }
       ],
+      "react/jsx-curly-brace-presence": [
+        "error",
+        "never"
+      ],
       "react/prop-types": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": [

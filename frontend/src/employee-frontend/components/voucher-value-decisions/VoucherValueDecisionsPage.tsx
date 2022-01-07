@@ -105,7 +105,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
       <ContentArea opaque>
         <VoucherValueDecisionFilters />
       </ContentArea>
-      <Gap size={'XL'} />
+      <Gap size="XL" />
       <ContentArea opaque>
         <VoucherValueDecisions
           decisions={decisions[page]}

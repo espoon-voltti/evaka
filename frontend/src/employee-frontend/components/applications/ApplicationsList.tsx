@@ -454,18 +454,18 @@ const ApplicationsList = React.memo(function Applications({
             <Tr>
               <SortableTh
                 sticky
-                top={'106px'}
+                top="106px"
                 sorted={isSorted('APPLICATION_TYPE')}
                 onClick={toggleSort('APPLICATION_TYPE')}
               >
                 {i18n.applications.list.type}
               </SortableTh>
-              <Th sticky top={'106px'}>
+              <Th sticky top="106px">
                 {i18n.applications.list.subtype}
               </Th>
               <SortableTh
                 sticky
-                top={'106px'}
+                top="106px"
                 sorted={isSorted('CHILD_NAME')}
                 onClick={toggleSort('CHILD_NAME')}
               >
@@ -473,7 +473,7 @@ const ApplicationsList = React.memo(function Applications({
               </SortableTh>
               <SortableTh
                 sticky
-                top={'106px'}
+                top="106px"
                 sorted={isSorted('DUE_DATE')}
                 onClick={toggleSort('DUE_DATE')}
               >
@@ -481,21 +481,21 @@ const ApplicationsList = React.memo(function Applications({
               </SortableTh>
               <SortableTh
                 sticky
-                top={'106px'}
+                top="106px"
                 sorted={isSorted('START_DATE')}
                 onClick={toggleSort('START_DATE')}
               >
                 {i18n.applications.list.startDate}
               </SortableTh>
-              <Th sticky top={'106px'}>
+              <Th sticky top="106px">
                 {i18n.applications.list.basis}
               </Th>
-              <Th sticky top={'106px'}>
+              <Th sticky top="106px">
                 {i18n.applications.list.unit}
               </Th>
               <SortableTh
                 sticky
-                top={'106px'}
+                top="106px"
                 sorted={isSorted('STATUS')}
                 onClick={toggleSort('STATUS')}
               >
@@ -509,9 +509,9 @@ const ApplicationsList = React.memo(function Applications({
                   <CheckAllContainer>
                     <Checkbox
                       checked={isAllChecked()}
-                      label={'hidden'}
+                      label="hidden"
                       hiddenLabel={true}
-                      data-qa={'toggle-check-all-checkbox'}
+                      data-qa="toggle-check-all-checkbox"
                       onChange={(checked) => toggleCheckAll(checked)}
                     />
                   </CheckAllContainer>

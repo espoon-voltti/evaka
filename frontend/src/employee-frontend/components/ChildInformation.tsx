@@ -259,8 +259,8 @@ const ChildInformation = React.memo(function ChildInformation({
                   text={`${i18n.common.form.dateOfDeath}: ${
                     person.value.dateOfDeath?.format() ?? ''
                   }`}
-                  background={`black`}
-                  color={`white`}
+                  background="black"
+                  color="white"
                   data-qa="deceased-label"
                 />
               )}
@@ -289,11 +289,11 @@ const ChildInformation = React.memo(function ChildInformation({
           </HeaderRow>
         </ContentArea>
 
-        <Gap size={'m'} />
+        <Gap size="m" />
 
         <ChildDetails id={id} />
 
-        <Gap size={'m'} />
+        <Gap size="m" />
 
         <FixedSpaceColumn spacing="m">
           {layout.map(({ component, open }) => {

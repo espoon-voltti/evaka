@@ -16,7 +16,7 @@ interface Props {
 export function InputWarning({ text, iconPosition }: Props) {
   return iconPosition === 'after' ? (
     <div>
-      <WarningText margin={'right'}>{text}</WarningText>
+      <WarningText margin="right">{text}</WarningText>
       <WarningIcon />
     </div>
   ) : (
@@ -41,7 +41,7 @@ const WarningText = styled.span<{
 const WarningIcon = () => (
   <FontAwesomeIcon
     icon={fasExclamationTriangle}
-    size={'1x'}
+    size="1x"
     color={colors.accents.warningOrange}
   />
 )

@@ -40,7 +40,7 @@ export default React.memo(function AttendanceChildComing({
           {i18n.attendances.actions.markAbsent}
         </WideLinkButton>
       </FixedSpaceColumn>
-      <Gap size={'s'} />
+      <Gap size="s" />
     </Fragment>
   )
 })

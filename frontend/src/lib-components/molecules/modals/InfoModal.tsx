@@ -46,7 +46,7 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
                 data-qa="modal-cancelBtn"
                 text={props.reject.label}
               />
-              <Gap horizontal size={'xs'} />
+              <Gap horizontal size="xs" />
             </>
           )}
           <InlineButton

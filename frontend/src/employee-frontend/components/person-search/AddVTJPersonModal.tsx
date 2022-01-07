@@ -58,7 +58,7 @@ export default React.memo(function VTJModal({
 
   return (
     <FormModal
-      iconColor={'blue'}
+      iconColor="blue"
       icon={faPlus}
       title={i18n.personSearch.addPersonFromVTJ.title}
       resolveAction={onConfirm}

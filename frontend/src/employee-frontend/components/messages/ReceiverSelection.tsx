@@ -83,7 +83,7 @@ export default React.memo(function ReceiverSelection({
             <Th>{i18n.messages.receiverSelection.receivers}</Th>
             <Th>
               <Checkbox
-                label={''}
+                label=""
                 checked={getSelectorStatus(unitId, selectedReceivers)}
                 onChange={(checked: boolean) =>
                   setSelectorChange({ selectorId: unitId, selected: checked })
@@ -112,7 +112,7 @@ export default React.memo(function ReceiverSelection({
               </Td>
               <Td>
                 <Checkbox
-                  label={''}
+                  label=""
                   checked={getSelectorStatus(
                     receiverGroup.selectorId,
                     selectedReceivers
@@ -141,7 +141,7 @@ export default React.memo(function ReceiverSelection({
                     </Td>
                     <Td>
                       <Checkbox
-                        label={''}
+                        label=""
                         checked={getSelectorStatus(
                           receiverChild.selectorId,
                           selectedReceivers

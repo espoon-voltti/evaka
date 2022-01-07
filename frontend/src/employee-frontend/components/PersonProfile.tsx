@@ -130,8 +130,8 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
                   text={`${i18n.common.form.dateOfDeath}: ${
                     person.value.dateOfDeath?.format() ?? ''
                   }`}
-                  background={`black`}
-                  color={`white`}
+                  background="black"
+                  color="white"
                   data-qa="deceased-label"
                 />
               )}

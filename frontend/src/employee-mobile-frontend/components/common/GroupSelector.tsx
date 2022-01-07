@@ -57,7 +57,7 @@ export default function GroupSelector({
               data-qa="group--all"
             />
           )}
-          <Gap horizontal size={'xxs'} />
+          <Gap horizontal size="xxs" />
           {(groups || unitInfo.groups).map((group) => (
             <Fragment key={group.id}>
               <ChoiceChip
@@ -74,7 +74,7 @@ export default function GroupSelector({
                 }}
                 data-qa={`group--${group.id}`}
               />
-              <Gap horizontal size={'xxs'} />
+              <Gap horizontal size="xxs" />
             </Fragment>
           ))}
         </>

@@ -63,7 +63,7 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
                             text: t.fileDownload.modalMessage
                           })
                         }
-                        data-qa={'service-need-urgency-attachment-download'}
+                        data-qa="service-need-urgency-attachment-download"
                         icon
                       />
                     </li>
@@ -121,7 +121,7 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
                           text: t.fileDownload.modalMessage
                         })
                       }
-                      data-qa={'service-need-shift-care-attachment-download'}
+                      data-qa="service-need-shift-care-attachment-download"
                       icon
                     />
                   </li>

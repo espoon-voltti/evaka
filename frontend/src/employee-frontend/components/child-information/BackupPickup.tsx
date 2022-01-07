@@ -94,23 +94,23 @@ function BackupPickup({ id }: BackupPickupProps) {
         rejectLabel={i18n.common.cancel}
       >
         <FixedSpaceColumn>
-          <FixedSpaceColumn spacing={'xxs'}>
+          <FixedSpaceColumn spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.name}</Label>
             <InputField
               value={name}
               onChange={setName}
               placeholder={i18n.childInformation.backupPickups.name}
-              width={'full'}
+              width="full"
               data-qa="backup-pickup-name-input"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing={'xxs'}>
+          <FixedSpaceColumn spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.phone}</Label>
             <InputField
               value={phone}
               onChange={setPhone}
               placeholder={i18n.childInformation.backupPickups.phone}
-              width={'full'}
+              width="full"
               data-qa="backup-pickup-phone-input"
             />
           </FixedSpaceColumn>
@@ -144,23 +144,23 @@ function BackupPickup({ id }: BackupPickupProps) {
         rejectLabel={i18n.common.save}
       >
         <FixedSpaceColumn>
-          <FixedSpaceColumn spacing={'xxs'}>
+          <FixedSpaceColumn spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.name}</Label>
             <InputField
               value={name}
               onChange={setName}
               placeholder={i18n.childInformation.backupPickups.name}
-              width={'full'}
+              width="full"
               data-qa="backup-pickup-name-input"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing={'xxs'}>
+          <FixedSpaceColumn spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.phone}</Label>
             <InputField
               value={phone}
               onChange={setPhone}
               placeholder={i18n.childInformation.backupPickups.phone}
-              width={'full'}
+              width="full"
               data-qa="backup-pickup-phone-input"
             />
           </FixedSpaceColumn>
@@ -171,7 +171,7 @@ function BackupPickup({ id }: BackupPickupProps) {
 
   const DeleteBackupPickupModal = () => (
     <InfoModal
-      iconColor={'orange'}
+      iconColor="orange"
       title={i18n.childInformation.backupPickups.removeConfirmation}
       icon={faQuestion}
       reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}

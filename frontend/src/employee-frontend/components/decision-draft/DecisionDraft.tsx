@@ -86,7 +86,7 @@ const WarningText = styled.span<{ smaller?: boolean }>`
 const WarningIcon = () => (
   <FontAwesomeIcon
     icon={faExclamationTriangle}
-    size={'1x'}
+    size="1x"
     color={colors.accents.warningOrange}
   />
 )

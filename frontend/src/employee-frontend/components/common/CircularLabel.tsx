@@ -31,7 +31,7 @@ function CircularLabel({ text, background, color, 'data-qa': dataQa }: Props) {
     <RoundLabel
       background={background}
       color={color}
-      className={`info-label`}
+      className="info-label"
       data-qa={dataQa}
     >
       {text}

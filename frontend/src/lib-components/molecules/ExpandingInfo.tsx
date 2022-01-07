@@ -77,7 +77,7 @@ export default React.memo(function ExpandingInfo({
 
   return (
     <span aria-live="polite">
-      <FixedSpaceRow spacing="xs" alignItems={'center'}>
+      <FixedSpaceRow spacing="xs" alignItems="center">
         <div>{children}</div>
         <InfoButton
           onClick={() => setExpanded(!expanded)}

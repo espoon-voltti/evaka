@@ -54,13 +54,13 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
 
   return (
     <tr data-qa="absence-child-row">
-      <td className={'absence-child-name hover-highlight'}>
+      <td className="absence-child-name hover-highlight">
         <FixedSpaceRow spacing="xs">
           <AgeIndicatorIcon dateOfBirth={child.dob} />
           <Tooltip
             tooltipId={`tooltip_absence-child-name-${child.id}`}
             tooltipText={`${child.lastName}, ${child.firstName}`}
-            place={'top'}
+            place="top"
             delayShow={750}
           >
             <Link
@@ -81,7 +81,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
             className={`${
               date.isToday() ? 'absence-cell-today' : ''
             } hover-highlight absence-cell-wrapper`}
-            data-qa={'absence-cell'}
+            data-qa="absence-cell"
           >
             <AbsenceCellWrapper
               selectedCells={selectedCells}
@@ -182,7 +182,7 @@ export default React.memo(function AbsenceTable({
 
   const renderEmptyRow = () => (
     <tr>
-      <td className={'empty-row'} />
+      <td className="empty-row" />
     </tr>
   )
 

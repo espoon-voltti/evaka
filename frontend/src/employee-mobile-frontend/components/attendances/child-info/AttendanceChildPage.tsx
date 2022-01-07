@@ -102,8 +102,8 @@ export default React.memo(function AttendanceChildPage() {
     <>
       <TallContentAreaNoOverflow
         opaque
-        paddingHorizontal={'0px'}
-        paddingVertical={'0px'}
+        paddingHorizontal="0px"
+        paddingVertical="0px"
         shadow
       >
         <BackButtonMargin
@@ -133,14 +133,14 @@ export default React.memo(function AttendanceChildPage() {
                         )}
                       </IconBox>
 
-                      <Gap size={'s'} />
+                      <Gap size="s" />
 
-                      <CustomTitle data-qa={'child-name'}>
+                      <CustomTitle data-qa="child-name">
                         {child.firstName} {child.lastName}
                       </CustomTitle>
 
                       {child.preferredName && (
-                        <CustomTitle data-qa={'child-preferred-name'}>
+                        <CustomTitle data-qa="child-preferred-name">
                           ({child.preferredName})
                         </CustomTitle>
                       )}
@@ -166,7 +166,7 @@ export default React.memo(function AttendanceChildPage() {
                   />
                 </Zindex>
 
-                <FlexColumn paddingHorizontal={'s'}>
+                <FlexColumn paddingHorizontal="s">
                   <AttendanceDailyServiceTimes
                     times={child.dailyServiceTimes}
                     reservations={child.reservations}
@@ -202,7 +202,7 @@ export default React.memo(function AttendanceChildPage() {
                   to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/mark-absent-beforehand`}
                 >
                   <RoundIcon
-                    size={'L'}
+                    size="L"
                     content={faCalendarTimes}
                     color={colors.main.primary}
                   />

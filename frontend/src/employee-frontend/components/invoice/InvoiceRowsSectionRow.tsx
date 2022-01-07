@@ -223,7 +223,7 @@ const AmountInput = React.memo(function AmountInput({
 
   return (
     <NarrowInput
-      type={'number'}
+      type="number"
       min={1}
       max={1000}
       value={stringValue}

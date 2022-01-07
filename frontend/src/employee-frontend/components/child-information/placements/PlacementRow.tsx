@@ -230,7 +230,7 @@ export default React.memo(function PlacementRow({
                   <WarningContainer>
                     <InputWarning
                       text={i18n.childInformation.placements.warning.overlap}
-                      iconPosition={'after'}
+                      iconPosition="after"
                     />
                   </WarningContainer>
                 ) : null}
@@ -258,7 +258,7 @@ export default React.memo(function PlacementRow({
                   <WarningContainer>
                     <InputWarning
                       text={i18n.childInformation.placements.warning.overlap}
-                      iconPosition={'after'}
+                      iconPosition="after"
                     />
                   </WarningContainer>
                 ) : null}
@@ -353,7 +353,7 @@ export default React.memo(function PlacementRow({
       {confirmingDelete && (
         <InfoModal
           title={i18n.childInformation.placements.deletePlacement.confirmTitle}
-          iconColor={'orange'}
+          iconColor="orange"
           icon={faQuestion}
           resolve={{
             action: submitDelete,

@@ -156,7 +156,7 @@ export default React.memo(function MobilePairingModal({
                 value={responseKey}
                 onChange={setResponseKey}
                 placeholder={i18n.common.code}
-                width={'m'}
+                width="m"
                 data-qa="response-key-input"
               />
             </Flex>
@@ -174,7 +174,7 @@ export default React.memo(function MobilePairingModal({
                   value={deviceName}
                   onChange={setDeviceName}
                   placeholder={i18n.mobilePairingModal.namePlaceholder}
-                  width={'m'}
+                  width="m"
                   data-qa="mobile-device-name-input"
                   id={pairingResponse.mobileDeviceId}
                 />

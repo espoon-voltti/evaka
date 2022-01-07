@@ -131,14 +131,14 @@ export default function MessageEditorPage() {
     ) : !selectedReceivers ? (
       <ContentArea
         opaque
-        paddingVertical={'zero'}
-        paddingHorizontal={'zero'}
+        paddingVertical="zero"
+        paddingHorizontal="zero"
         fullHeight={true}
-        data-qa={`messages-editor-content-area`}
+        data-qa="messages-editor-content-area"
       >
         <TopBar title={i18n.messages.newMessage} />
         <PaddedContainer>
-          <span data-qa={'info-no-receivers'}>{i18n.messages.noReceivers}</span>
+          <span data-qa="info-no-receivers">{i18n.messages.noReceivers}</span>
         </PaddedContainer>
         <BackButtonInline
           onClick={() => history.goBack()}

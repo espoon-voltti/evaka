@@ -57,7 +57,7 @@ export default function BackupCareRow({ childId, backupCare }: Props) {
     <div>
       {uiMode === `remove-backup-care-${backupCare.id}` && (
         <InfoModal
-          iconColor={'orange'}
+          iconColor="orange"
           title={i18n.childInformation.backupCares.remove}
           text={`${
             i18n.common.period

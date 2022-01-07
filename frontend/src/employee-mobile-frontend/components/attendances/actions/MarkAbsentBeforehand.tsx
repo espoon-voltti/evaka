@@ -124,8 +124,8 @@ export default React.memo(function MarkAbsentBeforehand() {
     <>
       <TallContentArea
         opaque={false}
-        paddingHorizontal={'zero'}
-        paddingVertical={'zero'}
+        paddingHorizontal="zero"
+        paddingVertical="zero"
       >
         {renderResult(child, (child) => (
           <>
@@ -149,15 +149,15 @@ export default React.memo(function MarkAbsentBeforehand() {
             <ContentArea
               shadow
               opaque={true}
-              paddingHorizontal={'s'}
-              paddingVertical={'m'}
+              paddingHorizontal="s"
+              paddingVertical="m"
             >
               <AbsenceWrapper>
                 <CustomTitle>
                   {i18n.attendances.actions.markAbsentBeforehand}
                 </CustomTitle>
-                <Gap size={'m'} />
-                <FixedSpaceRow spacing={'xxs'} alignItems={'flex-end'}>
+                <Gap size="m" />
+                <FixedSpaceRow spacing="xxs" alignItems="flex-end">
                   <TimeInputWrapper>
                     <Label>{i18n.common.starts}</Label>
                     <TimeInput
@@ -165,7 +165,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                       value={startDate}
                       type="date"
                       onChange={setStartDate}
-                      width={'s'}
+                      width="s"
                       info={
                         isBefore(new Date(startDate), new Date())
                           ? {
@@ -189,12 +189,12 @@ export default React.memo(function MarkAbsentBeforehand() {
                       value={endDate}
                       type="date"
                       onChange={setEndDate}
-                      width={'s'}
+                      width="s"
                     />
                   </TimeInputWrapper>
                 </FixedSpaceRow>
-                <Gap size={'L'} />
-                <FixedSpaceColumn spacing={'s'}>
+                <Gap size="L" />
+                <FixedSpaceColumn spacing="s">
                   <Label>{i18n.absences.reason}</Label>
                   <AbsenceSelector
                     selectedAbsenceType={selectedAbsenceType}
@@ -307,7 +307,7 @@ const DeleteAbsencesModal = React.memo(function DeleteAbsencesModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColor={'orange'}
+      iconColor="orange"
       title={i18n.absences.confirmDelete}
       icon={faExclamation}
       reject={{
@@ -334,7 +334,7 @@ const ConfirmExitModal = React.memo(function ConfirmExitModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColor={'orange'}
+      iconColor="orange"
       title={i18n.common.saveBeforeClosing}
       icon={faExclamation}
       reject={{

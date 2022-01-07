@@ -139,7 +139,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           : i18n.personProfile.fridgePartner.newPartner
       }
       icon={partnership ? faPen : faUser}
-      iconColor={'blue'}
+      iconColor="blue"
       resolveAction={onSubmit}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={!form.partner || validationErrors.length > 0}

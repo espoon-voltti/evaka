@@ -288,7 +288,7 @@ export default React.memo(function ApplicationEditView({
                     />
                     {partTimeOptions.length > 0 && serviceNeed.partTime && (
                       <SubRadios>
-                        <FixedSpaceColumn spacing={'xs'}>
+                        <FixedSpaceColumn spacing="xs">
                           {partTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
@@ -326,7 +326,7 @@ export default React.memo(function ApplicationEditView({
                     />
                     {!serviceNeed.partTime && fullTimeOptions.length > 0 && (
                       <SubRadios>
-                        <FixedSpaceColumn spacing={'xs'}>
+                        <FixedSpaceColumn spacing="xs">
                           {fullTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
@@ -698,7 +698,7 @@ export default React.memo(function ApplicationEditView({
                     futureAddress={child.futureAddress}
                     setApplication={setApplication}
                     i18n={i18n}
-                    path={'child'}
+                    path="child"
                   />
                   <Label>{i18n.application.person.movingDate}</Label>
                   <DatePickerDeprecated
@@ -784,7 +784,7 @@ export default React.memo(function ApplicationEditView({
                         futureAddress={guardian.futureAddress}
                         setApplication={setApplication}
                         i18n={i18n}
-                        path={'guardian'}
+                        path="guardian"
                       />
                       <Label>{i18n.application.person.movingDate}</Label>
                       <DatePickerDeprecated

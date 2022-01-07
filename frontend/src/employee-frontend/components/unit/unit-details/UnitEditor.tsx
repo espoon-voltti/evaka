@@ -221,7 +221,7 @@ function AddressEditor({
           value={address.postalCode}
           placeholder={i18n.unitEditor.placeholder.postalCode}
           onChange={(value) => update({ postalCode: value })}
-          width={'s'}
+          width="s"
           data-qa={`${dataQaPrefix}-postal-code-input`}
         />
         <InputField
@@ -608,7 +608,7 @@ export default function UnitEditor(props: Props): JSX.Element {
   }
 
   return (
-    <form action="#" data-qa={'unit-editor-container'}>
+    <form action="#" data-qa="unit-editor-container">
       {props.unit && (
         <TopBar>
           <H1 fitted>{props.unit.name}</H1>
@@ -617,7 +617,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               icon={faPen}
               onClick={onClickEditHandler}
               text={i18n.common.edit}
-              data-qa={'enable-edit-button'}
+              data-qa="enable-edit-button"
             />
           )}
         </TopBar>
@@ -634,7 +634,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.name}
             value={form.name}
             onChange={(value) => updateForm({ name: value })}
-            width={'L'}
+            width="L"
             data-qa="unit-name-input"
           />
         ) : (
@@ -669,7 +669,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 onChange={(closingDate) => updateForm({ closingDate })}
                 className="inline-block"
                 minDate={form.openingDate ?? LocalDate.of(1960, 0, 0)}
-                data-qa={'closing-date-input'}
+                data-qa="closing-date-input"
               />
             ) : (
               form.closingDate?.format()
@@ -680,7 +680,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               message={
                 i18n.unitEditor.warning.placementsShouldBeEndedIfUnitIsClosed
               }
-              data-qa={'closing-date-warning'}
+              data-qa="closing-date-warning"
             />
           )}
         </AlertBoxContainer>
@@ -881,9 +881,9 @@ export default function UnitEditor(props: Props): JSX.Element {
           {[1, 2, 3, 4, 5, 6, 7].map((day) => (
             <FixedSpaceColumn
               key={`"weekday-${day}"`}
-              spacing={'xs'}
-              marginRight={'m'}
-              alignItems={'center'}
+              spacing="xs"
+              marginRight="m"
+              alignItems="center"
             >
               <div>{i18n.unitEditor.label.operationDay[day]}</div>
               <Checkbox
@@ -892,7 +892,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                   (selectedDay) => selectedDay == day
                 )}
                 hiddenLabel={true}
-                label={''}
+                label=""
                 onChange={(checked) => {
                   updateForm({
                     operationDays: checked
@@ -921,7 +921,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             <InputField
               id="unit-capacity"
               value={form.capacity}
-              width={'xs'}
+              width="xs"
               onChange={(value) =>
                 updateForm({
                   capacity: value
@@ -978,7 +978,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                     i18n.unitEditor.warning
                       .onlyMunicipalUnitsShouldBeSentToVarda
                   }
-                  data-qa={'send-to-varda-warning'}
+                  data-qa="send-to-varda-warning"
                 />
               )}
           </AlertBoxContainer>
@@ -1010,11 +1010,11 @@ export default function UnitEditor(props: Props): JSX.Element {
             onChange={(invoicedByMunicipality) =>
               updateForm({ invoicedByMunicipality })
             }
-            data-qa={'check-invoice-by-municipality'}
+            data-qa="check-invoice-by-municipality"
           />
           {form.invoicedByMunicipality && (
             <>
-              <Gap size={'m'} />
+              <Gap size="m" />
               <FormPart>
                 <label htmlFor="unit-cost-center">
                   {i18n.unitEditor.label.costCenter}
@@ -1097,7 +1097,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.additionalInfo}
             value={form.additionalInfo}
             onChange={(value) => updateForm({ additionalInfo: value })}
-            width={'L'}
+            width="L"
           />
         ) : (
           form.additionalInfo
@@ -1125,7 +1125,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.email}
             value={form.email}
             onChange={(value) => updateForm({ email: value })}
-            width={'L'}
+            width="L"
           />
         ) : (
           form.email
@@ -1138,7 +1138,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             id="unit-url"
             placeholder={i18n.unitEditor.placeholder.url}
             value={form.url}
-            width={'L'}
+            width="L"
             onChange={(value) => updateForm({ url: value })}
           />
         ) : (
@@ -1191,7 +1191,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.unitManager.name}
             value={unitManager.name}
             onChange={(value) => updateUnitManager({ name: value })}
-            width={'L'}
+            width="L"
             data-qa="manager-name-input"
           />
         ) : (
@@ -1208,7 +1208,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.phone}
             value={unitManager.phone}
             onChange={(value) => updateUnitManager({ phone: value })}
-            data-qa={'qa-unit-manager-phone-input-field'}
+            data-qa="qa-unit-manager-phone-input-field"
           />
         ) : (
           <div data-qa="unit-manager-phone">{unitManager.phone}</div>
@@ -1224,8 +1224,8 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.email}
             value={unitManager.email}
             onChange={(value) => updateUnitManager({ email: value })}
-            width={'L'}
-            data-qa={'qa-unit-manager-email-input-field'}
+            width="L"
+            data-qa="qa-unit-manager-email-input-field"
           />
         ) : (
           <div data-qa="unit-manager-email">{unitManager.email}</div>
@@ -1241,7 +1241,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             id="unit-daycare-name"
             placeholder={i18n.unitEditor.placeholder.decisionCustomization.name}
             value={decisionCustomization.daycareName}
-            width={'L'}
+            width="L"
             onChange={(value) =>
               updateDecisionCustomization({
                 daycareName: value
@@ -1265,7 +1265,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                   i18n.unitEditor.placeholder.decisionCustomization.name
                 }
                 value={decisionCustomization.preschoolName}
-                width={'L'}
+                width="L"
                 onChange={(value) =>
                   updateDecisionCustomization({
                     preschoolName: value
@@ -1307,7 +1307,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               id="unit-handler-address"
               placeholder={i18n.unitEditor.placeholder.streetAddress}
               value={decisionCustomization.handlerAddress}
-              width={'L'}
+              width="L"
               onChange={(value) =>
                 updateDecisionCustomization({
                   handlerAddress: value
@@ -1319,7 +1319,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               isMunicipalOrPurchasedOrServiceVoucherUnit() && (
                 <AlertBox
                   message={i18n.unitEditor.warning.handlerAddressIsMandatory}
-                  data-qa={'handler-address-mandatory-warning'}
+                  data-qa="handler-address-mandatory-warning"
                 />
               )}
           </AlertBoxContainer>

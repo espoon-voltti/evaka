@@ -98,23 +98,23 @@ export default React.memo(function EmployeePinCodePage() {
 
         {pinLocked && pinLocked.isSuccess && pinLocked.value && (
           <AlertBox
-            data-qa={'pin-locked-alert-box'}
+            data-qa="pin-locked-alert-box"
             message={i18n.pinCode.lockedLong}
           />
         )}
 
-        <FixedSpaceColumn spacing={'xxs'}>
+        <FixedSpaceColumn spacing="xxs">
           <Label>{i18n.pinCode.pinCode}</Label>
           <InputField
             value={pin}
             onChange={errorCheck}
             placeholder={i18n.pinCode.placeholder}
-            width={'s'}
+            width="s"
             data-qa="pin-code-input"
             info={getInputInfo()}
           />
         </FixedSpaceColumn>
-        <Gap size={'L'} />
+        <Gap size="L" />
         {pin.length !== 4 || error ? (
           <Button primary text={i18n.pinCode.button} disabled />
         ) : (
@@ -125,10 +125,10 @@ export default React.memo(function EmployeePinCodePage() {
             onSuccess={() => {
               setError(false)
             }}
-            data-qa={'send-pin-button'}
+            data-qa="send-pin-button"
           />
         )}
-        <Gap size={'L'} />
+        <Gap size="L" />
       </ContentArea>
     </Container>
   )

@@ -303,7 +303,7 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                     <ExpandingInfo
                       key={basis.value}
                       info={basis.descriptionFi}
-                      ariaLabel={''}
+                      ariaLabel=""
                       fullWidth={true}
                     >
                       <CheckboxRow key={basis.value}>

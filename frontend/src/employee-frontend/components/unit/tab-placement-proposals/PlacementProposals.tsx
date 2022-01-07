@@ -129,8 +129,8 @@ export default React.memo(function PlacementProposals({
       {placementPlans.length > 0 && (
         <>
           <Label>{i18n.unit.placementProposals.infoTitle}</Label>
-          <Gap size={'xxs'} />
-          <P noMargin width={'960px'}>
+          <Gap size="xxs" />
+          <P noMargin width="960px">
             {i18n.unit.placementProposals.infoText}
           </P>
         </>
@@ -179,7 +179,7 @@ export default React.memo(function PlacementProposals({
       {placementPlans.length > 0 && (
         <ButtonRow>
           <Button
-            data-qa={'placement-proposals-accept-button'}
+            data-qa="placement-proposals-accept-button"
             onClick={() => {
               acceptPlacementProposal(unitId)
                 .then(loadUnitData)

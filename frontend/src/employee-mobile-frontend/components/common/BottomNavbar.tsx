@@ -162,9 +162,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                     )
                   : unreadCounts
                 ).some(({ unreadCount }) => unreadCount > 0) && (
-                  <UnreadMessagesIndicator
-                    data-qa={'unread-messages-indicator'}
-                  />
+                  <UnreadMessagesIndicator data-qa="unread-messages-indicator" />
                 )}
               </BottomText>
             </Button>

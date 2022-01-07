@@ -160,7 +160,7 @@ function CreateApplicationModal({
     <FormModal
       title={i18nView.modalTitle}
       icon={faFileAlt}
-      iconColor={'blue'}
+      iconColor="blue"
       resolveAction={submit}
       resolveLabel={i18nView.createButton}
       resolveDisabled={!canSubmit()}
@@ -235,7 +235,7 @@ function CreateApplicationModal({
 
             <div>
               <Radio
-                data-qa={'radio-new-no-ssn'}
+                data-qa="radio-new-no-ssn"
                 checked={personType === 'NEW_NO_SSN'}
                 label={i18nView.personTypes.NEW_NO_SSN}
                 onChange={() => setPersonType('NEW_NO_SSN')}

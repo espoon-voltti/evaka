@@ -126,7 +126,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
   ].filter(({ enabled }) => enabled)
 
   return actions.length > 0 ? (
-    <StickyActionBar align={'right'}>
+    <StickyActionBar align="right">
       {checkedIds.length > 0 ? (
         <CheckedRowsInfo>
           {i18n.applications.actions.checked(checkedIds.length)}
