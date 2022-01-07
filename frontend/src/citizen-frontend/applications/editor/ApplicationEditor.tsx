@@ -11,6 +11,7 @@ import {
   ApplicationFormData,
   formDataToApiData
 } from 'lib-common/api-types/application/ApplicationFormData'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -80,7 +81,17 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         void getPreschoolTerms().then((res) =>
           setTerms(
             res
-              .map((terms) => terms.map((term) => term.extendedTerm))
+              .map((terms) =>
+                terms
+                  .filter(({ applicationPeriod, extendedTerm }) => {
+                    const today = LocalDate.today()
+                    return (
+                      applicationPeriod.start.isEqualOrBefore(today) &&
+                      extendedTerm.end.isEqualOrAfter(today)
+                    )
+                  })
+                  .map((term) => term.extendedTerm)
+              )
               .getOrElse([])
           )
         )
