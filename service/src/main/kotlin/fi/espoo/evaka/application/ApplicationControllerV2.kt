@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -41,6 +42,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.upsertCitizenUser
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -151,6 +153,9 @@ class ApplicationControllerV2(
 
                 val guardian = tx.getPersonById(guardianId)
                     ?: throw BadRequest("Could not find the guardian with id $guardianId")
+
+                // If the guardian has never logged in to eVaka, evaka_user might not contain a row for them yet
+                tx.upsertCitizenUser(PersonId(guardianId))
 
                 val id = tx.insertApplication(
                     guardianId = guardianId,
