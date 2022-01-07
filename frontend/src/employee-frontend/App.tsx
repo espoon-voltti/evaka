@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -24,6 +24,7 @@ import { client } from './api/client'
 import ApplicationPage from './components/ApplicationPage'
 import ChildInformation from './components/ChildInformation'
 import FinancePage from './components/FinancePage'
+import { Footer } from './components/Footer'
 import GroupCaretakers from './components/GroupCaretakers'
 import Header from './components/Header'
 import IncomeStatementPage from './components/IncomeStatementPage'
@@ -456,6 +457,7 @@ export default function App() {
                   ])}
                   <Route exact path="/" component={RedirectToMainPage} />
                 </Switch>
+                <Footer />
                 <ErrorMessage />
                 <ReloadNotification
                   i18n={i18n.reloadNotification}

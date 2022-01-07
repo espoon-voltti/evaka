@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import type { EmployeeCustomizations } from 'lib-customizations/types'
 import { employeeConfig } from './appConfigs'
-import EspooLogo from './assets/EspooLogo.png'
+import Logo from './assets/EspooLogoPrimary.svg'
 import featureFlags from './featureFlags'
 
 const customizations: EmployeeCustomizations = {
@@ -16,10 +17,7 @@ const customizations: EmployeeCustomizations = {
     FI: {},
     SV: {}
   },
-  cityLogo: {
-    src: EspooLogo,
-    alt: 'Espoo Logo'
-  },
+  cityLogo: <img src={Logo} alt="Espoo Logo" data-qa="footer-city-logo" />,
   featureFlags,
   placementTypes: [
     'PRESCHOOL',
