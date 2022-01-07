@@ -11,6 +11,7 @@ import { H1, Title } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
+import { useTranslation } from '../localization'
 
 const ChildHeaderContainer = styled.div`
   display: flex;
@@ -35,6 +36,7 @@ export default React.memo(function ChildHeader({
 }: {
   child: Child
 }) {
+  const t = useTranslation()
   return (
     <ChildHeaderContainer>
       <RoundImage
@@ -44,6 +46,7 @@ export default React.memo(function ChildHeader({
         }
         fallbackContent={farUser}
         fallbackColor={colors.greyscale.lighter}
+        alt={t.children.childPicture}
       />
       <div>
         <H1 noMargin data-qa="child-name">

@@ -50,6 +50,7 @@ interface Props {
   fallbackColor: string
   size: IconSize
   sizeDesktop?: IconSize
+  alt?: string
 }
 
 export const RoundImage = React.memo(function RoundImage({
@@ -57,12 +58,13 @@ export const RoundImage = React.memo(function RoundImage({
   fallbackContent,
   size,
   sizeDesktop,
-  src
+  src,
+  alt
 }: Props) {
   return (
     <ImageContainer size={size} sizeDesktop={sizeDesktop} color={fallbackColor}>
       {src ? (
-        <Image size={size} sizeDesktop={sizeDesktop} src={src} />
+        <Image size={size} sizeDesktop={sizeDesktop} src={src} alt={alt} />
       ) : (
         <FontAwesomeIcon icon={fallbackContent} />
       )}

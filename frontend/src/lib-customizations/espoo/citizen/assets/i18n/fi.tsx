@@ -1704,6 +1704,7 @@ export default {
     pageDescription:
       'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
     noChildren: 'Ei lapsia',
+    childPicture: 'Lapsen kuva',
     placementTermination: {
       title: 'Paikan irtisanominen',
       description:

@@ -67,8 +67,9 @@ const ChevronContainer = styled.div`
   align-items: center;
 `
 
-function ChildItem({ child }: { child: Child }) {
+const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
   const history = useHistory()
+  const t = useTranslation()
   const navigateToChild = useCallback(
     () => history.push(`/children/${child.id}`),
     [history, child.id]
@@ -87,6 +88,7 @@ function ChildItem({ child }: { child: Child }) {
         }
         fallbackContent={faUser}
         fallbackColor={colors.greyscale.lighter}
+        alt={t.children.childPicture}
       />
       <MobileAndTablet>
         <NameAndGroup>
@@ -107,7 +109,7 @@ function ChildItem({ child }: { child: Child }) {
       </ChevronContainer>
     </ChildContainer>
   )
-}
+})
 
 export default React.memo(function ChildrenPage() {
   const [childrenResponse] = useApiState(getChildren, [])
