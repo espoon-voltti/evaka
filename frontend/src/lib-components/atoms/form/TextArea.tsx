@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { RefObject, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import classNames from 'classnames'
+import React, { RefObject, useMemo, useState } from 'react'
 import TextareaAutosize from 'react-autosize-textarea'
+import styled from 'styled-components'
 import { BaseProps } from '../../utils'
 import UnderRowStatusIcon from '../StatusIcon'
 import { InputFieldUnderRow, InputInfo, InputRow } from './InputField'

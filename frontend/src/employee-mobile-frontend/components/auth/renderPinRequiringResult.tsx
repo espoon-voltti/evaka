@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
 import React from 'react'
+import { Result } from 'lib-common/api'
 import { PinLoginRequired } from '../../api/auth-pin-login'
 import { renderResult, RenderResultFn } from '../async-rendering'
 import { PinLogin } from './PinLogin'

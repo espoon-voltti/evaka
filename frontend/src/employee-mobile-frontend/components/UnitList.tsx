@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useContext } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { Loading } from 'lib-common/api'
 import { UnitStats } from 'lib-common/generated/api-types/attendance'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -12,9 +15,6 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
 import { getMobileUnitStats } from '../api/unit'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Paragraph } from 'lib-common/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Paragraph } from 'lib-common/api-types/vasu'
-import TextArea from 'lib-components/atoms/form/TextArea'
 
 interface Props {
   onSave: (paragraph: Paragraph) => void

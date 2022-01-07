@@ -10,35 +10,35 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import LocalDate from 'lib-common/local-date'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { useTranslation } from '../../../state/i18n'
-import { UIContext } from '../../../state/ui'
-import { Gap } from 'lib-components/white-space'
+import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import { AssistanceAction, AssistanceMeasure } from '../../../types/child'
-
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import {
-  FormErrors,
-  formHasErrors,
-  isDateRangeInverted
-} from '../../../utils/validation/validations'
-import LabelValueList from '../../../components/common/LabelValueList'
-import FormActions from '../../../components/common/FormActions'
-import { DateRange, rangeContainsDate } from '../../../utils/date'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DivFitContent } from '../../common/styled/containers'
+import { Gap } from 'lib-components/white-space'
+import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import {
   AssistanceActionRequest,
   createAssistanceAction,
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
-import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { UUID } from 'lib-common/types'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import FormActions from '../../../components/common/FormActions'
+import LabelValueList from '../../../components/common/LabelValueList'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { AssistanceAction, AssistanceMeasure } from '../../../types/child'
+
+import { DateRange, rangeContainsDate } from '../../../utils/date'
+import {
+  FormErrors,
+  formHasErrors,
+  isDateRangeInverted
+} from '../../../utils/validation/validations'
+import { DivFitContent } from '../../common/styled/containers'
 
 const CheckboxRow = styled.div`
   display: flex;

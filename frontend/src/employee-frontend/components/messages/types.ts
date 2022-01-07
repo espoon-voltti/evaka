@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from 'lib-common/json'
 import {
   DraftContent,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
+import { JsonOf } from 'lib-common/json'
 
 export const deserializeDraftContent = ({
   created,

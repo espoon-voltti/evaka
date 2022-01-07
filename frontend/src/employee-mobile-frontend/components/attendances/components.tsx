@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import styled from 'styled-components'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { fontWeights } from 'lib-components/typography'
 import {
   defaultMargins,
@@ -13,7 +14,6 @@ import {
   SpacingSize
 } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import styled from 'styled-components'
 
 export const WideAsyncButton = styled(AsyncButton)`
   @media screen and (max-width: 1023px) {

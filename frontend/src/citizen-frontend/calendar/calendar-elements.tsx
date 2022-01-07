@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import styled from 'styled-components'
 import {
   ChildDailyData,
   DailyReservationData
 } from 'lib-common/generated/api-types/reservations'
-import React from 'react'
-import styled from 'styled-components'
 import { Light } from 'lib-components/typography'
 import { Translations, useTranslation } from '../localization'
 

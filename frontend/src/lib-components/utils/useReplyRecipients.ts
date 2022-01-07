@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
 import { useCallback, useEffect, useState } from 'react'
 import { Message } from 'lib-common/generated/api-types/messaging'
+import { UUID } from 'lib-common/types'
 import { SelectableAccount } from '../molecules/MessageReplyEditor'
 
 function getInitialRecipients(

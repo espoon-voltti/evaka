@@ -3,9 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
-import { client } from './client'
 import {
   ExternalStaffArrivalRequest,
   ExternalStaffDepartureRequest,
@@ -13,6 +10,9 @@ import {
   StaffAttendanceResponse,
   StaffDepartureRequest
 } from 'lib-common/generated/api-types/attendance'
+import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
+import { client } from './client'
 
 export async function getUnitStaffAttendances(
   unitId: UUID

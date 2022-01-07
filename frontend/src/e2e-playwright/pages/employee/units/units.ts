@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import config from 'e2e-test-common/config'
 import { UUID } from 'lib-common/types'
+import { waitUntilEqual } from '../../../utils'
 import { Checkbox, Element, Page, TextInput } from '../../../utils/page'
 import { UnitEditor, UnitPage } from './unit'
-import config from 'e2e-test-common/config'
-import { waitUntilEqual } from '../../../utils'
 
 export default class UnitsPage {
   constructor(private readonly page: Page) {}

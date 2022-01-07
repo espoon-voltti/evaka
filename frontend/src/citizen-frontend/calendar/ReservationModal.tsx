@@ -2,36 +2,36 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  FixedSpaceFlexWrap,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { fontWeights, H2, Label, Light } from 'lib-components/typography'
+import { faPlus, faTrash } from 'lib-icons'
 import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { useLang, useTranslation } from '../localization'
-import { postReservations } from './api'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { SelectionChip } from 'lib-components/atoms/Chip'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
-import LocalDate from 'lib-common/local-date'
-import DatePicker, {
-  DatePickerSpacer
-} from 'lib-components/molecules/date-picker/DatePicker'
-import { UUID } from 'lib-common/types'
-import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { errorToInputInfo } from '../input-info-helper'
+import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
 import {
   DailyReservationRequest,
   ReservationChild,
   TimeRange
 } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { SelectionChip } from 'lib-components/atoms/Chip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faPlus, faTrash } from 'lib-icons'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
+import {
+  FixedSpaceFlexWrap,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import DatePicker, {
+  DatePickerSpacer
+} from 'lib-components/molecules/date-picker/DatePicker'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { fontWeights, H2, Label, Light } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { errorToInputInfo } from '../input-info-helper'
+import { useLang, useTranslation } from '../localization'
+import { postReservations } from './api'
 
 interface Props {
   onClose: () => void

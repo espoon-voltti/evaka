@@ -4,13 +4,13 @@
 
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import { waitUntilEqual } from 'e2e-playwright/utils'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
-import { EmployeePinPage } from '../../pages/employee/employee-pin'
 import { Fixture } from 'e2e-test-common/dev-api/fixtures'
-import { employeeLogin } from 'e2e-playwright/utils/user'
-import { Page } from '../../utils/page'
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
+import { EmployeePinPage } from '../../pages/employee/employee-pin'
+import { Page } from '../../utils/page'
 
 let admin: EmployeeDetail
 let page: Page

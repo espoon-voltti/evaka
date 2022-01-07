@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import RoundIcon from '../atoms/RoundIcon'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'
-import styled from 'styled-components'
-import { modalZIndex } from '../layout/z-helpers'
-import IconButton from '../atoms/buttons/IconButton'
-import { defaultMargins } from '../white-space'
 import { faTimes } from 'lib-icons'
+import React from 'react'
+import styled from 'styled-components'
+import RoundIcon from '../atoms/RoundIcon'
+import IconButton from '../atoms/buttons/IconButton'
+import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'
+import { modalZIndex } from '../layout/z-helpers'
+import { defaultMargins } from '../white-space'
 
 export interface Props {
   icon: IconDefinition

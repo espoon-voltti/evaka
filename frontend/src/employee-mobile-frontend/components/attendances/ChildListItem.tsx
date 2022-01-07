@@ -2,24 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { farStickyNote, farUser, farUsers } from 'lib-icons'
 import React, { useContext } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { Bold, InformationText } from 'lib-components/typography'
 import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import colors, { attendanceColors } from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
-import { farStickyNote, farUser, farUsers } from 'lib-icons'
-import { Translations, useTranslation } from '../../state/i18n'
-import { Link, useParams } from 'react-router-dom'
-import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { UUID } from 'lib-common/types'
-import { UnitContext } from '../../state/unit'
 import { GroupNote } from 'lib-common/generated/api-types/note'
+import { UUID } from 'lib-common/types'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Bold, InformationText } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import colors, { attendanceColors } from 'lib-customizations/common'
+import { Translations, useTranslation } from '../../state/i18n'
+import { UnitContext } from '../../state/unit'
+import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
 
 const ChildBox = styled.div`
   align-items: center;

@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp, fasExclamationTriangle } from 'lib-icons'
 import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import Title from 'lib-components/atoms/Title'
-import { faChevronUp, fasExclamationTriangle } from 'lib-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 
+import StatusLabel from '../../components/common/StatusLabel'
 import { useTranslation } from '../../state/i18n'
 import {
   PlacementDraft,
   PlacementDraftPlacement
 } from '../../types/placementdraft'
-import colors from 'lib-customizations/common'
 import { getStatusLabelByDateRange } from '../../utils/date'
-import StatusLabel from '../../components/common/StatusLabel'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 interface PlacementsContainerProps {
   open: boolean

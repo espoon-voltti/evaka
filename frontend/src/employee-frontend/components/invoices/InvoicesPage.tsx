@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-import LocalDate from 'lib-common/local-date'
-import { Gap } from 'lib-components/white-space'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Label } from 'lib-components/typography'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import Invoices from './Invoices'
-import InvoiceFilters from './InvoiceFilters'
-import Actions from './Actions'
-import { useTranslation } from '../../state/i18n'
-import { InvoicesActions, useInvoicesState } from './invoices-state'
 import { Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { useTranslation } from '../../state/i18n'
+import Actions from './Actions'
+import InvoiceFilters from './InvoiceFilters'
+import Invoices from './Invoices'
+import { InvoicesActions, useInvoicesState } from './invoices-state'
 
 export default React.memo(function InvoicesPage() {
   const {

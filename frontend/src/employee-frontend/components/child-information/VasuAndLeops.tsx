@@ -13,7 +13,16 @@ import { useHistory } from 'react-router'
 import styled from 'styled-components'
 import { combine, Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
+import {
+  DaycarePlacementWithDetails,
+  PlacementType
+} from 'lib-common/generated/api-types/placement'
+import {
+  VasuDocumentSummary,
+  VasuTemplateSummary
+} from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -28,25 +37,16 @@ import { defaultMargins } from 'lib-components/white-space'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import { RequireRole } from '../../utils/roles'
+import { renderResult, UnwrapResult } from '../async-rendering'
 import { VasuStateChip } from '../common/VasuStateChip'
-import {
-  VasuDocumentSummary,
-  VasuTemplateSummary
-} from 'lib-common/generated/api-types/vasu'
 import {
   createVasuDocument,
   getVasuDocumentSummaries,
   updateDocumentState
 } from '../vasu/api'
-import { getLastPublished } from '../vasu/vasu-events'
 import { getVasuTemplateSummaries } from '../vasu/templates/api'
-import { RequireRole } from '../../utils/roles'
-import { renderResult, UnwrapResult } from '../async-rendering'
-import { UUID } from 'lib-common/types'
-import {
-  DaycarePlacementWithDetails,
-  PlacementType
-} from 'lib-common/generated/api-types/placement'
+import { getLastPublished } from '../vasu/vasu-events'
 
 const StateCell = styled(Td)`
   display: flex;

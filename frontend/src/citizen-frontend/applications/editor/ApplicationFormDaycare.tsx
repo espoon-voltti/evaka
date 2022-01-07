@@ -3,23 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-
+import { Loading, Result, Success } from 'lib-common/api'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import LocalDate from 'lib-common/local-date'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Loader from 'lib-components/atoms/Loader'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+
+import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
+import FeeSection from '../../applications/editor/FeeSection'
 import Heading from '../../applications/editor/Heading'
+import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
-import LocalDate from 'lib-common/local-date'
-import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
-import FeeSection from '../../applications/editor/FeeSection'
-import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
-import { ApplicationFormProps } from './ApplicationEditor'
-import Loader from 'lib-components/atoms/Loader'
-import { getServiceNeedOptionPublicInfos } from '../api'
-import { Loading, Result, Success } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../../localization'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import { getServiceNeedOptionPublicInfos } from '../api'
+import { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormDaycare({
   apiData,

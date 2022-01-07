@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Decision } from './decision'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { VoucherApplicationFilter } from '../state/application-ui'
 import {
   ApplicationAttachment,
   ApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
+import { VoucherApplicationFilter } from '../state/application-ui'
+import { Decision } from './decision'
 
 export interface ApplicationResponse {
   application: ApplicationDetails

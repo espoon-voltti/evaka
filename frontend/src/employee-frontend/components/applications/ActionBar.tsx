@@ -3,12 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { ApplicationUIContext } from '../../state/application-ui'
 import Button from 'lib-components/atoms/buttons/Button'
-import { useTranslation } from '../../state/i18n'
-import StickyActionBar from '../../components/common/StickyActionBar'
-import { UIContext } from '../../state/ui'
-import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
   batchCancelPlacementPlan,
   batchMoveToWaitingPlacement,
@@ -17,7 +13,11 @@ import {
   batchSendPlacementProposal,
   batchWithdrawPlacementProposal
 } from '../../api/applications'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import StickyActionBar from '../../components/common/StickyActionBar'
+import { ApplicationUIContext } from '../../state/application-ui'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 
 type Action = {
   id: string

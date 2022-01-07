@@ -5,12 +5,12 @@
 import { fasInfo, faTimes } from 'lib-icons'
 import React, { ReactNode, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
-import RoundIcon from '../atoms/RoundIcon'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { defaultMargins, SpacingSize } from '../white-space'
-import { tabletMin } from '../breakpoints'
+import RoundIcon from '../atoms/RoundIcon'
 import IconButton from '../atoms/buttons/IconButton'
+import { tabletMin } from '../breakpoints'
+import { defaultMargins, SpacingSize } from '../white-space'
 
 const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
   ${({ fullWidth }) => fullWidth && `width: 100%;`}

@@ -2,28 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faMapMarkerAlt } from 'lib-icons'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import colors from 'lib-customizations/common'
 import { placementTypes } from 'lib-customizations/employee'
-import { faMapMarkerAlt } from 'lib-icons'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { createPlacement } from '../../../api/child/placements'
 import { getDaycares } from '../../../api/unit'
-import Select from 'lib-components/atoms/dropdowns/Select'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { Unit } from '../../../types/unit'
-import { PlacementType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
 
 export interface Props {
   childId: UUID

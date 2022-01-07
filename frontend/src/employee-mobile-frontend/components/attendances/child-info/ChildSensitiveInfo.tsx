@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPhone } from 'lib-icons'
+import React from 'react'
+import styled from 'styled-components'
 import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
+import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faPhone } from 'lib-icons'
-import React from 'react'
-import styled from 'styled-components'
-import { getAge } from 'lib-common/utils/local-date'
 import { useTranslation } from '../../../state/i18n'
 
 const Key = styled.span`

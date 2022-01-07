@@ -96,6 +96,7 @@
     "esbuild": "^0.14.2",
     "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-react": "^7.24.0",
@@ -217,15 +218,33 @@
       "plugin:@evaka/recommended"
     ],
     "plugins": [
+      "import",
       "react-hooks"
     ],
     "settings": {
+      "import/internal-regex": "^(citizen-frontend|e2e-playwright|e2e-test-common|employee-frontend|employee-mobile-frontend|lib-common|lib-components|lib-customizations|lib-icons|maintenance-page-frontend)/",
       "react": {
         "version": "detect"
       }
     },
     "rules": {
-      "react/prop-types": 0,
+      "import/order": [
+        "warn",
+        {
+          "alphabetize": {
+            "order": "asc"
+          },
+          "groups": [
+            "builtin",
+            "external",
+            "internal",
+            "parent",
+            "sibling",
+            "index"
+          ]
+        }
+      ],
+      "react/prop-types": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": [
         "warn",

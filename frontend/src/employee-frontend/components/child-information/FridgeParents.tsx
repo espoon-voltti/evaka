@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
 import * as _ from 'lodash'
-
-import { useTranslation } from '../../state/i18n'
-import { ChildContext, ChildState } from '../../state/child'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
-import { getStatusLabelByDateRange } from '../../utils/date'
-import StatusLabel from '../../components/common/StatusLabel'
-import { H3 } from 'lib-components/typography'
-import { renderResult } from '../async-rendering'
 import { Parentship } from 'lib-common/generated/api-types/pis'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { H3 } from 'lib-components/typography'
+
+import StatusLabel from '../../components/common/StatusLabel'
+import { ChildContext, ChildState } from '../../state/child'
+import { useTranslation } from '../../state/i18n'
+import { getStatusLabelByDateRange } from '../../utils/date'
+import { renderResult } from '../async-rendering'
 
 const FridgeParents = React.memo(function FridgeParents() {
   const { i18n } = useTranslation()

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
-import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasExclamationTriangle } from 'lib-icons'
 import React from 'react'
+import styled from 'styled-components'
+import colors from 'lib-customizations/common'
 
 interface Props {
   text: string

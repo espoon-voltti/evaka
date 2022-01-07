@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
-import {
   insertDefaultServiceNeedOptions,
   resetDatabase,
   postChildDailyNote
 } from 'e2e-test-common/dev-api'
 import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
+import {
   DaycareBuilder,
   DaycareGroupBuilder,
   Fixture
 } from 'e2e-test-common/dev-api/fixtures'
-import { UnitPage } from '../../pages/employee/units/unit'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

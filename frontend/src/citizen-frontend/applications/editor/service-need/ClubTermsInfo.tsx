@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
 import React from 'react'
 import styled from 'styled-components'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../../localization'
 import { Term } from '../validations'
 

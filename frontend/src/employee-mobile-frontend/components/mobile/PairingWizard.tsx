@@ -2,25 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect } from 'react'
+import { faArrowRight } from 'lib-icons'
 import { useState } from 'react'
+import React, { Fragment, useContext, useEffect } from 'react'
 import styled from 'styled-components'
-
 import { Result, Loading } from 'lib-common/api'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InputField from 'lib-components/atoms/form/InputField'
+import { fontWeights, P } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 import {
   authMobile,
   getPairingStatus,
   PairingResponse,
   postPairingChallenge
 } from '../../api/unit'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InputField from 'lib-components/atoms/form/InputField'
-import colors from 'lib-customizations/common'
-import { fontWeights, P } from 'lib-components/typography'
-import { faArrowRight } from 'lib-icons'
+import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
-import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { FullHeightContainer, WideLinkButton } from './components'
 
 const CenteredColumn = styled.div`

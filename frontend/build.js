@@ -14,8 +14,8 @@ const path = require('path')
 const esbuild = require('esbuild')
 const express = require('express')
 const proxy = require('express-http-proxy')
-const yargs = require('yargs')
 const _ = require('lodash')
+const yargs = require('yargs')
 
 function resolveCustomizations() {
   const customizations = process.env.EVAKA_CUSTOMIZATIONS || 'espoo'

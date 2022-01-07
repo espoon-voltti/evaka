@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { DateQuestion } from 'lib-common/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
@@ -9,10 +10,9 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label } from 'lib-components/typography'
 import { VasuTranslations } from 'lib-customizations/employee'
-import React, { useEffect, useState } from 'react'
 import QuestionInfo from '../QuestionInfo'
-import { QuestionProps } from './question-props'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
+import { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<DateQuestion> {
   onChange?: (value: LocalDate | null) => void

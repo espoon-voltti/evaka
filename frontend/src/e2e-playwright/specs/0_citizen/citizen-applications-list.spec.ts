@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { enduserLogin } from 'e2e-playwright/utils/user'
 import {
   execSimpleApplicationActions,
   insertApplications,
@@ -13,9 +14,8 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
-import { enduserLogin } from 'e2e-playwright/utils/user'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 
 let page: Page

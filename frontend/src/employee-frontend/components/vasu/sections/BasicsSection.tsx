@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Dispatch } from 'react'
-import { Gap } from 'lib-components/white-space'
-import { ContentArea } from 'lib-components/layout/Container'
-import { H2, Label } from 'lib-components/typography'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ChildLanguage,
   CurriculumType,
   VasuBasics
 } from 'lib-common/generated/api-types/vasu'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { VasuTranslations } from 'lib-customizations/employee'
-import QuestionInfo from '../QuestionInfo'
+import InputField from 'lib-components/atoms/form/InputField'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import InputField from 'lib-components/atoms/form/InputField'
+import { H2, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { VasuTranslations } from 'lib-customizations/employee'
+import QuestionInfo from '../QuestionInfo'
 import { ValueOrNoRecord } from '../components/ValueOrNoRecord'
 
 interface Props {

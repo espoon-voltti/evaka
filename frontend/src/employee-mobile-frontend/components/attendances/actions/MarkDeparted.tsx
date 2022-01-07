@@ -2,35 +2,37 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { isBefore, parse } from 'date-fns'
+import { faArrowLeft, farStickyNote } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { faArrowLeft, farStickyNote } from 'lib-icons'
-import colors from 'lib-customizations/common'
+import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
-import { Gap } from 'lib-components/white-space'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { combine } from 'lib-common/api'
-import { ContentArea } from 'lib-components/layout/Container'
-import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
-import { TallContentArea } from '../../mobile/components'
-import { ChildAttendanceContext } from '../../../state/child-attendance'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import {
   childDeparts,
   getChildDeparture,
   postDeparture
 } from '../../../api/attendances'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { Translations, useTranslation } from '../../../state/i18n'
-import { AbsentFrom } from '../AbsentFrom'
-import DailyNote from '../notes/DailyNote'
-import { isBefore, parse } from 'date-fns'
+import { AbsenceType } from '../../../types'
+import { renderResult } from '../../async-rendering'
+import { TallContentArea } from '../../mobile/components'
 import AbsenceSelector from '../AbsenceSelector'
+import { AbsentFrom } from '../AbsentFrom'
 import {
   Actions,
   BackButtonInline,
@@ -38,9 +40,7 @@ import {
   DailyNotes,
   TimeWrapper
 } from '../components'
-import { AbsenceType } from '../../../types'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { renderResult } from '../../async-rendering'
+import DailyNote from '../notes/DailyNote'
 
 function validateTime(
   i18n: Translations,

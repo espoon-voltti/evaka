@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { useTranslation } from '../../state/i18n'
 import { formatCents } from 'lib-common/money'
+import { useTranslation } from '../../state/i18n'
 
 interface Props {
   title: 'rowSubTotal' | 'familyTotal'

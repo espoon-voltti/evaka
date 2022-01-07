@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPlus } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { faPlus } from 'lib-icons'
-import Spinner from 'lib-components/atoms/state/Spinner'
-import { Gap } from 'lib-components/white-space'
-import { Label } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
-import { getOrCreatePersonBySsn } from '../../api/person'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import InputField from 'lib-components/atoms/form/InputField'
+import Spinner from 'lib-components/atoms/state/Spinner'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { getOrCreatePersonBySsn } from '../../api/person'
+import { useTranslation } from '../../state/i18n'
 import { isSsnValid } from '../../utils/validation/validations'
 
 export default React.memo(function VTJModal({

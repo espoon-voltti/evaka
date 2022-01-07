@@ -8,8 +8,6 @@ import {
   deserializeMessageThread,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging/message'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import {
   CitizenMessageBody,
   MessageAccount,
@@ -17,6 +15,8 @@ import {
   ReplyToMessageBody,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
+import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
 import { client } from '../api-client'
 
 export async function getReceivedMessages(

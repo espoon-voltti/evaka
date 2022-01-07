@@ -4,13 +4,13 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Label } from 'lib-components/typography'
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { useTranslation } from '../../../localization'
 import { featureFlags } from 'lib-customizations/citizen'
+
 import { getAttachmentBlob } from '../../../attachments'
+import { useTranslation } from '../../../localization'
 import { OverlayContext } from '../../../overlay/state'
 
 type Props = {

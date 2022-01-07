@@ -4,13 +4,13 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { VasuDocument } from 'lib-common/generated/api-types/vasu'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { vasuTranslations } from 'lib-customizations/employee'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
-import { VasuDocument } from 'lib-common/generated/api-types/vasu'
-import { vasuTranslations } from 'lib-customizations/employee'
 
 const HeaderSection = styled(ContentArea)`
   display: flex;

@@ -4,15 +4,14 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import ReactCrop, { Crop } from 'react-image-crop'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import Button from 'lib-components/atoms/buttons/Button'
-import { uploadChildImage } from '../../../api/childImages'
-
-import 'react-image-crop/dist/ReactCrop.css'
-import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
+import styled from 'styled-components'
+import Button from 'lib-components/atoms/buttons/Button'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { uploadChildImage } from '../../../api/childImages'
 import { useTranslation } from '../../../state/i18n'
+import 'react-image-crop/dist/ReactCrop.css'
 
 const defaultCrop: Partial<Crop> = {
   unit: '%',
@@ -27,6 +26,7 @@ interface Props {
   image: string
   onReturn: () => void
 }
+
 export default React.memo(function ImageEditor({
   childId,
   image,

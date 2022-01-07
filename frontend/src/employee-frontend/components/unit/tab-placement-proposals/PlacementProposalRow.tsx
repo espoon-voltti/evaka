@@ -2,35 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faFileAlt } from 'lib-icons'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-
+import styled from 'styled-components'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
+import CheckIconButton from 'lib-components/atoms/buttons/CheckIconButton'
+import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
 import { Td, Tr } from 'lib-components/layout/Table'
+
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Gap } from 'lib-components/white-space'
+import { placementPlanRejectReasons } from 'lib-customizations/employee'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { getEmployeeUrlPrefix } from '../../../constants'
 import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus
 } from '../../../types/unit'
-import { CareTypeChip } from '../../common/CareTypeLabel'
 import { formatName } from '../../../utils'
-import styled from 'styled-components'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faFileAlt } from 'lib-icons'
-import { getEmployeeUrlPrefix } from '../../../constants'
-import CheckIconButton from 'lib-components/atoms/buttons/CheckIconButton'
-import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import Radio from 'lib-components/atoms/form/Radio'
-import InputField from 'lib-components/atoms/form/InputField'
-import { Gap } from 'lib-components/white-space'
-import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { isPartDayPlacement } from '../../../utils/placements'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
-import { placementPlanRejectReasons } from 'lib-customizations/employee'
+import { CareTypeChip } from '../../common/CareTypeLabel'
 
 const CenteredDiv = styled.div`
   display: flex;

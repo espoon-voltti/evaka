@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { IconDefinition } from '@fortawesome/fontawesome-common-types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import { faPlus } from 'lib-icons'
 import React, { ReactNode } from 'react'
 import styled from 'styled-components'
-import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from 'lib-icons'
 import { fontWeights } from '../../typography'
-import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
+import { defaultMargins } from '../../white-space'
 import { defaultButtonTextStyle } from './button-commons'
-import { IconDefinition } from '@fortawesome/fontawesome-common-types'
 
 const StyledButton = styled.button`
   width: fit-content;

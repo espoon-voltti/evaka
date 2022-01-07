@@ -3,22 +3,26 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
+import { Redirect } from 'react-router'
+import styled, { useTheme } from 'styled-components'
 import { AuthContext, User } from 'citizen-frontend/auth/state'
 import { Result } from 'lib-common/api'
 import { email, phone } from 'lib-common/form-validation'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Container, { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import ListGrid from 'lib-components/layout/ListGrid'
 import {
   ExpandingInfoBox,
   InfoButton
@@ -26,13 +30,9 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { Redirect } from 'react-router'
-import styled, { useTheme } from 'styled-components'
+import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { refreshRedirect } from '../auth/requireAuth'
-import Footer from '../Footer'
 import { getLoginUri } from '../header/const'
 import { Translations, useTranslation } from '../localization'
 import { updatePersonalData } from './api'

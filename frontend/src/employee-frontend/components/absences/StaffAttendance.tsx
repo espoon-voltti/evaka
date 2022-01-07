@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from 'lib-icons'
 import React, {
   ChangeEvent,
   useCallback,
@@ -9,22 +11,20 @@ import React, {
   useMemo,
   useRef
 } from 'react'
-import LocalDate from 'lib-common/local-date'
-import { Td, Tr } from 'lib-components/layout/Table'
-import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
-import { DisabledCell } from './AbsenceCell'
-import { useTranslation } from '../../state/i18n'
-import { isLoading, Result } from 'lib-common/api'
-import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
-import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
-import { faTimes } from 'lib-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
-import Tooltip from '../../components/common/Tooltip'
-import colors from 'lib-customizations/common'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { isLoading, Result } from 'lib-common/api'
+import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
+import LocalDate from 'lib-common/local-date'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
 import { useDebouncedSave } from 'lib-common/utils/useDebouncedSave'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { Td, Tr } from 'lib-components/layout/Table'
+import colors from 'lib-customizations/common'
+import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
+import Tooltip from '../../components/common/Tooltip'
+import { useTranslation } from '../../state/i18n'
+import { DisabledCell } from './AbsenceCell'
 
 type Props = {
   groupId: string

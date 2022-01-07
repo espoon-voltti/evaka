@@ -2,26 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import colors from 'lib-customizations/common'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChild, faComments, faUser } from 'lib-icons'
+import React, { useContext } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import { combine } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { faChild, faComments, faUser } from 'lib-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
-import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
-import { useTranslation } from '../../state/i18n'
-import { useHistory, useParams } from 'react-router-dom'
-import { UUID } from 'lib-common/types'
-import { featureFlags } from 'lib-customizations/employee'
-import { UnitContext } from '../../state/unit'
-import { renderResult } from '../async-rendering'
-import { combine } from 'lib-common/api'
 import { defaultMargins } from 'lib-components/white-space'
-import { UserContext } from '../../state/user'
+import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
+import { useTranslation } from '../../state/i18n'
 import { MessageContext } from '../../state/messages'
+import { UnitContext } from '../../state/unit'
+import { UserContext } from '../../state/user'
+import { renderResult } from '../async-rendering'
 
 export type NavItem = 'child' | 'staff' | 'messages'
 

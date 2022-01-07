@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
 import React from 'react'
+import styled from 'styled-components'
 import Button from '../atoms/buttons/Button'
 import Container, { ContentArea } from '../layout/Container'
 import { H1, P } from '../typography'

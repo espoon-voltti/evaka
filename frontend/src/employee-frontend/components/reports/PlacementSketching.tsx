@@ -2,30 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFileAlt } from 'lib-icons'
 import React, { useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { Link } from 'react-router-dom'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
-import { PlacementSketchingRow } from '../../types/reports'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
   getPlacementSketchingReport,
   PlacementSketchingReportFilters
 } from '../../api/reports'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import LocalDate from 'lib-common/local-date'
+import { useTranslation } from '../../state/i18n'
+import { PlacementSketchingRow } from '../../types/reports'
 import { distinct } from '../../utils'
-import { faFileAlt } from 'lib-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 
 interface DisplayFilters {
   careArea: string

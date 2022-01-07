@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Page } from 'e2e-playwright/utils/page'
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   insertFeeDecisionFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
   daycareFixture,
   enduserChildFixtureKaarina,
@@ -16,11 +18,9 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
-import { Page } from 'e2e-playwright/utils/page'
+import GuardianInformationPage from '../../pages/employee/guardian-information'
 
 let page: Page
 let guardianPage: GuardianInformationPage

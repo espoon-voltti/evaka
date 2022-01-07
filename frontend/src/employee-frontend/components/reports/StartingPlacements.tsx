@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { fi } from 'date-fns/locale'
-import { Link } from 'react-router-dom'
 
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import _ from 'lodash'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import { Loading, Result, Success } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import ReportDownload from '../../components/reports/ReportDownload'
-import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-import { Lang, Translations, useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from 'lib-common/api'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   getStartingPlacementsReport,
   PlacementsReportFilters
 } from '../../api/reports'
+import ReportDownload from '../../components/reports/ReportDownload'
+import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { StartingPlacementsRow } from '../../types/reports'
-import LocalDate from 'lib-common/local-date'
-import { FlexRow } from '../common/styled/containers'
-import _ from 'lodash'
 import { distinct } from '../../utils'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { FlexRow } from '../common/styled/containers'
+import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

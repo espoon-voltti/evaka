@@ -5,24 +5,24 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
-import { AbsenceType } from 'lib-common/generated/enums'
+import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { Label, P } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { AbsenceType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import DatePicker, {
-  DatePickerSpacer
-} from 'lib-components/molecules/date-picker/DatePicker'
 import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { useLang, useTranslation } from '../localization'
-import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
-import { AbsencesRequest, postAbsences } from './api'
+import DatePicker, {
+  DatePickerSpacer
+} from 'lib-components/molecules/date-picker/DatePicker'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../input-info-helper'
+import { useLang, useTranslation } from '../localization'
+import { AbsencesRequest, postAbsences } from './api'
 
 interface Props {
   close: () => void

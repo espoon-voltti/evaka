@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import _ from 'lodash'
 import React, { useCallback, useEffect, useMemo } from 'react'
-import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { getDaycareGroups } from '../../../api/unit'
-import Select from 'lib-components/atoms/dropdowns/Select'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
-import _ from 'lodash'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import { getDaycareGroups } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {

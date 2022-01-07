@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment } from 'react'
-
-import { useTranslation } from '../../state/i18n'
-import { AbsenceType, AbsenceTypes } from '../../types'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
+import { useTranslation } from '../../state/i18n'
+import { AbsenceType, AbsenceTypes } from '../../types'
 
 interface Props {
   selectedAbsenceType: AbsenceType | undefined

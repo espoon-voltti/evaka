@@ -4,9 +4,9 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
-import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import { client } from '../client'
 
 export async function getAdditionalInformation(
   id: UUID

@@ -4,37 +4,36 @@
 
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
-
-import LocalDate from 'lib-common/local-date'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import ListGrid from 'lib-components/layout/ListGrid'
-import Button from 'lib-components/atoms/buttons/Button'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import Radio from 'lib-components/atoms/form/Radio'
-import Title from 'lib-components/atoms/Title'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import DateRangeInput from '../../common/DateRangeInput'
-import IncomeTable, {
-  IncomeTableData,
-  tableDataFromIncomeFields
-} from './IncomeTable'
-import { useTranslation } from '../../../state/i18n'
 import {
   IncomeCoefficient,
   IncomeEffect,
   incomeEffects,
   IncomeValue
 } from 'lib-common/api-types/income'
-import { Income, IncomeBody, IncomeFields } from '../../../types/income'
 import { formatDate } from 'lib-common/date'
-import { Gap } from 'lib-components/white-space'
-import InputField from 'lib-components/atoms/form/InputField'
-import { IncomeTypeOptions } from '../../../api/income'
+import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
+import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
+import ListGrid from 'lib-components/layout/ListGrid'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { IncomeTypeOptions } from '../../../api/income'
+import { useTranslation } from '../../../state/i18n'
+import { Income, IncomeBody, IncomeFields } from '../../../types/income'
+import DateRangeInput from '../../common/DateRangeInput'
+import IncomeTable, {
+  IncomeTableData,
+  tableDataFromIncomeFields
+} from './IncomeTable'
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;

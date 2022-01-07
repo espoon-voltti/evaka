@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
-import Container, { ContentArea } from 'lib-components/layout/Container'
-import { H1 } from 'lib-components/typography'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { Gap } from 'lib-components/white-space'
-import { useTranslation } from '../../localization'
-import { getDecisions } from '../api'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import ApplicationDecisionsBlock from '../../decisions/decisions-page/ApplicationDecisionsBlock'
 import _ from 'lodash'
-import Footer from '../../Footer'
-import useTitle from '../../useTitle'
+import React, { Fragment } from 'react'
 import { renderResult } from 'citizen-frontend/async-rendering'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { H1 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import Footer from '../../Footer'
+import ApplicationDecisionsBlock from '../../decisions/decisions-page/ApplicationDecisionsBlock'
+import { useTranslation } from '../../localization'
+import useTitle from '../../useTitle'
+import { getDecisions } from '../api'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()

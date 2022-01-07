@@ -4,11 +4,11 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { Parentship } from 'lib-common/generated/api-types/pis'
-import { client } from './client'
-import { deserializePersonJSON } from '../types/person'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { deserializePersonJSON } from '../types/person'
+import { client } from './client'
 
 async function getParentships(
   headOfChildId?: UUID,

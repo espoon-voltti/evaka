@@ -3,8 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
+import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import { formatDate } from 'lib-common/date'
+import { formatCents } from 'lib-common/money'
+import Pagination from 'lib-components/Pagination'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   SortableTh,
   Table,
@@ -15,18 +20,13 @@ import {
   Tr
 } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import NameWithSsn from '../common/NameWithSsn'
-import ChildrenCell from '../common/ChildrenCell'
-import { useTranslation } from '../../state/i18n'
-import { VoucherValueDecisionSummary } from '../../types/invoicing'
-import { SearchOrder } from '../../types'
-import { Result } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
-import { formatCents } from 'lib-common/money'
 import { SortByVoucherValueDecisions } from '../../api/invoicing'
-import Pagination from 'lib-components/Pagination'
+import { useTranslation } from '../../state/i18n'
+import { SearchOrder } from '../../types'
+import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { renderResult } from '../async-rendering'
+import ChildrenCell from '../common/ChildrenCell'
+import NameWithSsn from '../common/NameWithSsn'
 
 const TitleRowContainer = styled.div`
   display: flex;

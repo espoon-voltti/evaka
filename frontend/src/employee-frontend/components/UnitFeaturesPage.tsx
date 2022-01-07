@@ -4,20 +4,20 @@
 
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { H1 } from 'lib-components/typography'
-import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { Table, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 import {
   PilotFeature,
   pilotFeatures
 } from 'lib-common/generated/api-types/shared'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { client } from '../api/client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
+import { H1 } from 'lib-components/typography'
+import { client } from '../api/client'
 import { renderResult } from './async-rendering'
 
 async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {

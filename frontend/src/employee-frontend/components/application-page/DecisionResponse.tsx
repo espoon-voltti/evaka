@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
-
-import { Decision } from '../../types/decision'
+import { UUID } from 'lib-common/types'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Radio from 'lib-components/atoms/form/Radio'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { useTranslation } from '../../state/i18n'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+
 import { acceptDecision, rejectDecision } from '../../api/applications'
-import { UUID } from 'lib-common/types'
+import { useTranslation } from '../../state/i18n'
+import { Decision } from '../../types/decision'
 
 interface Props {
   applicationId: UUID

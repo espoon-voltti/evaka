@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  insertBackupCareFixtures,
+  insertDaycareGroupFixtures,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
+import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
@@ -11,17 +16,12 @@ import {
   daycareGroupFixture,
   Fixture
 } from 'e2e-test-common/dev-api/fixtures'
-import { UnitPage } from '../../pages/employee/units/unit'
 import { BackupCare, PersonDetail } from 'e2e-test-common/dev-api/types'
-import {
-  insertBackupCareFixtures,
-  insertDaycareGroupFixtures,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
 import LocalDate from 'lib-common/local-date'
-import { employeeLogin } from '../../utils/user'
-import { Page } from '../../utils/page'
+import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
+import { Page } from '../../utils/page'
+import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let childFixture: PersonDetail

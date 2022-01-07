@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Translations } from 'lib-customizations/citizen'
 import { CareType } from 'lib-common/generated/enums'
+import { Translations } from 'lib-customizations/citizen'
 
 export function formatCareType(t: Translations, type: CareType): string {
   switch (type) {

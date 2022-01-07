@@ -3,6 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  insertApplications,
+  insertDaycareGroupFixtures,
+  insertDaycarePlacementFixtures,
+  insertDecisionFixtures,
+  insertInvoiceFixtures,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
+import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
@@ -18,14 +26,6 @@ import {
   invoiceFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import {
-  insertApplications,
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  insertDecisionFixtures,
-  insertInvoiceFixtures,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

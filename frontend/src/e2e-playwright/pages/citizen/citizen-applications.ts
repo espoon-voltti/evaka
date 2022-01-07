@@ -8,17 +8,17 @@ import {
   waitUntilTrue
 } from 'e2e-playwright/utils'
 import {
+  FormInput,
+  Section,
+  sections
+} from 'e2e-playwright/utils/application-forms'
+import {
   Page,
   Checkbox,
   Radio,
   TextInput,
   FileInput
 } from 'e2e-playwright/utils/page'
-import {
-  FormInput,
-  Section,
-  sections
-} from 'e2e-playwright/utils/application-forms'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 
 export default class CitizenApplicationsPage {

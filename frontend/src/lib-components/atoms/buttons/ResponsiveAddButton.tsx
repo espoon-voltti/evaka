@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import AddButton, { AddButtonProps } from './AddButton'
 import styled from 'styled-components'
 import { tabletMin } from '../../breakpoints'
+import AddButton, { AddButtonProps } from './AddButton'
 
 interface ResponsiveAddButtonProps extends AddButtonProps {
   breakpoint?: string

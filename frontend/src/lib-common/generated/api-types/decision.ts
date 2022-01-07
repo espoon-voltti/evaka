@@ -6,8 +6,8 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from '../../local-date'
-import { ProviderType } from './daycare'
 import { UUID } from '../../types'
+import { ProviderType } from './daycare'
 
 /**
 * Generated from fi.espoo.evaka.decision.Decision

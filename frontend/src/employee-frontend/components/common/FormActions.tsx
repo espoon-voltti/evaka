@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
 import React from 'react'
+import styled from 'styled-components'
 import Button from 'lib-components/atoms/buttons/Button'
-import { useTranslation } from '../../state/i18n'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { useTranslation } from '../../state/i18n'
 
 const ButtonsContainer = styled.div`
   display: flex;

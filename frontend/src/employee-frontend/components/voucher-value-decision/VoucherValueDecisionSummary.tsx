@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faEuroSign } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
-import { faEuroSign } from 'lib-icons'
-import { Gap } from 'lib-components/white-space'
+import { formatCents } from 'lib-common/money'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { fontWeights, H4 } from 'lib-components/typography'
-import VoucherValueDecisionIncomeSection from './VoucherValueDecisionIncomeSection'
-import VoucherValueDecisionCoPaymentSection from './VoucherValueDecisionCoPaymentSection'
-import VoucherValueDecisionValueSection from './VoucherValueDecisionValueSection'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from 'lib-common/money'
+import VoucherValueDecisionCoPaymentSection from './VoucherValueDecisionCoPaymentSection'
+import VoucherValueDecisionIncomeSection from './VoucherValueDecisionIncomeSection'
+import VoucherValueDecisionValueSection from './VoucherValueDecisionValueSection'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

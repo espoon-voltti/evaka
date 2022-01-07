@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useApiState } from 'lib-common/utils/useRestApi'
 import React, { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { getChildSensitiveInformation } from '../../../api/sensitive'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'

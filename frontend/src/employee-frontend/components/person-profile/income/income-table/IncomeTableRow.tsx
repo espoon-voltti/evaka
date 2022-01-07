@@ -4,16 +4,15 @@
 
 import React from 'react'
 import styled from 'styled-components'
-
-import { Td, Tr } from 'lib-components/layout/Table'
+import { incomeCoefficients } from 'lib-common/api-types/income'
+import { formatCents } from 'lib-common/money'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import { Td, Tr } from 'lib-components/layout/Table'
+import { Light } from 'lib-components/typography'
 import EuroInput from '../../../../components/common/EuroInput'
 import { Translations } from '../../../../state/i18n'
-import { incomeCoefficients } from 'lib-common/api-types/income'
 import { IncomeOption } from '../../../../types/income'
-import { formatCents } from 'lib-common/money'
 import { IncomeValueString } from '../IncomeTable'
-import { Light } from 'lib-components/typography'
 
 type Props = {
   i18n: Translations

@@ -4,12 +4,12 @@
 
 import React from 'react'
 import { MessageContextProvider } from '../components/messages/MessageContext'
+import { ApplicationUIContextProvider } from './application-ui'
 import { CustomersContextProvider } from './customers'
-import { UnitsContextProvider } from './units'
-import { UIContextProvider } from './ui'
 import { InvoicingUIContextProvider } from './invoicing-ui'
 import { TitleContextProvider } from './title'
-import { ApplicationUIContextProvider } from './application-ui'
+import { UIContextProvider } from './ui'
+import { UnitsContextProvider } from './units'
 
 const StateProvider = React.memo(function StateProvider({
   children

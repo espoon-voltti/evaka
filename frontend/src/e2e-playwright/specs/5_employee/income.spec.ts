@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { resetDatabase } from 'e2e-test-common/dev-api'
-import { employeeLogin } from '../../utils/user'
-import { UUID } from 'lib-common/types'
 import config from 'e2e-test-common/config'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import { resetDatabase } from 'e2e-test-common/dev-api'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
+import { UUID } from 'lib-common/types'
+import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
   IncomesSection
 } from '../../pages/employee/guardian-information'
-import ErrorModal from '../../pages/employee/error-modal'
+import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
-import { Fixture } from 'e2e-test-common/dev-api/fixtures'
+import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let personId: UUID

@@ -4,9 +4,9 @@
 
 import React, { useMemo } from 'react'
 import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
-import { useTranslation } from '../localization'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { errorToInputInfo } from '../input-info-helper'
+import { useTranslation } from '../localization'
 
 export interface TimeRange {
   startTime: string

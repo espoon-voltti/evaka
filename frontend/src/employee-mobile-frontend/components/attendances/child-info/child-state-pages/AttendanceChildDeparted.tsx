@@ -4,8 +4,8 @@
 
 import React, { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-import { returnToPresent } from '../../../../api/attendances'
 import { Child } from 'lib-common/generated/api-types/attendance'
+import { returnToPresent } from '../../../../api/attendances'
 import { ChildAttendanceContext } from '../../../../state/child-attendance'
 import { useTranslation } from '../../../../state/i18n'
 import { InlineWideAsyncButton } from '../../components'

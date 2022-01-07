@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import ChildInformationPage, {
+  VasuAndLeopsSection
+} from 'e2e-playwright/pages/employee/child-information'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
@@ -17,16 +21,12 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import ChildInformationPage, {
-  VasuAndLeopsSection
-} from 'e2e-playwright/pages/employee/child-information'
-import { employeeLogin } from 'e2e-playwright/utils/user'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
-import LocalDate from 'lib-common/local-date'
-import { Page } from '../../utils/page'
 import { waitUntilEqual } from '../../utils'
-import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
+import { Page } from '../../utils/page'
 
 let page: Page
 let admin: EmployeeDetail

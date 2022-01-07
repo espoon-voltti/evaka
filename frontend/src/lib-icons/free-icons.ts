@@ -3,6 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  faCommentAlt as farCommentAlt,
+  faFileAlt as farFileAlt,
+  faMap as farMap,
+  faStickyNote as farStickyNote,
+  faUser as farUser
+} from '@fortawesome/free-regular-svg-icons'
+import {
   faAngleDown,
   faAngleLeft,
   faAngleRight,
@@ -94,13 +101,6 @@ import {
   faUpRightAndDownLeftFromCenter,
   faDownLeftAndUpRightToCenter
 } from '@fortawesome/free-solid-svg-icons'
-import {
-  faCommentAlt as farCommentAlt,
-  faFileAlt as farFileAlt,
-  faMap as farMap,
-  faStickyNote as farStickyNote,
-  faUser as farUser
-} from '@fortawesome/free-regular-svg-icons'
 import { faLockOpen } from '@fortawesome/free-solid-svg-icons/faLockOpen'
 import { IconSet } from '.'
 

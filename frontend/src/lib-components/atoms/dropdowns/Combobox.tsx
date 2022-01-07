@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCombobox, UseComboboxStateChange } from 'downshift'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import styled from 'styled-components'
-import computeScrollIntoView from 'compute-scroll-into-view'
-import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
+import computeScrollIntoView from 'compute-scroll-into-view'
+import { useCombobox, UseComboboxStateChange } from 'downshift'
+import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import styled from 'styled-components'
 import { SpinnerSegment } from '../state/Spinner'
 import { borderRadius, borderStyles, DropdownProps, Root } from './shared'
 

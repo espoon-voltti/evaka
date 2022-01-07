@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import ErrorPage from 'lib-components/molecules/ErrorPage'
-import { theme } from 'lib-customizations/common'
 import React, { useEffect } from 'react'
 import {
   BrowserRouter as Router,
@@ -16,19 +14,25 @@ import {
   useRouteMatch
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
+import ErrorPage from 'lib-components/molecules/ErrorPage'
+import { theme } from 'lib-customizations/common'
+import EnsureAuthenticated from './components/EnsureAuthenticated'
+import MobileReloadNotification from './components/MobileReloadNotification'
+import UnitList from './components/UnitList'
+import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
 import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBeforehand'
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
 import MarkPresent from './components/attendances/actions/MarkPresent'
-import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
 import AttendanceChildPage from './components/attendances/child-info/AttendanceChildPage'
 import ChildSensitiveInfoPage from './components/attendances/child-info/ChildSensitiveInfoPage'
 import ChildNotes from './components/attendances/notes/ChildNotes'
 import requirePinAuth from './components/auth/requirePinAuth'
-import EnsureAuthenticated from './components/EnsureAuthenticated'
+import MessageEditorPage from './components/messages/MessageEditorPage'
+import MessagesPage from './components/messages/MessagesPage'
+import { UnreadMessagesPage } from './components/messages/UnreadMessagesPage'
 import MobileLander from './components/mobile/MobileLander'
 import PairingWizard from './components/mobile/PairingWizard'
-import MobileReloadNotification from './components/MobileReloadNotification'
 import ExternalStaffMemberPage from './components/staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './components/staff-attendance/MarkExternalStaffMemberArrivalPage'
 import StaffAttendancesPage from './components/staff-attendance/StaffAttendancesPage'
@@ -38,14 +42,10 @@ import StaffMemberPage from './components/staff-attendance/StaffMemberPage'
 import StaffPage from './components/staff/StaffPage'
 import { ChildAttendanceContextProvider } from './state/child-attendance'
 import { I18nContextProvider, useTranslation } from './state/i18n'
+import { MessageContextProvider } from './state/messages'
 import { StaffAttendanceContextProvider } from './state/staff-attendance'
 import { UnitContextProvider } from './state/unit'
 import { UserContextProvider } from './state/user'
-import MessagesPage from './components/messages/MessagesPage'
-import { MessageContextProvider } from './state/messages'
-import MessageEditorPage from './components/messages/MessageEditorPage'
-import UnitList from './components/UnitList'
-import { UnreadMessagesPage } from './components/messages/UnreadMessagesPage'
 
 export default function App() {
   const { i18n } = useTranslation()

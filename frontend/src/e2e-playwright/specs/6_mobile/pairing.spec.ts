@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Page } from 'e2e-playwright/utils/page'
 import config from 'e2e-test-common/config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
 import {
   postPairing,
   postPairingResponse,
   resetDatabase
 } from 'e2e-test-common/dev-api'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
-import { Page } from 'e2e-playwright/utils/page'
 
 let page: Page
 let pairingFlow: PairingFlow

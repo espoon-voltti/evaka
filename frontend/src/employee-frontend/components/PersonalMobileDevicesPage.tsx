@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen, faQuestion, faTrash } from 'lib-icons'
+import React, { useCallback, useContext, useState } from 'react'
 import {
   deleteMobileDevice,
   putMobileDeviceName
@@ -12,16 +14,14 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
-import React, { useCallback, useContext, useState } from 'react'
 import { getPersonalMobileDevices } from '../api/employees'
 import { useTranslation } from '../state/i18n'
 import { UIContext } from '../state/ui'

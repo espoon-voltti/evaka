@@ -3,21 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { cloneDeep } from 'lodash'
-import React, { Dispatch, Fragment, SetStateAction } from 'react'
 import { last } from 'lodash'
+import React, { Dispatch, Fragment, SetStateAction } from 'react'
 import styled, { css } from 'styled-components'
-import { ContentArea } from 'lib-components/layout/Container'
-import { H2 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
-import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
-import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
-import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
-import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
-import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
-import DateQuestionElem from '../components/DateQuestion'
-import FollowupQuestionElem from '../components/FollowupQuestion'
-import ParagraphElem from '../components/Paragraph'
 import {
   CheckboxQuestion,
   Followup,
@@ -33,6 +21,19 @@ import {
   VasuSection,
   VasuDocumentState
 } from 'lib-common/generated/api-types/vasu'
+import { ContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { VasuTranslations } from 'lib-customizations/employee'
+import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
+import DateQuestionElem from '../components/DateQuestion'
+import FollowupQuestionElem from '../components/FollowupQuestion'
+import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
+import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
+import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
+import ParagraphElem from '../components/Paragraph'
+import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
+import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
 import {
   getQuestionNumber,
   isCheckboxQuestion,
@@ -45,7 +46,6 @@ import {
   isRadioGroupQuestion,
   isTextQuestion
 } from '../vasu-content'
-import { VasuTranslations } from 'lib-customizations/employee'
 
 interface Props {
   sections: VasuSection[]

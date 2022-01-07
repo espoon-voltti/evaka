@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
 import { format, startOfMonth, subMonths } from 'date-fns'
-import { ContentArea } from 'lib-components/layout/Container'
-import Title from 'lib-components/atoms/Title'
-import { generateFeeDecisions } from '../../../api/invoicing'
+import React, { useState } from 'react'
 import styled from 'styled-components'
+import Title from 'lib-components/atoms/Title'
+import { ContentArea } from 'lib-components/layout/Container'
+import { generateFeeDecisions } from '../../../api/invoicing'
 
 const Form = styled.div`
   display: flex;

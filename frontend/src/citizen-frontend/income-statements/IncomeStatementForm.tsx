@@ -2,9 +2,44 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasExclamationTriangle } from 'lib-icons'
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled, { useTheme } from 'styled-components'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Attachment } from 'lib-common/api-types/attachment'
+import { otherIncome } from 'lib-common/api-types/incomeStatement'
+import {
+  required,
+  validate,
+  validateIf,
+  validDate,
+  validInt
+} from 'lib-common/form-validation'
+import { OtherIncome } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { scrollToRef } from 'lib-common/utils/scrolling'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
+import AsyncButton, {
+  AsyncClickCallback
+} from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import Radio from 'lib-components/atoms/form/Radio'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import { tabletMin } from 'lib-components/breakpoints'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
+import {
+  FixedSpaceColumn,
+  FixedSpaceFlexWrap,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import {
   fontWeights,
   H1,
@@ -14,52 +49,17 @@ import {
   Label,
   P
 } from 'lib-components/typography'
-import UnorderedList from 'lib-components/atoms/UnorderedList'
-import { tabletMin } from 'lib-components/breakpoints'
-import ListGrid from 'lib-components/layout/ListGrid'
-import { useLang, useTranslation } from '../localization'
-import Radio from 'lib-components/atoms/form/Radio'
-import {
-  FixedSpaceColumn,
-  FixedSpaceFlexWrap,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import Button from 'lib-components/atoms/buttons/Button'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import AsyncButton, {
-  AsyncClickCallback
-} from 'lib-components/atoms/buttons/AsyncButton'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import InputField from 'lib-components/atoms/form/InputField'
-import { AttachmentType } from './types/common'
-import * as Form from './types/form'
-import {
-  required,
-  validate,
-  validateIf,
-  validDate,
-  validInt
-} from 'lib-common/form-validation'
-import FileUpload from 'lib-components/molecules/FileUpload'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import Footer from '../Footer'
-import { Attachment } from 'lib-common/api-types/attachment'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import { UUID } from 'lib-common/types'
 import {
   deleteAttachment,
   getAttachmentBlob,
   saveIncomeStatementAttachment
 } from '../attachments'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamationTriangle } from 'lib-icons'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import LocalDate from 'lib-common/local-date'
-import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import { errorToInputInfo } from '../input-info-helper'
-import { OtherIncome } from 'lib-common/generated/enums'
-import { scrollToRef } from 'lib-common/utils/scrolling'
+import { useLang, useTranslation } from '../localization'
+import { AttachmentType } from './types/common'
+import * as Form from './types/form'
 
 const ActionContainer = styled.div`
   display: flex;

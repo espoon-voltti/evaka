@@ -2,12 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import GuardianInformationPage from '../../pages/employee/guardian-information'
-import ChildInformationPage from '../../pages/employee/child-information'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
+import { Page } from 'e2e-playwright/utils/page'
 import {
   insertDefaultServiceNeedOptions,
   insertFeeThresholds,
@@ -16,12 +11,17 @@ import {
   runPendingAsyncJobs
   // runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
-import { Fixture } from 'e2e-test-common/dev-api/fixtures'
+import ChildInformationPage from '../../pages/employee/child-information'
+import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { employeeLogin } from '../../utils/user'
-import { Page } from 'e2e-playwright/utils/page'
 
 let page: Page
 let guardianInformation: GuardianInformationPage

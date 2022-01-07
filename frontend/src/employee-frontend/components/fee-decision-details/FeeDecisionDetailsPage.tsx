@@ -2,24 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faQuestion } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { faQuestion } from 'lib-icons'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import Heading from './Heading'
-import ChildSection from './ChildSection'
-import Summary from './Summary'
-import Actions from './Actions'
 import { Loading, Result } from 'lib-common/api'
+import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import colors from 'lib-customizations/common'
 import { getFeeDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import colors from 'lib-customizations/common'
-import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
+import Actions from './Actions'
+import ChildSection from './ChildSection'
+import Heading from './Heading'
+import Summary from './Summary'
 
 export const ErrorMessage = styled.div`
   color: ${colors.accents.dangerRed};

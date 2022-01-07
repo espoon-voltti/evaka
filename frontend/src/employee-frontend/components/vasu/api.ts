@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
-import { client } from '../../api/client'
-import { mapVasuContent } from './vasu-content'
-import LocalDate from 'lib-common/local-date'
+import { GetVasuDocumentResponse } from 'lib-common/api-types/vasu'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   UpdateDocumentRequest,
@@ -15,8 +12,11 @@ import {
   VasuDocumentEventType,
   VasuDocumentSummary
 } from 'lib-common/generated/api-types/vasu'
-import { GetVasuDocumentResponse } from 'lib-common/api-types/vasu'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { client } from '../../api/client'
+import { mapVasuContent } from './vasu-content'
 
 const mapVasuDocumentEvent = (
   e: JsonOf<VasuDocumentEvent>

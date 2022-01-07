@@ -4,17 +4,17 @@
 
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { getApplication } from '../api'
-import Container from 'lib-components/layout/Container'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { useUser } from '../../auth/state'
-import { useTranslation } from '../../localization'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import Container from 'lib-components/layout/Container'
 import Footer from '../../Footer'
-import useTitle from '../../useTitle'
 import ApplicationReadViewContents from '../../applications/read-view/ApplicationReadViewContents'
 import { renderResult } from '../../async-rendering'
-import { UUID } from 'lib-common/types'
+import { useUser } from '../../auth/state'
+import { useTranslation } from '../../localization'
+import useTitle from '../../useTitle'
+import { getApplication } from '../api'
 
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useParams<{ applicationId: UUID }>()

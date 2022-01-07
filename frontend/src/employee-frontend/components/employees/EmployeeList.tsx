@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { sortBy } from 'lodash'
+import React from 'react'
+import { useHistory } from 'react-router'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { sortBy } from 'lodash'
-import React from 'react'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { EmployeeUser as Employee } from '../../types/employee'
-import { useHistory } from 'react-router'
 
 const LinkTr = styled(Tr)`
   cursor: pointer;

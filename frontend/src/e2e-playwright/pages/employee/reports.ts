@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { captureTextualDownload } from 'e2e-playwright/browser'
+import { waitUntilEqual } from 'e2e-playwright/utils'
 import {
   Combobox,
   DatePickerDeprecated,
   Page,
   Select
 } from 'e2e-playwright/utils/page'
-import { waitUntilEqual } from 'e2e-playwright/utils'
-import { captureTextualDownload } from 'e2e-playwright/browser'
 import LocalDate from 'lib-common/local-date'
 
 export default class ReportsPage {

@@ -2,17 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useContext, useState } from 'react'
-import styled from 'styled-components'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 import _ from 'lodash'
+import React, { Dispatch, SetStateAction, useContext, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { useTranslation } from '../../../state/i18n'
-import { Gap } from 'lib-components/white-space'
-import { H2, Label } from 'lib-components/typography'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { H2, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { OccupancyResponse } from '../../../api/unit'
+import UnitDataFilters from '../../../components/unit/UnitDataFilters'
+import Group from '../../../components/unit/tab-groups/groups/Group'
+import GroupModal from '../../../components/unit/tab-groups/groups/GroupModal'
+import GroupTransferModal from '../../../components/unit/tab-groups/groups/group/GroupTransferModal'
+import BackupCareGroupModal from '../../../components/unit/tab-groups/missing-group-placements/BackupCareGroupModal'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { UserContext } from '../../../state/user'
 import {
   DaycareGroup,
   DaycareGroupPlacementDetailed,
@@ -22,20 +34,8 @@ import {
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../types/unit'
-import { OccupancyResponse } from '../../../api/unit'
-import Group from '../../../components/unit/tab-groups/groups/Group'
-import { UIContext } from '../../../state/ui'
-import GroupModal from '../../../components/unit/tab-groups/groups/GroupModal'
-import GroupTransferModal from '../../../components/unit/tab-groups/groups/group/GroupTransferModal'
-import BackupCareGroupModal from '../../../components/unit/tab-groups/missing-group-placements/BackupCareGroupModal'
 import { UnitFilters } from '../../../utils/UnitFilters'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { Link } from 'react-router-dom'
 import { requireRole } from '../../../utils/roles'
-import { UserContext } from '../../../state/user'
-import UnitDataFilters from '../../../components/unit/UnitDataFilters'
-import { UUID } from 'lib-common/types'
-import { Action } from 'lib-common/generated/action'
 
 function renderGroups(
   unit: Unit,

@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faTimes } from 'lib-icons'
+import React, { useCallback, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { EditedNote } from 'lib-components/employee/notes/notes'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { StickyNoteTab } from 'lib-components/employee/notes/StickyNoteTab'
+import { EditedNote } from 'lib-components/employee/notes/notes'
 import { ContentArea } from 'lib-components/layout/Container'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faTimes } from 'lib-icons'
-import React, { useCallback, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import {
   deleteChildStickyNote,
   deleteGroupNote,

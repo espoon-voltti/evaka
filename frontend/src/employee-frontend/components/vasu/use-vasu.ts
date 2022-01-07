@@ -11,9 +11,21 @@ import {
   useMemo
 } from 'react'
 import { Result } from 'lib-common/api'
+import {
+  Followup,
+  FollowupEntry,
+  PermittedFollowupActions,
+  GetVasuDocumentResponse
+} from 'lib-common/api-types/vasu'
+import {
+  ChildLanguage,
+  VasuContent,
+  VasuDocument
+} from 'lib-common/generated/api-types/vasu'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 import {
   editFollowupEntry,
   EditFollowupEntryParams,
@@ -21,18 +33,6 @@ import {
   putVasuDocument,
   PutVasuDocumentParams
 } from './api'
-import {
-  ChildLanguage,
-  VasuContent,
-  VasuDocument
-} from 'lib-common/generated/api-types/vasu'
-import {
-  Followup,
-  FollowupEntry,
-  PermittedFollowupActions,
-  GetVasuDocumentResponse
-} from 'lib-common/api-types/vasu'
-import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
 type State =
   | 'loading'

@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import UnitsPage from '../../pages/employee/units/units'
+import {
+  insertDefaultServiceNeedOptions,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import {
@@ -11,14 +14,11 @@ import {
   DaycarePlacement,
   PersonDetail
 } from 'e2e-test-common/dev-api/types'
-import {
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
+import LocalDate from 'lib-common/local-date'
+import { UnitPage } from '../../pages/employee/units/unit'
+import UnitsPage from '../../pages/employee/units/units'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-import { UnitPage } from '../../pages/employee/units/unit'
-import LocalDate from 'lib-common/local-date'
 
 let unitFixture: Daycare
 let groupFixture: DaycareGroup

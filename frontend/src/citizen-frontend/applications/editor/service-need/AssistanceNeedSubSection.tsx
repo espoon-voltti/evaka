@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { useTranslation } from '../../../localization'
-import { H3, Label } from 'lib-components/typography'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import { Gap } from 'lib-components/white-space'
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import styled from 'styled-components'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { H3, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../input-info-helper'
+import { useTranslation } from '../../../localization'
+import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function AssistanceNeedSubSection({
   type,

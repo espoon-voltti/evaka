@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
+import { Page } from 'e2e-playwright/utils/page'
 
 export default class EmployeeNav {
   constructor(private readonly page: Page) {}

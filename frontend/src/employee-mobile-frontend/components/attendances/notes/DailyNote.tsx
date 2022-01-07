@@ -4,14 +4,14 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import Title from 'lib-components/atoms/Title'
-import { Gap } from 'lib-components/white-space'
-import { fontWeights, Label } from 'lib-components/typography'
 import { Child } from 'lib-common/generated/api-types/attendance'
-import { useTranslation } from '../../../state/i18n'
 import { GroupNote } from 'lib-common/generated/api-types/note'
+import Title from 'lib-components/atoms/Title'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { fontWeights, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   child: Child | undefined

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, Select, TextInput } from '../../utils/page'
 import { waitUntilEqual } from '../../utils'
+import { Page, Select, TextInput } from '../../utils/page'
 
 export default class PinLoginPage {
   constructor(private readonly page: Page) {}

@@ -7,8 +7,8 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { ServiceNeed } from './serviceneed'
 import { UUID } from '../../types'
+import { ServiceNeed } from './serviceneed'
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareChild

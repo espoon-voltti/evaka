@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { farUser } from 'lib-icons'
 import React from 'react'
+import styled from 'styled-components'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { farUser } from 'lib-icons'
-import styled from 'styled-components'
 import { H2 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { useTranslation } from '../../../state/i18n'
-import { Staff } from '../staff'
 import { IconBox } from '../StaffListItem'
+import { Staff } from '../staff'
 
 function getColorByStatus(present: boolean) {
   return present ? colors.accents.successGreen : colors.accents.turquoise

@@ -3,31 +3,31 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
+import { useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Radio from 'lib-components/atoms/form/Radio'
-import { useLang, useTranslation } from '../../../localization'
-import { H3, Label, P } from 'lib-components/typography'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
-import { Gap } from 'lib-components/white-space'
-import FileUpload from 'lib-components/molecules/FileUpload'
-import { Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
-import { useParams } from 'react-router-dom'
-import styled from 'styled-components'
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { featureFlags } from 'lib-customizations/citizen'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { H3, Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import {
   deleteAttachment,
   getAttachmentBlob,
   saveApplicationAttachment
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
+import { useLang, useTranslation } from '../../../localization'
+import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 const Hyphenbox = styled.div`
   display: flex;

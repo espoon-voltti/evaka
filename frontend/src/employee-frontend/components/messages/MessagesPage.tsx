@@ -2,31 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
-import Container from 'lib-components/layout/Container'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { defaultMargins } from 'lib-components/white-space'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
-import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
-import { headerHeight } from '../Header'
-import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
-import { MessageContext } from './MessageContext'
+import { UUID } from 'lib-common/types'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
-import MessageList from './ThreadListContainer'
 import {
   deselectAll,
   SelectorNode
 } from 'lib-components/employee/messages/SelectorNode'
-import Sidebar from './Sidebar'
-import ReceiverSelection from './ReceiverSelection'
+import Container from 'lib-components/layout/Container'
+import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   deleteAttachment,
   getAttachmentBlob,
   saveMessageAttachment
 } from '../../api/attachments'
-import { featureFlags } from 'lib-customizations/employee'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { headerHeight } from '../Header'
+import { MessageContext } from './MessageContext'
+import ReceiverSelection from './ReceiverSelection'
+import Sidebar from './Sidebar'
+import MessageList from './ThreadListContainer'
+import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
 
 const PanelContainer = styled.div`
   height: calc(100vh - ${headerHeight} - ${defaultMargins.m});

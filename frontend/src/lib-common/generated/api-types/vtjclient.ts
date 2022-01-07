@@ -5,8 +5,8 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-import { CitizenFeatures } from './shared'
 import { UUID } from '../../types'
+import { CitizenFeatures } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.vtjclient.controllers.VtjController.Child

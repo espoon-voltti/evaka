@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen } from 'lib-icons'
 import React, { useContext, useState } from 'react'
-import { useTranslation } from '../../../state/i18n'
+import styled from 'styled-components'
+import { isLoading } from 'lib-common/api'
+import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { H4 } from 'lib-components/typography'
 import {
   getAdditionalInformation,
   updateAdditionalInformation
 } from '../../../api/child/additional-information'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import LabelValueList from '../../../components/common/LabelValueList'
-import styled from 'styled-components'
-import { faPen } from 'lib-icons'
+import { useTranslation } from '../../../state/i18n'
 import { UIContext, UiState } from '../../../state/ui'
-import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { formatParagraphs } from '../../../utils/html-utils'
-import { textAreaRows } from '../../utils'
 import { RequireRole } from '../../../utils/roles'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H4 } from 'lib-components/typography'
-import { FlexRow } from '../../common/styled/containers'
 import { renderResult } from '../../async-rendering'
-import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { isLoading } from 'lib-common/api'
+import { FlexRow } from '../../common/styled/containers'
+import { textAreaRows } from '../../utils'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;

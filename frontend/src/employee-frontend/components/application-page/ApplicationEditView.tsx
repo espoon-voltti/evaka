@@ -3,6 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faChild,
+  faExclamationTriangle,
+  faFileAlt,
+  faInfo,
+  faMapMarkerAlt,
+  faTimes,
+  faUserFriends,
+  faUsers
+} from 'lib-icons'
+import { flow, set } from 'lodash/fp'
+import React, { useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import {
   ApplicationAddress,
@@ -23,8 +37,8 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FileUpload from 'lib-components/molecules/FileUpload'
@@ -32,20 +46,6 @@ import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
-import {
-  faChild,
-  faExclamationTriangle,
-  faFileAlt,
-  faInfo,
-  faMapMarkerAlt,
-  faTimes,
-  faUserFriends,
-  faUsers
-} from 'lib-icons'
-import { flow, set } from 'lodash/fp'
-import React, { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
 import {
   deleteAttachment,
   getAttachmentBlob,

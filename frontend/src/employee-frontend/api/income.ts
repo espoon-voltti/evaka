@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { partition } from 'lodash'
 import { Failure, Response, Result, Success } from 'lib-common/api'
-import { client } from './client'
-import { Income, IncomeOption, IncomeBody } from '../types/income'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { partition } from 'lodash'
 import { UUID } from 'lib-common/types'
+import { Income, IncomeOption, IncomeBody } from '../types/income'
+import { client } from './client'
 
 export async function getIncomes(personId: UUID): Promise<Result<Income[]>> {
   return client

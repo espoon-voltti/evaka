@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const webpack = require('webpack')
 const path = require('path')
-
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
-const WebpackPwaManifest = require('webpack-pwa-manifest')
-const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
+const webpack = require('webpack')
+
+const WebpackPwaManifest = require('webpack-pwa-manifest')
 
 function resolveCustomizations() {
   const customizations = process.env.EVAKA_CUSTOMIZATIONS

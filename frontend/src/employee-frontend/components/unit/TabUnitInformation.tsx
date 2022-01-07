@@ -2,26 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { renderResult } from '../async-rendering'
 import React, { useContext, useMemo } from 'react'
+import { isLoading, Result } from 'lib-common/api'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
-import { UnitContext } from '../../state/unit'
-import { requireRole } from '../../utils/roles'
-import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
-import Occupancy from '../../components/unit/tab-unit-information/Occupancy'
 import { H2, H3, Label } from 'lib-components/typography'
-import UnitDataFilters from '../../components/unit/UnitDataFilters'
-import { UserContext } from '../../state/user'
-import { DataList } from '../common/DataList'
-import { useTranslation } from '../../state/i18n'
 import { Gap } from 'lib-components/white-space'
 import { UnitData } from '../../api/unit'
-import { isLoading, Result } from 'lib-common/api'
+import UnitDataFilters from '../../components/unit/UnitDataFilters'
+import Occupancy from '../../components/unit/tab-unit-information/Occupancy'
+import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
+import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
+import { useTranslation } from '../../state/i18n'
+import { UnitContext } from '../../state/unit'
+import { UserContext } from '../../state/user'
+import { requireRole } from '../../utils/roles'
+import { renderResult } from '../async-rendering'
+import { DataList } from '../common/DataList'
 
 export default React.memo(function TabUnitInformation() {
   const { i18n } = useTranslation()

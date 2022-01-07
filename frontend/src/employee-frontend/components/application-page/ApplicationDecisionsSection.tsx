@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
-import { Label } from 'lib-components/typography'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { ApplicationStatus } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { useTranslation } from '../../state/i18n'
-import { Decision } from '../../types/decision'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { Label } from 'lib-components/typography'
+
 import DecisionResponse from '../../components/application-page/DecisionResponse'
-import { ApplicationStatus } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
+import { useTranslation } from '../../state/i18n'
+import { Decision } from '../../types/decision'
 
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
   decision.status === 'PENDING' && applicationStatus !== 'WAITING_MAILING'

@@ -4,20 +4,20 @@
 
 import React, { useState, FormEvent, useEffect } from 'react'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { Gap } from 'lib-components/white-space'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import LabelValueList from '../../../components/common/LabelValueList'
+import { Gap } from 'lib-components/white-space'
 import DateRangeInput from '../../../components/common/DateRangeInput'
-import FeeAlterationRowInput from './FeeAlterationRowInput'
+import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import {
   FeeAlteration,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
-import { UUID } from 'lib-common/types'
+import FeeAlterationRowInput from './FeeAlterationRowInput'
 
 const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({
   personId,

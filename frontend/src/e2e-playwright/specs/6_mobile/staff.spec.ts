@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import MobileNav from 'e2e-playwright/pages/mobile/mobile-nav'
+import StaffPage from 'e2e-playwright/pages/mobile/staff-page'
+import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
+import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
+import {
+  insertDefaultServiceNeedOptions,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import {
   daycareGroupFixture,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import MobileNav from 'e2e-playwright/pages/mobile/mobile-nav'
-import StaffPage from 'e2e-playwright/pages/mobile/staff-page'
-import {
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
-import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 import { DaycareGroup } from 'e2e-test-common/dev-api/types'
-import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 import { Page } from '../../utils/page'
 
 let page: Page

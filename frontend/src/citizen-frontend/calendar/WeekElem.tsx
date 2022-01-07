@@ -4,20 +4,20 @@
 
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
+import { headerHeightMobile } from 'citizen-frontend/header/const'
+import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import colors from 'lib-customizations/common'
-import { fontWeights } from 'lib-components/typography'
-import { useTranslation } from '../localization'
-import { defaultMargins } from 'lib-components/white-space'
+import { scrollToPos } from 'lib-common/utils/scrolling'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
-import { Reservations } from './calendar-elements'
+import { fontWeights } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../localization'
 import { WeeklyData } from './CalendarListView'
-import { headerHeightMobile } from 'citizen-frontend/header/const'
-import { scrollToPos } from 'lib-common/utils/scrolling'
+import { Reservations } from './calendar-elements'
 
 interface Props extends WeeklyData {
   selectDate: (date: LocalDate) => void

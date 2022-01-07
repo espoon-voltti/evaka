@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import { Fixture } from 'e2e-test-common/dev-api/fixtures'
-import ReportsPage, { ApplicationsReport } from '../../pages/employee/reports'
-import { employeeLogin } from '../../utils/user'
-import { Page } from '../../utils/page'
-import config from 'e2e-test-common/config'
 import LocalDate from 'lib-common/local-date'
 import EmployeeNav from '../../pages/employee/employee-nav'
+import ReportsPage, { ApplicationsReport } from '../../pages/employee/reports'
+import { Page } from '../../utils/page'
+import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page

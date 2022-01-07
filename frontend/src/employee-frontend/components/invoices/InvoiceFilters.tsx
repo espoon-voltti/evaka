@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
-import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 import { getAreas, getUnits } from '../../api/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'

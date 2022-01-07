@@ -2,37 +2,37 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InputField from 'lib-components/atoms/form/InputField'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import InputField from 'lib-components/atoms/form/InputField'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
+import { H3, Label } from 'lib-components/typography'
 import {
   createBackupPickup,
   getChildBackupPickups,
   removeBackupPickup,
   updateBackupPickup
 } from '../../api/child/backup-pickup'
+import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { ChildBackupPickup } from '../../types/child'
 import { UIContext } from '../../state/ui'
-import { H3, Label } from 'lib-components/typography'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { ChildBackupPickup } from '../../types/child'
 import { RequireRole } from '../../utils/roles'
 import { FlexRow } from '../common/styled/containers'
-import { ChildContext } from '../../state'
-import { UUID } from 'lib-common/types'
 
 interface BackupPickupProps {
   id: UUID

@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useRef } from 'react'
-import { useTranslation } from '../../state/i18n'
-import { combine } from 'lib-common/api'
-import Title from 'lib-components/atoms/Title'
-import AssistanceNeedRow from './assistance-need/AssistanceNeedRow'
-import AssistanceNeedForm from '../../components/child-information/assistance-need/AssistanceNeedForm'
-import { UIContext } from '../../state/ui'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
 import styled from 'styled-components'
+import { combine } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { scrollToRef } from 'lib-common/utils/scrolling'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import Title from 'lib-components/atoms/Title'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import {
   getAssistanceBasisOptions,
   getAssistanceNeeds
 } from '../../api/child/assistance-needs'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { UUID } from 'lib-common/types'
+import AssistanceNeedForm from '../../components/child-information/assistance-need/AssistanceNeedForm'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
-import { scrollToRef } from 'lib-common/utils/scrolling'
+import AssistanceNeedRow from './assistance-need/AssistanceNeedRow'
 
 const TitleRow = styled.div`
   display: flex;

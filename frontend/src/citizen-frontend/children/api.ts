@@ -7,15 +7,15 @@ import {
   Child,
   ChildrenResponse
 } from 'lib-common/generated/api-types/children'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import {
   ChildPlacement,
   ChildPlacementResponse,
   PlacementTerminationRequestBody,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
+import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { client } from '../api-client'
 
 export function getChildren(): Promise<Result<ChildrenResponse>> {

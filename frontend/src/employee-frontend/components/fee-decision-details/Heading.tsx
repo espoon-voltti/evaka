@@ -5,22 +5,22 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { formatDate } from 'lib-common/date'
 import DateRange from 'lib-common/date-range'
-import { Gap } from 'lib-components/white-space'
-import { H1 } from 'lib-components/typography'
-import LabelValueList from '../../components/common/LabelValueList'
-import WarningLabel from '../../components/common/WarningLabel'
-import { getFeeDecisionPdfUrl } from '../../api/invoicing'
-import { useTranslation } from '../../state/i18n'
 import {
   Detailed as PersonDetailed,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { H1 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { formatDate } from 'lib-common/date'
+import { getFeeDecisionPdfUrl } from '../../api/invoicing'
+import LabelValueList from '../../components/common/LabelValueList'
+import WarningLabel from '../../components/common/WarningLabel'
+import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { TypeSelect } from './TypeSelect'
-import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 interface Props {
   id: string

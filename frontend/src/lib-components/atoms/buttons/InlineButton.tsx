@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode } from 'react'
-import styled from 'styled-components'
-import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { defaultMargins } from '../../white-space'
+import classNames from 'classnames'
+import React, { ReactNode } from 'react'
+import styled from 'styled-components'
 import { BaseProps } from '../../utils'
+import { defaultMargins } from '../../white-space'
 import { defaultButtonTextStyle } from './button-commons'
 
 const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`

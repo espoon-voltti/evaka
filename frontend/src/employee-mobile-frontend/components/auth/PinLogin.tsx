@@ -2,14 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import { ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { PlainPinInput } from 'lib-components/molecules/PinInput'
-import { H1, Label } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
 import { sortBy } from 'lodash'
 import React, {
   FormEventHandler,
@@ -19,6 +11,14 @@ import React, {
   useState
 } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+import { UUID } from 'lib-common/types'
+import Button from 'lib-components/atoms/buttons/Button'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import { ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PlainPinInput } from 'lib-components/molecules/PinInput'
+import { H1, Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { pinLogin } from '../../api/auth'
 import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'

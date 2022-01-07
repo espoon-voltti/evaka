@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import Title from 'lib-components/atoms/Title'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp, faPen, faTrash } from 'lib-icons'
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import Title from 'lib-components/atoms/Title'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import colors from 'lib-customizations/common'
 
 const Container = styled.div`
   display: flex;

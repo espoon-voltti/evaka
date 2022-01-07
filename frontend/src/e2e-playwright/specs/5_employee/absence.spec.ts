@@ -3,27 +3,27 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  createDaycarePlacementFixture,
-  daycareGroupFixture,
-  Fixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
-import { UnitPage } from '../../pages/employee/units/unit'
-import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
-import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
+import {
+  createDaycarePlacementFixture,
+  daycareGroupFixture,
+  Fixture,
+  uuidv4
+} from 'e2e-test-common/dev-api/fixtures'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 // import AbsencesPage from '../../pages/employee/absences/absences-page'
+import LocalDate from 'lib-common/local-date'
+import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
 let daycarePlacementFixture: DaycarePlacement

@@ -6,8 +6,8 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from '../../local-date'
-import { MessageAttachment } from './attachment'
 import { UUID } from '../../types'
+import { MessageAttachment } from './attachment'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType

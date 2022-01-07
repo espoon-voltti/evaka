@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { waitUntilEqual } from 'e2e-playwright/utils'
 import { FeeThresholds } from 'lib-common/api-types/finance'
 import { Page, TextInput } from '../../utils/page'
-import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class FinanceBasicsPage {
   constructor(private readonly page: Page) {}

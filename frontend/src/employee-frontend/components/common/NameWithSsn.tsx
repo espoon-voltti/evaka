@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import LocalDate from 'lib-common/local-date'
 import { Translations } from '../../state/i18n'
 import { formatName } from '../../utils'
-import LocalDate from 'lib-common/local-date'
 
 interface Props {
   firstName: string

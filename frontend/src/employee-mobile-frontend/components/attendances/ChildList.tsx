@@ -5,19 +5,19 @@
 import React from 'react'
 import styled from 'styled-components'
 import {
-  defaultMargins,
-  isSpacingSize,
-  SpacingSize
-} from 'lib-components/white-space'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import ChildListItem from './ChildListItem'
-import colors from 'lib-customizations/common'
-import { useTranslation } from '../../state/i18n'
-import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
 import { GroupNote } from 'lib-common/generated/api-types/note'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  defaultMargins,
+  isSpacingSize,
+  SpacingSize
+} from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../../state/i18n'
+import ChildListItem from './ChildListItem'
 
 interface Props {
   unitId: string

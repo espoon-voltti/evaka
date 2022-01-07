@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
+import { useParams } from 'react-router-dom'
 import { combine, Loading, Result } from 'lib-common/api'
-import { CareArea } from '../../../types/unit'
-import { getAreas } from '../../../api/daycare'
-import { getEmployees } from '../../../api/employees'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
-import { useParams } from 'react-router-dom'
+import { getAreas } from '../../../api/daycare'
+import { getEmployees } from '../../../api/employees'
 import {
   DaycareFields,
   getDaycare,
   UnitResponse,
   updateDaycare
 } from '../../../api/unit'
-import { TitleContext, TitleState } from '../../../state/title'
+import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import { TitleContext, TitleState } from '../../../state/title'
+import { CareArea } from '../../../types/unit'
 import { renderResult } from '../../async-rendering'
 
 export default function UnitDetailsPage(): JSX.Element {

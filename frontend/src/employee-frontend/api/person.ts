@@ -3,13 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
-import { deserializePersonJSON, SearchColumn } from '../types/person'
-import { SearchOrder } from '../types'
-import { client } from './client'
-import { Decision } from '../types/decision'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
 import {
   ContactInfo,
   CreatePersonBody,
@@ -18,9 +14,13 @@ import {
   PersonSummary,
   PersonWithChildrenDTO
 } from 'lib-common/generated/api-types/pis'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { ChildResponse } from 'lib-common/generated/api-types/daycare'
-import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { SearchOrder } from '../types'
+import { Decision } from '../types/decision'
+import { deserializePersonJSON, SearchColumn } from '../types/person'
+import { client } from './client'
 
 export async function getPerson(id: UUID): Promise<Result<PersonJSON>> {
   return client

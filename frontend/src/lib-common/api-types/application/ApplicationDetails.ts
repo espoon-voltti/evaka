@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '../../json'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
-import { Attachment } from '../attachment'
 import {
   ApplicationOrigin,
   ApplicationStatus,
@@ -14,6 +10,10 @@ import {
   AttachmentType,
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { JsonOf } from '../../json'
+import { Attachment } from '../attachment'
 
 export interface GuardianApplications {
   childId: string

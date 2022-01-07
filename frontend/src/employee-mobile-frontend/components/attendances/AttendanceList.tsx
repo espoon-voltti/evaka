@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useMemo } from 'react'
 import {
   AttendanceResponse,
   AttendanceStatus
@@ -9,7 +10,6 @@ import {
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
-import React, { useMemo } from 'react'
 import { useTranslation } from '../../state/i18n'
 import ChildList from './ChildList'
 

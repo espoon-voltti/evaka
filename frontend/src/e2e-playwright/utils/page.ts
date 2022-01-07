@@ -8,8 +8,8 @@ import {
   Locator,
   Page as PlaywrightPage
 } from 'playwright'
-import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 import { newBrowserContext } from '../browser'
+import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 
 export class Page {
   readonly keyboard: Keyboard

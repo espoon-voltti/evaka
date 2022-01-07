@@ -2,20 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
 import * as _ from 'lodash'
-import Loader from 'lib-components/atoms/Loader'
-import { useTranslation } from '../../state/i18n'
-import { ChildContext } from '../../state'
+import React, { useContext, useEffect, useState } from 'react'
 import { Loading } from 'lib-common/api'
-import { getChildBackupCares } from '../../api/child/backup-care'
-import { UIContext } from '../../state/ui'
-import BackupCareForm from '../../components/child-information/backup-care/BackupCareForm'
-import BackupCareRow from '../../components/child-information/backup-care/BackupCareRow'
+import { UUID } from 'lib-common/types'
+import Loader from 'lib-components/atoms/Loader'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { UUID } from 'lib-common/types'
+import { getChildBackupCares } from '../../api/child/backup-care'
+import BackupCareForm from '../../components/child-information/backup-care/BackupCareForm'
+import BackupCareRow from '../../components/child-information/backup-care/BackupCareRow'
+import { ChildContext } from '../../state'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 
 export interface Props {
   id: UUID

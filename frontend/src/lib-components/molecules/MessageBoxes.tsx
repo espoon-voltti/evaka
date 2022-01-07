@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled, { useTheme } from 'styled-components'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfo, faExclamation } from 'lib-icons'
 import React from 'react'
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import styled, { useTheme } from 'styled-components'
 import { fontWeights } from '../typography'
 import { defaultMargins, Gap } from '../white-space'
 

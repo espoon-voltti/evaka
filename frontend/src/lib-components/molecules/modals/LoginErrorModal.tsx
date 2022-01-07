@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
-import InfoModal from './InfoModal'
 import { faTimes } from 'lib-icons'
+import React, { useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { P } from 'lib-components/typography'
 import styled from 'styled-components'
+import { P } from 'lib-components/typography'
+import InfoModal from './InfoModal'
 
 const ReturnContainer = styled.div`
   margin-top: 30px;

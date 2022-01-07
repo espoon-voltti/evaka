@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
 import { fasArrowDown, fasArrowUp } from 'lib-icons'
+import React from 'react'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import colors from 'lib-customizations/common'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 type Props = { isUnder3: boolean } | { dateOfBirth: LocalDate }

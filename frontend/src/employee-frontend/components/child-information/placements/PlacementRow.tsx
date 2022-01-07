@@ -2,39 +2,39 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
-import styled from 'styled-components'
-import { Link } from 'react-router-dom'
-
 import { faQuestion } from 'lib-icons'
-import LocalDate from 'lib-common/local-date'
+import React, { useContext, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Gap } from 'lib-components/white-space'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
-import ToolbarAccordion, {
-  RestrictedToolbar
-} from '../../../components/common/ToolbarAccordion'
-import {
-  DateRange,
-  getStatusLabelByDateRange,
-  isActiveDateRange
-} from '../../../utils/date'
-import { useTranslation } from '../../../state/i18n'
-import { UIContext, UiState } from '../../../state/ui'
-import Toolbar from '../../../components/common/Toolbar'
+import { Gap } from 'lib-components/white-space'
+
 import {
   deletePlacement,
   PlacementUpdate,
   updatePlacement
 } from '../../../api/child/placements'
+import Toolbar from '../../../components/common/Toolbar'
+import ToolbarAccordion, {
+  RestrictedToolbar
+} from '../../../components/common/ToolbarAccordion'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext, UiState } from '../../../state/ui'
+import {
+  DateRange,
+  getStatusLabelByDateRange,
+  isActiveDateRange
+} from '../../../utils/date'
 import { InputWarning } from '../../common/InputWarning'
 import ServiceNeeds from './ServiceNeeds'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 
 interface Props {
   placement: DaycarePlacementWithDetails

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
 import { fontWeights } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 
 export const CheckedRowsInfo = styled.div`
   color: ${colors.greyscale.dark};

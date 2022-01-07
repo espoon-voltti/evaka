@@ -2,20 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { JsonOf } from 'lib-common/json'
 import {
   Absence,
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 
-import { Translations } from '../state/i18n'
 import {
   AbsenceCareType,
   AbsenceType,
   PlacementType
 } from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { Translations } from '../state/i18n'
 
 export const AbsenceTypes: AbsenceType[] = [
   'OTHER_ABSENCE',

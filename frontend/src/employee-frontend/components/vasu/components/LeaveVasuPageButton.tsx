@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 import { useHistory } from 'react-router'
-import Button from 'lib-components/atoms/buttons/Button'
+import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
+import Button from 'lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../../state/i18n'
 
 export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({

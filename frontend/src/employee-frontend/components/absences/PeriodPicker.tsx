@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faChevronLeft, faChevronRight } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
-import { useTranslation } from '../../state/i18n'
-import { H3 } from 'lib-components/typography'
-import { faChevronLeft, faChevronRight } from 'lib-icons'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { useTranslation } from '../../state/i18n'
 
 interface Props {
   onChange: (date: LocalDate) => void

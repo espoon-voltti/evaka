@@ -5,15 +5,15 @@
 import React, { useState } from 'react'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import { useTranslation } from '../../state/i18n'
-import { FeeDecisionDetailed } from '../../types/invoicing'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
   confirmFeeDecisions,
   markFeeDecisionSent,
   setFeeDecisionType
 } from '../../api/invoicing'
+import { useTranslation } from '../../state/i18n'
+import { FeeDecisionDetailed } from '../../types/invoicing'
 import { ErrorMessage } from './FeeDecisionDetailsPage'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 interface Props {
   decision: FeeDecisionDetailed

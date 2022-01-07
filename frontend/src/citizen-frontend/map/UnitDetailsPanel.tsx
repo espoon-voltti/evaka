@@ -3,25 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { addDays, isSaturday, isSunday } from 'date-fns'
+import { faArrowLeft } from 'lib-icons'
+import React, { useCallback } from 'react'
+import styled from 'styled-components'
 import { Result, Success } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { CareType } from 'lib-common/generated/enums'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { routeLinkRootUrl } from 'lib-customizations/citizen'
-import { faArrowLeft } from 'lib-icons'
-import React, { useCallback } from 'react'
-import styled from 'styled-components'
 import { useLang, useTranslation } from '../localization'
+import { MapAddress } from './MapView'
 import { queryDistance } from './api'
 import { mapViewBreakpoint } from './const'
 import { formatDistance } from './distances'
-import { MapAddress } from './MapView'
 
 type Props = {
   unit: PublicUnit

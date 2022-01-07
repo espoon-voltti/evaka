@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import Loader from 'lib-components/atoms/Loader'
-import Title from 'lib-components/atoms/Title'
-import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
-import { VardaErrorReportRow } from '../../types/reports'
-import { getVardaErrorsReport } from '../../api/reports'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { TableScrollable } from './common'
-import LocalDate from 'lib-common/local-date'
-import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { getVardaErrorsReport } from '../../api/reports'
+import { useTranslation } from '../../state/i18n'
+import { VardaErrorReportRow } from '../../types/reports'
+import { TableScrollable } from './common'
 
 const FlatList = styled.ul`
   list-style: none;

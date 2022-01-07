@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { getPerson } from '../../api/person'
+import { Link } from 'react-router-dom'
 import { isLoading, Loading, Result } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { Dimmed, H4, Label } from 'lib-components/typography'
-import ListGrid from 'lib-components/layout/ListGrid'
-import { Link } from 'react-router-dom'
-import { formatName } from '../../utils'
-import { useTranslation } from '../../state/i18n'
-import { renderResult } from '../async-rendering'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { Dimmed, H4, Label } from 'lib-components/typography'
+import { getPerson } from '../../api/person'
+import { useTranslation } from '../../state/i18n'
+import { formatName } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 async function maybeGetPerson(
   personId: UUID | undefined | null

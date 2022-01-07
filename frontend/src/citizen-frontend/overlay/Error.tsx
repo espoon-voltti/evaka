@@ -4,8 +4,8 @@
 
 import { faExclamation } from 'lib-icons'
 import React, { useContext } from 'react'
-import { OverlayContext } from './state'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { OverlayContext } from './state'
 
 function GlobalErrorDialog() {
   const { errorMessage, clearErrorMessage } = useContext(OverlayContext)

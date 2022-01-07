@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { flatMap, partition } from 'lodash'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import styled from 'styled-components'
 import { AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import Button from 'lib-components/atoms/buttons/Button'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors, { absenceColors } from 'lib-customizations/common'
-import { flatMap, partition } from 'lodash'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import styled from 'styled-components'
 import {
   deleteGroupAbsences,
   getGroupAbsences,

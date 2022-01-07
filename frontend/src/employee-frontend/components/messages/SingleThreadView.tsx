@@ -3,24 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faReply } from '@fortawesome/free-solid-svg-icons'
-import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
-import {
-  Message,
-  MessageThread
-} from 'lib-common/generated/api-types/messaging'
-import { MessageType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
-import { scrollRefIntoView } from 'lib-common/utils/scrolling'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
-import { Bold, H2, InformationText } from 'lib-components/typography'
-import { useRecipients } from 'lib-components/utils/useReplyRecipients'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { faAngleLeft } from 'lib-icons'
 import React, {
   useCallback,
@@ -31,6 +13,24 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
+import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
+import {
+  Message,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
+import { MessageType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
+import { Bold, H2, InformationText } from 'lib-components/typography'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { getAttachmentBlob } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'

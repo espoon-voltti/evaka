@@ -4,12 +4,12 @@
 
 import React, { ReactNode, useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
+import { scrollToRef } from 'lib-common/utils/scrolling'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { scrollToRef } from 'lib-common/utils/scrolling'
+import colors from 'lib-customizations/common'
 
 type Props = {
   title: string

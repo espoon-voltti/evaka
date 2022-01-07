@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { MAX_DATE } from '../constants'
 import { StatusLabelType } from '../components/common/StatusLabel'
+import { MAX_DATE } from '../constants'
 
 export function isActiveDateRange(
   startDate: LocalDate,

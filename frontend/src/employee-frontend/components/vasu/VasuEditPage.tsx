@@ -2,27 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Button from 'lib-components/atoms/buttons/Button'
 import React from 'react'
 import { useHistory } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
+import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Dimmed } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
+import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
+import { VasuContainer } from './components/VasuContainer'
+import { BasicsSection } from './sections/BasicsSection'
 import { DynamicSections } from './sections/DynamicSections'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
-import { BasicsSection } from './sections/BasicsSection'
-import ButtonContainer from 'lib-components/layout/ButtonContainer'
-import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
-import { VasuContainer } from './components/VasuContainer'
 
 const FooterContainer = styled.div`
   display: flex;

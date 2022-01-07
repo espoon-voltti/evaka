@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import styled from 'styled-components'
-
-import { defaultMargins } from '../../white-space'
-import DatePickerInput from './DatePickerInput'
-import DatePickerDay from './DatePickerDay'
-import LocalDate from 'lib-common/local-date'
-import { InputInfo } from '../../atoms/form/InputField'
 import { DayModifiers } from 'react-day-picker'
+import styled from 'styled-components'
+import LocalDate from 'lib-common/local-date'
+
+import { InputInfo } from '../../atoms/form/InputField'
+import { defaultMargins } from '../../white-space'
+import DatePickerDay from './DatePickerDay'
+import DatePickerInput from './DatePickerInput'
 
 const inputWidth = 120
 const DatePickerWrapper = styled.div`

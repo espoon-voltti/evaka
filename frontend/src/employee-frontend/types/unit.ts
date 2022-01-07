@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
 import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -14,7 +15,6 @@ import {
   UnitProviderType
 } from 'lib-customizations/types'
 import { DayOfWeek } from './index'
-import { EvakaUser } from 'lib-common/generated/api-types/user'
 
 export interface CareArea {
   id: UUID

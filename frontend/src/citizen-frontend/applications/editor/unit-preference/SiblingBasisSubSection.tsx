@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { H3, Label } from 'lib-components/typography'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import InputField from 'lib-components/atoms/form/InputField'
-import { Gap } from 'lib-components/white-space'
-import { useTranslation } from '../../../localization'
-import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
-import { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 import Radio from 'lib-components/atoms/form/Radio'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { H3, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 import { errorToInputInfo } from '../../../input-info-helper'
+import { useTranslation } from '../../../localization'
 
 export default React.memo(function SiblingBasisSubSection({
   applicationType,

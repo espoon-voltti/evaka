@@ -2,20 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import * as _ from 'lodash'
-import { Link } from 'react-router-dom'
-
 import { faFileAlt } from 'lib-icons'
-import { useTranslation } from '../../state/i18n'
+import * as _ from 'lodash'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '../../api/person'
+import { useTranslation } from '../../state/i18n'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { UUID } from 'lib-common/types'
-import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { renderResult } from '../async-rendering'
 
 interface Props {

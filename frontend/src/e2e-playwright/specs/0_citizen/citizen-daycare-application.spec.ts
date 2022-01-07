@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  fullDaycareForm,
+  minimalDaycareForm
+} from 'e2e-playwright/utils/application-forms'
+import { enduserLogin } from 'e2e-playwright/utils/user'
+import {
   execSimpleApplicationActions,
   getApplication,
   insertApplications,
@@ -14,15 +19,10 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import { enduserLogin } from 'e2e-playwright/utils/user'
-import {
-  fullDaycareForm,
-  minimalDaycareForm
-} from 'e2e-playwright/utils/application-forms'
-import CitizenHeader from '../../pages/citizen/citizen-header'
-import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { applicationFixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import LocalDate from 'lib-common/local-date'
+import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 
 let page: Page

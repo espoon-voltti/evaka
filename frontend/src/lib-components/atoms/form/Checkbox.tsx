@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import { faCheck } from 'lib-icons'
 import React, { useRef } from 'react'
 import styled from 'styled-components'
-import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck } from 'lib-icons'
-import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
+import { defaultMargins } from '../../white-space'
 
 const diameter = '30px'
 

@@ -4,21 +4,21 @@
 
 import React from 'react'
 import { useHistory } from 'react-router-dom'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
-import ButtonContainer from 'lib-components/layout/ButtonContainer'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { ApplicationDecisions, DecisionType } from '../../decisions/types'
-import { useTranslation } from '../../localization'
+import { PdfLink } from '../../decisions/PdfLink'
 import {
   decisionOrderComparator,
   Status,
   decisionStatusIcon
 } from '../../decisions/shared'
-import { PdfLink } from '../../decisions/PdfLink'
+import { ApplicationDecisions, DecisionType } from '../../decisions/types'
+import { useTranslation } from '../../localization'
 
 const preschoolInfoTypes: DecisionType[] = [
   'PRESCHOOL',

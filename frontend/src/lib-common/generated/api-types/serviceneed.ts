@@ -6,8 +6,8 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from '../../local-date'
-import { PlacementType } from './placement'
 import { UUID } from '../../types'
+import { PlacementType } from './placement'
 
 /**
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeed

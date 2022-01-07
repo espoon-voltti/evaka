@@ -2,25 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
 import {
   insertDaycarePlacementFixtures,
   insertPedagogicalDocumentAttachment,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import CitizenHeader from '../../pages/citizen/citizen-header'
-import { enduserLogin } from '../../utils/user'
-import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
+import LocalDate from 'lib-common/local-date'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
 import { Page } from '../../utils/page'
+import { enduserLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page

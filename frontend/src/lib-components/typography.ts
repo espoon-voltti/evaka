@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { defaultMargins } from 'lib-components/white-space'
 import styled from 'styled-components'
+import { defaultMargins } from 'lib-components/white-space'
 import { tabletMin } from './breakpoints'
 
 import { BaseProps } from './utils'

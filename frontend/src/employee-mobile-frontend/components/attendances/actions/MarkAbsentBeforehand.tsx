@@ -2,43 +2,43 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
-import styled from 'styled-components'
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
+import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { Gap } from 'lib-components/white-space'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InputField from 'lib-components/atoms/form/InputField'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { ContentArea } from 'lib-components/layout/Container'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { fontWeights, Label, P } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
-import LocalDate from 'lib-common/local-date'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { fontWeights, Label, P } from 'lib-components/typography'
 
-import { TallContentArea } from '../../mobile/components'
-import { ChildAttendanceContext } from '../../../state/child-attendance'
+import { Gap } from 'lib-components/white-space'
 import {
   deleteAbsenceRange,
   getFutureAbsencesByChild,
   postAbsenceRange
 } from '../../../api/attendances'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceType } from '../../../types'
+import { renderResult } from '../../async-rendering'
+import { TallContentArea } from '../../mobile/components'
 import AbsenceSelector from '../AbsenceSelector'
 import { Actions, BackButtonInline, CustomTitle } from '../components'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import Title from 'lib-components/atoms/Title'
-import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
-import { renderResult } from '../../async-rendering'
 
 export default React.memo(function MarkAbsentBeforehand() {
   const history = useHistory()

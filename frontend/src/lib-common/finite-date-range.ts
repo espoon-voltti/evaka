@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from './local-date'
 import DateRange from './date-range'
 import { JsonOf } from './json'
+import LocalDate from './local-date'
 import { groupDatesToRanges } from './utils/local-date'
 
 function maxOf(a: LocalDate, b: LocalDate) {

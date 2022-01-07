@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
-import { fi } from 'date-fns/locale'
-import { Line } from 'react-chartjs-2'
-import colors from 'lib-customizations/common'
-import { formatTime } from 'lib-common/date'
-import { ceil } from 'lodash'
-import { useTranslation } from '../../../../state/i18n'
 import { ChartData, ChartOptions } from 'chart.js'
+import { fi } from 'date-fns/locale'
+import { ceil } from 'lodash'
+import React from 'react'
+import { Line } from 'react-chartjs-2'
+import { formatTime } from 'lib-common/date'
+import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../../../../state/i18n'
 
 type DatePoint = { x: Date; y: number | null }
 

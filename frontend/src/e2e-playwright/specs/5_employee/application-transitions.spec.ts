@@ -3,6 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  cleanUpMessages,
+  createDecisionPdf,
+  execSimpleApplicationActions,
+  insertApplications,
+  insertDecisionFixtures,
+  insertPlacementPlan,
+  rejectDecisionByCitizen,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
+import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
@@ -13,24 +23,14 @@ import {
   placementPlanFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import {
-  cleanUpMessages,
-  createDecisionPdf,
-  execSimpleApplicationActions,
-  insertApplications,
-  insertDecisionFixtures,
-  insertPlacementPlan,
-  rejectDecisionByCitizen,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
-import ApplicationReadView from '../../pages/employee/applications/application-read-view'
+import { Application, EmployeeDetail } from 'e2e-test-common/dev-api/types'
+import LocalDate from 'lib-common/local-date'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
+import ApplicationListView from '../../pages/employee/applications/application-list-view'
+import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-import ApplicationListView from '../../pages/employee/applications/application-list-view'
-import { Application, EmployeeDetail } from 'e2e-test-common/dev-api/types'
-import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage

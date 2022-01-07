@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { defaultMargins } from '../white-space'
 import { BaseProps } from '../utils'
+import { defaultMargins } from '../white-space'
 
 type Sizes =
   | '100%'

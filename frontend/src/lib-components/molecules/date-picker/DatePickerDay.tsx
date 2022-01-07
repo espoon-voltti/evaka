@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { fi, sv, enGB } from 'date-fns/locale'
 import React from 'react'
 import DayPicker, { DayModifiers } from 'react-day-picker'
-import 'react-day-picker/lib/style.css'
-import { fi, sv, enGB } from 'date-fns/locale'
-
 import LocalDate from 'lib-common/local-date'
+import 'react-day-picker/lib/style.css'
 
 const monthNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 

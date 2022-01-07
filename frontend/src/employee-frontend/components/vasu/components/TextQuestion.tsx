@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { TextQuestion } from 'lib-common/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Label } from 'lib-components/typography'
-import { TextQuestion } from 'lib-common/api-types/vasu'
+import { VasuTranslations } from 'lib-customizations/employee'
+import QuestionInfo from '../QuestionInfo'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
-import QuestionInfo from '../QuestionInfo'
-import { VasuTranslations } from 'lib-customizations/employee'
 
 interface TextQuestionQuestionProps extends QuestionProps<TextQuestion> {
   onChange?: (value: string) => void

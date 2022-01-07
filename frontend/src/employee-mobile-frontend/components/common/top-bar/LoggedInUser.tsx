@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faLockOpenAlt, faTimes } from 'lib-icons'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
-import { faLockOpenAlt, faTimes } from 'lib-icons'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { UnitContext } from '../../../state/unit'
 import { UserContext } from '../../../state/user'
 import { renderResult } from '../../async-rendering'

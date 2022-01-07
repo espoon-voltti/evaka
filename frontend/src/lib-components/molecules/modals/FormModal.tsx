@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { FormEvent, useCallback } from 'react'
-import Button from '../../atoms/buttons/Button'
 import AsyncButton from '../../atoms/buttons/AsyncButton'
+import Button from '../../atoms/buttons/Button'
 import { Gap } from '../../white-space'
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
 

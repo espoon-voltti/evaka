@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
-import LocalDate from 'lib-common/local-date'
-import config from 'e2e-test-common/config'
-import { insertFeeThresholds, resetDatabase } from 'e2e-test-common/dev-api'
-import { employeeLogin } from 'e2e-playwright/utils/user'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import FinanceBasicsPage from 'e2e-playwright/pages/employee/finance-basics'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { Page } from 'e2e-playwright/utils/page'
+import { employeeLogin } from 'e2e-playwright/utils/user'
+import config from 'e2e-test-common/config'
+import { insertFeeThresholds, resetDatabase } from 'e2e-test-common/dev-api'
 import { Fixture } from 'e2e-test-common/dev-api/fixtures'
+import DateRange from 'lib-common/date-range'
+import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let financeBasicsPage: FinanceBasicsPage

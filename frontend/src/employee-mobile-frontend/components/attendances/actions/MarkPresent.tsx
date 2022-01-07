@@ -2,29 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowLeft, farStickyNote } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { faArrowLeft, farStickyNote } from 'lib-icons'
-import colors from 'lib-customizations/common'
+import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
-import { Gap } from 'lib-components/white-space'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import Title from 'lib-components/atoms/Title'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
-import { TallContentArea } from '../../mobile/components'
-import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { childArrivesPOST } from '../../../api/attendances'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
-import DailyNote from '../notes/DailyNote'
-import { Actions, BackButtonInline, TimeWrapper } from '../components'
 import { renderResult } from '../../async-rendering'
-import { combine } from 'lib-common/api'
+import { TallContentArea } from '../../mobile/components'
+import { Actions, BackButtonInline, TimeWrapper } from '../components'
+import DailyNote from '../notes/DailyNote'
 
 export default React.memo(function MarkPresent() {
   const history = useHistory()

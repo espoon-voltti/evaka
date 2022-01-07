@@ -4,6 +4,9 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
+import { fasMapMarkerAlt } from 'lib-icons'
+import React, { FocusEventHandler, useCallback, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { combine, Result, Success } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -16,12 +19,9 @@ import {
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { fasMapMarkerAlt } from 'lib-icons'
-import React, { FocusEventHandler, useCallback, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { useTranslation } from '../localization'
-import { queryAutocomplete } from './api'
 import { MapAddress } from './MapView'
+import { queryAutocomplete } from './api'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

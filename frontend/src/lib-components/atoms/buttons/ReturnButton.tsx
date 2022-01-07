@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled, { useTheme } from 'styled-components'
-import { useHistory } from 'react-router-dom'
-
 import { faAngleLeft } from 'lib-icons'
-import InlineButton from './InlineButton'
+import React from 'react'
+import { useHistory } from 'react-router-dom'
+import styled, { useTheme } from 'styled-components'
+
 import { tabletMin } from '../../breakpoints'
 import { defaultMargins } from '../../white-space'
+import InlineButton from './InlineButton'
 
 export const ReturnButtonWrapper = styled.div`
   margin: 8px 0;

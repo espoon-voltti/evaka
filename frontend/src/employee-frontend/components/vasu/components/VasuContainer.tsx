@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { defaultMargins, SpacingSize } from 'lib-components/white-space'
 import { Container } from 'lib-components/layout/Container'
+import { defaultMargins, SpacingSize } from 'lib-components/white-space'
 
 type VasuContainerProps = {
   gapSize: SpacingSize

@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import _ from 'lodash'
+import React, { ReactNode, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { Result, Success } from 'lib-common/api'
 import { UnitLanguage } from 'lib-common/api-types/units/enums'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -10,21 +13,18 @@ import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import _ from 'lodash'
-import React, { ReactNode, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { useUser } from '../auth/state'
 import { headerHeightDesktop } from '../header/const'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
-import { fetchUnits, queryDistances } from './api'
-import { mapViewBreakpoint, MobileMode } from './const'
-import { calcStraightDistance, UnitWithStraightDistance } from './distances'
 import MapBox from './MapBox'
 import MobileTabs from './MobileTabs'
 import SearchSection from './SearchSection'
 import UnitDetailsPanel from './UnitDetailsPanel'
 import UnitList from './UnitList'
+import { fetchUnits, queryDistances } from './api'
+import { mapViewBreakpoint, MobileMode } from './const'
+import { calcStraightDistance, UnitWithStraightDistance } from './distances'
 
 export type MapAddress = {
   coordinates: Coordinate

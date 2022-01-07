@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { Result, Success } from 'lib-common/api'
+import { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { getAge } from 'lib-common/utils/local-date'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { BaseProps } from 'lib-components/utils'
 import {
@@ -20,7 +21,6 @@ import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { isSsnValid } from '../../utils/validation/validations'
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
 
 const Container = styled.div`
   margin: 10px 0;

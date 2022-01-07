@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
-import styled, { useTheme } from 'styled-components'
-import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
 import { faAngleDown, faAngleUp } from 'lib-icons'
+import React, { useCallback, useState } from 'react'
+import styled, { useTheme } from 'styled-components'
 import { desktopMin } from '../breakpoints'
 import { H3 } from '../typography'
-import { defaultMargins } from '../white-space'
 import { BaseProps } from '../utils'
+import { defaultMargins } from '../white-space'
 
 const Wrapper = styled.div`
   width: 100%;

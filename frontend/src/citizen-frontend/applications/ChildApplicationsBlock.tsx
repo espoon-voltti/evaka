@@ -2,16 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
-import { useTranslation } from '../localization'
-import { H2, H3, Label } from 'lib-components/typography'
-import { ContentArea } from 'lib-components/layout/Container'
-import { Gap } from 'lib-components/white-space'
-import styled from 'styled-components'
-import ListGrid from 'lib-components/layout/ListGrid'
-import { Status, applicationStatusIcon } from '../decisions/shared'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { isEqual } from 'date-fns'
 import {
   faArrowRight,
   faExclamation,
@@ -20,18 +12,26 @@ import {
   faTimes,
   faTrash
 } from 'lib-icons'
-import colors from 'lib-customizations/common'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { Link, useHistory } from 'react-router-dom'
-import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
-import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
-import { removeUnprocessedApplication } from '../applications/api'
-import { OverlayContext } from '../overlay/state'
-import { isEqual } from 'date-fns'
+import React, { useContext } from 'react'
+import { Link, useHistory } from 'react-router-dom'
+import styled from 'styled-components'
+import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
 import { formatDate } from 'lib-common/date'
 import { ApplicationStatus } from 'lib-common/generated/enums'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import { H2, H3, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { removeUnprocessedApplication } from '../applications/api'
+import { Status, applicationStatusIcon } from '../decisions/shared'
+import { useTranslation } from '../localization'
+import { OverlayContext } from '../overlay/state'
 
 const StyledLink = styled(Link)`
   color: ${colors.main.primary};

@@ -4,13 +4,13 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
 import { OccupancyResponse } from '../../../../api/unit'
 import { useTranslation } from '../../../../state/i18n'
-import Title from 'lib-components/atoms/Title'
-import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import OccupancyDayGraph from './OccupancyDayGraph'
-import { featureFlags } from 'lib-customizations/employee'
 
 const Container = styled.div`
   text-align: center;

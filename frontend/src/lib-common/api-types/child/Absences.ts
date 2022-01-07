@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
 import { EvakaUserType } from '../../generated/api-types/user'
 
 export interface Absence {

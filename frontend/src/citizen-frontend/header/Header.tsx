@@ -4,19 +4,19 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
 import { desktopMin } from 'lib-components/breakpoints'
-import CityLogo from './CityLogo'
-import EvakaLogo from './EvakaLogo'
-import DesktopNav from './DesktopNav'
-import MobileNav from './MobileNav'
-import { headerHeightDesktop, headerHeightMobile } from './const'
+import colors from 'lib-customizations/common'
 import { useUser } from '../auth/state'
 import { MessageContext, MessagePageState } from '../messages/state'
 import {
   PedagogicalDocumentsContext,
   PedagogicalDocumentsState
 } from '../pedagogical-documents/state'
+import CityLogo from './CityLogo'
+import DesktopNav from './DesktopNav'
+import EvakaLogo from './EvakaLogo'
+import MobileNav from './MobileNav'
+import { headerHeightDesktop, headerHeightMobile } from './const'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)

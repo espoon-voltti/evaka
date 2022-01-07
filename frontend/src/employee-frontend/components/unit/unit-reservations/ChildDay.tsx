@@ -4,17 +4,17 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
-import {
-  ChildReservations,
-  OperationalDay
-} from 'lib-common/api-types/reservations'
 import {
   getTimesOnWeekday,
   isIrregular,
   isRegular,
   isVariableTime
 } from 'lib-common/api-types/child/common'
+import {
+  ChildReservations,
+  OperationalDay
+} from 'lib-common/api-types/reservations'
+import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import AbsenceDay from './AbsenceDay'
 

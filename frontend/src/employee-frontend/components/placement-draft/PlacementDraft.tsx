@@ -4,17 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { History } from 'history'
-import { isLoading, Loading, Result, Success } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import Title from 'lib-components/atoms/Title'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import { fontWeights } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
 import { faLink } from 'lib-icons'
 import React, {
   Dispatch,
@@ -27,6 +16,17 @@ import React, {
 import { RouteComponentProps, useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { isLoading, Loading, Result, Success } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import { getApplicationUnits } from '../../api/daycare'
 import Tooltip from '../../components/common/Tooltip'
@@ -39,10 +39,10 @@ import {
   PlacementDraftPlacement
 } from '../../types/placementdraft'
 import { formatName } from '../../utils'
+import { renderResult } from '../async-rendering'
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
 import UnitCards from './UnitCards'
-import { renderResult } from '../async-rendering'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;

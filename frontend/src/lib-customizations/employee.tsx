@@ -5,13 +5,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import customizations from '@evaka/customizations/employee'
-import type { EmployeeCustomizations } from './types'
-import { fi } from './espoo/employee/assets/i18n/fi'
 import { mergeWith } from 'lodash'
 import { ApplicationType } from 'lib-common/generated/enums'
 import { translationsMergeCustomizer } from './common'
+import { fi } from './espoo/employee/assets/i18n/fi'
 import { fi as vasuFI } from './espoo/employee/assets/i18n/vasu/fi'
 import { sv as vasuSV } from './espoo/employee/assets/i18n/vasu/sv'
+import type { EmployeeCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {

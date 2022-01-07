@@ -4,8 +4,8 @@
 
 import React from 'react'
 import { Label } from 'lib-components/typography'
-import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { VasuTranslations } from 'lib-customizations/employee'
+import { ValueOrNoRecord } from './ValueOrNoRecord'
 
 interface Props {
   label: string

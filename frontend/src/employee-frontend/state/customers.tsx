@@ -9,13 +9,13 @@ import React, {
   useState,
   createContext
 } from 'react'
-import { SearchColumn } from '../types/person'
-import { SearchOrder } from '../types'
 import { Result, Success } from 'lib-common/api'
-import { findByNameOrAddress } from '../api/person'
+import { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
+import { findByNameOrAddress } from '../api/person'
+import { SearchOrder } from '../types'
+import { SearchColumn } from '../types/person'
 
 export interface CustomersState {
   customers: Result<PersonSummary[]>

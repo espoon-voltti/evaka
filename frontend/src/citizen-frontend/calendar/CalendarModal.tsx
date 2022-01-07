@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faTimes } from 'lib-icons'
 import React, { ReactNode } from 'react'
 import styled from 'styled-components'
-import { faTimes } from 'lib-icons'
-import { defaultMargins } from 'lib-components/white-space'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
+import { defaultMargins } from 'lib-components/white-space'
 
 interface Props {
   close: () => void

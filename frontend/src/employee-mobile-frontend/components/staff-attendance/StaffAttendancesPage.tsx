@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import Button from 'lib-components/atoms/buttons/Button'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import Tabs from 'lib-components/molecules/Tabs'
 import { faPlus } from 'lib-icons'
 import React, { useCallback, useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import Button from 'lib-components/atoms/buttons/Button'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import Tabs from 'lib-components/molecules/Tabs'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
 import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
-import { toStaff } from './staff'
 import StaffListItem from './StaffListItem'
+import { toStaff } from './staff'
 
 const StaticIconContainer = styled.div`
   position: fixed;

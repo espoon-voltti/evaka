@@ -2,35 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { Link } from 'react-router-dom'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 
-import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
+import { range } from 'lodash'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { Loading, Result, Success } from 'lib-common/api'
+import { DATE_FORMAT_ISO, formatDate } from 'lib-common/date'
+import LocalDate from 'lib-common/local-date'
+import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { Translations, useTranslation } from '../../state/i18n'
-import { OccupancyReportRow } from '../../types/reports'
+import { Gap } from 'lib-components/white-space'
+import { getAreas } from '../../api/daycare'
 import {
   getOccupanciesReport,
   OccupancyReportFilters,
   OccupancyReportType
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { DATE_FORMAT_ISO, formatDate } from 'lib-common/date'
+import { Translations, useTranslation } from '../../state/i18n'
+import { OccupancyReportRow } from '../../types/reports'
 import { CareArea } from '../../types/unit'
-import { getAreas } from '../../api/daycare'
-import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { FlexRow } from '../common/styled/containers'
-import { range } from 'lodash'
-import LocalDate from 'lib-common/local-date'
-import { Gap } from 'lib-components/white-space'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

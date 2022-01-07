@@ -2,29 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen, faTrash } from 'lib-icons'
 import React, { useCallback, useContext, useState } from 'react'
-import { useTranslation } from '../../state/i18n'
-import { Td, Tr } from 'lib-components/layout/Table'
+import styled from 'styled-components'
 import {
   Attachment,
   PedagogicalDocument
 } from 'lib-common/generated/api-types/pedagogicaldocument'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import { Td, Tr } from 'lib-components/layout/Table'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import { defaultMargins } from 'lib-components/white-space'
 import {
   deleteAttachment,
   getAttachmentBlob,
   savePedagogicalDocumentAttachment
 } from '../../api/attachments'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faPen, faTrash } from 'lib-icons'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import styled from 'styled-components'
 import { updatePedagogicalDocument } from '../../api/child/pedagogical-documents'
+import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { defaultMargins } from 'lib-components/white-space'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
 interface Props {
   id: UUID

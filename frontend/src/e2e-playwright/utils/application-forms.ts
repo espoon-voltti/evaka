@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
+import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 
 function assertEquals<T>(expected: T, actual: T) {
   if (actual !== expected)

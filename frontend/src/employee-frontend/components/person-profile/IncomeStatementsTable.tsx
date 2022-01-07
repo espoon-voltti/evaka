@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
-import { useTranslation } from '../../state/i18n'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import React from 'react'
-import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileAlt } from 'lib-icons'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { formatDate } from 'lib-common/date'
+import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { Gap } from 'lib-components/white-space'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Dimmed } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { useTranslation } from '../../state/i18n'
 
 export default React.memo(function IncomeStatementsTable({
   personId,

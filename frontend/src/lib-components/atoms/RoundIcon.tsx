@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import classNames from 'classnames'
-import styled from 'styled-components'
-import { readableColor, shade } from 'polished'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fontWeights } from '../typography'
-import { BaseProps } from '../utils'
+import classNames from 'classnames'
+import { readableColor, shade } from 'polished'
+import React from 'react'
+import styled from 'styled-components'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { fontWeights } from '../typography'
+import { BaseProps } from '../utils'
 
 export type IconSize = 'xs' | 's' | 'm' | 'L' | 'XL' | 'XXL'
 

@@ -2,25 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowRight } from 'lib-icons'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
-import { fontWeights } from 'lib-components/typography'
+import { formatDateOrTime } from 'lib-common/date'
 import {
   Message,
   MessageThread,
   NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { formatDateOrTime } from 'lib-common/date'
-import React, { useCallback, useContext, useEffect, useRef } from 'react'
-import { MessageContext } from '../../state/messages'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRight } from 'lib-icons'
-import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
-import { useTranslation } from '../../state/i18n'
-import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { UUID } from 'lib-common/types'
 import TextArea from 'lib-components/atoms/form/TextArea'
+import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
+import { fontWeights } from 'lib-components/typography'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../../state/i18n'
+import { MessageContext } from '../../state/messages'
 import TopBar from '../common/TopBar'
 
 interface ThreadViewProps {

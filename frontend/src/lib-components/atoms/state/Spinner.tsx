@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { transparentize } from 'polished'
 import React from 'react'
 import styled from 'styled-components'
-import { transparentize } from 'polished'
-import { defaultMargins, SpacingSize } from '../../white-space'
 import { spinnerOverlayZIndex } from '../../layout/z-helpers'
+import { defaultMargins, SpacingSize } from '../../white-space'
 
 const spinnerSize = '50px'
 

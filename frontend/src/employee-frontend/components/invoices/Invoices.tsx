@@ -2,13 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import { useHistory } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamation, faSync } from 'lib-icons'
-import { Gap } from 'lib-components/white-space'
+import { uniqBy } from 'lodash'
+import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import styled from 'styled-components'
+import { Failure, Loading, Result, Success } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import { formatCents } from 'lib-common/money'
+import Pagination from 'lib-components/Pagination'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   Table,
   Tr,
@@ -18,24 +25,17 @@ import {
   Tbody,
   SortableTh
 } from 'lib-components/layout/Table'
-import Title from 'lib-components/atoms/Title'
-import Loader from 'lib-components/atoms/Loader'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { useTranslation } from '../../state/i18n'
-import NameWithSsn from '../common/NameWithSsn'
-import ChildrenCell from '../common/ChildrenCell'
-import { InvoiceSummary } from '../../types/invoicing'
-import { Failure, Loading, Result, Success } from 'lib-common/api'
-import { formatCents } from 'lib-common/money'
-import Tooltip from '../../components/common/Tooltip'
-import { StatusIconContainer } from '../common/StatusIconContainer'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { SearchOrder } from '../../types'
 import { SortByInvoices } from '../../api/invoicing'
-import Pagination from 'lib-components/Pagination'
+import Tooltip from '../../components/common/Tooltip'
+import { useTranslation } from '../../state/i18n'
+import { SearchOrder } from '../../types'
+import { InvoiceSummary } from '../../types/invoicing'
+import ChildrenCell from '../common/ChildrenCell'
+import NameWithSsn from '../common/NameWithSsn'
+import { StatusIconContainer } from '../common/StatusIconContainer'
 import { InvoicesActions } from './invoices-state'
-import LocalDate from 'lib-common/local-date'
-import { uniqBy } from 'lodash'
 
 interface Props {
   actions: InvoicesActions

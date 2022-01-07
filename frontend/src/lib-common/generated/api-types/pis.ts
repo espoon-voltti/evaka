@@ -6,14 +6,14 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { UUID } from '../../types'
 import { Action } from '../action'
-import { EmployeeFeatures } from './shared'
 import { ExternalId } from './identity'
 import { IncomeEffect } from './invoicing'
+import { EmployeeFeatures } from './shared'
+import { UserRole } from './shared'
 import { Nationality } from './vtjclient'
 import { NativeLanguage } from './vtjclient'
-import { UUID } from '../../types'
-import { UserRole } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.AddSsnRequest

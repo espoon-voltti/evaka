@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
-import { Translations } from '../state/i18n'
 import { PlacementType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import { Translations } from '../state/i18n'
 
 export type ChildAttendanceUIState =
   | 'coming'

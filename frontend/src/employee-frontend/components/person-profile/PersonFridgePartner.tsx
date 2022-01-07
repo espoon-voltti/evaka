@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faQuestion, faUser } from 'lib-icons'
+import * as _ from 'lodash'
 import React, { useContext, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
+import { Partnership, PersonJSON } from 'lib-common/generated/api-types/pis'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Partnership, PersonJSON } from 'lib-common/generated/api-types/pis'
-import * as _ from 'lodash'
-import { UIContext } from '../../state/ui'
-import FridgePartnerModal from '../../components/person-profile/person-fridge-partner/FridgePartnerModal'
-import { Link } from 'react-router-dom'
-import { formatName } from '../../utils'
-import { faQuestion, faUser } from 'lib-icons'
 import {
   getPartnerships,
   removePartnership,
   retryPartnership
 } from '../../api/partnerships'
-import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import Toolbar from '../../components/common/Toolbar'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import FridgePartnerModal from '../../components/person-profile/person-fridge-partner/FridgePartnerModal'
+import { useTranslation } from '../../state/i18n'
+import { PersonContext } from '../../state/person'
+import { UIContext } from '../../state/ui'
+import { formatName } from '../../utils'
+import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 
 const TopBar = styled.div`

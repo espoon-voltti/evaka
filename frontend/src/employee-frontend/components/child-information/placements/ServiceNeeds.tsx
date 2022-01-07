@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPlus, faQuestion } from 'lib-icons'
+import _ from 'lodash'
+import React, { useMemo, useState } from 'react'
+import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
@@ -13,10 +17,6 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H4 } from 'lib-components/typography'
-import { faPlus, faQuestion } from 'lib-icons'
-import _ from 'lodash'
-import React, { useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { deleteServiceNeed } from '../../../api/child/service-needs'
 import { useTranslation } from '../../../state/i18n'
 import { DateRange } from '../../../utils/date'

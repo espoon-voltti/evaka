@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useRef, useState } from 'react'
-import styled, { useTheme } from 'styled-components'
-import { animated, useSpring } from 'react-spring'
-import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
 import { faCheck, faTimes } from 'lib-icons'
+import React, { useEffect, useRef, useState } from 'react'
+import { animated, useSpring } from 'react-spring'
+import styled, { useTheme } from 'styled-components'
 import { StyledButton } from './Button'
 
 export type AsyncClickCallback = (

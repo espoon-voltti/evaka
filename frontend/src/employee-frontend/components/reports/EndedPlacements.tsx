@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { range } from 'lodash'
-import { Loading, Result, Success } from 'lib-common/api'
-import LocalDate from 'lib-common/local-date'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import Loader from 'lib-components/atoms/Loader'
-import Title from 'lib-components/atoms/Title'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { Loading, Result, Success } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   getEndedPlacementsReport,
   PlacementsReportFilters

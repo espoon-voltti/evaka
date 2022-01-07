@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
+import { waitUntilEqual, waitUntilFalse } from '../../../utils'
 import {
   Checkbox,
   Combobox,
@@ -11,9 +13,7 @@ import {
   Radio,
   TextInput
 } from '../../../utils/page'
-import { waitUntilEqual, waitUntilFalse } from '../../../utils'
 import ApplicationReadView from './application-read-view'
-import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
 
 export default class ApplicationEditView {
   constructor(private readonly page: Page) {}

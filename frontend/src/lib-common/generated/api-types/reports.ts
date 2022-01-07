@@ -7,13 +7,13 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { AbsenceType } from './daycare'
-import { AssistanceActionOption } from './assistanceaction'
-import { AssistanceBasisOption } from './assistanceneed'
-import { AssistanceMeasure } from './assistanceaction'
-import { PlacementType } from './placement'
-import { ProviderType } from './daycare'
 import { UUID } from '../../types'
+import { AssistanceActionOption } from './assistanceaction'
+import { AssistanceMeasure } from './assistanceaction'
+import { AssistanceBasisOption } from './assistanceneed'
+import { AbsenceType } from './daycare'
+import { ProviderType } from './daycare'
+import { PlacementType } from './placement'
 
 /**
 * Generated from fi.espoo.evaka.reports.ApplicationsReportRow

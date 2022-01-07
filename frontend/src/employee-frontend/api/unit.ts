@@ -2,9 +2,34 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { mapValues } from 'lodash'
 import { Failure, Result, Success } from 'lib-common/api'
+import { AdRole } from 'lib-common/api-types/employee-auth'
+import {
+  ChildReservations,
+  UnitAttendanceReservations
+} from 'lib-common/api-types/reservations'
+import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { client } from './client'
+import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import {
+  ServiceNeed,
+  ServiceNeedOptionSummary
+} from 'lib-common/generated/api-types/serviceneed'
+import {
+  AbsenceType,
+  ApplicationStatus,
+  PlacementType
+} from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { UnitProviderType } from 'lib-customizations/types'
+import { DayOfWeek } from '../types'
 import {
   Coordinate,
   DaycareGroup,
@@ -23,32 +48,7 @@ import {
   UnitTypes,
   VisitingAddress
 } from '../types/unit'
-import { DayOfWeek } from '../types'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import DateRange from 'lib-common/date-range'
-import {
-  ServiceNeed,
-  ServiceNeedOptionSummary
-} from 'lib-common/generated/api-types/serviceneed'
-import { UnitProviderType } from 'lib-customizations/types'
-import {
-  AbsenceType,
-  ApplicationStatus,
-  PlacementType
-} from 'lib-common/generated/enums'
-import { Action } from 'lib-common/generated/action'
-import { mapValues } from 'lodash'
-import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import {
-  ChildReservations,
-  UnitAttendanceReservations
-} from 'lib-common/api-types/reservations'
-import { AdRole } from 'lib-common/api-types/employee-auth'
-import { UUID } from 'lib-common/types'
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import { client } from './client'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {

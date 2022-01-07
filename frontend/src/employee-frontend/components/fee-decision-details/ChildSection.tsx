@@ -5,13 +5,13 @@
 import { faUserFriends } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { Detailed as PersonDetailed } from 'lib-common/generated/api-types/invoicing'
+import { PlacementType } from 'lib-common/generated/enums'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import { Detailed as PersonDetailed } from 'lib-common/generated/api-types/invoicing'
 import { UnitDetailed } from '../../types/invoicing'
 import { formatName } from '../../utils'
-import { PlacementType } from 'lib-common/generated/enums'
 
 interface Props {
   child: PersonDetailed

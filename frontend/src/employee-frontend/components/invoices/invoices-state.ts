@@ -11,8 +11,9 @@ import {
   useMemo,
   useState
 } from 'react'
-import LocalDate from 'lib-common/local-date'
 import { Paged, Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
   createInvoices,
   getInvoices,
@@ -24,7 +25,6 @@ import {
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
 import { InvoiceSummary } from '../../types/invoicing'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 
 const pageSize = 200
 

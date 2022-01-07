@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
-import { faTimes } from 'lib-icons'
 import Button from '../atoms/buttons/Button'
 import TextArea from '../atoms/form/TextArea'
 import ButtonContainer from '../layout/ButtonContainer'

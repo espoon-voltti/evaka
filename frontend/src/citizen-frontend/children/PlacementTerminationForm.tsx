@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { sortBy } from 'lodash'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   PlacementTerminationRequestBody,
   TerminatablePlacementGroup
@@ -10,12 +12,10 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
-import { sortBy } from 'lodash'
-import React, { useCallback, useMemo, useState } from 'react'
 import { useLang, useTranslation } from '../localization'
 import { terminatePlacement } from './api'
 

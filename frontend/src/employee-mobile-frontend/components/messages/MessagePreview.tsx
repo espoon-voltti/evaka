@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import styled from 'styled-components'
+import { formatDateOrTime } from 'lib-common/date'
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
   Container,
   Header,
   TitleAndDate,
   Truncated
 } from 'lib-components/molecules/ThreadListItem'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { formatDateOrTime } from 'lib-common/date'
-import React from 'react'
 
 export function MessagePreview({
   thread,

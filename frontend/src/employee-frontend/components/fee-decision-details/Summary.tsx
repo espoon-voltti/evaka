@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faEuroSign } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
-import { faEuroSign } from 'lib-icons'
-import { Gap } from 'lib-components/white-space'
+import { formatCents } from 'lib-common/money'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { fontWeights, H4 } from 'lib-components/typography'
-import IncomeSection from './IncomeSection'
-import ChildrenSection from './ChildrenSection'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from 'lib-common/money'
+import ChildrenSection from './ChildrenSection'
+import IncomeSection from './IncomeSection'
 
 interface Props {
   decision: FeeDecisionDetailed

@@ -7,11 +7,11 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { EvakaUser } from './user'
-import { PilotFeature } from './shared'
+import { UUID } from '../../types'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
-import { UUID } from '../../types'
+import { PilotFeature } from './shared'
+import { EvakaUser } from './user'
 
 /**
 * Generated from fi.espoo.evaka.placement.ChildBasics

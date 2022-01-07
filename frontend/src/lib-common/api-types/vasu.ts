@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '../local-date'
 import { VasuDocument } from 'lib-common/generated/api-types/vasu'
+import LocalDate from '../local-date'
 
 export const vasuQuestionTypes = [
   'TEXT',

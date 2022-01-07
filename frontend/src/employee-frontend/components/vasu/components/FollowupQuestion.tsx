@@ -2,25 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen } from 'lib-icons'
 import React, { useState, useContext, useCallback } from 'react'
 import styled, { css } from 'styled-components'
 import { v4 as uuid } from 'uuid'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { UserContext } from '../../../state/user'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import { Dimmed, H2, Label } from 'lib-components/typography'
 import { Followup, FollowupEntry } from 'lib-common/api-types/vasu'
-import { QuestionProps } from './question-props'
-import QuestionInfo from '../QuestionInfo'
-import { VasuTranslations } from 'lib-customizations/employee'
-import { defaultMargins } from 'lib-components/white-space'
-import Button from 'lib-components/atoms/buttons/Button'
-import LocalDate from 'lib-common/local-date'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { colors } from 'lib-customizations/common'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faPen } from 'lib-icons'
 import { PermittedFollowupActions } from 'lib-common/api-types/vasu'
+import LocalDate from 'lib-common/local-date'
+import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Dimmed, H2, Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import { colors } from 'lib-customizations/common'
+import { VasuTranslations } from 'lib-customizations/employee'
+import { UserContext } from '../../../state/user'
+import QuestionInfo from '../QuestionInfo'
+import { QuestionProps } from './question-props'
 
 const FollowupEntryElement = React.memo(function FollowupEntryElement({
   entry,

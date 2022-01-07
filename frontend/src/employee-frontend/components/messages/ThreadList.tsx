@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import { Result } from 'lib-common/api'
 import { MessageType } from 'lib-common/generated/enums'
-import React from 'react'
+import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
 import {
   Hyphen,
@@ -17,7 +18,6 @@ import {
   TypeAndDate
 } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
-import { UUID } from 'lib-common/types'
 
 export type ThreadListItem = {
   id: UUID

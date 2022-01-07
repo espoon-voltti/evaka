@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../api-client'
-import { JsonOf } from 'lib-common/json'
-import { AbsenceType } from 'lib-common/generated/enums'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DailyReservationRequest,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import { AbsenceType } from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { client } from '../api-client'
 
 export async function getReservations(
   from: LocalDate,

@@ -6,9 +6,9 @@
 /* eslint-disable prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { UUID } from '../../types'
 import { ContactInfo } from './attendance'
 import { PlacementType } from './placement'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.sensitive.ChildSensitiveInformation

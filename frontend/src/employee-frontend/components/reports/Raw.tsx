@@ -3,19 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Loading, Result } from 'lib-common/api'
+import { RawReportRow } from 'lib-common/generated/api-types/reports'
+import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { getRawReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { FilterLabel, FilterRow } from './common'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import LocalDate from 'lib-common/local-date'
+import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { RawReportRow } from 'lib-common/generated/api-types/reports'
+import { FilterLabel, FilterRow } from './common'
 
 function Raw() {
   const { i18n } = useTranslation()

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
+import { combine, Result } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import { ContentArea } from 'lib-components/layout/Container'
-import { UnitContext } from '../../state/unit'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Groups from '../../components/unit/tab-groups/Groups'
 import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGroupPlacements'
-import { combine, Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
+import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import TerminatedPlacements from './tab-groups/TerminatedPlacements'
 

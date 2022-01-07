@@ -4,25 +4,25 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Title from 'lib-components/atoms/Title'
-import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
 import { Loading, Result } from 'lib-common/api'
-import { getInvoice, getInvoiceCodes } from '../../api/invoicing'
-import InvoiceRowsSection from './InvoiceRowsSection'
-import InvoiceDetailsSection from './InvoiceDetailsSection'
-import InvoiceHeadOfFamilySection from './InvoiceHeadOfFamilySection'
-import Sum from './Sum'
-import Actions from './Actions'
 import {
   InvoiceCodes,
   InvoiceDetailed,
   InvoiceRowDetailed
 } from 'lib-common/generated/api-types/invoicing'
+import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+
+import { getInvoice, getInvoiceCodes } from '../../api/invoicing'
+import { useTranslation } from '../../state/i18n'
+import { TitleContext, TitleState } from '../../state/title'
 import { totalPrice } from '../../utils/pricing'
+import Actions from './Actions'
+import InvoiceDetailsSection from './InvoiceDetailsSection'
+import InvoiceHeadOfFamilySection from './InvoiceHeadOfFamilySection'
+import InvoiceRowsSection from './InvoiceRowsSection'
+import Sum from './Sum'
 
 const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   const { id } = useParams<{ id: string }>()

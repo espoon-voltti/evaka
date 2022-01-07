@@ -5,11 +5,11 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { useTranslation } from '../../state/i18n'
-import StickyActionBar from '../common/StickyActionBar'
 import { confirmFeeDecisions } from '../../api/invoicing'
+import { useTranslation } from '../../state/i18n'
 import { FeeDecisionStatus } from '../../types/invoicing'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
+import StickyActionBar from '../common/StickyActionBar'
 
 const ErrorMessage = styled.div`
   color: ${(p) => p.theme.colors.accents.orangeDark};

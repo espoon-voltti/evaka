@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { H3 } from 'lib-components/typography'
+import React from 'react'
 import styled from 'styled-components'
 import Loader from 'lib-components/atoms/Loader'
+import { H3 } from 'lib-components/typography'
 
 type Props = {
   loading: boolean

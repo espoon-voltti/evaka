@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import React from 'react'
-import { useTranslation } from '../../../localization'
-import { H2, H3, Label } from 'lib-components/typography'
+import styled from 'styled-components'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { ApplicationType } from 'lib-common/generated/enums'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
+import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
-import ServiceNeedPreparatory from './ServiceNeedPreparatory'
+import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
+import { useTranslation } from '../../../localization'
 import {
   ServiceNeedUrgency,
   ServiceNeedShiftCare
 } from './ServiceNeedAttachments'
+import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
 import ServiceNeedPartTime from './ServiceNeedPartTime'
-import styled from 'styled-components'
-import { ApplicationType } from 'lib-common/generated/enums'
+import ServiceNeedPreparatory from './ServiceNeedPreparatory'
 
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData

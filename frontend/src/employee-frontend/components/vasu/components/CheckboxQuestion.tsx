@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { useTranslation } from '../../../state/i18n'
 import { CheckboxQuestion } from 'lib-common/api-types/vasu'
-import { QuestionProps } from './question-props'
-import { ReadOnlyValue } from './ReadOnlyValue'
-import QuestionInfo from '../QuestionInfo'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { VasuTranslations } from 'lib-customizations/employee'
+import { useTranslation } from '../../../state/i18n'
+import QuestionInfo from '../QuestionInfo'
+import { ReadOnlyValue } from './ReadOnlyValue'
+import { QuestionProps } from './question-props'
 
 type Props = QuestionProps<CheckboxQuestion> & {
   onChange?: (checked: boolean) => void

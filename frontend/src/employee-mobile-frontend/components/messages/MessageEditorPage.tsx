@@ -2,17 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowLeft } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { MessageContext } from '../../state/messages'
-import { UUID } from 'lib-common/types'
+import { useHistory, useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import { Result } from 'lib-common/api'
 import {
   MessageReceiversResponse,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
+import { UUID } from 'lib-common/types'
+import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import {
   receiverAsSelectorNode,
   SelectorNode
 } from 'lib-components/employee/messages/SelectorNode'
+import { ContentArea } from 'lib-components/layout/Container'
+import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveMessageAttachment
+} from '../../api/attachments'
 import {
   deleteDraft,
   initDraft,
@@ -20,21 +32,9 @@ import {
   saveDraft,
   getReceivers
 } from '../../api/messages'
-import MessageEditor from 'lib-components/employee/messages/MessageEditor'
-import {
-  deleteAttachment,
-  getAttachmentBlob,
-  saveMessageAttachment
-} from '../../api/attachments'
-import { featureFlags } from 'lib-customizations/employee'
 import { useTranslation } from '../../state/i18n'
-import { useHistory, useParams } from 'react-router-dom'
-import { Result } from 'lib-common/api'
+import { MessageContext } from '../../state/messages'
 import { renderResult } from '../async-rendering'
-import styled from 'styled-components'
-import { defaultMargins } from 'lib-components/white-space'
-import { ContentArea } from 'lib-components/layout/Container'
-import { faArrowLeft } from 'lib-icons'
 import { BackButtonInline } from '../attendances/components'
 import TopBar from '../common/TopBar'
 

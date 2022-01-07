@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { uniqueId } from 'lodash'
-
 import { Absence } from 'lib-common/api-types/child/Absences'
 import LocalDate from 'lib-common/local-date'
 import { groupAbsencesByDateRange } from './absences'

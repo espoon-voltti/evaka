@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from './local-date'
-import { JsonOf } from './json'
 import FiniteDateRange from './finite-date-range'
+import { JsonOf } from './json'
+import LocalDate from './local-date'
 
 export default class DateRange {
   constructor(readonly start: LocalDate, readonly end: LocalDate | null) {

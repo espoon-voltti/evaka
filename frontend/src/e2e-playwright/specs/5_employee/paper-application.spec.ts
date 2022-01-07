@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { employeeLogin } from 'e2e-playwright/utils/user'
+import {
+  insertDaycareGroupFixtures,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
-import {
-  insertDaycareGroupFixtures,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
-import ChildInformationPage from '../../pages/employee/child-information'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
-import { employeeLogin } from 'e2e-playwright/utils/user'
-import { Page } from '../../utils/page'
 import LocalDate from 'lib-common/local-date'
 import CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
+import ChildInformationPage from '../../pages/employee/child-information'
+import { Page } from '../../utils/page'
 
 let childInformationPage: ChildInformationPage
 

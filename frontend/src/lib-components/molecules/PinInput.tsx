@@ -6,13 +6,13 @@ import classNames from 'classnames'
 import { range } from 'lodash'
 import React, { RefObject, useMemo, useRef } from 'react'
 import styled from 'styled-components'
+import UnderRowStatusIcon from '../atoms/StatusIcon'
 import InputField, {
   InputFieldUnderRow,
   InputInfo,
   StyledInput,
   TextInputProps
 } from '../atoms/form/InputField'
-import UnderRowStatusIcon from '../atoms/StatusIcon'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 

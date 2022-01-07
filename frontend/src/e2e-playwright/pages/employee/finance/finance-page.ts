@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { runPendingAsyncJobs } from 'e2e-test-common/dev-api'
+import { waitUntilEqual } from 'e2e-playwright/utils'
 import {
   AsyncButton,
   Checkbox,
@@ -11,7 +10,8 @@ import {
   Page,
   TextInput
 } from 'e2e-playwright/utils/page'
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { runPendingAsyncJobs } from 'e2e-test-common/dev-api'
+import LocalDate from 'lib-common/local-date'
 import GuardianInformationPage from '../guardian-information'
 
 export class FinancePage {

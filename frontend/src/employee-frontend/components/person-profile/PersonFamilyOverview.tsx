@@ -2,13 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faHome } from 'lib-icons'
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-
-import { faHome } from 'lib-icons'
+import { isLoading } from 'lib-common/api'
+import { formatCents } from 'lib-common/money'
+import { getAge } from 'lib-common/utils/local-date'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+
 import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
@@ -18,11 +21,8 @@ import {
   FamilyOverviewPersonRole,
   FamilyOverviewRow
 } from '../../types/family-overview'
-import { formatCents } from 'lib-common/money'
-import { getAge } from 'lib-common/utils/local-date'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
-import { isLoading } from 'lib-common/api'
 
 interface Props {
   open: boolean

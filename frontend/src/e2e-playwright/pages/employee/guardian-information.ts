@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from 'e2e-test-common/config'
-import { waitUntilEqual, waitUntilNotEqual, waitUntilTrue } from '../../utils'
 import LocalDate from 'lib-common/local-date'
+import { formatCents } from 'lib-common/money'
+import { UUID } from 'lib-common/types'
+import { waitUntilEqual, waitUntilNotEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
   Combobox,
@@ -17,8 +19,6 @@ import {
   TextInput
 } from '../../utils/page'
 import { IncomeStatementPage } from './IncomeStatementPage'
-import { UUID } from 'lib-common/types'
-import { formatCents } from 'lib-common/money'
 
 export default class GuardianInformationPage {
   constructor(private readonly page: Page) {}

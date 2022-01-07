@@ -4,12 +4,12 @@
 
 import { faInbox } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useTranslation } from '../localization'
-import { H3 } from 'lib-components/typography'
-import colors from 'lib-customizations/common'
 import React from 'react'
 import styled from 'styled-components'
 import { tabletMin } from 'lib-components/breakpoints'
+import { H3 } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../localization'
 
 interface Props {
   inboxEmpty: boolean

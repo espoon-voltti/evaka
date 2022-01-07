@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { endOfYesterday } from 'date-fns'
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
+import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
-import PlusMinus from './PlusMinus'
-import { Result } from 'lib-common/api'
-import { Translations, useTranslation } from '../../state/i18n'
-import { UUID } from 'lib-common/types'
-import LocalDate from 'lib-common/local-date'
-import { endOfYesterday } from 'date-fns'
-import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
 import colors from 'lib-customizations/common'
+import { Translations, useTranslation } from '../../state/i18n'
+import PlusMinus from './PlusMinus'
 
 export interface Props {
   groupId: UUID | undefined

@@ -2,13 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  AttendanceResponse,
-  Child,
-  GroupInfo
-} from 'lib-common/generated/api-types/attendance'
-import { ContentArea } from 'lib-components/layout/Container'
-import colors from 'lib-customizations/common'
 import React, {
   useCallback,
   useContext,
@@ -19,6 +12,13 @@ import React, {
 import { useHistory, useParams } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
+import {
+  AttendanceResponse,
+  Child,
+  GroupInfo
+} from 'lib-common/generated/api-types/attendance'
+import { ContentArea } from 'lib-components/layout/Container'
+import colors from 'lib-customizations/common'
 import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'

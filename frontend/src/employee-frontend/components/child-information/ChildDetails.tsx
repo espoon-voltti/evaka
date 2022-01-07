@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { useTranslation } from '../../state/i18n'
-import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
-import { ChildContext, ChildState } from '../../state/child'
-import PersonDetails from '../../components/person-shared/PersonDetails'
+import { isLoading } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
+import PersonDetails from '../../components/person-shared/PersonDetails'
+import { ChildContext, ChildState } from '../../state/child'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
-import { UUID } from 'lib-common/types'
-import { isLoading } from 'lib-common/api'
 
 interface Props {
   id: UUID

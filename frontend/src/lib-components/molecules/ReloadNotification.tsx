@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { faInfo, faRedo } from 'lib-icons'
-import Toast from './Toast'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from 'styled-components'
-import InlineButton from '../atoms/buttons/InlineButton'
 import { appVersion } from 'lib-common/globals'
+import InlineButton from '../atoms/buttons/InlineButton'
+import Toast from './Toast'
 
 // If the user closes the toast, remind every 5 minutes
 const REMIND_INTERVAL = 5 * 60 * 1000

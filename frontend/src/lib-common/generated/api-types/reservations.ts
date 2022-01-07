@@ -7,8 +7,8 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { AbsenceType } from './daycare'
 import { UUID } from '../../types'
+import { AbsenceType } from './daycare'
 
 /**
 * Generated from fi.espoo.evaka.reservations.AbsenceRequest

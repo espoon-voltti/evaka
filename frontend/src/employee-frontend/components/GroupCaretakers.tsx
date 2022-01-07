@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { RouteComponentProps } from 'react-router'
+import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { RouteComponentProps } from 'react-router'
-import { Loading, Result } from 'lib-common/api'
-import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+
 import { deleteCaretakers, getCaretakers } from '../api/caretakers'
+import StatusLabel from '../components/common/StatusLabel'
+import GroupCaretakersModal from '../components/group-caretakers/GroupCaretakersModal'
+import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
+import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
 import { capitalizeFirstLetter } from '../utils'
 import { getStatusLabelByDateRange } from '../utils/date'
-import StatusLabel from '../components/common/StatusLabel'
-import styled from 'styled-components'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
-import GroupCaretakersModal from '../components/group-caretakers/GroupCaretakersModal'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { useTranslation } from '../state/i18n'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { UUID } from 'lib-common/types'
 
 const NarrowContainer = styled.div`
   max-width: 900px;

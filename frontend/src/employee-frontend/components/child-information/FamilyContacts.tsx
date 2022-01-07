@@ -2,35 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
 import { cloneDeep, range } from 'lodash'
+import React, { useContext, useEffect, useState } from 'react'
 import { Loading, Result } from 'lib-common/api'
-import {
-  getFamilyContacts,
-  updateFamilyContacts
-} from '../../api/family-overview'
+import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { FamilyContact } from '../../types/family-overview'
-import { Gap } from 'lib-components/white-space'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import { useTranslation } from '../../state/i18n'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import InputField from 'lib-components/atoms/form/InputField'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { formatName } from '../../utils'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
+import {
+  getFamilyContacts,
+  updateFamilyContacts
+} from '../../api/family-overview'
 import { patchPersonDetails } from '../../api/person'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { UserContext } from '../../state/user'
-import BackupPickup from './BackupPickup'
 import { ChildContext } from '../../state'
-import { UUID } from 'lib-common/types'
+import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
+import { FamilyContact } from '../../types/family-overview'
+import { formatName } from '../../utils'
+import BackupPickup from './BackupPickup'
 
 interface FamilyContactsProps {
   id: UUID

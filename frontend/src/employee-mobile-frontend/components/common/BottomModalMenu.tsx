@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
-import styled from 'styled-components'
-import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from 'lib-icons'
+import React from 'react'
+import styled from 'styled-components'
+import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { fontWeights } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 
 const MenuBackground = styled.div`
   z-index: 100;

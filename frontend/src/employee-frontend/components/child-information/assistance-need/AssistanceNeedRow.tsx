@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { MutableRefObject, useContext, useRef, useState } from 'react'
-import { useTranslation } from '../../../state/i18n'
-import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
-import { UIContext } from '../../../state/ui'
-import AssistanceNeedForm from '../../../components/child-information/assistance-need/AssistanceNeedForm'
 import { faQuestion } from 'lib-icons'
-import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
-import { isActiveDateRange } from '../../../utils/date'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { formatDecimal } from 'lib-common/utils/number'
+import { scrollToRef } from 'lib-common/utils/scrolling'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
+import AssistanceNeedForm from '../../../components/child-information/assistance-need/AssistanceNeedForm'
 import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
-import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { scrollToRef } from 'lib-common/utils/scrolling'
+import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
+import { isActiveDateRange } from '../../../utils/date'
 
 export interface Props {
   assistanceNeed: AssistanceNeed

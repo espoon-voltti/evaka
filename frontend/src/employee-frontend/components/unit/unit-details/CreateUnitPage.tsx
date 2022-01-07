@@ -4,14 +4,14 @@
 
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { combine, Loading, Result } from 'lib-common/api'
-import { CareArea } from '../../../types/unit'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
-import { Container, ContentArea } from 'lib-components/layout/Container'
 import { createDaycare, DaycareFields } from '../../../api/unit'
+import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import { CareArea } from '../../../types/unit'
 import { renderResult } from '../../async-rendering'
 
 export default function CreateUnitPage(): JSX.Element {

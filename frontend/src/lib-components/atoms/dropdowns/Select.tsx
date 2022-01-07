@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import { faChevronDown } from 'lib-icons'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
-import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronDown } from 'lib-icons'
 import { borderStyles, DropdownProps, Root } from './shared'
 
 type SelectProps<T> = DropdownProps<T, HTMLSelectElement> &

@@ -3,19 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo } from 'react'
+import { Absence } from 'lib-common/api-types/child/Absences'
+import { formatDate } from 'lib-common/date'
+import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import Tooltip from '../../components/common/Tooltip'
+import { useTranslation } from '../../state/i18n'
 import {
   AbsenceBackupCare,
   billableCareTypes,
   Cell,
   CellPart
 } from '../../types/absence'
-import Tooltip from '../../components/common/Tooltip'
-import { useTranslation } from '../../state/i18n'
-import { Absence } from 'lib-common/api-types/child/Absences'
-import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
-import { formatDate } from 'lib-common/date'
 
 interface AbsenceCellPartProps {
   position: string

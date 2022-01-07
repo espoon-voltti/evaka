@@ -9,10 +9,10 @@ import {
   IncomeStatement,
   IncomeStatementAwaitingHandler
 } from 'lib-common/api-types/incomeStatement'
-import { JsonOf } from 'lib-common/json'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
-import { client } from './client'
+import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import { client } from './client'
 
 export async function getIncomeStatements(
   personId: UUID,

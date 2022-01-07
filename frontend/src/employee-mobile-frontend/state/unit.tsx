@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { createContext, useEffect, useMemo } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
+import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import React, { createContext, useEffect, useMemo } from 'react'
 import { client } from '../api/client'
-import { getMobileUnitInfo } from '../api/unit'
-import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
 import { getUnreadCountsByUnit } from '../api/messages'
+import { getMobileUnitInfo } from '../api/unit'
 
 interface UnitState {
   unitInfoResponse: Result<UnitInfo>

@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import { applicationFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
-import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-import { employeeLogin } from '../../utils/user'
 import { Page } from '../../utils/page'
+import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page

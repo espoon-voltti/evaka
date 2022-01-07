@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
 import { Failure, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { client } from '../api-client'
 import {
   ApplicationDecisions,
   Decision,
   deserializeApplicationDecisions,
   deserializeDecision
 } from '../decisions/types'
-import { client } from '../api-client'
-import LocalDate from 'lib-common/local-date'
 
 export async function getDecisions(): Promise<Result<ApplicationDecisions[]>> {
   return client

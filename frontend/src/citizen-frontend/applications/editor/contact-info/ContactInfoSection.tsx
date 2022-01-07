@@ -2,20 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UpdateStateFn } from 'lib-common/form-state'
 import React from 'react'
-import { useTranslation } from '../../../localization'
 import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import EditorSection from '../../../applications/editor/EditorSection'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { ApplicationFormDataErrors } from '../validations'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
+import { ApplicationType } from 'lib-common/generated/enums'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import EditorSection from '../../../applications/editor/EditorSection'
 import ChildSubSection from '../../../applications/editor/contact-info/ChildSubSection'
 import GuardianSubSection from '../../../applications/editor/contact-info/GuardianSubSection'
-import SecondGuardianSubSection from '../../../applications/editor/contact-info/SecondGuardianSubSection'
-import OtherPartnerSubSection from '../../../applications/editor/contact-info/OtherPartnerSubSection'
 import OtherChildrenSubSection from '../../../applications/editor/contact-info/OtherChildrenSubSection'
-import { ApplicationType } from 'lib-common/generated/enums'
+import OtherPartnerSubSection from '../../../applications/editor/contact-info/OtherPartnerSubSection'
+import SecondGuardianSubSection from '../../../applications/editor/contact-info/SecondGuardianSubSection'
+import { useTranslation } from '../../../localization'
+import { ApplicationFormDataErrors } from '../validations'
 
 export type ContactInfoSectionProps = {
   type: ApplicationType

@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
-
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import Heading from '../../applications/editor/Heading'
-import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
-import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
 import LocalDate from 'lib-common/local-date'
-import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
-import FeeSection from '../../applications/editor/FeeSection'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
+import FeeSection from '../../applications/editor/FeeSection'
+import Heading from '../../applications/editor/Heading'
+import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
+import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
+import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
 
 export default React.memo(function ApplicationFormPreschool({
   apiData,

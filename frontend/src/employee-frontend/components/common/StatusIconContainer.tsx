@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import colors from 'lib-customizations/common'
 import styled from 'styled-components'
+import colors from 'lib-customizations/common'
 
 interface StatusIconContainerProps {
   color: string

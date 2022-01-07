@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { UnitContext } from '../../state/unit'
-import { useTranslation } from '../../state/i18n'
-import Title from 'lib-components/atoms/Title'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { formatName } from '../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import { CareTypeChip } from '../common/CareTypeLabel'
+import Title from 'lib-components/atoms/Title'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { useTranslation } from '../../state/i18n'
+import { UnitContext } from '../../state/unit'
+import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { NotificationCounter } from '../UnitPage'
 import { renderResult } from '../async-rendering'
+import { CareTypeChip } from '../common/CareTypeLabel'
 
 export default React.memo(function TabApplications() {
   const { i18n } = useTranslation()
