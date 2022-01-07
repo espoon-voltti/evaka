@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import styled from 'styled-components'
+import { fontWeights } from 'lib-components/typography'
+import { colors } from 'lib-customizations/common'
 import {
   faGavel,
   faCheck,
@@ -11,9 +14,6 @@ import {
   faPlay,
   faFile
 } from 'lib-icons'
-import styled from 'styled-components'
-import { fontWeights } from 'lib-components/typography'
-import { colors } from 'lib-customizations/common'
 import { Decision, DecisionSummary } from '../decisions/types'
 
 export const Status = styled.span`

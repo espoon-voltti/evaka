@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChild, faPlus } from 'lib-icons'
 import _ from 'lodash'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -20,6 +19,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { faChild, faPlus } from 'lib-icons'
 import {
   getPersonFeeDecisions,
   createRetroactiveFeeDecisions

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowDown, faArrowUp, faEye, faEyeSlash } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import { formatPercentage } from 'lib-common/utils/number'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+import { faArrowDown, faArrowUp, faEye, faEyeSlash } from 'lib-icons'
 import { OccupancyResponse } from '../../../../api/unit'
 import Tooltip from '../../../../components/common/Tooltip'
 import { useTranslation } from '../../../../state/i18n'

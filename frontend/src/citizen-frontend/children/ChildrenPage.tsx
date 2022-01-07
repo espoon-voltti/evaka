@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChevronRight, faUser } from 'lib-icons'
 import React, { useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
@@ -27,6 +26,7 @@ import {
 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faChevronRight, faUser } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { getChildren } from './api'

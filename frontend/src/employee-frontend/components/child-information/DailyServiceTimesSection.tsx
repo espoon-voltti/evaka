@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 import styled from 'styled-components'
@@ -34,6 +33,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faPen } from 'lib-icons'
 import {
   deleteChildDailyServiceTimes,
   getChildDailyServiceTimes,

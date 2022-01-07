@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faAngleDown, faAngleUp } from 'lib-icons'
 import _ from 'lodash'
 import React, { Dispatch, SetStateAction, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -16,6 +15,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faAngleDown, faAngleUp } from 'lib-icons'
 import { OccupancyResponse } from '../../../api/unit'
 import UnitDataFilters from '../../../components/unit/UnitDataFilters'
 import Group from '../../../components/unit/tab-groups/groups/Group'

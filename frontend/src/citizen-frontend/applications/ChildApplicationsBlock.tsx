@@ -4,14 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { isEqual } from 'date-fns'
-import {
-  faArrowRight,
-  faExclamation,
-  faFileAlt,
-  faPen,
-  faTimes,
-  faTrash
-} from 'lib-icons'
 import { noop } from 'lodash'
 import React, { useContext } from 'react'
 import { Link, useHistory } from 'react-router-dom'
@@ -28,6 +20,14 @@ import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import {
+  faArrowRight,
+  faExclamation,
+  faFileAlt,
+  faPen,
+  faTimes,
+  faTrash
+} from 'lib-icons'
 import { removeUnprocessedApplication } from '../applications/api'
 import { Status, applicationStatusIcon } from '../decisions/shared'
 import { useTranslation } from '../localization'

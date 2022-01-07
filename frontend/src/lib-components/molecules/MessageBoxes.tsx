@@ -4,9 +4,9 @@
 
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faInfo, faExclamation } from 'lib-icons'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
+import { faInfo, faExclamation } from 'lib-icons'
 import { fontWeights } from '../typography'
 import { defaultMargins, Gap } from '../white-space'
 

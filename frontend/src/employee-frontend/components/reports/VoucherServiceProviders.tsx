@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt, faSearch } from 'lib-icons'
 import { range } from 'lodash'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
@@ -24,6 +23,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faLockAlt, faSearch } from 'lib-icons'
 import { getAreas } from '../../api/daycare'
 import {
   getVoucherServiceProvidersReport,

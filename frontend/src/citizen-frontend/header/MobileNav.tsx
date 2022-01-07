@@ -3,17 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faBars,
-  faChevronDown,
-  faChevronUp,
-  faCircleExclamation,
-  faLockAlt,
-  faSignIn,
-  faSignOut,
-  faTimes,
-  faUser
-} from 'lib-icons'
 import React, {
   Dispatch,
   SetStateAction,
@@ -28,6 +17,17 @@ import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import {
+  faBars,
+  faChevronDown,
+  faChevronUp,
+  faCircleExclamation,
+  faLockAlt,
+  faSignIn,
+  faSignOut,
+  faTimes,
+  faUser
+} from 'lib-icons'
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'

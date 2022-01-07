@@ -3,15 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faAngleDown,
-  faAngleUp,
-  faPaperclip,
-  faSearch,
-  fasExclamationTriangle,
-  faTimes,
-  faTrash
-} from 'lib-icons'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { ApplicationType } from 'lib-common/generated/enums'
@@ -32,6 +23,15 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
 import { applicationTypes } from 'lib-customizations/employee'
+import {
+  faAngleDown,
+  faAngleUp,
+  faPaperclip,
+  faSearch,
+  fasExclamationTriangle,
+  faTimes,
+  faTrash
+} from 'lib-icons'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'

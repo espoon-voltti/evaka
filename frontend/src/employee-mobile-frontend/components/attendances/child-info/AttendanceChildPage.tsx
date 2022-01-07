@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 import React, { useContext, useMemo, useRef, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -17,6 +16,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
+import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
 import { deleteChildImage } from '../../../api/childImages'
 import { ChildAttendanceContext } from '../../../state/child-attendance'

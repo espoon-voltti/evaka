@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react'
+import styled, { useTheme } from 'styled-components'
 import {
   faChevronUp,
   faChevronDown,
   fasChevronUp,
   fasChevronDown
 } from 'lib-icons'
-import React from 'react'
-import styled, { useTheme } from 'styled-components'
 import { fontWeights } from '../typography'
 import { defaultMargins, Gap } from '../white-space'
 

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faAngleDown } from 'lib-icons'
 import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
@@ -15,6 +14,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faAngleDown } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { MapAddress } from './MapView'
 import UnitListItem from './UnitListItem'

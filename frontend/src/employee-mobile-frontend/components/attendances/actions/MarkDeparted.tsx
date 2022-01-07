@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isBefore, parse } from 'date-fns'
-import { faArrowLeft, farStickyNote } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { combine } from 'lib-common/api'
@@ -21,6 +20,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowLeft, farStickyNote } from 'lib-icons'
 import {
   childDeparts,
   getChildDeparture,

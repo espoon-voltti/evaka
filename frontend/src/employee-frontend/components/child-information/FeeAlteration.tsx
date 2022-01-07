@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'lib-icons'
 import React, { useContext, useRef, useState } from 'react'
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
@@ -13,6 +12,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faQuestion } from 'lib-icons'
 import {
   createFeeAlteration,
   deleteFeeAlteration,

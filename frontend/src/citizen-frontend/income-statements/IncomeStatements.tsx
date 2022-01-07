@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
@@ -18,6 +17,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Dimmed, H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'

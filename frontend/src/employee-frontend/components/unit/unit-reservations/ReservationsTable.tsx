@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faCalendarPlus } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -16,6 +15,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faCalendarPlus } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import AgeIndicatorIcon from '../../common/AgeIndicatorIcon'
 import ChildDay, { TimeCell, TimesRow } from './ChildDay'

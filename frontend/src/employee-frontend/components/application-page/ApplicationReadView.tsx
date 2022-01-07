@@ -2,14 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  faChild,
-  faFileAlt,
-  faInfo,
-  faMapMarkerAlt,
-  faUserFriends,
-  faUsers
-} from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -24,6 +16,14 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { H4, Label, Dimmed } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+import {
+  faChild,
+  faFileAlt,
+  faInfo,
+  faMapMarkerAlt,
+  faUserFriends,
+  faUsers
+} from 'lib-icons'
 import ApplicationDecisionsSection from '../../components/application-page/ApplicationDecisionsSection'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'

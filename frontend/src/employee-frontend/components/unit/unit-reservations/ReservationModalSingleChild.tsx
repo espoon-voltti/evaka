@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPlus, faTrash } from 'lib-icons'
 import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Child } from 'lib-common/api-types/reservations'
@@ -24,6 +23,7 @@ import DatePicker, {
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faPlus, faTrash } from 'lib-icons'
 import { postReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { errorToInputInfo } from '../../../utils/validation/input-info-helper'

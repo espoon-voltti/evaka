@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faFileAlt } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -17,6 +16,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
+import { faFileAlt } from 'lib-icons'
 import {
   createPaperApplication,
   PaperApplicationRequest

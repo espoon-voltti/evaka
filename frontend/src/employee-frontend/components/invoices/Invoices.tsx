@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamation, faSync } from 'lib-icons'
 import { uniqBy } from 'lodash'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -27,6 +26,7 @@ import {
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faExclamation, faSync } from 'lib-icons'
 import { SortByInvoices } from '../../api/invoicing'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'

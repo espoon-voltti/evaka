@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faAbacus, faCoins } from 'lib-icons'
 import { groupBy, get } from 'lodash/fp'
 import React, { Fragment, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -18,6 +17,7 @@ import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { faAbacus, faCoins } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'

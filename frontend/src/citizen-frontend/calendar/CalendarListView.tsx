@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from 'lib-icons'
 import _ from 'lodash'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
@@ -12,6 +11,7 @@ import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
+import { faPlus } from 'lib-icons'
 import { useTranslation } from '../localization'
 import WeekElem from './WeekElem'
 

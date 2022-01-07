@@ -3,12 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import {
-  faDownLeftAndUpRightToCenter,
-  faTimes,
-  faTrash,
-  faUpRightAndDownLeftFromCenter
-} from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Failure, Result } from 'lib-common/api'
@@ -49,6 +43,12 @@ import { modalZIndex } from 'lib-components/layout/z-helpers'
 import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import {
+  faDownLeftAndUpRightToCenter,
+  faTimes,
+  faTrash,
+  faUpRightAndDownLeftFromCenter
+} from 'lib-icons'
 import Combobox from '../../atoms/dropdowns/Combobox'
 
 type Message = UpsertableDraftContent & {

@@ -4,11 +4,11 @@
 
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import colors from 'lib-customizations/common'
+import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
 import StatusLabel from '../../components/common/StatusLabel'
 import Tooltip from '../../components/common/Tooltip'
 import { UserContext } from '../../state/user'

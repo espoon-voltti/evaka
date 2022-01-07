@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from 'lib-icons'
 import React, {
   ChangeEvent,
   useCallback,
@@ -21,6 +20,7 @@ import { useDebouncedSave } from 'lib-common/utils/useDebouncedSave'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { Td, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
+import { faTimes } from 'lib-icons'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'

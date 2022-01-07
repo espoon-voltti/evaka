@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faTimes } from 'lib-icons'
 import React from 'react'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -15,6 +14,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faTimes } from 'lib-icons'
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'

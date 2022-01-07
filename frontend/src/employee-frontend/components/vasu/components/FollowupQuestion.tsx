@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen } from 'lib-icons'
 import React, { useState, useContext, useCallback } from 'react'
 import styled, { css } from 'styled-components'
 import { v4 as uuid } from 'uuid'
@@ -18,6 +17,7 @@ import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { VasuTranslations } from 'lib-customizations/employee'
+import { faPen } from 'lib-icons'
 import { UserContext } from '../../../state/user'
 import QuestionInfo from '../QuestionInfo'
 import { QuestionProps } from './question-props'

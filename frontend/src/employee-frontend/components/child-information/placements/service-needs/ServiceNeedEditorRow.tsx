@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faExclamation } from 'lib-icons'
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
@@ -16,6 +15,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faExclamation } from 'lib-icons'
 import {
   createServiceNeed,
   updateServiceNeed

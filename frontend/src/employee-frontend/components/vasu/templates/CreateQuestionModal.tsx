@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faTrash } from 'lib-icons'
 import React, { useState } from 'react'
 import {
   VasuQuestion,
@@ -20,6 +19,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faTrash } from 'lib-icons'
 import React, { Fragment, useCallback, useState } from 'react'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
@@ -26,6 +25,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faTrash } from 'lib-icons'
 import {
   deleteChildDailyNote,
   postChildDailyNote,

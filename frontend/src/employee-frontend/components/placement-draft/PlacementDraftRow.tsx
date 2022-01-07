@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamationTriangle } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -14,6 +13,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { fontWeights } from 'lib-components/typography'
 
 import colors from 'lib-customizations/common'
+import { faExclamationTriangle } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import {
   DaycarePlacementPlan,

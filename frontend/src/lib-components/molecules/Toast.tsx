@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { faTimes } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
+import { faTimes } from 'lib-icons'
 import RoundIcon from '../atoms/RoundIcon'
 import IconButton from '../atoms/buttons/IconButton'
 import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'

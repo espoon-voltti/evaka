@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChild, faComments, faUser } from 'lib-icons'
 import React, { useContext } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -17,6 +16,7 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
+import { faChild, faComments, faUser } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from '../../state/messages'
 import { UnitContext } from '../../state/unit'

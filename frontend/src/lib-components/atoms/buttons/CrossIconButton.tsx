@@ -4,9 +4,9 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { faTimes } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
+import { faTimes } from 'lib-icons'
 import { BaseProps } from '../../utils'
 
 const StyledButton = styled.button`

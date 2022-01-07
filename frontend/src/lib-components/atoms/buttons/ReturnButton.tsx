@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faAngleLeft } from 'lib-icons'
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
+import { faAngleLeft } from 'lib-icons'
 
 import { tabletMin } from '../../breakpoints'
 import { defaultMargins } from '../../white-space'

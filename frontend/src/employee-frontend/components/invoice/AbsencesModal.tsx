@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faAbacus } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Absence } from 'lib-common/api-types/child/Absences'
@@ -13,6 +12,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
+import { faAbacus } from 'lib-icons'
 import { getAbsencesByChild } from '../../api/invoicing'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen } from 'lib-icons'
 import React, { useState, useContext } from 'react'
 import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -14,6 +13,7 @@ import {
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
+import { faPen } from 'lib-icons'
 import { editGroup } from '../../../../../api/unit'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'

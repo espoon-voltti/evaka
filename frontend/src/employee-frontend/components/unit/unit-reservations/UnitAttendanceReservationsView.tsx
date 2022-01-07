@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChevronLeft, faChevronRight } from 'lib-icons'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
@@ -16,6 +15,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faChevronLeft, faChevronRight } from 'lib-icons'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import ReservationsTable from './ReservationsTable'

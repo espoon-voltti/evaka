@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -16,6 +15,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faQuestion } from 'lib-icons'
 
 import {
   deletePlacement,

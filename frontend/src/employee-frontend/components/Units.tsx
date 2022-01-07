@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faSearch } from 'lib-icons'
 import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -22,6 +21,7 @@ import {
   SortableTh
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
+import { faSearch } from 'lib-icons'
 import { getDaycares } from '../api/unit'
 import { useTranslation } from '../state/i18n'
 import { SearchColumn, UnitsContext, UnitsState } from '../state/units'

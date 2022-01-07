@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChild } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -14,6 +13,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Bold } from 'lib-components/typography'
+import { faChild } from 'lib-icons'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import {
   createGroupPlacement,

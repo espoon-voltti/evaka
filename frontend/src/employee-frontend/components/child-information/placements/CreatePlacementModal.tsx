@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faMapMarkerAlt } from 'lib-icons'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
@@ -19,6 +18,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import colors from 'lib-customizations/common'
 import { placementTypes } from 'lib-customizations/employee'
+import { faMapMarkerAlt } from 'lib-icons'
 import { createPlacement } from '../../../api/child/placements'
 import { getDaycares } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'

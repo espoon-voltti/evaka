@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileAlt, faTimes } from 'lib-icons'
 import _ from 'lodash'
 import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -16,6 +15,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { P } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+import { faFileAlt, faTimes } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'

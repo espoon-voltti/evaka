@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { farUser } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import { Child } from 'lib-common/generated/api-types/children'
@@ -11,6 +10,7 @@ import { desktopMin } from 'lib-components/breakpoints'
 import { H1, Title } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { farUser } from 'lib-icons'
 
 const ChildHeaderContainer = styled.div`
   display: flex;

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowLeft } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { Result } from 'lib-common/api'
@@ -19,6 +18,7 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faArrowLeft } from 'lib-icons'
 import { postExternalStaffArrival } from '../../api/realtimeStaffAttendances'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'

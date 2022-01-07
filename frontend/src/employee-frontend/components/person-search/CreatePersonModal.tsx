@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPlus } from 'lib-icons'
 import { set } from 'lodash/fp'
 import React, { useState } from 'react'
 import styled from 'styled-components'
@@ -15,6 +14,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faPlus } from 'lib-icons'
 import { createPerson } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'
