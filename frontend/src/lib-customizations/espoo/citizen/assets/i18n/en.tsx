@@ -1775,6 +1775,7 @@ const en: Translations = {
     pageDescription:
       "General information related to your children's early childhood education or pre-primary education is displayed on this page.",
     noChildren: 'No children',
+    childPicture: 'Picture of the child',
     placementTermination: {
       title: 'Terminating early childhood education agreement',
       description:

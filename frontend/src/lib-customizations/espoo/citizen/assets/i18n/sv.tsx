@@ -1734,6 +1734,7 @@ const sv: Translations = {
     pageDescription:
       'På denna sida ser du dina allmänna uppgifter som förknippas med dina barns småbarnspedagogik eller förskoleundervisning.',
     noChildren: 'Inga barn',
+    childPicture: 'Bild på barnet',
     placementTermination: {
       title: 'Uppsägning av plats',
       description:
