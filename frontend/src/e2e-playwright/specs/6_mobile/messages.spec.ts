@@ -301,6 +301,8 @@ describe('Child message thread', () => {
     await employeeLogin(adminPage, admin.data)
     await adminPage.goto(`${config.employeeUrl}/child-information/${child.id}`)
     const childInformationPage = new ChildInformationPage(adminPage)
+    await childInformationPage.waitUntilLoaded()
+
     const blocklistSection = await childInformationPage.openCollapsible(
       'messageBlocklist'
     )

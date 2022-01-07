@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
+import { isLoading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -43,7 +44,10 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
   }
 
   return (
-    <div className="child-message-blocklist">
+    <div
+      data-qa="child-message-blocklist"
+      data-isloading={isLoading(recipients)}
+    >
       <CollapsibleContentArea
         title={<H2 noMargin>{i18n.childInformation.messaging.title}</H2>}
         open={open}

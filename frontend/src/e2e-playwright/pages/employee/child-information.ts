@@ -527,10 +527,25 @@ export class AssistanceNeedSection extends Section {
 }
 
 class MessageBlocklistSection extends Section {
+  #loading = (status: boolean) =>
+    this.page.find(
+      `[data-qa="child-message-blocklist"][data-isloading="${status.toString()}"]`
+    )
+
+  async waitUntilLoading() {
+    await this.#loading(true).waitUntilVisible()
+  }
+
+  async waitUntilLoaded() {
+    await this.#loading(false).waitUntilVisible()
+  }
+
   async addParentToBlockList(parentId: string) {
     await this.find(
       `[data-qa="recipient-${parentId}"] [data-qa="blocklist-checkbox"]`
     ).click()
+    await this.waitUntilLoading()
+    await this.waitUntilLoaded()
   }
 }
 
