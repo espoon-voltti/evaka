@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -31,34 +31,34 @@ const InfoBall = styled.div<InfoBallProps>`
   }
 `
 
-interface ColourInfoContainerProps {
+interface ColorInfoContainerProps {
   maxWidth?: number
   noMargin?: boolean
 }
 
-const ColourInfoContainer = styled.div<ColourInfoContainerProps>`
+const ColorInfoContainer = styled.div<ColorInfoContainerProps>`
   display: flex;
   flex: auto;
-  max-width: ${(props: ColourInfoContainerProps) =>
+  max-width: ${(props: ColorInfoContainerProps) =>
     props.maxWidth ? `${props.maxWidth}px` : `130px`};
-  margin: ${(props: ColourInfoContainerProps) =>
+  margin: ${(props: ColorInfoContainerProps) =>
     props.noMargin ? `` : `0 10px`};
 `
 
-interface ColourInfoItemProps {
+interface Props {
   type: AbsenceType
   maxWidth?: number
   noMargin?: boolean
 }
 
-const ColourInfoItem = ({ type, maxWidth }: ColourInfoItemProps) => {
+const ColorInfoItem = ({ type, maxWidth }: Props) => {
   const { i18n } = useTranslation()
   return (
-    <ColourInfoContainer maxWidth={maxWidth} noMargin>
+    <ColorInfoContainer maxWidth={maxWidth} noMargin>
       <InfoBall type={type} />
       <div>{i18n.absences.absenceTypes[type]}</div>
-    </ColourInfoContainer>
+    </ColorInfoContainer>
   )
 }
 
-export default ColourInfoItem
+export default ColorInfoItem

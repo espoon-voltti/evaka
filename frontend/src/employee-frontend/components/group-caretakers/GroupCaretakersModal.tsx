@@ -117,7 +117,7 @@ function GroupCaretakersModal({
     <FormModal
       title={existing ? i18n.groupCaretakers.edit : i18n.groupCaretakers.create}
       icon={existing ? faPen : faPlus}
-      iconColour={'blue'}
+      iconColor={'blue'}
       resolveAction={submit}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={hasErrors || submitting}

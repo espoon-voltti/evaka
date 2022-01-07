@@ -138,7 +138,7 @@ const EditNameModal = React.memo(function EditNameModal({
     <InfoModal
       title={i18n.personalMobileDevices.editName}
       icon={faQuestion}
-      iconColour="blue"
+      iconColor="blue"
       reject={{ action: close, label: i18n.common.cancel }}
       resolve={{
         action: () => putMobileDeviceName(id, newName).then(close),
@@ -170,7 +170,7 @@ const DeleteModal = React.memo(function DeleteModal({
     <InfoModal
       title={i18n.personalMobileDevices.deleteDevice}
       icon={faQuestion}
-      iconColour="orange"
+      iconColor="orange"
       reject={{ action: close, label: i18n.common.cancel }}
       resolve={{
         action: () => deleteMobileDevice(id).then(close),

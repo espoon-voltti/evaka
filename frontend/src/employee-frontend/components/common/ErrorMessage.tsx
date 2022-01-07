@@ -15,7 +15,7 @@ function ErrorMessage() {
     <InfoModal
       title={errorMessage.title}
       icon={faExclamation}
-      iconColour={errorMessage.type === 'error' ? 'red' : 'orange'}
+      iconColor={errorMessage.type === 'error' ? 'red' : 'orange'}
       text={errorMessage.text}
       resolve={{
         action: clearErrorMessage,

@@ -70,7 +70,7 @@ export function VasuStateTransitionButtons({
     <FullWidthDiv>
       {selectedEventType && !updateResult?.isSuccess && (
         <InfoModal
-          iconColour="blue"
+          iconColor="blue"
           title={i18n.vasu.transitions[selectedEventType].confirmTitle}
           icon={faQuestion}
           text={
@@ -99,7 +99,7 @@ export function VasuStateTransitionButtons({
       )}
       {selectedEventType && updateResult?.isSuccess && (
         <InfoModal
-          iconColour="green"
+          iconColor="green"
           title={i18n.vasu.transitions[selectedEventType].successTitle}
           icon={faCheck}
           text={i18n.vasu.transitions[selectedEventType].successText}

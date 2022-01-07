@@ -104,7 +104,7 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
       </CollapsibleContentArea>
       {deleted ? (
         <InfoModal
-          iconColour={'orange'}
+          iconColor={'orange'}
           title={i18n.childInformation.feeAlteration.confirmDelete}
           text={`${
             i18n.childInformation.feeAlteration.types[deleted.type]

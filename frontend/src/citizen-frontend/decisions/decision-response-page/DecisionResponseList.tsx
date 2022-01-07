@@ -110,7 +110,7 @@ export default React.memo(function DecisionResponseList() {
                 .decisionWithNoResponseWarning.title
             }
             icon={faExclamation}
-            iconColour={'orange'}
+            iconColor={'orange'}
             text={
               t.decisions.applicationDecisions.warnings
                 .decisionWithNoResponseWarning.text

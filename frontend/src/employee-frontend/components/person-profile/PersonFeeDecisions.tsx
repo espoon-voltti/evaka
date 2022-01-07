@@ -143,7 +143,7 @@ const Modal = React.memo(function Modal({
   return (
     <AsyncFormModal
       icon={faPlus}
-      iconColour="blue"
+      iconColor="blue"
       title={i18n.personProfile.feeDecisions.createRetroactive}
       resolveAction={resolve}
       resolveLabel={i18n.common.create}

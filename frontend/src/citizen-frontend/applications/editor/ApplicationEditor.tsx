@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -138,7 +138,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         setInfoMessage({
           title: t.applications.editor.draftPolicyInfo.title,
           text: t.applications.editor.draftPolicyInfo.text,
-          iconColour: 'green',
+          iconColor: 'green',
           icon: faExclamation,
           resolve: {
             action: () => {
@@ -176,7 +176,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setInfoMessage({
               title: t.applications.editor.sentInfo.title,
               text: t.applications.editor.sentInfo.text,
-              iconColour: 'green',
+              iconColor: 'green',
               icon: faCheck,
               resolve: {
                 action: () => {
@@ -210,7 +210,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         setInfoMessage({
           title: t.applications.editor.updateInfo.title,
           text: t.applications.editor.updateInfo.text,
-          iconColour: 'green',
+          iconColor: 'green',
           icon: faCheck,
           resolve: {
             action: () => {

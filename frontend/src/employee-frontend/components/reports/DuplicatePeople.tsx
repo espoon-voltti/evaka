@@ -168,7 +168,7 @@ function DuplicatePeople() {
             </TableScrollable>
             {master && duplicate && (
               <InfoModal
-                iconColour={'orange'}
+                iconColor={'orange'}
                 title={i18n.reports.duplicatePeople.confirmMoveTitle}
                 icon={faQuestion}
                 reject={{
@@ -214,7 +214,7 @@ function DuplicatePeople() {
             )}
             {deleteId && (
               <InfoModal
-                iconColour={'orange'}
+                iconColor={'orange'}
                 title={i18n.reports.duplicatePeople.confirmDeleteTitle}
                 icon={faQuestion}
                 reject={{

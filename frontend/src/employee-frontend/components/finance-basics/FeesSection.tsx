@@ -176,7 +176,7 @@ export default React.memo(function FeesSection() {
       {modal ? (
         <InfoModal
           icon={faQuestion}
-          iconColour="red"
+          iconColor="red"
           title={i18n.financeBasics.fees.modals[modal.type].title}
           text={i18n.financeBasics.fees.modals[modal.type].text}
           reject={{

@@ -104,7 +104,7 @@ const Modal = React.memo(function Modal({
 
   return (
     <AsyncFormModal
-      iconColour={'blue'}
+      iconColor={'blue'}
       title={i18n.invoices.sendModal.title}
       icon={faEnvelope}
       resolveAction={() => sendInvoices({ invoiceDate, dueDate })}

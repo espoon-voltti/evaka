@@ -179,7 +179,7 @@ export default React.memo(function ServiceNeeds({
       {deletingId && (
         <InfoModal
           title={t.deleteServiceNeed.confirmTitle}
-          iconColour={'orange'}
+          iconColor={'orange'}
           icon={faQuestion}
           resolve={{
             action: () =>

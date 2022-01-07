@@ -71,7 +71,7 @@ export default React.memo(function BackupCareGroupModal({
           : i18n.unit.placements.modal.createTitle
       }
       icon={isTransfer ? faExchange : faChild}
-      iconColour={'blue'}
+      iconColor={'blue'}
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={!group}
