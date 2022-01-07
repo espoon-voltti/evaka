@@ -213,7 +213,7 @@ SELECT
     active,
     updated
 FROM service_need_option
-ORDER BY part_week, daycare_hours_per_week, part_day, name_fi
+ORDER BY part_week, daycare_hours_per_week DESC, part_day, name_fi
         """.trimIndent()
     )
         .mapTo<ServiceNeedOption>()
