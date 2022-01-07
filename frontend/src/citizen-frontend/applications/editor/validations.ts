@@ -70,12 +70,6 @@ export const isValidPreferredStartDate = (
 
   if (date.isAfter(maxPreferredStartDate())) return false
 
-  if (type === 'PRESCHOOL') {
-    // cannot apply for summer time between extended preschool terms
-    if (date.isBetween(LocalDate.of(2021, 6, 5), LocalDate.of(2021, 7, 31)))
-      return false
-  }
-
   if (terms !== undefined) {
     return terms.some(({ start, end }) => date.isBetween(start, end))
   }
