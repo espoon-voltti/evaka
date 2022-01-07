@@ -77,7 +77,7 @@ export default React.memo(function StaffListItem({
 
   return (
     <StaffBox data-qa={`staff-${id}`} key={id}>
-      <AttendanceLinkBox to={link} data-qa={'staff-link'}>
+      <AttendanceLinkBox to={link} data-qa="staff-link">
         <IconBox present={present}>
           <RoundIcon
             content={farUser}

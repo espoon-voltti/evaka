@@ -143,7 +143,7 @@ export default React.memo(function StaffAttendancesPage() {
         <Button
           primary
           onClick={navigateToExternalMemberArrival}
-          data-qa={'add-external-member-btn'}
+          data-qa="add-external-member-btn"
         >
           <FontAwesomeIcon icon={faPlus} size="sm" />{' '}
           {i18n.attendances.staff.externalPerson}
