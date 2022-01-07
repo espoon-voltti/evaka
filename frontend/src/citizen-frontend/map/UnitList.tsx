@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faAngleDown } from 'lib-icons'
+import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import _ from 'lodash'
 import { Result } from 'lib-common/api'
-import colors from 'lib-customizations/common'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { ContentArea } from 'lib-components/layout/Container'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { faAngleDown } from 'lib-icons'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../localization'
+import { MapAddress } from './MapView'
 import UnitListItem from './UnitListItem'
 import { formatDistance, UnitWithDistance } from './distances'
-import { MapAddress } from './MapView'
 
 type Props = {
   selectedAddress: MapAddress | null

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   DatePickerDeprecated,
   Element,
@@ -9,7 +10,6 @@ import {
   Page,
   TextInput
 } from '../../../utils/page'
-import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
 import { UnitDiaryPage } from './unit-diary-page'
 
 export class UnitGroupsPage {

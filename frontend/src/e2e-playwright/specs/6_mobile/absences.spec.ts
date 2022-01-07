@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
+import MobileAbsencesPage from 'e2e-playwright/pages/mobile/absences-page'
+import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
+import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
+import { waitUntilEqual } from 'e2e-playwright/utils'
+import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import { resetDatabase } from 'e2e-test-common/dev-api'
-import { waitUntilEqual } from 'e2e-playwright/utils'
-import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
+import { daycareGroupFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import LocalDate from 'lib-common/local-date'
-import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
-import MobileAbsencesPage from 'e2e-playwright/pages/mobile/absences-page'
-import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import { Page } from '../../utils/page'
 
 let fixtures: AreaAndPersonFixtures

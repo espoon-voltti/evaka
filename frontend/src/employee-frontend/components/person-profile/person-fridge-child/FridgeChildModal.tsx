@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext, useEffect, useMemo } from 'react'
-import LocalDate from 'lib-common/local-date'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { useTranslation } from '../../../state/i18n'
-import { UIContext } from '../../../state/ui'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import { Loading, Result } from 'lib-common/api'
 import { faChild } from 'lib-icons'
-import { formatName } from '../../../utils'
-import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
+import React, { useState, useContext, useEffect, useMemo } from 'react'
+import { Loading, Result } from 'lib-common/api'
+import { UpdateStateFn } from 'lib-common/form-state'
+import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 import { addParentship, updateParentship } from '../../../api/parentships'
 import { getPerson } from '../../../api/person'
-import { UUID } from 'lib-common/types'
-import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
+import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { formatName } from '../../../utils'
 
 interface Props {
   headPersonId: UUID

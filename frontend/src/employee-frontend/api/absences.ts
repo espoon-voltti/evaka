@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Failure, Result, Success, Response } from 'lib-common/api'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import {
   GroupStaffAttendance,
   StaffAttendanceUpdate
 } from 'lib-common/generated/api-types/daycare'
-import { client } from './client'
-import { Failure, Result, Success, Response } from 'lib-common/api'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import {
   Group,
   AbsencePayload,
   deserializeChild,
   AbsenceUpdatePayload
 } from '../types/absence'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import { client } from './client'
 
 interface SearchParams {
   year: number

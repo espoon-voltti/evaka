@@ -10,9 +10,11 @@ import React, {
   SetStateAction,
   useCallback
 } from 'react'
-import LocalDate from 'lib-common/local-date'
-import { Unit } from '../types/invoicing'
 import { Result, Loading, Paged } from 'lib-common/api'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { useDebounce } from 'lib-common/utils/useDebounce'
 import {
   ApplicationDateType,
   ApplicationTypeToggle,
@@ -23,10 +25,8 @@ import {
   ApplicationDistinctions,
   TransferApplicationFilter
 } from '../components/common/Filters'
-import { useDebounce } from 'lib-common/utils/useDebounce'
+import { Unit } from '../types/invoicing'
 import { CareArea } from '../types/unit'
-import { UUID } from 'lib-common/types'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
 // Nothing in here yet. Filters will be added here in next PR.
 

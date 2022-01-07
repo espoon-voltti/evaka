@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faChild, faQuestion } from 'lib-icons'
+import * as _ from 'lodash'
 import React, { useContext, useState } from 'react'
-import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
-import { formatName } from '../../utils'
+import { Link } from 'react-router-dom'
+import { Parentship } from 'lib-common/generated/api-types/pis'
+import { UUID } from 'lib-common/types'
+import { getAge } from 'lib-common/utils/local-date'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { Parentship } from 'lib-common/generated/api-types/pis'
-import * as _ from 'lodash'
-import { faChild, faQuestion } from 'lib-icons'
-import { UIContext } from '../../state/ui'
-import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Link } from 'react-router-dom'
 import {
   getParentshipsByHeadOfChild,
   removeParentship,
   retryParentship
 } from '../../api/parentships'
-import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
-import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import Toolbar from '../../components/common/Toolbar'
-import { getAge } from 'lib-common/utils/local-date'
-import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
+import { useTranslation } from '../../state/i18n'
+import { PersonContext } from '../../state/person'
+import { UIContext } from '../../state/ui'
+import { formatName } from '../../utils'
+import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 
 interface Props {

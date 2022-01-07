@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import PersonSearchPage from 'e2e-playwright/pages/employee/person-search'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
-import { employeeLogin } from 'e2e-playwright/utils/user'
-import PersonSearchPage from 'e2e-playwright/pages/employee/person-search'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
-import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 let page: Page
 let personSearchPage: PersonSearchPage

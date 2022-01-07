@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import DateRange from 'lib-common/date-range'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { colors } from 'lib-customizations/common'
-import React from 'react'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 

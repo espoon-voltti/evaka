@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import React from 'react'
-import EditorSection from '../../applications/editor/EditorSection'
-import { getErrorCount } from 'lib-common/form-validation'
-import { useTranslation } from '../../localization'
 import { FeeFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationFormDataErrors } from './validations'
+import { UpdateStateFn } from 'lib-common/form-state'
+import { getErrorCount } from 'lib-common/form-validation'
 import { ApplicationType } from 'lib-common/generated/enums'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import EditorSection from '../../applications/editor/EditorSection'
+import { useTranslation } from '../../localization'
+import { ApplicationFormDataErrors } from './validations'
 
 type Props = {
   applicationType: ApplicationType

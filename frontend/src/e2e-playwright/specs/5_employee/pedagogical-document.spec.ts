@@ -2,6 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { format } from 'date-fns'
+import ChildInformationPage, {
+  PedagogicalDocumentsSection
+} from 'e2e-playwright/pages/employee/child-information'
+import { waitUntilEqual } from 'e2e-playwright/utils'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
@@ -15,12 +21,6 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import ChildInformationPage, {
-  PedagogicalDocumentsSection
-} from 'e2e-playwright/pages/employee/child-information'
-import { waitUntilEqual } from 'e2e-playwright/utils'
-import { employeeLogin } from 'e2e-playwright/utils/user'
-import { format } from 'date-fns'
 import { UUID } from 'lib-common/types'
 import { Page } from '../../utils/page'
 

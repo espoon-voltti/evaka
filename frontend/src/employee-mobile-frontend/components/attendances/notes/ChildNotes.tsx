@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowLeft } from 'lib-icons'
+import React, { useContext, useMemo, useState } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
+import styled from 'styled-components'
 import { Failure, Result, Success } from 'lib-common/api'
 import { Child } from 'lib-common/generated/api-types/attendance'
 import {
@@ -15,19 +19,15 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faArrowLeft } from 'lib-icons'
-import React, { useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
-import styled from 'styled-components'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { TallContentArea } from '../../mobile/components'
 import { BackButtonInline } from '../components'
 import { ChildStickyNotesTab } from './ChildStickyNotesTab'
-import { ChildDailyNoteFormData } from './daily-note'
 import { DailyNotesTab } from './DailyNotesTab'
 import { GroupNotesTab } from './GroupNotesTab'
+import { ChildDailyNoteFormData } from './daily-note'
 
 type NoteType = 'NOTE' | 'STICKY' | 'GROUP'
 

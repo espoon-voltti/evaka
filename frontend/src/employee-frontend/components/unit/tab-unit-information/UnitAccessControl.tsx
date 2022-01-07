@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 import { orderBy, sortBy } from 'lodash'
 import React, {
   useCallback,
@@ -11,10 +12,27 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
+import { combine, isLoading } from 'lib-common/api'
+import { AdRole } from 'lib-common/api-types/employee-auth'
+import { Action } from 'lib-common/generated/action'
+import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { ExpandableList } from 'lib-components/atoms/ExpandableList'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { combine, isLoading } from 'lib-common/api'
+import { fontWeights, H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { getEmployees } from '../../../api/employees'
 import {
   addDaycareAclSpecialEducationTeacher,
   addDaycareAclStaff,
@@ -30,30 +48,12 @@ import {
   removeDaycareAclSupervisor,
   updateDaycareGroupAcl
 } from '../../../api/unit'
-import { getEmployees } from '../../../api/employees'
-import { Employee } from '../../../types/employee'
-import { UserContext } from '../../../state/user'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { Translations, useTranslation } from '../../../state/i18n'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
-import { fontWeights, H2 } from 'lib-components/typography'
-import Button from 'lib-components/atoms/buttons/Button'
 import { UIContext } from '../../../state/ui'
+import { UserContext } from '../../../state/user'
+import { Employee } from '../../../types/employee'
 import { formatName } from '../../../utils'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { Gap } from 'lib-components/white-space'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import InputField from 'lib-components/atoms/form/InputField'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { ExpandableList } from 'lib-components/atoms/ExpandableList'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { Action } from 'lib-common/generated/action'
-import { UUID } from 'lib-common/types'
-import { AdRole } from 'lib-common/api-types/employee-auth'
 import { renderResult } from '../../async-rendering'
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 
 type Props = {
   unitId: string

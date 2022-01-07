@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faFileAlt } from 'lib-icons'
+import React, { useContext, useState } from 'react'
+import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { ApplicationType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -10,26 +17,19 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
-import { faFileAlt } from 'lib-icons'
-import React, { useContext, useState } from 'react'
 import {
   createPaperApplication,
   PaperApplicationRequest
 } from '../../api/applications'
-import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import CreatePersonInput from '../../components/common/CreatePersonInput'
 import {
   DbPersonSearch as PersonSearch,
   VtjPersonSearch
 } from '../../components/common/PersonSearch'
-import Select from 'lib-components/atoms/dropdowns/Select'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { formatName } from '../../utils'
-import { ApplicationType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
 
 type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 

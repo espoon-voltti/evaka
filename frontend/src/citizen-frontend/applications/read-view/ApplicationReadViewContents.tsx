@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Container, { ContentArea } from 'lib-components/layout/Container'
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { H1 } from 'lib-components/typography'
-import { useTranslation } from '../../localization'
-import BasicsSection from '../../applications/editor/verification/BasicsSection'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import UnitPreferenceSection from '../../applications/editor/verification/UnitPreferenceSection'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import ServiceNeedSection from '../../applications/editor/verification/ServiceNeedSection'
-import ContactInfoSection from '../../applications/editor/verification/ContactInfoSection'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import { H1 } from 'lib-components/typography'
 import AdditionalDetailsSection from '../../applications/editor/verification/AdditionalDetailsSection'
+import BasicsSection from '../../applications/editor/verification/BasicsSection'
+import ContactInfoSection from '../../applications/editor/verification/ContactInfoSection'
+import ServiceNeedSection from '../../applications/editor/verification/ServiceNeedSection'
+import UnitPreferenceSection from '../../applications/editor/verification/UnitPreferenceSection'
+import { useTranslation } from '../../localization'
 
 type DaycareApplicationReadViewProps = {
   application: ApplicationDetails

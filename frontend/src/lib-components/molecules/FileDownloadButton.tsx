@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
-
 import { Result } from 'lib-common/api'
-import { downloadBlobAsFile, openBlobInBrowser } from 'lib-common/utils/file'
-import { isIOS } from 'lib-common/utils/helpers'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { downloadBlobAsFile, openBlobInBrowser } from 'lib-common/utils/file'
+import { isIOS } from 'lib-common/utils/helpers'
+
 import { FixedSpaceRow } from '../layout/flex-helpers'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fileIcon } from './FileUpload'
 
 const DownloadButton = styled.button`

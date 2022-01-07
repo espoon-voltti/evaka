@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faEllipsisVAlt } from 'lib-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { faEllipsisVAlt } from 'lib-icons'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import colors from 'lib-customizations/common'

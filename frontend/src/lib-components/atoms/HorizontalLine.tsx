@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
+import { defaultMargins } from '../white-space'
 
 const HorizontalLine = styled.hr<{ slim?: boolean; dashed?: boolean }>`
   width: 100%;

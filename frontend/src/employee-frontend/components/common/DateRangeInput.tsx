@@ -5,8 +5,8 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
-import { Gap } from 'lib-components/white-space'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 
 type NullableEnd = {

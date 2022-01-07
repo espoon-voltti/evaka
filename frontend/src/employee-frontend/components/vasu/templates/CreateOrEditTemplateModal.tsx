@@ -2,15 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
 import React, { useContext, useState } from 'react'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  CreateTemplateRequest,
+  CurriculumType,
+  VasuLanguage,
+  VasuTemplateSummary
+} from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
@@ -19,14 +27,6 @@ import {
   editVasuTemplate,
   vasuLanguages
 } from './api'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import {
-  CreateTemplateRequest,
-  CurriculumType,
-  VasuLanguage,
-  VasuTemplateSummary
-} from 'lib-common/generated/api-types/vasu'
-import { featureFlags } from 'lib-customizations/employee'
 
 interface Props {
   onSuccess: (templateId: UUID) => void

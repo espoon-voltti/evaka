@@ -5,15 +5,14 @@
 import MobileChildPage from 'e2e-playwright/pages/mobile/child-page'
 import MobileListPage from 'e2e-playwright/pages/mobile/list-page'
 import PinLoginPage from 'e2e-playwright/pages/mobile/pin-login-page'
-import { Page } from 'e2e-playwright/utils/page'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
+import { Page } from 'e2e-playwright/utils/page'
 import config from 'e2e-test-common/config'
 import {
   insertGuardianFixtures,
   resetDatabase,
   upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
-import { Daycare, PersonDetail } from 'e2e-test-common/dev-api/types'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -23,15 +22,16 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
+import { Daycare, PersonDetail } from 'e2e-test-common/dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
+import ChildInformationPage from '../../pages/employee/child-information'
 import MobileMessageEditorPage from '../../pages/mobile/message-editor'
 import MobileMessagesPage from '../../pages/mobile/messages'
+import MobileNav from '../../pages/mobile/mobile-nav'
 import ThreadViewPage from '../../pages/mobile/thread-view'
+import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
 import { waitUntilEqual } from '../../utils'
 import { employeeLogin, enduserLogin } from '../../utils/user'
-import MobileNav from '../../pages/mobile/mobile-nav'
-import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
-import ChildInformationPage from '../../pages/employee/child-information'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useEffect, useMemo } from 'react'
-import { Loading, Result } from 'lib-common/api'
-import { getDaycareAttendances } from '../api/attendances'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { useParams } from 'react-router-dom'
-import { UUID } from 'lib-common/types'
+import { Loading, Result } from 'lib-common/api'
 import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
 import { idleTracker } from 'lib-common/utils/idleTracker'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { getDaycareAttendances } from '../api/attendances'
 import { client } from '../api/client'
 
 interface ChildAttendanceState {

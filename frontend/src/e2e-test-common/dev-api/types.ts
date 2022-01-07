@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
+import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
-import LocalDate from 'lib-common/local-date'
-import { JsonOf } from 'lib-common/json'
+import { ApplicationForm } from 'lib-common/generated/api-types/application'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { PilotFeature } from 'lib-common/generated/api-types/shared'
 import {
   ApplicationOrigin,
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/enums'
-import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
-import { HighestFee } from 'lib-common/api-types/incomeStatement'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { PilotFeature } from 'lib-common/generated/api-types/shared'
-import { ApplicationForm } from 'lib-common/generated/api-types/application'
 
 type ISODate = string
 type Timestamp = string

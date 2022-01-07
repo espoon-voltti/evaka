@@ -2,22 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { MutableRefObject, useContext, useRef, useState } from 'react'
-import { useTranslation } from '../../../state/i18n'
-import { AssistanceAction } from '../../../types/child'
-import { UIContext } from '../../../state/ui'
-import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
 import { faQuestion } from 'lib-icons'
-import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
-import { isActiveDateRange } from '../../../utils/date'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-
-import LabelValueList from '../../../components/common/LabelValueList'
-import Toolbar from '../../../components/common/Toolbar'
-import { removeAssistanceAction } from '../../../api/child/assistance-actions'
-import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { scrollToRef } from 'lib-common/utils/scrolling'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import { removeAssistanceAction } from '../../../api/child/assistance-actions'
+import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
+import LabelValueList from '../../../components/common/LabelValueList'
+import Toolbar from '../../../components/common/Toolbar'
+import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { AssistanceAction } from '../../../types/child'
+import { isActiveDateRange } from '../../../utils/date'
 
 export interface Props {
   assistanceAction: AssistanceAction

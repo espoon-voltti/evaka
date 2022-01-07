@@ -5,22 +5,22 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import LocalDate from 'lib-common/local-date'
-import { Gap } from 'lib-components/white-space'
-import { H1 } from 'lib-components/typography'
-import LabelValueList from '../../components/common/LabelValueList'
-import { useTranslation } from '../../state/i18n'
 import { formatDate } from 'lib-common/date'
 import {
   Detailed as PersonDetailed,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
-import WarningLabel from '../../components/common/WarningLabel'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import LocalDate from 'lib-common/local-date'
+import { H1 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
+import LabelValueList from '../../components/common/LabelValueList'
+import WarningLabel from '../../components/common/WarningLabel'
+import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { TypeSelect } from '../fee-decision-details/TypeSelect'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 type Props = {
   id: string

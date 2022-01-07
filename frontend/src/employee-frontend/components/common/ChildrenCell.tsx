@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useTranslation } from '../../state/i18n'
-import NameWithSsn from '../common/NameWithSsn'
-import { formatName } from '../../utils'
 import LocalDate from 'lib-common/local-date'
+import { useTranslation } from '../../state/i18n'
+import { formatName } from '../../utils'
+import NameWithSsn from '../common/NameWithSsn'
 
 type Props = {
   people: {

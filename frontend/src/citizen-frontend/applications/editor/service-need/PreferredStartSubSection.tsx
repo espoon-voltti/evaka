@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import { useParams } from 'react-router-dom'
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import React from 'react'
-import { useParams } from 'react-router-dom'
-import { useLang, useTranslation } from '../../../localization'
-import { isValidPreferredStartDate } from '../validations'
-import { ClubTermsInfo } from './ClubTermsInfo'
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import {
   deleteAttachment,
   getAttachmentBlob,
   saveApplicationAttachment
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
+import { useLang, useTranslation } from '../../../localization'
+import { isValidPreferredStartDate } from '../validations'
+import { ClubTermsInfo } from './ClubTermsInfo'
+import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,

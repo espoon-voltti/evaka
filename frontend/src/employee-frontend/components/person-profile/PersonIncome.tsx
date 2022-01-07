@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { combine, Result } from 'lib-common/api'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import Pagination from 'lib-components/Pagination'
-import { H3 } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
 import { faEuroSign } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { combine, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import Pagination from 'lib-components/Pagination'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { H3 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import {
   createIncome,
   deleteIncome,
@@ -24,10 +25,9 @@ import { UIContext } from '../../state/ui'
 import { Income, IncomeBody, IncomeId } from '../../types/income'
 import { useIncomeTypeOptions } from '../../utils/income'
 import { renderResult } from '../async-rendering'
+import IncomeStatementsTable from './IncomeStatementsTable'
 import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
-import { UUID } from 'lib-common/types'
-import IncomeStatementsTable from './IncomeStatementsTable'
 
 interface Props {
   id: UUID

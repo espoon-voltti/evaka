@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import { Paragraph } from 'lib-common/api-types/vasu'
 import { H3, P } from 'lib-components/typography'
-import React from 'react'
 
 interface Props {
   question: Paragraph

@@ -3,25 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+import styled from 'styled-components'
 import { Paged, Result } from 'lib-common/api'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { H1 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { getApplications } from '../../api/applications'
+import ApplicationsList from '../../components/applications/ApplicationsList'
+import { ApplicationUIContext } from '../../state/application-ui'
+import { useTranslation } from '../../state/i18n'
+import { SearchOrder } from '../../types'
 import {
   ApplicationSearchParams,
   SortByApplications
 } from '../../types/application'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SearchOrder } from '../../types'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import ApplicationsList from '../../components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
-import { ApplicationUIContext } from '../../state/application-ui'
-import { H1 } from 'lib-components/typography'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import styled from 'styled-components'
-import { useTranslation } from '../../state/i18n'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
 const PaddedDiv = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.L};

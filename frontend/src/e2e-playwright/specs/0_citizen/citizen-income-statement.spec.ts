@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
 import { resetDatabase } from 'e2e-test-common/dev-api'
+import LocalDate from 'lib-common/local-date'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { enduserLogin } from '../../utils/user'
 import { Page } from '../../utils/page'
+import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let header: CitizenHeader

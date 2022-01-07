@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import { faMeh } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
-import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMeh } from 'lib-icons'
 import { defaultMargins, Gap } from '../../white-space'
 
 const StyledSegment = styled.div`

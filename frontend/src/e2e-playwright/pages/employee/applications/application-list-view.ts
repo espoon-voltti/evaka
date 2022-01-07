@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MultiSelect, Page } from '../../../utils/page'
 import config from 'e2e-test-common/config'
 import { waitUntilEqual } from '../../../utils'
+import { MultiSelect, Page } from '../../../utils/page'
 
 export default class ApplicationListView {
   constructor(private page: Page) {}

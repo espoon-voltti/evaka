@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Child } from 'lib-common/generated/api-types/attendance'
-import { useTranslation } from '../../../state/i18n'
 import { formatTime } from 'lib-common/date'
-import { ArrivalTime } from '../components'
+import { Child } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { useTranslation } from '../../../state/i18n'
+import { ArrivalTime } from '../components'
 
 interface Props {
   child: Child

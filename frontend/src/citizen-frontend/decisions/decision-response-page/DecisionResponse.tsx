@@ -2,29 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faExclamation } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
-import { Decision } from '../../decisions/types'
-import { useLang, useTranslation } from '../../localization'
 import LocalDate from 'lib-common/local-date'
-import { OverlayContext } from '../../overlay/state'
-import { H2, H3, Label, P } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import ListGrid from 'lib-components/layout/ListGrid'
-import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Button from 'lib-components/atoms/buttons/Button'
+import Radio from 'lib-components/atoms/form/Radio'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Radio from 'lib-components/atoms/form/Radio'
-import Button from 'lib-components/atoms/buttons/Button'
-import { acceptDecision, rejectDecision } from '../../decisions/api'
-import { PdfLink } from '../../decisions/PdfLink'
-import { Status, decisionStatusIcon } from '../../decisions/shared'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { faExclamation } from 'lib-icons'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { H2, H3, Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { isValidDecisionStartDate } from '../../applications/editor/validations'
+import { PdfLink } from '../../decisions/PdfLink'
+import { acceptDecision, rejectDecision } from '../../decisions/api'
+import { Status, decisionStatusIcon } from '../../decisions/shared'
+import { Decision } from '../../decisions/types'
+import { useLang, useTranslation } from '../../localization'
+import { OverlayContext } from '../../overlay/state'
 
 interface SingleDecisionProps {
   decision: Decision

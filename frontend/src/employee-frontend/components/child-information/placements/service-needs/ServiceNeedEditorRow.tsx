@@ -2,26 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faExclamation } from 'lib-icons'
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { faExclamation } from 'lib-icons'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { useTranslation } from '../../../../state/i18n'
-import { UIContext } from '../../../../state/ui'
 import {
   createServiceNeed,
   updateServiceNeed
 } from '../../../../api/child/service-needs'
-import { UUID } from 'lib-common/types'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
 
 interface ServiceNeedCreateRowProps {
   placement: DaycarePlacementWithDetails

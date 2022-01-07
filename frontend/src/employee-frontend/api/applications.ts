@@ -2,21 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SearchOrder } from '../types'
-import {
-  ApplicationNote,
-  ApplicationResponse,
-  ApplicationSearchParams,
-  SortByApplications
-} from '../types/application'
 import { Failure, Paged, Result, Success } from 'lib-common/api'
-import { client } from './client'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
-import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
-import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
-import { PlacementPlanConfirmationStatus } from '../types/unit'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
@@ -27,10 +13,24 @@ import {
   deserializePreschoolTerm,
   PreschoolTerm
 } from 'lib-common/api-types/units/terms'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
-import { ApplicationType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import { ApplicationType } from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { SearchOrder } from '../types'
+import {
+  ApplicationNote,
+  ApplicationResponse,
+  ApplicationSearchParams,
+  SortByApplications
+} from '../types/application'
+import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
+import { PlacementPlanConfirmationStatus } from '../types/unit'
+import { client } from './client'
 
 export async function getApplication(
   id: UUID

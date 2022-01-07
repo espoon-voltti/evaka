@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Element, Page } from 'e2e-playwright/utils/page'
-import ApplicationReadView from './applications/application-read-view'
 import { waitUntilEqual } from '../../utils'
+import ApplicationReadView from './applications/application-read-view'
 
 export default class ApplicationsPage {
   constructor(private readonly page: Page) {}

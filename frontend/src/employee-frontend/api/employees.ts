@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
-import { client } from './client'
-import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
-import { Employee, EmployeeUser } from '../types/employee'
-import { UUID } from 'lib-common/types'
 import { GlobalRole } from 'lib-common/api-types/employee-auth'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
+import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
+import { Employee, EmployeeUser } from '../types/employee'
+import { client } from './client'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
   return client

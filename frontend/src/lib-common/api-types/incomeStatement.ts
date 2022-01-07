@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
-import LocalDate from 'lib-common/local-date'
 import { Attachment } from 'lib-common/api-types/attachment'
-import { JsonOf } from '../json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { IncomeSource, OtherIncome } from '../generated/enums'
+import { JsonOf } from '../json'
 
 export const otherIncome: OtherIncome[] = [
   'PENSION',

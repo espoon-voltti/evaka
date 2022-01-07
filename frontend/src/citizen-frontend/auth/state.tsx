@@ -9,12 +9,12 @@ import React, {
   useEffect,
   useMemo
 } from 'react'
-import { idleTracker } from 'lib-common/utils/idleTracker'
-import { client } from '../api-client'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { getAuthStatus } from './api'
 import { Loading, Result } from 'lib-common/api'
 import { CitizenUserDetails } from 'lib-common/generated/api-types/vtjclient'
+import { idleTracker } from 'lib-common/utils/idleTracker'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { client } from '../api-client'
+import { getAuthStatus } from './api'
 
 export type User = CitizenUserDetails & {
   userType: 'ENDUSER' | 'CITIZEN_WEAK'

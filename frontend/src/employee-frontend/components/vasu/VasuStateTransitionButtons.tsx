@@ -2,31 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faCheck, faQuestion } from 'lib-icons'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import Button from 'lib-components/atoms/buttons/Button'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ButtonContainer from 'lib-components/layout/ButtonContainer'
-import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { faCheck, faQuestion } from 'lib-icons'
-import { useTranslation } from '../../state/i18n'
-import { RequireRole } from '../../utils/roles'
-import { updateDocumentState } from './api'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
 import {
   VasuDocumentEventType,
   VasuDocumentState
 } from 'lib-common/generated/api-types/vasu'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Button from 'lib-components/atoms/buttons/Button'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../../state/i18n'
+import { RequireRole } from '../../utils/roles'
+import { updateDocumentState } from './api'
+import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
 
 const PublishingDisclaimer = styled(FixedSpaceRow)`
   justify-content: flex-end;

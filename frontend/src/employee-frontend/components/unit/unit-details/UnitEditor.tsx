@@ -2,10 +2,38 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen } from 'lib-icons'
 import React, { useMemo, useState } from 'react'
+import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
-import styled from 'styled-components'
+import { UUID } from 'lib-common/types'
+import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import {
+  DatePickerClearableDeprecated,
+  DatePickerDeprecated
+} from 'lib-components/molecules/DatePickerDeprecated'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { fontWeights, H1, H3 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
+import { UnitProviderType } from 'lib-customizations/types'
+import { DaycareFields } from '../../../api/unit'
+import { Translations, useTranslation } from '../../../state/i18n'
+import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import { DayOfWeek } from '../../../types'
 import {
   CareArea,
   Coordinate,
@@ -13,34 +41,6 @@ import {
   UnitLanguage,
   UnitTypes
 } from '../../../types/unit'
-import {
-  DatePickerClearableDeprecated,
-  DatePickerDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
-import InputField from 'lib-components/atoms/form/InputField'
-import Button from 'lib-components/atoms/buttons/Button'
-import Radio from 'lib-components/atoms/form/Radio'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { DaycareFields } from '../../../api/unit'
-import { DayOfWeek } from '../../../types'
-import { Result } from 'lib-common/api'
-import { Translations, useTranslation } from '../../../state/i18n'
-import colors from 'lib-customizations/common'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { faPen } from 'lib-icons'
-import { fontWeights, H1, H3 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import DateRange from 'lib-common/date-range'
-import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
-import { UnitProviderType } from 'lib-customizations/types'
-import { UUID } from 'lib-common/types'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'

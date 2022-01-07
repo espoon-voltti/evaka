@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
-import React, { useContext } from 'react'
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import Tooltip from '../../components/common/Tooltip'
-import StatusLabel from '../../components/common/StatusLabel'
-import colors from 'lib-customizations/common'
-import { DateRangeOpen, getStatusLabelByDateRange } from '../../utils/date'
-import { UserContext } from '../../state/user'
-import { requireRole } from '../../utils/roles'
+import React, { useContext } from 'react'
+import styled from 'styled-components'
 import { AdRole } from 'lib-common/api-types/employee-auth'
+import colors from 'lib-customizations/common'
+import StatusLabel from '../../components/common/StatusLabel'
+import Tooltip from '../../components/common/Tooltip'
+import { UserContext } from '../../state/user'
+import { DateRangeOpen, getStatusLabelByDateRange } from '../../utils/date'
+import { requireRole } from '../../utils/roles'
 
 const ToolbarWrapper = styled.div`
   display: flex;

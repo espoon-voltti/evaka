@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { client } from './client'
-import { JsonOf } from 'lib-common/json'
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
+import { JsonOf } from 'lib-common/json'
+import { client } from './client'
 
 export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`
 

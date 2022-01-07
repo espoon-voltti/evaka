@@ -2,37 +2,37 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faCopy, faPen, faQuestion } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { faCopy, faPen, faQuestion } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
+import { formatCents } from 'lib-common/money'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { H2, H3, H4, Label } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { Table, Tbody, Th, Thead, Td, Tr } from 'lib-components/layout/Table'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Th, Thead, Td, Tr } from 'lib-components/layout/Table'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { H2, H3, H4, Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { getFeeThresholds } from '../../api/finance-basics'
+import { Translations, useTranslation } from '../../state/i18n'
 import {
   familySizes,
   FeeThresholds,
   FeeThresholdsWithId
 } from '../../types/finance-basics'
-import { Translations, useTranslation } from '../../state/i18n'
-import { formatCents } from 'lib-common/money'
+import { UnwrapResult } from '../async-rendering'
 import StatusLabel from '../common/StatusLabel'
 import FeeThresholdsEditor from './FeeThresholdsEditor'
-import { UnwrapResult } from '../async-rendering'
 
 export default React.memo(function FeesSection() {
   const { i18n } = useTranslation()

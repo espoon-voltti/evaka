@@ -9,14 +9,14 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
-import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
 import { Loading, Result } from 'lib-common/api'
-import { FamilyOverview } from '../types/family-overview'
-import { getFamilyOverview } from '../api/family-overview'
 import { Action } from 'lib-common/generated/action'
-import { getPersonDetails } from '../api/person'
+import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
+import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { getFamilyOverview } from '../api/family-overview'
+import { getPersonDetails } from '../api/person'
+import { FamilyOverview } from '../types/family-overview'
 
 export interface PersonState {
   person: Result<PersonJSON>

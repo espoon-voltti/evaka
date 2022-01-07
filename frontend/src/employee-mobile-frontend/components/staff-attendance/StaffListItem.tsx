@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { Bold } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 import React from 'react'
 import { Link, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { Bold } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { Staff } from './staff'
 
 const StaffBox = styled.div`

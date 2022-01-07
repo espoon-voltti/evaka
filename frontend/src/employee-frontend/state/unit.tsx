@@ -10,11 +10,11 @@ import React, {
   useState
 } from 'react'
 import { Loading, Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { getDaycare, getUnitData, UnitData, UnitResponse } from '../api/unit'
 import { UnitFilters } from '../utils/UnitFilters'
-import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { UUID } from 'lib-common/types'
 
 export interface UnitState {
   unitInformation: Result<UnitResponse>

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
-import React from 'react'
 import { useTranslation } from '../../state/i18n'
 import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
 import { ServiceTime } from './components'

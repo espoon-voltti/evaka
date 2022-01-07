@@ -2,20 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
-import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
-import { ContentArea } from 'lib-components/layout/Container'
-import Pagination from 'lib-components/Pagination'
-import { H1, H2 } from 'lib-components/typography'
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import Pagination from 'lib-components/Pagination'
+import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
+import { ContentArea } from 'lib-components/layout/Container'
+import { H1, H2 } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
-import { ThreadList, ThreadListItem } from './ThreadList'
 import { SingleThreadView } from './SingleThreadView'
+import { ThreadList, ThreadListItem } from './ThreadList'
 import { AccountView } from './types-view'
-import { Result } from 'lib-common/api'
-import colors from 'lib-customizations/common'
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;

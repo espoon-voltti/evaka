@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { History } from 'history'
+import { faEnvelope } from 'lib-icons'
 import React, {
   Fragment,
   useCallback,
@@ -12,24 +16,28 @@ import React, {
 } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { Loading, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import Title from 'lib-components/atoms/Title'
-import Button from 'lib-components/atoms/buttons/Button'
-import Loader from 'lib-components/atoms/Loader'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 import {
   getDecisionDrafts,
   getDecisionUnits,
   updateDecisionDrafts
 } from '../../api/decision-draft'
-import { Translations, useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LabelValueList from '../../components/common/LabelValueList'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { Translations, useTranslation } from '../../state/i18n'
+import { TitleContext, TitleState } from '../../state/title'
 import {
   DecisionDraft,
   DecisionDraftGroup,
@@ -37,15 +45,7 @@ import {
   DecisionType,
   DecisionUnit
 } from '../../types/decision'
-import { faEnvelope } from 'lib-icons'
-import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
-import { TitleContext, TitleState } from '../../state/title'
-import colors from 'lib-customizations/common'
 import { formatName } from '../../utils'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { UUID } from 'lib-common/types'
-import { History } from 'history'
 
 const ColumnTitle = styled.div`
   font-weight: ${fontWeights.semibold};

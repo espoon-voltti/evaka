@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import {
@@ -17,7 +18,6 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import React, { useCallback, useEffect, useState } from 'react'
 import { client } from '../api/client'
 import { renderResult } from './async-rendering'
 

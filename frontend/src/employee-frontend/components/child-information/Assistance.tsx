@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { useTranslation } from '../../state/i18n'
-import AssistanceNeed from '../../components/child-information/AssistanceNeed'
-import AssistanceAction from '../../components/child-information/AssistanceAction'
+import { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import AssistanceAction from '../../components/child-information/AssistanceAction'
+import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import { ChildContext, ChildState } from '../../state/child'
-import { UUID } from 'lib-common/types'
+import { useTranslation } from '../../state/i18n'
 
 export interface Props {
   id: UUID

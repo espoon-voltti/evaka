@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
-import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import React from 'react'
+import styled from 'styled-components'
 import { BaseProps } from '../../utils'
 import { IconSize } from '../icon-size'
 

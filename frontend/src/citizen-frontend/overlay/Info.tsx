@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { OverlayContext } from './state'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { OverlayContext } from './state'
 
 function GlobalInfoDialog() {
   const { infoMessage, clearInfoMessage } = useContext(OverlayContext)

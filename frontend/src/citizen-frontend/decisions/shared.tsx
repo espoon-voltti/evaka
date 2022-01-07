@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { colors } from 'lib-customizations/common'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import {
   faGavel,
   faCheck,
@@ -13,8 +13,8 @@ import {
 } from 'lib-icons'
 import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
+import { colors } from 'lib-customizations/common'
 import { Decision, DecisionSummary } from '../decisions/types'
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 export const Status = styled.span`
   text-transform: uppercase;

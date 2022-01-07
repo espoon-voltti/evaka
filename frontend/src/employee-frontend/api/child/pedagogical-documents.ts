@@ -7,9 +7,9 @@ import {
   PedagogicalDocument,
   PedagogicalDocumentPostBody
 } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { client } from '../client'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import { client } from '../client'
 
 export async function getChildPedagogicalDocuments(
   childId: UUID

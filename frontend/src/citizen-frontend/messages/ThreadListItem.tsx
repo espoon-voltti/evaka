@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -12,7 +13,6 @@ import {
   TitleAndDate,
   Truncated
 } from 'lib-components/molecules/ThreadListItem'
-import React from 'react'
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
 import { MessageTypeChip } from './MessageTypeChip'

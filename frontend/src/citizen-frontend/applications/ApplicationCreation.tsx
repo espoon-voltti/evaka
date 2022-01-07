@@ -6,27 +6,27 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import { fontWeights, H1, H2 } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
-import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import { ApplicationType } from 'lib-common/generated/enums'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Radio from 'lib-components/atoms/form/Radio'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
-import { useUser } from '../auth/state'
-import { useTranslation } from '../localization'
+import { fontWeights, H1, H2 } from 'lib-components/typography'
+import { Gap, defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
+import Footer from '../Footer'
 import {
   createApplication,
   getActivePlacementsByApplicationType,
   getDuplicateApplications
 } from '../applications/api'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import Footer from '../Footer'
+import { useUser } from '../auth/state'
+import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
-import { featureFlags } from 'lib-customizations/citizen'
-import { ApplicationType } from 'lib-common/generated/enums'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()

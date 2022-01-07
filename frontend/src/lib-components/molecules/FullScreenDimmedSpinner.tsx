@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import Spinner from '../atoms/state/Spinner'
 import { modalZIndex } from '../layout/z-helpers'
 import ModalBackground from './modals/ModalBackground'
-import Spinner from '../atoms/state/Spinner'
 
 const FullScreenCentered = styled.div`
   position: fixed;

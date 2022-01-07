@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '../../local-date'
-import { JsonOf } from '../../json'
 import { ApplicationStatus } from 'lib-common/generated/enums'
+import { JsonOf } from '../../json'
+import LocalDate from '../../local-date'
 
 export interface ApplicationsOfChild {
   childId: string

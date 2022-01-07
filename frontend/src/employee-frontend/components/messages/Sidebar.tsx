@@ -2,31 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { sortBy, uniqBy } from 'lodash'
+import React, { useContext, useEffect, useMemo } from 'react'
+import styled from 'styled-components'
+import { Result } from 'lib-common/api'
 import {
   MessageReceiversResponse,
   NestedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { getReceivers } from './api'
+import Button from 'lib-components/atoms/buttons/Button'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   SelectorNode,
   unitAsSelectorNode
 } from 'lib-components/employee/messages/SelectorNode'
-import { Result } from 'lib-common/api'
-import Button from 'lib-components/atoms/buttons/Button'
+import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
+import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { sortBy, uniqBy } from 'lodash'
-import React, { useContext, useEffect, useMemo } from 'react'
-import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { renderResult } from '../async-rendering'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
+import { getReceivers } from './api'
 import { messageBoxes } from './types-view'
-import { fontWeights, H1 } from 'lib-components/typography'
-import { renderResult } from '../async-rendering'
-import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
 
 const Container = styled.div`
   flex: 0 1 260px;

@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faTrash } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-
-import { faTrash } from 'lib-icons'
+import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
+
 import { InvoiceCodes, Product } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
-import { Td, Tr } from 'lib-components/layout/Table'
-import InputField from 'lib-components/atoms/form/InputField'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import DateRangeInput from '../common/DateRangeInput'
-import EuroInput from '../common/EuroInput'
-import { useTranslation } from '../../state/i18n'
-import { Result } from 'lib-common/api'
 import { formatCents, parseCents } from 'lib-common/money'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import InputField from 'lib-components/atoms/form/InputField'
+import { Td, Tr } from 'lib-components/layout/Table'
+import { useTranslation } from '../../state/i18n'
+import DateRangeInput from '../common/DateRangeInput'
+import EuroInput from '../common/EuroInput'
 
 interface InvoiceRowStub {
   product: Product

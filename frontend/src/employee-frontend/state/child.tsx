@@ -9,17 +9,17 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { ChildBackupCare } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
-import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { Action } from 'lib-common/generated/action'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { getPlacements } from '../api/child/placements'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
-import { UUID } from 'lib-common/types'
-import { getChildDetails, getPersonGuardians } from '../api/person'
-import { getParentshipsByChild } from '../api/parentships'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
+import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { UUID } from 'lib-common/types'
+import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { getPlacements } from '../api/child/placements'
+import { getParentshipsByChild } from '../api/parentships'
+import { getChildDetails, getPersonGuardians } from '../api/person'
+import { ChildBackupCare } from '../types/child'
 
 export interface ChildState {
   person: Result<PersonJSON>

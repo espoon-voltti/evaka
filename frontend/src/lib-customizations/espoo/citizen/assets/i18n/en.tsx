@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { P } from 'lib-components/typography'
 import React from 'react'
-import { Translations } from 'lib-customizations/citizen'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
+import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { Translations } from 'lib-customizations/citizen'
 
 const yes = 'Yes'
 const no = 'No'

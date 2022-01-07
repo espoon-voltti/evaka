@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
-import LocalDate from 'lib-common/local-date'
+import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
@@ -15,12 +14,13 @@ import {
   Fixture
 } from 'e2e-test-common/dev-api/fixtures'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
+import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
-import config from 'e2e-test-common/config'
 
 let page: Page
 let listPage: MobileListPage

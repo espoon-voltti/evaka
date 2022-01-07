@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { ApplicationUIContext } from '../../state/application-ui'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import styled from 'styled-components'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { ApplicationUIContext } from '../../state/application-ui'
 
 type Props = {
   applicationId: string

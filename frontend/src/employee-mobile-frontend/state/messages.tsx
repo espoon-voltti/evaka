@@ -2,13 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Paged, Result } from 'lib-common/api'
-import {
-  Message,
-  MessageThread,
-  NestedMessageAccount,
-  ThreadReply
-} from 'lib-common/generated/api-types/messaging'
 import React, {
   createContext,
   useCallback,
@@ -17,7 +10,18 @@ import React, {
   useMemo,
   useState
 } from 'react'
+import { useParams } from 'react-router-dom'
+import { Loading, Paged, Result } from 'lib-common/api'
+import {
+  Message,
+  MessageThread,
+  NestedMessageAccount,
+  ThreadReply
+} from 'lib-common/generated/api-types/messaging'
+import { UUID } from 'lib-common/types'
+import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { SelectOption } from 'lib-components/molecules/Select'
 import {
   getMessagingAccounts,
   getReceivedMessages,
@@ -25,11 +29,7 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from '../api/messages'
-import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import { UUID } from 'lib-common/types'
 import { UnitContext } from './unit'
-import { SelectOption } from 'lib-components/molecules/Select'
-import { useParams } from 'react-router-dom'
 import { UserContext } from './user'
 
 const PAGE_SIZE = 20

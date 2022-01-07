@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useTranslation } from '../../state/i18n'
-import Select from 'lib-components/atoms/dropdowns/Select'
 import React from 'react'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import Select from 'lib-components/atoms/dropdowns/Select'
+import { useTranslation } from '../../state/i18n'
 
 interface TypeSelectProps {
   selected: VoucherValueDecisionType

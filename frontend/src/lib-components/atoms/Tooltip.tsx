@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   fasCaretDown,
@@ -11,8 +9,10 @@ import {
   fasCaretRight,
   fasCaretUp
 } from 'lib-icons'
-import { defaultMargins } from '../white-space'
+import React from 'react'
+import styled from 'styled-components'
 import { BaseProps } from '../utils'
+import { defaultMargins } from '../white-space'
 
 const TooltipWrapper = styled.div`
   position: relative;

@@ -4,12 +4,12 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import CircularLabel from '../common/CircularLabel'
 
 type Props = {

@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faUser } from 'lib-icons'
 import React, { useContext, useEffect } from 'react'
-import { useTranslation } from '../../state/i18n'
-import { PersonContext, PersonState } from '../../state/person'
+import { isLoading } from 'lib-common/api'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import PersonDetails from '../../components/person-shared/PersonDetails'
-import { faUser } from 'lib-icons'
+import { useTranslation } from '../../state/i18n'
+import { PersonContext, PersonState } from '../../state/person'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
-import { isLoading } from 'lib-common/api'
 
 export default React.memo(function PersonFridgeHead() {
   const { i18n } = useTranslation()

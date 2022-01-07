@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useContext, useMemo } from 'react'
+import { useParams } from 'react-router-dom'
 import { formatTime } from 'lib-common/date'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import React, { useContext, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnwrapResult } from '../async-rendering'
 import { WideLinkButton } from '../mobile/components'
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
-import { TimeInfo } from './components/staff-components'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
+import { TimeInfo } from './components/staff-components'
 import { toStaff } from './staff'
 
 export default React.memo(function StaffMemberPage() {

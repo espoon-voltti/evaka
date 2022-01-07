@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { fontWeights } from 'lib-components/typography'
-import { useTranslation } from './localization'
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
-import { footerLogo } from 'lib-customizations/citizen'
 import { desktopMin } from 'lib-components/breakpoints'
 import Container from 'lib-components/layout/Container'
+import { fontWeights } from 'lib-components/typography'
+import { footerLogo } from 'lib-customizations/citizen'
+import colors from 'lib-customizations/common'
+import { useTranslation } from './localization'
 
 export const FooterContent = React.memo(function FooterContent() {
   const t = useTranslation()

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { P } from 'lib-components/typography'
 import React, { useContext } from 'react'
 import { Redirect } from 'react-router-dom'
 import styled from 'styled-components'
+import { P } from 'lib-components/typography'
 import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'

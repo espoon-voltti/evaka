@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import CitizenCalendarPage from 'e2e-playwright/pages/citizen/citizen-calendar'
+import CitizenHeader from 'e2e-playwright/pages/citizen/citizen-header'
+import { Page } from 'e2e-playwright/utils/page'
 import config from 'e2e-test-common/config'
 import {
   insertDaycarePlacementFixtures,
@@ -15,9 +16,8 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
-import CitizenHeader from 'e2e-playwright/pages/citizen/citizen-header'
-import CitizenCalendarPage from 'e2e-playwright/pages/citizen/citizen-calendar'
-import { Page } from 'e2e-playwright/utils/page'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
 
 describe('Citizen attendance reservations (desktop)', () => {
   citizenReservationTests('desktop')

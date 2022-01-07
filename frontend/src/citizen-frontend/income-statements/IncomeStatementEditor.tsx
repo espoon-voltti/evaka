@@ -3,24 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { RouteComponentProps } from 'react-router'
+import { combine, Loading, Result, Success } from 'lib-common/api'
+import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { renderResult } from '../async-rendering'
 import IncomeStatementForm, {
   IncomeStatementFormAPI
 } from './IncomeStatementForm'
-import * as Form from './types/form'
-import { fromBody } from './types/body'
 import {
   createIncomeStatement,
   getIncomeStatement,
   getIncomeStatementStartDates,
   updateIncomeStatement
 } from './api'
-import { combine, Loading, Result, Success } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
-import LocalDate from 'lib-common/local-date'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import { fromBody } from './types/body'
+import * as Form from './types/form'
 import { initialFormData } from './types/form'
-import { renderResult } from '../async-rendering'
-import { RouteComponentProps } from 'react-router'
 
 interface EditorState {
   id: string | undefined

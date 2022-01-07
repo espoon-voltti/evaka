@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import classNames from 'classnames'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import classNames from 'classnames'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import Tooltip from '../../components/common/Tooltip'
+import { Translations, useTranslation } from '../../state/i18n'
 import { Cell, CellPart, Child } from '../../types/absence'
-import { getMonthDays, getRange, getWeekDay } from './utils'
+import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
-import { Translations, useTranslation } from '../../state/i18n'
-import Tooltip from '../../components/common/Tooltip'
-import { UUID } from 'lib-common/types'
-import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { getMonthDays, getRange, getWeekDay } from './utils'
 
 interface AbsenceRowProps {
   child: Child

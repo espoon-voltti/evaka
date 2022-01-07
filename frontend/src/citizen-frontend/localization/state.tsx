@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useContext, useMemo } from 'react'
+import useLocalStorage from 'lib-common/utils/useLocalStorage'
 import {
   Lang,
   langs,
   translations as localizations
 } from 'lib-customizations/citizen'
-import useLocalStorage from 'lib-common/utils/useLocalStorage'
 
 const getDefaultLanguage: () => Lang = () => {
   const params = new URLSearchParams(window.location.search)

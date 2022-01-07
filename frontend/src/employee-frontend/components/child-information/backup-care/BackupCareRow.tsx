@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
-import { useTranslation } from '../../../state/i18n'
-import { UIContext } from '../../../state/ui'
 import { faQuestion } from 'lib-icons'
+import React, { useContext } from 'react'
+import styled from 'styled-components'
+import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { ChildContext } from '../../../state'
-import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
 import {
   getChildBackupCares,
   removeBackupCare
 } from '../../../api/child/backup-care'
-import styled from 'styled-components'
-import { ChildBackupCare } from '../../../types/child'
+import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
 import Toolbar from '../../../components/common/Toolbar'
+import { ChildContext } from '../../../state'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { ChildBackupCare } from '../../../types/child'
 import { ALL_ROLES_BUT_STAFF } from '../../../utils/roles'
-import { UUID } from 'lib-common/types'
 
 export interface Props {
   childId: UUID

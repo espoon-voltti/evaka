@@ -2,28 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowLeft, farStickyNote } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-
-import { faArrowLeft, farStickyNote } from 'lib-icons'
-import colors from 'lib-customizations/common'
-import { Gap } from 'lib-components/white-space'
+import { combine } from 'lib-common/api'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { ContentArea } from 'lib-components/layout/Container'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
-import { TallContentArea } from '../../mobile/components'
-import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { postFullDayAbsence } from '../../../api/attendances'
+import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
-import DailyNote from '../notes/DailyNote'
 import { AbsenceType } from '../../../types'
+import { renderResult } from '../../async-rendering'
+import { TallContentArea } from '../../mobile/components'
 import AbsenceSelector from '../AbsenceSelector'
 import {
   Actions,
@@ -31,8 +31,7 @@ import {
   CustomTitle,
   DailyNotes
 } from '../components'
-import { combine } from 'lib-common/api'
-import { renderResult } from '../../async-rendering'
+import DailyNote from '../notes/DailyNote'
 
 export default React.memo(function MarkAbsent() {
   const history = useHistory()

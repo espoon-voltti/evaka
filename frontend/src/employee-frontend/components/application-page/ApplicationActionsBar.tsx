@@ -5,14 +5,14 @@
 import React from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
-import { Gap } from 'lib-components/white-space'
-import StickyFooter from 'lib-components/layout/StickyFooter'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
-import { useTranslation } from '../../state/i18n'
-import { sendApplication, updateApplication } from '../../api/applications'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationStatus } from 'lib-common/generated/enums'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import StickyFooter from 'lib-components/layout/StickyFooter'
+import { Gap } from 'lib-components/white-space'
+import { sendApplication, updateApplication } from '../../api/applications'
+import { useTranslation } from '../../state/i18n'
 
 type Props = {
   applicationStatus: ApplicationStatus

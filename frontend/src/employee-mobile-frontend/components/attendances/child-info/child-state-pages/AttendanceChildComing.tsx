@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Gap } from 'lib-components/white-space'
 import React, { Fragment } from 'react'
 import { Child } from 'lib-common/generated/api-types/attendance'
-import { WideLinkButton } from '../../../mobile/components'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../../../state/i18n'
+import { WideLinkButton } from '../../../mobile/components'
 
 interface Props {
   unitId: string

@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
-import { fontWeights } from '../../typography'
-import { StaticCheckBox } from './Checkbox'
-import { defaultMargins } from '../../white-space'
-import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
-import ReactSelect, { Props } from 'react-select'
 import classNames from 'classnames'
+import React from 'react'
+import ReactSelect, { Props } from 'react-select'
+import styled from 'styled-components'
+import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
+import { fontWeights } from '../../typography'
+import { defaultMargins } from '../../white-space'
+import { StaticCheckBox } from './Checkbox'
 
 interface MultiSelectProps<T> {
   value: readonly T[]

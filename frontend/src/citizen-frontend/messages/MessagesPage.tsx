@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useTranslation } from '../localization'
-import { getReceivers, sendMessage } from './api'
-import EmptyThreadView from './EmptyThreadView'
-import MessageEditor from './MessageEditor'
+import React, { useContext, useEffect, useState } from 'react'
+import styled from 'styled-components'
+import { UnwrapResult } from 'citizen-frontend/async-rendering'
+import { combine } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
-import React, { useContext, useEffect, useState } from 'react'
-import styled from 'styled-components'
 import { headerHeightDesktop } from '../header/const'
-import { MessageContext } from './state'
+import { useTranslation } from '../localization'
+import EmptyThreadView from './EmptyThreadView'
+import MessageEditor from './MessageEditor'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
-import { UnwrapResult } from 'citizen-frontend/async-rendering'
-import { combine } from 'lib-common/api'
+import { getReceivers, sendMessage } from './api'
+import { MessageContext } from './state'
 
 const FullHeightContainer = styled(Container)`
   height: calc(100vh - ${headerHeightDesktop}px);

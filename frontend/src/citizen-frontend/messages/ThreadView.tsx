@@ -3,23 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faReply } from '@fortawesome/free-solid-svg-icons'
-import { formatDate } from 'lib-common/date'
-import {
-  Message,
-  MessageThread
-} from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
-import { scrollRefIntoView } from 'lib-common/utils/scrolling'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
-import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
-import { fontWeights, H2, InformationText } from 'lib-components/typography'
-import { useRecipients } from 'lib-components/utils/useReplyRecipients'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import React, {
   useCallback,
   useContext,
@@ -29,6 +12,23 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
+import { formatDate } from 'lib-common/date'
+import {
+  Message,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
+import { UUID } from 'lib-common/types'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
+import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
+import { fontWeights, H2, InformationText } from 'lib-components/typography'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'

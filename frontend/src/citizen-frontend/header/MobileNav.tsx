@@ -3,11 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { desktopMin } from 'lib-components/breakpoints'
-import { fontWeights } from 'lib-components/typography'
-import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import {
   faBars,
   faChevronDown,
@@ -28,12 +23,17 @@ import React, {
 } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
+import { desktopMin } from 'lib-components/breakpoints'
+import { fontWeights } from 'lib-components/typography'
+import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
 import AttentionIndicator from './AttentionIndicator'
-import { getLoginUri, getLogoutUri } from './const'
 import { CircledChar } from './DesktopNav'
+import { getLoginUri, getLogoutUri } from './const'
 
 type Props = {
   showMenu: boolean

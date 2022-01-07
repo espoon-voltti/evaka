@@ -2,10 +2,37 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import {
+  apiDataToFormData,
+  ApplicationFormData,
+  formDataToApiData
+} from 'lib-common/api-types/application/ApplicationFormData'
+import { UUID } from 'lib-common/types'
+import { scrollToTop } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import ReturnButton, {
+  ReturnButtonWrapper
+} from 'lib-components/atoms/buttons/ReturnButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import ActionRow from 'lib-components/layout/ActionRow'
 import Container from 'lib-components/layout/Container'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import Footer from '../../Footer'
+import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
+import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'
+import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
+import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
+import { renderResult } from '../../async-rendering'
+import { useUser } from '../../auth/state'
+import { useTranslation } from '../../localization'
+import { OverlayContext } from '../../overlay/state'
+import useTitle from '../../useTitle'
 import {
   getApplication,
   getClubTerms,
@@ -14,39 +41,12 @@ import {
   sendApplication,
   updateApplication
 } from '../api'
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { useTranslation } from '../../localization'
-import { useUser } from '../../auth/state'
-import { OverlayContext } from '../../overlay/state'
-import {
-  apiDataToFormData,
-  ApplicationFormData,
-  formDataToApiData
-} from 'lib-common/api-types/application/ApplicationFormData'
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,
   Term,
   validateApplication
 } from './validations'
-import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import ActionRow from 'lib-components/layout/ActionRow'
-import Button from 'lib-components/atoms/buttons/Button'
-import ReturnButton, {
-  ReturnButtonWrapper
-} from 'lib-components/atoms/buttons/ReturnButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'
-import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
-import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
-import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
-import Footer from '../../Footer'
-import useTitle from '../../useTitle'
-import { UUID } from 'lib-common/types'
-import { renderResult } from '../../async-rendering'
-import { scrollToTop } from 'lib-common/utils/scrolling'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails

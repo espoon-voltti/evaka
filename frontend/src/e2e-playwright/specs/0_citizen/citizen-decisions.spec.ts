@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import { enduserLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   execSimpleApplicationActions,
@@ -16,9 +16,9 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
-import { enduserLogin } from 'e2e-playwright/utils/user'
-import CitizenHeader from '../../pages/citizen/citizen-header'
+import LocalDate from 'lib-common/local-date'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 
 let page: Page

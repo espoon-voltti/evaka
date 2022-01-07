@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
-import LocalDate from 'lib-common/local-date'
-import { client } from '../api-client'
-import { JsonOf } from 'lib-common/json'
 import {
   deserializeIncomeStatement,
   IncomeStatement
 } from 'lib-common/api-types/incomeStatement'
-import { IncomeStatementBody } from './types/body'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { client } from '../api-client'
+import { IncomeStatementBody } from './types/body'
 
 export async function getIncomeStatements(
   page: number,

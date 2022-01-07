@@ -2,25 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
-import FormModal from 'lib-components/molecules/modals/FormModal'
-import InputField from 'lib-components/atoms/form/InputField'
-import { Label } from 'lib-components/typography'
-import { useTranslation } from '../../../state/i18n'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faTrash } from 'lib-icons'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import React, { useState } from 'react'
 import {
   VasuQuestion,
   VasuQuestionType,
   vasuQuestionTypes
 } from 'lib-common/api-types/vasu'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
+import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   onSave: (question: VasuQuestion) => void

@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Gap } from 'lib-components/white-space'
+import { getErrorCount } from 'lib-common/form-validation'
+import { ApplicationType } from 'lib-common/generated/enums'
 import { ContentArea } from 'lib-components/layout/Container'
-import { H1, H2 } from 'lib-components/typography'
-import { useTranslation } from '../../localization'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { H1, H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import {
   ApplicationFormDataErrors,
   applicationHasErrors
 } from '../../applications/editor/validations'
-import { getErrorCount } from 'lib-common/form-validation'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { useTranslation } from '../../localization'
 
 type HeadingProps = {
   type: ApplicationType

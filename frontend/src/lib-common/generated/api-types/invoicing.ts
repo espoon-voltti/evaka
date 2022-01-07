@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/order, prettier/prettier */
 
 import DateRange from '../../date-range'
 import LocalDate from '../../local-date'

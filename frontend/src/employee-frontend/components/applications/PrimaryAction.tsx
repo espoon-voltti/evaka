@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Action } from './ApplicationActions'
 import React from 'react'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import styled from 'styled-components'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Action } from './ApplicationActions'
 
 type Props = {
   action: Action | undefined

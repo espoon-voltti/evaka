@@ -2,15 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
-import { H2, Label, P } from 'lib-components/typography'
+import { faPen } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
-import { Translations, useTranslation } from '../../state/i18n'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
 import {
   isRegular,
   DailyServiceTimes,
@@ -21,28 +17,32 @@ import {
   isVariableTime,
   VariableDailyServiceTimes
 } from 'lib-common/api-types/child/common'
+import { DailyServiceTimesType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { H2, Label, P } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   deleteChildDailyServiceTimes,
   getChildDailyServiceTimes,
   putChildDailyServiceTimes
 } from '../../api/child/daily-service-times'
-import { faPen } from 'lib-icons'
-import styled from 'styled-components'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import Button from 'lib-components/atoms/buttons/Button'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import Radio from 'lib-components/atoms/form/Radio'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { ChildContext, ChildState } from '../../state/child'
+import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { NullableValues } from '../../types'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { DailyServiceTimesType } from 'lib-common/generated/enums'
-import { ChildContext, ChildState } from '../../state/child'
 
 const weekdays = [
   'monday',

@@ -4,17 +4,17 @@
 
 import { IncomeEffect } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
-import { FeeAlterationType } from './fee-alteration'
-import { Income } from './income'
-import { PlacementType } from 'lib-common/generated/enums'
 import {
   Basic as PersonBasic,
   Detailed as PersonDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import { PlacementType } from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { FeeAlterationType } from './fee-alteration'
+import { Income } from './income'
 
 // Enums
 

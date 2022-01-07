@@ -10,8 +10,8 @@ import React, {
   useState
 } from 'react'
 import { Loading, Result } from 'lib-common/api'
-import { Unit } from '../types/unit'
 import { SearchOrder } from '../types'
+import { Unit } from '../types/unit'
 
 export interface UnitsState {
   units: Result<Unit[]>

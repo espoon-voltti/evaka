@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../utils/page'
 import { waitUntilEqual } from '../../utils'
+import { Page } from '../../utils/page'
 
 export default class CitizenPedagogicalDocumentsPage {
   constructor(private readonly page: Page) {}

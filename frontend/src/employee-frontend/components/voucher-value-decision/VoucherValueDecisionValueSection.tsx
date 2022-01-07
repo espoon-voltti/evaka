@@ -4,12 +4,12 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { formatCents } from 'lib-common/money'
+import { formatDecimal } from 'lib-common/utils/number'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from 'lib-common/money'
-import { formatDecimal } from 'lib-common/utils/number'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

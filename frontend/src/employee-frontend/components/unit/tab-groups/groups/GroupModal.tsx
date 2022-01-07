@@ -4,17 +4,17 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { UpdateStateFn } from 'lib-common/form-state'
+import LocalDate from 'lib-common/local-date'
+import InputField from 'lib-components/atoms/form/InputField'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
-import { useTranslation } from '../../../../state/i18n'
-import { UIContext } from '../../../../state/ui'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import InputField from 'lib-components/atoms/form/InputField'
-import { allPropertiesTrue } from '../../../../utils/validation/validations'
 import { createGroup } from '../../../../api/unit'
 import { EVAKA_START } from '../../../../constants'
-import LocalDate from 'lib-common/local-date'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
+import { allPropertiesTrue } from '../../../../utils/validation/validations'
 
 interface Props {
   unitId: string

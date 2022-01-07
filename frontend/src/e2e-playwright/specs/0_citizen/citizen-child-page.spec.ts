@@ -8,7 +8,6 @@ import {
   insertDaycarePlacementFixtures,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import LocalDate from 'lib-common/local-date'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -19,6 +18,8 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
+import LocalDate from 'lib-common/local-date'
+import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import {
   CitizenChildPage,
   CitizenChildrenPage
@@ -26,7 +27,6 @@ import {
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
-import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page

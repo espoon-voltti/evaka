@@ -2,26 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen, faQuestion, faTrash } from 'lib-icons'
+import React, { useCallback, useContext, useState } from 'react'
+import { Link, useHistory } from 'react-router-dom'
+import styled from 'styled-components'
+import { renderResult } from 'citizen-frontend/async-rendering'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Pagination from 'lib-components/Pagination'
+import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
+import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Dimmed, H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
-import React, { useCallback, useContext, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
-import styled from 'styled-components'
-import Pagination from 'lib-components/Pagination'
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 import { deleteIncomeStatement, getIncomeStatements } from './api'
-import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
-import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
-import { renderResult } from 'citizen-frontend/async-rendering'
 
 const HeadingContainer = styled.div`
   display: flex;

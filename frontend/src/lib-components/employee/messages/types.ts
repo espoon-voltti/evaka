@@ -8,9 +8,9 @@ import {
   NestedMessageAccount,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 export interface NestedGroupMessageAccount extends NestedMessageAccount {
   daycareGroup: Group

@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faChevronLeft, faChevronRight } from 'lib-icons'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { faChevronLeft, faChevronRight } from 'lib-icons'
+import { renderResult } from 'employee-frontend/components/async-rendering'
+import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -14,11 +17,8 @@ import { H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { getUnitAttendanceReservations } from '../../../api/unit'
-import ReservationsTable from './ReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
-import { UUID } from 'lib-common/types'
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { Child } from 'lib-common/api-types/reservations'
+import ReservationsTable from './ReservationsTable'
 
 interface Props {
   unitId: UUID

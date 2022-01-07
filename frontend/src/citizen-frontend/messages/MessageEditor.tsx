@@ -2,24 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faTimes } from 'lib-icons'
+import React, { useState } from 'react'
+import styled from 'styled-components'
 import {
   CitizenMessageBody,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { useUser } from '../auth/state'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import { desktopMin } from 'lib-components/breakpoints'
 import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faTimes } from 'lib-icons'
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
-import Button from 'lib-components/atoms/buttons/Button'
-import { desktopMin } from 'lib-components/breakpoints'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',

@@ -2,8 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { BaseError } from 'make-error-cause'
+import * as fs from 'fs/promises'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import FormData from 'form-data'
+import { BaseError } from 'make-error-cause'
+import {
+  ApplicationDetails,
+  deserializeApplicationDetails
+} from 'lib-common/api-types/application/ApplicationDetails'
+import { ScopedRole } from 'lib-common/api-types/employee-auth'
+import { FeeThresholds } from 'lib-common/api-types/finance'
+import {
+  ChildDailyNoteBody,
+  GroupNoteBody
+} from 'lib-common/generated/api-types/note'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import config from '../config'
 import {
   Application,
@@ -39,22 +55,6 @@ import {
   AssistanceNeed,
   DevIncome
 } from './types'
-import { JsonOf } from 'lib-common/json'
-import {
-  ApplicationDetails,
-  deserializeApplicationDetails
-} from 'lib-common/api-types/application/ApplicationDetails'
-import { FeeThresholds } from 'lib-common/api-types/finance'
-import * as fs from 'fs/promises'
-import FormData from 'form-data'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { UUID } from 'lib-common/types'
-import {
-  ChildDailyNoteBody,
-  GroupNoteBody
-} from 'lib-common/generated/api-types/note'
-import LocalDate from 'lib-common/local-date'
-import { ScopedRole } from 'lib-common/api-types/employee-auth'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {

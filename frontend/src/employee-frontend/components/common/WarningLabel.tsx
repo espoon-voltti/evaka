@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import colors from 'lib-customizations/common'
-import { Gap } from 'lib-components/white-space'
 import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
 interface Props {
   text: string

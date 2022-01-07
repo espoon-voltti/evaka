@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFileSpreadsheet } from 'lib-icons'
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileSpreadsheet } from 'lib-icons'
 import { fontWeights } from 'lib-components/typography'
-import { useTranslation } from '../../state/i18n'
 import colors from 'lib-customizations/common'
+import { useTranslation } from '../../state/i18n'
 
 const RowRightAligned = styled.div`
   display: flex;

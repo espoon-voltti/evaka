@@ -4,8 +4,8 @@
 
 import { Attachment } from 'lib-common/api-types/attachment'
 import * as IncomeStatement from 'lib-common/api-types/incomeStatement'
-import LocalDate from 'lib-common/local-date'
 import { IncomeSource, OtherIncome } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 
 export interface IncomeStatementForm {
   startDate: string

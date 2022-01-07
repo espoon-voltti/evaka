@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { trimEnd } = require('lodash')
 const assert = require('assert')
+const express = require('express')
+const proxy = require('express-http-proxy')
+const { trimEnd } = require('lodash')
 const webpack = require('webpack')
 const devMiddleware = require('webpack-dev-middleware')
-const proxy = require('express-http-proxy')
 
 const rawConfigs = require('./webpack.config.js')({ DEV_SERVER: true }, {})
-const express = require('express')
 const publicPaths = ['/employee/mobile/', '/employee/', '/']
 
 const contexts = Object.fromEntries(

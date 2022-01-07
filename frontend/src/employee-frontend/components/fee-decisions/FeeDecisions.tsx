@@ -3,8 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
+import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import { formatDate } from 'lib-common/date'
+import { formatCents } from 'lib-common/money'
+import Pagination from 'lib-components/Pagination'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   Table,
   Tr,
@@ -14,19 +21,12 @@ import {
   Tbody,
   SortableTh
 } from 'lib-components/layout/Table'
-import Title from 'lib-components/atoms/Title'
-import Loader from 'lib-components/atoms/Loader'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import NameWithSsn from '../common/NameWithSsn'
-import ChildrenCell from '../common/ChildrenCell'
-import { useTranslation } from '../../state/i18n'
-import { FeeDecisionSummary } from '../../types/invoicing'
-import { SearchOrder } from '../../types'
-import { Result } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
-import { formatCents } from 'lib-common/money'
 import { SortByFeeDecisions } from '../../api/invoicing'
-import Pagination from 'lib-components/Pagination'
+import { useTranslation } from '../../state/i18n'
+import { SearchOrder } from '../../types'
+import { FeeDecisionSummary } from '../../types/invoicing'
+import ChildrenCell from '../common/ChildrenCell'
+import NameWithSsn from '../common/NameWithSsn'
 
 const TitleRowContainer = styled.div`
   display: flex;

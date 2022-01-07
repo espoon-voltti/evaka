@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 import InputField, { InputInfo } from '../../atoms/form/InputField'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 interface Props {
   date: string

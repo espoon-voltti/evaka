@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { client } from './client'
 import { Failure, Result, Success } from 'lib-common/api'
+import { client } from './client'
 
 export async function uploadChildImage(
   childId: string,

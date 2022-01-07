@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 import React, { KeyboardEvent, ReactNode } from 'react'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronDown, faChevronUp } from 'lib-icons'
 import { desktopMin } from '../breakpoints'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
-import classNames from 'classnames'
 
 export const Container = styled.div<{ verticalMargin?: string }>`
   margin: ${({ verticalMargin }) => (verticalMargin ? verticalMargin : '0')}

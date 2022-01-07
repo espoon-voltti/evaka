@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import React from 'react'
+import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { getErrorCount } from 'lib-common/form-validation'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import React from 'react'
 import EditorSection from '../../../applications/editor/EditorSection'
 import AssistanceNeedSubSection from '../../../applications/editor/service-need/AssistanceNeedSubSection'
 import PreferredStartSubSection from '../../../applications/editor/service-need/PreferredStartSubSection'
 import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
-import { getErrorCount } from 'lib-common/form-validation'
 import { useTranslation } from '../../../localization'
-import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors, Term } from '../validations'
-import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus

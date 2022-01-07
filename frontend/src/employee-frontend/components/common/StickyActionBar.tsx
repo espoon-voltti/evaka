@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from 'lib-customizations/common'
 import { Container } from 'lib-components/layout/Container'
+import colors from 'lib-customizations/common'
 
 type Props = {
   align: 'center' | 'left' | 'right'

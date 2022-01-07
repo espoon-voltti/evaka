@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 import React, { ReactNode, useContext, useState } from 'react'
 import styled from 'styled-components'
+import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { NestedGroupMessageAccount } from 'lib-components/employee/messages/types'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faChevronDown, faChevronUp } from 'lib-icons'
-import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import MessageBox, { MessageBoxRow } from './MessageBox'
-import { AccountView, messageBoxes } from './types-view'
 import { MessageContext } from './MessageContext'
-import { NestedGroupMessageAccount } from 'lib-components/employee/messages/types'
+import { AccountView, messageBoxes } from './types-view'
 
 const AccountContainer = styled.div`
   margin: 12px 0;

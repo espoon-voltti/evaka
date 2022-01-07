@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Dispatch, SetStateAction } from 'react'
+import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import { SelectionChip } from 'lib-components/atoms/Chip'
-import { useTranslation } from '../../state/i18n'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import styled from 'styled-components'
-import { UnitFilters } from '../../utils/UnitFilters'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { useTranslation } from '../../state/i18n'
+import { UnitFilters } from '../../utils/UnitFilters'
 
 const DatePickersContainer = styled.div`
   display: flex;

@@ -3,31 +3,30 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { Link } from 'react-router-dom'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from 'lib-common/api'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import {
   AssistanceNeedsAndActionsReportFilters,
   getAssistanceNeedsAndActionsReport
 } from '../../api/reports'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
-import { distinct, reducePropertySum } from '../../utils'
-import LocalDate from 'lib-common/local-date'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { useTranslation } from '../../state/i18n'
 import {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportRow
 } from '../../types/reports'
-import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import { distinct, reducePropertySum } from '../../utils'
+import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 
 interface DisplayFilters {
   careArea: string

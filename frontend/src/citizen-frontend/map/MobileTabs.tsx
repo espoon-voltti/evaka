@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import styled from 'styled-components'
 import { stickyElementZIndex } from 'lib-components/layout/z-helpers'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
-import React from 'react'
-import styled from 'styled-components'
 import { headerHeightMobile } from '../header/const'
 import { useTranslation } from '../localization'
 import { mapViewBreakpoint, MobileMode } from './const'

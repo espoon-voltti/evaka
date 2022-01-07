@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from 'lib-common/json'
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
 import { UnitInfo, UnitStats } from 'lib-common/generated/api-types/attendance'
+import { JsonOf } from 'lib-common/json'
 import { featureFlags } from 'lib-customizations/employee'
+import { client } from '../api/client'
 
 type PairingStatus =
   | 'WAITING_CHALLENGE'

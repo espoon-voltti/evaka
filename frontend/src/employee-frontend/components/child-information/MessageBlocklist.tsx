@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useContext, useState } from 'react'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2, P } from 'lib-components/typography'
-import React, { useContext, useState } from 'react'
 import { getChildRecipients, updateChildRecipient } from '../../api/person'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'

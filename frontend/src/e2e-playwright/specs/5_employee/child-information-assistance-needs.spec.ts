@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { addDays, format, subDays } from 'date-fns'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
@@ -16,15 +18,13 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { employeeLogin } from 'e2e-playwright/utils/user'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
+import { PlacementType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 import ChildInformationPage, {
   AssistanceNeedSection
 } from '../../pages/employee/child-information'
-import { addDays, format, subDays } from 'date-fns'
-import { PlacementType } from 'lib-common/generated/enums'
 import { Page } from '../../utils/page'
-import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 
 let page: Page
 let childInformationPage: ChildInformationPage

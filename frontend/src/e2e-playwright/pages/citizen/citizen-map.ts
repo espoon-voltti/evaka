@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Daycare } from 'e2e-test-common/dev-api/types'
-import { delay, waitUntilEqual } from '../../utils'
 import {
   Element,
   Page,
@@ -11,6 +9,8 @@ import {
   SelectionChip,
   TextInput
 } from 'e2e-playwright/utils/page'
+import { Daycare } from 'e2e-test-common/dev-api/types'
+import { delay, waitUntilEqual } from '../../utils'
 
 export default class CitizenMapPage {
   constructor(private readonly page: Page) {}

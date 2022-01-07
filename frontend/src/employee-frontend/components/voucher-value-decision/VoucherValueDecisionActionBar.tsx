@@ -4,16 +4,16 @@
 
 import React, { useContext } from 'react'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import StickyActionBar from '../../components/common/StickyActionBar'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
   markVoucherValueDecisionSent,
   sendVoucherValueDecisions,
   setVoucherDecisionType
 } from '../../api/invoicing'
-import { VoucherValueDecisionDetailed } from '../../types/invoicing'
+import StickyActionBar from '../../components/common/StickyActionBar'
 import { useTranslation } from '../../state/i18n'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { UIContext } from '../../state/ui'
+import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

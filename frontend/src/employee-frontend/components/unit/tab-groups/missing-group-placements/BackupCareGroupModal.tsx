@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faChild, faExchange } from 'lib-icons'
+import React, { useContext, useState } from 'react'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { faChild, faExchange } from 'lib-icons'
-import React, { useContext, useState } from 'react'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'

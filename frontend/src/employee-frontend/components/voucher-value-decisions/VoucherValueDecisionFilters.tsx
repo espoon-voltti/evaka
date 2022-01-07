@@ -3,6 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect } from 'react'
+import { useMemo } from 'react'
+import LocalDate from 'lib-common/local-date'
+import { Gap } from 'lib-components/white-space'
+import { getAreas, getUnits } from '../../api/daycare'
+import { getFinanceDecisionHandlers } from '../../api/employees'
+import { useTranslation } from '../../state/i18n'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import {
   AreaFilter,
   Filters,
@@ -11,14 +19,6 @@ import {
   FinanceDecisionHandlerFilter,
   ValueDecisionDateFilter
 } from '../common/Filters'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { getAreas, getUnits } from '../../api/daycare'
-import { VoucherValueDecisionStatus } from '../../types/invoicing'
-import { Gap } from 'lib-components/white-space'
-import { useTranslation } from '../../state/i18n'
-import { getFinanceDecisionHandlers } from '../../api/employees'
-import { useMemo } from 'react'
-import LocalDate from 'lib-common/local-date'
 
 export default React.memo(function VoucherValueDecisionFilters() {
   const {

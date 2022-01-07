@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DatePickerDeprecated, Page, Radio } from '../../../utils/page'
-import { DecisionType } from 'e2e-test-common/dev-api/types'
 import config from 'e2e-test-common/config'
+import { DecisionType } from 'e2e-test-common/dev-api/types'
 import { UUID } from 'lib-common/types'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import { DatePickerDeprecated, Page, Radio } from '../../../utils/page'
 import ApplicationEditView from './application-edit-view'
 
 export default class ApplicationReadView {

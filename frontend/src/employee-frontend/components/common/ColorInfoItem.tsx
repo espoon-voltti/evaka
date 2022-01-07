@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { useTranslation } from '../../state/i18n'
-import { absenceColors } from 'lib-customizations/common'
 import { AbsenceType } from 'lib-common/generated/enums'
+import { absenceColors } from 'lib-customizations/common'
+import { useTranslation } from '../../state/i18n'
 
 interface InfoBallProps {
   type: AbsenceType

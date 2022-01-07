@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import _ from 'lodash'
 import React, {
   FormEvent,
   useContext,
@@ -9,34 +10,33 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import _ from 'lodash'
-import LocalDate from 'lib-common/local-date'
-import { UpdateStateFn } from 'lib-common/form-state'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { fontWeights } from 'lib-components/typography'
-import { useTranslation } from '../../../state/i18n'
-import { UIContext } from '../../../state/ui'
-import { ChildContext } from '../../../state'
-import { DateRange } from '../../../utils/date'
-import Button from 'lib-components/atoms/buttons/Button'
+import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
-import {
-  isDateRangeInverted,
-  isDateRangeOverlappingWithExisting
-} from '../../../utils/validation/validations'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { UpdateStateFn } from 'lib-common/form-state'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import Button from 'lib-components/atoms/buttons/Button'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { getUnits } from '../../../api/daycare'
-import { Unit } from '../../../types/invoicing'
+import { fontWeights } from 'lib-components/typography'
 import {
   createBackupCare,
   getChildBackupCares,
   updateBackupCare
 } from '../../../api/child/backup-care'
-import styled from 'styled-components'
+import { getUnits } from '../../../api/daycare'
+import { ChildContext } from '../../../state'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
 import { ChildBackupCare } from '../../../types/child'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { UUID } from 'lib-common/types'
+import { Unit } from '../../../types/invoicing'
+import { DateRange } from '../../../utils/date'
+import {
+  isDateRangeInverted,
+  isDateRangeOverlappingWithExisting
+} from '../../../utils/validation/validations'
 
 export interface Props {
   childId: UUID

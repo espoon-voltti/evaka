@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import React from 'react'
-import { useTranslation } from '../../../localization'
-import { H2, H3, Label } from 'lib-components/typography'
+import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { ApplicationType } from 'lib-common/generated/enums'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
+import { useTranslation } from '../../../localization'
 import ContactInfoSecondGuardianDaycare from './ContactInfoSecondGuardianDaycare'
 import ContactInfoSecondGuardianPreschool from './ContactInfoSecondGuardianPreschool'
-import { ApplicationType } from 'lib-common/generated/enums'
 
 type ContactInfoProps = {
   formData: ContactInfoFormData

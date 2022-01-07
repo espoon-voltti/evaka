@@ -2,11 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
-import { H4, Label, Dimmed } from 'lib-components/typography'
-import { ApplicationResponse } from '../../types/application'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import {
   faChild,
   faFileAlt,
@@ -15,24 +10,29 @@ import {
   faUserFriends,
   faUsers
 } from 'lib-icons'
-import { Gap } from 'lib-components/white-space'
-import { formatName } from '../../utils'
-import { useTranslation } from '../../state/i18n'
-import ListGrid from 'lib-components/layout/ListGrid'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import { formatParagraphs } from '../../utils/html-utils'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import ApplicationTitle from '../../components/application-page/ApplicationTitle'
-import VTJGuardian from '../../components/application-page/VTJGuardian'
-import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
-import ApplicationDecisionsSection from '../../components/application-page/ApplicationDecisionsSection'
-import Attachment from '../../components/common/Attachment'
+import styled from 'styled-components'
 import {
   ApplicationAddress,
   ApplicationAttachment,
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { H4, Label, Dimmed } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+import ApplicationDecisionsSection from '../../components/application-page/ApplicationDecisionsSection'
+import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
+import ApplicationTitle from '../../components/application-page/ApplicationTitle'
+import VTJGuardian from '../../components/application-page/VTJGuardian'
+import Attachment from '../../components/common/Attachment'
+import { useTranslation } from '../../state/i18n'
+import { ApplicationResponse } from '../../types/application'
+import { formatName } from '../../utils'
+import { formatParagraphs } from '../../utils/html-utils'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
   const { i18n } = useTranslation()

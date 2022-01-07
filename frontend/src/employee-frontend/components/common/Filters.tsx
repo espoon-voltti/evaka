@@ -3,24 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ApplicationType } from 'lib-common/generated/enums'
-import LocalDate from 'lib-common/local-date'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import Radio from 'lib-components/atoms/form/Radio'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { Label } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors, { applicationBasisColors } from 'lib-customizations/common'
-import { applicationTypes } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -32,6 +14,24 @@ import {
 } from 'lib-icons'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
+import { ApplicationType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import Radio from 'lib-components/atoms/form/Radio'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors, { applicationBasisColors } from 'lib-customizations/common'
+import { applicationTypes } from 'lib-customizations/employee'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'

@@ -5,13 +5,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { Action } from 'lib-common/generated/action'
 import Title from 'lib-components/atoms/Title'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { Unit } from '../../../types/unit'
 import { DataList } from '../../common/DataList'
-import { Gap } from 'lib-components/white-space'
-import { Action } from 'lib-common/generated/action'
-import { Label } from 'lib-components/typography'
 
 const DetailsLink = styled(Link)`
   text-transform: uppercase;

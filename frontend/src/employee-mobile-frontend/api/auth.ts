@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
 import { AuthStatus, MobileUser } from 'lib-common/api-types/employee-auth'
 import { PinLoginResponse } from 'lib-common/generated/api-types/pairing'
+import { JsonOf } from 'lib-common/json'
 import { client } from './client'
 
 export async function getAuthStatus(): Promise<Result<AuthStatus<MobileUser>>> {

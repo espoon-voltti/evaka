@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
 import { faFile } from 'lib-icons'
-import { Label } from 'lib-components/typography'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import ListGrid from 'lib-components/layout/ListGrid'
-import { useTranslation } from '../../state/i18n'
-import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
+import React from 'react'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
+import ListGrid from 'lib-components/layout/ListGrid'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { Label } from 'lib-components/typography'
+import { useTranslation } from '../../state/i18n'
 
 interface Props {
   application: ApplicationDetails

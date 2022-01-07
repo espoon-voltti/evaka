@@ -3,12 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { desktopMin } from 'lib-components/breakpoints'
-import { fontWeights } from 'lib-components/typography'
-import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import {
   faChevronDown,
   faChevronUp,
@@ -21,6 +15,12 @@ import {
 import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { desktopMin } from 'lib-components/breakpoints'
+import { fontWeights } from 'lib-components/typography'
+import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'

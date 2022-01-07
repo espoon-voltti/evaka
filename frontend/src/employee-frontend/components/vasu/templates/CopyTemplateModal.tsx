@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
 import React, { useState } from 'react'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import { copyVasuTemplate } from './api'
 

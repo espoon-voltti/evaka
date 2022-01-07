@@ -6,10 +6,10 @@ import React from 'react'
 import styled from 'styled-components'
 import { Table } from 'lib-components/layout/Table'
 import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
-import colors from 'lib-customizations/common'
-import { Gap } from 'lib-components/white-space'
 
 export const TableScrollableWrapper = styled.div`
   display: block;

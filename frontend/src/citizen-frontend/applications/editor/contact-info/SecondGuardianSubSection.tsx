@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { useTranslation } from '../../../localization'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { H3, Label, P } from 'lib-components/typography'
 import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationFormDataErrors } from '../validations'
-import Radio from 'lib-components/atoms/form/Radio'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { Gap } from 'lib-components/white-space'
-import InputField from 'lib-components/atoms/form/InputField'
-import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
+import { UpdateStateFn } from 'lib-common/form-state'
 import {
   ApplicationType,
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/enums'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { H3, Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../input-info-helper'
+import { useTranslation } from '../../../localization'
+import { ApplicationFormDataErrors } from '../validations'
 
 type SecondGuardianSubSectionProps = {
   type: ApplicationType

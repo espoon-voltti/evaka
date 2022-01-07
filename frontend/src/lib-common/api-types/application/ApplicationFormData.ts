@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
 import {
   ApplicationAttachment,
   ApplicationDetails,
@@ -11,6 +10,7 @@ import {
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import { OtherGuardianAgreementStatus } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 
 export type ServiceNeedFormData = {
   preferredStartDate: string

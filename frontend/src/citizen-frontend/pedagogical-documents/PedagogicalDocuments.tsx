@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
+import { uniq } from 'lodash'
 import React, {
   useCallback,
   useContext,
@@ -9,32 +11,30 @@ import React, {
   useState,
   useMemo
 } from 'react'
-import { uniq } from 'lodash'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { useTranslation } from '../localization'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import Container, { ContentArea } from 'lib-components/layout/Container'
-import { fontWeights, H1 } from 'lib-components/typography'
-import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import LocalDate from 'lib-common/local-date'
+import styled from 'styled-components'
 import {
   Attachment,
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { getAttachmentBlob } from '../attachments'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { OverlayContext } from '../overlay/state'
-import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
-import styled from 'styled-components'
-import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
+import LocalDate from 'lib-common/local-date'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { fontWeights, H1 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { renderResult } from '../async-rendering'
+import { getAttachmentBlob } from '../attachments'
+import { useTranslation } from '../localization'
+import { OverlayContext } from '../overlay/state'
+import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
+import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
 
 const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,

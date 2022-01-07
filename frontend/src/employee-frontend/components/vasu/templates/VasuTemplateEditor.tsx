@@ -2,50 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  FixedSpaceColumn,
-  FixedSpaceFlexWrap,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { H1, H2, H3, Label, P } from 'lib-components/typography'
+import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
 import React, { Fragment, useEffect, useState, useMemo } from 'react'
 import { useHistory } from 'react-router'
 import { Prompt, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField from 'lib-components/atoms/form/InputField'
-import Radio from 'lib-components/atoms/form/Radio'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import Container, { ContentArea } from 'lib-components/layout/Container'
-import { Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
-import { useTranslation } from '../../../state/i18n'
-import { vasuTranslations } from 'lib-customizations/employee'
-import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
-import {
-  getQuestionNumber,
-  isCheckboxQuestion,
-  isDateQuestion,
-  isFollowup,
-  isMultiFieldListQuestion,
-  isMultiFieldQuestion,
-  isMultiSelectQuestion,
-  isParagraph,
-  isRadioGroupQuestion,
-  isTextQuestion
-} from '../vasu-content'
-import { getVasuTemplate, updateVasuTemplateContents } from './api'
-import CreateQuestionModal from './CreateQuestionModal'
-import QuestionInfo from '../QuestionInfo'
 import {
   CheckboxQuestion,
   DateQuestion,
@@ -59,8 +21,46 @@ import {
   VasuQuestion
 } from 'lib-common/api-types/vasu'
 import { VasuTemplate } from 'lib-common/generated/api-types/vasu'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import {
+  FixedSpaceColumn,
+  FixedSpaceFlexWrap,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { H1, H2, H3, Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { vasuTranslations } from 'lib-customizations/employee'
+import { useTranslation } from '../../../state/i18n'
+import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
+import QuestionInfo from '../QuestionInfo'
+import {
+  getQuestionNumber,
+  isCheckboxQuestion,
+  isDateQuestion,
+  isFollowup,
+  isMultiFieldListQuestion,
+  isMultiFieldQuestion,
+  isMultiSelectQuestion,
+  isParagraph,
+  isRadioGroupQuestion,
+  isTextQuestion
+} from '../vasu-content'
 import CreateParagraphModal from './CreateParagraphModal'
+import CreateQuestionModal from './CreateQuestionModal'
+import { getVasuTemplate, updateVasuTemplateContents } from './api'
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from './local-date'
-import FiniteDateRange from './finite-date-range'
 import DateRange from './date-range'
+import FiniteDateRange from './finite-date-range'
+import LocalDate from './local-date'
 
 export type JsonOf<T> = T extends string | number | boolean | null | undefined
   ? T

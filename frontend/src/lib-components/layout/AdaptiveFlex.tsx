@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { defaultMargins, SpacingSize } from '../white-space'
 import { tabletMin } from '../breakpoints'
+import { defaultMargins, SpacingSize } from '../white-space'
 
 type AdaptiveFlexProps = {
   breakpoint?: string

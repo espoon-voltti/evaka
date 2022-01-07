@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import styled from 'styled-components'
 import { Child } from 'lib-common/generated/api-types/attendance'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label } from 'lib-components/typography'
-import React from 'react'
-import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { formatCareType } from '../../types'
 

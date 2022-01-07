@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useState } from 'react'
+import styled from 'styled-components'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
-import React, { useState } from 'react'
-import styled from 'styled-components'
 import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
 
 const ErrorMessage = styled.div`

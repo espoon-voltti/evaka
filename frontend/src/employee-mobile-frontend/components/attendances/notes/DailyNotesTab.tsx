@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faExclamation, faTrash } from 'lib-icons'
+import React, { Fragment, useCallback, useContext, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
@@ -10,10 +14,10 @@ import {
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
+import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
-import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -25,10 +29,6 @@ import {
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faExclamation, faTrash } from 'lib-icons'
-import React, { Fragment, useCallback, useContext, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
 import {
   deleteChildDailyNote,
   postChildDailyNote,

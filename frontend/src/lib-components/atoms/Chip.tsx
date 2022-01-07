@@ -4,12 +4,12 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 import { faCheck } from 'lib-icons'
 import { readableColor } from 'polished'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { tabletMin } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'

@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useTranslation } from '../../../localization'
 import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationDataGridLabelWidth } from './const'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Label } from 'lib-components/typography'
+import { useTranslation } from '../../../localization'
+import { ApplicationDataGridLabelWidth } from './const'
 
 type Props = {
   formData: ContactInfoFormData

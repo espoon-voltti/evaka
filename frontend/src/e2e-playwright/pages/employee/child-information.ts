@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import config from 'e2e-test-common/config'
+import { Daycare } from 'e2e-test-common/dev-api/types'
+import { UUID } from 'lib-common/types'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
   Combobox,
@@ -14,10 +18,6 @@ import {
   Select,
   TextInput
 } from '../../utils/page'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Daycare } from 'e2e-test-common/dev-api/types'
-import config from 'e2e-test-common/config'
-import { UUID } from 'lib-common/types'
 import CreateApplicationModal from './applications/create-application-modal'
 
 export default class ChildInformationPage {

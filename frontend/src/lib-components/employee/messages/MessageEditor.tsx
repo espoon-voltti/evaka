@@ -2,17 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import { UUID } from 'lib-common/types'
-import { useDebounce } from 'lib-common/utils/useDebounce'
-import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import InputField from 'lib-components/atoms/form/InputField'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import Radio from 'lib-components/atoms/form/Radio'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import classNames from 'classnames'
 import {
   faDownLeftAndUpRightToCenter,
   faTimes,
@@ -21,17 +11,23 @@ import {
 } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { modalZIndex } from 'lib-components/layout/z-helpers'
-import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
-import { Attachment } from 'lib-common/api-types/attachment'
 import { Failure, Result } from 'lib-common/api'
+import { Attachment } from 'lib-common/api-types/attachment'
+import { UpdateStateFn } from 'lib-common/form-state'
 import {
   DraftContent,
   NestedMessageAccount,
   PostMessageBody,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { Bold } from 'lib-components/typography'
+import { UUID } from 'lib-common/types'
+import { useDebounce } from 'lib-common/utils/useDebounce'
+import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import Radio from 'lib-components/atoms/form/Radio'
 import {
   deselectAll,
   getReceiverOptions,
@@ -43,13 +39,17 @@ import {
   SelectorNode,
   updateSelector
 } from 'lib-components/employee/messages/SelectorNode'
-import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
 import {
   isNestedGroupMessageAccount,
   SaveDraftParams
 } from 'lib-components/employee/messages/types'
+import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { modalZIndex } from 'lib-components/layout/z-helpers'
+import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
+import { Bold } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import Combobox from '../../atoms/dropdowns/Combobox'
-import classNames from 'classnames'
 
 type Message = UpsertableDraftContent & {
   sender: ReactSelectOption

@@ -2,26 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
-import InputField from 'lib-components/atoms/form/InputField'
-import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Translations, useTranslation } from '../state/i18n'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { H1, H2, H3, Label, P } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import Container, { ContentArea } from 'lib-components/layout/Container'
 import styled from 'styled-components'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import {
-  getIncomeStatement,
-  updateIncomeStatementHandled
-} from '../api/income-statement'
+import { combine, Result } from 'lib-common/api'
+import { Attachment } from 'lib-common/api-types/attachment'
 import {
   Accountant,
   Entrepreneur,
@@ -29,20 +15,34 @@ import {
   Gross,
   Income
 } from 'lib-common/api-types/incomeStatement'
-import { combine, Result } from 'lib-common/api'
+import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Attachment } from 'lib-common/api-types/attachment'
-import { getPerson } from '../api/person'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
+import { H1, H2, H3, Label, P } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   deleteAttachment,
   getAttachmentBlob,
   saveIncomeStatementAttachment
 } from '../api/attachments'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  getIncomeStatement,
+  updateIncomeStatementHandled
+} from '../api/income-statement'
+import { getPerson } from '../api/person'
+import { Translations, useTranslation } from '../state/i18n'
 import { renderResult } from './async-rendering'
-import { UUID } from 'lib-common/types'
 
 export default React.memo(function IncomeStatementPage({
   match

@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { UnitContext } from '../../state/unit'
 import { useParams } from 'react-router-dom'
-import PlacementProposals from '../../components/unit/tab-placement-proposals/PlacementProposals'
-import { UUID } from 'lib-common/types'
-import { renderResult } from '../async-rendering'
-import Title from 'lib-components/atoms/Title'
 import { useTranslation } from 'employee-frontend/state/i18n'
+import { UUID } from 'lib-common/types'
+import Title from 'lib-components/atoms/Title'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import PlacementProposals from '../../components/unit/tab-placement-proposals/PlacementProposals'
+import { UnitContext } from '../../state/unit'
 import { NotificationCounter } from '../UnitPage'
+import { renderResult } from '../async-rendering'
 
 interface Props {
   reloadUnitData: () => void

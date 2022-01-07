@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
+import { UnitEditor, UnitPage } from 'e2e-playwright/pages/employee/units/unit'
+import UnitsPage from 'e2e-playwright/pages/employee/units/units'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
-import { Page } from '../../utils/page'
-import UnitsPage from 'e2e-playwright/pages/employee/units/units'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { UnitEditor, UnitPage } from 'e2e-playwright/pages/employee/units/unit'
-import { employeeLogin } from 'e2e-playwright/utils/user'
 import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { Daycare } from 'e2e-test-common/dev-api/types'
+import { Page } from '../../utils/page'
 
 describe('Employee - unit details', () => {
   let page: Page

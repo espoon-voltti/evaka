@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import React from 'react'
-import { useTranslation } from '../../../localization'
-import { H2, Label } from 'lib-components/typography'
-import ListGrid from 'lib-components/layout/ListGrid'
-import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { formatDate } from 'lib-common/date'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { H2, Label } from 'lib-components/typography'
+import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
+import { useTranslation } from '../../../localization'
 
 type BasicsSectionProps = {
   application: ApplicationDetails

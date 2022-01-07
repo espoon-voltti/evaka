@@ -3,9 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
-import { Label } from 'lib-components/typography'
+import { Loading } from 'lib-common/api'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { getAreas, getUnits } from '../../api/daycare'
+import {
+  ApplicationUIContext,
+  VoucherApplicationFilter
+} from '../../state/application-ui'
+import { useTranslation } from '../../state/i18n'
 import {
   Filters,
   ApplicationDistinctionsFilter,
@@ -24,14 +32,6 @@ import {
   ApplicationDistinctions,
   TransferApplicationsFilter
 } from '../common/Filters'
-import {
-  ApplicationUIContext,
-  VoucherApplicationFilter
-} from '../../state/application-ui'
-import { Loading } from 'lib-common/api'
-import { getAreas, getUnits } from '../../api/daycare'
-import { Gap } from 'lib-components/white-space'
-import { useTranslation } from '../../state/i18n'
 
 export default React.memo(function ApplicationFilters() {
   const {

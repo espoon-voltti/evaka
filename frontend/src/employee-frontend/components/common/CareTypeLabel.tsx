@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import { PlacementType } from 'lib-common/generated/enums'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { careTypeColors } from 'lib-customizations/common'
-import React from 'react'
 import { useTranslation } from '../../state/i18n'
 import { CareTypeLabel } from '../../types'
 

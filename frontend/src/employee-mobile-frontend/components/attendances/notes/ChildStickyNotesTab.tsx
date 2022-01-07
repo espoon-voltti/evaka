@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useCallback, useContext, useMemo } from 'react'
 import { Result } from 'lib-common/api'
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
-import { EditedNote } from 'lib-components/employee/notes/notes'
-import React, { useCallback, useContext, useMemo } from 'react'
 import {
   StickyNoteTab,
   StickyNoteTabLabels
 } from 'lib-components/employee/notes/StickyNoteTab'
+import { EditedNote } from 'lib-components/employee/notes/notes'
 import {
   deleteChildStickyNote,
   postChildStickyNote,

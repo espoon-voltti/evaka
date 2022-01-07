@@ -3,12 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from 'e2e-test-common/config'
-import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
-import { applicationFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import {
   cleanUpMessages,
   createPlacementPlan,
@@ -18,10 +12,16 @@ import {
   resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from 'e2e-test-common/dev-api/data-init'
+import { applicationFixture, Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { Application, EmployeeDetail } from 'e2e-test-common/dev-api/types'
-import { Page } from '../../utils/page'
 import ApplicationDetailsPage from '../../pages/admin/application-details-page'
+import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
+import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page

@@ -3,27 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Loading, Result } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import {
-  ChildDailyNote,
-  NotesByGroupResponse
-} from 'lib-common/generated/api-types/note'
-import { UUID } from 'lib-common/types'
-import { formatPercentage } from 'lib-common/utils/number'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import Tooltip from 'lib-components/atoms/Tooltip'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { H3, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -41,7 +20,28 @@ import * as _ from 'lodash'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import {
+  ChildDailyNote,
+  NotesByGroupResponse
+} from 'lib-common/generated/api-types/note'
+import { UUID } from 'lib-common/types'
+import { formatPercentage } from 'lib-common/utils/number'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { H3, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { getNotesByGroup } from '../../../../api/daycare-notes'
 import {
@@ -49,7 +49,6 @@ import {
   deleteGroupPlacement,
   OccupancyResponse
 } from '../../../../api/unit'
-import { CareTypeChip } from '../../../common/CareTypeLabel'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
@@ -62,15 +61,16 @@ import {
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'
 import { capitalizeFirstLetter, formatPersonName } from '../../../../utils'
+import { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'
-import { UnitFilters } from '../../../../utils/UnitFilters'
 import { renderResult } from '../../../async-rendering'
+import { AgeIndicatorIconWithTooltip } from '../../../common/AgeIndicatorIcon'
+import { CareTypeChip } from '../../../common/CareTypeLabel'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
 import NotesModal from '../notes/NotesModal'
-import { AgeIndicatorIconWithTooltip } from '../../../common/AgeIndicatorIcon'
 
 interface Props {
   unit: Unit

@@ -2,20 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import styled from 'styled-components'
+import { AdditionalDetailsFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { getErrorCount } from 'lib-common/form-validation'
+import { ApplicationType } from 'lib-common/generated/enums'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import React from 'react'
-import styled from 'styled-components'
 import EditorSection from '../../applications/editor/EditorSection'
-import { getErrorCount } from 'lib-common/form-validation'
 import { useTranslation } from '../../localization'
-import { AdditionalDetailsFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ApplicationFormDataErrors } from './validations'
-import { ApplicationType } from 'lib-common/generated/enums'
 
 type Props = {
   formData: AdditionalDetailsFormData

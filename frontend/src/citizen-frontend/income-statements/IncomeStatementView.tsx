@@ -2,23 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPen } from 'lib-icons'
 import React, { useCallback, useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
-import { UUID } from 'lib-common/types'
-import { renderResult } from '../async-rendering'
-import ListGrid from 'lib-components/layout/ListGrid'
-import { useTranslation } from '../localization'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import { H1, H2, H3, Label } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { OverlayContext } from '../overlay/state'
-import { getIncomeStatement } from './api'
+import { Attachment } from 'lib-common/api-types/attachment'
 import {
   Accountant,
   Entrepreneur,
@@ -26,16 +16,26 @@ import {
   Gross,
   Income
 } from 'lib-common/api-types/incomeStatement'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Attachment } from 'lib-common/api-types/attachment'
+import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { fileIcon } from 'lib-components/molecules/FileUpload'
+import { H1, H2, H3, Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { renderResult } from '../async-rendering'
 import { getAttachmentBlob } from '../attachments'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { useHistory } from 'react-router-dom'
-import { faPen } from 'lib-icons'
-import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
+import { useTranslation } from '../localization'
+import { OverlayContext } from '../overlay/state'
+import { getIncomeStatement } from './api'
 
 export default React.memo(function IncomeStatementView({
   match

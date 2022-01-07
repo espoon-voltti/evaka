@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import ApplicationsPage from 'e2e-playwright/pages/employee/applications'
+import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
@@ -10,9 +13,6 @@ import {
   applicationFixtureId,
   Fixture
 } from 'e2e-test-common/dev-api/fixtures'
-import { employeeLogin } from 'e2e-playwright/utils/user'
-import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
-import ApplicationsPage from 'e2e-playwright/pages/employee/applications'
 import { Page } from '../../utils/page'
 
 let page: Page

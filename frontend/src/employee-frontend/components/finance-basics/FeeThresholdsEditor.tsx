@@ -7,19 +7,20 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
-import colors from 'lib-customizations/common'
-import { H3, H4, Label } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import InputField from 'lib-components/atoms/form/InputField'
+import { Table, Tbody, Th, Thead, Td, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Table, Tbody, Th, Thead, Td, Tr } from 'lib-components/layout/Table'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
-import InputField from 'lib-components/atoms/form/InputField'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { H3, H4, Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import {
   createFeeThresholds,
   updateFeeThresholds
@@ -31,7 +32,6 @@ import {
   FeeThresholds,
   FeeThresholdsWithId
 } from '../../types/finance-basics'
-import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
 import { FormState } from './FeesSection'
 
 export default React.memo(function FeeThresholdsEditor({

@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useContext, useMemo } from 'react'
+import { useHistory } from 'react-router'
 import { UserContext } from 'employee-mobile-frontend/state/user'
 import { combine } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
 import { Gap } from 'lib-components/white-space'
-import React, { useContext, useMemo } from 'react'
-import { useHistory } from 'react-router'
 import { UnitContext } from '../../state/unit'
 import { CountInfo } from './GroupSelector'
 import { GroupSelectorBar } from './GroupSelectorBar'
 import TopBar from './TopBar'
-import { UUID } from 'lib-common/types'
 
 interface Props {
   selectedGroup: GroupInfo | undefined

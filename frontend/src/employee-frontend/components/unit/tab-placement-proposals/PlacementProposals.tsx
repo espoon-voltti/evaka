@@ -2,27 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef, useState } from 'react'
 import _ from 'lodash'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-
-import { Table, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
-import { useTranslation } from '../../../state/i18n'
-import {
-  DaycarePlacementPlan,
-  PlacementPlanConfirmationStatus
-} from '../../../types/unit'
-import { Gap } from 'lib-components/white-space'
+import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
+import { Table, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
+import { Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
+
 import {
   acceptPlacementProposal,
   respondToPlacementProposal
 } from '../../../api/applications'
-import { UIContext } from '../../../state/ui'
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
-import { UUID } from 'lib-common/types'
-import { Label, P } from 'lib-components/typography'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import {
+  DaycarePlacementPlan,
+  PlacementPlanConfirmationStatus
+} from '../../../types/unit'
 
 const ButtonRow = styled.div`
   display: flex;

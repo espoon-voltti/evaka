@@ -2,6 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import ChildInformationPage, {
+  AdditionalInformationSection,
+  BackupCaresSection,
+  DailyServiceTimeSection,
+  FamilyContactsSection,
+  GuardiansSection
+} from 'e2e-playwright/pages/employee/child-information'
+import {
+  waitUntilEqual,
+  waitUntilFalse,
+  waitUntilTrue
+} from 'e2e-playwright/utils'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
   insertDaycareGroupFixtures,
@@ -17,19 +30,6 @@ import {
   enduserNonSsnChildFixture,
   Fixture
 } from 'e2e-test-common/dev-api/fixtures'
-import ChildInformationPage, {
-  AdditionalInformationSection,
-  BackupCaresSection,
-  DailyServiceTimeSection,
-  FamilyContactsSection,
-  GuardiansSection
-} from 'e2e-playwright/pages/employee/child-information'
-import {
-  waitUntilEqual,
-  waitUntilFalse,
-  waitUntilTrue
-} from 'e2e-playwright/utils'
-import { employeeLogin } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
 import { Page } from '../../utils/page'
 

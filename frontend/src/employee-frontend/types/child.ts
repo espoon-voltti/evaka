@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import { AssistanceMeasure } from 'lib-customizations/types'
 import {
   AssistanceBasisOption,
   AssistanceNeed as ServiceAssistanceNeed
 } from 'lib-common/generated/api-types/assistanceneed'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { AssistanceMeasure } from 'lib-customizations/types'
 
 export type { AssistanceBasisOption }
 

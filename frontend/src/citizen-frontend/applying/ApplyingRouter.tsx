@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Tabs from 'lib-components/molecules/Tabs'
-import { Gap } from 'lib-components/white-space'
-import { colors } from 'lib-customizations/common'
 import React from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import styled from 'styled-components'
+import Tabs from 'lib-components/molecules/Tabs'
+import { Gap } from 'lib-components/white-space'
+import { colors } from 'lib-customizations/common'
 import Applications from '../applications/Applications'
 import requireAuth from '../auth/requireAuth'
 import { useUser } from '../auth/state'

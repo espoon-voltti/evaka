@@ -3,18 +3,27 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHome, faLockAlt } from 'lib-icons'
+import { range, sortBy } from 'lodash'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Select from 'lib-components/atoms/dropdowns/Select'
+import {
+  VoucherReportRowType,
+  ServiceVoucherUnitReport,
+  ServiceVoucherValueRow
+} from 'lib-common/generated/api-types/reports'
+import { formatCents } from 'lib-common/money'
+import { UUID } from 'lib-common/types'
+import { formatDecimal } from 'lib-common/utils/number'
+import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Loader from 'lib-components/atoms/Loader'
-import { H2, H3 } from 'lib-components/typography'
 import Tooltip, { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
 import {
   SortableTh,
   Tbody,
@@ -23,31 +32,22 @@ import {
   Thead,
   Tr
 } from 'lib-components/layout/Table'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faHome, faLockAlt } from 'lib-icons'
-import { range, sortBy } from 'lodash'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
-import styled from 'styled-components'
 import {
   getVoucherServiceProviderUnitReport,
   VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import {
-  VoucherReportRowType,
-  ServiceVoucherUnitReport,
-  ServiceVoucherValueRow
-} from 'lib-common/generated/api-types/reports'
 import { formatName } from '../../utils'
-import { formatCents } from 'lib-common/money'
-import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
-import { FilterLabel, FilterRow, TableScrollable } from './common'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
-import { formatDecimal } from 'lib-common/utils/number'
-import { UUID } from 'lib-common/types'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const FilterWrapper = styled.div`
   width: 400px;

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { ContentArea } from 'lib-components/layout/Container'
 import Title from 'lib-components/atoms/Title'
+import { ContentArea } from 'lib-components/layout/Container'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
+import TabApplications from './TabApplications'
 import TabPlacementProposals from './TabPlacementProposals'
 import TabWaitingConfirmation from './TabWaitingConfirmation'
-import TabApplications from './TabApplications'
-import { Gap } from 'lib-components/white-space'
 
 interface Props {
   isLoading: boolean

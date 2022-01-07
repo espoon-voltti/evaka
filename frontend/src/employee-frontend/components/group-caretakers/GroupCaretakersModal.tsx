@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
-import LocalDate from 'lib-common/local-date'
-import { CaretakerAmount } from '../../types/caretakers'
-import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faPen, faPlus } from 'lib-icons'
-import { useTranslation } from '../../state/i18n'
+import React, { useState } from 'react'
+import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
-import styled from 'styled-components'
-import { postCaretakers, putCaretakers } from '../../api/caretakers'
-import { Result } from 'lib-common/api'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { UUID } from 'lib-common/types'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { postCaretakers, putCaretakers } from '../../api/caretakers'
+import { useTranslation } from '../../state/i18n'
+import { CaretakerAmount } from '../../types/caretakers'
 
 const NumberInputContainer = styled.div`
   width: 150px;

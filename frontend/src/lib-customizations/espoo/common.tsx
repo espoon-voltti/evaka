@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CommonCustomizations } from 'lib-customizations/types'
 import theme from 'lib-common/themes/espoo-theme'
+import { CommonCustomizations } from 'lib-customizations/types'
 
 const customizations: CommonCustomizations = { theme }
 

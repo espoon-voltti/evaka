@@ -2,6 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import config from 'e2e-test-common/config'
+import {
+  DigitransitFeature,
+  putDigitransitAutocomplete,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
 import {
   careAreaFixture,
   clubFixture,
@@ -10,12 +16,6 @@ import {
   preschoolFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import { Daycare } from 'e2e-test-common/dev-api/types'
-import {
-  DigitransitFeature,
-  putDigitransitAutocomplete,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
-import config from 'e2e-test-common/config'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'

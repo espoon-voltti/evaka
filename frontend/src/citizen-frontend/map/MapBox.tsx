@@ -3,13 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import leaflet, { LatLngTuple, LeafletEventHandlerFnMap } from 'leaflet'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { isAutomatedTest } from 'lib-common/utils/helpers'
-import ExternalLink from 'lib-components/atoms/ExternalLink'
-import { fontWeights } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { mapConfig } from 'lib-customizations/citizen'
-import colors from 'lib-customizations/common'
 import React, {
   Dispatch,
   SetStateAction,
@@ -26,12 +19,19 @@ import {
   ZoomControl
 } from 'react-leaflet'
 import styled from 'styled-components'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
+import { fontWeights } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { mapConfig } from 'lib-customizations/citizen'
+import colors from 'lib-customizations/common'
 import { FooterContent } from '../Footer'
 import { useTranslation } from '../localization'
+import { MapAddress } from './MapView'
 import { mapViewBreakpoint } from './const'
 import { formatDistance, UnitWithDistance } from './distances'
 import { formatCareTypes } from './format'
-import { MapAddress } from './MapView'
 import markerAddress from './marker-address.svg'
 import markerUnitHighlight from './marker-unit-highlight.svg'
 import markerUnit from './marker-unit.svg'

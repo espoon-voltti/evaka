@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AbsenceType } from 'lib-common/generated/enums'
+import { UUID } from 'lib-common/types'
+import { waitUntilEqual } from '../../../utils'
 import {
   Checkbox,
   Element,
@@ -11,9 +14,6 @@ import {
   Select,
   TextInput
 } from '../../../utils/page'
-import { waitUntilEqual } from '../../../utils'
-import { AbsenceType } from 'lib-common/generated/enums'
-import { UUID } from 'lib-common/types'
 
 export class UnitDiaryPage {
   constructor(private page: Page) {}

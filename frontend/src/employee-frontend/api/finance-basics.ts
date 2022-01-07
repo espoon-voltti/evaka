@@ -5,8 +5,8 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
-import { client } from './client'
 import { FeeThresholdsWithId, FeeThresholds } from '../types/finance-basics'
+import { client } from './client'
 
 export async function getFeeThresholds(): Promise<
   Result<FeeThresholdsWithId[]>

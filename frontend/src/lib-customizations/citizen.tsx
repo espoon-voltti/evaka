@@ -5,12 +5,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import customizations from '@evaka/customizations/citizen'
-import type { CitizenCustomizations } from './types'
-import fi from './espoo/citizen/assets/i18n/fi'
-import sv from './espoo/citizen/assets/i18n/sv'
-import en from './espoo/citizen/assets/i18n/en'
 import { mergeWith } from 'lodash'
 import { translationsMergeCustomizer } from './common'
+import en from './espoo/citizen/assets/i18n/en'
+import fi from './espoo/citizen/assets/i18n/fi'
+import sv from './espoo/citizen/assets/i18n/sv'
+import type { CitizenCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {

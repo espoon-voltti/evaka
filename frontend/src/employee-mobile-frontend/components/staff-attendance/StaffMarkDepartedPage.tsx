@@ -2,30 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { isAfter, parse } from 'date-fns'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
-import { isAfter, parse } from 'date-fns'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
+import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Gap } from 'lib-components/white-space'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { postStaffDeparture } from '../../api/realtimeStaffAttendances'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import { Actions } from '../attendances/components'
+import TopBar from '../common/TopBar'
 import { TallContentArea } from '../mobile/components'
 import { TimeWrapper } from './components/staff-components'
-import { Label } from 'lib-components/typography'
-import TopBar from '../common/TopBar'
 
 export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()

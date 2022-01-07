@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
 import { Page, TextInput } from 'e2e-playwright/utils/page'
 import { AbsenceType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 
 export default class MobileAbsencesPage {
   constructor(private readonly page: Page) {}

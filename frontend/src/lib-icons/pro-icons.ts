@@ -3,6 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  faCaretUp as fasCaretUp,
+  faCaretDown as fasCaretDown,
+  faCaretLeft as fasCaretLeft,
+  faCaretRight as fasCaretRight,
+  faCheckCircle as fasCheckCircle,
+  faChevronDown as fasChevronDown,
+  faChevronUp as fasChevronUp,
+  faExclamationTriangle as fasExclamationTriangle,
+  faInfo as fasInfo,
+  faMapMarkerAlt as fasMapMarkerAlt,
+  faArrowDown as fasArrowDown,
+  faArrowUp as fasArrowUp
+} from '@fortawesome/free-solid-svg-icons'
+import {
   faAbacus,
   faAngleDown,
   faAngleLeft,
@@ -109,21 +123,6 @@ import {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { faCommentAltLines as fasCommentAltLines } from '@fortawesome/pro-solid-svg-icons'
-
-import {
-  faCaretUp as fasCaretUp,
-  faCaretDown as fasCaretDown,
-  faCaretLeft as fasCaretLeft,
-  faCaretRight as fasCaretRight,
-  faCheckCircle as fasCheckCircle,
-  faChevronDown as fasChevronDown,
-  faChevronUp as fasChevronUp,
-  faExclamationTriangle as fasExclamationTriangle,
-  faInfo as fasInfo,
-  faMapMarkerAlt as fasMapMarkerAlt,
-  faArrowDown as fasArrowDown,
-  faArrowUp as fasArrowUp
-} from '@fortawesome/free-solid-svg-icons'
 
 import { IconSet } from '.'
 

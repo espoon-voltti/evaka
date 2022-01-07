@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useState } from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import React, { useState } from 'react'
 import { Incomes } from '../person-profile/PersonIncome'
 
 interface Props {

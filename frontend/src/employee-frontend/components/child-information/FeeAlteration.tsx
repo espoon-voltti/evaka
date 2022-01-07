@@ -2,29 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useRef, useState } from 'react'
 import { faQuestion } from 'lib-icons'
-import { Gap } from 'lib-components/white-space'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import FeeAlterationList from './fee-alteration/FeeAlterationList'
-import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
-import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
-import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
+import React, { useContext, useRef, useState } from 'react'
 import { Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { scrollToRef } from 'lib-common/utils/scrolling'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import {
   createFeeAlteration,
   deleteFeeAlteration,
   getFeeAlterations,
   updateFeeAlteration
 } from '../../api/child/fee-alteration'
-import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { H2 } from 'lib-components/typography'
-import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
 import { renderResult } from '../async-rendering'
-import { scrollToRef } from 'lib-common/utils/scrolling'
+import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
+import FeeAlterationList from './fee-alteration/FeeAlterationList'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`

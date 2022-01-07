@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { formatCents } from 'lib-common/money'
 import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../../../state/i18n'
-import { formatCents } from 'lib-common/money'
 
 const Container = styled.div`
   display: flex;

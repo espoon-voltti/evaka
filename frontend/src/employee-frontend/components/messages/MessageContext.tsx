@@ -2,6 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState
+} from 'react'
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
   DraftContent,
@@ -15,13 +22,7 @@ import {
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState
-} from 'react'
+import { ReactSelectOption } from 'lib-components/employee/messages/SelectorNode'
 import { client } from '../../api/client'
 import { UserContext } from '../../state/user'
 import {
@@ -34,7 +35,6 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { ReactSelectOption } from 'lib-components/employee/messages/SelectorNode'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20

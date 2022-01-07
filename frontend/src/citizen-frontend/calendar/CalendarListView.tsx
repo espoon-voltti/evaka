@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
-import _ from 'lodash'
-import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from 'lib-icons'
-import LocalDate from 'lib-common/local-date'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import WeekElem from './WeekElem'
-import { defaultMargins } from 'lib-components/white-space'
-import Button from 'lib-components/atoms/buttons/Button'
-import { useTranslation } from '../localization'
+import _ from 'lodash'
+import React, { useMemo } from 'react'
+import styled from 'styled-components'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
+import Button from 'lib-components/atoms/buttons/Button'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { defaultMargins } from 'lib-components/white-space'
+import { useTranslation } from '../localization'
+import WeekElem from './WeekElem'
 
 export interface Props {
   dailyData: DailyReservationData[]

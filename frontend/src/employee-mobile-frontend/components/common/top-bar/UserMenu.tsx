@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Label } from 'lib-components/typography'
 import { faUserUnlock } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { pinLogout } from '../../../api/auth'
 import { useTranslation } from '../../../state/i18n'
 import { topBarHeight } from '../../constants'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 const UserMenuContainer = styled.div`
   position: fixed;

@@ -6,11 +6,9 @@ import { faSearch } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-
 import { getAge } from 'lib-common/utils/local-date'
 
-import { formatName } from '../utils'
-import { Gap } from 'lib-components/white-space'
+import Loader from 'lib-components/atoms/Loader'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -22,12 +20,13 @@ import {
   Tbody,
   SortableTh
 } from 'lib-components/layout/Table'
-import Loader from 'lib-components/atoms/Loader'
+import { Gap } from 'lib-components/white-space'
 import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '../components/person-search/CreatePersonModal'
 import { CHILD_AGE } from '../constants'
 import { CustomersContext } from '../state/customers'
 import { useTranslation } from '../state/i18n'
+import { formatName } from '../utils'
 import { RequireRole } from '../utils/roles'
 
 const TopBar = styled.div`

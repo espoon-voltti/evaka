@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext } from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import React, { useMemo, useState, createContext } from 'react'
 import { IconColor } from 'lib-components/molecules/modals/BaseModal'
 
 export interface InfoMessage {

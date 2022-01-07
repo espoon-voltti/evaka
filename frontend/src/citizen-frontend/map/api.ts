@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import axios from 'axios'
+import _ from 'lodash'
 import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -11,10 +12,9 @@ import { ApplicationType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { mapConfig } from 'lib-customizations/citizen'
-import _ from 'lodash'
 import { client } from '../api-client'
-import { UnitWithDistance, UnitWithStraightDistance } from './distances'
 import { MapAddress } from './MapView'
+import { UnitWithDistance, UnitWithStraightDistance } from './distances'
 
 export async function fetchUnits(
   type: ApplicationType

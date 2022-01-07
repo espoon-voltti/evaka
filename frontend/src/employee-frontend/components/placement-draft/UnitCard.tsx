@@ -2,25 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faCheck } from 'lib-icons'
+import React, { Dispatch, SetStateAction } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { isLoading, Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
-import { faCheck } from 'lib-icons'
-import React, { Dispatch, SetStateAction } from 'react'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
 import { getOccupancyRates, OccupancyResponse } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
 import { Occupancy } from '../../types/unit'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { renderResult } from '../async-rendering'
 
 const MarginBox = styled.div`

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import { AttachmentType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 import { client } from './api-client'
-import { AttachmentType } from 'lib-common/generated/enums'
 
 async function doSaveAttachment(
   url: string,

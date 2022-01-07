@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { UnitProviderType } from 'lib-customizations/types'
-import { UUID } from 'lib-common/types'
 import {
   AssistanceActionOption,
   AssistanceMeasure
@@ -12,6 +9,9 @@ import {
 import { AssistanceBasisOption } from 'lib-common/generated/api-types/assistanceneed'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { UnitType } from 'lib-common/generated/api-types/reports'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { UnitProviderType } from 'lib-customizations/types'
 
 export interface InvoiceReportRow {
   areaCode: number

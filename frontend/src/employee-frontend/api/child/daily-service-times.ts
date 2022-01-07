@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
-import { client } from '../client'
+import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+import { client } from '../client'
 
 interface DailyServiceTimesResponse {
   dailyServiceTimes: DailyServiceTimes | null

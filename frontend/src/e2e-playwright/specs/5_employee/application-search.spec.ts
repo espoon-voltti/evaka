@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import config from 'e2e-test-common/config'
 import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
@@ -13,11 +14,10 @@ import {
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-import config from 'e2e-test-common/config'
-import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 
 let fixtures: AreaAndPersonFixtures
 let admin: EmployeeDetail

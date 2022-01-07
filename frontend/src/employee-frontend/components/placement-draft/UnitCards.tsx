@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
 import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
 import {
   DaycarePlacementPlan,
   PlacementDraft

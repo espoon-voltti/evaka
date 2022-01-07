@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationStatus } from 'lib-common/generated/enums'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Checkbox, Page, TextInput } from '../../utils/page'
 // import ApplicationReadView from '../employee/applications/application-read-view'
 import ApplicationListView from '../employee/applications/application-list-view'
-import { ApplicationStatus } from 'lib-common/generated/enums'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import ApplicationDetailsPage from './application-details-page'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
+import ApplicationDetailsPage from './application-details-page'
 
 export class SearchFilter {
   constructor(private page: Page) {}

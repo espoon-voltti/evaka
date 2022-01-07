@@ -4,28 +4,28 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { H3, Label, P } from 'lib-components/typography'
+import { Result, Success } from 'lib-common/api'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { ApplicationType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import { SelectionChip } from 'lib-components/atoms/Chip'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Gap } from 'lib-components/white-space'
-import { Result, Success } from 'lib-common/api'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { ApplicationUnitType, getApplicationUnits } from '../../api'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
-import { SelectionChip } from 'lib-components/atoms/Chip'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import { H3, Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import ExternalLink from 'lib-components/atoms/ExternalLink'
-import { useTranslation } from '../../../localization'
-import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
+import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { UnwrapResult } from '../../../async-rendering'
-import LocalDate from 'lib-common/local-date'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { useTranslation } from '../../../localization'
+import { ApplicationUnitType, getApplicationUnits } from '../../api'
+import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
 
 const maxUnits = 3
 

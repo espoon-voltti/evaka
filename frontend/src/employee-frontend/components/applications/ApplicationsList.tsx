@@ -3,35 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Paged } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
-import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import PlacementCircle from 'lib-components/atoms/PlacementCircle'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import Tooltip from 'lib-components/atoms/Tooltip'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import {
-  SortableTh,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import Pagination from 'lib-components/Pagination'
-import { Bold, H1, Italic, Light } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors, { applicationBasisColors } from 'lib-customizations/common'
 import {
   faCheck,
   faCommentAlt,
@@ -42,6 +13,35 @@ import {
 } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
+import { Paged } from 'lib-common/api'
+import { formatDate } from 'lib-common/date'
+import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import { UUID } from 'lib-common/types'
+import Pagination from 'lib-components/Pagination'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import TextArea from 'lib-components/atoms/form/TextArea'
+import {
+  SortableTh,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from 'lib-components/layout/Table'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { Bold, H1, Italic, Light } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors, { applicationBasisColors } from 'lib-customizations/common'
 import { updateServiceWorkerNote } from '../../api/applications'
 import ActionBar from '../../components/applications/ActionBar'
 import ApplicationActions from '../../components/applications/ApplicationActions'

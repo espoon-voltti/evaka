@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import {
   faCheck,
   faChevronLeft,
@@ -13,30 +11,32 @@ import {
   faTrash,
   faUserMinus
 } from 'lib-icons'
-import LocalDate from 'lib-common/local-date'
-import { tabletMin } from 'lib-components/breakpoints'
-import { H1, H2, H3, Label } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { useTranslation } from '../localization'
+import { zip } from 'lodash'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   Reservation,
   ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import { AbsenceType } from 'lib-common/generated/enums'
-import { postReservations } from './api'
-import CalendarModal from './CalendarModal'
-import { zip } from 'lodash'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { tabletMin } from 'lib-components/breakpoints'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { H1, H2, H3, Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { useTranslation } from '../localization'
+import CalendarModal from './CalendarModal'
 import TimeRangeInput, { TimeRange, validateTimeRange } from './TimeRangeInput'
+import { postReservations } from './api'
 
 interface Props {
   date: LocalDate

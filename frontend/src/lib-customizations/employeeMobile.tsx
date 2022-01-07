@@ -5,10 +5,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import customizations from '@evaka/customizations/employeeMobile'
-import type { EmployeeMobileCustomizations } from './types'
-import { fi } from './espoo/employee-mobile-frontend/assets/i18n/fi'
 import { mergeWith } from 'lodash'
 import { translationsMergeCustomizer } from './common'
+import { fi } from './espoo/employee-mobile-frontend/assets/i18n/fi'
+import type { EmployeeMobileCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const { appConfig }: EmployeeMobileCustomizations = customizations

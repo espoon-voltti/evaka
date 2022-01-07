@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import ChildInformationPage from 'e2e-playwright/pages/employee/child-information'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
@@ -11,8 +13,6 @@ import {
   PlacementBuilder,
   ServiceNeedOptionBuilder
 } from 'e2e-test-common/dev-api/fixtures'
-import ChildInformationPage from 'e2e-playwright/pages/employee/child-information'
-import { employeeLogin } from 'e2e-playwright/utils/user'
 import { UUID } from 'lib-common/types'
 import { Page } from '../../utils/page'
 

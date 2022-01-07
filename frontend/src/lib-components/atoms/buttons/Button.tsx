@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
-import classNames from 'classnames'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
-import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 export const StyledButton = styled.button`
   min-height: 45px;

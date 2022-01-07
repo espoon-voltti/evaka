@@ -4,17 +4,17 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import LabelValueList from '../../components/common/LabelValueList'
-import { Gap } from 'lib-components/white-space'
+import { useIncomeTypeOptions } from 'employee-frontend/utils/income'
+import { formatCents } from 'lib-common/money'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { H3, H4 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { Income } from '../../types/income'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from 'lib-common/money'
 import { formatName, formatPercent } from '../../utils'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { useIncomeTypeOptions } from 'employee-frontend/utils/income'
 
 interface Props {
   decision: FeeDecisionDetailed

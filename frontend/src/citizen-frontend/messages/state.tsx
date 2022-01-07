@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Paged, Result, Success } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import React, {
   createContext,
   useCallback,
@@ -12,10 +9,13 @@ import React, {
   useMemo,
   useState
 } from 'react'
+import { Loading, Paged, Result, Success } from 'lib-common/api'
 import {
   MessageThread,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from '../localization'
 import {
   getMessageAccount,

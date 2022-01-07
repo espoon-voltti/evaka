@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faCalendarPlus, faUserMinus } from 'lib-icons'
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
-import LocalDate from 'lib-common/local-date'
 import styled, { css } from 'styled-components'
-import { useTranslation } from '../localization'
-import colors from 'lib-customizations/common'
+import { headerHeightDesktop } from 'citizen-frontend/header/const'
+import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
+import { scrollToPos } from 'lib-common/utils/scrolling'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import Container, { ContentArea } from 'lib-components/layout/Container'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { faCalendarPlus, faUserMinus } from 'lib-icons'
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
-import { Reservations } from './calendar-elements'
+import colors from 'lib-customizations/common'
+import { useTranslation } from '../localization'
 import { asWeeklyData, WeeklyData } from './CalendarListView'
-import { headerHeightDesktop } from 'citizen-frontend/header/const'
-import { scrollToPos } from 'lib-common/utils/scrolling'
+import { Reservations } from './calendar-elements'
 
 export interface Props {
   dailyData: DailyReservationData[]

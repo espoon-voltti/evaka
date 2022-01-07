@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
-import styled from 'styled-components'
 import {
   faFile,
   faFileImage,
@@ -12,15 +10,17 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
+import React, { useContext } from 'react'
+import styled from 'styled-components'
 import { ApplicationAttachment } from 'lib-common/api-types/application/ApplicationDetails'
+import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { Dimmed } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import { getAttachmentBlob } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { defaultMargins } from 'lib-components/white-space'
-import { Dimmed } from 'lib-components/typography'
-import LocalDate from 'lib-common/local-date'
-import { getAttachmentBlob } from '../../api/attachments'
 
 const AttachmentContainer = styled.div`
   display: flex;

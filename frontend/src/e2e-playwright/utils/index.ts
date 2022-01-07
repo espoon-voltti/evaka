@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInSeconds } from 'date-fns'
-import config from 'e2e-test-common/config'
 import { isEqual } from 'lodash'
 import { BaseError } from 'make-error-cause'
+import config from 'e2e-test-common/config'
 
 /**
  * Returns a promise that is resolved after the given amount of milliseconds

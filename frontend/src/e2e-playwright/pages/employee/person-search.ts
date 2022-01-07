@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { Page, Checkbox, TextInput } from 'e2e-playwright/utils/page'
 import { waitUntilEqual } from 'e2e-playwright/utils'
+import { Page, Checkbox, TextInput } from 'e2e-playwright/utils/page'
+import LocalDate from 'lib-common/local-date'
 
 export default class PersonSearchPage {
   constructor(private readonly page: Page) {}

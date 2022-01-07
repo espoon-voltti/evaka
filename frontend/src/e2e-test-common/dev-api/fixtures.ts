@@ -3,6 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { format } from 'date-fns'
+import { ScopedRole } from 'lib-common/api-types/employee-auth'
+import DateRange from 'lib-common/date-range'
+import { ApplicationForm } from 'lib-common/generated/api-types/application'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import {
   Application,
   AssistanceNeed,
@@ -51,14 +59,6 @@ import {
   setAclForDaycareGroups,
   setAclForDaycares
 } from './index'
-import LocalDate from 'lib-common/local-date'
-import DateRange from 'lib-common/date-range'
-import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { ScopedRole } from 'lib-common/api-types/employee-auth'
-import { UUID } from 'lib-common/types'
-import { ApplicationForm } from 'lib-common/generated/api-types/application'
 
 export const careAreaFixture: CareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',

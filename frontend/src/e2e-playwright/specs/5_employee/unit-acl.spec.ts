@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UnitPage } from 'e2e-playwright/pages/employee/units/unit'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { UnitPage } from 'e2e-playwright/pages/employee/units/unit'
 import {
   daycareFixture,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { UUID } from 'lib-common/types'
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
-import { employeeLogin } from 'e2e-playwright/utils/user'
+import { UUID } from 'lib-common/types'
 import { Page } from '../../utils/page'
 
 let page: Page

@@ -4,14 +4,14 @@
 
 import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
-import InputField from 'lib-components/atoms/form/InputField'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import InputField from 'lib-components/atoms/form/InputField'
 import colors from 'lib-customizations/common'
+import { useTranslation } from '../../../state/i18n'
 import {
   feeAlterationTypes,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
-import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   edited: PartialFeeAlteration

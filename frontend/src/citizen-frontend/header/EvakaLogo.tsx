@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
-import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import React from 'react'
 import styled from 'styled-components'
+import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
+import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 
 export default React.memo(function Logo() {
   return (

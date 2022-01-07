@@ -2,6 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowLeft } from 'lib-icons'
+import React, { useCallback, useContext } from 'react'
+import styled from 'styled-components'
+import { renderResult } from 'citizen-frontend/async-rendering'
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -10,15 +15,10 @@ import { tabletMin } from 'lib-components/breakpoints'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faArrowLeft } from 'lib-icons'
-import React, { useCallback, useContext } from 'react'
-import styled from 'styled-components'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
-import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'
-import { renderResult } from 'citizen-frontend/async-rendering'
+import { MessageContext } from './state'
 
 const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
   thread.messages.some((m) => !m.readAt && m.sender.id !== accountId)

@@ -4,20 +4,20 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { useLang, useTranslation } from '../../../localization'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { H3, Label, P } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
-import { Gap } from 'lib-components/white-space'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
-import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { H3, Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import { errorToInputInfo } from '../../../input-info-helper'
+import { useLang, useTranslation } from '../../../localization'
 
 export default React.memo(function GuardianSubSection({
   formData,

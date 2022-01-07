@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import _ from 'lodash'
-import { Link } from 'react-router-dom'
-
 import { faChild } from 'lib-icons'
-import { useTranslation } from '../../state/i18n'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { getGuardianDecisions } from '../../api/person'
-import { Decision } from '../../types/decision'
-import { DateTd, NameTd, StatusTd } from '../PersonProfile'
+import _ from 'lodash'
+import React from 'react'
+import { Link } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+
+import { getGuardianDecisions } from '../../api/person'
+import { useTranslation } from '../../state/i18n'
+import { Decision } from '../../types/decision'
+import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 
 interface Props {

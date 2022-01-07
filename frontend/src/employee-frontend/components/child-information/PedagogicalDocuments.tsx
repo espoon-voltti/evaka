@@ -2,27 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
-import { useTranslation } from '../../state/i18n'
-import { ChildContext } from '../../state'
+import { faQuestion } from 'lib-icons'
 import * as _ from 'lodash'
-import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { H2 } from 'lib-components/typography'
+import React, { useContext, useEffect, useState } from 'react'
+import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { H2 } from 'lib-components/typography'
 import {
   createPedagogicalDocument,
   deletePedagogicalDocument,
   getChildPedagogicalDocuments
 } from '../../api/child/pedagogical-documents'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
-import PedagogicalDocumentRow from './PedagogicalDocumentRow'
+import { ChildContext } from '../../state'
+import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { faQuestion } from 'lib-icons'
-import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { renderResult } from '../async-rendering'
+import PedagogicalDocumentRow from './PedagogicalDocumentRow'
 
 interface Props {
   id: UUID

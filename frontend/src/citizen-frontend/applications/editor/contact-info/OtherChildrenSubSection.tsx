@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faTimes } from 'lib-icons'
 import React from 'react'
-import { useTranslation } from '../../../localization'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { H3, Label, P } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { faTimes } from 'lib-icons'
 import { Gap } from 'lib-components/white-space'
-import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import { errorToInputInfo } from '../../../input-info-helper'
+import { useTranslation } from '../../../localization'
 
 export default React.memo(function OtherChildrenSubSection({
   formData,

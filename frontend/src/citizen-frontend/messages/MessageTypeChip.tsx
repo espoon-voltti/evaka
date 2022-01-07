@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { StaticChip } from 'lib-components/atoms/Chip'
-import { colors } from 'lib-customizations/common'
-import { MessageType } from 'lib-common/generated/enums'
 import React from 'react'
 import styled from 'styled-components'
+import { MessageType } from 'lib-common/generated/enums'
+import { StaticChip } from 'lib-components/atoms/Chip'
+import { colors } from 'lib-customizations/common'
 
 // TODO is the 20px line-height in StaticChip unintentional?
 const Chip = styled(StaticChip)`

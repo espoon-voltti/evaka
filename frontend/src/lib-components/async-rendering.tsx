@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
 import React, { useMemo } from 'react'
+import { Result } from 'lib-common/api'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import {
   LoadableContent,
   SpinnerSegment
 } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 export type RenderResultFn<T> = (
   value: T,

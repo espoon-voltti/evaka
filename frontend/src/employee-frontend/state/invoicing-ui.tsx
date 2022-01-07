@@ -10,7 +10,9 @@ import React, {
   useState,
   createContext
 } from 'react'
+import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import {
   DecisionDistinctiveDetails,
@@ -20,9 +22,7 @@ import {
   Unit,
   InvoiceDistinctiveDetails
 } from '../types/invoicing'
-import { Loading, Result } from 'lib-common/api'
 import { CareArea } from '../types/unit'
-import { UUID } from 'lib-common/types'
 
 export interface Checked {
   [id: string]: boolean

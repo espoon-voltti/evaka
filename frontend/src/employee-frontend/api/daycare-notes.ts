@@ -9,10 +9,10 @@ import {
   GroupNoteBody,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
-import { UUID } from 'lib-common/types'
-import { client } from './client'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { client } from './client'
 
 export async function getNotesByGroup(
   groupId: UUID
