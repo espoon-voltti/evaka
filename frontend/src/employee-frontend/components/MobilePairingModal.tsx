@@ -127,7 +127,7 @@ export default React.memo(function MobilePairingModal({
       }
       icon={faPlus}
       data-qa={`mobile-pairing-modal-phase-${phase}`}
-      iconColour={phase === 3 ? 'green' : 'blue'}
+      iconColor={phase === 3 ? 'green' : 'blue'}
       {...actions}
     >
       {phase === 1 && (

@@ -163,7 +163,7 @@ export default React.memo(function GroupPlacementModal({
       data-qa="group-placement-modal"
       title={i18n.unit.placements.modal.createTitle}
       icon={faChild}
-      iconColour={'blue'}
+      iconColor={'blue'}
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={form.errors.length > 0}

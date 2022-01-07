@@ -270,7 +270,7 @@ export default React.memo(function AttendanceChildPage() {
       {uiMode == 'img-delete' && (
         <InfoModal
           icon={faQuestion}
-          iconColour="orange"
+          iconColor="orange"
           title={i18n.attendances.childInfo.image.modalMenu.deleteConfirm.title}
           resolve={{
             label:

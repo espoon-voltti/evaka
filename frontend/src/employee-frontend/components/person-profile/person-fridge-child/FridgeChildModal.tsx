@@ -126,7 +126,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
               : i18n.personProfile.fridgeChild.newChild
           }
           icon={faChild}
-          iconColour={'blue'}
+          iconColor={'blue'}
           resolveAction={childFormActions}
           resolveLabel={i18n.common.confirm}
           resolveDisabled={!form.child || validationErrors.length > 0}

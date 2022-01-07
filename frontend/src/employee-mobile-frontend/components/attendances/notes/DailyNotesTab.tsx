@@ -150,7 +150,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
   function DeleteNoteModal() {
     return (
       <InfoModal
-        iconColour="orange"
+        iconColor="orange"
         title={i18n.attendances.notes.clearTitle}
         icon={faExclamation}
         reject={{
@@ -177,7 +177,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
   function ConfirmExitModal() {
     return (
       <InfoModal
-        iconColour="orange"
+        iconColor="orange"
         title={i18n.attendances.notes.confirmTitle}
         icon={faExclamation}
         close={() => setUiMode('default')}

@@ -160,7 +160,7 @@ function CreateApplicationModal({
     <FormModal
       title={i18nView.modalTitle}
       icon={faFileAlt}
-      iconColour={'blue'}
+      iconColor={'blue'}
       resolveAction={submit}
       resolveLabel={i18nView.createButton}
       resolveDisabled={!canSubmit()}

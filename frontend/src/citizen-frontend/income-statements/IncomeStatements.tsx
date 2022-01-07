@@ -181,7 +181,7 @@ export default React.memo(function IncomeStatements() {
 
           {deletionState.status !== 'row-not-selected' && (
             <InfoModal
-              iconColour="orange"
+              iconColor="orange"
               title={t.income.table.deleteConfirm}
               text={t.income.table.deleteDescription}
               icon={faQuestion}

@@ -44,7 +44,7 @@ export default React.memo(function AssistanceNeedRow({
 
   const renderDeleteConfirmation = () => (
     <InfoModal
-      iconColour={'orange'}
+      iconColor={'orange'}
       title={i18n.childInformation.assistanceNeed.removeConfirmation}
       text={`${
         i18n.common.period

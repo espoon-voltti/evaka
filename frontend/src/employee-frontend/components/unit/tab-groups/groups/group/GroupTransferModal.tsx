@@ -114,7 +114,7 @@ export default React.memo(function GroupTransferModal({
       data-qa="group-placement-modal"
       title={i18n.unit.placements.modal.transferTitle}
       icon={faExchange}
-      iconColour={'blue'}
+      iconColor={'blue'}
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={form.errors.length > 0}

@@ -276,7 +276,7 @@ export default React.memo(function DecisionResponse({
             t.decisions.applicationDecisions.warnings.doubleRejectWarning.title
           }
           icon={faExclamation}
-          iconColour={'orange'}
+          iconColor={'orange'}
           text={
             t.decisions.applicationDecisions.warnings.doubleRejectWarning.text
           }

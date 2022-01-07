@@ -307,7 +307,7 @@ const DeleteAbsencesModal = React.memo(function DeleteAbsencesModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColour={'orange'}
+      iconColor={'orange'}
       title={i18n.absences.confirmDelete}
       icon={faExclamation}
       reject={{
@@ -334,7 +334,7 @@ const ConfirmExitModal = React.memo(function ConfirmExitModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColour={'orange'}
+      iconColor={'orange'}
       title={i18n.common.saveBeforeClosing}
       icon={faExclamation}
       reject={{

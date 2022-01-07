@@ -51,7 +51,7 @@ const IncomeList = React.memo(function IncomeList({
     } ${income.validFrom.format()} - ${income.validTo?.format() ?? ''}?`
     return (
       <InfoModal
-        iconColour={'orange'}
+        iconColor={'orange'}
         title={i18n.personProfile.income.deleteModal.title}
         text={confirmText}
         icon={faQuestion}

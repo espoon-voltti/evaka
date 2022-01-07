@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -107,7 +107,7 @@ export default React.memo(function ChildApplicationsBlock({
         applicationStatus === 'CREATED'
           ? t.applications.deleteDraftText
           : t.applications.deleteSentText,
-      iconColour: applicationStatus === 'CREATED' ? 'orange' : 'red',
+      iconColor: applicationStatus === 'CREATED' ? 'orange' : 'red',
       icon: applicationStatus === 'CREATED' ? faExclamation : faTimes,
       resolve: {
         action: () => {

@@ -49,7 +49,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
       data-qa="group-update-modal"
       title={i18n.unit.groups.updateModal.title}
       icon={faPen}
-      iconColour={'blue'}
+      iconColor={'blue'}
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -19,7 +19,7 @@ export interface ModalBaseProps {
   text?: string
   className?: string
   icon?: IconProp
-  iconColour?: IconColor
+  iconColor?: IconColor
   mobileFullScreen?: boolean
   zIndex?: number
   children?: React.ReactNode | React.ReactNodeArray
@@ -48,7 +48,7 @@ export default React.memo(function BaseModal(props: Props) {
           <ModalTitle>
             {props.icon && (
               <>
-                <ModalIcon color={props.iconColour}>
+                <ModalIcon color={props.iconColor}>
                   <FontAwesomeIcon icon={props.icon} />
                 </ModalIcon>
                 <Gap size={'m'} />

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,7 +11,7 @@ export interface InfoMessage {
   text?: string
   'data-qa'?: string
   icon: IconProp
-  iconColour: IconColor
+  iconColor: IconColor
   resolve: {
     action: () => void
     label: string

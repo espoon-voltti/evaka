@@ -48,7 +48,7 @@ export const LoginErrorModal = React.memo(function LoginErrorModal(
     <InfoModal
       title={props.translations.header}
       close={onClose}
-      iconColour="red"
+      iconColor="red"
       icon={faTimes}
     >
       <P centered>{props.translations.message}</P>
