@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -43,6 +44,7 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toFeeDecisionServiceNeed
+import fi.espoo.evaka.withMockedTime
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -936,14 +938,50 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Test
     fun `confirmDrafts returns bad request when some decisions being in the future`() {
         val draftWithFutureDates = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-            .copy(validDuring = DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusYears(1)))
+            .copy(validDuring = DateRange(LocalDate.now().plusDays(2), LocalDate.now().plusYears(1)))
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(draftWithFutureDates.id))
+            .jsonBody(objectMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
             .response()
         assertEquals(400, response.statusCode)
+        assertEquals(
+            "feeDecisions.confirmation.tooFarInFuture",
+            objectMapper.readTree(response.body().asString("text/json")).get("errorCode").textValue()
+        )
+    }
+
+    @Test
+    fun `confirmDrafts when decision at last possible confirmation date exists`() {
+        val now = HelsinkiDateTime.now()
+        val draftWithFutureDates = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
+            .copy(validDuring = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusYears(1)))
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
+
+        val (_, response, _) = http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(objectMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
+            .withMockedTime(now)
+            .response()
+        assertEquals(204, response.statusCode)
+
+        asyncJobRunner.runPendingJobsSync(2)
+
+        val (_, _, result) = http.get("/decisions/${draftWithFutureDates.id}")
+            .asUser(user)
+            .responseString()
+
+        val expected = draftWithFutureDates.copy(
+            decisionNumber = 1,
+            status = FeeDecisionStatus.SENT,
+            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            documentKey = "feedecision_${draftWithFutureDates.id}_fi.pdf"
+        )
+        val actual = deserializeResult(result.get()).data
+        assertEqualEnough(expected.let(::toDetailed), actual)
+        assertEquals(now.toInstant(), actual.approvedAt)
     }
 
     @Test

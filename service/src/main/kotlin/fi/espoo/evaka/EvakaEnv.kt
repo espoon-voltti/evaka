@@ -32,6 +32,7 @@ data class EvakaEnv(
     val httpClientCertificateCheck: Boolean,
     val fiveYearsOldDaycareEnabled: Boolean,
     val mockClock: Boolean,
+    val nrOfDaysFeeDecisionCanBeSentInAdvance: Long
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -57,6 +58,7 @@ data class EvakaEnv(
                     "fi.espoo.evaka.five_years_old_daycare.enabled"
                 ) ?: true,
                 mockClock = env.lookup("evaka.clock.mock") ?: false,
+                nrOfDaysFeeDecisionCanBeSentInAdvance = env.lookup("evaka.fee_decision.days_in_advance") ?: 0
             )
         }
     }

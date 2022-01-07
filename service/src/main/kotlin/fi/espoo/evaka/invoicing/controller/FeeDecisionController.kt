@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -36,7 +37,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -106,12 +106,22 @@ class FeeDecisionController(
     }
 
     @PostMapping("/confirm")
-    fun confirmDrafts(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
+    fun confirmDrafts(
+        db: Database,
+        user: AuthenticatedUser,
+        evakaClock: EvakaClock,
+        @RequestBody feeDecisionIds: List<FeeDecisionId>
+    ): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
+                val confirmedDecisions = service.confirmDrafts(
+                    tx,
+                    user,
+                    feeDecisionIds,
+                    evakaClock.now()
+                )
                 asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
             }
         }
