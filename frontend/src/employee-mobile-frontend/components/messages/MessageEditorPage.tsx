@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowLeft } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -20,6 +19,7 @@ import {
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+import { faArrowLeft } from 'lib-icons'
 import {
   deleteAttachment,
   getAttachmentBlob,

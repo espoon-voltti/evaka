@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 import { orderBy, sortBy } from 'lodash'
 import React, {
   useCallback,
@@ -32,6 +31,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 import { getEmployees } from '../../../api/employees'
 import {
   addDaycareAclSpecialEducationTeacher,

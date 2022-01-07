@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faEuroSign } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { combine, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
@@ -12,6 +11,7 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faEuroSign } from 'lib-icons'
 import {
   createIncome,
   deleteIncome,

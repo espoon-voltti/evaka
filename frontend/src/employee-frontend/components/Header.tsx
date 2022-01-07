@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
 import { partition } from 'lodash'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import {
@@ -25,6 +24,7 @@ import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
+import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
 import { logoutUrl } from '../api/auth'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'

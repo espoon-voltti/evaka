@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowLeft } from 'lib-icons'
 import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -15,6 +14,7 @@ import { tabletMin } from 'lib-components/breakpoints'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowLeft } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 import ThreadListItem from './ThreadListItem'

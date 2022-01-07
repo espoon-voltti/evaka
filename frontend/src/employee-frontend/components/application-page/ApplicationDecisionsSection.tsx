@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ApplicationStatus } from 'lib-common/generated/enums'
@@ -15,6 +14,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Label } from 'lib-components/typography'
+import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 
 import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { useTranslation } from '../../state/i18n'

@@ -4,7 +4,6 @@
 
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 
-import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -27,6 +26,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights, Label, P } from 'lib-components/typography'
 
 import { Gap } from 'lib-components/white-space'
+import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import {
   deleteAbsenceRange,
   getFutureAbsencesByChild,

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileAlt } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
@@ -13,6 +12,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Dimmed } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faFileAlt } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 
 export default React.memo(function IncomeStatementsTable({

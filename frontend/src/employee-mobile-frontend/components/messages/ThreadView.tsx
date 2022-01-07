@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRight } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { formatDateOrTime } from 'lib-common/date'
@@ -19,6 +18,7 @@ import { fontWeights } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowRight } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from '../../state/messages'
 import TopBar from '../common/TopBar'

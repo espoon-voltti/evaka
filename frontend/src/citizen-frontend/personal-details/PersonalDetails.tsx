@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Redirect } from 'react-router'
 import styled, { useTheme } from 'styled-components'
@@ -30,6 +29,7 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { refreshRedirect } from '../auth/requireAuth'

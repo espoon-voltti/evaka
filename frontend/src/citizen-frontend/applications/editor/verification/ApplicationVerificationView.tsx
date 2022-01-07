@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faInfo } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
@@ -15,6 +14,7 @@ import { H1, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
+import { faInfo } from 'lib-icons'
 import BasicsSection from '../../../applications/editor/verification/BasicsSection'
 import UnitPreferenceSection from '../../../applications/editor/verification/UnitPreferenceSection'
 import { useTranslation } from '../../../localization'

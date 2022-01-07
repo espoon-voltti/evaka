@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
+import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 
 export const StatusIcon = styled.div`
   font-size: 15px;

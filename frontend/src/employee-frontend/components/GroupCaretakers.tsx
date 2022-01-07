@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router'
 import styled from 'styled-components'
@@ -17,6 +16,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { deleteCaretakers, getCaretakers } from '../api/caretakers'
 import StatusLabel from '../components/common/StatusLabel'

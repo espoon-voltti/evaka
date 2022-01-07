@@ -5,6 +5,16 @@
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useRef, useState } from 'react'
+import styled from 'styled-components'
+import { Failure, Result, Success } from 'lib-common/api'
+import { Attachment } from 'lib-common/api-types/attachment'
+import { UUID } from 'lib-common/types'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faExclamationTriangle,
   faFile,
@@ -16,16 +26,6 @@ import {
   faPlus,
   faTimes
 } from 'lib-icons'
-import React, { useRef, useState } from 'react'
-import styled from 'styled-components'
-import { Failure, Result, Success } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
-import { UUID } from 'lib-common/types'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { defaultMargins, Gap } from 'lib-components/white-space'
 import InlineButton from '../atoms/buttons/InlineButton'
 
 const fileUploadErrorKeys = {

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPen } from 'lib-icons'
 import React, { useCallback, useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { useHistory } from 'react-router-dom'
@@ -31,6 +30,7 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faPen } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'

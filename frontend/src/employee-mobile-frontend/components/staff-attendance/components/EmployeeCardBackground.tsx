@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { farUser } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -10,6 +9,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { farUser } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { IconBox } from '../StaffListItem'
 import { Staff } from '../staff'

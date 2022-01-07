@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamationTriangle } from 'lib-icons'
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { Attachment } from 'lib-common/api-types/attachment'
@@ -50,6 +49,7 @@ import {
   P
 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { fasExclamationTriangle } from 'lib-icons'
 import Footer from '../Footer'
 import {
   deleteAttachment,

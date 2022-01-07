@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faThermometer } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import { AbsenceType } from 'lib-common/generated/enums'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
+import { faThermometer } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {

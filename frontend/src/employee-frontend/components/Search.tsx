@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faSearch } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -21,6 +20,7 @@ import {
   SortableTh
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
+import { faSearch } from 'lib-icons'
 import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '../components/person-search/CreatePersonModal'
 import { CHILD_AGE } from '../constants'

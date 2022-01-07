@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
 import React, { Fragment, useEffect, useState, useMemo } from 'react'
 import { useHistory } from 'react-router'
 import { Prompt, useParams } from 'react-router-dom'
@@ -43,6 +42,7 @@ import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { vasuTranslations } from 'lib-customizations/employee'
+import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import QuestionInfo from '../QuestionInfo'

@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'lib-icons'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faQuestion } from 'lib-icons'
 import {
   getChildBackupCares,
   removeBackupCare

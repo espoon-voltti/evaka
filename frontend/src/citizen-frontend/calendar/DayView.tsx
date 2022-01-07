@@ -2,15 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  faCheck,
-  faChevronLeft,
-  faChevronRight,
-  faPen,
-  faPlus,
-  faTrash,
-  faUserMinus
-} from 'lib-icons'
 import { zip } from 'lodash'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -33,6 +24,15 @@ import {
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import {
+  faCheck,
+  faChevronLeft,
+  faChevronRight,
+  faPen,
+  faPlus,
+  faTrash,
+  faUserMinus
+} from 'lib-icons'
 import { useTranslation } from '../localization'
 import CalendarModal from './CalendarModal'
 import TimeRangeInput, { TimeRange, validateTimeRange } from './TimeRangeInput'

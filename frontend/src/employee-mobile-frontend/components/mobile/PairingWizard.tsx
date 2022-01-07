@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowRight } from 'lib-icons'
 import { useState } from 'react'
 import React, { Fragment, useContext, useEffect } from 'react'
 import styled from 'styled-components'
@@ -11,6 +10,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+import { faArrowRight } from 'lib-icons'
 import {
   authMobile,
   getPairingStatus,

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowLeft, farStickyNote } from 'lib-icons'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -17,6 +16,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowLeft, farStickyNote } from 'lib-icons'
 
 import { postFullDayAbsence } from '../../../api/attendances'
 import { ChildAttendanceContext } from '../../../state/child-attendance'

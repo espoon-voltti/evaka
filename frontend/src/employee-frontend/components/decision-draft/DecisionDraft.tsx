@@ -5,7 +5,6 @@
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { History } from 'history'
-import { faEnvelope } from 'lib-icons'
 import React, {
   Fragment,
   useCallback,
@@ -30,6 +29,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+import { faEnvelope } from 'lib-icons'
 import {
   getDecisionDrafts,
   getDecisionUnits,

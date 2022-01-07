@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'lib-icons'
 import * as _ from 'lodash'
 import React, { useContext, useEffect, useState } from 'react'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
@@ -13,6 +12,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
+import { faQuestion } from 'lib-icons'
 import {
   createPedagogicalDocument,
   deletePedagogicalDocument,

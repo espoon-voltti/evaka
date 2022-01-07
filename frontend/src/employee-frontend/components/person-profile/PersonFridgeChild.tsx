@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChild, faQuestion } from 'lib-icons'
 import * as _ from 'lodash'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -14,6 +13,7 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faChild, faQuestion } from 'lib-icons'
 import {
   getParentshipsByHeadOfChild,
   removeParentship,

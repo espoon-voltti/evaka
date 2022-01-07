@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { History } from 'history'
-import { faLink } from 'lib-icons'
 import React, {
   Dispatch,
   Fragment,
@@ -27,6 +26,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faLink } from 'lib-icons'
 import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import { getApplicationUnits } from '../../api/daycare'
 import Tooltip from '../../components/common/Tooltip'

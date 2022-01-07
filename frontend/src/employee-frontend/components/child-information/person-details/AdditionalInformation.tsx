@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { isLoading } from 'lib-common/api'
@@ -14,6 +13,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
+import { faPen } from 'lib-icons'
 import {
   getAdditionalInformation,
   updateAdditionalInformation

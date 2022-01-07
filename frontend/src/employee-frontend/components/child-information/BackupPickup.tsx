@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
@@ -21,6 +20,7 @@ import {
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, Label } from 'lib-components/typography'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 import {
   createBackupPickup,
   getChildBackupPickups,

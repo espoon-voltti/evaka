@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import { Prompt } from 'react-router-dom'
 import { Result } from 'lib-common/api'
@@ -16,6 +15,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faLockAlt } from 'lib-icons'
 import { isPinCodeLocked, updatePinCode } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChild } from 'lib-icons'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
@@ -11,6 +10,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { faChild } from 'lib-icons'
 import { addParentship, updateParentship } from '../../../api/parentships'
 import { getPerson } from '../../../api/person'
 import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'

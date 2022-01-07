@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faTrash } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
@@ -15,6 +14,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
+import { faTrash } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'

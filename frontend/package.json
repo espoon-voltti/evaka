@@ -222,7 +222,7 @@
       "react-hooks"
     ],
     "settings": {
-      "import/internal-regex": "^(citizen-frontend|e2e-playwright|e2e-test-common|employee-frontend|employee-mobile-frontend|lib-common|lib-components|lib-customizations|lib-icons|maintenance-page-frontend)/",
+      "import/internal-regex": "^(citizen-frontend|e2e-playwright|e2e-test-common|employee-frontend|employee-mobile-frontend|lib-common|lib-components|lib-customizations|lib-icons|maintenance-page-frontend)(/|$)",
       "react": {
         "version": "detect"
       }

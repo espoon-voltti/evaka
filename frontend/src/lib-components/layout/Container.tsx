@@ -4,9 +4,9 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { faChevronDown, faChevronUp } from 'lib-icons'
 import React, { KeyboardEvent, ReactNode } from 'react'
 import styled from 'styled-components'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 import { desktopMin } from '../breakpoints'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 

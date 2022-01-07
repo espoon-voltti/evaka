@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExternalLink } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
+import { faExternalLink } from 'lib-icons'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faExclamation } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -18,6 +17,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faExclamation } from 'lib-icons'
 import { isValidDecisionStartDate } from '../../applications/editor/validations'
 import { PdfLink } from '../../decisions/PdfLink'
 import { acceptDecision, rejectDecision } from '../../decisions/api'

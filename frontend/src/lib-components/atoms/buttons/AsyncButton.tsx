@@ -4,10 +4,10 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { faCheck, faTimes } from 'lib-icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
+import { faCheck, faTimes } from 'lib-icons'
 import { StyledButton } from './Button'
 
 export type AsyncClickCallback = (

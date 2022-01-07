@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faExclamation } from 'lib-icons'
 import React, { useContext } from 'react'
 import { errorModalZIndex } from 'lib-components/layout/z-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faExclamation } from 'lib-icons'
 import { UIContext } from '../../state/ui'
 
 function ErrorMessage() {

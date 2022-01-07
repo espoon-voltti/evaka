@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faAngleDown, faAngleUp } from 'lib-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
@@ -22,6 +21,7 @@ import { fontWeights, H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
+import { faAngleDown, faAngleUp } from 'lib-icons'
 import { useTranslation } from '../localization'
 import SearchInput from '../map/SearchInput'
 import { CareTypeOption, MapAddress, ProviderTypeOption } from './MapView'

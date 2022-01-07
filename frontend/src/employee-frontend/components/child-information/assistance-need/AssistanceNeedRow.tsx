@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'lib-icons'
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faQuestion } from 'lib-icons'
 import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
 import AssistanceNeedForm from '../../../components/child-information/assistance-need/AssistanceNeedForm'
 import LabelValueList from '../../../components/common/LabelValueList'

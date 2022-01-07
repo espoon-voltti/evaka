@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
 import { uniq } from 'lodash'
 import React, {
   useCallback,
@@ -29,6 +28,7 @@ import {
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'

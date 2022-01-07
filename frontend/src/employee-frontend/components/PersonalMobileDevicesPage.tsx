@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen, faQuestion, faTrash } from 'lib-icons'
 import React, { useCallback, useContext, useState } from 'react'
 import {
   deleteMobileDevice,
@@ -22,6 +21,7 @@ import {
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 import { getPersonalMobileDevices } from '../api/employees'
 import { useTranslation } from '../state/i18n'
 import { UIContext } from '../state/ui'

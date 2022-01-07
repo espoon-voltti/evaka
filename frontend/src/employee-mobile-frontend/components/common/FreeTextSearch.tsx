@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faTimes } from 'lib-icons'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { Child as AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowLeft, faTimes } from 'lib-icons'
 
 const SearchInputContainer = styled.div`
   height: 60px;

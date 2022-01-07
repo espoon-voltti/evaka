@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faInfo, faRedo } from 'lib-icons'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from 'styled-components'
 import { appVersion } from 'lib-common/globals'
+import { faInfo, faRedo } from 'lib-icons'
 import InlineButton from '../atoms/buttons/InlineButton'
 import Toast from './Toast'
 

@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faEuroSign } from 'lib-icons'
 import React from 'react'
 import styled from 'styled-components'
 import { formatCents } from 'lib-common/money'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { fontWeights, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faEuroSign } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import ChildrenSection from './ChildrenSection'

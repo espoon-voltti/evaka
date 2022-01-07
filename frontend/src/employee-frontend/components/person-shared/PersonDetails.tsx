@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen } from 'lib-icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Loading, Result, Success } from 'lib-common/api'
@@ -24,6 +23,7 @@ import {
   InfoButton,
   ExpandingInfoBox
 } from 'lib-components/molecules/ExpandingInfo'
+import { faPen } from 'lib-icons'
 import { patchPersonDetails, updateSsnAddingDisabled } from '../../api/person'
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'

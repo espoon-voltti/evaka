@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faCopy, faPen, faQuestion } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
@@ -23,6 +22,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { faCopy, faPen, faQuestion } from 'lib-icons'
 import { getFeeThresholds } from '../../api/finance-basics'
 import { Translations, useTranslation } from '../../state/i18n'
 import {

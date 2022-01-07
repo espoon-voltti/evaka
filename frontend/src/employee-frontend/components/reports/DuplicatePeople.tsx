@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -17,6 +16,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { colors } from 'lib-customizations/common'
+import { faQuestion } from 'lib-icons'
 import { deletePerson, mergePeople } from '../../api/person'
 import { getDuplicatePeopleReport } from '../../api/reports'
 import { CHILD_AGE } from '../../constants'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen, faTrash } from 'lib-icons'
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
@@ -10,6 +9,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
+import { faPen, faTrash } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { FeeAlteration } from '../../../types/fee-alteration'
 import FeeAlterationEditor from './FeeAlterationEditor'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faFileAlt } from 'lib-icons'
 import * as _ from 'lodash'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -14,6 +13,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
+import { faFileAlt } from 'lib-icons'
 import { getChildApplicationSummaries } from '../../api/person'
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
 import { ChildContext } from '../../state'

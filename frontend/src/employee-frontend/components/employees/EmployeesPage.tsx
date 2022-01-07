@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faSearch } from 'lib-icons'
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Paged, Result } from 'lib-common/api'
@@ -13,6 +12,7 @@ import Title from 'lib-components/atoms/Title'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
+import { faSearch } from 'lib-icons'
 import { searchEmployees } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { EmployeeUser as Employee } from '../../types/employee'

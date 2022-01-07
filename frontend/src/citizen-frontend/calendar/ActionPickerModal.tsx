@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCalendarPlus, faUserMinus } from 'lib-icons'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faCalendarPlus, faUserMinus } from 'lib-icons'
 import { useTranslation } from '../localization'
 
 interface Props {

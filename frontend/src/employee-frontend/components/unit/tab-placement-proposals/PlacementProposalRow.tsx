@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faFileAlt } from 'lib-icons'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -22,6 +21,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { faFileAlt } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../../constants'
 import { useTranslation } from '../../../state/i18n'
 import {

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChevronLeft, faExclamation } from 'lib-icons'
 import React, { useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { UUID } from 'lib-common/types'
@@ -14,6 +13,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faChevronLeft, faExclamation } from 'lib-icons'
 import Footer from '../../Footer'
 import { renderResult } from '../../async-rendering'
 import { getApplicationDecisions } from '../../decisions/api'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowRight } from 'lib-icons'
 import _ from 'lodash'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -16,6 +15,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags, Translations } from 'lib-customizations/employee'
+import { faArrowRight } from 'lib-icons'
 import { MissingGroupPlacement } from '../../../api/unit'
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
 import { useTranslation } from '../../../state/i18n'

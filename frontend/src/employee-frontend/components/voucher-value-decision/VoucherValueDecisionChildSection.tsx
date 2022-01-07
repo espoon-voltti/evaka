@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faUserFriends } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Detailed as PersonDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { faUserFriends } from 'lib-icons'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import {

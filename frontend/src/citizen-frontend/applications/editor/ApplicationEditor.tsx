@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
@@ -23,6 +22,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ActionRow from 'lib-components/layout/ActionRow'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 import Footer from '../../Footer'
 import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
 import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'

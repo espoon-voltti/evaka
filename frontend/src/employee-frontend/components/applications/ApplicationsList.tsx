@@ -3,14 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faCheck,
-  faCommentAlt,
-  faPaperclip,
-  fasCommentAltLines,
-  faTimes,
-  faTrash
-} from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { Paged } from 'lib-common/api'
@@ -42,6 +34,14 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, H1, Italic, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
+import {
+  faCheck,
+  faCommentAlt,
+  faPaperclip,
+  fasCommentAltLines,
+  faTimes,
+  faTrash
+} from 'lib-icons'
 import { updateServiceWorkerNote } from '../../api/applications'
 import ActionBar from '../../components/applications/ActionBar'
 import ApplicationActions from '../../components/applications/ApplicationActions'

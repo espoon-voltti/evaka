@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChild, faComments, faPen } from 'lib-icons'
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
@@ -10,6 +9,7 @@ import { Child } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { faChild, faComments, faPen } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { UnitContext } from '../../../state/unit'
 import { renderResult } from '../../async-rendering'
