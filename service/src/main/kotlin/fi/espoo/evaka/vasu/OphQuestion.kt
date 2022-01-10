@@ -611,30 +611,30 @@ fun getDefaultLeopsContent() = VasuContent(
                     name = "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla:",
                     options = listOf(
                         QuestionOption(
-                            key = "Tulevaan esiopetusryhmään",
+                            key = "tiedonsaajataho_tuleva_esiopetusryhma",
                             name = "Tulevaan esiopetusryhmään"
                         ),
                         QuestionOption(
-                            key = "Neuvolaan",
+                            key = "tiedonsaajataho_neuvola",
                             name = "Neuvolaan"
                         ),
                         QuestionOption(
-                            key = "Lasten terapiapalveluihin",
+                            key = "tiedonsaajataho_terapiapalveluihin",
                             name = "Lasten terapiapalveluihin"
                         ),
                         QuestionOption(
-                            key = "Erikoissairaanhoitoon",
+                            key = "tiedonsaajataho_erikoissairaanhoitoon",
                             name = "Erikoissairaanhoitoon"
+                        ),
+                        QuestionOption(
+                            key = "tiedonsaajataho_muualle",
+                            name = "Muualle, minne?",
+                            textAnswer = true
                         )
                     ),
                     minSelections = 0,
                     maxSelections = null,
                     value = emptyList()
-                ),
-                VasuQuestion.TextQuestion(
-                    name = "Muualle, minne?",
-                    multiline = false,
-                    value = ""
                 ),
                 VasuQuestion.MultiFieldList(
                     name = "Päiväykset ja allekirjoitukset",

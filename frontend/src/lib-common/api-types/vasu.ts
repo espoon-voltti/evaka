@@ -44,11 +44,17 @@ export interface MultiSelectQuestion extends VasuQuestionCommon {
   minSelections: number
   maxSelections: number | null
   value: string[]
+  textValue?: TextValueMap
 }
 
 export interface QuestionOption {
   key: string
   name: string
+  textAnswer?: boolean
+}
+
+export interface TextValueMap {
+  [key: string]: string
 }
 
 export interface MultiFieldQuestion extends VasuQuestionCommon {

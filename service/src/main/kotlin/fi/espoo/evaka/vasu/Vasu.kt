@@ -280,10 +280,11 @@ sealed class VasuQuestion(
         val options: List<QuestionOption>,
         val minSelections: Int,
         val maxSelections: Int?,
-        val value: List<String>
+        val value: List<String>,
+        val textValue: Map<String, String>? = emptyMap()
     ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is MultiSelectQuestion && question.copy(value = this.value) == this
+            return question is MultiSelectQuestion && question.copy(value = this.value, textValue = this.textValue) == this
         }
     }
 
@@ -362,7 +363,8 @@ sealed class VasuQuestion(
 
 data class QuestionOption(
     val key: String,
-    val name: String
+    val name: String,
+    val textAnswer: Boolean = false,
 )
 
 data class Field(val name: String)

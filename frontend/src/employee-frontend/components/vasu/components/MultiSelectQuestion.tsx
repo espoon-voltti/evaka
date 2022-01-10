@@ -5,6 +5,7 @@
 import React from 'react'
 import { MultiSelectQuestion, QuestionOption } from 'lib-common/api-types/vasu'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -15,13 +16,13 @@ import { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
   selectedValues: string[]
-  onChange?: (option: QuestionOption, checked: boolean) => void
+  onChange?: (option: QuestionOption, value: boolean | string) => void
   translations: VasuTranslations
 }
 
 export function MultiSelectQuestion({
   onChange,
-  question: { name, options, info },
+  question: { name, options, info, textValue },
   questionNumber,
   selectedValues,
   translations
@@ -39,13 +40,23 @@ export function MultiSelectQuestion({
           <FixedSpaceColumn>
             {options.map((option) => {
               return (
-                <Checkbox
-                  key={option.key}
-                  checked={selectedValues.includes(option.key)}
-                  label={option.name}
-                  onChange={(checked) => onChange(option, checked)}
-                  data-qa="multi-select-question-option"
-                />
+                <React.Fragment key={option.key}>
+                  <Checkbox
+                    key={option.key}
+                    checked={selectedValues.includes(option.key)}
+                    label={option.name}
+                    onChange={(checked) => onChange(option, checked)}
+                    data-qa="multi-select-question-option"
+                  />
+                  {option.textAnswer && textValue && (
+                    <InputField
+                      value={textValue[option.key] || ''}
+                      onChange={(text) => onChange(option, text)}
+                      placeholder={option.name}
+                      data-qa="option-text-input"
+                    />
+                  )}
+                </React.Fragment>
               )
             })}
           </FixedSpaceColumn>
@@ -54,7 +65,11 @@ export function MultiSelectQuestion({
         <ValueOrNoRecord
           text={options
             .filter((option) => selectedValues.includes(option.key))
-            .map((o) => o.name)
+            .map((o) =>
+              textValue && textValue[o.key]
+                ? `${o.name} (${textValue[o.key]})`
+                : o.name
+            )
             .join(', ')}
           translations={translations}
         />
