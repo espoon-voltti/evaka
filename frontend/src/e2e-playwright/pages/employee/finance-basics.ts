@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilTrue } from 'e2e-playwright/utils'
 import { FeeThresholds } from 'lib-common/api-types/finance'
-import { Page, TextInput } from '../../utils/page'
+import { AsyncButton, Page, TextInput } from '../../utils/page'
 
 export default class FinanceBasicsPage {
   constructor(private readonly page: Page) {}
@@ -107,7 +107,7 @@ export default class FinanceBasicsPage {
       siblingDiscount2Plus: new TextInput(
         this.page.find('[data-qa="sibling-discount-2-plus"]')
       ),
-      saveButton: this.page.find('[data-qa="save"]'),
+      saveButton: new AsyncButton(this.page.find('[data-qa="save"]')),
       fillInThresholds: async (feeThresholds: FeeThresholds) => {
         await this.feesSection.editor.validFromInput.fill(
           feeThresholds.validDuring.start.format()
@@ -144,10 +144,7 @@ export default class FinanceBasicsPage {
         )
       },
       assertSaveIsDisabled: async () => {
-        await waitUntilEqual(
-          () => this.feesSection.editor.saveButton.getAttribute('disabled'),
-          ''
-        )
+        await waitUntilTrue(() => this.feesSection.editor.saveButton.disabled)
       },
       save: async (retroactive: boolean) => {
         await this.feesSection.editor.saveButton.click()
@@ -156,10 +153,7 @@ export default class FinanceBasicsPage {
           await this.page.find('[data-qa="modal-okBtn"]').click()
         }
 
-        await waitUntilEqual(
-          () => this.feesSection.editor.saveButton.getAttribute('data-status'),
-          'success'
-        )
+        await this.feesSection.editor.saveButton.waitUntilHidden()
         await this.feesSection.spinner.waitUntilVisible()
       }
     }

@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { useEffect, useRef, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { faCheck, faTimes } from 'lib-icons'
 import { StyledButton } from './Button'
 
@@ -90,10 +91,10 @@ export default React.memo(function AsyncButton({
 
   useEffect(() => {
     const runOnSuccess = showSuccess
-      ? setTimeout(() => onSuccessRef.current(), 500)
+      ? setTimeout(() => onSuccessRef.current(), isAutomatedTest ? 10 : 500)
       : undefined
     const clearShowSuccess = showSuccess
-      ? setTimeout(() => setShowSuccess(false), 2000)
+      ? setTimeout(() => setShowSuccess(false), isAutomatedTest ? 25 : 2000)
       : undefined
 
     return () => {
@@ -104,7 +105,7 @@ export default React.memo(function AsyncButton({
 
   useEffect(() => {
     const clearShowFailure = showFailure
-      ? setTimeout(() => setShowFailure(false), 2000)
+      ? setTimeout(() => setShowFailure(false), isAutomatedTest ? 25 : 2000)
       : undefined
 
     return () => {
