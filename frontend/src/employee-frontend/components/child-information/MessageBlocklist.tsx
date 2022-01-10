@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
-import { isLoading } from 'lib-common/api'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
+import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -27,27 +27,34 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
 
   const { setErrorMessage } = useContext(UIContext)
   const { permittedActions } = useContext(ChildContext)
-  const [recipients, loadData] = useApiState(() => getChildRecipients(id), [id])
   const [open, setOpen] = useState(startOpen)
+  const [recipients, loadData] = useApiState(() => getChildRecipients(id), [id])
+  const [saving, setSaving] = useState(false)
 
-  const onChange = async (personId: UUID, checked: boolean) => {
-    const res = await updateChildRecipient(id, personId, !checked)
-    if (res.isFailure) {
-      setErrorMessage({
-        type: 'error',
-        title: i18n.common.error.unknown,
-        text: i18n.common.error.saveFailed,
-        resolveLabel: i18n.common.ok
-      })
-    }
-    loadData()
-  }
+  const allowUpdate = useMemo(
+    () => permittedActions.has('UPDATE_CHILD_RECIPIENT'),
+    [permittedActions]
+  )
+  const onChange = useCallback(
+    async (personId: UUID, checked: boolean) => {
+      setSaving(true)
+      const res = await updateChildRecipient(id, personId, !checked)
+      if (res.isFailure) {
+        setErrorMessage({
+          type: 'error',
+          title: i18n.common.error.unknown,
+          text: i18n.common.error.saveFailed,
+          resolveLabel: i18n.common.ok
+        })
+      }
+      setSaving(false)
+      loadData()
+    },
+    [i18n, id, loadData, setErrorMessage]
+  )
 
   return (
-    <div
-      data-qa="child-message-blocklist"
-      data-isloading={isLoading(recipients)}
-    >
+    <div data-qa="child-message-blocklist">
       <CollapsibleContentArea
         title={<H2 noMargin>{i18n.childInformation.messaging.title}</H2>}
         open={open}
@@ -67,29 +74,50 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
             </Thead>
             <Tbody>
               {recipients.map((recipient) => (
-                <Tr
+                <RecipientRow
                   key={recipient.personId}
-                  data-qa={`recipient-${recipient.personId}`}
-                >
-                  <Td>{formatPersonName(recipient, i18n, true)}</Td>
-                  <Td>
-                    <Checkbox
-                      label={formatPersonName(recipient, i18n, true)}
-                      hiddenLabel
-                      checked={!recipient.blocklisted}
-                      data-qa="blocklist-checkbox"
-                      disabled={!permittedActions.has('UPDATE_CHILD_RECIPIENT')}
-                      onChange={(checked) =>
-                        onChange(recipient.personId, checked)
-                      }
-                    />
-                  </Td>
-                </Tr>
+                  recipient={recipient}
+                  disabled={!allowUpdate || saving}
+                  onChange={onChange}
+                />
               ))}
             </Tbody>
           </Table>
         ))}
       </CollapsibleContentArea>
     </div>
+  )
+})
+
+const RecipientRow = React.memo(function RecipientRow({
+  recipient,
+  disabled,
+  onChange
+}: {
+  recipient: Recipient
+  disabled: boolean
+  onChange: (personId: UUID, checked: boolean) => void
+}) {
+  const { i18n } = useTranslation()
+
+  const handleChange = useCallback(
+    (checked: boolean) => onChange(recipient.personId, checked),
+    [onChange, recipient.personId]
+  )
+
+  return (
+    <Tr data-qa={`recipient-${recipient.personId}`}>
+      <Td>{formatPersonName(recipient, i18n, true)}</Td>
+      <Td>
+        <Checkbox
+          label={formatPersonName(recipient, i18n, true)}
+          hiddenLabel
+          checked={!recipient.blocklisted}
+          data-qa="blocklist-checkbox"
+          disabled={disabled}
+          onChange={handleChange}
+        />
+      </Td>
+    </Tr>
   )
 })
