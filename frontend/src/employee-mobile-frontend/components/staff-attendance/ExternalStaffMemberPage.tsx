@@ -54,7 +54,7 @@ export default React.memo(function ExternalStaffMemberPage() {
               <FixedSpaceColumn>
                 <TimeInfo>
                   <Label>{i18n.attendances.arrivalTime}</Label>{' '}
-                  {formatTime(ext.arrived)}
+                  <span data-qa="arrival-time">{formatTime(ext.arrived)}</span>
                 </TimeInfo>
 
                 <TimeInfo>

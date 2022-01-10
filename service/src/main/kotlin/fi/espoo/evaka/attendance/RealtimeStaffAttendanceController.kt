@@ -78,13 +78,17 @@ class RealtimeStaffAttendanceController(
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
 
+        val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
+        val nowHDT = HelsinkiDateTime.now()
+        val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
+
         try {
             db.connect { dbc ->
                 dbc.transaction {
                     it.markStaffArrival(
                         employeeId = body.employeeId,
                         groupId = body.groupId,
-                        arrivalTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                        arrivalTime = arrivedTimeOrDefault
                     )
                 }
             }
@@ -106,6 +110,10 @@ class RealtimeStaffAttendanceController(
     ) {
         Audit.StaffAttendanceDepartureCreate.log()
 
+        val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
+        val nowHDT = HelsinkiDateTime.now()
+        val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
+
         db.connect { dbc ->
             // todo: convert to action auth
             @Suppress("DEPRECATION")
@@ -118,7 +126,7 @@ class RealtimeStaffAttendanceController(
             dbc.transaction {
                 it.markStaffDeparture(
                     attendanceId = attendanceId,
-                    departureTime = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                    departureTime = arrivedTimeOrDefault
                 )
             }
         }
@@ -139,12 +147,17 @@ class RealtimeStaffAttendanceController(
         // todo: convert to action auth
         @Suppress("DEPRECATION")
         acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
+
+        val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.arrived)
+        val nowHDT = HelsinkiDateTime.now()
+        val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
+
         return db.connect { dbc ->
             dbc.transaction {
                 it.markExternalStaffArrival(
                     ExternalStaffArrival(
                         name = body.name,
-                        groupId = body.groupId, arrived = HelsinkiDateTime.now().withTime(minOf(body.arrived, LocalTime.now()))
+                        groupId = body.groupId, arrived = arrivedTimeOrDefault
                     )
                 )
             }
@@ -170,11 +183,15 @@ class RealtimeStaffAttendanceController(
             @Suppress("DEPRECATION")
             acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
 
+            val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
+            val nowHDT = HelsinkiDateTime.now()
+            val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
+
             dbc.transaction {
                 it.markExternalStaffDeparture(
                     ExternalStaffDeparture(
                         id = body.attendanceId,
-                        departed = HelsinkiDateTime.now().withTime(minOf(body.time, LocalTime.now()))
+                        departed = arrivedTimeOrDefault
                     )
                 )
             }
