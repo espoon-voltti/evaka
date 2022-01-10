@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { Absence } from 'lib-common/api-types/child/Absences'
 import { AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import Loader from 'lib-components/atoms/Loader'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
@@ -17,10 +17,11 @@ import { getAbsencesByChild } from '../../api/invoicing'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'
 import Tooltip from '../../components/common/Tooltip'
-import { useTranslation } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { AbsenceTypes, billableCareTypes } from '../../types/absence'
 import { formatName } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 const Section = styled.section``
 
@@ -58,75 +59,24 @@ interface Props {
   date: LocalDate
 }
 
-export default function AbsencesModal({ child, date }: Props) {
+export default React.memo(function AbsencesModal({ child, date }: Props) {
   const { i18n } = useTranslation()
-  const [loading, setLoading] = useState<boolean>(true)
-  const [absences, setAbsences] = useState<Absence[]>([])
   const { clearUiMode } = useContext(UIContext)
   const [selectedDate, setSelectedDate] = useState<LocalDate>(date)
-  const [failure, setFailure] = useState<boolean>(false)
-
-  useEffect(() => {
-    void getAbsencesByChild(child.id, {
-      year: selectedDate.getYear(),
-      month: selectedDate.getMonth()
-    }).then((res) => {
-      if (res.isSuccess) {
-        setAbsences(
-          Object.values(res.value)
-            .filter((elem: Absence[]) => elem.length > 0)
+  const [absences] = useApiState(
+    () =>
+      getAbsencesByChild(child.id, {
+        year: selectedDate.getYear(),
+        month: selectedDate.getMonth()
+      }).then((res) =>
+        res.map((obj) =>
+          Object.values(obj)
+            .filter((elem) => elem.length > 0)
             .flat()
         )
-        setFailure(false)
-        setTimeout(() => {
-          setLoading(false)
-        }, 500)
-      } else if (res.isFailure) {
-        setFailure(true)
-        setTimeout(() => {
-          setLoading(false)
-        }, 500)
-      }
-    })
-  }, [child.id, selectedDate])
-
-  function calculateAbsences(
-    absences: Absence[],
-    absenceType: AbsenceType,
-    type: 'free' | 'paid'
-  ) {
-    const absencesListSize = absences
-      .filter((abs: Absence) => abs.absenceType === absenceType)
-      .filter((abs: Absence) => {
-        return type === 'paid'
-          ? billableCareTypes.includes(abs.careType)
-          : !billableCareTypes.includes(abs.careType)
-      }).length
-    if (absencesListSize > 0) {
-      return absencesListSize === 1
-        ? `${absencesListSize} ${i18n.common.day}`
-        : `${absencesListSize} ${i18n.common.days}`
-    } else {
-      return ``
-    }
-  }
-
-  function createTooltipText(absenceType: AbsenceType, type: 'free' | 'paid') {
-    const absencesList = absences
-      .filter((abs: Absence) => abs.absenceType === absenceType)
-      .filter((abs: Absence) => {
-        return type === 'paid'
-          ? billableCareTypes.includes(abs.careType)
-          : !billableCareTypes.includes(abs.careType)
-      })
-      .map(
-        (abs: Absence) =>
-          `${
-            i18n.datePicker.weekdaysShort[abs.date.getIsoDayOfWeek() - 1]
-          } ${abs.date.format()}`
-      )
-    return absencesList.join('<br />')
-  }
+      ),
+    [child.id, selectedDate]
+  )
 
   return (
     <InfoModal
@@ -135,9 +85,7 @@ export default function AbsencesModal({ child, date }: Props) {
       icon={faAbacus}
       close={() => clearUiMode()}
     >
-      {loading && <Loader />}
-      {failure && <div>{i18n.common.loadingFailed}</div>}
-      {!loading && child && (
+      {renderResult(absences, (absences) => (
         <Section>
           <CustomTitle size={4}>
             {formatName(child.firstName, child.lastName, i18n)}
@@ -166,23 +114,33 @@ export default function AbsencesModal({ child, date }: Props) {
                   <TableData>
                     <Tooltip
                       tooltipId={`tooltip_free-${absenceType}`}
-                      tooltipText={createTooltipText(absenceType, 'free')}
+                      tooltipText={createTooltipText(
+                        absences,
+                        absenceType,
+                        'free',
+                        i18n
+                      )}
                       place="left"
                       className="absence-tooltip"
                       delayShow={1}
                     >
-                      {calculateAbsences(absences, absenceType, 'free')}
+                      {calculateAbsences(absences, absenceType, 'free', i18n)}
                     </Tooltip>
                   </TableData>
                   <TableData>
                     <Tooltip
                       tooltipId={`tooltip_paid-${absenceType}`}
-                      tooltipText={createTooltipText(absenceType, 'paid')}
+                      tooltipText={createTooltipText(
+                        absences,
+                        absenceType,
+                        'paid',
+                        i18n
+                      )}
                       place="right"
                       className="absence-tooltip"
                       delayShow={1}
                     >
-                      {calculateAbsences(absences, absenceType, 'paid')}
+                      {calculateAbsences(absences, absenceType, 'paid', i18n)}
                     </Tooltip>
                   </TableData>
                 </tr>
@@ -190,7 +148,51 @@ export default function AbsencesModal({ child, date }: Props) {
             </tbody>
           </Table>
         </Section>
-      )}
+      ))}
     </InfoModal>
   )
+})
+
+function calculateAbsences(
+  absences: Absence[],
+  absenceType: AbsenceType,
+  type: 'free' | 'paid',
+  i18n: Translations
+) {
+  const absencesListSize = absences
+    .filter((abs: Absence) => abs.absenceType === absenceType)
+    .filter((abs: Absence) => {
+      return type === 'paid'
+        ? billableCareTypes.includes(abs.careType)
+        : !billableCareTypes.includes(abs.careType)
+    }).length
+  if (absencesListSize > 0) {
+    return absencesListSize === 1
+      ? `${absencesListSize} ${i18n.common.day}`
+      : `${absencesListSize} ${i18n.common.days}`
+  } else {
+    return ``
+  }
+}
+
+function createTooltipText(
+  absences: Absence[],
+  absenceType: AbsenceType,
+  type: 'free' | 'paid',
+  i18n: Translations
+) {
+  const absencesList = absences
+    .filter((abs: Absence) => abs.absenceType === absenceType)
+    .filter((abs: Absence) => {
+      return type === 'paid'
+        ? billableCareTypes.includes(abs.careType)
+        : !billableCareTypes.includes(abs.careType)
+    })
+    .map(
+      (abs: Absence) =>
+        `${
+          i18n.datePicker.weekdaysShort[abs.date.getIsoDayOfWeek() - 1]
+        } ${abs.date.format()}`
+    )
+  return absencesList.join('<br />')
 }
