@@ -60,7 +60,6 @@ export const StyledInput = styled.input<StyledInputProps>`
 
   &::placeholder {
     color: ${({ theme: { colors } }) => colors.greyscale.dark};
-    font-size: 15px;
     font-family: 'Open Sans', 'Arial', sans-serif;
   }
 
@@ -121,14 +120,13 @@ const InputIcon = styled.div`
 
 export const InputFieldUnderRow = styled.div`
   height: 16px;
-  padding: 0 12px;
   margin-top: ${defaultMargins.xxs};
   margin-bottom: -20px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 
-  font-size: 12px;
+  font-size: 1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -141,7 +139,7 @@ export const InputFieldUnderRow = styled.div`
   }
 
   &.warning {
-    color: ${({ theme: { colors } }) => colors.accents.warningOrange};
+    color: ${({ theme: { colors } }) => colors.accents.orangeDark};
   }
 `
 

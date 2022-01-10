@@ -156,8 +156,8 @@ const StyledTextArea = styled(TextareaAutosize)`
   }
 
   &.success {
-    border-bottom: 2px solid
-      ${({ theme: { colors } }) => colors.accents.successGreen};
+    border-bottom-color: ${({ theme: { colors } }) =>
+      colors.accents.successGreen};
 
     &:focus {
       border-color: ${({ theme: { colors } }) => colors.accents.successGreen};
@@ -165,8 +165,8 @@ const StyledTextArea = styled(TextareaAutosize)`
   }
 
   &.warning {
-    border-bottom: 2px solid
-      ${({ theme: { colors } }) => colors.accents.warningOrange};
+    border-bottom-color: ${({ theme: { colors } }) =>
+      colors.accents.warningOrange};
 
     &:focus {
       border-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
