@@ -11,7 +11,9 @@ export default class FinanceBasicsPage {
 
   readonly feesSection = {
     root: this.page.find('[data-qa="fees-section"]'),
-    spinner: this.page.find('[data-qa="fees-section-spinner"]'),
+    rootLoaded: this.page.find(
+      '[data-qa="fees-section"][data-isloading="false"]'
+    ),
     createFeeThresholdsButton: this.page.find(
       '[data-qa="create-new-fee-thresholds"]'
     ),
@@ -154,7 +156,7 @@ export default class FinanceBasicsPage {
         }
 
         await this.feesSection.editor.saveButton.waitUntilHidden()
-        await this.feesSection.spinner.waitUntilVisible()
+        await this.feesSection.rootLoaded.waitUntilVisible()
       }
     }
   }
