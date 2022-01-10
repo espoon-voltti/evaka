@@ -24,7 +24,7 @@ import InvoiceHeadOfFamilySection from './InvoiceHeadOfFamilySection'
 import InvoiceRowsSection from './InvoiceRowsSection'
 import Sum from './Sum'
 
-const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
+export default React.memo(function InvoiceDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const { i18n } = useTranslation()
   const [invoice, setInvoice] = useState<Result<InvoiceDetailed>>(Loading.of())
@@ -94,5 +94,3 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
     </div>
   )
 })
-
-export default InvoiceDetailsPage
