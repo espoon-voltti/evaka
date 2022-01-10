@@ -151,7 +151,7 @@ describe('New staff attendance page', () => {
     await staffAttendancePage.clickAddNewExternalMemberButton()
 
     await staffAttendancePage.setArrivedInfo(
-      '09:20',
+      '03:20',
       'Nomen Estomen',
       daycareGroup2Fixture.name
     )

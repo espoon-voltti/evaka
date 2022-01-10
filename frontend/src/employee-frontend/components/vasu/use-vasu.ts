@@ -7,15 +7,15 @@ import {
   SetStateAction,
   useCallback,
   useEffect,
-  useState,
-  useMemo
+  useMemo,
+  useState
 } from 'react'
 import { Result } from 'lib-common/api'
 import {
   Followup,
   FollowupEntry,
-  PermittedFollowupActions,
-  GetVasuDocumentResponse
+  GetVasuDocumentResponse,
+  PermittedFollowupActions
 } from 'lib-common/api-types/vasu'
 import {
   ChildLanguage,
@@ -36,10 +36,12 @@ import {
 
 type State =
   | 'loading'
+  | 'loading-dirty'
   | 'loading-error'
   | 'clean'
   | 'dirty'
   | 'saving'
+  | 'saving-dirty'
   | 'save-error'
 
 export interface VasuStatus {
@@ -83,11 +85,15 @@ export function useVasu(id: string): Vasu {
         loading: () => null,
         failure: () => setStatus({ state: 'loading-error' }),
         success: ({ vasu: { content, ...meta }, permittedFollowupActions }) => {
-          setStatus({ state: 'clean' })
           setVasu(meta)
           setContent(content)
           setChildLanguage(meta.basics.childLanguage)
           setPermittedFollowupActions(permittedFollowupActions)
+          setStatus((prev) =>
+            prev.state === 'loading-dirty'
+              ? { ...prev, state: 'dirty' }
+              : { state: 'clean' }
+          )
         }
       })
     },
@@ -102,15 +108,15 @@ export function useVasu(id: string): Vasu {
     [id, handleVasuDocLoaded]
   )
 
-  const handleSaveResult = useCallback(
-    (res: Result<unknown>) =>
-      res.mapAll({
-        loading: () => null,
-        failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
-        success: () => setStatus({ state: 'clean', savedAt: new Date() })
-      }),
-    []
-  )
+  const handleSaveResult = useCallback((res: Result<unknown>) => {
+    res.mapAll({
+      loading: () => null,
+      failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
+      success: () => {
+        setStatus({ state: 'clean', savedAt: new Date() })
+      }
+    })
+  }, [])
   const save = useRestApi(putVasuDocument, handleSaveResult)
   const saveNow = useCallback(
     (params: PutVasuDocumentParams) => {
@@ -126,23 +132,17 @@ export function useVasu(id: string): Vasu {
       res.mapAll({
         loading: () => null,
         failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
-        success: () => {
-          if (status.state === 'dirty') {
-            debouncedSave({ documentId: id, content, childLanguage })
-          } else {
-            setStatus({ state: 'loading' })
-            void getVasuDocument(id).then(handleVasuDocLoaded)
-          }
-        }
+        success: () =>
+          setStatus((prev) => {
+            if (prev.state === 'saving-dirty') {
+              return { ...prev, state: 'dirty' }
+            } else {
+              void getVasuDocument(id).then(handleVasuDocLoaded)
+              return { state: 'loading' }
+            }
+          })
       }),
-    [
-      status.state,
-      id,
-      handleVasuDocLoaded,
-      debouncedSave,
-      content,
-      childLanguage
-    ]
+    [id, handleVasuDocLoaded]
   )
   const editFollowup = useRestApi(
     editFollowupEntry,
@@ -179,20 +179,34 @@ export function useVasu(id: string): Vasu {
     [content, permittedFollowupActions]
   )
 
+  const setDirty = useCallback(
+    () =>
+      setStatus((prev) => {
+        const state =
+          prev.state === 'loading'
+            ? 'loading-dirty'
+            : prev.state === 'saving'
+            ? 'saving-dirty'
+            : 'dirty'
+        return { ...prev, state }
+      }),
+    []
+  )
+
   const setContentCallback = useCallback(
     (draft: SetStateAction<VasuContent>) => {
       setContent(draft)
-      setStatus((status) => ({ ...status, state: 'dirty' }))
+      setDirty()
     },
-    []
+    [setDirty]
   )
 
   const setChildLanguageCallback = useCallback(
     (childLanguage: ChildLanguage) => {
       setChildLanguage(childLanguage)
-      setStatus((status) => ({ ...status, state: 'dirty' }))
+      setDirty()
     },
-    []
+    [setDirty]
   )
 
   const translations = useMemo(
