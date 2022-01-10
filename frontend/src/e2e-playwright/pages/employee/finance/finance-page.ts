@@ -84,7 +84,7 @@ export class FeeDecisionsPage {
 
   async sendFeeDecisions() {
     await this.#sendFeeDecisionsButton.click()
-    await this.#sendFeeDecisionsButton.waitUntilSuccessful()
+    await this.#sendFeeDecisionsButton.waitUntilIdle()
     await runPendingAsyncJobs()
   }
 
@@ -176,7 +176,7 @@ export class ValueDecisionsPage {
 
   async sendValueDecisions() {
     await this.#sendValueDecisionsButton.click()
-    await this.#sendValueDecisionsButton.waitUntilSuccessful()
+    await this.#sendValueDecisionsButton.waitUntilIdle()
     await runPendingAsyncJobs()
   }
 
@@ -283,7 +283,7 @@ export class InvoicesPage {
     await this.#openSendInvoicesDialogButton.click()
     await this.#sendInvoicesDialog.waitUntilVisible()
     await this.#sendInvoicesButton.click()
-    await this.#sendInvoicesButton.waitUntilSuccessful()
+    await this.#sendInvoicesButton.waitUntilHidden()
   }
 
   async showSentInvoices() {
@@ -336,13 +336,13 @@ export class InvoicesPage {
     await invoiceRow.unitPriceInput.fill('')
     await invoiceRow.unitPriceInput.type(this.formatFinnishDecimal(unitPrice))
     await this.#saveChangesButton.click()
-    await this.#saveChangesButton.waitUntilSuccessful()
+    await this.#saveChangesButton.waitUntilIdle()
   }
 
   async deleteInvoiceRow(index: number) {
     await this.#invoiceRow(index).deleteRowButton.click()
     await this.#saveChangesButton.click()
-    await this.#saveChangesButton.waitUntilSuccessful()
+    await this.#saveChangesButton.waitUntilIdle()
   }
 
   async assertInvoiceTotal(total: number) {
@@ -360,7 +360,7 @@ export class InvoicesPage {
 
   async markInvoiceSent() {
     await this.#markInvoiceSentButton.click()
-    await this.#markInvoiceSentButton.waitUntilSuccessful()
+    await this.#markInvoiceSentButton.waitUntilHidden()
   }
 
   private formatFinnishDecimal(number: number) {

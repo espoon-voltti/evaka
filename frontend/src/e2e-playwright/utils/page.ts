@@ -262,8 +262,8 @@ export class AsyncButton extends Element {
     return this.getAttribute('data-status')
   }
 
-  async waitUntilSuccessful() {
-    await waitUntilEqual(() => this.status(), 'success')
+  async waitUntilIdle() {
+    await waitUntilEqual(() => this.status(), '')
   }
 }
 

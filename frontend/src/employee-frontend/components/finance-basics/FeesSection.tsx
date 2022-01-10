@@ -2,18 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Loading, Result } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import Spinner from 'lib-components/atoms/state/Spinner'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { Table, Tbody, Th, Thead, Td, Tr } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -25,12 +23,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faCopy, faPen, faQuestion } from 'lib-icons'
 import { getFeeThresholds } from '../../api/finance-basics'
 import { Translations, useTranslation } from '../../state/i18n'
-import {
-  familySizes,
-  FeeThresholds,
-  FeeThresholdsWithId
-} from '../../types/finance-basics'
-import { UnwrapResult } from '../async-rendering'
+import { familySizes, FeeThresholds } from '../../types/finance-basics'
+import { renderResult } from '../async-rendering'
 import StatusLabel from '../common/StatusLabel'
 import FeeThresholdsEditor from './FeeThresholdsEditor'
 
@@ -40,11 +34,7 @@ export default React.memo(function FeesSection() {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => setOpen((isOpen) => !isOpen), [setOpen])
 
-  const [data, setData] = useState<Result<FeeThresholdsWithId[]>>(Loading.of())
-  const loadData = useRestApi(getFeeThresholds, setData)
-  useEffect(() => {
-    void loadData()
-  }, [loadData])
+  const [data, loadData] = useApiState(() => getFeeThresholds(), [])
 
   const [modal, setModal] = useState<{
     type: 'editRetroactive' | 'saveRetroactive'
@@ -119,6 +109,7 @@ export default React.memo(function FeesSection() {
       open={open}
       toggleOpen={toggleOpen}
       data-qa="fees-section"
+      data-isloading={isLoading(data)}
     >
       <AddButtonRow
         onClick={createNewThresholds}
@@ -137,42 +128,36 @@ export default React.memo(function FeesSection() {
           existingThresholds={data}
         />
       ) : null}
-      <UnwrapResult
-        result={data}
-        loading={() => <Spinner data-qa="fees-section-spinner" />}
-        failure={() => <ErrorSegment title={i18n.common.error.unknown} />}
-      >
-        {(feeThresholdsList) => (
-          <>
-            {feeThresholdsList.map((feeThresholds, index) =>
-              editorState.editing === feeThresholds.id ? (
-                <FeeThresholdsEditor
-                  key={feeThresholds.id}
-                  i18n={i18n}
-                  id={feeThresholds.id}
-                  initialState={editorState.form}
-                  close={closeEditor}
-                  reloadData={loadData}
-                  toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
-                  existingThresholds={data}
-                />
-              ) : (
-                <FeeThresholdsItem
-                  key={feeThresholds.id}
-                  i18n={i18n}
-                  id={feeThresholds.id}
-                  feeThresholds={feeThresholds.thresholds}
-                  copyThresholds={copyThresholds}
-                  editThresholds={editThresholds}
-                  editing={!!editorState.editing}
-                  toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
-                  data-qa={`fee-thresholds-item-${index}`}
-                />
-              )
-            )}
-          </>
-        )}
-      </UnwrapResult>
+      {renderResult(data, (feeThresholdsList) => (
+        <>
+          {feeThresholdsList.map((feeThresholds, index) =>
+            editorState.editing === feeThresholds.id ? (
+              <FeeThresholdsEditor
+                key={feeThresholds.id}
+                i18n={i18n}
+                id={feeThresholds.id}
+                initialState={editorState.form}
+                close={closeEditor}
+                reloadData={loadData}
+                toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
+                existingThresholds={data}
+              />
+            ) : (
+              <FeeThresholdsItem
+                key={feeThresholds.id}
+                i18n={i18n}
+                id={feeThresholds.id}
+                feeThresholds={feeThresholds.thresholds}
+                copyThresholds={copyThresholds}
+                editThresholds={editThresholds}
+                editing={!!editorState.editing}
+                toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
+                data-qa={`fee-thresholds-item-${index}`}
+              />
+            )
+          )}
+        </>
+      ))}
       {modal ? (
         <InfoModal
           icon={faQuestion}
