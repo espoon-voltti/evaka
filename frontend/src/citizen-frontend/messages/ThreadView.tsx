@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -21,6 +21,7 @@ import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
@@ -49,15 +50,22 @@ const TitleRow = styled.div`
 const StickyTitleRow = styled(TitleRow)`
   position: sticky;
   top: 0;
-  padding: ${defaultMargins.L};
   background: ${colors.greyscale.white};
-  max-height: 100px;
+  max-height: 215px; // fits roughly 5 rows of heading text with the chip and paddings
   overflow: auto;
 
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  gap: ${defaultMargins.s};
+  gap: ${defaultMargins.xs};
+  padding: ${defaultMargins.m};
+
+  @media screen and (min-width: ${desktopMin}) {
+    flex-direction: row-reverse;
+    gap: ${defaultMargins.s};
+    padding: ${defaultMargins.L};
+  }
 `
 
 const SenderName = styled.div`
@@ -187,10 +195,10 @@ export default React.memo(function ThreadView({
   return (
     <ThreadContainer>
       <StickyTitleRow ref={stickyTitleRowRef}>
+        <MessageTypeChip type={type} labels={i18n.messages.types} />
         <H2 noMargin data-qa="thread-reader-title">
           {title}
         </H2>
-        <MessageTypeChip type={type} labels={i18n.messages.types} />
       </StickyTitleRow>
       {messages.map((message, idx) => (
         <React.Fragment key={`${message.id}-fragment`}>
