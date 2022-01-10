@@ -14,7 +14,7 @@ import {
   DraftContent,
   Message,
   MessageThread,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   SentMessage,
   ThreadReply,
   UnreadCountByAccount
@@ -41,7 +41,7 @@ const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
-  accounts: Result<NestedMessageAccount[]>
+  accounts: Result<AuthorizedMessageAccount[]>
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
@@ -118,7 +118,7 @@ export const MessageContextProvider = React.memo(
       () =>
         user?.accessibleFeatures.messages
           ? getMessagingAccounts()
-          : Promise.resolve(Loading.of<NestedMessageAccount[]>()),
+          : Promise.resolve(Loading.of<AuthorizedMessageAccount[]>()),
       [user]
     )
 

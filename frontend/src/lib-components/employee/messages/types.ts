@@ -5,19 +5,19 @@
 import {
   Group,
   MessageReceiver,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-export interface GroupMessageAccount extends NestedMessageAccount {
+export interface GroupMessageAccount extends AuthorizedMessageAccount {
   daycareGroup: Group
 }
 
 export const isGroupMessageAccount = (
-  acc: NestedMessageAccount
+  acc: AuthorizedMessageAccount
 ): acc is GroupMessageAccount =>
   acc.account.type === 'GROUP' && acc.daycareGroup !== null
 

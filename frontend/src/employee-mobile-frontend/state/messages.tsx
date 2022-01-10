@@ -15,7 +15,7 @@ import { Loading, Paged, Result } from 'lib-common/api'
 import {
   Message,
   MessageThread,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
@@ -49,14 +49,14 @@ const appendMessageAndMoveThreadToTopOfList =
     })
 
 export interface MessagesState {
-  accounts: Result<NestedMessageAccount[]>
+  accounts: Result<AuthorizedMessageAccount[]>
   loadAccounts: (unitId: UUID) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
   setPages: (pages: number) => void
-  groupAccounts: NestedMessageAccount[]
-  selectedAccount: NestedMessageAccount | undefined
+  groupAccounts: AuthorizedMessageAccount[]
+  selectedAccount: AuthorizedMessageAccount | undefined
   receivedMessages: Result<MessageThread[]>
   selectedUnit: SelectOption | undefined
   selectedThread: MessageThread | undefined
@@ -104,9 +104,9 @@ export const MessageContextProvider = React.memo(
       [unitInfoResponse]
     )
 
-    const [accounts, setAccounts] = useState<Result<NestedMessageAccount[]>>(
-      Loading.of()
-    )
+    const [accounts, setAccounts] = useState<
+      Result<AuthorizedMessageAccount[]>
+    >(Loading.of())
 
     const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
 
@@ -121,7 +121,7 @@ export const MessageContextProvider = React.memo(
       if (unitId && hasPinLogin) loadAccounts(unitId)
     }, [loadAccounts, unitId, user])
 
-    const groupAccounts: NestedMessageAccount[] = useMemo(() => {
+    const groupAccounts: AuthorizedMessageAccount[] = useMemo(() => {
       return accounts
         .map((acc) =>
           acc.filter(
@@ -132,7 +132,7 @@ export const MessageContextProvider = React.memo(
         .getOrElse([])
     }, [accounts, unitId])
 
-    const selectedAccount: NestedMessageAccount = useMemo(() => {
+    const selectedAccount: AuthorizedMessageAccount = useMemo(() => {
       return (
         groupAccounts.find(
           ({ daycareGroup }) => daycareGroup?.id === groupId

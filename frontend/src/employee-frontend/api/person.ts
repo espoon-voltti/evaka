@@ -1,11 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
-import { Recipient } from 'lib-common/generated/api-types/messaging'
+import {
+  EditRecipientRequest,
+  Recipient
+} from 'lib-common/generated/api-types/messaging'
 import {
   ContactInfo,
   CreatePersonBody,
@@ -178,12 +181,10 @@ export async function getChildRecipients(
 export async function updateChildRecipient(
   childId: UUID,
   recipientId: UUID,
-  blocklisted: boolean
+  data: EditRecipientRequest
 ): Promise<Result<void>> {
   return client
-    .put<void>(`/child/${childId}/recipients/${recipientId}`, {
-      blocklisted: blocklisted
-    })
+    .put<void>(`/child/${childId}/recipients/${recipientId}`, data)
     .then((v) => Success.of(v.data))
     .catch((e) => Failure.fromError(e))
 }

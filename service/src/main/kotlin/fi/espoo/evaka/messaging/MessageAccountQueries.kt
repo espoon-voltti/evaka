@@ -41,7 +41,7 @@ fun Database.Read.getEmployeeMessageAccountIds(employeeId: EmployeeId): Set<Mess
         .toSet()
 }
 
-fun Database.Read.getEmployeeNestedMessageAccounts(employeeId: EmployeeId): Set<NestedMessageAccount> {
+fun Database.Read.getAuthorizedMessageAccountsForEmployee(employeeId: EmployeeId): Set<AuthorizedMessageAccount> {
     val accountIds = getEmployeeMessageAccountIds(employeeId)
 
     val sql = """
@@ -66,7 +66,7 @@ AND (
 """
     return this.createQuery(sql)
         .bind("accountIds", accountIds.toTypedArray())
-        .mapTo<NestedMessageAccount>()
+        .mapTo<AuthorizedMessageAccount>()
         .toSet()
 }
 

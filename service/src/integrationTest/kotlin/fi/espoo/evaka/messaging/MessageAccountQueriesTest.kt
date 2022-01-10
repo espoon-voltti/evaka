@@ -95,7 +95,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
         val accounts = db.transaction { it.getEmployeeMessageAccountIds(supervisorId) }
         assertEquals(3, accounts.size)
 
-        val accounts2 = db.read { it.getEmployeeNestedMessageAccounts(supervisorId) }
+        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(supervisorId) }
         assertEquals(3, accounts2.size)
         val personalAccount =
             accounts2.find { it.account.type === AccountType.PERSONAL } ?: throw Error("Personal account not found")
@@ -123,7 +123,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
         val accounts = db.transaction { it.getEmployeeMessageAccountIds(employee1Id) }
         assertEquals(1, accounts.size)
 
-        val accounts2 = db.read { it.getEmployeeNestedMessageAccounts(employee1Id) }
+        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee1Id) }
         assertEquals(1, accounts2.size)
         assertNull(accounts2.find { it.account.type === AccountType.PERSONAL })
 
@@ -139,7 +139,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
         val accounts = db.transaction { it.getEmployeeMessageAccountIds(employee2Id) }
         assertEquals(0, accounts.size)
 
-        val accounts2 = db.read { it.getEmployeeNestedMessageAccounts(employee2Id) }
+        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee2Id) }
         assertEquals(0, accounts2.size)
     }
 

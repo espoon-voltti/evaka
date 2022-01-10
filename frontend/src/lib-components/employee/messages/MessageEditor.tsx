@@ -10,7 +10,7 @@ import { Attachment } from 'lib-common/api-types/attachment'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   DraftContent,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   PostMessageBody,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
@@ -125,7 +125,7 @@ interface Props {
   i18n: MessageEditorI18n & FileUploadI18n
   initDraftRaw: (accountId: string) => Promise<Result<string>>
   mobileVersion?: boolean
-  accounts: NestedMessageAccount[]
+  accounts: AuthorizedMessageAccount[]
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId: UUID) => void
   onSend: (accountId: UUID, msg: PostMessageBody) => void
@@ -341,13 +341,13 @@ export default React.memo(function MessageEditor({
     () =>
       accounts
         .filter(
-          (acc: NestedMessageAccount) =>
+          (acc: AuthorizedMessageAccount) =>
             !isGroupMessageAccount(acc) ||
             (isGroupMessageAccount(acc) &&
               !!getSelectorName(acc.daycareGroup.id, availableReceivers) &&
               acc.daycareGroup.unitId === selectedUnit.value)
         )
-        .map(({ account: { id, name } }: NestedMessageAccount) => ({
+        .map(({ account: { id, name } }: AuthorizedMessageAccount) => ({
           value: id,
           label: name
         })),

@@ -9,7 +9,7 @@ import { formatDateOrTime } from 'lib-common/date'
 import {
   Message,
   MessageThread,
-  NestedMessageAccount
+  AuthorizedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -31,7 +31,7 @@ interface ThreadViewProps {
 
 const getAccountsInThread = (
   messages: Message[],
-  accounts: NestedMessageAccount[]
+  accounts: AuthorizedMessageAccount[]
 ) => {
   const allRecipients = messages.flatMap((m) => m.recipients)
 

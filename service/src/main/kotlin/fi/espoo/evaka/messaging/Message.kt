@@ -89,7 +89,7 @@ data class Group(
     val unitName: String,
 )
 
-data class NestedMessageAccount(
+data class AuthorizedMessageAccount(
     @Nested("account_")
     val account: MessageAccount,
     @Nested("group_")

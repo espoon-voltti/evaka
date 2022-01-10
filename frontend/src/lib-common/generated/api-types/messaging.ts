@@ -18,6 +18,14 @@ export type AccountType =
   | 'CITIZEN'
 
 /**
+* Generated from fi.espoo.evaka.messaging.AuthorizedMessageAccount
+*/
+export interface AuthorizedMessageAccount {
+  account: MessageAccount
+  daycareGroup: Group | null
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.CitizenMessageBody
 */
 export interface CitizenMessageBody {
@@ -125,14 +133,6 @@ export interface MessageThread {
 export type MessageType = 
   | 'MESSAGE'
   | 'BULLETIN'
-
-/**
-* Generated from fi.espoo.evaka.messaging.NestedMessageAccount
-*/
-export interface NestedMessageAccount {
-  account: MessageAccount
-  daycareGroup: Group | null
-}
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageController.PostMessageBody

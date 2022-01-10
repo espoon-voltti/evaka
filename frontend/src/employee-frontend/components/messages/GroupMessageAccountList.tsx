@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { ReactNode, useContext, useState } from 'react'
 import styled from 'styled-components'
-import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import { GroupMessageAccount } from 'lib-components/employee/messages/types'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -71,7 +71,7 @@ export default function GroupMessageAccountList({
   setView: (view: AccountView) => void
 }) {
   const { unreadCountsByAccount } = useContext(MessageContext)
-  const startCollapsed = (acc: NestedMessageAccount, i: number) =>
+  const startCollapsed = (acc: AuthorizedMessageAccount, i: number) =>
     i > 0 &&
     ((unreadCountsByAccount.isSuccess &&
       !unreadCountsByAccount.value.find((a) => a.accountId === acc.account.id)

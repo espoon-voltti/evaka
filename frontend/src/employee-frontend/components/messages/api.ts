@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,7 +11,7 @@ import {
   DraftContent,
   MessageReceiversResponse,
   MessageThread,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   PostMessageBody,
   ReplyToMessageBody,
   SentMessage,
@@ -46,10 +46,10 @@ export async function getReceivers(
 }
 
 export async function getMessagingAccounts(): Promise<
-  Result<NestedMessageAccount[]>
+  Result<AuthorizedMessageAccount[]>
 > {
   return client
-    .get<JsonOf<NestedMessageAccount[]>>('/messages/my-accounts')
+    .get<JsonOf<AuthorizedMessageAccount[]>>('/messages/my-accounts')
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

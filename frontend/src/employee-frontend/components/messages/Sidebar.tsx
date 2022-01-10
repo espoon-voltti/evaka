@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import {
   MessageReceiversResponse,
-  NestedMessageAccount
+  AuthorizedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -85,7 +85,7 @@ const Receivers = styled.div<{ active: boolean }>`
 `
 
 interface AccountsParams {
-  accounts: NestedMessageAccount[]
+  accounts: AuthorizedMessageAccount[]
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
