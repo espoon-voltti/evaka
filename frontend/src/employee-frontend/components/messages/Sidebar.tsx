@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,7 +16,7 @@ import {
   SelectorNode,
   unitAsSelectorNode
 } from 'lib-components/employee/messages/SelectorNode'
-import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
+import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -44,15 +44,13 @@ const AccountContainer = styled.div`
 `
 
 const HeaderContainer = styled.div`
-  padding: 12px ${defaultMargins.m};
-  padding-top: 0px;
-  padding-bottom: 0px;
+  padding: 0 ${defaultMargins.m};
 `
 
 const DashedLine = styled.hr`
   width: 100%;
   border: 1px dashed ${colors.greyscale.medium};
-  border-top-width: 0px;
+  border-top-width: 0;
 `
 
 const AccountSection = styled.section`
@@ -87,27 +85,23 @@ const Receivers = styled.div<{ active: boolean }>`
 `
 
 interface AccountsParams {
-  nestedAccounts: NestedMessageAccount[]
+  accounts: NestedMessageAccount[]
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
 }
 
-function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
+function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
   const { i18n } = useTranslation()
   const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
     useContext(MessageContext)
 
   const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
-    const nestedPersonalAccount = nestedAccounts.find(
-      (a) => !isNestedGroupMessageAccount(a)
-    )
-    const nestedGroupAccounts = nestedAccounts.filter(
-      isNestedGroupMessageAccount
-    )
-    const unitOptions = sortBy(
+    const personal = accounts.find((a) => !isGroupMessageAccount(a))
+    const groupAccs = accounts.filter(isGroupMessageAccount)
+    const unitOpts = sortBy(
       uniqBy(
-        nestedGroupAccounts.map(({ daycareGroup }) => ({
+        groupAccs.map(({ daycareGroup }) => ({
           value: daycareGroup.unitId,
           label: daycareGroup.unitName
         })),
@@ -115,8 +109,8 @@ function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
       ),
       (u) => u.label
     )
-    return [nestedPersonalAccount, nestedGroupAccounts, unitOptions]
-  }, [nestedAccounts])
+    return [personal, groupAccs, unitOpts]
+  }, [accounts])
 
   const unitSelectionEnabled = unitOptions.length > 1
 
@@ -150,7 +144,7 @@ function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
 
   return (
     <>
-      {nestedAccounts.length === 0 && (
+      {accounts.length === 0 && (
         <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
       )}
 
@@ -185,7 +179,7 @@ function Accounts({ nestedAccounts, setSelectedReceivers }: AccountsParams) {
             </UnitSelection>
           )}
           <GroupMessageAccountList
-            nestedGroupAccounts={visibleGroupAccounts}
+            accounts={visibleGroupAccounts}
             activeView={selectedAccount}
             setView={setSelectedAccount}
           />
@@ -207,11 +201,10 @@ export default React.memo(function Sidebar({
   showEditor
 }: Props) {
   const { i18n } = useTranslation()
-  const { nestedAccounts, selectedAccount, setSelectedAccount } =
+  const { accounts, selectedAccount, setSelectedAccount } =
     useContext(MessageContext)
 
-  const newMessageEnabled =
-    nestedAccounts.isSuccess && nestedAccounts.value.length > 0
+  const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
   return (
     <Container>
       <AccountContainer>
@@ -230,9 +223,9 @@ export default React.memo(function Sidebar({
             data-qa="new-message-btn"
           />
         </HeaderContainer>
-        {renderResult(nestedAccounts, (nestedAccounts) => (
+        {renderResult(accounts, (value) => (
           <Accounts
-            nestedAccounts={nestedAccounts}
+            accounts={value}
             setSelectedReceivers={setSelectedReceivers}
           />
         ))}

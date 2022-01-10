@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -49,8 +49,8 @@ const appendMessageAndMoveThreadToTopOfList =
     })
 
 export interface MessagesState {
-  nestedAccounts: Result<NestedMessageAccount[]>
-  loadNestedAccounts: (unitId: UUID) => void
+  accounts: Result<NestedMessageAccount[]>
+  loadAccounts: (unitId: UUID) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -68,8 +68,8 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
-  nestedAccounts: Loading.of(),
-  loadNestedAccounts: () => undefined,
+  accounts: Loading.of(),
+  loadAccounts: () => undefined,
   page: 1,
   setPage: () => undefined,
   pages: undefined,
@@ -104,16 +104,13 @@ export const MessageContextProvider = React.memo(
       [unitInfoResponse]
     )
 
-    const [nestedAccounts, setNestedMessagingAccounts] = useState<
-      Result<NestedMessageAccount[]>
-    >(Loading.of())
-
-    const getNestedAccounts = useRestApi(
-      getMessagingAccounts,
-      setNestedMessagingAccounts
+    const [accounts, setAccounts] = useState<Result<NestedMessageAccount[]>>(
+      Loading.of()
     )
 
-    const [loadNestedAccounts] = useDebouncedCallback(getNestedAccounts, 100)
+    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
+
+    const [loadAccounts] = useDebouncedCallback(getAccounts, 100)
 
     const { groupId } = useParams<{
       groupId: UUID | 'all'
@@ -121,19 +118,19 @@ export const MessageContextProvider = React.memo(
 
     useEffect(() => {
       const hasPinLogin = user.map((u) => u?.pinLoginActive).getOrElse(false)
-      if (unitId && hasPinLogin) loadNestedAccounts(unitId)
-    }, [loadNestedAccounts, unitId, user])
+      if (unitId && hasPinLogin) loadAccounts(unitId)
+    }, [loadAccounts, unitId, user])
 
     const groupAccounts: NestedMessageAccount[] = useMemo(() => {
-      return nestedAccounts
-        .map((nested) =>
-          nested.filter(
+      return accounts
+        .map((acc) =>
+          acc.filter(
             ({ account, daycareGroup }) =>
               account.type === 'GROUP' && daycareGroup?.unitId === unitId
           )
         )
         .getOrElse([])
-    }, [nestedAccounts, unitId])
+    }, [accounts, unitId])
 
     const selectedAccount: NestedMessageAccount = useMemo(() => {
       return (
@@ -219,8 +216,8 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        nestedAccounts,
-        loadNestedAccounts,
+        accounts,
+        loadAccounts,
         selectedAccount,
         groupAccounts,
         page,
@@ -237,8 +234,8 @@ export const MessageContextProvider = React.memo(
         replyState
       }),
       [
-        nestedAccounts,
-        loadNestedAccounts,
+        accounts,
+        loadAccounts,
         groupAccounts,
         selectedAccount,
         page,
