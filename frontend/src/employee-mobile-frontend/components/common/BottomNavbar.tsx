@@ -90,7 +90,7 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => {
   )
 }
 
-type BottomNavbarProps = {
+export type BottomNavbarProps = {
   selected?: NavItem
 }
 

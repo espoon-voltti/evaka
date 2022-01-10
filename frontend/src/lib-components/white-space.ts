@@ -58,6 +58,7 @@ export const Gap = styled.div<GapProps>`
   display: ${(p) => (p.horizontal ? 'inline-block' : 'block')};
   ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
     defaultMargins[p.size || 'm']};
+  flex-shrink: 0;
 
   @media (max-width: ${tabletMin}) {
     ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>

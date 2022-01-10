@@ -24,6 +24,7 @@ const StickyTopBar = styled.section<{ invertedColors?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 
   background: ${({ theme, invertedColors }) =>
     invertedColors

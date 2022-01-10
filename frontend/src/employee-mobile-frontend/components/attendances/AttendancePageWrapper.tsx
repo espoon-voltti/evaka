@@ -24,9 +24,8 @@ import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../../types'
 import { renderResult } from '../async-rendering'
-import BottomNavbar from '../common/BottomNavbar'
 import FreeTextSearch from '../common/FreeTextSearch'
-import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
+import { PageWithNavigation } from '../common/PageWithNavigation'
 import { zIndex } from '../constants'
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
@@ -104,21 +103,22 @@ export default React.memo(function AttendancePageWrapper() {
           attendanceResponse={attendanceResponse.value}
         />
       )}
-      <TopBarWithGroupSelector
+      <PageWithNavigation
+        selected="child"
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
         toggleSearch={toggleSearch}
         countInfo={countInfo}
-      />
-      {renderResult(attendanceResponse, (attendance) => (
-        <AttendanceList
-          unitId={unitId}
-          groupId={groupId}
-          attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
-          attendanceResponse={attendance}
-        />
-      ))}
-      <BottomNavbar selected="child" />
+      >
+        {renderResult(attendanceResponse, (attendance) => (
+          <AttendanceList
+            unitId={unitId}
+            groupId={groupId}
+            attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
+            attendanceResponse={attendance}
+          />
+        ))}
+      </PageWithNavigation>
     </>
   )
 })

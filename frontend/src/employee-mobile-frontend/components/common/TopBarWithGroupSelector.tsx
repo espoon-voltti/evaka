@@ -14,7 +14,7 @@ import { CountInfo } from './GroupSelector'
 import { GroupSelectorBar } from './GroupSelectorBar'
 import TopBar from './TopBar'
 
-interface Props {
+export type TopBarWithGroupSelectorProps = {
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   includeSelectAll?: boolean
@@ -30,7 +30,7 @@ export default React.memo(function TopBarWithGroupSelector({
   countInfo,
   includeSelectAll = true,
   allowedGroupIds = undefined
-}: Props) {
+}: TopBarWithGroupSelectorProps) {
   const history = useHistory()
   const { user } = useContext(UserContext)
   const { unitInfoResponse } = useContext(UnitContext)
