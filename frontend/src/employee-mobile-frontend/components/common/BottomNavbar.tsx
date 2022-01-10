@@ -16,7 +16,14 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
-import { faChild, faComments, faUser } from 'lib-icons'
+import {
+  faChild,
+  fasChild,
+  faEnvelope,
+  fasEnvelope,
+  faUser,
+  fasUser
+} from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from '../../state/messages'
 import { UnitContext } from '../../state/unit'
@@ -119,7 +126,10 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                 )
               }
             >
-              <CustomIcon icon={faChild} selected={selected === 'child'} />
+              <CustomIcon
+                icon={selected === 'child' ? fasChild : faChild}
+                selected={selected === 'child'}
+              />
             </BottomText>
           </Button>
           <Button data-qa="bottomnav-staff">
@@ -135,7 +145,10 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                 )
               }
             >
-              <CustomIcon icon={faUser} selected={selected === 'staff'} />
+              <CustomIcon
+                icon={selected === 'staff' ? fasUser : faUser}
+                selected={selected === 'staff'}
+              />
             </BottomText>
           </Button>
           {unit.features.includes('MOBILE_MESSAGING') ? (
@@ -153,7 +166,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                 }
               >
                 <CustomIcon
-                  icon={faComments}
+                  icon={selected === 'messages' ? fasEnvelope : faEnvelope}
                   selected={selected === 'messages'}
                 />
                 {(user?.pinLoginActive && groupAccountIds.length > 0

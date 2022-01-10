@@ -3,18 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  faCaretUp as fasCaretUp,
+  faArrowDown as fasArrowDown,
+  faArrowUp as fasArrowUp,
   faCaretDown as fasCaretDown,
   faCaretLeft as fasCaretLeft,
   faCaretRight as fasCaretRight,
+  faCaretUp as fasCaretUp,
   faCheckCircle as fasCheckCircle,
   faChevronDown as fasChevronDown,
   faChevronUp as fasChevronUp,
+  faChild as fasChild,
+  faEnvelope as fasEnvelope,
   faExclamationTriangle as fasExclamationTriangle,
   faInfo as fasInfo,
   faMapMarkerAlt as fasMapMarkerAlt,
-  faArrowDown as fasArrowDown,
-  faArrowUp as fasArrowUp
+  faUser as fasUser
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faAbacus,
@@ -147,6 +150,7 @@ const icons: IconSet = {
   faChevronRight,
   faChevronUp,
   faChild,
+  fasChild,
   faCircleExclamation,
   faClock,
   faCoins,
@@ -155,6 +159,7 @@ const icons: IconSet = {
   faDatabase,
   faDiagnoses,
   faEnvelope,
+  fasEnvelope,
   faEuroSign,
   faEllipsisVAlt,
   faEye,
@@ -206,6 +211,7 @@ const icons: IconSet = {
   faTrash,
   faUndo,
   faUser,
+  fasUser,
   faUserAltSlash,
   faUserFriends,
   faUserMinus,

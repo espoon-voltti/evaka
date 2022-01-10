@@ -27,6 +27,7 @@ export interface IconSet {
   faChevronRight: IconDefinition
   faChevronUp: IconDefinition
   faChild: IconDefinition
+  fasChild: IconDefinition
   faCircleExclamation: IconDefinition
   faClock: IconDefinition
   faCoins: IconDefinition
@@ -36,6 +37,7 @@ export interface IconSet {
   faDatabase: IconDefinition
   faDiagnoses: IconDefinition
   faEnvelope: IconDefinition
+  fasEnvelope: IconDefinition
   faEuroSign: IconDefinition
   faEllipsisVAlt: IconDefinition
   faEye: IconDefinition
@@ -87,6 +89,7 @@ export interface IconSet {
   faTrash: IconDefinition
   faUndo: IconDefinition
   faUser: IconDefinition
+  fasUser: IconDefinition
   faUserAltSlash: IconDefinition
   faUserFriends: IconDefinition
   faUserMinus: IconDefinition
@@ -142,6 +145,7 @@ export const faChevronLeft = iconSet.faChevronLeft
 export const faChevronRight = iconSet.faChevronRight
 export const faChevronUp = iconSet.faChevronUp
 export const faChild = iconSet.faChild
+export const fasChild = iconSet.fasChild
 export const faCircleExclamation = iconSet.faCircleExclamation
 export const faClock = iconSet.faClock
 export const faCommentAlt = iconSet.faCommentAlt
@@ -151,6 +155,7 @@ export const faComments = iconSet.faComments
 export const faDatabase = iconSet.faDatabase
 export const faDiagnoses = iconSet.faDiagnoses
 export const faEnvelope = iconSet.faEnvelope
+export const fasEnvelope = iconSet.fasEnvelope
 export const faEllipsisVAlt = iconSet.faEllipsisVAlt
 export const faEuroSign = iconSet.faEuroSign
 export const faEye = iconSet.faEye
@@ -203,6 +208,7 @@ export const faTimes = iconSet.faTimes
 export const faTrash = iconSet.faTrash
 export const faUndo = iconSet.faUndo
 export const faUser = iconSet.faUser
+export const fasUser = iconSet.fasUser
 export const faUserAltSlash = iconSet.faUserAltSlash
 export const faUserFriends = iconSet.faUserFriends
 export const faUserMinus = iconSet.faUserMinus
