@@ -110,9 +110,9 @@ class RealtimeStaffAttendanceController(
     ) {
         Audit.StaffAttendanceDepartureCreate.log()
 
-        val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
+        val departedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
         val nowHDT = HelsinkiDateTime.now()
-        val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
+        val departedTimeOrDefault = if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
 
         db.connect { dbc ->
             // todo: convert to action auth
@@ -126,7 +126,7 @@ class RealtimeStaffAttendanceController(
             dbc.transaction {
                 it.markStaffDeparture(
                     attendanceId = attendanceId,
-                    departureTime = arrivedTimeOrDefault
+                    departureTime = departedTimeOrDefault
                 )
             }
         }
@@ -183,15 +183,15 @@ class RealtimeStaffAttendanceController(
             @Suppress("DEPRECATION")
             acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
 
-            val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
+            val departedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
             val nowHDT = HelsinkiDateTime.now()
-            val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
+            val departedTimeOrDefault = if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
 
             dbc.transaction {
                 it.markExternalStaffDeparture(
                     ExternalStaffDeparture(
                         id = body.attendanceId,
-                        departed = arrivedTimeOrDefault
+                        departed = departedTimeOrDefault
                     )
                 )
             }
