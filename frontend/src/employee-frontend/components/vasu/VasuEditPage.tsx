@@ -69,7 +69,9 @@ export default React.memo(function VasuEditPage({
       case 'save-error':
         return i18n.common.error.saveFailed
       case 'loading':
+      case 'loading-dirty':
       case 'saving':
+      case 'saving-dirty':
       case 'dirty':
       case 'clean':
         return status.savedAt
@@ -80,6 +82,7 @@ export default React.memo(function VasuEditPage({
           : null
     }
   }
+
   const textualVasuStatus = formatVasuStatus(status)
   const showSpinner = status.state === 'saving'
 
