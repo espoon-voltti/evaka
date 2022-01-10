@@ -154,7 +154,7 @@ export interface Recipient {
   blocklisted: boolean
   firstName: string
   lastName: string
-  personId: string
+  personId: UUID
 }
 
 /**

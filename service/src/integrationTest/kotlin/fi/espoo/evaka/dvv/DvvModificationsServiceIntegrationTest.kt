@@ -8,6 +8,7 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.getGuardianChildIds
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -241,7 +242,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     }
 
     val testPerson = DevPerson(
-        id = UUID.randomUUID(),
+        id = PersonId(UUID.randomUUID()),
         ssn = "set this",
         dateOfBirth = LocalDate.parse("1980-01-01"),
         dateOfDeath = null,
@@ -253,7 +254,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         restrictedDetailsEnabled = false
     )
 
-    private fun createTestPerson(devPerson: DevPerson): UUID = db.transaction { tx ->
+    private fun createTestPerson(devPerson: DevPerson): PersonId = db.transaction { tx ->
         tx.insertTestPerson(devPerson)
     }
 

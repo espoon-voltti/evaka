@@ -15,6 +15,7 @@ import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -45,7 +46,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `createPersonFromVtj creates person with correct data`() {
-        val tempId = UUID.randomUUID()
+        val tempId = PersonId(UUID.randomUUID())
         val validSSN = "010199-8137"
 
         val inputPerson = testPerson(validSSN)
@@ -302,7 +303,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
 
     private fun testPerson(validSSN: String): PersonDTO {
         return PersonDTO(
-            id = UUID.randomUUID(),
+            id = PersonId(UUID.randomUUID()),
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
             ssnAddingDisabled = false,
             dateOfBirth = getDobFromSsn(validSSN),

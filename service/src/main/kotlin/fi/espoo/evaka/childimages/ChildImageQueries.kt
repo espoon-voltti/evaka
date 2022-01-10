@@ -4,13 +4,13 @@
 
 package fi.espoo.evaka.childimages
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
-fun Database.Transaction.insertChildImage(childId: UUID): ChildImageId {
+fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId {
     // language=sql
     val sql = """
         INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id;
@@ -21,7 +21,7 @@ fun Database.Transaction.insertChildImage(childId: UUID): ChildImageId {
         .one()
 }
 
-fun Database.Transaction.deleteChildImage(childId: UUID): ChildImageId? {
+fun Database.Transaction.deleteChildImage(childId: ChildId): ChildImageId? {
     return createQuery("DELETE FROM child_images WHERE child_id = :childId RETURNING id")
         .bind("childId", childId)
         .mapTo<ChildImageId>()

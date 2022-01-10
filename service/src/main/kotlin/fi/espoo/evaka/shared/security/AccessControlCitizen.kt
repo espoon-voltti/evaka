@@ -4,23 +4,23 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class AccessControlCitizen {
     fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser): CitizenFeatures {
         return CitizenFeatures(
-            messages = tx.citizenHasAccessToMessaging(user.id),
-            reservations = tx.citizenHasAccessToReservations(user.id),
-            pedagogicalDocumentation = tx.citizenHasAccessToPedagogicalDocumentation(user.id)
+            messages = tx.citizenHasAccessToMessaging(PersonId(user.id)),
+            reservations = tx.citizenHasAccessToReservations(PersonId(user.id)),
+            pedagogicalDocumentation = tx.citizenHasAccessToPedagogicalDocumentation(PersonId(user.id))
         )
     }
 
-    private fun Database.Read.citizenHasAccessToMessaging(personId: UUID): Boolean {
+    private fun Database.Read.citizenHasAccessToMessaging(personId: PersonId): Boolean {
         // language=sql
         val sql = """
 WITH child_placements AS (
@@ -66,7 +66,7 @@ SELECT EXISTS (
         return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
     }
 
-    private fun Database.Read.citizenHasAccessToReservations(personId: UUID): Boolean {
+    private fun Database.Read.citizenHasAccessToReservations(personId: PersonId): Boolean {
         // language=sql
         val sql = """
 SELECT EXISTS (
@@ -80,7 +80,7 @@ SELECT EXISTS (
         return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
     }
 
-    private fun Database.Read.citizenHasAccessToPedagogicalDocumentation(personId: UUID): Boolean {
+    private fun Database.Read.citizenHasAccessToPedagogicalDocumentation(personId: PersonId): Boolean {
         // language=sql
         val sql = """
 SELECT EXISTS (

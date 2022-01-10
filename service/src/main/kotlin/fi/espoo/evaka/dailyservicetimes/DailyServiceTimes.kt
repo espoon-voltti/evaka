@@ -8,11 +8,11 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import org.jdbi.v3.core.result.RowView
 import java.time.LocalTime
-import java.util.UUID
 
 data class TimeRange(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
@@ -56,7 +56,7 @@ sealed class DailyServiceTimes(
     object VariableTimes : DailyServiceTimes(DailyServiceTimesType.VARIABLE_TIME)
 }
 
-fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
+fun Database.Read.getChildDailyServiceTimes(childId: ChildId): DailyServiceTimes? {
     return this.createQuery(
         """
 SELECT
@@ -116,7 +116,7 @@ fun toTimeRange(row: RowView, columnPrefix: String): TimeRange? {
     return null
 }
 
-fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes) {
+fun Database.Transaction.upsertChildDailyServiceTimes(childId: ChildId, times: DailyServiceTimes) {
     when (times) {
         is DailyServiceTimes.RegularTimes -> upsertRegularChildDailyServiceTimes(childId, times)
         is DailyServiceTimes.IrregularTimes -> upsertIrregularChildDailyServiceTimes(childId, times)
@@ -125,7 +125,7 @@ fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: Dail
 }
 
 private fun Database.Transaction.upsertRegularChildDailyServiceTimes(
-    childId: UUID,
+    childId: ChildId,
     times: DailyServiceTimes.RegularTimes
 ) {
     // language=sql
@@ -176,7 +176,7 @@ private fun Database.Transaction.upsertRegularChildDailyServiceTimes(
 }
 
 private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(
-    childId: UUID,
+    childId: ChildId,
     times: DailyServiceTimes.IrregularTimes
 ) {
     // language=sql
@@ -246,7 +246,7 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(
         .execute()
 }
 
-private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: UUID) {
+private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: ChildId) {
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
@@ -300,7 +300,7 @@ private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: U
         .execute()
 }
 
-fun Database.Transaction.deleteChildDailyServiceTimes(childId: UUID) {
+fun Database.Transaction.deleteChildDailyServiceTimes(childId: ChildId) {
     // language=sql
     val sql = """
         DELETE FROM daily_service_time

@@ -15,6 +15,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -39,7 +41,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 enum class FeeDecisionSortParam {
     HEAD_OF_FAMILY,
@@ -92,7 +93,7 @@ class FeeDecisionController(
                         body.sortDirection ?: SortDirection.DESC,
                         body.status?.split(",")?.mapNotNull { parseEnum<FeeDecisionStatus>(it) } ?: listOf(),
                         body.area?.split(",") ?: listOf(),
-                        body.unit?.let { parseUUID(it) },
+                        body.unit,
                         body.distinctions?.split(",")?.mapNotNull { parseEnum<DistinctiveParams>(it) } ?: listOf(),
                         body.searchTerms ?: "",
                         body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
@@ -160,10 +161,10 @@ class FeeDecisionController(
     fun getHeadOfFamilyFeeDecisions(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable uuid: UUID
+        @PathVariable uuid: PersonId
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.Person.READ_FEE_DECISIONS, PersonId(uuid))
+        accessControl.requirePermissionFor(user, Action.Person.READ_FEE_DECISIONS, uuid)
         val res = db.connect { dbc ->
             dbc.read {
                 it.findFeeDecisionsForHeadOfFamily(
@@ -180,11 +181,11 @@ class FeeDecisionController(
     fun generateRetroactiveDecisions(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS, PersonId(id))
+        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS, id)
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) } }
         return ResponseEntity.noContent().build()
     }
@@ -212,13 +213,13 @@ data class SearchFeeDecisionRequest(
     val sortDirection: SortDirection?,
     val status: String?,
     val area: String?,
-    val unit: String?,
+    val unit: DaycareId?,
     val distinctions: String?,
     val searchTerms: String?,
     val startDate: String?,
     val endDate: String?,
     val searchByStartDate: Boolean = false,
-    val financeDecisionHandlerId: UUID?
+    val financeDecisionHandlerId: EmployeeId?
 )
 
 data class FeeDecisionTypeRequest(

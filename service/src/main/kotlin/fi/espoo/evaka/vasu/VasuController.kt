@@ -7,6 +7,7 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -47,7 +48,7 @@ class VasuController(
     fun createDocument(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: CreateDocumentRequest
     ): VasuDocumentId {
         Audit.VasuDocumentCreate.log(childId)
@@ -75,7 +76,7 @@ class VasuController(
     fun getVasuSummariesByChild(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): List<VasuDocumentSummary> {
         Audit.ChildVasuDocumentsRead.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_VASU_DOCUMENT, childId)
@@ -213,7 +214,7 @@ class VasuController(
                     tx.insertVasuDocumentEvent(
                         documentId = id,
                         eventType = eventType,
-                        employeeId = user.id
+                        employeeId = EmployeeId(user.id)
                     )
                 }
             }

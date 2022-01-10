@@ -16,7 +16,6 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -348,7 +347,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
-fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: UUID, resetTimestamp: Instant) = createUpdate(
+fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: ChildId, resetTimestamp: Instant) = createUpdate(
     """
 UPDATE varda_reset_child SET reset_timestamp = :resetTimestamp
 WHERE evaka_child_id = :evakaChildId
@@ -373,7 +372,7 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
     .list().isNotEmpty()
 
 fun Database.Read.getServiceNeedsForVardaByChild(
-    childId: UUID
+    childId: ChildId
 ): List<ServiceNeedId> {
     // language=SQL
     val sql =
@@ -424,7 +423,7 @@ fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
         .mapTo<VardaChildIdPair>()
         .associate { it.vardaChildId to it.evakaChildId }
 
-fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boolean): List<UUID> {
+fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boolean): List<ChildId> {
     // We aim to include children by daycare units, capping each batch with <limit>
     val updateCount = if (!addNewChildren) 0 else createUpdate(
         """
@@ -463,7 +462,7 @@ fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boo
 
     return createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit")
         .bind("limit", limit)
-        .mapTo<UUID>()
+        .mapTo<ChildId>()
         .list()
 }
 

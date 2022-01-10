@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonPatch
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -23,7 +24,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
-import java.util.UUID
 
 val personDTOColumns = listOf(
     "id",
@@ -63,7 +63,7 @@ fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? = createQuery(
     "SELECT id FROM person WHERE social_security_number = :ssn"
 ).bind("ssn", ssn).mapTo<CitizenUser>().firstOrNull()
 
-fun Database.Read.getPersonById(id: UUID): PersonDTO? {
+fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery(
         """
 SELECT
@@ -105,7 +105,7 @@ private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
 
 data class PersonSummary(
-    val id: UUID,
+    val id: PersonId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
@@ -156,7 +156,7 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
         .toList()
 }
 
-fun Database.Transaction.createPerson(person: CreatePersonBody): UUID {
+fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
     // language=SQL
     val sql =
         """
@@ -167,7 +167,7 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): UUID {
 
     return createQuery(sql)
         .bindKotlin(person)
-        .mapTo<UUID>()
+        .mapTo<PersonId>()
         .first()
 }
 
@@ -263,7 +263,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         .first()
 }
 
-fun Database.Transaction.updatePersonBasicContactInfo(id: UUID, email: String, phone: String): Boolean {
+fun Database.Transaction.updatePersonBasicContactInfo(id: PersonId, email: String, phone: String): Boolean {
     // language=SQL
     val sql =
         """
@@ -278,11 +278,11 @@ fun Database.Transaction.updatePersonBasicContactInfo(id: UUID, email: String, p
         .bind("id", id)
         .bind("email", email)
         .bind("phone", phone)
-        .mapTo<UUID>()
+        .mapTo<PersonId>()
         .firstOrNull() != null
 }
 
-fun Database.Transaction.updatePersonContactInfo(id: UUID, contactInfo: ContactInfo): Boolean {
+fun Database.Transaction.updatePersonContactInfo(id: PersonId, contactInfo: ContactInfo): Boolean {
     // language=SQL
     val sql =
         """
@@ -302,12 +302,12 @@ fun Database.Transaction.updatePersonContactInfo(id: UUID, contactInfo: ContactI
     return createQuery(sql)
         .bind("id", id)
         .bindKotlin(contactInfo)
-        .mapTo<UUID>()
+        .mapTo<PersonId>()
         .firstOrNull() != null
 }
 
 // Update those person fields which do not come from VTJ
-fun Database.Transaction.updatePersonNonVtjDetails(id: UUID, patch: PersonPatch): Boolean {
+fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPatch): Boolean {
     // language=SQL
     val sql =
         """
@@ -328,11 +328,11 @@ fun Database.Transaction.updatePersonNonVtjDetails(id: UUID, patch: PersonPatch)
     return createQuery(sql)
         .bind("id", id)
         .bindKotlin(patch)
-        .mapTo<UUID>()
+        .mapTo<PersonId>()
         .firstOrNull() != null
 }
 
-fun Database.Transaction.updateNonSsnPersonDetails(id: UUID, patch: PersonPatch): Boolean {
+fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPatch): Boolean {
     // language=SQL
     val sql =
         """
@@ -359,11 +359,11 @@ fun Database.Transaction.updateNonSsnPersonDetails(id: UUID, patch: PersonPatch)
     return createQuery(sql)
         .bind("id", id)
         .bindKotlin(patch)
-        .mapTo<UUID>()
+        .mapTo<PersonId>()
         .firstOrNull() != null
 }
 
-fun Database.Transaction.addSSNToPerson(id: UUID, ssn: String) {
+fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
     // language=SQL
     val sql = "UPDATE person SET social_security_number = :ssn WHERE id = :id"
 
@@ -389,7 +389,7 @@ FROM person WHERE date_of_death >= :since
 
 private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx ->
     PersonDTO(
-        id = rs.getUUID("id"),
+        id = PersonId(rs.getUUID("id")),
         identity = rs.getString("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
             ?: ExternalIdentifier.NoID(),
         ssnAddingDisabled = rs.getBoolean("ssn_adding_disabled"),
@@ -452,7 +452,7 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
     return createQuery(sql).mapTo<PersonReference>().list()
 }
 
-fun Database.Read.getGuardianDependants(personId: UUID) =
+fun Database.Read.getGuardianDependants(personId: PersonId) =
     createQuery(
         """
 SELECT
@@ -465,7 +465,7 @@ WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)
         .map(toPersonDTO)
         .toList()
 
-fun Database.Read.getDependantGuardians(personId: UUID) =
+fun Database.Read.getDependantGuardians(personId: ChildId) =
     createQuery(
         """
 SELECT
@@ -485,7 +485,7 @@ fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: B
         .execute()
 }
 
-fun Database.Transaction.updatePreferredName(id: UUID, preferredName: String) {
+fun Database.Transaction.updatePreferredName(id: PersonId, preferredName: String) {
     createUpdate("UPDATE person SET preferred_name = :preferredName WHERE id = :id")
         .bind("id", id)
         .bind("preferredName", preferredName)

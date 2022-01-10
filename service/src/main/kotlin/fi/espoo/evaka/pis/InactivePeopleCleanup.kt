@@ -4,16 +4,16 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
 val logger = KotlinLogging.logger {}
 
-fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<UUID> {
+fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<PersonId> {
     val deletedPeople = tx.createUpdate(
         """
 WITH people_with_no_archive_data AS (
@@ -103,7 +103,7 @@ RETURNING id
     )
         .bind("twoWeeksAgo", queryDate.minusDays(14))
         .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
+        .mapTo<PersonId>()
         .toSet()
 
     logger.info(mapOf("deletedPeople" to deletedPeople)) {

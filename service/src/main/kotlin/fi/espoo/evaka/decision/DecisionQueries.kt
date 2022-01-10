@@ -7,8 +7,11 @@ package fi.espoo.evaka.decision
 import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -69,7 +72,7 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
         providerType = rs.getEnum("provider_type")
     ),
     applicationId = ApplicationId(rs.getUUID("application_id")),
-    childId = UUID.fromString(rs.getString("child_id")),
+    childId = ChildId(UUID.fromString(rs.getString("child_id"))),
     childName = "${rs.getString("child_last_name")} ${rs.getString("child_first_name")}"
 )
 
@@ -78,7 +81,7 @@ fun Database.Read.getDecision(decisionId: DecisionId): Decision? {
         .map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.first()
 }
 
-fun Database.Read.getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByChild(childId: ChildId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql = "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
     val query = createQuery(sql).bind("id", childId)
@@ -96,7 +99,7 @@ fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, author
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
 
-fun Database.Read.getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByGuardian(guardianId: PersonId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql = "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
     val query = createQuery(sql).bind("id", guardianId)
@@ -115,7 +118,7 @@ data class ApplicationDecisionRow(
     val resolved: LocalDate?
 )
 
-fun Database.Read.getOwnDecisions(guardianId: UUID): List<ApplicationDecisions> {
+fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisions> {
     // language=sql
     val sql =
         """
@@ -186,7 +189,7 @@ fun Database.Transaction.finalizeDecisions(
 
 fun Database.Transaction.insertDecision(
     decisionId: DecisionId,
-    userId: UUID,
+    userId: EvakaUserId,
     sentDate: LocalDate,
     applicationId: ApplicationId,
     unitId: DaycareId,

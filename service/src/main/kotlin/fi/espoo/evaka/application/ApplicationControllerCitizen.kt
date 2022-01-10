@@ -16,7 +16,9 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -37,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -60,12 +61,12 @@ class ApplicationControllerCitizen(
         return ResponseEntity.ok(
             db.connect { dbc ->
                 dbc.read { tx ->
-                    val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
+                    val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(PersonId(user.id))
                         .groupBy { it.childId }
                         .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
 
                     // Some children might not have applications, so add 0 application children
-                    tx.getCitizenChildren(user.id).map { citizenChild ->
+                    tx.getCitizenChildren(PersonId(user.id)).map { citizenChild ->
                         val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.applicationSummaries
                             ?: emptyList()
                         ApplicationsOfChild(
@@ -95,7 +96,7 @@ class ApplicationControllerCitizen(
             }
         }
 
-        return if (application?.guardianId == user.id && !application.hideFromGuardian)
+        return if (application?.guardianId?.raw == user.id && !application.hideFromGuardian)
             ResponseEntity.ok(application)
         else
             throw NotFound("Application not found")
@@ -116,15 +117,15 @@ class ApplicationControllerCitizen(
             dbc.transaction { tx ->
                 if (
                     body.type != ApplicationType.CLUB &&
-                    tx.duplicateApplicationExists(guardianId = user.id, childId = body.childId, type = body.type)
+                    tx.duplicateApplicationExists(guardianId = PersonId(user.id), childId = body.childId, type = body.type)
                 ) {
                     throw BadRequest("Duplicate application")
                 }
 
-                val guardian = tx.getPersonById(user.id)
+                val guardian = tx.getPersonById(PersonId(user.id))
                     ?: throw IllegalStateException("Guardian not found")
 
-                if (tx.getGuardianChildIds(user.id).none { it == body.childId }) {
+                if (tx.getGuardianChildIds(PersonId(user.id)).none { it == body.childId }) {
                     throw IllegalStateException("User is not child's guardian")
                 }
 
@@ -132,7 +133,7 @@ class ApplicationControllerCitizen(
                     ?: throw IllegalStateException("Child not found")
 
                 val applicationId = tx.insertApplication(
-                    guardianId = user.id,
+                    guardianId = PersonId(user.id),
                     childId = body.childId,
                     origin = ApplicationOrigin.ELECTRONIC
                 )
@@ -147,7 +148,7 @@ class ApplicationControllerCitizen(
     fun getChildDuplicateApplications(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): ResponseEntity<Map<ApplicationType, Boolean>> {
         Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
         @Suppress("DEPRECATION")
@@ -159,7 +160,7 @@ class ApplicationControllerCitizen(
                     .map { type ->
                         type to (
                             type != ApplicationType.CLUB &&
-                                tx.duplicateApplicationExists(guardianId = user.id, childId = childId, type = type)
+                                tx.duplicateApplicationExists(guardianId = PersonId(user.id), childId = childId, type = type)
                             )
                     }
                     .toMap()
@@ -172,7 +173,7 @@ class ApplicationControllerCitizen(
     fun getChildPlacementStatusByApplicationType(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): ResponseEntity<Map<ApplicationType, Boolean>> {
         Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
         @Suppress("DEPRECATION")
@@ -256,7 +257,7 @@ class ApplicationControllerCitizen(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val application = tx.fetchApplicationDetails(applicationId)
-                    ?.takeIf { it.guardianId == user.id }
+                    ?.takeIf { it.guardianId.raw == user.id }
                     ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
                 if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
@@ -284,7 +285,7 @@ class ApplicationControllerCitizen(
         Audit.DecisionRead.log(targetId = user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
-        return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } })
+        return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getOwnDecisions(PersonId(user.id)) } })
     }
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -300,7 +301,7 @@ class ApplicationControllerCitizen(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationDetails(applicationId)
-                    ?.let { if (it.guardianId != user.id) throw Forbidden("Application not owned") }
+                    ?.let { if (it.guardianId.raw != user.id) throw Forbidden("Application not owned") }
                     ?: throw NotFound("Application not found")
 
                 tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
@@ -359,7 +360,7 @@ class ApplicationControllerCitizen(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                if (!tx.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == id }) {
+                if (!tx.getDecisionsByGuardian(PersonId(user.id), AclAuthorization.All).any { it.id == id }) {
                     logger.warn { "Citizen ${user.id} tried to download decision $id" }
                     throw NotFound("Decision not found")
                 }
@@ -376,13 +377,13 @@ class ApplicationControllerCitizen(
 }
 
 data class ApplicationsOfChild(
-    val childId: UUID,
+    val childId: ChildId,
     val childName: String,
     val applicationSummaries: List<CitizenApplicationSummary>
 )
 
 data class CreateApplicationBody(
-    val childId: UUID,
+    val childId: ChildId,
     val type: ApplicationType
 )
 

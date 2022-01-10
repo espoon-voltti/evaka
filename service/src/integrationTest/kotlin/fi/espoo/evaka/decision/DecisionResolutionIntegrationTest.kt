@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -57,7 +58,7 @@ data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept
 
 class DecisionResolutionIntegrationTest : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw)
     private val applicationId = ApplicationId(UUID.randomUUID())
 
     @BeforeEach
@@ -405,7 +406,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
             if (preschoolDaycareWithoutPreschool) null
             else tx.insertTestDecision(
                 TestDecision(
-                    createdBy = testDecisionMaker_1.id,
+                    createdBy = EvakaUserId(testDecisionMaker_1.id),
                     unitId = unit.id,
                     applicationId = applicationId,
                     type = when (type) {
@@ -424,7 +425,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         val preschoolDaycareId = preschoolDaycarePeriod?.let {
             tx.insertTestDecision(
                 TestDecision(
-                    createdBy = testDecisionMaker_1.id,
+                    createdBy = EvakaUserId(testDecisionMaker_1.id),
                     unitId = unit.id,
                     applicationId = applicationId,
                     type = DecisionType.PRESCHOOL_DAYCARE,

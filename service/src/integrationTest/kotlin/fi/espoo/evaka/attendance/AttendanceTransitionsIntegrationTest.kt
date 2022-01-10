@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
@@ -39,8 +40,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
-    private val userId = UUID.randomUUID()
-    private val mobileUser = AuthenticatedUser.MobileDevice(userId)
+    private val mobileUser = AuthenticatedUser.MobileDevice(UUID.randomUUID())
     private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
     private val daycarePlacementId = PlacementId(UUID.randomUUID())
@@ -53,7 +53,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            tx.createMobileDeviceToUnit(userId, testDaycare.id)
+            tx.createMobileDeviceToUnit(MobileDeviceId(mobileUser.id), testDaycare.id)
         }
     }
 

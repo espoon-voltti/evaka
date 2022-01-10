@@ -5,6 +5,7 @@
 package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
@@ -12,9 +13,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
-fun Database.Read.getChildDailyNote(childId: UUID): ChildDailyNote? {
+fun Database.Read.getChildDailyNote(childId: ChildId): ChildDailyNote? {
     return createQuery(
         """
         SELECT 
@@ -68,7 +68,7 @@ private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>): L
         .list()
 }
 
-fun Database.Transaction.createChildDailyNote(childId: UUID, note: ChildDailyNoteBody): ChildDailyNoteId {
+fun Database.Transaction.createChildDailyNote(childId: ChildId, note: ChildDailyNoteBody): ChildDailyNoteId {
     return createUpdate(
         """
 INSERT INTO child_daily_note (child_id, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note)

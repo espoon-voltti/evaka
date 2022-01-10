@@ -62,6 +62,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -178,7 +179,7 @@ class ApplicationStateService(
                 serviceNeed = form.preferences.serviceNeed?.copy(
                     serviceNeedOption = defaultServiceNeedOption?.let {
                         ServiceNeedOption(
-                            id = it.id.raw,
+                            id = it.id,
                             nameFi = it.nameFi,
                             nameSv = it.nameSv,
                             nameEn = it.nameEn
@@ -202,7 +203,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
-            if (application.guardianId != user.id) {
+            if (application.guardianId.raw != user.id) {
                 throw Forbidden("User does not own this application")
             }
         } else {
@@ -449,7 +450,7 @@ class ApplicationStateService(
         Audit.DecisionAccept.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
-            if (application.guardianId != user.id) {
+            if (application.guardianId.raw != user.id) {
                 throw Forbidden("User does not own this application")
             }
         } else {
@@ -506,7 +507,7 @@ class ApplicationStateService(
         Audit.DecisionReject.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
-            if (application.guardianId != user.id) {
+            if (application.guardianId.raw != user.id) {
                 throw Forbidden("User does not own this application")
             }
         } else {
@@ -548,18 +549,18 @@ class ApplicationStateService(
         asDraft: Boolean = false
     ): ApplicationDetails {
         val original = tx.fetchApplicationDetails(applicationId)
-            ?.takeIf { it.guardianId == user.id }
+            ?.takeIf { it.guardianId.raw == user.id }
             ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
         val updatedForm = original.form.update(update)
 
         if (!updatedForm.preferences.urgent) {
-            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, user.id)
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, user.evakaUserId)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
         }
 
         if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
-            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE, user.id)
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE, user.evakaUserId)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
         }
 
@@ -587,7 +588,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         applicationId: ApplicationId,
         update: ApplicationUpdate,
-        userId: UUID,
+        userId: EvakaUserId,
         currentDate: LocalDate
     ) {
         val original = tx.fetchApplicationDetails(applicationId)
@@ -801,7 +802,7 @@ class ApplicationStateService(
                 applicationId = application.id
             ).let { validateIncome(it, incomeTypes) }
             tx.splitEarlierIncome(validIncome.personId, period)
-            tx.upsertIncome(mapper, validIncome, application.guardianId)
+            tx.upsertIncome(mapper, validIncome, EvakaUserId(application.guardianId.raw))
             asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
         }
     }

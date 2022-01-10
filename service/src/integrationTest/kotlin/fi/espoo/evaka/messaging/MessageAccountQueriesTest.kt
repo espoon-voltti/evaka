@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
@@ -31,10 +32,10 @@ import kotlin.test.assertNull
 
 class MessageAccountQueriesTest : PureJdbiTest() {
 
-    private val personId: UUID = UUID.randomUUID()
-    private val supervisorId: UUID = UUID.randomUUID()
-    private val employee1Id: UUID = UUID.randomUUID()
-    private val employee2Id: UUID = UUID.randomUUID()
+    private val personId = PersonId(UUID.randomUUID())
+    private val supervisorId = EmployeeId(UUID.randomUUID())
+    private val employee1Id = EmployeeId(UUID.randomUUID())
+    private val employee2Id = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
@@ -63,7 +64,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             it.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
 
             it.insertDaycareAclRow(daycareId, employee1Id, UserRole.STAFF)
-            it.insertDaycareGroupAcl(daycareId, EmployeeId(employee1Id), listOf(groupId))
+            it.insertDaycareGroupAcl(daycareId, employee1Id, listOf(groupId))
 
             // employee2 has no groups
             it.insertDaycareAclRow(daycareId, employee2Id, UserRole.STAFF)

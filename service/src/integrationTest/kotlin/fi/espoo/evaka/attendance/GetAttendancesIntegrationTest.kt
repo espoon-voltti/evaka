@@ -15,6 +15,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
@@ -43,10 +44,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GetAttendancesIntegrationTest : FullApplicationTest() {
-    private val userId = UUID.randomUUID()
-    private val mobileUser = AuthenticatedUser.MobileDevice(userId)
-    private val userId2 = UUID.randomUUID()
-    private val mobileUser2 = AuthenticatedUser.MobileDevice(userId2)
+    private val mobileUser = AuthenticatedUser.MobileDevice(UUID.randomUUID())
+    private val mobileUser2 = AuthenticatedUser.MobileDevice(UUID.randomUUID())
     private val groupId = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -75,8 +74,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            tx.createMobileDeviceToUnit(userId, testDaycare.id)
-            tx.createMobileDeviceToUnit(userId2, testDaycare2.id)
+            tx.createMobileDeviceToUnit(MobileDeviceId(mobileUser.id), testDaycare.id)
+            tx.createMobileDeviceToUnit(MobileDeviceId(mobileUser2.id), testDaycare2.id)
         }
     }
 

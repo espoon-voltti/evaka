@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/absences")
@@ -57,7 +57,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
             accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, it.childId)
         }
 
-        db.connect { dbc -> dbc.transaction { absenceService.upsertAbsences(it, absences.data, user.id) } }
+        db.connect { dbc -> dbc.transaction { absenceService.upsertAbsences(it, absences.data, user.evakaUserId) } }
         return ResponseEntity.noContent().build()
     }
 
@@ -82,7 +82,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun getAbsencesByChild(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): ResponseEntity<Wrapper<AbsenceChildMinimal>> {
@@ -96,7 +96,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun getFutureAbsencesByChild(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): ResponseEntity<List<Absence>> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FUTURE_ABSENCES, childId)

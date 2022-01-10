@@ -8,13 +8,13 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
-import java.util.UUID
 
 data class VisitingAddress(
     val streetAddress: String = "", // address.street_address not nullable
@@ -74,7 +74,7 @@ data class Daycare(
 
 @PropagateNull("finance_decision_handler_id")
 data class FinanceDecisionHandler(
-    val id: UUID,
+    val id: EmployeeId,
     val firstName: String,
     val LastName: String
 )

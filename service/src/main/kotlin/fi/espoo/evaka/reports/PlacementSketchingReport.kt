@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class PlacementSketchingReportController(private val accessControl: AccessControl) {
@@ -106,7 +106,7 @@ data class PlacementSketchingReportRow(
     val areaName: String,
     val requestedUnitId: DaycareId,
     val requestedUnitName: String,
-    val childId: UUID,
+    val childId: ChildId,
     val childFirstName: String?,
     val childLastName: String?,
     val childDob: String?,

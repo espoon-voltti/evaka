@@ -5,6 +5,7 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -12,12 +13,11 @@ import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
 data class KoskiSearchParams(
-    val personIds: List<UUID> = listOf(),
+    val personIds: List<ChildId> = listOf(),
     val daycareIds: List<DaycareId> = listOf()
 )
 

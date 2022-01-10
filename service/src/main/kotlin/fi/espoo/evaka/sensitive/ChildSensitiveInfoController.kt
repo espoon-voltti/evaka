@@ -28,8 +28,8 @@ class ChildSensitiveInfoController(
     ): ChildSensitiveInformation {
         Audit.ChildSensitiveInfoRead.log(targetId = childId)
 
-        ac.requirePermissionFor(user, Action.Child.READ_SENSITIVE_INFO, childId.raw)
+        ac.requirePermissionFor(user, Action.Child.READ_SENSITIVE_INFO, childId)
 
-        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(childId.raw) ?: throw NotFound("Child not found") } }
+        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(childId) ?: throw NotFound("Child not found") } }
     }
 }

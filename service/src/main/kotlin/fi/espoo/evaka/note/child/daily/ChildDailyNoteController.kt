@@ -6,6 +6,7 @@ package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -31,7 +31,7 @@ class ChildDailyNoteController(
     fun createChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNoteId {
         Audit.ChildDailyNoteCreate.log(childId)

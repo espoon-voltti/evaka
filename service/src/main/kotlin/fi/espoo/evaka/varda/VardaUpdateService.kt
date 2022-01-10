@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaAsyncJob
@@ -31,7 +32,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -121,7 +121,7 @@ fun updateVardaChild(db: Database.Connection, client: VardaClient, serviceNeedDi
         if (!db.read { it.hasVardaServiceNeeds(evakaChildId) }) {
             logger.info("VardaUpdate: deleting child for not having service needs ($evakaChildId)")
 
-            if (!deleteChildDataFromVardaAndDb(db, client, evakaChildId.raw)) {
+            if (!deleteChildDataFromVardaAndDb(db, client, evakaChildId)) {
                 // If child has 0 service needs in varda, and delete fails, we need to retry it via the reset mechanism
                 db.transaction {
                     it.resetChildResetTimestamp(evakaChildId)
@@ -249,7 +249,7 @@ private fun guardiansLiveInSameAddress(guardians: List<VardaGuardianWithId>): Bo
     return validResidenceCodes.size == guardians.size && validResidenceCodes.toSet().size == 1
 }
 
-private fun guardiansResponsibleForFeeData(decisionHeadOfFamilyId: UUID, allGuardians: List<VardaGuardianWithId>): List<VardaGuardianWithId> {
+private fun guardiansResponsibleForFeeData(decisionHeadOfFamilyId: PersonId, allGuardians: List<VardaGuardianWithId>): List<VardaGuardianWithId> {
     return if (guardiansLiveInSameAddress(allGuardians)) allGuardians else allGuardians.filter { guardian -> guardian.id == decisionHeadOfFamilyId }
 }
 
@@ -267,7 +267,7 @@ private fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection
             val decision = db.read { it.getFeeDecisionsByIds(listOf(feeId)) }.first()
 
             // If head of family is not a guardian, fee data is not supposed to be sent to varda (https://wiki.eduuni.fi/display/OPHPALV/Huoltajan+tiedot)
-            if (guardians.none { it.id == decision.headOfFamily.id }) {
+            if (guardians.none { it.id.raw == decision.headOfFamily.id }) {
                 logger.info("VardaUpdate: refusing to send fee data for fee decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}")
                 null
             } else sendFeeDecisionToVarda(
@@ -275,7 +275,7 @@ private fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection
                 decision = decision,
                 vardaChildId = newVardaServiceNeed.vardaChildId!!,
                 evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
+                guardians = guardiansResponsibleForFeeData(PersonId(decision.headOfFamily.id), guardians)
             )
         } catch (e: Exception) {
             error("VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")

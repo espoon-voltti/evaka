@@ -9,9 +9,9 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 data class ApplicationFormUpdate(
     val child: ChildDetailsUpdate,
@@ -435,7 +435,7 @@ data class ClubDetails(
 )
 
 data class ServiceNeedOption(
-    val id: UUID,
+    val id: ServiceNeedOptionId,
     val nameFi: String,
     val nameSv: String,
     val nameEn: String

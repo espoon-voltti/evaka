@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -169,7 +170,7 @@ enum class VoucherReportRowType {
 }
 
 data class ServiceVoucherValueRow(
-    val childId: UUID,
+    val childId: ChildId,
     val childFirstName: String,
     val childLastName: String,
     val childDateOfBirth: LocalDate,

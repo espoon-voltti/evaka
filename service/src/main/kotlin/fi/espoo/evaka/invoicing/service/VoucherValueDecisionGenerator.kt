@@ -34,7 +34,9 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -58,10 +60,10 @@ internal fun Database.Transaction.handleValueDecisionChanges(
 
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
-    val adults = families.flatMap { listOfNotNull(it.headOfFamily.id, it.partner?.id) }
+    val adults = families.flatMap { listOfNotNull(PersonId(it.headOfFamily.id), it.partner?.id?.let(::PersonId)) }
     val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, adults, from)
-    val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
-    val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
+    val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(ChildId(child.id)) else listOf()
+    val feeAlterations = getFeeAlterationsFrom(listOf(ChildId(child.id)), from) + addECHAFeeAlterations(listOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
     val serviceVoucherUnits = getServiceVoucherUnits()
@@ -80,12 +82,12 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             serviceVoucherUnits
         )
 
-    lockValueDecisionsForChild(child.id)
+    lockValueDecisionsForChild(ChildId(child.id))
 
     val existingDrafts =
-        findValueDecisionsForChild(child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
+        findValueDecisionsForChild(ChildId(child.id), null, listOf(VoucherValueDecisionStatus.DRAFT))
     val activeDecisions = findValueDecisionsForChild(
-        child.id,
+        ChildId(child.id),
         null,
         listOf(
             VoucherValueDecisionStatus.WAITING_FOR_SENDING,
@@ -135,13 +137,13 @@ private fun generateNewValueDecisions(
                 ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
-                .find { family.headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
+                .find { family.headOfFamily.id == it.personId.raw && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
             val partnerIncome = family.partner?.let { partner ->
                 incomes
                     .find {
-                        partner.id == it.personId && DateRange(
+                        partner.id == it.personId.raw && DateRange(
                             it.validFrom,
                             it.validTo
                         ).contains(period)

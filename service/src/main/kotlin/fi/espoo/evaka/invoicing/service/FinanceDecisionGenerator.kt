@@ -18,7 +18,9 @@ import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -26,7 +28,6 @@ import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
 import org.springframework.stereotype.Component
 import java.time.LocalDate
-import java.util.UUID
 
 data class Quadruple<out A, out B, out C, out D>(
     val first: A,
@@ -45,18 +46,18 @@ class FinanceDecisionGenerator(
     private val feeDecisionMinDate = env.feeDecisionMinDate
     private val valueDecisionCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled
 
-    fun createRetroactiveFeeDecisions(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
+    fun createRetroactiveFeeDecisions(tx: Database.Transaction, headOfFamily: PersonId, from: LocalDate) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         tx.handleFeeDecisionChanges(
             objectMapper,
             incomeTypesProvider,
             from, // intentionally does not care about feeDecisionMinDate
-            PersonData.JustId(headOfFamily),
+            PersonData.JustId(headOfFamily.raw),
             families
         )
     }
 
-    fun createRetroactiveValueDecisions(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
+    fun createRetroactiveValueDecisions(tx: Database.Transaction, headOfFamily: PersonId, from: LocalDate) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         families
             .flatMap { family -> family.children.map { it to family } }
@@ -76,13 +77,13 @@ class FinanceDecisionGenerator(
             }
     }
 
-    fun generateNewDecisionsForAdult(tx: Database.Transaction, personId: UUID, from: LocalDate) {
+    fun generateNewDecisionsForAdult(tx: Database.Transaction, personId: PersonId, from: LocalDate) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
         val families = tx.findFamiliesByAdult(personId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, fromOrMinDate, families)
     }
 
-    fun generateNewDecisionsForChild(tx: Database.Transaction, personId: UUID, from: LocalDate) {
+    fun generateNewDecisionsForChild(tx: Database.Transaction, personId: ChildId, from: LocalDate) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
         val families = tx.findFamiliesByChild(personId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, fromOrMinDate, families)
@@ -124,7 +125,7 @@ class FinanceDecisionGenerator(
     }
 }
 
-private fun Database.Read.findFamiliesByChild(childId: UUID, from: LocalDate): List<FridgeFamily> {
+private fun Database.Read.findFamiliesByChild(childId: ChildId, from: LocalDate): List<FridgeFamily> {
     val dateRange = DateRange(from, null)
     val parentRelations = getParentships(null, childId, includeConflicts = false, period = dateRange)
 
@@ -147,7 +148,7 @@ private fun Database.Read.findFamiliesByChild(childId: UUID, from: LocalDate): L
     }
 }
 
-private fun Database.Read.findFamiliesByAdult(personId: UUID, from: LocalDate): List<FridgeFamily> {
+private fun Database.Read.findFamiliesByAdult(personId: PersonId, from: LocalDate): List<FridgeFamily> {
     val possibleHeadsOfFamily = getPartnersForPerson(personId, includeConflicts = false, period = DateRange(from, null))
         .map { it.person.id }
         .distinct() + personId
@@ -155,7 +156,7 @@ private fun Database.Read.findFamiliesByAdult(personId: UUID, from: LocalDate): 
     return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(it, from) }
 }
 
-private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, from: LocalDate): List<FridgeFamily> {
+private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: PersonId, from: LocalDate): List<FridgeFamily> {
     val dateRange = DateRange(from, null)
     val childRelations = getParentships(headOfFamilyId, null, includeConflicts = false, period = dateRange)
     val partners = getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = dateRange)
@@ -174,7 +175,7 @@ private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, from:
 }
 
 private fun Database.Read.filterFridgePartnerParentshipsByGuardianship(
-    headOfFamily: UUID,
+    headOfFamily: PersonId,
     fridgePartnerParentships: Iterable<Parentship>
 ): List<Parentship> = fridgePartnerParentships.filter {
     getChildGuardians(it.child.id).contains(headOfFamily)
@@ -182,7 +183,7 @@ private fun Database.Read.filterFridgePartnerParentshipsByGuardianship(
 
 private fun generateFamilyCompositions(
     from: LocalDate,
-    headOfFamily: UUID,
+    headOfFamily: PersonId,
     partners: Iterable<Partner>,
     parentships: Iterable<Parentship>,
     fridgePartnerParentships: Iterable<Parentship>,
@@ -213,16 +214,16 @@ private fun generateFamilyCompositions(
                 .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
                 .map { it.child }
             period to Quadruple(
-                PersonData.JustId(headOfFamily),
-                partner?.let { PersonData.JustId(it.id) },
-                children.map { PersonData.WithDateOfBirth(it.id, it.dateOfBirth) },
-                fridgePartnerChildren.map { PersonData.WithDateOfBirth(it.id, it.dateOfBirth) }
+                PersonData.JustId(headOfFamily.raw),
+                partner?.let { PersonData.JustId(it.id.raw) },
+                children.map { PersonData.WithDateOfBirth(it.id.raw, it.dateOfBirth) },
+                fridgePartnerChildren.map { PersonData.WithDateOfBirth(it.id.raw, it.dateOfBirth) }
             )
         }
 
     return mergePeriods(familyPeriods).map { (period, familyData) ->
         val (children, fridgeChildren) = if (familyData.second?.id != null) {
-            getChildrenAndFridgeChildren(headOfFamily, familyData.second.id, familyData.third, familyData.fourth, fridgePartnerParentshipsWithGuardianship)
+            getChildrenAndFridgeChildren(headOfFamily, PersonId(familyData.second.id), familyData.third, familyData.fourth, fridgePartnerParentshipsWithGuardianship)
         } else {
             Pair(familyData.third, listOf())
         }
@@ -238,14 +239,14 @@ private fun generateFamilyCompositions(
 }
 
 fun getChildrenAndFridgeChildren(
-    headOfFamily: UUID,
-    fridgePartner: UUID,
+    headOfFamily: PersonId,
+    fridgePartner: PersonId,
     children: List<PersonData.WithDateOfBirth>,
     fridgePartnerChildren: List<PersonData.WithDateOfBirth>,
     fridgePartnerParentshipsWithGuardianship: Iterable<Parentship>
 ):
     Pair<List<PersonData.WithDateOfBirth>, List<PersonData.WithDateOfBirth>> =
-    if (fridgePartnerChildren.map { it.id }.toSet() == fridgePartnerParentshipsWithGuardianship.map { it.child.id }.toSet()) {
+    if (fridgePartnerChildren.map { PersonId(it.id) }.toSet() == fridgePartnerParentshipsWithGuardianship.map { it.child.id }.toSet()) {
         if (shouldReceiveFeeDecision(headOfFamily, fridgePartner, children, fridgePartnerChildren)) {
             Pair(children + fridgePartnerChildren, listOf())
         } else {
@@ -261,8 +262,8 @@ fun getChildrenAndFridgeChildren(
  *  which one it is.
  */
 fun shouldReceiveFeeDecision(
-    headOfFamily: UUID,
-    fridgePartner: UUID,
+    headOfFamily: PersonId,
+    fridgePartner: PersonId,
     children: List<PersonData.WithDateOfBirth>,
     fridgePartnerChildren: List<PersonData.WithDateOfBirth>
 ):
@@ -418,6 +419,6 @@ internal fun addECHAFeeAlterations(
     incomes: List<Income>
 ): List<FeeAlteration> {
     return incomes.filter { it.worksAtECHA }.flatMap { income ->
-        children.map { child -> getECHAIncrease(child.id, DateRange(income.validFrom, income.validTo)) }
+        children.map { child -> getECHAIncrease(ChildId(child.id), DateRange(income.validFrom, income.validTo)) }
     }
 }

@@ -4,11 +4,13 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
 fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
     val sql = """
@@ -21,7 +23,7 @@ WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
         .one()
 }
 
-fun Database.Read.getCitizenMessageAccount(personId: UUID): MessageAccountId {
+fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
     val sql = """
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = :personId AND acc.active = true
@@ -32,14 +34,14 @@ WHERE acc.person_id = :personId AND acc.active = true
         .one()
 }
 
-fun Database.Read.getEmployeeMessageAccountIds(employeeId: UUID): Set<MessageAccountId> {
+fun Database.Read.getEmployeeMessageAccountIds(employeeId: EmployeeId): Set<MessageAccountId> {
     return this.createQuery("SELECT account_id FROM message_account_access_view WHERE employee_id = :employeeId")
         .bind("employeeId", employeeId)
         .mapTo<MessageAccountId>()
         .toSet()
 }
 
-fun Database.Read.getEmployeeNestedMessageAccounts(employeeId: UUID): Set<NestedMessageAccount> {
+fun Database.Read.getEmployeeNestedMessageAccounts(employeeId: EmployeeId): Set<NestedMessageAccount> {
     val accountIds = getEmployeeMessageAccountIds(employeeId)
 
     val sql = """
@@ -103,7 +105,7 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupI
         .execute()
 }
 
-fun Database.Transaction.createPersonMessageAccount(personId: UUID): MessageAccountId {
+fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
     // language=SQL
     val sql = """
         INSERT INTO message_account (person_id) VALUES (:personId)
@@ -115,7 +117,7 @@ fun Database.Transaction.createPersonMessageAccount(personId: UUID): MessageAcco
         .one()
 }
 
-fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: UUID): MessageAccountId {
+fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
     // language=SQL
     val sql = """
         INSERT INTO message_account (employee_id) VALUES (:employeeId)
@@ -128,7 +130,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: UUID): Message
         .one()
 }
 
-fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: UUID) {
+fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
     // language=SQL
     val sql = """
         UPDATE message_account SET active = false
@@ -140,7 +142,7 @@ fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: UUID) {
 }
 
 fun Database.Read.groupRecipientAccountsByGuardianship(accountIds: Set<MessageAccountId>): Set<Set<MessageAccountId>> {
-    data class AccountToChild(val id: MessageAccountId, val childId: UUID? = null)
+    data class AccountToChild(val id: MessageAccountId, val childId: ChildId? = null)
 
     val accountsWithCommonChildren = createQuery(
         """     

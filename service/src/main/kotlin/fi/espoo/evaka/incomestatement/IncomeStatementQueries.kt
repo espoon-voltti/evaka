@@ -7,6 +7,7 @@ package fi.espoo.evaka.incomestatement
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -18,7 +19,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
 import java.time.LocalDate
-import java.util.UUID
 
 enum class IncomeStatementType {
     HIGHEST_FEE,
@@ -168,7 +168,7 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
 }
 
 fun Database.Read.readIncomeStatementsForPerson(
-    personId: UUID,
+    personId: PersonId,
     includeEmployeeContent: Boolean,
     page: Int,
     pageSize: Int
@@ -180,7 +180,7 @@ fun Database.Read.readIncomeStatementsForPerson(
         .mapToPaged(pageSize) { row -> mapIncomeStatement(row, includeEmployeeContent) }
 
 fun Database.Read.readIncomeStatementForPerson(
-    personId: UUID,
+    personId: PersonId,
     incomeStatementId: IncomeStatementId,
     includeEmployeeContent: Boolean
 ): IncomeStatement? =
@@ -268,7 +268,7 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindAccountant(accoun
         .bind("accountantEmail", accountant.email)
 
 fun Database.Transaction.createIncomeStatement(
-    personId: UUID,
+    personId: PersonId,
     body: IncomeStatementBody
 ): IncomeStatementId {
     return createQuery(
@@ -340,7 +340,7 @@ RETURNING id
 }
 
 fun Database.Transaction.updateIncomeStatement(
-    personId: UUID,
+    personId: PersonId,
     incomeStatementId: IncomeStatementId,
     body: IncomeStatementBody
 ): Boolean {
@@ -407,11 +407,11 @@ fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
 }
 
 data class IncomeStatementAwaitingHandler(
-    val id: UUID,
+    val id: IncomeStatementId,
     val created: HelsinkiDateTime,
     val startDate: LocalDate,
     val type: IncomeStatementType,
-    val personId: UUID,
+    val personId: PersonId,
     val personName: String,
     val primaryCareArea: String?
 )

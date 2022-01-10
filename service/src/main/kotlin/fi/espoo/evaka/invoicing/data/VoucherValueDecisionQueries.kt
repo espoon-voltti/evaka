@@ -12,7 +12,11 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -25,7 +29,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Transaction.upsertValueDecisions(decisions: List<VoucherValueDecision>) {
     val sql =
@@ -199,7 +202,7 @@ WHERE id = ANY(:ids)
 }
 
 fun Database.Read.findValueDecisionsForChild(
-    childId: UUID,
+    childId: ChildId,
     period: DateRange?,
     statuses: List<VoucherValueDecisionStatus>?
 ): List<VoucherValueDecision> {
@@ -272,12 +275,12 @@ fun Database.Read.searchValueDecisions(
     sortDirection: SortDirection,
     status: VoucherValueDecisionStatus,
     areas: List<String>,
-    unit: UUID?,
+    unit: DaycareId?,
     searchTerms: String = "",
     startDate: LocalDate?,
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
-    financeDecisionHandlerId: UUID?
+    financeDecisionHandlerId: EmployeeId?
 ): Paged<VoucherValueDecisionSummary> {
     val sortColumn = when (sortBy) {
         VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -410,7 +413,7 @@ WHERE decision.id = :id
         }
 }
 
-fun Database.Read.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId: UUID): List<VoucherValueDecisionSummary> {
+fun Database.Read.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId: PersonId): List<VoucherValueDecisionSummary> {
     return createQuery(
         """
 SELECT
@@ -448,7 +451,7 @@ WHERE decision.head_of_family_id = :headOfFamilyId
 
 fun Database.Transaction.approveValueDecisionDraftsForSending(
     ids: List<VoucherValueDecisionId>,
-    approvedBy: UUID,
+    approvedBy: EmployeeId,
     approvedAt: Instant
 ) {
     // language=sql
@@ -553,7 +556,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatusAndDates(updatedDecisio
         .execute()
 }
 
-fun Database.Transaction.lockValueDecisionsForChild(childId: UUID) {
+fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE child_id = :childId FOR UPDATE")
         .bind("childId", childId)
         .execute()

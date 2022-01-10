@@ -6,6 +6,7 @@ package fi.espoo.evaka.vtjclient.service.persondetails
 
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
@@ -122,7 +123,7 @@ class VTJPersonDetailsServiceTest {
     private fun queryAboutSelf(vtjPerson: VtjPerson = validPerson) =
         vtjPerson
             .toPersonDTO()
-            .let { DetailsQuery(requestingUser = AuthenticatedUser.Employee(it.id, setOf()), targetIdentifier = it.identity as SSN) }
+            .let { DetailsQuery(requestingUser = AuthenticatedUser.Employee(it.id.raw, setOf()), targetIdentifier = it.identity as SSN) }
 
     private fun DetailsQuery.asMinimalVtjResponse(): Henkilo = minimalVtjResponse("${requestingUser.id}")
 
@@ -135,7 +136,7 @@ class VTJPersonDetailsServiceTest {
         }
 
     private fun VtjPerson.toPersonDTO() = PersonDTO(
-        id = randomUUID(),
+        id = PersonId(randomUUID()),
         identity = SSN.getInstance(socialSecurityNumber),
         ssnAddingDisabled = false,
         firstName = firstNames,

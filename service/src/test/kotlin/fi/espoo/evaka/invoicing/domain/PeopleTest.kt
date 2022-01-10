@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import fi.espoo.evaka.decision.DecisionSendAddress
+import fi.espoo.evaka.shared.PersonId
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
@@ -13,7 +14,7 @@ import kotlin.test.assertNull
 
 class PeopleTest {
     private val testPerson = PersonData.Detailed(
-        id = UUID.randomUUID(),
+        id = PersonId(UUID.randomUUID()),
         dateOfBirth = LocalDate.of(1980, 1, 1),
         firstName = "John",
         lastName = "Doe",

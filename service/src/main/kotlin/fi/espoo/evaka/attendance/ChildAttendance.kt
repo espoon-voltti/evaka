@@ -11,10 +11,10 @@ import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttendanceId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.util.UUID
 
 data class ContactInfo(
     val id: String,
@@ -32,7 +32,7 @@ data class AttendanceResponse(
 )
 
 data class Child(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val preferredName: String?,
@@ -58,7 +58,7 @@ enum class AttendanceStatus {
 
 data class ChildAttendance(
     val id: AttendanceId,
-    val childId: UUID,
+    val childId: ChildId,
     val unitId: DaycareId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?

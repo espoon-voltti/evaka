@@ -7,7 +7,6 @@ package fi.espoo.evaka.varda
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
@@ -39,7 +38,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
         val vardaChildId = 31415L
         val vardaPersonId = 31245
         val vardaPersonOid = "1.2.3.4.5"
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         db.transaction {
             insertVardaOrganizerChild(it, childId, vardaChildId, vardaPersonId, vardaPersonOid, defaultMunicipalOrganizerOid)
         }
@@ -53,7 +52,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getOrCreateVardaChildByOrganizer creates child when person exists`() {
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         db.transaction {
             insertVardaOrganizerChild(it, childId, 31415L, 31415, "3.1.4.1.5", defaultMunicipalOrganizerOid)
         }
@@ -67,7 +66,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getOrCreateVardaChildByOrganizer creates child & person when neither exists`() {
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", municipalOrganizerOid)
         assertEquals(1L, result)
 
@@ -91,7 +90,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getOrCreateVardaChildByOrganizer won't create person if she doesn't have ssn nor oid`() {
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         db.transaction {
             it.createUpdate(
                 """
@@ -119,7 +118,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getOrCreateVardaChildByOrganizer creates person if she does have oid but no ssn`() {
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         db.transaction {
             it.createUpdate(
                 """
@@ -139,7 +138,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getOrCreateVardaChildByOrganizer creates person if she does have ssn but no oid`() {
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         db.transaction {
             it.createUpdate(
                 """
@@ -162,7 +161,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
         val vardaChildId = 31415L
         val vardaPersonId = 31245
         val vardaPersonOid = "1.2.3.4.5"
-        val childId = ChildId(testChild_1.id)
+        val childId = testChild_1.id
         db.transaction {
             insertVardaOrganizerChild(it, childId, vardaChildId, vardaPersonId, vardaPersonOid, defaultMunicipalOrganizerOid)
         }

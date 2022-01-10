@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
-import java.util.UUID
 
 data class PlacementPlanDraft(
     val type: PlacementType,
@@ -20,13 +20,13 @@ data class PlacementPlanDraft(
     val guardianHasRestrictedDetails: Boolean
 )
 
-data class PlacementDraftChild(val id: UUID, val firstName: String, val lastName: String, val dob: LocalDate)
+data class PlacementDraftChild(val id: ChildId, val firstName: String, val lastName: String, val dob: LocalDate)
 data class PlacementDraftUnit(val id: DaycareId, val name: String)
 
 data class PlacementDraftPlacement(
     val id: PlacementId,
     val type: PlacementType,
-    val childId: UUID,
+    val childId: ChildId,
     val unit: PlacementDraftUnit,
     val startDate: LocalDate,
     val endDate: LocalDate

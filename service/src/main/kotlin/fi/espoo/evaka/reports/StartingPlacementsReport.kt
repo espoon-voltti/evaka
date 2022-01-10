@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.Month
-import java.util.UUID
 
 @RestController
 class StartingPlacementsReportController(private val accessControl: AccessControl) {
@@ -36,7 +36,7 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
 }
 
 data class StartingPlacementsRow(
-    val childId: UUID,
+    val childId: ChildId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
@@ -69,7 +69,7 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
 
 private val toRow = { rs: ResultSet, _: StatementContext ->
     StartingPlacementsRow(
-        childId = rs.getUUID("child_id"),
+        childId = ChildId(rs.getUUID("child_id")),
         firstName = rs.getString("first_name"),
         lastName = rs.getString("last_name"),
         dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),

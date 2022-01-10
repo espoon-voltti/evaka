@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
@@ -23,7 +24,7 @@ sealed class PersonData {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Basic(
         @PropagateNull
-        val id: UUID,
+        val id: PersonId,
         val dateOfBirth: LocalDate,
         val firstName: String,
         val lastName: String,
@@ -33,7 +34,7 @@ sealed class PersonData {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Detailed(
         @PropagateNull
-        val id: UUID,
+        val id: PersonId,
         val dateOfBirth: LocalDate,
         val dateOfDeath: LocalDate? = null,
         val firstName: String,

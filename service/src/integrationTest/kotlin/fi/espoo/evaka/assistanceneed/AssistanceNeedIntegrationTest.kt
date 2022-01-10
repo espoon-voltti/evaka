@@ -10,6 +10,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -300,20 +301,20 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     private fun testDate(day: Int) = LocalDate.now().withMonth(1).withDayOfMonth(day)
 
-    private fun givenAssistanceNeed(startDate: LocalDate, endDate: LocalDate, childId: UUID = testChild_1.id): AssistanceNeedId {
+    private fun givenAssistanceNeed(startDate: LocalDate, endDate: LocalDate, childId: ChildId = testChild_1.id): AssistanceNeedId {
         return db.transaction {
             it.insertTestAssistanceNeed(
                 DevAssistanceNeed(
                     childId = childId,
                     startDate = startDate,
                     endDate = endDate,
-                    updatedBy = assistanceWorker.id
+                    updatedBy = assistanceWorker.evakaUserId
                 )
             )
         }
     }
 
-    private fun givenPlacement(startDate: LocalDate, endDate: LocalDate, type: PlacementType, childId: UUID = testChild_1.id): PlacementId {
+    private fun givenPlacement(startDate: LocalDate, endDate: LocalDate, type: PlacementType, childId: ChildId = testChild_1.id): PlacementId {
         return db.transaction {
             it.insertTestPlacement(
                 DevPlacement(
@@ -346,7 +347,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun whenGetAssistanceNeedsThenExpectSuccess(childId: UUID, asUser: AuthenticatedUser = assistanceWorker): List<AssistanceNeed> {
+    private fun whenGetAssistanceNeedsThenExpectSuccess(childId: ChildId, asUser: AuthenticatedUser = assistanceWorker): List<AssistanceNeed> {
         val (_, res, result) = http.get("/children/$childId/assistance-needs")
             .asUser(asUser)
             .responseObject<List<AssistanceNeed>>(objectMapper)

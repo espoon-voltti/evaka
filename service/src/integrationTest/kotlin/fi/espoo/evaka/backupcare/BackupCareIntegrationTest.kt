@@ -11,7 +11,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -34,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -145,7 +146,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                 )
             )
             tx.insertTestServiceNeed(
-                confirmedBy = testDecisionMaker_1.id,
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id),
                 period = serviceNeedPeriod,
                 placementId = placementId,
                 optionId = snDefaultDaycare.id
@@ -188,7 +189,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     }
 
     private fun createBackupCareAndAssert(
-        childId: UUID = testChild_1.id,
+        childId: ChildId = testChild_1.id,
         unitId: DaycareId = testDaycare.id,
         groupId: GroupId? = null,
         period: FiniteDateRange = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))

@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -30,7 +31,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
 class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
-    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id.raw)
 
     @BeforeEach
     fun beforeEach() {
@@ -357,7 +358,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `create an income statement with someone else's attachment`() {
-        val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id)
+        val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id.raw)
         val attachmentId = uploadAttachment(someoneElse)
 
         createIncomeStatement(
@@ -602,8 +603,8 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
     fun `employee attachments are not visible to citizen`() {
         val attachment1 = uploadAttachment()
 
-        val employeeId = UUID.randomUUID()
-        val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
+        val employeeId = EmployeeId(UUID.randomUUID())
+        val employee = AuthenticatedUser.Employee(employeeId.raw, setOf(UserRole.FINANCE_ADMIN))
         db.transaction {
             it.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
         }

@@ -8,8 +8,11 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
@@ -43,16 +46,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AclIntegrationTest : PureJdbiTest() {
-    private lateinit var employeeId: UUID
+    private lateinit var employeeId: EmployeeId
     private lateinit var daycareId: DaycareId
     private lateinit var groupId: GroupId
-    private lateinit var childId: UUID
+    private lateinit var childId: ChildId
     private lateinit var applicationId: ApplicationId
     private lateinit var decisionId: DecisionId
     private lateinit var placementId: PlacementId
@@ -70,16 +72,16 @@ class AclIntegrationTest : PureJdbiTest() {
             val areaId = it.insertTestCareArea(DevCareArea(name = "Test area"))
             daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId))
             groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
-            guardianId = PersonId(it.insertTestPerson(DevPerson()))
+            guardianId = it.insertTestPerson(DevPerson())
             childId = it.insertTestPerson(DevPerson())
             it.insertTestChild(DevChild(id = childId))
-            fridgeParentId = PersonId(it.insertTestPerson(DevPerson()))
-            it.insertFridgeChild(DevFridgeChild(childId = childId, headOfChild = fridgeParentId.raw, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2030, 1, 1)))
-            it.insertGuardian(guardianId.raw, childId)
-            applicationId = it.insertTestApplication(childId = childId, guardianId = guardianId.raw)
+            fridgeParentId = it.insertTestPerson(DevPerson())
+            it.insertFridgeChild(DevFridgeChild(childId = childId, headOfChild = fridgeParentId, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2030, 1, 1)))
+            it.insertGuardian(guardianId, childId)
+            applicationId = it.insertTestApplication(childId = childId, guardianId = guardianId)
             decisionId = it.insertTestDecision(
                 TestDecision(
-                    createdBy = employeeId,
+                    createdBy = EvakaUserId(employeeId.raw),
                     unitId = daycareId,
                     applicationId = applicationId,
                     type = DecisionType.DAYCARE,
@@ -88,8 +90,7 @@ class AclIntegrationTest : PureJdbiTest() {
                 )
             )
             placementId = it.insertTestPlacement(childId = childId, unitId = daycareId, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2100, 1, 1))
-            mobileId = MobileDeviceId(it.insertTestEmployee(DevEmployee()))
-            it.insertTestMobileDevice(DevMobileDevice(id = mobileId, unitId = daycareId))
+            mobileId = it.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
         accessControl = AccessControl(StaticPermittedRoleActions(), acl, jdbi)
@@ -104,7 +105,7 @@ class AclIntegrationTest : PureJdbiTest() {
     @EnumSource(names = ["ADMIN", "SERVICE_WORKER", "FINANCE_ADMIN"])
     @Suppress("DEPRECATION")
     fun testGlobalRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
+        val user = AuthenticatedUser.Employee(employeeId.raw, setOf(role))
         val aclAuth = AclAuthorization.All
         val aclRoles = AclAppliedRoles(setOf(role))
 
@@ -121,7 +122,7 @@ class AclIntegrationTest : PureJdbiTest() {
     @EnumSource(names = ["UNIT_SUPERVISOR", "STAFF"])
     @Suppress("DEPRECATION")
     fun testAclRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
+        val user = AuthenticatedUser.Employee(employeeId.raw, setOf(role))
         val negativeAclAuth = AclAuthorization.Subset(emptySet())
         val negativeAclRoles = AclAppliedRoles(emptySet())
         val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))

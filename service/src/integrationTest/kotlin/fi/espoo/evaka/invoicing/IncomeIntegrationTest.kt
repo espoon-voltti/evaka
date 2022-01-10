@@ -84,7 +84,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `getIncome works with single income in DB`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -108,7 +108,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             ),
             testIncome
         )
-        db.transaction { tx -> incomes.forEach { tx.upsertIncome(mapper, it, financeUser.id) } }
+        db.transaction { tx -> incomes.forEach { tx.upsertIncome(mapper, it, financeUser.evakaUserId) } }
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -154,7 +154,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome splits earlier indefinite income`() {
         val firstIncome = testIncome().copy(validTo = null)
-        db.transaction { tx -> tx.upsertIncome(mapper, firstIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, firstIncome, financeUser.evakaUserId) }
 
         val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusMonths(1))
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
@@ -179,7 +179,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome throws with partly overlapping date range`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val overlappingIncome =
             testIncome.let { it.copy(validFrom = it.validFrom.plusDays(10), validTo = null) }
@@ -194,7 +194,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome throws with identical date range`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -206,7 +206,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome throws with covering date range`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val overlappingIncome =
             testIncome.let { it.copy(validFrom = it.validTo!!.minusMonths(1), validTo = it.validTo!!.plusYears(1)) }
@@ -241,7 +241,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome works with valid income`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val updated = testIncome.copy(
             data = mapOf(
@@ -272,7 +272,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome throws with invalid date rage`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val updated = testIncome.copy(validTo = testIncome.validFrom.minusDays(1))
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
@@ -285,7 +285,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome throws with overlapping date rage`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val anotherIncome = with(testIncome) {
             this.copy(
@@ -294,7 +294,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
                 validTo = validTo!!.plusYears(1)
             )
         }
-        db.transaction { tx -> tx.upsertIncome(mapper, anotherIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, anotherIncome, financeUser.evakaUserId) }
 
         val updated = testIncome.copy(validTo = anotherIncome.validTo)
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
@@ -307,7 +307,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome removes data if effect is not INCOME`() {
         val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId) }
 
         val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
@@ -332,7 +332,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val testIncome = testIncome()
         db.transaction { tx ->
             val application = tx.insertApplication()
-            tx.upsertIncome(mapper, testIncome.copy(applicationId = application.id), financeUser.id)
+            tx.upsertIncome(mapper, testIncome.copy(applicationId = application.id), financeUser.evakaUserId)
         }
 
         val (_, responseBeforeUpdate, resultBeforeUpdate) = http.get("/incomes?personId=${testAdult_1.id}")
@@ -370,8 +370,8 @@ class IncomeIntegrationTest : FullApplicationTest() {
             )
         }
         db.transaction { tx ->
-            tx.upsertIncome(mapper, testIncome, financeUser.id)
-            tx.upsertIncome(mapper, anotherIncome, financeUser.id)
+            tx.upsertIncome(mapper, testIncome, financeUser.evakaUserId)
+            tx.upsertIncome(mapper, anotherIncome, financeUser.evakaUserId)
         }
 
         val resultBeforeDelete = db.transaction { tx -> tx.getIncomesForPerson(mapper, incomeTypesProvider, testIncome.personId) }

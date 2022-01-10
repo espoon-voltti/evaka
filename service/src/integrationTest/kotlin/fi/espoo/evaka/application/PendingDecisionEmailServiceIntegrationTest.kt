@@ -12,6 +12,7 @@ import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.TestDecision
@@ -160,7 +161,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
                 TestDecision(
                     applicationId = applicationId,
                     status = DecisionStatus.PENDING,
-                    createdBy = testDecisionMaker_1.id,
+                    createdBy = EvakaUserId(testDecisionMaker_1.id),
                     unitId = unitId,
                     type = type,
                     startDate = startDate,

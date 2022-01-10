@@ -22,6 +22,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.updatePersonContactInfo
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -43,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/person")
@@ -69,7 +69,7 @@ class PersonController(
     ): PersonResponse {
         Audit.PersonDetailsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ, personId)
-        return db.connect { dbc -> dbc.transaction { it.getPersonById(personId.raw) } }
+        return db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
             ?.let {
                 PersonResponse(
                     PersonJSON.from(it),
@@ -83,18 +83,18 @@ class PersonController(
     fun getPersonIdentity(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID
+        @PathVariable(value = "personId") personId: PersonId
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Person.READ, PersonId(personId))
+        accessControl.requirePermissionFor(user, Action.Person.READ, personId)
         return db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
             ?.hideNonPermittedPersonData(
                 includeInvoiceAddress = accessControl.hasPermissionFor(
                     user,
                     Action.Person.READ_INVOICE_ADDRESS,
-                    PersonId(personId)
+                    personId
                 ),
-                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, PersonId(personId))
+                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, personId)
             )
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
             ?: ResponseEntity.notFound().build()
@@ -104,7 +104,7 @@ class PersonController(
     fun getPersonDependants(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID
+        @PathVariable(value = "personId") personId: PersonId
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
         @Suppress("DEPRECATION")
@@ -118,7 +118,7 @@ class PersonController(
     fun getPersonGuardians(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") childId: UUID
+        @PathVariable(value = "personId") childId: ChildId
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonGuardianRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_GUARDIANS, childId)
@@ -150,7 +150,7 @@ class PersonController(
     fun updateContactInfo(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID,
+        @PathVariable(value = "personId") personId: PersonId,
         @RequestBody contactInfo: ContactInfo
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
@@ -167,7 +167,7 @@ class PersonController(
     fun updatePersonDetails(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID,
+        @PathVariable(value = "personId") personId: PersonId,
         @RequestBody data: PersonPatch
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
@@ -176,7 +176,7 @@ class PersonController(
 
         val userEditablePersonData = data
             .let {
-                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_INVOICE_ADDRESS, PersonId(personId))) it
+                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_INVOICE_ADDRESS, personId)) it
                 else it.copy(
                     invoiceRecipientName = null,
                     invoicingStreetAddress = null,
@@ -186,7 +186,7 @@ class PersonController(
                 )
             }
             .let {
-                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_OPH_OID, PersonId(personId))) it
+                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_OPH_OID, personId)) it
                 else it.copy(ophPersonOid = null)
             }
 
@@ -198,7 +198,7 @@ class PersonController(
     fun safeDeletePerson(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: UUID
+        @PathVariable(value = "personId") personId: PersonId
     ): ResponseEntity<Unit> {
         Audit.PersonDelete.log(targetId = personId)
         @Suppress("DEPRECATION")
@@ -307,7 +307,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: CreatePersonBody
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<PersonId> {
         Audit.PersonCreate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
@@ -321,8 +321,8 @@ class PersonController(
     )
 
     data class MergeRequest(
-        val master: UUID,
-        val duplicate: UUID
+        val master: PersonId,
+        val duplicate: PersonId
     )
 
     data class AddSsnRequest(
@@ -334,7 +334,7 @@ class PersonController(
     )
 
     data class PersonIdentityResponseJSON(
-        val id: UUID,
+        val id: PersonId,
         val socialSecurityNumber: String?
     ) {
         companion object {

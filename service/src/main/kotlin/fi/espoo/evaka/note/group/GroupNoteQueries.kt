@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.note.group
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -11,9 +12,8 @@ import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
-fun Database.Read.getGroupNotesForChild(childId: UUID): List<GroupNote> = createQuery(
+fun Database.Read.getGroupNotesForChild(childId: ChildId): List<GroupNote> = createQuery(
     """
     SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
     FROM group_note gn

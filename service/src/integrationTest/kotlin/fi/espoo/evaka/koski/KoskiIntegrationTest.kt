@@ -14,7 +14,9 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
@@ -312,7 +314,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(1, searchByExistingPerson.size)
 
         val searchByRandomPerson = db.read {
-            it.getPendingStudyRights(today, KoskiSearchParams(personIds = listOf(UUID.randomUUID())))
+            it.getPendingStudyRights(today, KoskiSearchParams(personIds = listOf(ChildId(UUID.randomUUID()))))
         }
         assertEquals(0, searchByRandomPerson.size)
 
@@ -342,7 +344,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
             testCases.forEach {
                 tx.insertTestAssistanceNeed(
                     DevAssistanceNeed(
-                        updatedBy = testDecisionMaker_1.id,
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id),
                         childId = testChild_1.id,
                         startDate = it.period.start,
                         endDate = it.period.end,
@@ -388,7 +390,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
             testCases.forEach {
                 tx.insertTestAssistanceAction(
                     DevAssistanceAction(
-                        updatedBy = testDecisionMaker_1.id,
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id),
                         childId = testChild_1.id,
                         startDate = it.period.start,
                         endDate = it.period.end,
@@ -799,7 +801,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun insertAbsences(childId: UUID, absenceType: AbsenceType, vararg periods: FiniteDateRange) =
+    private fun insertAbsences(childId: ChildId, absenceType: AbsenceType, vararg periods: FiniteDateRange) =
         db.transaction { tx ->
             for (period in periods) {
                 for (date in period.dates()) {

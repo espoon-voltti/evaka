@@ -9,6 +9,8 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -17,7 +19,6 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.Duration
-import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
@@ -47,8 +48,8 @@ class PendingDecisionEmailService(
     }
 
     data class GuardianDecisions(
-        val guardianId: UUID,
-        val decisionIds: List<UUID>
+        val guardianId: PersonId,
+        val decisionIds: List<DecisionId>
     )
 
     fun scheduleSendPendingDecisionsEmails(db: Database.Connection): Int {

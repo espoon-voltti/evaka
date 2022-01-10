@@ -20,6 +20,7 @@ import fi.espoo.evaka.pis.updateNonSsnPersonDetails
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.pis.updatePersonNonVtjDetails
 import fi.espoo.evaka.pis.updatePersonSsnAddingDisabled
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -33,14 +34,13 @@ import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class PersonService(
     private val personDetailsService: IPersonDetailsService
 ) {
     // Does a request to VTJ if the person has a SSN and updates person data
-    fun getUpToDatePersonFromVtj(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): PersonDTO? {
+    fun getUpToDatePersonFromVtj(tx: Database.Transaction, user: AuthenticatedUser, id: PersonId): PersonDTO? {
         val person = tx.getPersonById(id) ?: return null
         return if (person.identity is ExternalIdentifier.SSN) {
             val personDetails =
@@ -51,7 +51,7 @@ class PersonService(
         }
     }
 
-    fun personsLiveInTheSameAddress(db: Database.Read, person1Id: UUID, person2Id: UUID): Boolean {
+    fun personsLiveInTheSameAddress(db: Database.Read, person1Id: PersonId, person2Id: PersonId): Boolean {
         val person1 = db.getPersonById(person1Id)
         val person2 = db.getPersonById(person2Id)
 
@@ -82,7 +82,7 @@ class PersonService(
     fun getPersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: UUID,
+        id: PersonId,
         forceRefresh: Boolean = false
     ): PersonWithChildrenDTO? {
         val guardian = tx.getPersonById(id) ?: return null
@@ -104,7 +104,7 @@ class PersonService(
     }
 
     // Does a request to VTJ if SSN is present
-    fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
+    fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: ChildId): List<PersonDTO> {
         val child = tx.getPersonById(id) ?: return emptyList()
 
         return when (child.identity) {
@@ -126,8 +126,8 @@ class PersonService(
     fun getOtherGuardian(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        otherGuardianId: UUID,
-        childId: UUID
+        otherGuardianId: PersonId,
+        childId: ChildId
     ): PersonDTO? = getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
 
     // Does a request to VTJ if person is not found in database or person data has not been initialized from VTJ
@@ -149,7 +149,7 @@ class PersonService(
         }
     }
 
-    fun patchUserDetails(tx: Database.Transaction, id: UUID, data: PersonPatch): PersonDTO {
+    fun patchUserDetails(tx: Database.Transaction, id: PersonId, data: PersonPatch): PersonDTO {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         // People with SSN get basic details from VTJ which should not be modified
@@ -167,7 +167,7 @@ class PersonService(
         id: PersonId,
         ssn: ExternalIdentifier.SSN
     ): PersonDTO {
-        val person = tx.getPersonById(id.raw) ?: throw NotFound("Person $id not found")
+        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         return when (person.identity) {
             is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
@@ -192,7 +192,7 @@ class PersonService(
     }
 
     fun disableSsn(tx: Database.Transaction, personId: PersonId, disabled: Boolean) {
-        val person = tx.getPersonById(personId.raw) ?: throw NotFound("Person $personId not found")
+        val person = tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
 
         if (person.identity is ExternalIdentifier.SSN)
             throw BadRequest("Cannot disable a SSN, person $personId already has a SSN")
@@ -212,7 +212,7 @@ class PersonService(
 
     private fun toPersonDTO(person: VtjPersonDTO): PersonDTO =
         PersonDTO(
-            id = person.id,
+            id = PersonId(person.id),
             identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
             ssnAddingDisabled = false,
             firstName = person.firstName,
@@ -240,7 +240,7 @@ class PersonService(
         email: String? = null
     ): PersonWithChildrenDTO =
         PersonWithChildrenDTO(
-            id = person.id,
+            id = PersonId(person.id),
             socialSecurityNumber = person.socialSecurityNumber,
             firstName = person.firstName,
             lastName = person.lastName,
@@ -316,7 +316,7 @@ class PersonService(
 }
 
 data class PersonDTO(
-    val id: UUID,
+    val id: PersonId,
     val identity: ExternalIdentifier,
     val ssnAddingDisabled: Boolean,
     val firstName: String,
@@ -346,7 +346,7 @@ data class PersonDTO(
     val ophPersonOid: String? = ""
 ) {
     fun toVtjPersonDTO() = VtjPersonDTO(
-        id = this.id,
+        id = this.id.raw,
         firstName = this.firstName,
         lastName = this.lastName,
         dateOfBirth = this.dateOfBirth,
@@ -383,7 +383,7 @@ fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, include
     }
 
 data class PersonJSON(
-    val id: UUID,
+    val id: PersonId,
     val socialSecurityNumber: String? = null,
     val ssnAddingDisabled: Boolean,
     val firstName: String = "",
@@ -464,7 +464,7 @@ data class PersonPatch(
 )
 
 data class PersonWithChildrenDTO(
-    val id: UUID,
+    val id: PersonId,
     val socialSecurityNumber: String?,
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate?,
@@ -556,27 +556,27 @@ private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO)
     }
 }
 
-private fun initChildIfNotExists(tx: Database.Transaction, childIds: List<UUID>) {
+private fun initChildIfNotExists(tx: Database.Transaction, childIds: List<ChildId>) {
     childIds.forEach { childId ->
         if (tx.getChild(childId) == null)
             tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()))
     }
 }
 
-private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: UUID, childIds: List<UUID>) {
+private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: PersonId, childIds: List<ChildId>) {
     tx.deleteGuardianChildRelationShips(guardianId)
     tx.insertGuardianChildren(guardianId, childIds)
     tx.updateVtjDependantsQueriedTimestamp(guardianId)
 }
 
-private fun createOrReplaceChildRelationships(tx: Database.Transaction, childId: UUID, guardianIds: List<UUID>) {
+private fun createOrReplaceChildRelationships(tx: Database.Transaction, childId: ChildId, guardianIds: List<PersonId>) {
     tx.deleteChildGuardianRelationships(childId)
     tx.insertChildGuardians(childId, guardianIds)
     tx.updateVtjGuardiansQueriedTimestamp(childId)
 }
 
 private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO = PersonDTO(
-    id = inputPerson.id, // This will be overwritten
+    id = PersonId(inputPerson.id), // This will be overwritten
     identity = ExternalIdentifier.SSN.getInstance(inputPerson.socialSecurityNumber),
     ssnAddingDisabled = false,
     firstName = inputPerson.firstName,
@@ -640,13 +640,13 @@ private fun getPostOfficeByLanguage(vtjPerson: VtjPersonDTO): String {
     }
 }
 
-private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: UUID) =
+private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: PersonId) =
     createUpdate("UPDATE person SET vtj_dependants_queried = :now WHERE id = :personId")
         .bind("personId", personId)
         .bind("now", HelsinkiDateTime.now())
         .execute()
 
-private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: UUID) =
+private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: ChildId) =
     createUpdate("UPDATE person SET vtj_guardians_queried = :now WHERE id = :personId")
         .bind("personId", personId)
         .bind("now", HelsinkiDateTime.now())

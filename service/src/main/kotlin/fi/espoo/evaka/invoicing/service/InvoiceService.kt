@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -74,7 +73,7 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
         if (invoiceDate != null && dueDate != null) {
             tx.updateInvoiceDates(invoices.map { it.id }, invoiceDate, dueDate)
         }
-        tx.setDraftsSent(succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, EvakaUserId(user.id))
+        tx.setDraftsSent(succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.evakaUserId)
         tx.updateToWaitingForSending(withoutSSNs.map { it.id })
     }
 

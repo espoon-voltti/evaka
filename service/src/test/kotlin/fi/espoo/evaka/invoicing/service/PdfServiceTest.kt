@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
@@ -45,7 +46,7 @@ class PdfServiceTest {
         decisionType = FeeDecisionType.NORMAL,
         validDuring = testDecision1.validDuring,
         headOfFamily = PersonData.Detailed(
-            id = UUID.randomUUID(),
+            id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "John",
             lastName = "Doe",
@@ -55,7 +56,7 @@ class PdfServiceTest {
             restrictedDetailsEnabled = false
         ),
         partner = PersonData.Detailed(
-            id = UUID.randomUUID(),
+            id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "Joan",
             lastName = "Doe",
@@ -77,7 +78,7 @@ class PdfServiceTest {
         children = testDecision1.children.map {
             FeeDecisionChildDetailed(
                 child = PersonData.Detailed(
-                    id = UUID.randomUUID(),
+                    id = PersonId(UUID.randomUUID()),
                     dateOfBirth = LocalDate.of(2017, 1, 1),
                     firstName = "Johnny",
                     lastName = "Doe",
@@ -120,7 +121,7 @@ class PdfServiceTest {
         decisionType = VoucherValueDecisionType.NORMAL,
         status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
         headOfFamily = PersonData.Detailed(
-            id = UUID.randomUUID(),
+            id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "Anselmi Aataminpoika",
             lastName = "Guggenheim",
@@ -130,7 +131,7 @@ class PdfServiceTest {
             restrictedDetailsEnabled = false
         ),
         partner = PersonData.Detailed(
-            id = UUID.randomUUID(),
+            id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "Cynthia Elisabeth",
             lastName = "Maalahti-Guggenheim",
@@ -148,7 +149,7 @@ class PdfServiceTest {
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
         child = PersonData.Detailed(
-            id = UUID.randomUUID(),
+            id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(2017, 1, 1),
             firstName = "Iisakki Anselminpoika",
             lastName = "Guggenheim",

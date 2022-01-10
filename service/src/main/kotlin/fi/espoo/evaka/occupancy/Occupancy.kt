@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
@@ -23,7 +24,6 @@ import org.jdbi.v3.core.result.RowView
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
-import java.util.UUID
 
 const val youngChildOccupancyCoefficient = "1.75"
 
@@ -298,10 +298,10 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getRealizedP
 
 private fun Database.Read.getPeriodsAwayInBackupCareByChildId(
     period: FiniteDateRange,
-    childIds: Set<UUID>
-): Map<UUID, List<FiniteDateRange>> {
+    childIds: Set<ChildId>
+): Map<ChildId, List<FiniteDateRange>> {
     data class QueryResult(
-        val childId: UUID,
+        val childId: ChildId,
         val startDate: LocalDate,
         val endDate: LocalDate
     )
@@ -546,7 +546,7 @@ private data class Caretakers<K : OccupancyGroupingKey>(
 data class Placement(
     val groupingId: DaycareId,
     val placementId: PlacementId,
-    val childId: UUID,
+    val childId: ChildId,
     val unitId: DaycareId,
     val type: PlacementType,
     val familyUnitPlacement: Boolean,
@@ -561,7 +561,7 @@ private data class PlacementPlan(
 )
 
 private data class Child(
-    val id: UUID,
+    val id: ChildId,
     val dateOfBirth: LocalDate
 )
 
@@ -572,13 +572,13 @@ data class ServiceNeed(
 )
 
 data class AssistanceNeed(
-    val childId: UUID,
+    val childId: ChildId,
     val capacityFactor: BigDecimal,
     val period: FiniteDateRange
 )
 
 data class Absence(
-    val childId: UUID,
+    val childId: ChildId,
     val date: LocalDate,
     val careType: AbsenceCareType
 )

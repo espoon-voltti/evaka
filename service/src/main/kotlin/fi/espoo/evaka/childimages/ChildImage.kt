@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
 
 data class ChildImage(
     val id: ChildImageId,
@@ -29,7 +28,7 @@ fun replaceImage(
     db: Database.Connection,
     documentClient: DocumentService,
     bucket: String,
-    childId: UUID,
+    childId: ChildId,
     file: MultipartFile
 ) {
     val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
@@ -57,7 +56,7 @@ fun removeImage(
     db: Database.Connection,
     documentClient: DocumentService,
     bucket: String,
-    childId: UUID
+    childId: ChildId
 ) {
     db.transaction { tx ->
         tx.deleteChildImage(childId)

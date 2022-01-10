@@ -41,7 +41,7 @@ class IncomeStatementController(
         return db.connect { dbc ->
             dbc.read {
                 it.readIncomeStatementsForPerson(
-                    personId = personId.raw,
+                    personId = personId,
                     includeEmployeeContent = true,
                     page = page,
                     pageSize = pageSize
@@ -62,7 +62,7 @@ class IncomeStatementController(
         return db.connect { dbc ->
             dbc.read {
                 it.readIncomeStatementForPerson(
-                    personId.raw,
+                    personId,
                     incomeStatementId,
                     includeEmployeeContent = true
                 )

@@ -7,8 +7,10 @@ package fi.espoo.evaka.vasu
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.pis.Employee
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -99,7 +101,7 @@ data class VasuBasics(
 
 @Json
 data class VasuChild(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate
@@ -107,7 +109,7 @@ data class VasuChild(
 
 @Json
 data class VasuGuardian(
-    val id: UUID,
+    val id: PersonId,
     val firstName: String,
     val lastName: String
 )

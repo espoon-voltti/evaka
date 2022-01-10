@@ -49,8 +49,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
     private val validClubForm = ClubFormV0.fromForm2(validClubApplication.form, false, false)
 
-    private val serviceWorker = AuthenticatedUser.Employee(testAdult_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val serviceWorker = AuthenticatedUser.Employee(testAdult_1.id.raw, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw)
     private val guardian = testAdult_1.copy(email = "john.doe@espootest.com")
     private val guardianAsDaycareAdult = Adult(
         firstName = guardian.firstName,

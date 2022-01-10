@@ -11,6 +11,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -63,7 +64,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         validFrom = LocalDate.of(2019, 1, 1),
         validTo = LocalDate.of(2019, 1, 31),
         notes = "",
-        updatedBy = testDecisionMaker_1.id
+        updatedBy = EvakaUserId(testDecisionMaker_1.id)
     )
 
     @Test
@@ -123,7 +124,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(testFeeAlteration.copy(updatedBy = testDecisionMaker_1.id)),
+            listOf(testFeeAlteration.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id))),
             deserializeResult(result.get()).data
         )
     }
@@ -154,7 +155,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(updated.copy(updatedBy = testDecisionMaker_1.id)),
+            listOf(updated.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id))),
             deserializeResult(result.get()).data
         )
     }

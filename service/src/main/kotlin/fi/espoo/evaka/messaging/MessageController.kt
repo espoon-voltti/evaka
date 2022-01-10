@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCount: Int)
 data class UnreadCountByAccountAndGroup(val accountId: MessageAccountId, val unreadCount: Int, val groupId: GroupId)
@@ -52,7 +52,7 @@ class MessageController(
     fun getAccountsByUser(db: Database, user: AuthenticatedUser): Set<NestedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
-        return db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(user.id) } }
+        return db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(EmployeeId(user.id)) } }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
@@ -65,7 +65,7 @@ class MessageController(
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
         return if (user is AuthenticatedUser.MobileDevice && user.employeeId != null) {
-            db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(user.employeeId.raw) } }
+            db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(user.employeeId) } }
         } else setOf()
     }
 
@@ -268,7 +268,7 @@ class MessageController(
             UserRole.MOBILE
         )
 
-        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(user.id, unitId) } }
+        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.id), unitId) } }
     }
 
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
@@ -303,8 +303,8 @@ class MessageController(
         } || throw Forbidden("Not authorized to send to the given recipients")
     }
 
-    fun getEmployeeId(user: AuthenticatedUser): UUID = when (user) {
-        is AuthenticatedUser.MobileDevice -> user.employeeId?.raw
-        else -> user.id
-    } ?: user.id
+    fun getEmployeeId(user: AuthenticatedUser): EmployeeId = when (user) {
+        is AuthenticatedUser.MobileDevice -> user.employeeId
+        else -> EmployeeId(user.id)
+    } ?: EmployeeId(user.id)
 }

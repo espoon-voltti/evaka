@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
@@ -13,7 +15,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Transaction.insertVasuDocument(childId: UUID, template: VasuTemplate): VasuDocumentId {
+fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemplate): VasuDocumentId {
     val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
         .bind("id", childId)
         .mapTo<VasuChild>()
@@ -210,7 +212,7 @@ data class SummaryResultRow(
     val eventType: VasuDocumentEventType? = null
 )
 
-fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSummary> {
+fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentSummary> {
     // language=sql
     val sql = """
         SELECT 
@@ -251,7 +253,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSumm
 fun Database.Transaction.insertVasuDocumentEvent(
     documentId: VasuDocumentId,
     eventType: VasuDocumentEventType,
-    employeeId: UUID
+    employeeId: EmployeeId
 ): VasuDocumentEvent {
     val sql = """
         INSERT INTO curriculum_document_event (curriculum_document_id, employee_id, event_type)

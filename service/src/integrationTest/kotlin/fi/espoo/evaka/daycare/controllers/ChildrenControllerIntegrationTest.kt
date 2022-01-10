@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -25,7 +26,7 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var childController: ChildController
 
-    private val childId = UUID.randomUUID()
+    private val childId = ChildId(UUID.randomUUID())
 
     private lateinit var child: Child
 

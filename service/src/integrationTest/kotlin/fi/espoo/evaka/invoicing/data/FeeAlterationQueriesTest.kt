@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -47,7 +48,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
         validFrom = LocalDate.of(2019, 1, 1),
         validTo = LocalDate.of(2019, 1, 31),
         notes = "",
-        updatedBy = testDecisionMaker_1.id
+        updatedBy = EvakaUserId(testDecisionMaker_1.id)
     )
 
     @Test

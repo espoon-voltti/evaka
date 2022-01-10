@@ -7,14 +7,14 @@ package fi.espoo.evaka.serviceneed
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.util.UUID
 
 class ServiceNeedConfirmationDeserializer :
     StdDeserializer<ServiceNeedConfirmation>(ServiceNeedConfirmation::class.java) {
 
     private data class ServiceNeedConfirmationNullableFields(
-        val userId: UUID?,
+        val userId: EvakaUserId?,
         val name: String?,
         val at: HelsinkiDateTime?
     )

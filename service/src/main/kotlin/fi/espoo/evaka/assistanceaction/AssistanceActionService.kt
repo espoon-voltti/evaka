@@ -5,17 +5,17 @@
 package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class AssistanceActionService {
-    fun createAssistanceAction(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: AssistanceActionRequest): AssistanceAction {
+    fun createAssistanceAction(db: Database.Connection, user: AuthenticatedUser, childId: ChildId, data: AssistanceActionRequest): AssistanceAction {
         try {
             return db.transaction { tx ->
                 validateActions(data, tx.getAssistanceActionOptions().map { it.value })
@@ -27,7 +27,7 @@ class AssistanceActionService {
         }
     }
 
-    fun getAssistanceActionsByChildId(db: Database.Connection, childId: UUID): List<AssistanceAction> {
+    fun getAssistanceActionsByChildId(db: Database.Connection, childId: ChildId): List<AssistanceAction> {
         return db.read { it.getAssistanceActionsByChild(childId) }
     }
 

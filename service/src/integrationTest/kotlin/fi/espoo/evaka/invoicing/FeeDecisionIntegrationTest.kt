@@ -481,7 +481,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .asUser(user)
             .responseString()
 
-        val expectedDecisions = testDecisions.filter { it.headOfFamily.id != testAdult_3.id }
+        val expectedDecisions = testDecisions.filter { it.headOfFamily.id != testAdult_3.id.raw }
 
         assertEqualEnough(
             expectedDecisions.map(::toSummary),
@@ -635,12 +635,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(2, feeDecisions.size)
         feeDecisions.find { it.status == FeeDecisionStatus.DRAFT }.let { draft ->
             assertNotNull(draft)
-            assertEquals(testAdult_1.id, draft.headOfFamily.id)
+            assertEquals(testAdult_1.id.raw, draft.headOfFamily.id)
             assertEquals(28900 + 14500, draft.totalFee())
         }
         feeDecisions.find { it.status == FeeDecisionStatus.SENT }.let { sent ->
             assertNotNull(sent)
-            assertEquals(testAdult_1.id, sent.headOfFamily.id)
+            assertEquals(testAdult_1.id.raw, sent.headOfFamily.id)
             assertEquals(28900, sent.totalFee())
         }
     }
@@ -895,7 +895,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Test
     fun `sendDecisions does not send if ssn missing`() {
         val draft =
-            testDecisions.find { it.status === FeeDecisionStatus.DRAFT && it.headOfFamily.id === testAdult_3.id }!!
+            testDecisions.find { it.status === FeeDecisionStatus.DRAFT && it.headOfFamily.id === testAdult_3.id.raw }!!
 
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 

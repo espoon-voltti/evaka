@@ -10,10 +10,10 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.getCurrentPlacementForChild
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
-import java.util.UUID
 
-fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
+fun Database.Read.getChildSensitiveInfo(childId: ChildId): ChildSensitiveInformation? {
     val person = getPersonById(childId) ?: return null
 
     val placementType = getCurrentPlacementForChild(childId)?.let { it.type }

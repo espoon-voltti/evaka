@@ -6,7 +6,9 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
@@ -16,7 +18,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Read.getParentship(id: ParentshipId): Parentship? {
     // language=SQL
@@ -39,8 +40,8 @@ fun Database.Read.getParentship(id: ParentshipId): Parentship? {
 }
 
 fun Database.Read.getParentships(
-    headOfChildId: UUID?,
-    childId: UUID?,
+    headOfChildId: PersonId?,
+    childId: ChildId?,
     includeConflicts: Boolean = false,
     period: DateRange? = null
 ): List<Parentship> {
@@ -73,8 +74,8 @@ fun Database.Read.getParentships(
 }
 
 fun Database.Transaction.createParentship(
-    childId: UUID,
-    headOfChildId: UUID,
+    childId: ChildId,
+    headOfChildId: PersonId,
     startDate: LocalDate,
     endDate: LocalDate,
     conflict: Boolean = false
@@ -131,7 +132,7 @@ fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
 
     return createQuery(sql)
         .bind("id", id)
-        .mapTo<UUID>()
+        .mapTo<ParentshipId>()
         .firstOrNull() != null
 }
 
@@ -166,9 +167,9 @@ private val toParentship: (String, String) -> (ResultSet, StatementContext) -> P
     { rs, _ ->
         Parentship(
             id = ParentshipId(rs.getUUID("id")),
-            childId = rs.getUUID("child_id"),
+            childId = ChildId(rs.getUUID("child_id")),
             child = toPersonJSON(childAlias, rs),
-            headOfChildId = rs.getUUID("head_of_child"),
+            headOfChildId = PersonId(rs.getUUID("head_of_child")),
             headOfChild = toPersonJSON(headAlias, rs),
             startDate = rs.getDate("start_date").toLocalDate(),
             endDate = rs.getDate("end_date").toLocalDate(),
@@ -179,7 +180,7 @@ private val toParentship: (String, String) -> (ResultSet, StatementContext) -> P
 
 internal val toPersonJSON: (String, ResultSet) -> PersonJSON = { table, rs ->
     PersonJSON(
-        id = rs.getUUID("${table}_id"),
+        id = PersonId(rs.getUUID("${table}_id")),
         socialSecurityNumber = rs.getString("${table}_social_security_number"),
         ssnAddingDisabled = rs.getBoolean("${table}_ssn_adding_disabled"),
         firstName = rs.getString("${table}_first_name"),

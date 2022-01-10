@@ -12,6 +12,7 @@ import fi.espoo.evaka.attendance.ExternalStaffDeparture
 import fi.espoo.evaka.attendance.markExternalStaffArrival
 import fi.espoo.evaka.attendance.markExternalStaffDeparture
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -59,7 +60,7 @@ class RealtimeOccupancyTest : FullApplicationTest() {
                 .withAge(2, 11)
                 .saveAnd {
                     addPlacement().toUnit(testDaycare.id).save()
-                    addAssistanceNeed().createdBy(testDecisionMaker_1.id).withFactor(2.0).save()
+                    addAssistanceNeed().createdBy(EvakaUserId(testDecisionMaker_1.id)).withFactor(2.0).save()
                     addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(8, 15)).departing(LocalTime.of(16, 30)).save()
                 }
                 .addChild()

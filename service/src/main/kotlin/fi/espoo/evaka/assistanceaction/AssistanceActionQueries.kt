@@ -5,14 +5,14 @@
 package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
-fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId: UUID, data: AssistanceActionRequest): AssistanceAction {
+fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId: ChildId, data: AssistanceActionRequest): AssistanceAction {
     //language=sql
     val sql =
         """
@@ -77,7 +77,7 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
     return createQuery(sql).bind("id", id).mapTo(AssistanceAction::class.java).first()
 }
 
-fun Database.Read.getAssistanceActionsByChild(childId: UUID): List<AssistanceAction> {
+fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<AssistanceAction> {
     //language=sql
     val sql =
         """
@@ -116,7 +116,7 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
         .bind("updatedBy", user.id)
         .bind("otherAction", data.otherAction)
         .bind("measures", data.measures.map { it.toString() }.toTypedArray())
-        .mapTo(UUID::class.java)
+        .mapTo<AssistanceActionId>()
         .firstOrNull() ?: throw NotFound("Assistance action $id not found")
 
     deleteAssistanceActionOptionRefsByActionId(id, data.actions)
@@ -125,7 +125,7 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
     return getAssistanceActionById(id)
 }
 
-fun Database.Transaction.shortenOverlappingAssistanceAction(user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate) {
+fun Database.Transaction.shortenOverlappingAssistanceAction(user: AuthenticatedUser, childId: ChildId, startDate: LocalDate, endDate: LocalDate) {
     //language=sql
     val sql =
         """

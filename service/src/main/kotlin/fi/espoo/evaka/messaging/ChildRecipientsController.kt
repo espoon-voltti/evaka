@@ -5,6 +5,8 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
@@ -14,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class ChildRecipientsController(private val accessControl: AccessControl) {
@@ -23,7 +24,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     fun getRecipients(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID
+        @PathVariable childId: ChildId
     ): List<Recipient> {
         Audit.MessagingBlocklistRead.log(childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_CHILD_RECIPIENTS, childId)
@@ -38,8 +39,8 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     fun editRecipient(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: UUID,
-        @PathVariable personId: UUID,
+        @PathVariable childId: ChildId,
+        @PathVariable personId: PersonId,
         @RequestBody body: EditRecipientRequest
     ) {
         Audit.MessagingBlocklistEdit.log(childId)

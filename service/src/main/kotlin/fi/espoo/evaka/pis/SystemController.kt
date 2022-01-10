@@ -12,7 +12,6 @@ import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDeviceByToken
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -46,7 +45,7 @@ class SystemController(private val personService: PersonService, private val acc
                         tx,
                         user,
                         ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
-                    )?.let { CitizenUser(PersonId(it.id)) }
+                    )?.let { CitizenUser(it.id) }
                     ?: error("No person found with ssn")
                 tx.markPersonLastLogin(citizen.id)
                 tx.upsertCitizenUser(citizen.id)

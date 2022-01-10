@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -124,7 +125,7 @@ class StartingPlacementsReportTest : FullApplicationTest() {
         assertEquals(expected, result.get())
     }
 
-    private fun insertPlacement(childId: UUID, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1)) =
+    private fun insertPlacement(childId: ChildId, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1)) =
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,

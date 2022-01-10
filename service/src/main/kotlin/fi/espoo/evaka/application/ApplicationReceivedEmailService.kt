@@ -8,9 +8,9 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.shared.PersonId
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,7 +22,7 @@ class ApplicationReceivedEmailService(private val emailClient: IEmailClient, pri
     private val senderAddressSv = env.applicationReceivedSenderAddressSv
     private val senderNameSv = env.applicationReceivedSenderNameSv
 
-    fun sendApplicationEmail(personId: UUID, toAddress: String, language: Language, type: ApplicationType, sentWithinPreschoolApplicationPeriod: Boolean? = null) {
+    fun sendApplicationEmail(personId: PersonId, toAddress: String, language: Language, type: ApplicationType, sentWithinPreschoolApplicationPeriod: Boolean? = null) {
         val fromAddress = when (language) {
             Language.sv -> "$senderNameSv <$senderAddressSv>"
             else -> "$senderNameFi <$senderAddressFi>"

@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.messaging.planFinanceDecisionGeneration
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,11 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 data class GenerateDecisionsBody(
     val starting: String,
-    val targetHeads: List<UUID?>
+    val targetHeads: List<PersonId?>
 )
 
 @RestController
@@ -47,7 +47,7 @@ class FeeDecisionGeneratorController(
         return ResponseEntity.noContent().build()
     }
 
-    private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
+    private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<PersonId>) {
         db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, DateRange(starting, null), targetHeads) }
     }
 }

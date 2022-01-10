@@ -6,6 +6,7 @@ package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class BackupCareController(private val accessControl: AccessControl) {
@@ -33,7 +33,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     fun getForChild(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable("childId") childId: UUID
+        @PathVariable("childId") childId: ChildId
     ): ResponseEntity<ChildBackupCaresResponse> {
         Audit.ChildBackupCareRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_CARE, childId)
@@ -45,7 +45,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     fun createForChild(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable("childId") childId: UUID,
+        @PathVariable("childId") childId: ChildId,
         @RequestBody body: NewBackupCare
     ): ResponseEntity<BackupCareCreateResponse> {
         Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)

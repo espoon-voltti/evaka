@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -67,19 +68,19 @@ import kotlin.test.assertTrue
 
 class MessageIntegrationTest : FullApplicationTest() {
 
-    private val person1Id: UUID = testAdult_1.id
-    private val person2Id: UUID = testAdult_2.id
-    private val person3Id: UUID = testAdult_3.id
-    private val person4Id: UUID = testAdult_4.id
-    private val fridgeHeadId: UUID = person4Id
-    private val employee1Id: UUID = UUID.randomUUID()
-    private val employee2Id: UUID = UUID.randomUUID()
-    private val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val employee2 = AuthenticatedUser.Employee(id = employee2Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val person1 = AuthenticatedUser.Citizen(id = person1Id)
-    private val person2 = AuthenticatedUser.Citizen(id = person2Id)
-    private val person3 = AuthenticatedUser.Citizen(id = person3Id)
-    private val person4 = AuthenticatedUser.Citizen(id = person4Id)
+    private val person1Id = testAdult_1.id
+    private val person2Id = testAdult_2.id
+    private val person3Id = testAdult_3.id
+    private val person4Id = testAdult_4.id
+    private val fridgeHeadId = person4Id
+    private val employee1Id = EmployeeId(UUID.randomUUID())
+    private val employee2Id = EmployeeId(UUID.randomUUID())
+    private val employee1 = AuthenticatedUser.Employee(id = employee1Id.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employee2 = AuthenticatedUser.Employee(id = employee2Id.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val person1 = AuthenticatedUser.Citizen(id = person1Id.raw)
+    private val person2 = AuthenticatedUser.Citizen(id = person2Id.raw)
+    private val person3 = AuthenticatedUser.Citizen(id = person3Id.raw)
+    private val person4 = AuthenticatedUser.Citizen(id = person4Id.raw)
     private val groupId = GroupId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
@@ -171,7 +172,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
             tx.upsertEmployeeMessageAccount(employee1Id)
             tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, EmployeeId(employee1Id), listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee1Id, listOf(groupId))
 
             tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Foo", lastName = "Supervisor"))
             tx.upsertEmployeeMessageAccount(employee2Id)
@@ -204,7 +205,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun getAccounts(personAccountIds: List<UUID>): Set<MessageAccountId> = db.read {
+    private fun getAccounts(personAccountIds: List<PersonId>): Set<MessageAccountId> = db.read {
         it.createQuery("SELECT acc.id FROM message_account acc WHERE acc.person_id = ANY(:personIds)")
             .bind("personIds", personAccountIds.toTypedArray())
             .mapTo<MessageAccountId>()

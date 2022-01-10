@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.youngChildOccupancyCoefficient
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class RawReportController(private val accessControl: AccessControl) {
@@ -122,7 +122,7 @@ ORDER BY p.id, t
 
 data class RawReportRow(
     val day: LocalDate,
-    val childId: UUID,
+    val childId: ChildId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,

@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttendanceId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -21,10 +22,9 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Transaction.insertAttendance(
-    childId: UUID,
+    childId: ChildId,
     unitId: DaycareId,
     arrived: HelsinkiDateTime,
     departed: HelsinkiDateTime? = null
@@ -48,7 +48,7 @@ fun Database.Transaction.insertAttendance(
 
 fun Database.Transaction.insertAbsence(
     user: AuthenticatedUser,
-    childId: UUID,
+    childId: ChildId,
     date: LocalDate,
     careType: AbsenceCareType,
     absenceType: AbsenceType
@@ -71,7 +71,7 @@ fun Database.Transaction.insertAbsence(
         .first()
 }
 
-fun Database.Read.getChildAttendance(childId: UUID, unitId: DaycareId, now: HelsinkiDateTime): ChildAttendance? {
+fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: HelsinkiDateTime): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -92,7 +92,7 @@ fun Database.Read.getChildAttendance(childId: UUID, unitId: DaycareId, now: Hels
         .firstOrNull()
 }
 
-fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: DaycareId): ChildAttendance? {
+fun Database.Read.getChildOngoingAttendance(childId: ChildId, unitId: DaycareId): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -109,7 +109,7 @@ fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: DaycareId): C
 }
 
 data class ChildBasics(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val preferredName: String?,
@@ -306,7 +306,7 @@ fun Database.Transaction.deleteAttendance(id: AttendanceId) {
         .execute()
 }
 
-fun Database.Transaction.deleteAbsencesByDate(childId: UUID, date: LocalDate) {
+fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate) {
     // language=sql
     val sql =
         """
@@ -320,7 +320,7 @@ fun Database.Transaction.deleteAbsencesByDate(childId: UUID, date: LocalDate) {
         .execute()
 }
 
-fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRange: FiniteDateRange) {
+fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: ChildId, dateRange: FiniteDateRange) {
     // language=sql
     val sql =
         """
@@ -337,7 +337,7 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRang
 fun Database.Read.fetchAttendanceReservations(
     unitId: DaycareId,
     date: LocalDate
-): Map<UUID, List<AttendanceReservation>> = createQuery(
+): Map<ChildId, List<AttendanceReservation>> = createQuery(
     """
     SELECT
         child.id AS child_id,
@@ -352,7 +352,7 @@ fun Database.Read.fetchAttendanceReservations(
     .bind("unitId", unitId)
     .bind("date", date)
     .map { ctx ->
-        ctx.mapColumn<UUID>("child_id") to AttendanceReservation(
+        ctx.mapColumn<ChildId>("child_id") to AttendanceReservation(
             ctx.mapColumn("start_time"),
             ctx.mapColumn("end_time")
         )

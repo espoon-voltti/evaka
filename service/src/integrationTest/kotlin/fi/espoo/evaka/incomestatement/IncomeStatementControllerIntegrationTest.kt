@@ -11,8 +11,10 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -39,9 +41,9 @@ import java.util.UUID
 import kotlin.test.assertEquals
 
 class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
-    private val employeeId = UUID.randomUUID()
+    private val employeeId = EmployeeId(UUID.randomUUID())
     private val citizenId = testAdult_1.id
-    private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
+    private val employee = AuthenticatedUser.Employee(employeeId.raw, setOf(UserRole.FINANCE_ADMIN))
 
     @BeforeEach
     fun beforeEach() {
@@ -170,7 +172,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun createTestIncomeStatement(personId: UUID): IncomeStatement {
+    private fun createTestIncomeStatement(personId: PersonId): IncomeStatement {
         val id = db.transaction { tx ->
             tx.createIncomeStatement(
                 personId,
@@ -198,7 +200,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             Paged(
                 listOf(
                     IncomeStatementAwaitingHandler(
-                        id = incomeStatement.id.raw,
+                        id = incomeStatement.id,
                         created = incomeStatement.created,
                         startDate = incomeStatement.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
@@ -260,7 +262,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             Paged(
                 listOf(
                     IncomeStatementAwaitingHandler(
-                        id = incomeStatement1.id.raw,
+                        id = incomeStatement1.id,
                         created = incomeStatement1.created,
                         startDate = incomeStatement1.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
@@ -269,7 +271,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                         primaryCareArea = "Test Area",
                     ),
                     IncomeStatementAwaitingHandler(
-                        id = incomeStatement2.id.raw,
+                        id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
@@ -278,7 +280,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
                         primaryCareArea = "Lwiz Foo",
                     ),
                     IncomeStatementAwaitingHandler(
-                        id = incomeStatement3.id.raw,
+                        id = incomeStatement3.id,
                         created = incomeStatement3.created,
                         startDate = incomeStatement3.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
@@ -328,7 +330,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             Paged(
                 listOf(
                     IncomeStatementAwaitingHandler(
-                        id = incomeStatement2.id.raw,
+                        id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
@@ -350,7 +352,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
             .responseObject<IncomeStatement>(objectMapper)
             .let { (_, _, body) -> body.get() }
 
-    private fun getIncomeStatements(personId: UUID): Paged<IncomeStatement> =
+    private fun getIncomeStatements(personId: PersonId): Paged<IncomeStatement> =
         http.get("/income-statements/person/$personId?page=1&pageSize=10")
             .asUser(employee)
             .responseObject<Paged<IncomeStatement>>(objectMapper)

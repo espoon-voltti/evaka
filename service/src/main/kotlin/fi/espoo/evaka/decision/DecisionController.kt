@@ -8,7 +8,9 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -23,7 +25,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/decisions2")
@@ -37,7 +38,7 @@ class DecisionController(
     fun getDecisionsByGuardian(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam("id") guardianId: UUID
+        @RequestParam("id") guardianId: PersonId
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
         @Suppress("DEPRECATION")
@@ -51,7 +52,7 @@ class DecisionController(
     fun getDecisionsByChild(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam("id") childId: UUID
+        @RequestParam("id") childId: ChildId
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
         @Suppress("DEPRECATION")

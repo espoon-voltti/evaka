@@ -11,11 +11,14 @@ import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
@@ -47,7 +50,7 @@ sealed interface VardaAsyncJob : AsyncJobPayload {
     }
 
     data class ResetVardaChild(
-        val childId: UUID
+        val childId: ChildId
     ) : VardaAsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -74,11 +77,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendApplicationEmail(val guardianId: UUID, val language: Language, val type: ApplicationType = ApplicationType.DAYCARE, val sentWithinPreschoolApplicationPeriod: Boolean? = null) : AsyncJob {
+    data class SendApplicationEmail(val guardianId: PersonId, val language: Language, val type: ApplicationType = ApplicationType.DAYCARE, val sentWithinPreschoolApplicationPeriod: Boolean? = null) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendPendingDecisionEmail(val guardianId: UUID, val email: String, val language: String?, val decisionIds: List<UUID>) : AsyncJob {
+    data class SendPendingDecisionEmail(val guardianId: PersonId, val email: String, val language: String?, val decisionIds: List<DecisionId>) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -119,7 +122,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class InitializeFamilyFromApplication(val applicationId: ApplicationId, override val user: AuthenticatedUser) :
         AsyncJob
 
-    data class VTJRefresh(val personId: UUID, val requestingUserId: UUID) : AsyncJob {
+    data class VTJRefresh(val personId: PersonId, val requestingUserId: EvakaUserId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -136,14 +139,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
 
         companion object {
-            fun forAdult(personId: UUID, dateRange: DateRange) = GenerateFinanceDecisions(Person.Adult(personId), dateRange)
-            fun forChild(personId: UUID, dateRange: DateRange) = GenerateFinanceDecisions(Person.Child(personId), dateRange)
+            fun forAdult(personId: PersonId, dateRange: DateRange) = GenerateFinanceDecisions(Person.Adult(personId), dateRange)
+            fun forChild(personId: ChildId, dateRange: DateRange) = GenerateFinanceDecisions(Person.Child(personId), dateRange)
         }
 
         @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
         sealed class Person {
-            data class Adult(val adultId: UUID) : Person()
-            data class Child(val childId: UUID) : Person()
+            data class Adult(val adultId: PersonId) : Person()
+            data class Child(val childId: ChildId) : Person()
         }
     }
 

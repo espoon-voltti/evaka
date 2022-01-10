@@ -9,7 +9,9 @@ import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -230,7 +232,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     private fun createPartnerRecord(
         partnershipId: PartnershipId,
         indx: Int,
-        personId: UUID,
+        personId: PersonId,
         startDate: LocalDate,
         endDate: LocalDate
     ) {
@@ -252,7 +254,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         }
     }
 
-    private fun createParentshipRecord(childId: UUID, parentId: UUID, startDate: LocalDate, endDate: LocalDate) =
+    private fun createParentshipRecord(childId: ChildId, parentId: PersonId, startDate: LocalDate, endDate: LocalDate) =
         db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {

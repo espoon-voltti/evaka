@@ -9,17 +9,17 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.PersonId
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 @ExcludeCodeGen
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Income(
     val id: IncomeId? = null,
-    val personId: UUID,
+    val personId: PersonId,
     val effect: IncomeEffect,
     val data: Map<String, IncomeValue>,
     @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.note.child.sticky
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -11,9 +12,8 @@ import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
-fun Database.Read.getChildStickyNotesForChild(childId: UUID): List<ChildStickyNote> = createQuery(
+fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> = createQuery(
     """
     SELECT id, child_id, note, modified_at, expires
     FROM child_sticky_note
@@ -61,7 +61,7 @@ private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>):
     .mapTo<ChildStickyNote>()
     .list()
 
-fun Database.Transaction.createChildStickyNote(childId: UUID, note: ChildStickyNoteBody): ChildStickyNoteId {
+fun Database.Transaction.createChildStickyNote(childId: ChildId, note: ChildStickyNoteBody): ChildStickyNoteId {
     return createUpdate(
         """
 INSERT INTO child_sticky_note (child_id, note, expires)

@@ -17,6 +17,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.insertMessageContent
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -49,10 +50,10 @@ import kotlin.test.assertTrue
 class DaycareControllerIntegrationTest : FullApplicationTest() {
     private val childId = testChild_1.id
     private val daycareId = testDaycare.id
-    private val supervisorId = UUID.randomUUID()
-    private val supervisor = AuthenticatedUser.Employee(supervisorId, emptySet())
-    private val staffId = UUID.randomUUID()
-    private val staffMember = AuthenticatedUser.Employee(staffId, emptySet())
+    private val supervisorId = EmployeeId(UUID.randomUUID())
+    private val supervisor = AuthenticatedUser.Employee(supervisorId.raw, emptySet())
+    private val staffId = EmployeeId(UUID.randomUUID())
+    private val staffMember = AuthenticatedUser.Employee(staffId.raw, emptySet())
 
     @BeforeEach
     fun beforeEach() {

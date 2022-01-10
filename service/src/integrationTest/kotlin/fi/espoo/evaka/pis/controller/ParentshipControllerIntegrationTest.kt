@@ -9,7 +9,7 @@ import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
-import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -40,7 +40,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     private val parent = testAdult_1
     private val child = testChild_1
 
-    private val unitSupervisorId = UUID.randomUUID()
+    private val unitSupervisorId = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     fun init() {
@@ -66,7 +66,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `can add a sibling parentship and fetch parentships`() {
         `can add a sibling parentship and fetch parentships`(
-            AuthenticatedUser.Employee(unitSupervisorId, setOf())
+            AuthenticatedUser.Employee(unitSupervisorId.raw, setOf())
         )
     }
 
@@ -79,10 +79,10 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val startDate = child.dateOfBirth
         val endDate = startDate.plusDays(200)
         val reqBody =
-            ParentshipController.ParentshipRequest(PersonId(parent.id), PersonId(child.id), startDate, endDate)
+            ParentshipController.ParentshipRequest(parent.id, child.id, startDate, endDate)
         controller.createParentship(Database(jdbi), user, reqBody)
 
-        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(parent.id))
+        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = parent.id)
         with(getResponse.first()) {
             assertNotNull(this.id)
             assertEquals(parent.id, this.headOfChildId)
@@ -91,7 +91,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             assertEquals(endDate, this.endDate)
         }
 
-        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(child.id)).size)
+        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = child.id).size)
     }
 
     fun `can add a sibling parentship and fetch parentships`(user: AuthenticatedUser) {
@@ -103,10 +103,10 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val startDate = sibling.dateOfBirth
         val endDate = startDate.plusDays(200)
         val reqBody =
-            ParentshipController.ParentshipRequest(PersonId(parent.id), PersonId(sibling.id), startDate, endDate)
+            ParentshipController.ParentshipRequest(parent.id, sibling.id, startDate, endDate)
         controller.createParentship(Database(jdbi), user, reqBody)
 
-        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(parent.id))
+        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = parent.id)
         assertEquals(2, getResponse.size)
         getResponse
             .find { it.childId == sibling.id }
@@ -119,7 +119,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
                 assertEquals(endDate, it.endDate)
             }
 
-        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(child.id)).size)
+        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = child.id).size)
     }
 
     @Test
@@ -129,7 +129,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `unit supervisor can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser.Employee(unitSupervisorId, setOf()))
+        `can update parentship duration`(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf()))
     }
 
     @Test
@@ -160,7 +160,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `unit supervisor cannot delete parentships`() {
-        `cannot delete parentship`(AuthenticatedUser.Employee(unitSupervisorId, setOf()))
+        `cannot delete parentship`(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf()))
     }
 
     @Test
@@ -208,7 +208,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
-        assertThrows<Forbidden> { controller.getParentships(Database(jdbi), user, headOfChildId = PersonId(parent.id)) }
+        assertThrows<Forbidden> { controller.getParentships(Database(jdbi), user, headOfChildId = parent.id) }
     }
 
     @Test
@@ -236,8 +236,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     fun `error is thrown if service worker tries to create a partnership with a start date before child's date of birth`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val request = ParentshipController.ParentshipRequest(
-            PersonId(parent.id),
-            PersonId(child.id),
+            parent.id,
+            child.id,
             child.dateOfBirth.minusDays(1),
             child.dateOfBirth.plusYears(1)
         )
@@ -248,8 +248,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     fun `error is thrown if service worker tries to create a partnership with a end date after child's 18th birthday`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val request = ParentshipController.ParentshipRequest(
-            PersonId(parent.id),
-            PersonId(child.id),
+            parent.id,
+            child.id,
             child.dateOfBirth,
             child.dateOfBirth.plusYears(18)
         )

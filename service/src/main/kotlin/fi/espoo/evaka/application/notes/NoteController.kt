@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.util.UUID
 
 @RestController
 @RequestMapping("/note")
@@ -59,7 +59,7 @@ class NoteController(private val accessControl: AccessControl) {
 
         val newNote = db.connect { dbc ->
             dbc.transaction {
-                it.createApplicationNote(applicationId, note.text, user.id)
+                it.createApplicationNote(applicationId, note.text, user.evakaUserId)
             }
         }
         return ResponseEntity.ok(NoteJSON.toJSON(newNote))
@@ -77,7 +77,7 @@ class NoteController(private val accessControl: AccessControl) {
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateApplicationNote(noteId, note.text, user.id)
+                tx.updateApplicationNote(noteId, note.text, user.evakaUserId)
             }
         }
         return ResponseEntity.noContent().build()
@@ -126,10 +126,10 @@ data class NoteJSON(
     val id: ApplicationNoteId,
     val text: String,
     val created: LocalDateTime,
-    val createdBy: UUID,
+    val createdBy: EvakaUserId,
     val createdByName: String,
     val updated: LocalDateTime,
-    val updatedBy: UUID?,
+    val updatedBy: EvakaUserId?,
     val updatedByName: String?
 ) {
     companion object DomainMapping {

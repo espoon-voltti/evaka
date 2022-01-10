@@ -14,7 +14,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -60,8 +60,8 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     private val testNotificationRecipients = listOf(testGuardianFi, testGuardianSv)
     private val testAddresses = testNotificationRecipients.mapNotNull { it.email }
 
-    private val employeeId: UUID = UUID.randomUUID()
-    private val employee = AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employeeId = EmployeeId(UUID.randomUUID())
+    private val employee = AuthenticatedUser.Employee(id = employeeId.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
     @BeforeEach
     fun beforeEach() {
@@ -120,7 +120,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     fun `notifications are sent to guardians but not heads`() {
         postNewDocument(
             user = employee,
-            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "foobar")
+            PedagogicalDocumentPostBody(testChild_1.id, "foobar")
         )
         asyncJobRunner.runPendingJobsSync()
 
@@ -139,7 +139,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     fun `sending of notifications are tracked in the database`() {
         val doc = postNewDocument(
             user = employee,
-            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "foobar")
+            PedagogicalDocumentPostBody(testChild_1.id, "foobar")
         )
 
         db.read {
@@ -160,13 +160,13 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     fun `notifications are not sent before document has content`() {
         val doc = postNewDocument(
             user = employee,
-            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "")
+            PedagogicalDocumentPostBody(testChild_1.id, "")
         )
         asyncJobRunner.runPendingJobsSync()
 
         assertEmailSent(doc.id, false)
 
-        updateDocument(user = employee, doc.id, PedagogicalDocumentPostBody(ChildId(testChild_1.id), "babar"))
+        updateDocument(user = employee, doc.id, PedagogicalDocumentPostBody(testChild_1.id, "babar"))
 
         asyncJobRunner.runPendingJobsSync()
 
@@ -177,7 +177,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     fun `notifications are sent after document has an attachment`() {
         val doc = postNewDocument(
             user = employee,
-            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "")
+            PedagogicalDocumentPostBody(testChild_1.id, "")
         )
         asyncJobRunner.runPendingJobsSync()
 
@@ -209,7 +209,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
 
         postNewDocument(
             user = employee,
-            PedagogicalDocumentPostBody(ChildId(testChild_1.id), "foobar")
+            PedagogicalDocumentPostBody(testChild_1.id, "foobar")
         )
         asyncJobRunner.runPendingJobsSync()
 

@@ -14,8 +14,12 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
@@ -256,13 +260,13 @@ fun Database.Read.searchFeeDecisions(
     sortDirection: SortDirection,
     statuses: List<FeeDecisionStatus>,
     areas: List<String>,
-    unit: UUID?,
+    unit: DaycareId?,
     distinctiveParams: List<DistinctiveParams>,
     searchTerms: String = "",
     startDate: LocalDate?,
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
-    financeDecisionHandlerId: UUID?
+    financeDecisionHandlerId: EmployeeId?
 ): Paged<FeeDecisionSummary> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -435,7 +439,7 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
 }
 
 fun Database.Read.findFeeDecisionsForHeadOfFamily(
-    headOfFamilyId: UUID,
+    headOfFamilyId: PersonId,
     period: DateRange?,
     status: List<FeeDecisionStatus>?
 ): List<FeeDecision> {
@@ -459,7 +463,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
         .merge()
 }
 
-fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<FeeDecisionId>, approvedBy: UUID, approvedAt: Instant, isRetroactive: Boolean = false) {
+fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<FeeDecisionId>, approvedBy: EmployeeId, approvedAt: Instant, isRetroactive: Boolean = false) {
     val sql =
         """
         WITH youngest_child AS (
@@ -596,7 +600,7 @@ fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecision
         .execute()
 }
 
-fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: UUID) {
+fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: PersonId) {
     createUpdate("SELECT id FROM fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
         .execute()
@@ -609,9 +613,9 @@ fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
 }
 
 fun Database.Read.isElementaryFamily(
-    headOfFamilyId: UUID,
-    partnerId: UUID?,
-    childIds: List<UUID>
+    headOfFamilyId: PersonId,
+    partnerId: PersonId?,
+    childIds: List<ChildId>
 ): Boolean = partnerId != null && createQuery(
     """
 SELECT

@@ -23,7 +23,6 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery(
@@ -38,11 +37,11 @@ WHERE p.id = :id
         .first()
 }
 
-fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraftPlacement> {
+fun Database.Read.getPlacementDraftPlacements(childId: ChildId): List<PlacementDraftPlacement> {
     data class QueryResult(
         val id: PlacementId,
         val type: PlacementType,
-        val childId: UUID,
+        val childId: ChildId,
         val unitId: DaycareId,
         val unitName: String,
         val startDate: LocalDate,
@@ -74,7 +73,7 @@ fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraf
         }
 }
 
-fun Database.Read.getPlacementsForChild(childId: UUID): List<Placement> {
+fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
     return createQuery(
         """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
@@ -87,7 +86,7 @@ WHERE p.child_id = :childId
         .list()
 }
 
-fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: LocalDate?): List<Placement> {
+fun Database.Read.getPlacementsForChildDuring(childId: ChildId, start: LocalDate, end: LocalDate?): List<Placement> {
     return createQuery(
         """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
@@ -103,7 +102,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
         .list()
 }
 
-fun Database.Read.getCurrentPlacementForChild(childId: UUID): Placement? {
+fun Database.Read.getCurrentPlacementForChild(childId: ChildId): Placement? {
     return createQuery(
         """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
@@ -119,7 +118,7 @@ AND daterange(p.start_date, p.end_date, '[]') @> now()::date
 
 fun Database.Transaction.insertPlacement(
     type: PlacementType,
-    childId: UUID,
+    childId: ChildId,
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate
@@ -173,9 +172,9 @@ fun Database.Transaction.updatePlacementStartAndEndDate(placementId: PlacementId
         .execute()
 }
 
-fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<UUID, LocalDate, LocalDate> {
+fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, LocalDate, LocalDate> {
     data class QueryResult(
-        val childId: UUID,
+        val childId: ChildId,
         val startDate: LocalDate,
         val endDate: LocalDate
     )
@@ -264,7 +263,7 @@ fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, da
 
 fun Database.Read.getDaycarePlacements(
     daycareId: DaycareId?,
-    childId: UUID?,
+    childId: ChildId?,
     startDate: LocalDate?,
     endDate: LocalDate?
 ): List<DaycarePlacementDetails> {
@@ -405,7 +404,7 @@ data class ChildPlacement(
     val terminatedBy: EvakaUser?,
 )
 
-fun Database.Read.getCitizenChildPlacements(today: LocalDate, childId: UUID): List<ChildPlacement> = createQuery(
+fun Database.Read.getCitizenChildPlacements(today: LocalDate, childId: ChildId): List<ChildPlacement> = createQuery(
     """
 SELECT
     child.id AS child_id,
@@ -547,7 +546,7 @@ fun Database.Read.getGroupPlacementsAtDaycare(daycareId: DaycareId, placementRan
 }
 
 fun Database.Read.getChildGroupPlacements(
-    childId: UUID
+    childId: ChildId
 ): List<DaycareGroupPlacement> {
     // language=SQL
     val sql =
@@ -601,7 +600,7 @@ fun Database.Transaction.updateGroupPlacementStartDate(id: GroupPlacementId, sta
     return createQuery(sql)
         .bind("id", id)
         .bind("startDate", startDate)
-        .mapTo<UUID>()
+        .mapTo<GroupPlacementId>()
         .firstOrNull() != null
 }
 
@@ -630,7 +629,7 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
     DaycarePlacement(
         id = PlacementId(rs.getUUID("placement_id")),
         child = ChildBasics(
-            id = rs.getUUID("child_id"),
+            id = ChildId(rs.getUUID("child_id")),
             socialSecurityNumber = rs.getString("child_ssn"),
             firstName = rs.getString("child_first_name"),
             lastName = rs.getString("child_last_name"),

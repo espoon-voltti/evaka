@@ -203,7 +203,7 @@ fun createValidDecision(
         providerType = ProviderType.MUNICIPAL
     ),
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
-    childId: UUID = UUID.randomUUID(),
+    childId: ChildId = ChildId(UUID.randomUUID()),
     documentKey: String? = null,
     otherGuardianDocumentKey: String? = null,
     decisionNumber: Long = 123,

@@ -31,8 +31,10 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
@@ -54,9 +56,9 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     val fridgeSiblings = families.flatMap { it.fridgeSiblings }
 
     val prices = getFeeThresholds(from)
-    val partnerIds = families.mapNotNull { it.partner?.id }
-    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, partnerIds + headOfFamily.id, from)
-    val feeAlterations = getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+    val partnerIds = families.mapNotNull { it.partner?.id?.let(::PersonId) }
+    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, partnerIds + PersonId(headOfFamily.id), from)
+    val feeAlterations = getFeeAlterationsFrom(children.map { ChildId(it.id) }, from) + addECHAFeeAlterations(children, incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
     val invoicedUnits = getUnitsThatAreInvoiced()
@@ -72,12 +74,12 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
         invoicedUnits
     )
 
-    lockFeeDecisionsForHeadOfFamily(headOfFamily.id)
+    lockFeeDecisionsForHeadOfFamily(PersonId(headOfFamily.id))
 
     val existingDrafts =
-        findFeeDecisionsForHeadOfFamily(headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
+        findFeeDecisionsForHeadOfFamily(PersonId(headOfFamily.id), null, listOf(FeeDecisionStatus.DRAFT))
     val activeDecisions = findFeeDecisionsForHeadOfFamily(
-        headOfFamily.id,
+        PersonId(headOfFamily.id),
         null,
         listOf(
             FeeDecisionStatus.WAITING_FOR_SENDING,
@@ -116,13 +118,13 @@ private fun generateFeeDecisions(
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate fee decision")
 
             val income = incomes
-                .find { headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
+                .find { headOfFamily.id == it.personId.raw && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
             val partnerIncome = family.partner?.let { partner ->
                 incomes
                     .find {
-                        partner.id == it.personId && DateRange(
+                        partner.id == it.personId.raw && DateRange(
                             it.validFrom,
                             it.validTo
                         ).contains(period)
@@ -163,7 +165,7 @@ private fun generateFeeDecisions(
                         val siblingDiscountMultiplier = price.siblingDiscountMultiplier(index + 1)
                         val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement.serviceNeed.feeCoefficient, siblingDiscountMultiplier, price.minFee)
                         val relevantFeeAlterations = feeAlterations.filter {
-                            it.personId == child.id && DateRange(it.validFrom, it.validTo).contains(period)
+                            it.personId.raw == child.id && DateRange(it.validFrom, it.validTo).contains(period)
                         }
                         val feeAlterationsWithEffects =
                             toFeeAlterationsWithEffects(feeBeforeAlterations, relevantFeeAlterations)
@@ -219,7 +221,7 @@ internal fun Database.Read.getPaidPlacements(
     children: List<PersonData.WithDateOfBirth>
 ): List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>> {
     return children.map { child ->
-        val placements = getActivePaidPlacements(child.id, from)
+        val placements = getActivePaidPlacements(ChildId(child.id), from)
         if (placements.isEmpty()) return@map child to listOf<Pair<DateRange, PlacementWithServiceNeed>>()
 
         val serviceNeeds = createQuery(
@@ -280,7 +282,7 @@ private val excludedPlacementTypes = arrayOf(
 /**
  * Leaves out club and temporary placements since they shouldn't have an effect on fee or value decisions
  */
-private fun Database.Read.getActivePaidPlacements(childId: UUID, from: LocalDate): List<Placement> {
+private fun Database.Read.getActivePaidPlacements(childId: ChildId, from: LocalDate): List<Placement> {
     return createQuery(
         """
 SELECT

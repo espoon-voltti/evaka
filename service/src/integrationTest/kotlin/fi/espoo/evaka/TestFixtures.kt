@@ -30,7 +30,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -189,7 +191,7 @@ val unitSupervisorOfTestDaycare = PersonData.WithName(
 )
 
 val testAdult_1 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1980, 1, 1),
     ssn = "010180-1232",
     firstName = "John",
@@ -201,7 +203,7 @@ val testAdult_1 = PersonData.Detailed(
 )
 
 val testAdult_2 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1979, 2, 1),
     ssn = "010279-123L",
     firstName = "Joan",
@@ -214,7 +216,7 @@ val testAdult_2 = PersonData.Detailed(
 )
 
 val testAdult_3 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1985, 6, 7),
     ssn = null,
     firstName = "Mark",
@@ -227,7 +229,7 @@ val testAdult_3 = PersonData.Detailed(
 )
 
 val testAdult_4 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1981, 3, 2),
     ssn = null,
     firstName = "Dork",
@@ -241,7 +243,7 @@ val testAdult_4 = PersonData.Detailed(
 
 // Matches VTJ mock person Johannes Karhula
 val testAdult_5 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1944, 6, 7),
     ssn = "070644-937X",
     firstName = "Johannes Olavi Antero Tapio",
@@ -254,7 +256,7 @@ val testAdult_5 = PersonData.Detailed(
 
 // Matches VTJ mock person Ville Vilkas
 val testAdult_6 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1999, 12, 31),
     ssn = "311299-999E",
     email = "ville.vilkas@test.com",
@@ -267,7 +269,7 @@ val testAdult_6 = PersonData.Detailed(
 )
 
 val testAdult_7 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1980, 1, 1),
     ssn = "010180-969B",
     firstName = "Tepi",
@@ -279,7 +281,7 @@ val testAdult_7 = PersonData.Detailed(
 )
 
 val testChild_1 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2017, 6, 1),
     ssn = "010617A123U",
     firstName = "Ricky",
@@ -291,7 +293,7 @@ val testChild_1 = PersonData.Detailed(
 )
 
 val testChild_2 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2016, 3, 1),
     ssn = "010316A1235",
     firstName = "Micky",
@@ -303,7 +305,7 @@ val testChild_2 = PersonData.Detailed(
 )
 
 val testChild_3 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 9, 1),
     ssn = "120220A995L",
     firstName = "Hillary",
@@ -315,7 +317,7 @@ val testChild_3 = PersonData.Detailed(
 )
 
 val testChild_4 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2019, 3, 2),
     ssn = "020319A990J",
     firstName = "Maisa",
@@ -327,7 +329,7 @@ val testChild_4 = PersonData.Detailed(
 )
 
 val testChild_5 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 11, 13),
     ssn = "131118A111F",
     firstName = "Visa",
@@ -340,7 +342,7 @@ val testChild_5 = PersonData.Detailed(
 
 // Matches vtj mock child Jari-Petteri Karhula
 val testChild_6 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 11, 13),
     ssn = "070714A9126",
     firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
@@ -352,7 +354,7 @@ val testChild_6 = PersonData.Detailed(
 )
 
 val testChild_7 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 7, 28),
     ssn = null,
     firstName = "Heikki",
@@ -364,7 +366,7 @@ val testChild_7 = PersonData.Detailed(
 )
 
 val testChild_8 = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2016, 3, 10),
     ssn = "010316A1237",
     firstName = "Captain",
@@ -376,7 +378,7 @@ val testChild_8 = PersonData.Detailed(
 )
 
 val testChildWithNamelessGuardian = PersonData.Detailed(
-    id = UUID.randomUUID(),
+    id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 12, 31),
     ssn = "311218A999J",
     firstName = "Niilo",
@@ -495,7 +497,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     testDecisionMaker_1.let {
         insertTestEmployee(
             DevEmployee(
-                id = it.id,
+                id = EmployeeId(it.id),
                 firstName = it.firstName,
                 lastName = it.lastName,
                 roles = setOf(UserRole.SERVICE_WORKER)
@@ -506,7 +508,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     testDecisionMaker_2.let {
         insertTestEmployee(
             DevEmployee(
-                id = it.id,
+                id = EmployeeId(it.id),
                 firstName = it.firstName,
                 lastName = it.lastName
             )
@@ -516,7 +518,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     unitSupervisorOfTestDaycare.let {
         insertTestEmployee(
             DevEmployee(
-                id = it.id,
+                id = EmployeeId(it.id),
                 firstName = it.firstName,
                 lastName = it.lastName,
                 externalId = unitSupervisorExternalId
@@ -544,7 +546,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
                 restrictedDetailsEnabled = it.restrictedDetailsEnabled
             )
         )
-        upsertCitizenUser(PersonId(it.id))
+        upsertCitizenUser(it.id)
     }
 
     allChildren.forEach {

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -128,7 +129,7 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
 }
 
 data class FamilyContactReportRow(
-    val id: UUID,
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val ssn: String?,

@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.resetDatabase
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
@@ -37,7 +38,7 @@ class PersonIntegrationTest : PureJdbiTest() {
             createPersonFromVtj(
                 it,
                 PersonDTO(
-                    id = UUID.randomUUID(),
+                    id = PersonId(UUID.randomUUID()),
                     identity = ExternalIdentifier.SSN.getInstance("080512A918W"),
                     ssnAddingDisabled = false,
                     dateOfBirth = LocalDate.of(2012, 5, 8),
@@ -138,7 +139,7 @@ class PersonIntegrationTest : PureJdbiTest() {
         assertEquals(expected, references)
     }
 
-    private fun personHasMessageAccount(personId: UUID): Boolean {
+    private fun personHasMessageAccount(personId: PersonId): Boolean {
         // language=SQL
         val sql = """
             SELECT EXISTS(

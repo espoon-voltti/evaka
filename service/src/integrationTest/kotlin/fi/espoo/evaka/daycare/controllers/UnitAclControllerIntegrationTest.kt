@@ -46,7 +46,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             admin = AuthenticatedUser.Employee(
-                tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))),
+                tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))).raw,
                 roles = setOf(UserRole.ADMIN)
             )
             tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
@@ -55,7 +55,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
             employee.also {
                 tx.insertTestEmployee(
                     DevEmployee(
-                        id = it.id.raw,
+                        id = it.id,
                         firstName = it.firstName,
                         lastName = it.lastName,
                         email = it.email

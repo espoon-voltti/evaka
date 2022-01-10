@@ -11,6 +11,7 @@ import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -51,8 +52,8 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     private val testPersons = listOf(testPersonFi, testPersonSv, testPersonEn, testPersonNoEmail)
     private val testAddresses = testPersons.mapNotNull { it.email }
 
-    private val employeeId: UUID = UUID.randomUUID()
-    private val employee = AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employeeId = EmployeeId(UUID.randomUUID())
+    private val employee = AuthenticatedUser.Employee(id = employeeId.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
     @BeforeEach
     fun beforeEach() {

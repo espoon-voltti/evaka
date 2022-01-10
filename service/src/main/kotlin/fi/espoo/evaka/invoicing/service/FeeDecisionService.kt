@@ -32,7 +32,9 @@ import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -86,9 +88,9 @@ class FeeDecisionService(
 
         val conflicts = decisions
             .flatMap {
-                tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)
+                tx.lockFeeDecisionsForHeadOfFamily(PersonId(it.headOfFamily.id))
                 tx.findFeeDecisionsForHeadOfFamily(
-                    it.headOfFamily.id,
+                    PersonId(it.headOfFamily.id),
                     DateRange(it.validFrom, it.validTo),
                     listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                 )
@@ -117,11 +119,11 @@ class FeeDecisionService(
 
         tx.approveFeeDecisionDraftsForSending(
             retroactiveDecisions.map { it.id },
-            approvedBy = user.id,
+            approvedBy = EmployeeId(user.id),
             isRetroactive = true,
             approvedAt = approvedAt
         )
-        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = approvedAt)
+        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = EmployeeId(user.id), approvedAt = approvedAt)
 
         return validDecisions.map { it.id }
     }

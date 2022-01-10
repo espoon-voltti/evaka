@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.data.getFeeAlterationsForPerson
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -35,7 +36,7 @@ import java.util.UUID
 @RequestMapping("/fee-alterations")
 class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
     @GetMapping
-    fun getFeeAlterations(db: Database, user: AuthenticatedUser, @RequestParam personId: UUID): ResponseEntity<Wrapper<List<FeeAlteration>>> {
+    fun getFeeAlterations(db: Database, user: AuthenticatedUser, @RequestParam personId: PersonId): ResponseEntity<Wrapper<List<FeeAlteration>>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FEE_ALTERATIONS, personId)
 
@@ -49,7 +50,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
         accessControl.requirePermissionFor(user, Action.Child.CREATE_FEE_ALTERATION, feeAlteration.personId)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.upsertFeeAlteration(feeAlteration.copy(id = FeeAlterationId(UUID.randomUUID()), updatedBy = user.id))
+                tx.upsertFeeAlteration(feeAlteration.copy(id = FeeAlterationId(UUID.randomUUID()), updatedBy = user.evakaUserId))
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -72,7 +73,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val existing = tx.getFeeAlteration(feeAlterationId)
-                tx.upsertFeeAlteration(feeAlteration.copy(id = feeAlterationId, updatedBy = user.id))
+                tx.upsertFeeAlteration(feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId))
 
                 val expandedPeriod = existing?.let {
                     DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))

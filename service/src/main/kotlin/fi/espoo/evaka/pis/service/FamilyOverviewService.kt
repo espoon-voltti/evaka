@@ -14,11 +14,12 @@ import fi.espoo.evaka.invoicing.domain.incomeTotal
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.getNullableUUID
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class FamilyOverviewService(
@@ -122,7 +123,7 @@ data class FamilyOverview(
 )
 
 data class FamilyOverviewPerson(
-    val personId: UUID,
+    val personId: PersonId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
@@ -131,7 +132,7 @@ data class FamilyOverviewPerson(
     val postalCode: String,
     val postOffice: String,
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    val headOfChild: UUID?,
+    val headOfChild: PersonId?,
     val income: FamilyOverviewIncome?
 )
 
@@ -148,7 +149,7 @@ fun toFamilyOverviewPerson(
     incomeTypesProvider: IncomeTypesProvider
 ): FamilyOverviewPerson {
     return FamilyOverviewPerson(
-        personId = UUID.fromString(rs.getString("id")),
+        personId = PersonId(rs.getUUID("id")),
         firstName = rs.getString("first_name"),
         lastName = rs.getString("last_name"),
         dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
@@ -156,7 +157,7 @@ fun toFamilyOverviewPerson(
         streetAddress = rs.getString("street_address"),
         postalCode = rs.getString("postal_code"),
         postOffice = rs.getString("post_office"),
-        headOfChild = rs.getString("head_of_child")?.let { UUID.fromString(it) },
+        headOfChild = rs.getNullableUUID("head_of_child")?.let(::PersonId),
         income = FamilyOverviewIncome(
             effect = rs.getString("income_effect")?.let { IncomeEffect.valueOf(it) },
             total = rs.getString("income_data")?.let {

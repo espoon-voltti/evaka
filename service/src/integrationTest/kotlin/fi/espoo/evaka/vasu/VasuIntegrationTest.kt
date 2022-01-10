@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -26,7 +27,6 @@ import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_REVIEWED
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -344,7 +344,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun postVasuDocument(childId: UUID, request: VasuController.CreateDocumentRequest): VasuDocumentId {
+    private fun postVasuDocument(childId: ChildId, request: VasuController.CreateDocumentRequest): VasuDocumentId {
         val (_, res, result) = http.post("/children/$childId/vasu")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(adminUser)
@@ -354,7 +354,7 @@ class VasuIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getVasuSummaries(childId: UUID): List<VasuDocumentSummary> {
+    private fun getVasuSummaries(childId: ChildId): List<VasuDocumentSummary> {
         val (_, res, result) = http.get("/children/$childId/vasu-summaries")
             .asUser(adminUser)
             .responseObject<List<VasuDocumentSummary>>(objectMapper)

@@ -4,14 +4,14 @@
 
 package fi.espoo.evaka.note.child.sticky
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
-import java.util.UUID
 
 data class ChildStickyNote(
     val id: ChildStickyNoteId,
-    val childId: UUID,
+    val childId: ChildId,
     val note: String,
     val modifiedAt: HelsinkiDateTime,
     val expires: LocalDate

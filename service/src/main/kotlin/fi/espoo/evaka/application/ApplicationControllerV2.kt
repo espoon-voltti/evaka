@@ -26,6 +26,7 @@ import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.Paged
@@ -53,7 +54,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 enum class ApplicationTypeToggle {
     CLUB,
@@ -155,7 +155,7 @@ class ApplicationControllerV2(
                     ?: throw BadRequest("Could not find the guardian with id $guardianId")
 
                 // If the guardian has never logged in to eVaka, evaka_user might not contain a row for them yet
-                tx.upsertCitizenUser(PersonId(guardianId))
+                tx.upsertCitizenUser(guardianId)
 
                 val id = tx.insertApplication(
                     guardianId = guardianId,
@@ -208,7 +208,7 @@ class ApplicationControllerV2(
                     sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
                     sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
                     areas = body.area?.split(",") ?: listOf(),
-                    units = body.units?.split(",")?.map { parseUUID(it) } ?: listOf(),
+                    units = body.units?.split(",")?.map { DaycareId(parseUUID(it)) } ?: listOf(),
                     basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
                     type = body.type,
                     preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
@@ -233,7 +233,7 @@ class ApplicationControllerV2(
     fun getGuardianApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "guardianId") guardianId: UUID
+        @PathVariable(value = "guardianId") guardianId: PersonId
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
         accessControl.requirePermissionFor(user, Action.Global.READ_PERSON_APPLICATION)
@@ -246,7 +246,7 @@ class ApplicationControllerV2(
     fun getChildApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "childId") childId: UUID
+        @PathVariable(value = "childId") childId: ChildId
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_APPLICATION, childId)
@@ -321,7 +321,7 @@ class ApplicationControllerV2(
                     user,
                     applicationId,
                     application,
-                    user.id,
+                    user.evakaUserId,
                     currentDateInFinland()
                 )
             }
@@ -554,8 +554,8 @@ class ApplicationControllerV2(
 }
 
 data class PaperApplicationCreateRequest(
-    val childId: UUID,
-    val guardianId: UUID? = null,
+    val childId: ChildId,
+    val guardianId: PersonId? = null,
     val guardianToBeCreated: CreatePersonBody?,
     val guardianSsn: String? = null,
     val type: ApplicationType,
@@ -632,7 +632,7 @@ data class ChildInfo(
 )
 
 data class GuardianInfo(
-    val id: UUID? = null,
+    val id: PersonId? = null,
     val ssn: String?,
     val firstName: String,
     val lastName: String,

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.koski
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -12,7 +13,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-data class KoskiStudyRightKey(val childId: UUID, val unitId: DaycareId, val type: OpiskeluoikeudenTyyppiKoodi)
+data class KoskiStudyRightKey(val childId: ChildId, val unitId: DaycareId, val type: OpiskeluoikeudenTyyppiKoodi)
 
 fun Database.Read.getPendingStudyRights(
     today: LocalDate,

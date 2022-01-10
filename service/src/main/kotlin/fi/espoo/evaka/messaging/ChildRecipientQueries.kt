@@ -4,18 +4,19 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
-import java.util.UUID
 
 data class Recipient(
-    val personId: String,
+    val personId: PersonId,
     val firstName: String,
     val lastName: String,
     val blocklisted: Boolean
 )
 
-fun Database.Transaction.addToBlocklist(childId: UUID, recipientId: UUID) {
+fun Database.Transaction.addToBlocklist(childId: ChildId, recipientId: PersonId) {
     // language=sql
     val sql = """
         INSERT INTO messaging_blocklist (child_id, blocked_recipient)
@@ -29,7 +30,7 @@ fun Database.Transaction.addToBlocklist(childId: UUID, recipientId: UUID) {
         .execute()
 }
 
-fun Database.Transaction.removeFromBlocklist(childId: UUID, recipientId: UUID) {
+fun Database.Transaction.removeFromBlocklist(childId: ChildId, recipientId: PersonId) {
     // language=sql
     val sql = """
         DELETE FROM messaging_blocklist
@@ -42,7 +43,7 @@ fun Database.Transaction.removeFromBlocklist(childId: UUID, recipientId: UUID) {
         .execute()
 }
 
-fun Database.Read.fetchRecipients(childId: UUID): List<Recipient> {
+fun Database.Read.fetchRecipients(childId: ChildId): List<Recipient> {
     // language=sql
     val sql = """
         SELECT 

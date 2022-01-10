@@ -77,12 +77,15 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -90,6 +93,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -306,7 +310,7 @@ class DevApi(
         val placementId: PlacementId,
         val endDate: LocalDate,
         val terminationRequestedDate: LocalDate?,
-        val terminatedBy: UUID?
+        val terminatedBy: EvakaUserId?
     )
 
     @PostMapping("/placement/terminate")
@@ -320,7 +324,7 @@ class DevApi(
 
     data class DecisionRequest(
         val id: DecisionId,
-        val employeeId: UUID,
+        val employeeId: EmployeeId,
         val applicationId: ApplicationId,
         val unitId: DaycareId,
         val type: DecisionType,
@@ -335,7 +339,7 @@ class DevApi(
                 decisions.forEach { decision ->
                     tx.insertDecision(
                         decision.id,
-                        decision.employeeId,
+                        EvakaUserId(decision.employeeId.raw),
                         LocalDate.now(ZoneId.of("Europe/Helsinki")),
                         decision.applicationId,
                         decision.unitId,
@@ -365,7 +369,7 @@ class DevApi(
                     tx.fetchApplicationDetails(decision.applicationId) ?: throw NotFound("application not found")
                 applicationStateService.rejectDecision(
                     tx,
-                    AuthenticatedUser.Citizen(application.guardianId),
+                    AuthenticatedUser.Citizen(application.guardianId.raw),
                     application.id,
                     id,
                     isEnduser = true
@@ -427,10 +431,10 @@ class DevApi(
     }
 
     @PostMapping("/fee-thresholds")
-    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholds): UUID =
+    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholds): FeeThresholdsId =
         db.connect { dbc -> dbc.transaction { it.insertTestFeeThresholds(feeThresholds) } }
 
-    data class DevCreateIncomeStatements(val personId: UUID, val data: List<IncomeStatementBody>)
+    data class DevCreateIncomeStatements(val personId: PersonId, val data: List<IncomeStatementBody>)
 
     @PostMapping("/income-statements")
     fun createIncomeStatements(db: Database, @RequestBody body: DevCreateIncomeStatements) =
@@ -459,11 +463,11 @@ class DevApi(
     }
 
     @PostMapping("/person/create")
-    fun createPerson(db: Database, @RequestBody body: DevPerson): UUID {
+    fun createPerson(db: Database, @RequestBody body: DevPerson): PersonId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val personId = tx.insertTestPerson(body)
-                tx.insertEvakaUser(EvakaUser(id = EvakaUserId(personId), type = EvakaUserType.CITIZEN, name = body.firstName.plus(' ').plus(body.lastName)))
+                tx.insertEvakaUser(EvakaUser(id = EvakaUserId(personId.raw), type = EvakaUserType.CITIZEN, name = body.firstName.plus(' ').plus(body.lastName)))
                 tx.createPersonMessageAccount(personId)
                 val dto = body.copy(id = personId).toPersonDTO()
                 if (dto.identity is ExternalIdentifier.SSN) {
@@ -488,7 +492,7 @@ class DevApi(
     }
 
     @PostMapping("/employee")
-    fun createEmployee(db: Database, @RequestBody body: DevEmployee): UUID {
+    fun createEmployee(db: Database, @RequestBody body: DevEmployee): EmployeeId {
         return db.connect { dbc -> dbc.transaction { it.insertTestEmployee(body) } }
     }
 
@@ -502,7 +506,7 @@ class DevApi(
         db: Database,
         @PathVariable externalId: ExternalId,
         @RequestBody employee: DevEmployee
-    ): UUID = db.connect { dbc ->
+    ): EmployeeId = db.connect { dbc ->
         dbc.transaction {
             it.createUpdate(
                 """
@@ -518,14 +522,14 @@ RETURNING id
             )
                 .bindKotlin(employee)
                 .executeAndReturnGeneratedKeys()
-                .mapTo<UUID>()
+                .mapTo<EmployeeId>()
                 .single()
         }
     }
 
     data class DevGuardian(
-        val guardianId: UUID,
-        val childId: UUID
+        val guardianId: PersonId,
+        val childId: ChildId
     )
 
     @PostMapping("/guardian")
@@ -540,7 +544,7 @@ RETURNING id
     }
 
     @PostMapping("/child")
-    fun insertChild(db: Database, @RequestBody body: DevPerson): UUID = db.connect { dbc ->
+    fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId = db.connect { dbc ->
         dbc.transaction {
             it.insertTestPerson(
                 DevPerson(
@@ -639,13 +643,12 @@ RETURNING id
             dbc.transaction { tx ->
                 val uuid = tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                     .bind("ssn", person.socialSecurityNumber)
-                    .mapTo<UUID>()
+                    .mapTo<PersonId>()
                     .firstOrNull()
 
                 uuid?.let {
                     // Refresh Pis data by forcing refresh from VTJ
-                    val dummyUser = AuthenticatedUser.Employee(it, setOf(UserRole.SERVICE_WORKER))
-                    personService.getUpToDatePersonFromVtj(tx, dummyUser, it)
+                    personService.getUpToDatePersonFromVtj(tx, AuthenticatedUser.SystemInternalUser, it)
                 }
             }
         }
@@ -787,7 +790,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     @PostMapping("/children/{childId}/child-daily-notes")
     fun postChildDailyNote(
         db: Database,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNoteId {
         return db.connect { dbc ->
@@ -803,7 +806,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     @PostMapping("/children/{childId}/child-sticky-notes")
     fun postChildStickyNote(
         db: Database,
-        @PathVariable childId: UUID,
+        @PathVariable childId: ChildId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
         return db.connect { dbc ->
@@ -890,14 +893,14 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     fun createPedagogicalDocumentAttachment(
         db: Database,
         @PathVariable pedagogicalDocumentId: PedagogicalDocumentId,
-        @RequestParam employeeId: UUID,
+        @RequestParam employeeId: EmployeeId,
         @RequestPart("file") file: MultipartFile
     ): String {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val id = UUID.randomUUID()
                 tx.insertAttachment(
-                    AuthenticatedUser.Employee(employeeId, emptySet()),
+                    AuthenticatedUser.Employee(employeeId.raw, emptySet()),
                     AttachmentId(id),
                     file.name,
                     file.contentType ?: "image/jpeg",
@@ -1051,7 +1054,7 @@ fun Database.Transaction.ensureFakeAdminExists() {
     upsertEmployeeUser(EmployeeId(fakeAdmin.id))
 }
 
-fun Database.Transaction.deleteAndCascadeEmployee(id: UUID) {
+fun Database.Transaction.deleteAndCascadeEmployee(id: EmployeeId) {
     execute("DELETE FROM message_account WHERE employee_id = ?", id)
     execute("DELETE FROM employee_pin WHERE user_id = ?", id)
     execute("DELETE FROM employee WHERE id = ?", id)
@@ -1060,7 +1063,7 @@ fun Database.Transaction.deleteAndCascadeEmployee(id: UUID) {
 fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: ExternalId) {
     val employeeId = createQuery("SELECT id FROM employee WHERE external_id = :externalId")
         .bind("externalId", externalId)
-        .mapTo<UUID>()
+        .mapTo<EmployeeId>()
         .findOne()
     if (employeeId.isPresent) {
         deleteAndCascadeEmployee(employeeId.get())
@@ -1112,15 +1115,15 @@ data class DevCareArea(
 )
 
 data class DevBackupCare(
-    val id: UUID? = null,
-    val childId: UUID,
+    val id: BackupCareId? = null,
+    val childId: ChildId,
     val unitId: DaycareId,
     val groupId: GroupId?,
     val period: FiniteDateRange
 )
 
 data class DevChild(
-    val id: UUID,
+    val id: ChildId,
     val allergies: String = "",
     val diet: String = "",
     val medication: String = "",
@@ -1193,8 +1196,8 @@ data class DevDaycareGroupPlacement(
 
 data class DevAssistanceNeed(
     val id: AssistanceNeedId = AssistanceNeedId(UUID.randomUUID()),
-    val childId: UUID,
-    val updatedBy: UUID,
+    val childId: ChildId,
+    val updatedBy: EvakaUserId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val capacityFactor: Double = 1.0,
@@ -1203,8 +1206,8 @@ data class DevAssistanceNeed(
 
 data class DevAssistanceAction(
     val id: AssistanceActionId = AssistanceActionId(UUID.randomUUID()),
-    val childId: UUID,
-    val updatedBy: UUID,
+    val childId: ChildId,
+    val updatedBy: EvakaUserId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val actions: Set<String> = emptySet(),
@@ -1215,16 +1218,16 @@ data class DevAssistanceAction(
 data class DevPlacement(
     val id: PlacementId = PlacementId(UUID.randomUUID()),
     val type: PlacementType = PlacementType.DAYCARE,
-    val childId: UUID,
+    val childId: ChildId,
     val unitId: DaycareId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val terminationRequestedDate: LocalDate? = null,
-    val terminatedBy: UUID? = null
+    val terminatedBy: EvakaUserId? = null
 )
 
 data class DevPerson(
-    val id: UUID = UUID.randomUUID(),
+    val id: PersonId = PersonId(UUID.randomUUID()),
     val dateOfBirth: LocalDate = LocalDate.of(1980, 1, 1),
     val dateOfDeath: LocalDate? = null,
     val firstName: String = "Test",
@@ -1280,14 +1283,14 @@ data class DevPerson(
 
 data class DevParentship(
     val id: ParentshipId?,
-    val childId: UUID,
-    val headOfChildId: UUID,
+    val childId: ChildId,
+    val headOfChildId: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
 
 data class DevEmployee(
-    val id: UUID = UUID.randomUUID(),
+    val id: EmployeeId = EmployeeId(UUID.randomUUID()),
     val firstName: String = "Test",
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
@@ -1325,13 +1328,13 @@ data class DevApplicationWithForm(
     var sentDate: LocalDate?,
     var dueDate: LocalDate?,
     val status: ApplicationStatus,
-    val guardianId: UUID,
-    val childId: UUID,
+    val guardianId: PersonId,
+    val childId: ChildId,
     val origin: ApplicationOrigin,
     val checkedByAdmin: Boolean,
     val hideFromGuardian: Boolean,
     val transferApplication: Boolean,
-    val otherGuardianId: UUID?,
+    val otherGuardianId: PersonId?,
     val form: ApplicationForm
 )
 
@@ -1344,7 +1347,7 @@ data class DevApplicationForm(
     val updated: OffsetDateTime? = OffsetDateTime.now()
 )
 
-data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: UUID)
+data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: EmployeeId)
 
 data class DevServiceNeed(
     val id: ServiceNeedId,
@@ -1353,11 +1356,11 @@ data class DevServiceNeed(
     val endDate: LocalDate,
     val optionId: ServiceNeedOptionId,
     val shiftCare: Boolean,
-    val confirmedBy: UUID,
+    val confirmedBy: EvakaUserId,
     val confirmedAt: LocalDate? = null
 )
 
 data class PostVasuDocBody(
-    val childId: UUID,
+    val childId: ChildId,
     val templateId: VasuTemplateId
 )

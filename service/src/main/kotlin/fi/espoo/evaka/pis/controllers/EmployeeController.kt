@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/employee")
@@ -82,7 +81,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun updateEmployee(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") id: UUID,
+        @PathVariable(value = "id") id: EmployeeId,
         @RequestBody body: EmployeeUpdate
     ): ResponseEntity<Unit> {
         Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
@@ -105,7 +104,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun getEmployeeDetails(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") id: UUID
+        @PathVariable(value = "id") id: EmployeeId
     ): ResponseEntity<EmployeeWithDaycareRoles> {
         Audit.EmployeeRead.log(targetId = id)
         @Suppress("DEPRECATION")
@@ -143,7 +142,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.upsertPinCode(
-                    user.id, body
+                    EmployeeId(user.id), body
                 )
             }
         }.let {
@@ -159,7 +158,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         Audit.PinCodeLockedRead.log(targetId = user.id)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.isPinLocked(user.id)
+                tx.isPinLocked(EmployeeId(user.id))
             }
         }
     }

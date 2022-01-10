@@ -35,6 +35,7 @@ import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
@@ -62,7 +63,6 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -135,7 +135,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw),
                 today,
                 applicationId,
                 ApplicationType.DAYCARE,
@@ -165,7 +165,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw),
                 today,
                 applicationId,
                 ApplicationType.DAYCARE,
@@ -196,7 +196,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val applicationDate = secondTerm.applicationPeriod.start.minusWeeks(1)
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw),
                 applicationDate,
                 applicationId,
                 ApplicationType.PRESCHOOL,
@@ -212,7 +212,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val applicationDate = secondTerm.applicationPeriod.start
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw),
                 applicationDate,
                 applicationId,
                 ApplicationType.PRESCHOOL,
@@ -303,14 +303,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         assertDueDate(applicationId, null) // missing attachment
 
         // when
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id)))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw)))
         db.transaction { tx ->
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.minus(Period.ofWeeks(1)))
                 .execute()
         }
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id)))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw)))
         // then
         assertDueDate(applicationId, now.plus(Period.ofWeeks(2))) // end date >= earliest attachment.receivedAt
     }
@@ -328,8 +328,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
         }
         // when
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id), AttachmentType.EXTENDED_CARE))
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id), AttachmentType.URGENCY))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw), AttachmentType.EXTENDED_CARE))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw), AttachmentType.URGENCY))
 
         // then
         assertDueDate(applicationId, null) // application not sent
@@ -1362,7 +1362,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            tx.upsertIncome(mapper, earlierIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, earlierIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1402,7 +1402,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            tx.upsertIncome(mapper, earlierIncome, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1442,7 +1442,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = null
             )
-            tx.upsertIncome(mapper, laterIndefiniteIncome, financeUser.id)
+            tx.upsertIncome(mapper, laterIndefiniteIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1482,7 +1482,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(7),
                 validTo = mainPeriod.start.minusMonths(5)
             )
-            tx.upsertIncome(mapper, earlierIncome, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1524,7 +1524,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = mainPeriod.start.plusMonths(6)
             )
-            tx.upsertIncome(mapper, laterIncome, financeUser.id)
+            tx.upsertIncome(mapper, laterIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1564,7 +1564,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            tx.upsertIncome(mapper, earlierIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, earlierIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions(preferredStartDate = null)
 
@@ -1602,7 +1602,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start,
                 validTo = null
             )
-            tx.upsertIncome(mapper, sameDayIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, sameDayIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1641,7 +1641,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start,
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            tx.upsertIncome(mapper, sameDayIncome, financeUser.id)
+            tx.upsertIncome(mapper, sameDayIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1681,7 +1681,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = null
             )
-            tx.upsertIncome(mapper, dayBeforeIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, dayBeforeIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1722,7 +1722,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusDays(1),
                 validTo = null
             )
-            tx.upsertIncome(mapper, nextDayIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, nextDayIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1762,7 +1762,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            tx.upsertIncome(mapper, incomeDayBefore, financeUser.id)
+            tx.upsertIncome(mapper, incomeDayBefore, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1802,7 +1802,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start
             )
-            tx.upsertIncome(mapper, earlierIncomeEndingOnSameDay, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnSameDay, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1842,7 +1842,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.plusDays(1)
             )
-            tx.upsertIncome(mapper, earlierIncomeEndingOnNextDay, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnNextDay, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1882,7 +1882,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.minusDays(1)
             )
-            tx.upsertIncome(mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnDayBefore, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1915,7 +1915,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         db.transaction { tx ->
             // when
-            val user = AuthenticatedUser.Citizen(testAdult_5.id)
+            val user = AuthenticatedUser.Citizen(testAdult_5.id.raw)
             service.acceptDecision(
                 tx,
                 user,
@@ -1944,7 +1944,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         workflowForPreschoolDaycareDecisions()
 
         db.transaction { tx ->
-            val user = AuthenticatedUser.Citizen(testAdult_1.id)
+            val user = AuthenticatedUser.Citizen(testAdult_1.id.raw)
             // when
             assertThrows<Forbidden> {
                 service.acceptDecision(
@@ -1966,7 +1966,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         db.transaction { tx ->
             // when
-            val user = AuthenticatedUser.Citizen(testAdult_1.id)
+            val user = AuthenticatedUser.Citizen(testAdult_1.id.raw)
             assertThrows<Forbidden> {
                 service.rejectDecision(
                     tx,
@@ -2032,7 +2032,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Test
     fun `daycare with unknown service need option`() {
         // given
-        val serviceNeedOption = ServiceNeedOption(UUID.randomUUID(), "unknown service need option", "unknown service need option", "unknown service need option")
+        val serviceNeedOption = ServiceNeedOption(ServiceNeedOptionId(UUID.randomUUID()), "unknown service need option", "unknown service need option", "unknown service need option")
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
         db.transaction { tx ->
@@ -2057,7 +2057,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Test
     fun `daycare with known service need option`() {
         // given
-        val serviceNeedOption = ServiceNeedOption(snPreschoolDaycare45.id.raw, snPreschoolDaycare45.nameFi, snPreschoolDaycare45.nameSv, snPreschoolDaycare45.nameEn)
+        val serviceNeedOption = ServiceNeedOption(snPreschoolDaycare45.id, snPreschoolDaycare45.nameFi, snPreschoolDaycare45.nameSv, snPreschoolDaycare45.nameEn)
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
         db.transaction { tx ->
@@ -2075,7 +2075,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(serviceNeedOption, application.form.preferences.serviceNeed?.serviceNeedOption)
             val serviceNeeds = it.getServiceNeedsByChild(application.childId)
-            assertThat(serviceNeeds).extracting({ sn -> sn.option.id.raw }).containsExactly(tuple(serviceNeedOption.id))
+            assertEquals(listOf(serviceNeedOption.id), serviceNeeds.map { sn -> sn.option.id })
         }
     }
 

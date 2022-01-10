@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -11,7 +13,6 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -26,7 +27,7 @@ class FridgeFamilyService(
         val head = db.transaction {
             personService.getPersonWithChildren(
                 it,
-                user = AuthenticatedUser.Employee(msg.requestingUserId, setOf()),
+                user = AuthenticatedUser.Employee(msg.requestingUserId.raw, setOf()),
                 id = msg.personId,
                 forceRefresh = true
             )
@@ -40,7 +41,7 @@ class FridgeFamilyService(
                     db.transaction {
                         personService.getPersonWithChildren(
                             it,
-                            user = AuthenticatedUser.Employee(msg.requestingUserId, setOf()),
+                            user = AuthenticatedUser.Employee(msg.requestingUserId.raw, setOf()),
                             id = partnerId,
                             forceRefresh = true
                         )
@@ -84,7 +85,7 @@ class FridgeFamilyService(
         }
     }
 
-    fun getPartnerId(tx: Database.Read, personId: UUID): UUID? {
+    fun getPartnerId(tx: Database.Read, personId: PersonId): PersonId? {
         // language=sql
         val sql =
             """
@@ -94,17 +95,17 @@ class FridgeFamilyService(
             WHERE p1.person_id = :personId AND daterange(p1.start_date, p1.end_date, '[]') @> current_date AND p1.conflict = false AND p2.conflict = false
             """.trimIndent()
 
-        return tx.createQuery(sql).bind("personId", personId).mapTo<UUID>().firstOrNull()
+        return tx.createQuery(sql).bind("personId", personId).mapTo<PersonId>().firstOrNull()
     }
 
-    private fun getCurrentFridgeChildren(tx: Database.Read, personId: UUID): Set<UUID> {
+    private fun getCurrentFridgeChildren(tx: Database.Read, personId: PersonId): Set<ChildId> {
         // language=sql
         val sql =
             """
             SELECT child_id FROM fridge_child 
             WHERE head_of_child = :personId AND daterange(start_date, end_date, '[]') @> current_date AND conflict = false
             """.trimIndent()
-        return tx.createQuery(sql).bind("personId", personId).mapTo<UUID>().list().toHashSet()
+        return tx.createQuery(sql).bind("personId", personId).mapTo<ChildId>().list().toHashSet()
     }
 
     private fun livesInSameAddress(address1: PersonAddressDTO, address2: PersonAddressDTO): Boolean {

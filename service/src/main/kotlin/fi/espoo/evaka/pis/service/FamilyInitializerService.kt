@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -22,7 +23,6 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class FamilyInitializerService(
@@ -100,7 +100,7 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(tx: Database.Transaction, child: PersonDTO, headOfChildId: UUID) {
+    private fun createParentship(tx: Database.Transaction, child: PersonDTO, headOfChildId: PersonId) {
         val startDate = LocalDate.now()
         val alreadyExists = tx.getParentships(
             headOfChildId = headOfChildId,
@@ -148,7 +148,7 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createPartnership(tx: Database.Transaction, personId1: UUID, personId2: UUID) {
+    private fun createPartnership(tx: Database.Transaction, personId1: PersonId, personId2: PersonId) {
         val startDate = LocalDate.now()
         val alreadyExists =
             tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true)

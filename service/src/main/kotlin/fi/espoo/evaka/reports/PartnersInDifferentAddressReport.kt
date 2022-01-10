@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -16,7 +17,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class PartnersInDifferentAddressReportController(
@@ -82,11 +82,11 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
                 careAreaName = rs.getString("care_area_name"),
                 unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
-                personId1 = rs.getUUID("person_id_1"),
+                personId1 = PersonId(rs.getUUID("person_id_1")),
                 firstName1 = rs.getString("first_name_1"),
                 lastName1 = rs.getString("last_name_1"),
                 address1 = rs.getString("street_address_1"),
-                personId2 = rs.getUUID("person_id_2"),
+                personId2 = PersonId(rs.getUUID("person_id_2")),
                 firstName2 = rs.getString("first_name_2"),
                 lastName2 = rs.getString("last_name_2"),
                 address2 = rs.getString("street_address_2")
@@ -99,11 +99,11 @@ data class PartnersInDifferentAddressReportRow(
     val careAreaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val personId1: UUID,
+    val personId1: PersonId,
     val firstName1: String?,
     val lastName1: String?,
     val address1: String,
-    val personId2: UUID,
+    val personId2: PersonId,
     val firstName2: String?,
     val lastName2: String?,
     val address2: String

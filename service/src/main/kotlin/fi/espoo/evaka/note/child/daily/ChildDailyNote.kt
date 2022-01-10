@@ -6,12 +6,12 @@ package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.util.UUID
 
 data class ChildDailyNote(
     val id: ChildDailyNoteId,
-    val childId: UUID,
+    val childId: ChildId,
     val note: String,
     val feedingNote: ChildDailyNoteLevel?,
     val sleepingNote: ChildDailyNoteLevel?,

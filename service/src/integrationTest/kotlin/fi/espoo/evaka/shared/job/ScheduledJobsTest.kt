@@ -23,6 +23,7 @@ import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChild
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -74,7 +75,7 @@ class ScheduledJobsTest : FullApplicationTest() {
     fun `Draft application and attachments older than 30 days is cleaned up`() {
         val id_to_be_deleted = ApplicationId(UUID.randomUUID())
         val id_not_to_be_deleted = ApplicationId(UUID.randomUUID())
-        val user = AuthenticatedUser.Citizen(testAdult_5.id)
+        val user = AuthenticatedUser.Citizen(testAdult_5.id.raw)
 
         db.transaction { tx ->
             tx.insertApplication(guardian = testAdult_5, applicationId = id_to_be_deleted)
@@ -475,7 +476,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         type: ApplicationType,
         preferredStartDate: LocalDate,
         preschoolDaycare: Boolean = false,
-        childId: UUID = testChild_1.id,
+        childId: ChildId = testChild_1.id,
         status: ApplicationStatus = ApplicationStatus.SENT
     ): ApplicationId {
         return db.transaction { tx ->
@@ -501,7 +502,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         type: ApplicationType,
         preferredStartDate: LocalDate,
         preparatory: Boolean = false,
-        childId: UUID = testChild_1.id
+        childId: ChildId = testChild_1.id
     ): ApplicationId {
         return db.transaction { tx ->
             val applicationId = tx.insertTestApplication(
@@ -523,7 +524,7 @@ class ScheduledJobsTest : FullApplicationTest() {
         }
     }
 
-    private fun createPlacement(type: PlacementType, dateRange: FiniteDateRange, childId: UUID = testChild_1.id) {
+    private fun createPlacement(type: PlacementType, dateRange: FiniteDateRange, childId: ChildId = testChild_1.id) {
         db.transaction {
             it.insertTestPlacement(
                 childId = childId,

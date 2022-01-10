@@ -10,8 +10,10 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
@@ -36,7 +38,7 @@ WHERE id = :applicationId
 data class DecisionTableRow(
     val id: DecisionId,
     val number: Int,
-    val createdBy: UUID,
+    val createdBy: EvakaUserId,
     val sentDate: LocalDate,
     val unitId: DaycareId,
     val applicationId: ApplicationId,
@@ -65,7 +67,7 @@ fun Database.Read.getDecisionRowById(id: DecisionId) = createQuery(
 data class PlacementTableRow(
     val id: PlacementId,
     val type: PlacementType,
-    val childId: UUID,
+    val childId: ChildId,
     val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate
@@ -73,7 +75,7 @@ data class PlacementTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getPlacementRowsByChild(childId: UUID) = createQuery(
+fun Database.Read.getPlacementRowsByChild(childId: ChildId) = createQuery(
     // language=SQL
     "SELECT * FROM placement WHERE child_id = :childId ORDER BY start_date"
 ).bind("childId", childId).mapTo<PlacementTableRow>()
@@ -106,7 +108,7 @@ fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId)
 
 data class BackupCareTableRow(
     val id: BackupCareId,
-    val childId: UUID,
+    val childId: ChildId,
     val unitId: DaycareId,
     val groupId: GroupId?,
     val startDate: LocalDate,
@@ -120,7 +122,7 @@ fun Database.Read.getBackupCareRowById(id: BackupCareId) = createQuery(
     "SELECT * FROM backup_care WHERE id = :id"
 ).bind("id", id).mapTo<BackupCareTableRow>()
 
-fun Database.Read.getBackupCareRowsByChild(childId: UUID) = createQuery(
+fun Database.Read.getBackupCareRowsByChild(childId: ChildId) = createQuery(
     // language=SQL
     "SELECT * FROM backup_care WHERE child_id = :childId ORDER BY start_date"
 ).bind("childId", childId).mapTo<BackupCareTableRow>()
