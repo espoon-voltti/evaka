@@ -8,7 +8,7 @@ import TextareaAutosize from 'react-autosize-textarea'
 import styled from 'styled-components'
 import { BaseProps } from '../../utils'
 import UnderRowStatusIcon from '../StatusIcon'
-import { InputFieldUnderRow, InputInfo, InputRow } from './InputField'
+import { InputFieldUnderRow, InputInfo } from './InputField'
 
 interface TextAreaInputProps extends BaseProps {
   value: string
@@ -74,31 +74,29 @@ export default React.memo(function TextArea({
 
   return (
     <div className={wrapperClassName}>
-      <InputRow>
-        <StyledTextArea
-          value={value}
-          onChange={handleChange}
-          onFocus={onFocus}
-          onBlur={(e) => {
-            setTouched(true)
-            onBlur && onBlur(e)
-          }}
-          onKeyPress={onKeyPress}
-          placeholder={placeholder}
-          readOnly={readonly}
-          disabled={readonly}
-          maxLength={maxLength}
-          type={type}
-          autoFocus={autoFocus}
-          className={classNames(className, infoStatus)}
-          data-qa={dataQa}
-          id={id}
-          aria-describedby={ariaId}
-          required={required ?? false}
-          ref={inputRef}
-          rows={rows}
-        />
-      </InputRow>
+      <StyledTextArea
+        value={value}
+        onChange={handleChange}
+        onFocus={onFocus}
+        onBlur={(e) => {
+          setTouched(true)
+          onBlur && onBlur(e)
+        }}
+        onKeyPress={onKeyPress}
+        placeholder={placeholder}
+        readOnly={readonly}
+        disabled={readonly}
+        maxLength={maxLength}
+        type={type}
+        autoFocus={autoFocus}
+        className={classNames(className, infoStatus)}
+        data-qa={dataQa}
+        id={id}
+        aria-describedby={ariaId}
+        required={required ?? false}
+        ref={inputRef}
+        rows={rows}
+      />
       {infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
           <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
@@ -114,14 +112,12 @@ export default React.memo(function TextArea({
 const StyledTextArea = styled(TextareaAutosize)`
   display: block;
   position: relative;
-  align-items: center;
-  justify-content: flex-start;
 
   width: 100%;
   max-width: 100%;
   height: 38px;
   min-height: 2.5em;
-  padding: calc(0.5em - 1px) calc(0.625em - 1px) calc(0.5em - 1px);
+  padding: 6px 10px;
 
   font-size: 1rem;
   font-family: 'Open Sans', Arial, sans-serif;
@@ -132,27 +128,25 @@ const StyledTextArea = styled(TextareaAutosize)`
   resize: none;
 
   background-color: transparent;
-  border: 2px solid transparent;
-  border-bottom: 1px solid ${({ theme: { colors } }) => colors.greyscale.medium};
+  margin: 0;
+  border: none;
+  border-top: 2px solid transparent;
+  border-bottom: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
   border-radius: 0;
   box-shadow: none;
-
   outline: none;
 
-  &:focus {
-    border-width: 2px;
-    border-style: solid;
-    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
-  }
-
+  &:focus,
   &.success,
   &.warning {
-    border-width: 2px;
-    margin-bottom: -1px;
+    border-bottom-width: 2px;
+  }
 
-    &:focus {
-      margin-bottom: -1px;
-    }
+  &:focus {
+    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    border-radius: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   &.success {

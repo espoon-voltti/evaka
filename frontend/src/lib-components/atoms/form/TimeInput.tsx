@@ -51,5 +51,6 @@ function onFocus(event: React.FocusEvent<HTMLInputElement>) {
 }
 
 const ShorterInput = styled(InputField)`
-  width: calc(3.4em + 24px);
+  width: calc(2.6em + 24px);
+  max-width: calc(2.6em + 24px);
 `

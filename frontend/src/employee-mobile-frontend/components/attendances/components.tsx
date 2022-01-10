@@ -116,7 +116,7 @@ export const TimeWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 20px;
+  font-size: 60px;
   color: ${colors.main.dark};
   font-weight: ${fontWeights.semibold};
 
