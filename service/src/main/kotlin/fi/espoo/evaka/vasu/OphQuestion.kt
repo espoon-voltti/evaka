@@ -608,7 +608,7 @@ fun getDefaultLeopsContent() = VasuContent(
             name = "Tiedonsaajatahot",
             questions = listOf(
                 VasuQuestion.MultiSelectQuestion(
-                    name = "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla:",
+                    name = "Tämä oppimissuunnitelma luovutetaan huoltajan/huoltajien luvalla",
                     options = listOf(
                         QuestionOption(
                             key = "tiedonsaajataho_tuleva_esiopetusryhma",

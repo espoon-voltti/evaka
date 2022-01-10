@@ -130,6 +130,7 @@ export function VasuStateTransitionButtons({
           <>
             {getStateTransitionButton('PUBLISHED', false)}
             <Button
+              data-qa="edit-button"
               text={i18n.common.edit}
               onClick={() => history.push(`/vasu/${documentId}/edit`)}
             />

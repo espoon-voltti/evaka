@@ -50,6 +50,7 @@ export default React.memo(function VasuTemplatesPage() {
             <AddButtonRow
               onClick={() => setCreateModalOpen(true)}
               text={t.addNewTemplate}
+              data-qa="add-button"
             />
             <Table>
               <Thead>

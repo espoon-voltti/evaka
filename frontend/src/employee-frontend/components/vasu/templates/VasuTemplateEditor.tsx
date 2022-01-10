@@ -659,6 +659,7 @@ export default React.memo(function VasuTemplateEditor() {
             <Button
               text={i18n.common.save}
               primary
+              data-qa="save-template"
               onClick={() => {
                 void updateVasuTemplateContents(
                   id,

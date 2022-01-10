@@ -105,7 +105,11 @@ export default React.memo(function CreateOrEditTemplateModal({
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.name}</Label>
           {isEditableName ? (
-            <InputField value={name} onChange={setName} />
+            <InputField
+              value={name}
+              onChange={setName}
+              data-qa="template-name"
+            />
           ) : (
             <span>{name}</span>
           )}
@@ -122,6 +126,7 @@ export default React.memo(function CreateOrEditTemplateModal({
                   if (value) setType(value)
                 }}
                 getItemLabel={(option) => t.types[option]}
+                data-qa="select-type"
               />
             ) : (
               <span>{t.types[type]}</span>

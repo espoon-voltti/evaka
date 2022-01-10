@@ -46,14 +46,14 @@ export function MultiSelectQuestion({
                     checked={selectedValues.includes(option.key)}
                     label={option.name}
                     onChange={(checked) => onChange(option, checked)}
-                    data-qa="multi-select-question-option"
+                    data-qa={`multi-select-question-option-${option.key}`}
                   />
                   {option.textAnswer && textValue && (
                     <InputField
                       value={textValue[option.key] || ''}
                       onChange={(text) => onChange(option, text)}
                       placeholder={option.name}
-                      data-qa="option-text-input"
+                      data-qa={`multi-select-question-option-text-input-${option.key}`}
                     />
                   )}
                 </React.Fragment>
@@ -72,6 +72,7 @@ export function MultiSelectQuestion({
             )
             .join(', ')}
           translations={translations}
+          dataQa={`value-or-no-record-${questionNumber}`}
         />
       )}
     </div>

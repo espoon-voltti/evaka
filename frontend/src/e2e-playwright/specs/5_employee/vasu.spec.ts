@@ -242,17 +242,20 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const sharedTo = vasuEditPage.infoSharedToSection
 
-      await sharedTo.recipientsOptions.nth(1).click()
-      await sharedTo.recipientsOptions.nth(2).click()
+      await sharedTo.recipientsOptions('Neuvolaan').click()
+      await sharedTo.recipientsOptions('Lasten terapiapalveluihin').click()
       await sharedTo.otherInput.fill('Police')
 
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
       await waitUntilEqual(
-        () => vasuPage.infoSharedToSection.recipients,
+        () => vasuPage.infoSharedToSection.recipients.innerText,
         'Neuvolaan, Lasten terapiapalveluihin'
       )
-      await waitUntilEqual(() => vasuPage.infoSharedToSection.other, 'Police')
+      await waitUntilEqual(
+        () => vasuPage.infoSharedToSection.other.innerText,
+        'Police'
+      )
     })
 
     test('Fill the additional info section', async () => {

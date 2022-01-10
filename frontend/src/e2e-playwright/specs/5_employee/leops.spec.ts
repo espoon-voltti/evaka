@@ -21,6 +21,14 @@ import {
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import EmployeeNav from '../../pages/employee/employee-nav'
+import {
+  VasuEditPage,
+  VasuPage,
+  VasuPreviewPage
+} from '../../pages/employee/vasu/vasu'
+import { VasuTemplateEditPage } from '../../pages/employee/vasu/vasu-template-edit'
+import { VasuTemplatesListPage } from '../../pages/employee/vasu/vasu-templates-list'
 import { Page } from '../../utils/page'
 
 let page: Page
@@ -60,9 +68,39 @@ describe('Child Information - Leops documents section', () => {
     childInformationPage = new ChildInformationPage(page)
   })
 
+  const createLeopsTemplate = async (templateName: string) => {
+    await new EmployeeNav(page).openAndClickDropdownMenuItem('vasu-templates')
+    const vasuTemplatesList = new VasuTemplatesListPage(page)
+    await vasuTemplatesList.addTemplateButton.click()
+    await vasuTemplatesList.nameInput.fill(templateName)
+    await vasuTemplatesList.selectType.selectOption('PRESCHOOL')
+    await vasuTemplatesList.okButton.click()
+    await new VasuTemplateEditPage(page).saveButton.click()
+  }
+
   test('Can add a new vasu document', async () => {
-    await page.pause()
+    const templateName = 'Test template'
+    await createLeopsTemplate(templateName)
+    await page.goto(`${config.employeeUrl}/child-information/${childId}`)
     section = await childInformationPage.openCollapsible('vasuAndLeops')
+
     await section.addNew()
+    const vasuPage = new VasuPage(page)
+
+    await vasuPage.assertTemplateName(templateName)
+
+    await vasuPage.edit()
+    const vasuEditPage = new VasuEditPage(page)
+
+    await vasuEditPage.clickMultiSelectQuestionOption('tiedonsaajataho_muualle')
+    await vasuEditPage.setMultiSelectQuestionOptionText(
+      'tiedonsaajataho_muualle',
+      'test text'
+    )
+
+    await vasuEditPage.previewBtn.click()
+    const vasuPreviewPage = new VasuPreviewPage(page)
+
+    await vasuPreviewPage.assertMultiSelectContains('9.1', 'test text')
   })
 })

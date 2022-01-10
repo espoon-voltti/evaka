@@ -14,11 +14,16 @@ const PreFormattedText = styled.div`
 interface Props {
   text: string | undefined
   translations: VasuTranslations
+  dataQa?: string | null
 }
 
-export function ValueOrNoRecord({ text, translations }: Props): JSX.Element {
+export function ValueOrNoRecord({
+  text,
+  translations,
+  dataQa = 'value-or-no-record'
+}: Props): JSX.Element {
   return (
-    <PreFormattedText data-qa="value-or-no-record">
+    <PreFormattedText data-qa={dataQa}>
       {text || <Dimmed>{translations.noRecord}</Dimmed>}
     </PreFormattedText>
   )

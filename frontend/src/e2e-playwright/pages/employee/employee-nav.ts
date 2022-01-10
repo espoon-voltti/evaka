@@ -22,13 +22,16 @@ export default class EmployeeNav {
   readonly #financeBasicsLink = this.page.find(
     '[data-qa="user-popup-finance-basics"]'
   )
+  readonly #vasuTemplatesLink = this.page.find(
+    '[data-qa="user-popup-vasu-templates"]'
+  )
 
   async openDropdownMenu() {
     await this.#userNameBtn.click()
   }
 
   async openAndClickDropdownMenuItem(
-    item: 'employees' | 'pinCode' | 'financeBasics'
+    item: 'employees' | 'pinCode' | 'financeBasics' | 'vasu-templates'
   ) {
     await this.openDropdownMenu()
     switch (item) {
@@ -38,6 +41,8 @@ export default class EmployeeNav {
         return await this.#pinCodeLink.click()
       case 'financeBasics':
         return await this.#financeBasicsLink.click()
+      case 'vasu-templates':
+        return await this.#vasuTemplatesLink.click()
     }
   }
 
