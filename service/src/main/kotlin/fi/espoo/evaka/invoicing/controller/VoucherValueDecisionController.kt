@@ -38,10 +38,11 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -52,9 +53,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @RestController
@@ -124,7 +123,12 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/send")
-    fun sendDrafts(db: Database, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
+    fun sendDrafts(
+        db: Database,
+        user: AuthenticatedUser,
+        evakaClock: EvakaClock,
+        @RequestBody decisionIds: List<VoucherValueDecisionId>
+    ): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *decisionIds.toTypedArray())
         db.connect { dbc ->
@@ -133,7 +137,7 @@ class VoucherValueDecisionController(
                     tx = it,
                     asyncJobRunner = asyncJobRunner,
                     user = user,
-                    now = ZonedDateTime.now(europeHelsinki).toInstant(),
+                    now = evakaClock.now(),
                     ids = decisionIds
                 )
             }
@@ -142,7 +146,12 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun markSent(db: Database, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
+    fun markSent(
+        db: Database,
+        user: AuthenticatedUser,
+        evakaClock: EvakaClock,
+        @RequestBody ids: List<VoucherValueDecisionId>
+    ): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *ids.toTypedArray())
         db.connect { dbc ->
@@ -150,7 +159,7 @@ class VoucherValueDecisionController(
                 val decisions = tx.getValueDecisionsByIds(ids)
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING })
                     throw BadRequest("Voucher value decision cannot be marked sent")
-                tx.markVoucherValueDecisionsSent(ids, Instant.now())
+                tx.markVoucherValueDecisionsSent(ids, evakaClock.now())
             }
         }
         return ResponseEntity.noContent().build()
@@ -198,7 +207,7 @@ fun sendVoucherValueDecisions(
     tx: Database.Transaction,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     user: AuthenticatedUser,
-    now: Instant,
+    now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>
 ) {
     tx.lockValueDecisions(ids)

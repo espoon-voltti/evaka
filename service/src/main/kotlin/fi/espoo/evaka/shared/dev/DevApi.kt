@@ -37,6 +37,7 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.createIncomeStatement
+import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
@@ -422,7 +423,16 @@ class DevApi(
         db: Database,
         @RequestBody decisions: List<VoucherValueDecision>
     ) {
-        db.connect { dbc -> dbc.transaction { tx -> tx.upsertValueDecisions(decisions) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.upsertValueDecisions(decisions)
+                decisions.forEach { fd ->
+                    if (fd.sentAt != null) {
+                        tx.markVoucherValueDecisionsSent(listOf(fd.id), fd.sentAt)
+                    }
+                }
+            }
+        }
     }
 
     @PostMapping("/invoices")

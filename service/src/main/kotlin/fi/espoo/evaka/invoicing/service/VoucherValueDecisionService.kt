@@ -29,12 +29,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.langWithDefault
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
-import java.time.Instant
 import java.time.LocalDate
 
 @Component
@@ -109,7 +109,7 @@ class VoucherValueDecisionService(
             )
         )
 
-        tx.markVoucherValueDecisionsSent(listOf(decision.id), Instant.now())
+        tx.markVoucherValueDecisionsSent(listOf(decision.id), HelsinkiDateTime.now())
 
         return true
     }

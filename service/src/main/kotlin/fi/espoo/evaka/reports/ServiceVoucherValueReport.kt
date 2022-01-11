@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.europeHelsinki
@@ -118,7 +119,7 @@ class ServiceVoucherValueReportController(
     }
 }
 
-fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int, takenAt: Instant) {
+fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int, takenAt: HelsinkiDateTime) {
     val rows = tx.getServiceVoucherValues(year, month)
 
     val voucherValueReportSnapshotId =

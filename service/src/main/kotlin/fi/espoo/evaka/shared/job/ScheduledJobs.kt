@@ -149,7 +149,7 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
                 it,
                 LocalDate.now(europeHelsinki).year,
                 LocalDate.now(europeHelsinki).monthValue,
-                Instant.now()
+                HelsinkiDateTime.now()
             )
         }
     }

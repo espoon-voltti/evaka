@@ -383,6 +383,22 @@ class FeeDecisionsSection extends Section {
   }
 }
 
+class VoucherValueDecisionsSection extends Section {
+  #voucherValueDecisionSentAt = this.findAll(
+    `[data-qa="voucher-value-decision-sent-at"]`
+  )
+
+  async checkVoucherValueDecisionSentAt(
+    nth: number,
+    expectedSentAt: LocalDate
+  ) {
+    await waitUntilEqual(
+      () => this.#voucherValueDecisionSentAt.nth(nth).innerText,
+      expectedSentAt.format('dd.MM.yyyy')
+    )
+  }
+}
+
 class InvoicesSection extends Section {
   #invoiceRows = this.findAll('[data-qa="table-invoice-row"]')
 
@@ -439,6 +455,10 @@ const collapsibles = {
   feeDecisions: {
     selector: '[data-qa="person-fee-decisions-collapsible"]',
     section: FeeDecisionsSection
+  },
+  voucherValueDecisions: {
+    selector: '[data-qa="person-voucher-value-decisions-collapsible"]',
+    section: VoucherValueDecisionsSection
   },
   invoices: {
     selector: '[data-qa="person-invoices-collapsible"]',

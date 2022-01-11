@@ -24,7 +24,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -41,11 +41,9 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -66,7 +64,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     private val janFirst = LocalDate.of(2020, 1, 1)
     private val febFirst = LocalDate.of(2020, 2, 1)
 
-    private val janFreeze = ZonedDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0), europeHelsinki).toInstant()
+    private val janFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0))
 
     @Test
     fun `unfrozen area voucher report includes value decisions that begin in the beginning of reports month`() {
@@ -154,7 +152,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         coPayment: Int,
         adultId: PersonId,
         child: DevPerson,
-        approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), europeHelsinki).toInstant()
+        approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0))
     ): VoucherValueDecision {
         val decision = db.transaction {
             val decision = createVoucherValueDecisionFixture(
