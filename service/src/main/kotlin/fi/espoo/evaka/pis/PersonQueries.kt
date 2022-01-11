@@ -391,7 +391,7 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx 
     PersonDTO(
         id = PersonId(rs.getUUID("id")),
         identity = rs.getString("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
-            ?: ExternalIdentifier.NoID(),
+            ?: ExternalIdentifier.NoID,
         ssnAddingDisabled = rs.getBoolean("ssn_adding_disabled"),
         firstName = rs.getString("first_name"),
         lastName = rs.getString("last_name"),

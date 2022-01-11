@@ -9,7 +9,7 @@ package fi.espoo.evaka.identity
  * to log in with
  */
 sealed class ExternalIdentifier {
-    class SSN private constructor(val ssn: String) : ExternalIdentifier() {
+    data class SSN private constructor(val ssn: String) : ExternalIdentifier() {
         companion object {
             fun getInstance(ssn: String): SSN {
                 require(isValidSSN(ssn)) { "Invalid Social Security Number: $ssn." }
@@ -18,22 +18,7 @@ sealed class ExternalIdentifier {
         }
 
         override fun toString(): String = ssn
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as SSN
-
-            if (ssn != other.ssn) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return ssn.hashCode()
-        }
     }
 
-    class NoID : ExternalIdentifier()
+    object NoID : ExternalIdentifier()
 }
