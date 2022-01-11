@@ -7,8 +7,6 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.shared.domain.BadRequest
 import java.util.UUID
 
-data class Wrapper<T>(val data: T)
-
 fun parseUUID(uuid: String): UUID = try {
     UUID.fromString(uuid)
 } catch (e: IllegalArgumentException) {

@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,11 +36,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId
-    ): ResponseEntity<DaycareAclResponse> {
+    ): DaycareAclResponse {
         Audit.UnitAclRead.log()
         accessControl.requirePermissionFor(user, Action.Unit.READ_ACL, daycareId)
-        val acls = db.connect { dbc -> getDaycareAclRows(dbc, daycareId) }
-        return ResponseEntity.ok(DaycareAclResponse(acls))
+        return DaycareAclResponse(db.connect { dbc -> getDaycareAclRows(dbc, daycareId) })
     }
 
     @PutMapping("/daycares/{daycareId}/supervisors/{employeeId}")
@@ -50,11 +48,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_UNIT_SUPERVISOR, daycareId)
         db.connect { dbc -> addUnitSupervisor(dbc, daycareId, employeeId) }
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
@@ -63,11 +60,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_UNIT_SUPERVISOR, daycareId)
         db.connect { dbc -> removeUnitSupervisor(dbc, daycareId, employeeId) }
-        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
@@ -76,11 +72,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
         db.connect { dbc -> addSpecialEducationTeacher(dbc, daycareId, employeeId) }
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
@@ -89,11 +84,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
         db.connect { dbc -> removeSpecialEducationTeacher(dbc, daycareId, employeeId) }
-        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}")
@@ -102,11 +96,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_STAFF, daycareId)
         db.connect { dbc -> addStaffMember(dbc, daycareId, employeeId) }
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/staff/{employeeId}")
@@ -115,11 +108,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_STAFF, daycareId)
         db.connect { dbc -> removeStaffMember(dbc, daycareId, employeeId) }
-        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}/groups")

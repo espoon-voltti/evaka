@@ -5,8 +5,6 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.noContent
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
@@ -21,7 +19,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.mapper.Nested
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -53,10 +50,10 @@ class ChildController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): ResponseEntity<AdditionalInformation> {
+    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): AdditionalInformation {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ADDITIONAL_INFO, childId)
-        return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }.let(::ok)
+        return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }
     }
 
     @PutMapping("/children/{childId}/additional-information")
@@ -65,11 +62,10 @@ class ChildController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable childId: ChildId,
         @RequestBody data: AdditionalInformation
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_ADDITIONAL_INFO, childId)
         db.connect { dbc -> dbc.transaction { it.upsertAdditionalInformation(childId, data) } }
-        return noContent()
     }
 
     data class ChildResponse(

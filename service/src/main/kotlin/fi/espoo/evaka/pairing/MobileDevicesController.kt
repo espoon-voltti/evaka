@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -34,14 +33,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
-    ): ResponseEntity<List<MobileDevice>> {
+    ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_DEVICES, unitId)
-        return db.connect { dbc ->
-            dbc
-                .read { it.listSharedDevices(unitId) }
-        }
-            .let { ResponseEntity.ok(it) }
+        return db.connect { dbc -> dbc.read { it.listSharedDevices(unitId) } }
     }
 
     @GetMapping("/mobile-devices/personal")
@@ -59,14 +54,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable id: MobileDeviceId
-    ): ResponseEntity<MobileDeviceDetails> {
+    ): MobileDeviceDetails {
         Audit.MobileDevicesRead.log(targetId = id)
-
-        return db.connect { dbc ->
-            dbc
-                .read { it.getDevice(id) }
-        }
-            .let { ResponseEntity.ok(it) }
+        // TODO access control
+        return db.connect { dbc -> dbc.read { it.getDevice(id) } }
     }
 
     data class RenameRequest(
@@ -78,12 +69,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.MobileDevicesRename.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.MobileDevice.UPDATE_NAME, id)
-
         db.connect { dbc -> dbc.transaction { it.renameDevice(id, body.name) } }
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/mobile-devices/{id}")
@@ -91,12 +80,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable id: MobileDeviceId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.MobileDevicesDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.MobileDevice.DELETE, id)
-
         db.connect { dbc -> dbc.transaction { it.softDeleteDevice(id) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/mobile-devices/pin-login")

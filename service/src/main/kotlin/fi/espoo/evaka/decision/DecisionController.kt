@@ -39,13 +39,12 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") guardianId: PersonId
-    ): ResponseEntity<DecisionListResponse> {
+    ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = guardianId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
-
-        return ResponseEntity.ok(DecisionListResponse(decisions))
+        return DecisionListResponse(decisions)
     }
 
     @GetMapping("/by-child")
@@ -53,13 +52,12 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") childId: ChildId
-    ): ResponseEntity<DecisionListResponse> {
+    ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = childId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
-
-        return ResponseEntity.ok(DecisionListResponse(decisions))
+        return DecisionListResponse(decisions)
     }
 
     @GetMapping("/by-application")
@@ -67,21 +65,20 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") applicationId: ApplicationId
-    ): ResponseEntity<DecisionListResponse> {
+    ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = applicationId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
 
-        return ResponseEntity.ok(DecisionListResponse(decisions))
+        return DecisionListResponse(decisions)
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(db: Database, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
+    fun getDecisionUnits(db: Database, user: AuthenticatedUser): List<DecisionUnit> {
         Audit.UnitRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_DECISION_UNITS)
-        val units = db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
-        return ResponseEntity.ok(units)
+        return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])

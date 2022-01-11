@@ -272,7 +272,7 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable attachmentId: AttachmentId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.AttachmentsDelete.log(targetId = attachmentId)
 
         db.connect { dbc ->
@@ -291,7 +291,6 @@ class AttachmentsController(
 
             dbc.transaction { deleteAttachment(it, attachmentId) }
         }
-        return ResponseEntity.noContent().build()
     }
 
     fun deleteAttachment(tx: Database.Transaction, attachmentId: AttachmentId) {

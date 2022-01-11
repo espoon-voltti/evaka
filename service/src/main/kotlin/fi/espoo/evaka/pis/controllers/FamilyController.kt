@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -61,14 +60,10 @@ class FamilyController(
         db: Database,
         user: AuthenticatedUser,
         @RequestParam(value = "childId", required = true) childId: ChildId
-    ): ResponseEntity<List<FamilyContact>> {
+    ): List<FamilyContact> {
         Audit.FamilyContactsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FAMILY_CONTACTS, childId)
-        return db.connect { dbc ->
-            dbc
-                .read { it.fetchFamilyContacts(childId) }
-        }
-            .let { ResponseEntity.ok(it) }
+        return db.connect { dbc -> dbc.read { it.fetchFamilyContacts(childId) } }
     }
 
     @PostMapping("/contacts")
@@ -76,13 +71,10 @@ class FamilyController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: FamilyContactUpdate
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT, body.childId)
-
         db.connect { dbc -> dbc.transaction { it.updateFamilyContact(body.childId, body.contactPersonId, body.priority) } }
-
-        return ResponseEntity.noContent().build()
     }
 }
 

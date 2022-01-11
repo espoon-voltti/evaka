@@ -5,7 +5,6 @@
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.shared.db.Database
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -21,9 +20,8 @@ class VardaDevController(
     @PostMapping("/run-update-all")
     fun runFullVardaUpdate(
         db: Database
-    ): ResponseEntity<Unit> {
+    ) {
         db.connect { dbc -> vardaUpdateService.startVardaUpdate(dbc) }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/reset-children")

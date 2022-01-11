@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -34,7 +33,7 @@ class FeeDecisionGeneratorController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/generate")
-    fun generateDecisions(db: Database, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
+    fun generateDecisions(db: Database, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody) {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
         accessControl.requirePermissionFor(user, Action.Global.GENERATE_FEE_DECISIONS)
         db.connect { dbc ->
@@ -44,7 +43,6 @@ class FeeDecisionGeneratorController(
                 data.targetHeads.filterNotNull().distinct()
             )
         }
-        return ResponseEntity.noContent().build()
     }
 
     private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<PersonId>) {

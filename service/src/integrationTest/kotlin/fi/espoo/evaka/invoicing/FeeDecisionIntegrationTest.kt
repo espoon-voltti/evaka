@@ -11,7 +11,6 @@ import com.github.kittinunf.result.Result
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
-import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
@@ -27,6 +26,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
@@ -653,7 +653,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .asUser(user)
             .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
     }
 
     @Test
@@ -963,7 +963,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
             .withMockedTime(now)
             .response()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -1436,7 +1436,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(listOf(decision.id)))
             .responseString()
 
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 

@@ -1,7 +1,7 @@
 package evaka.codegen.apitypes
 
-import fi.espoo.evaka.daycare.controllers.utils.Wrapper
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.springframework.http.ResponseEntity
@@ -60,6 +60,5 @@ val classesToUnwrap = kotlinCollectionClasses + listOf(
     ResponseEntity::class,
     Paged::class,
     VardaClient.PaginatedResponse::class,
-    Wrapper::class,
-    fi.espoo.evaka.invoicing.controller.Wrapper::class
+    Wrapper::class
 )

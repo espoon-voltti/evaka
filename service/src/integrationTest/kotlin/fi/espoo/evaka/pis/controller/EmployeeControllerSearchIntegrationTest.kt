@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -38,9 +37,8 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `admin searches employees`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 3, searchTerm = null))
-        assertEquals(HttpStatus.OK, response.statusCode)
-        val body = response.body ?: fail("missing body")
+        val body = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 3, searchTerm = null))
+
         assertEquals(3, body.total)
         assertEquals(1, body.pages)
 
@@ -59,9 +57,7 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `admin searches employees with free text`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super"))
-        assertEquals(HttpStatus.OK, response.statusCode)
-        val body = response.body ?: fail("missing body")
+        val body = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super"))
         assertEquals(1, body.data.size)
         assertEquals("Sammy", body.data[0].firstName)
         assertEquals("Supervisor", body.data[0].lastName)

@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -39,41 +38,33 @@ class LocationController {
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
-    ): ResponseEntity<List<PublicUnit>> {
-        val units = db.connect { dbc -> dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = user.isEndUser) } }
-        return ResponseEntity.ok(units)
+    ): List<PublicUnit> {
+        return db.connect { dbc -> dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = user.isEndUser) } }
     }
 
     @GetMapping("/public/units/{applicationType}")
     fun getAllApplicableUnits(
         db: Database,
         @PathVariable applicationType: ApplicationType
-    ): ResponseEntity<List<PublicUnit>> {
-        return db.connect { dbc ->
-            dbc
-                .read { it.getAllApplicableUnits(applicationType) }
-        }
-            .let { ResponseEntity.ok(it) }
+    ): List<PublicUnit> {
+        return db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
     }
 
     @GetMapping("/areas")
-    fun getAreas(db: Database, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
+    fun getAreas(db: Database, user: AuthenticatedUser): List<AreaJSON> {
         return db.connect { dbc ->
-            dbc
-                .read {
-                    it.createQuery("SELECT id, name, short_name FROM care_area")
-                        .mapTo<AreaJSON>()
-                        .toList()
-                }
+            dbc.read {
+                it.createQuery("SELECT id, name, short_name FROM care_area")
+                    .mapTo<AreaJSON>()
+                    .toList()
+            }
         }
-            .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/filters/units")
-    fun getUnits(db: Database, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
+    fun getUnits(db: Database, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): List<UnitStub> {
         val areas = area?.split(",") ?: listOf()
-        val units = db.connect { dbc -> dbc.read { it.getUnits(areas, type) } }
-        return ResponseEntity.ok(units)
+        return db.connect { dbc -> dbc.read { it.getUnits(areas, type) } }
     }
 }
 

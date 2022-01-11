@@ -5,7 +5,6 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.Wrapper
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceChildMinimal
 import fi.espoo.evaka.daycare.service.AbsenceDelete
@@ -15,10 +14,10 @@ import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -37,11 +36,10 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
-    ): ResponseEntity<Wrapper<AbsenceGroup>> {
+    ): Wrapper<AbsenceGroup> {
         Audit.AbsenceRead.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.READ_ABSENCES, groupId)
-        val absences = db.connect { dbc -> dbc.read { absenceService.getAbsencesByMonth(it, groupId, year, month) } }
-        return ResponseEntity.ok(Wrapper(absences))
+        return Wrapper(db.connect { dbc -> dbc.read { absenceService.getAbsencesByMonth(it, groupId, year, month) } })
     }
 
     @PostMapping("/{groupId}")
@@ -50,7 +48,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         user: AuthenticatedUser,
         @RequestBody absences: Wrapper<List<Absence>>,
         @PathVariable groupId: GroupId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.CREATE_ABSENCES, groupId)
         absences.data.forEach {
@@ -58,7 +56,6 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         }
 
         db.connect { dbc -> dbc.transaction { absenceService.upsertAbsences(it, absences.data, user.evakaUserId) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{groupId}/delete")
@@ -67,7 +64,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         user: AuthenticatedUser,
         @RequestBody deletions: List<AbsenceDelete>,
         @PathVariable groupId: GroupId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.DELETE_ABSENCES, groupId)
         deletions.forEach {
@@ -75,7 +72,6 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         }
 
         db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/by-child/{childId}")
@@ -85,11 +81,10 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @PathVariable childId: ChildId,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): ResponseEntity<Wrapper<AbsenceChildMinimal>> {
+    ): Wrapper<AbsenceChildMinimal> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ABSENCES, childId)
-        val absences = db.connect { dbc -> dbc.read { absenceService.getAbsencesByChild(it, childId, year, month) } }
-        return ResponseEntity.ok(Wrapper(absences))
+        return Wrapper(db.connect { dbc -> dbc.read { absenceService.getAbsencesByChild(it, childId, year, month) } })
     }
 
     @GetMapping("/by-child/{childId}/future")
@@ -97,10 +92,9 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
-    ): ResponseEntity<List<Absence>> {
+    ): List<Absence> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FUTURE_ABSENCES, childId)
-        val absences = db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, childId) } }
-        return ResponseEntity.ok(absences)
+        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, childId) } }
     }
 }

@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
@@ -69,7 +70,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchVoucherValueDecisionRequest
-    ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
+    ): Paged<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionSearch.log()
         accessControl.requirePermissionFor(user, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
         val maxPageSize = 5000
@@ -94,7 +95,6 @@ class VoucherValueDecisionController(
                     )
                 }
         }
-            .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/{id}")
@@ -102,12 +102,12 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VoucherValueDecisionId
-    ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
+    ): Wrapper<VoucherValueDecisionDetailed> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, id)
         val res = db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
-        return ResponseEntity.ok(Wrapper(res))
+        return Wrapper(res)
     }
 
     @GetMapping("/head-of-family/{headOfFamilyId}")
@@ -115,11 +115,10 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable headOfFamilyId: PersonId
-    ): ResponseEntity<List<VoucherValueDecisionSummary>> {
+    ): List<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
         accessControl.requirePermissionFor(user, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
-        val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
-        return ResponseEntity.ok(res)
+        return db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
     }
 
     @PostMapping("/send")
@@ -128,7 +127,7 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestBody decisionIds: List<VoucherValueDecisionId>
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *decisionIds.toTypedArray())
         db.connect { dbc ->
@@ -142,7 +141,6 @@ class VoucherValueDecisionController(
                 )
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/mark-sent")
@@ -151,7 +149,7 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestBody ids: List<VoucherValueDecisionId>
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *ids.toTypedArray())
         db.connect { dbc ->
@@ -162,7 +160,6 @@ class VoucherValueDecisionController(
                 tx.markVoucherValueDecisionsSent(ids, evakaClock.now())
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/pdf/{id}")
@@ -183,11 +180,10 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser,
         @PathVariable uuid: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { valueDecisionService.setType(it, uuid, request.type) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")

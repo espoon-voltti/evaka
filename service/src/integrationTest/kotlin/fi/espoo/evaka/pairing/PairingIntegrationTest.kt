@@ -570,13 +570,13 @@ class PairingIntegrationTest : FullApplicationTest() {
             .asUser(user)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
     }
 
     private fun deleteMobileDeviceAssertOk(id: MobileDeviceId) {
         val (_, res, _) = http.delete("/mobile-devices/$id")
             .asUser(user)
             .response()
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
     }
 }

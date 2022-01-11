@@ -21,13 +21,13 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -57,7 +57,7 @@ class IncomeController(
     }
 
     @PostMapping
-    fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
+    fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): IncomeId {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         accessControl.requirePermissionFor(user, Action.Person.CREATE_INCOME, income.personId)
         val period = try {
@@ -68,7 +68,7 @@ class IncomeController(
             }
         }
 
-        val id = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.transaction { tx ->
                 val id = IncomeId(UUID.randomUUID())
                 val incomeTypes = incomeTypesProvider.get()
@@ -79,8 +79,6 @@ class IncomeController(
                 id
             }
         }
-
-        return ResponseEntity.ok(id)
     }
 
     @PutMapping("/{incomeId}")
@@ -89,7 +87,7 @@ class IncomeController(
         user: AuthenticatedUser,
         @PathVariable incomeId: IncomeId,
         @RequestBody income: Income
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
         accessControl.requirePermissionFor(user, Action.Income.UPDATE, incomeId)
 
@@ -107,12 +105,10 @@ class IncomeController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
             }
         }
-
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(db: Database, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
+    fun deleteIncome(db: Database, user: AuthenticatedUser, @PathVariable incomeId: IncomeId) {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
         accessControl.requirePermissionFor(user, Action.Income.DELETE, incomeId)
 
@@ -127,14 +123,12 @@ class IncomeController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
             }
         }
-
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/types")
-    fun getTypes(user: AuthenticatedUser): ResponseEntity<Map<String, IncomeType>> {
+    fun getTypes(user: AuthenticatedUser): Map<String, IncomeType> {
         accessControl.requirePermissionFor(user, Action.Global.READ_INCOME_TYPES)
-        return incomeTypesProvider.get().let { ResponseEntity.ok(it) }
+        return incomeTypesProvider.get()
     }
 }
 

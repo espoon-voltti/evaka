@@ -132,7 +132,6 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.context.annotation.Profile
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -362,7 +361,7 @@ class DevApi(
     fun rejectDecisionByCitizen(
         db: Database,
         @PathVariable id: DecisionId,
-    ): ResponseEntity<Unit> {
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decision = tx.getDecision(id) ?: throw NotFound("decision not found")
@@ -377,7 +376,6 @@ class DevApi(
                 )
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/applications/{applicationId}")

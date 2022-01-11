@@ -334,7 +334,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
             .asUser(assistanceWorker)
             .responseObject<AssistanceAction>(objectMapper)
 
-        assertEquals(201, res.statusCode)
+        assertEquals(200, res.statusCode)
         return result.get()
     }
 
@@ -380,7 +380,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
             .asUser(assistanceWorker)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
     }
 
     private fun whenDeleteAssistanceActionThenExpectError(id: AssistanceActionId, status: Int) {

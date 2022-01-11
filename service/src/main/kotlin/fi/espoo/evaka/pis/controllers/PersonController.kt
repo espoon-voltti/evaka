@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -53,12 +52,12 @@ class PersonController(
     private val accessControl: AccessControl
 ) {
     @PostMapping
-    fun createEmpty(db: Database, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
+    fun createEmpty(db: Database, user: AuthenticatedUser): PersonIdentityResponseJSON {
         Audit.PersonCreate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.connect { dbc -> dbc.transaction { createEmptyPerson(it) } }
-            .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
+            .let { PersonIdentityResponseJSON.from(it) }
     }
 
     @GetMapping("/{personId}")
@@ -84,7 +83,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: PersonId
-    ): ResponseEntity<PersonJSON> {
+    ): PersonJSON {
         Audit.PersonDetailsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ, personId)
         return db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
@@ -96,8 +95,8 @@ class PersonController(
                 ),
                 includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, personId)
             )
-            ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
-            ?: ResponseEntity.notFound().build()
+            ?.let { PersonJSON.from(it) }
+            ?: throw NotFound()
     }
 
     @GetMapping("/dependants/{personId}")
@@ -105,13 +104,12 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: PersonId
-    ): ResponseEntity<List<PersonWithChildrenDTO>> {
+    ): List<PersonWithChildrenDTO> {
         Audit.PersonDependantRead.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
-        return db.connect { dbc -> dbc.transaction { personService.getPersonWithChildren(it, user, personId) } }
-            ?.let { ResponseEntity.ok().body(it.children) }
-            ?: ResponseEntity.notFound().build()
+        return db.connect { dbc -> dbc.transaction { personService.getPersonWithChildren(it, user, personId) } }?.children
+            ?: throw NotFound()
     }
 
     @GetMapping("/guardians/{personId}")
@@ -119,11 +117,11 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") childId: ChildId
-    ): ResponseEntity<List<PersonJSON>> {
+    ): List<PersonJSON> {
         Audit.PersonGuardianRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_GUARDIANS, childId)
         return db.connect { dbc -> dbc.transaction { personService.getGuardians(it, user, childId) } }
-            .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
+            .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
     }
 
     @PostMapping("/search")
@@ -152,14 +150,14 @@ class PersonController(
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: PersonId,
         @RequestBody contactInfo: ContactInfo
-    ): ResponseEntity<ContactInfo> {
+    ): ContactInfo {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
         return if (db.connect { dbc -> dbc.transaction { it.updatePersonContactInfo(personId, contactInfo) } }) {
-            ResponseEntity.ok().body(contactInfo)
+            contactInfo
         } else {
-            ResponseEntity.notFound().build()
+            throw NotFound()
         }
     }
 
@@ -169,7 +167,7 @@ class PersonController(
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: PersonId,
         @RequestBody data: PersonPatch
-    ): ResponseEntity<PersonJSON> {
+    ): PersonJSON {
         Audit.PersonUpdate.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
@@ -191,7 +189,7 @@ class PersonController(
             }
 
         return db.connect { dbc -> dbc.transaction { personService.patchUserDetails(it, personId, userEditablePersonData) } }
-            .let { ResponseEntity.ok(PersonJSON.from(it)) }
+            .let { PersonJSON.from(it) }
     }
 
     @DeleteMapping("/{personId}")
@@ -199,12 +197,11 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: PersonId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PersonDelete.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         db.connect { dbc -> dbc.transaction { mergeService.deleteEmptyPerson(it, personId) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/{personId}/ssn")
@@ -213,19 +210,20 @@ class PersonController(
         user: AuthenticatedUser,
         @PathVariable personId: PersonId,
         @RequestBody body: AddSsnRequest
-    ): ResponseEntity<PersonJSON> {
+    ): PersonJSON {
         Audit.PersonUpdate.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.ADD_SSN, personId)
 
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
         }
-        val person = db.connect { dbc ->
-            dbc.transaction {
-                personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+        return PersonJSON.from(
+            db.connect { dbc ->
+                dbc.transaction {
+                    personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+                }
             }
-        }
-        return ResponseEntity.ok(PersonJSON.from(person))
+        )
     }
 
     @PutMapping("/{personId}/ssn/disable")
@@ -246,14 +244,14 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: GetOrCreatePersonBySsnRequest
-    ): ResponseEntity<PersonJSON> {
+    ): PersonJSON {
         Audit.PersonDetailsRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
-        val person = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.transaction {
                 personService.getOrCreatePerson(
                     it,
@@ -263,10 +261,8 @@ class PersonController(
                 )
             }
         }
-
-        return person
-            ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
-            ?: ResponseEntity.notFound().build()
+            ?.let { PersonJSON.from(it) }
+            ?: throw NotFound()
     }
 
     @GetMapping("/get-deceased/")
@@ -274,15 +270,11 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
-    ): ResponseEntity<List<PersonJSON>> {
+    ): List<PersonJSON> {
         Audit.PersonDetailsRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-
-        return ResponseEntity.ok()
-            .body(
-                db.connect { dbc -> dbc.read { it.getDeceasedPeople(sinceDate) } }.map { personDTO -> PersonJSON.from(personDTO) }
-            )
+        return db.connect { dbc -> dbc.read { it.getDeceasedPeople(sinceDate) } }.map { personDTO -> PersonJSON.from(personDTO) }
     }
 
     @PostMapping("/merge")
@@ -290,7 +282,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: MergeRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
@@ -299,7 +291,6 @@ class PersonController(
                 mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
             }
         }
-        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/create")
@@ -307,12 +298,11 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: CreatePersonBody
-    ): ResponseEntity<PersonId> {
+    ): PersonId {
         Audit.PersonCreate.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
         return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }
-            .let { ResponseEntity.ok(it) }
     }
 
     data class PersonResponse(

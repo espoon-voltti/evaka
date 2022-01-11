@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -35,7 +34,7 @@ class NoteController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
-    ): ResponseEntity<List<NoteJSON>> {
+    ): List<NoteJSON> {
         Audit.NoteRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_NOTES, applicationId)
 
@@ -44,7 +43,7 @@ class NoteController(private val accessControl: AccessControl) {
                 it.getApplicationNotes(applicationId)
             }
         }
-        return ResponseEntity.ok(notes.map(NoteJSON.DomainMapping::toJSON))
+        return notes.map(NoteJSON.DomainMapping::toJSON)
     }
 
     @PostMapping("/application/{id}")
@@ -53,7 +52,7 @@ class NoteController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable("id") applicationId: ApplicationId,
         @RequestBody note: NoteRequest
-    ): ResponseEntity<NoteJSON> {
+    ): NoteJSON {
         Audit.NoteCreate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.CREATE_NOTE, applicationId)
 
@@ -62,7 +61,7 @@ class NoteController(private val accessControl: AccessControl) {
                 it.createApplicationNote(applicationId, note.text, user.evakaUserId)
             }
         }
-        return ResponseEntity.ok(NoteJSON.toJSON(newNote))
+        return NoteJSON.toJSON(newNote)
     }
 
     @PutMapping("/{noteId}")
@@ -71,7 +70,7 @@ class NoteController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.NoteUpdate.log(targetId = noteId)
         accessControl.requirePermissionFor(user, Action.ApplicationNote.UPDATE, noteId)
 
@@ -80,7 +79,6 @@ class NoteController(private val accessControl: AccessControl) {
                 tx.updateApplicationNote(noteId, note.text, user.evakaUserId)
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{noteId}")
@@ -88,7 +86,7 @@ class NoteController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: ApplicationNoteId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.NoteDelete.log(targetId = noteId)
         accessControl.requirePermissionFor(user, Action.ApplicationNote.DELETE, noteId)
         db.connect { dbc ->
@@ -96,7 +94,6 @@ class NoteController(private val accessControl: AccessControl) {
                 tx.deleteApplicationNote(noteId)
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/service-worker/application/{applicationId}")
