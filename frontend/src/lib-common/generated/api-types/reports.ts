@@ -460,6 +460,7 @@ export interface VardaErrorReportRow {
   childId: UUID
   created: Date
   errors: string[]
+  resetTimeStamp: Date | null
   serviceNeedEndDate: string
   serviceNeedId: UUID
   serviceNeedOptionName: string
