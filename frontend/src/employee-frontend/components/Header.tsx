@@ -46,9 +46,9 @@ const LogoLink = styled(Link)`
   }
 
   > svg {
+    width: 100%;
     height: 100%;
     max-width: 150px;
-    width: auto;
   }
 `
 
