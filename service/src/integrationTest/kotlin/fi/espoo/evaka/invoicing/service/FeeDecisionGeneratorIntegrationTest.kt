@@ -142,7 +142,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `child in a club does not affect fee decisions for siblings in any way`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        insertPlacement(testChild_1.id, placementPeriod, CLUB, testClub.id!!)
+        insertPlacement(testChild_1.id, placementPeriod, CLUB, testClub.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
 

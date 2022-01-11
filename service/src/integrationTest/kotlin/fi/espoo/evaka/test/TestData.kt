@@ -272,7 +272,7 @@ val validClubApplication = ApplicationDetails(
         preferences = Preferences(
             preferredUnits = listOf(
                 PreferredUnit(
-                    id = testClub.id!!,
+                    id = testClub.id,
                     name = testClub.name
                 )
             ),

@@ -1617,7 +1617,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
@@ -1657,7 +1657,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
@@ -1697,7 +1697,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
@@ -1737,7 +1737,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
@@ -1777,7 +1777,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
@@ -1817,7 +1817,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                     createFeeDecisionChildFixture(
                         childId = testChild_1.id,
                         dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testRoundTheClockDaycare.id!!,
+                        placementUnitId = testRoundTheClockDaycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
@@ -1888,7 +1888,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                     createFeeDecisionChildFixture(
                         childId = testChild_1.id,
                         dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testRoundTheClockDaycare.id!!,
+                        placementUnitId = testRoundTheClockDaycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
@@ -1906,7 +1906,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                     createFeeDecisionChildFixture(
                         childId = testChild_1.id,
                         dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testRoundTheClockDaycare.id!!,
+                        placementUnitId = testRoundTheClockDaycare.id,
                         placementType = PlacementType.DAYCARE_PART_TIME,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
@@ -1956,7 +1956,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
@@ -2014,7 +2014,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
@@ -2072,7 +2072,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id!!,
+                    placementUnitId = testRoundTheClockDaycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
