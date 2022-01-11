@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
@@ -27,7 +28,6 @@ import java.math.RoundingMode
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
-import java.util.UUID
 
 interface RowWithPrice {
     val price: Int
@@ -62,7 +62,7 @@ enum class InvoiceStatus {
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRow(
-    val id: UUID?,
+    val id: InvoiceRowId?,
     val child: ChildWithDateOfBirth,
     val amount: Int,
     val unitPrice: Int,
@@ -100,7 +100,7 @@ data class InvoiceDetailed(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRowDetailed(
-    val id: UUID,
+    val id: InvoiceRowId,
     val child: PersonDetailed,
     val amount: Int,
     val unitPrice: Int,
@@ -135,7 +135,7 @@ data class InvoiceSummary(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRowSummary(
-    val id: UUID,
+    val id: InvoiceRowId,
     val child: PersonBasic,
     val amount: Int,
     val unitPrice: Int

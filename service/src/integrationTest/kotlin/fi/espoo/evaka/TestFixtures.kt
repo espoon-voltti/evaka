@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.VoucherValueId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -530,7 +531,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
 
     insertTestVoucherValue(
         VoucherValue(
-            id = UUID.randomUUID(),
+            id = VoucherValueId(UUID.randomUUID()),
             validity = DateRange(LocalDate.of(2000, 1, 1), null),
             baseValue = 87000,
             ageUnderThreeCoefficient = BigDecimal("1.55")

@@ -29,6 +29,7 @@ sealed interface DatabaseTable {
     sealed class ChildImage : DatabaseTable
     sealed class ChildStickyNote : DatabaseTable
     sealed class GroupNote : DatabaseTable
+    sealed class DaycareCaretaker : DatabaseTable
     sealed class Decision : DatabaseTable
     sealed class Employee : DatabaseTable
     sealed class EvakaUser : DatabaseTable
@@ -40,6 +41,8 @@ sealed interface DatabaseTable {
     sealed class Income : DatabaseTable
     sealed class IncomeStatement : DatabaseTable
     sealed class Invoice : DatabaseTable
+    sealed class InvoiceRow : DatabaseTable
+    sealed class KoskiStudyRight : DatabaseTable
     sealed class Message : DatabaseTable
     sealed class MessageAccount : DatabaseTable
     sealed class MessageContent : DatabaseTable
@@ -61,6 +64,7 @@ sealed interface DatabaseTable {
     sealed class VardaPlacement : DatabaseTable
     sealed class VasuDocument : DatabaseTable
     sealed class VasuTemplate : DatabaseTable
+    sealed class VoucherValue : DatabaseTable
     sealed class VoucherValueDecision : DatabaseTable
 }
 
@@ -82,6 +86,7 @@ typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
 typealias ChildImageId = Id<DatabaseTable.ChildImage>
 typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>
 typealias GroupNoteId = Id<DatabaseTable.GroupNote>
+typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
 typealias DecisionId = Id<DatabaseTable.Decision>
 typealias EmployeeId = Id<DatabaseTable.Employee>
 typealias EvakaUserId = Id<DatabaseTable.EvakaUser>
@@ -93,6 +98,8 @@ typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 typealias IncomeId = Id<DatabaseTable.Income>
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
 typealias InvoiceId = Id<DatabaseTable.Invoice>
+typealias InvoiceRowId = Id<DatabaseTable.InvoiceRow>
+typealias KoskiStudyRightId = Id<DatabaseTable.KoskiStudyRight>
 typealias MessageId = Id<DatabaseTable.Message>
 typealias MessageAccountId = Id<DatabaseTable.MessageAccount>
 typealias MessageContentId = Id<DatabaseTable.MessageContent>
@@ -115,6 +122,7 @@ typealias VardaPlacementId = Id<DatabaseTable.VardaPlacement>
 typealias VasuDocumentId = Id<DatabaseTable.VasuDocument>
 typealias VasuDocumentFollowupEntryId = Pair<VasuDocumentId, UUID>
 typealias VasuTemplateId = Id<DatabaseTable.VasuTemplate>
+typealias VoucherValueId = Id<DatabaseTable.VoucherValue>
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 
 @JsonSerialize(converter = Id.ToJson::class)

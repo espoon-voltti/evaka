@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -184,7 +185,7 @@ data class VasuContent(
                                             text = text,
                                             edited = FollowupEntryEditDetails(
                                                 editedAt = LocalDate.now(),
-                                                editorId = editor?.id?.raw,
+                                                editorId = editor?.id,
                                                 editorName = "${editor?.firstName} ${editor?.lastName}"
                                             )
                                         )
@@ -399,7 +400,7 @@ data class FollowupEntry(
 data class FollowupEntryEditDetails(
     val editedAt: LocalDate = LocalDate.now(),
     val editorName: String = "",
-    val editorId: UUID? = null
+    val editorId: EmployeeId? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (other is FollowupEntryEditDetails) {

@@ -20,6 +20,7 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
+import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -88,7 +89,7 @@ class KoskiClient(
             }
             tx.finishKoskiUpload(
                 KoskiUploadResponse(
-                    id = response.opiskeluoikeudet[0].lähdejärjestelmänId.id,
+                    id = KoskiStudyRightId(response.opiskeluoikeudet[0].lähdejärjestelmänId.id),
                     studyRightOid = response.opiskeluoikeudet[0].oid,
                     personOid = response.henkilö.oid,
                     version = response.opiskeluoikeudet[0].versionumero,

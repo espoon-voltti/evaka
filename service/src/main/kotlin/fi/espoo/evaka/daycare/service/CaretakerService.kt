@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
+import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -15,7 +16,6 @@ import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class CaretakerService {
@@ -82,7 +82,7 @@ class CaretakerService {
     fun update(
         tx: Database.Transaction,
         groupId: GroupId,
-        id: UUID,
+        id: DaycareCaretakerId,
         startDate: LocalDate,
         endDate: LocalDate?,
         amount: Double
@@ -111,7 +111,7 @@ class CaretakerService {
         }
     }
 
-    fun delete(tx: Database.Transaction, groupId: GroupId, id: UUID) {
+    fun delete(tx: Database.Transaction, groupId: GroupId, id: DaycareCaretakerId) {
         tx.createUpdate("DELETE FROM daycare_caretaker WHERE id = :id AND group_id = :groupId")
             .bind("groupId", groupId)
             .bind("id", id)
@@ -121,7 +121,7 @@ class CaretakerService {
 }
 
 data class CaretakerAmount(
-    val id: UUID,
+    val id: DaycareCaretakerId,
     val groupId: GroupId,
     val startDate: LocalDate,
     val endDate: LocalDate?,

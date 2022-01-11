@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -16,7 +17,6 @@ import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class FamilyContactReportController(private val accessControl: AccessControl) {
@@ -99,7 +99,7 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
                 postalCode = rs.getString("postal_code"),
                 postOffice = rs.getString("post_office"),
                 group = rs.getString("group_name"),
-                headOfChild = ctx.mapNullableColumn<UUID>(rs, "hoc_id")?.let {
+                headOfChild = ctx.mapNullableColumn<PersonId>(rs, "hoc_id")?.let {
                     Contact(
                         firstName = rs.getString("hoc_first_name") ?: "",
                         lastName = rs.getString("hoc_last_name") ?: "",
@@ -107,7 +107,7 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
                         email = rs.getString("hoc_email") ?: ""
                     )
                 },
-                guardian1 = ctx.mapNullableColumn<UUID>(rs, "gu1_id")?.let {
+                guardian1 = ctx.mapNullableColumn<PersonId>(rs, "gu1_id")?.let {
                     Contact(
                         firstName = rs.getString("gu1_first_name") ?: "",
                         lastName = rs.getString("gu1_last_name") ?: "",
@@ -115,7 +115,7 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
                         email = rs.getString("gu1_email") ?: ""
                     )
                 },
-                guardian2 = ctx.mapNullableColumn<UUID>(rs, "gu2_id")?.let {
+                guardian2 = ctx.mapNullableColumn<PersonId>(rs, "gu2_id")?.let {
                     Contact(
                         firstName = rs.getString("gu2_first_name") ?: "",
                         lastName = rs.getString("gu2_last_name") ?: "",

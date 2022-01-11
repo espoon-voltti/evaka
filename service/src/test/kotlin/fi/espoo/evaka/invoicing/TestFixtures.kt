@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
@@ -145,7 +146,7 @@ val testDecision1 = FeeDecision(
 )
 
 val testInvoiceRow = InvoiceRow(
-    id = UUID.randomUUID(),
+    id = InvoiceRowId(UUID.randomUUID()),
     amount = 1,
     child = ChildWithDateOfBirth(testChild2.id, testChild2.dateOfBirth),
     periodStart = LocalDate.of(2019, 5, 1),
@@ -285,7 +286,7 @@ fun createVoucherValueDecisionFixture(
 )
 
 fun createInvoiceRowFixture(childId: ChildId) = InvoiceRow(
-    id = UUID.randomUUID(),
+    id = InvoiceRowId(UUID.randomUUID()),
     child = ChildWithDateOfBirth(childId, LocalDate.of(2017, 1, 1)),
     amount = 1,
     unitPrice = 28900,

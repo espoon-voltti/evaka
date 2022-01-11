@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -83,7 +84,7 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
 
         val updated = when (original.status) {
             InvoiceStatus.DRAFT -> original.copy(
-                rows = invoice.rows.map { row -> if (row.id == null) row.copy(id = UUID.randomUUID()) else row }
+                rows = invoice.rows.map { row -> if (row.id == null) row.copy(id = InvoiceRowId(UUID.randomUUID())) else row }
             )
             else -> throw BadRequest("Only draft invoices can be updated")
         }

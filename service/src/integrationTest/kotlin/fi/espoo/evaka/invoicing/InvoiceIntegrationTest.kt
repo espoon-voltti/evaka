@@ -32,6 +32,7 @@ import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -602,7 +603,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
                 it.copy(
                     id = InvoiceId(UUID.randomUUID()),
                     number = null,
-                    rows = it.rows.map { row -> row.copy(id = UUID.randomUUID()) }
+                    rows = it.rows.map { row -> row.copy(id = InvoiceRowId(UUID.randomUUID())) }
                 )
             }
         }

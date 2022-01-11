@@ -30,6 +30,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -286,7 +287,7 @@ private fun toTemporaryPlacementInvoiceRows(
     return if (amount == 0) listOf()
     else listOf(
         InvoiceRow(
-            id = UUID.randomUUID(),
+            id = InvoiceRowId(UUID.randomUUID()),
             periodStart = period.start,
             periodEnd = period.end!!,
             child = child,
@@ -355,7 +356,7 @@ private fun toPermanentPlacementInvoiceRows(
             operationalDays.generalCase.size
         ).map { (dates, product) ->
             if (dates.size == operationalDays.generalCase.size) InvoiceRow(
-                id = UUID.randomUUID(),
+                id = InvoiceRowId(UUID.randomUUID()),
                 child = child,
                 periodStart = period.start,
                 periodEnd = period.end!!,
@@ -366,7 +367,7 @@ private fun toPermanentPlacementInvoiceRows(
                 unitPrice = -price
             )
             else InvoiceRow(
-                id = UUID.randomUUID(),
+                id = InvoiceRowId(UUID.randomUUID()),
                 child = child,
                 periodStart = period.start,
                 periodEnd = period.end!!,
@@ -383,7 +384,7 @@ private fun toPermanentPlacementInvoiceRows(
         else listOfNotNull(
             getAbsenceProduct(absences, operationalDays.forUnit(placement.unit), operationalDays.generalCase.size)?.let {
                 InvoiceRow(
-                    id = UUID.randomUUID(),
+                    id = InvoiceRowId(UUID.randomUUID()),
                     child = child,
                     periodStart = period.start,
                     periodEnd = period.end!!,
@@ -406,7 +407,7 @@ private fun toPermanentPlacementInvoiceRows(
 
     val initialRows = listOf(
         InvoiceRow(
-            id = UUID.randomUUID(),
+            id = InvoiceRowId(UUID.randomUUID()),
             child = child,
             periodStart = period.start,
             periodEnd = period.end!!,
@@ -418,7 +419,7 @@ private fun toPermanentPlacementInvoiceRows(
         )
     ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
         InvoiceRow(
-            id = UUID.randomUUID(),
+            id = InvoiceRowId(UUID.randomUUID()),
             periodStart = period.start,
             periodEnd = period.end,
             child = child,
@@ -513,7 +514,7 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
 
                 if (difference != 0 && -20 < difference && difference < 20) {
                     rows.first().copy(
-                        id = UUID.randomUUID(),
+                        id = InvoiceRowId(UUID.randomUUID()),
                         periodStart = invoicePeriod.start,
                         periodEnd = invoicePeriod.end!!,
                         amount = 1,
