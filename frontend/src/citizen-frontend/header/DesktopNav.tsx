@@ -50,9 +50,21 @@ export default React.memo(function DesktopNav({
             <Nav>
               {user ? (
                 <>
-                  <StyledNavLink to="/applying" data-qa="nav-applying">
-                    {t.header.nav.applying} {maybeLockElem}
-                  </StyledNavLink>
+                  {user.accessibleFeatures.reservations && (
+                    <StyledNavLink to="/calendar" data-qa="nav-calendar">
+                      {t.header.nav.calendar}
+                    </StyledNavLink>
+                  )}
+                  {user.accessibleFeatures.messages && (
+                    <StyledNavLink to="/messages" data-qa="nav-messages">
+                      {t.header.nav.messages}{' '}
+                      {unreadMessagesCount > 0 ? (
+                        <CircledChar>{unreadMessagesCount}</CircledChar>
+                      ) : (
+                        ''
+                      )}
+                    </StyledNavLink>
+                  )}
                   {user.accessibleFeatures.pedagogicalDocumentation && (
                     <StyledNavLink
                       to="/pedagogical-documents"
@@ -67,23 +79,11 @@ export default React.memo(function DesktopNav({
                       )}
                     </StyledNavLink>
                   )}
-                  {user.accessibleFeatures.messages && (
-                    <StyledNavLink to="/messages" data-qa="nav-messages">
-                      {t.header.nav.messages}{' '}
-                      {unreadMessagesCount > 0 ? (
-                        <CircledChar>{unreadMessagesCount}</CircledChar>
-                      ) : (
-                        ''
-                      )}
-                    </StyledNavLink>
-                  )}
-                  {user.accessibleFeatures.reservations && (
-                    <StyledNavLink to="/calendar" data-qa="nav-calendar">
-                      {t.header.nav.calendar}
-                    </StyledNavLink>
-                  )}
                   <StyledNavLink to="/children" data-qa="nav-children">
                     {t.header.nav.children} {maybeLockElem}
+                  </StyledNavLink>
+                  <StyledNavLink to="/applying" data-qa="nav-applying">
+                    {t.header.nav.applying} {maybeLockElem}
                   </StyledNavLink>
                 </>
               ) : null}
