@@ -773,7 +773,8 @@ export const voucherValueDecisionsFixture = (
   partner: PersonDetail | null = null,
   status: 'DRAFT' | 'SENT' = 'DRAFT',
   validFrom = LocalDate.today().subYears(1),
-  validTo = LocalDate.today().addYears(1)
+  validTo = LocalDate.today().addYears(1),
+  sentAt: Date | null = null
 ): VoucherValueDecision => ({
   id,
   status,
@@ -808,7 +809,7 @@ export const voucherValueDecisionsFixture = (
   ageCoefficient: 1.0,
   capacityFactor: 1.0,
   voucherValue: 87000,
-  sentAt: null,
+  sentAt,
   approvedAt: null,
   approvedById: null,
   decisionNumber: null,

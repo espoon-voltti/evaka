@@ -81,30 +81,34 @@ export default React.memo(function PersonVoucherValueDecisions({
             </Tr>
           </Thead>
           <Tbody>
-            {orderBy(voucherValueDecisions, ['createdAt'], ['desc']).map(
-              (decision) => (
-                <Tr
-                  key={`${decision.id}`}
-                  data-qa="table-voucher-value-decision-row"
-                >
-                  <Td>
-                    {decision.child.lastName} {decision.child.firstName}
-                    <br />
-                    <Link to={`/finance/value-decisions/${decision.id}`}>
-                      {`${decision.validFrom.format()} - ${
-                        decision.validTo?.format() ?? ''
-                      }`}
-                    </Link>
-                  </Td>
-                  <Td>{decision.decisionNumber}</Td>
-                  <Td>{formatCents(decision.voucherValue)}</Td>
-                  <Td>{formatCents(decision.finalCoPayment)}</Td>
-                  <Td>{formatDate(decision.created)}</Td>
-                  <Td>{formatDate(decision.sentAt)}</Td>
-                  <Td>{i18n.valueDecision.status[decision.status]}</Td>
-                </Tr>
-              )
-            )}
+            {orderBy(
+              voucherValueDecisions,
+              ['sentAt', 'validFrom'],
+              ['desc']
+            ).map((decision) => (
+              <Tr
+                key={`${decision.id}`}
+                data-qa="table-voucher-value-decision-row"
+              >
+                <Td>
+                  {decision.child.lastName} {decision.child.firstName}
+                  <br />
+                  <Link to={`/finance/value-decisions/${decision.id}`}>
+                    {`${decision.validFrom.format()} - ${
+                      decision.validTo?.format() ?? ''
+                    }`}
+                  </Link>
+                </Td>
+                <Td>{decision.decisionNumber}</Td>
+                <Td>{formatCents(decision.voucherValue)}</Td>
+                <Td>{formatCents(decision.finalCoPayment)}</Td>
+                <Td>{formatDate(decision.created)}</Td>
+                <Td data-qa="voucher-value-decision-sent-at">
+                  {formatDate(decision.sentAt)}
+                </Td>
+                <Td>{i18n.valueDecision.status[decision.status]}</Td>
+              </Tr>
+            ))}
           </Tbody>
         </Table>
       ))}

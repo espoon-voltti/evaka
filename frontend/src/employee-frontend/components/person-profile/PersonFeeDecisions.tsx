@@ -81,7 +81,7 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
             </Tr>
           </Thead>
           <Tbody>
-            {_.orderBy(feeDecisions, ['sentAt', 'createdAt'], ['desc']).map(
+            {_.orderBy(feeDecisions, ['sentAt', 'validFrom'], ['desc']).map(
               (feeDecision: FeeDecision) => (
                 <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
                   <Td>

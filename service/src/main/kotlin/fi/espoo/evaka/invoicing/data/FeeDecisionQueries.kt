@@ -343,7 +343,7 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN person AS child ON part.child_id = child.id
             LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit_id
             LEFT JOIN (
-                SELECT fee_decision.id, sum(fee_decision_child.final_fee) sum
+                SELECT fee_decision.id, coalesce(sum(fee_decision_child.final_fee), 0) sum
                 FROM fee_decision
                 LEFT JOIN fee_decision_child ON fee_decision.id = fee_decision_child.fee_decision_id
                 GROUP BY fee_decision.id
