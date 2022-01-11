@@ -387,25 +387,11 @@ data class FollowupEntry(
     val id: UUID = UUID.randomUUID(),
     val authorId: UUID? = null,
     val edited: FollowupEntryEditDetails? = null
-) {
-    override fun equals(other: Any?): Boolean {
-        if (other is FollowupEntry) {
-            return this.date == other.date && this.authorName == other.authorName && this.text == other.text && this.id == other.id && this.authorId == other.authorId && this.edited == other.edited
-        }
-        return false
-    }
-}
+)
 
 @Json
 data class FollowupEntryEditDetails(
     val editedAt: LocalDate = LocalDate.now(),
     val editorName: String = "",
     val editorId: EmployeeId? = null
-) {
-    override fun equals(other: Any?): Boolean {
-        if (other is FollowupEntryEditDetails) {
-            return this.editedAt == other.editedAt && this.editorName == other.editorName && this.editorId == other.editorId
-        }
-        return false
-    }
-}
+)
