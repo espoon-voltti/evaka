@@ -12,6 +12,7 @@ import fi.espoo.evaka.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.Product
+import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 import java.time.LocalDate
 
@@ -47,7 +48,8 @@ interface InvoiceIntegrationClient {
             return result.fold(
                 { true },
                 { error ->
-                    logger.error("Failed sending invoice batch", error.exception)
+                    val meta = mapOf("errorMessage" to error.errorData.decodeToString())
+                    logger.error(error, meta) { "Failed sending invoice batch" }
                     false
                 }
             )
