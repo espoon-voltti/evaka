@@ -74,7 +74,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
                 )
             )
             tx.updateDaycareAcl(
-                testRoundTheClockDaycare.id!!,
+                testRoundTheClockDaycare.id,
                 testRoundTheClockDaycareSupervisorExternalId,
                 UserRole.UNIT_SUPERVISOR
             )
@@ -259,7 +259,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `application attachments when placed into a round the clock unit`() {
-        val applicationId = createPlacementProposalWithAttachments(testRoundTheClockDaycare.id!!)
+        val applicationId = createPlacementProposalWithAttachments(testRoundTheClockDaycare.id)
 
         val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)

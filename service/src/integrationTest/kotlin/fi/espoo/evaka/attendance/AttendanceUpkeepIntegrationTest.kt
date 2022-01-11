@@ -71,7 +71,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id!!,
+                unitId = testRoundTheClockDaycare.id,
                 arrived = arrived,
                 departed = null
             )

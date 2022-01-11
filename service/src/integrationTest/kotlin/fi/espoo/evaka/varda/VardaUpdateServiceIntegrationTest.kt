@@ -360,7 +360,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
-        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL, testGhostUnitDaycare.id!!)
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL, testGhostUnitDaycare.id)
 
         updateChildData(db, vardaClient, feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
@@ -735,8 +735,8 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
         val child = testChild_1
         val adult = testAdult_1
-        createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!, unitId = testGhostUnitDaycare.id!!)
-        createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant(), daycareId = testGhostUnitDaycare.id!!)
+        createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!, unitId = testGhostUnitDaycare.id)
+        createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant(), daycareId = testGhostUnitDaycare.id)
 
         updateChildData(db, vardaClient, feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)

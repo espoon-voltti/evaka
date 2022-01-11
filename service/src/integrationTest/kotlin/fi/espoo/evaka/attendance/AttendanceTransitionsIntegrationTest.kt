@@ -542,7 +542,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun markArrivedAssertOkOneChild(arrived: LocalTime): Child {
         val time = arrived.format(DateTimeFormatter.ofPattern("HH:mm"))
-        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
+        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
             .jsonBody("{\"arrived\": \"$time\"}") // test HH:mm deserialization
             .asUser(mobileUser)
             .response()
