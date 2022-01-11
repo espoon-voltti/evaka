@@ -192,3 +192,4 @@ V191__service_need_option_active_flag.sql
 V192__terminate_placement.sql
 V193__invoice_codebtor.sql
 V194__evaka_user_for_paper_application_guardians.sql
+V195__evaka_user_decision_resolved_by.sql
