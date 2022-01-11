@@ -86,10 +86,7 @@ export default React.memo(function StaffAttendanceEditor({
       <Gap size="s" />
       {groupId && (
         <>
-          <FixedSpaceRow
-            justifyContent="center"
-            style={{ marginLeft: -32, marginRight: -32 }}
-          >
+          <FixedSpaceRow justifyContent="center">
             <CancelButton
               text={i18n.staff.cancel}
               onClick={reset}
@@ -156,9 +153,11 @@ const Subtitle = styled.h2`
 
 const CancelButton = styled(Button)`
   width: 172px;
+  padding: 0;
 `
 const ConfirmButton = styled(AsyncButton)`
   width: 172px;
+  padding: 0;
 `
 
 function updatedTime(i18n: Translations, date: Date | null): string {

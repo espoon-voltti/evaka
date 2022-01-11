@@ -17,8 +17,8 @@ import { MessageContext } from '../../state/messages'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
+import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
-import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
 import { MessagePreview } from './MessagePreview'
 import { ThreadView } from './ThreadView'
 
@@ -60,22 +60,20 @@ export default function MessagesPage() {
       />
     </ContentArea>
   ) : !selectedThread && selectedAccount ? (
-    <>
-      <TopBarWithGroupSelector
-        selectedGroup={
-          selectedAccount?.daycareGroup
-            ? {
-                id: selectedAccount.daycareGroup.id,
-                name: selectedAccount.daycareGroup.name
-              }
-            : undefined
-        }
-        onChangeGroup={changeGroup}
-        allowedGroupIds={groupAccounts.flatMap(
-          (ga) => ga.daycareGroup?.id || []
-        )}
-        includeSelectAll={false}
-      />
+    <PageWithNavigation
+      selected="messages"
+      selectedGroup={
+        selectedAccount?.daycareGroup
+          ? {
+              id: selectedAccount.daycareGroup.id,
+              name: selectedAccount.daycareGroup.name
+            }
+          : undefined
+      }
+      onChangeGroup={changeGroup}
+      allowedGroupIds={groupAccounts.flatMap((ga) => ga.daycareGroup?.id || [])}
+      includeSelectAll={false}
+    >
       {renderResult(receivedMessages, (messages) => (
         <ContentArea
           opaque
@@ -111,10 +109,9 @@ export default function MessagesPage() {
               text={i18n.messages.emptyInbox}
             />
           )}
-          <BottomNavBar selected="messages" />
         </ContentArea>
       ))}
-    </>
+    </PageWithNavigation>
   ) : (
     renderResult(unitInfoResponse, (unit) => (
       <ContentArea

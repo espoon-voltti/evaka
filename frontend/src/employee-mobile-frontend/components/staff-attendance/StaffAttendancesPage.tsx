@@ -15,8 +15,7 @@ import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
-import BottomNavBar from '../common/BottomNavbar'
-import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
+import { PageWithNavigation } from '../common/PageWithNavigation'
 import StaffListItem from './StaffListItem'
 import { toStaff } from './staff'
 
@@ -124,12 +123,11 @@ export default React.memo(function StaffAttendancesPage() {
   )
 
   return (
-    <>
-      <TopBarWithGroupSelector
-        selectedGroup={selectedGroup}
-        onChangeGroup={changeGroup}
-      />
-
+    <PageWithNavigation
+      selected="staff"
+      selectedGroup={selectedGroup}
+      onChangeGroup={changeGroup}
+    >
       <Tabs tabs={tabs} mobile />
       {renderResult(filteredStaff, (staff) => (
         <FixedSpaceColumn spacing="zero">
@@ -149,7 +147,6 @@ export default React.memo(function StaffAttendancesPage() {
           {i18n.attendances.staff.externalPerson}
         </Button>
       </StaticIconContainer>
-      <BottomNavBar selected="staff" />
-    </>
+    </PageWithNavigation>
   )
 })

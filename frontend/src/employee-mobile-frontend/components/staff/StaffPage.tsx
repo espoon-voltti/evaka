@@ -16,8 +16,7 @@ import { getUnitStaffAttendances, postStaffAttendance } from '../../api/staff'
 import { UnitContext } from '../../state/unit'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 import { renderResult } from '../async-rendering'
-import BottomNavBar from '../common/BottomNavbar'
-import TopBarWithGroupSelector from '../common/TopBarWithGroupSelector'
+import { PageWithNavigation } from '../common/PageWithNavigation'
 import StaffAttendanceEditor from './StaffAttendanceEditor'
 
 export default React.memo(function StaffPage() {
@@ -78,15 +77,15 @@ export default React.memo(function StaffPage() {
   const today = useMemo(() => LocalDate.today(), [])
 
   return (
-    <>
-      <TopBarWithGroupSelector
-        selectedGroup={selectedGroup}
-        onChangeGroup={changeGroup}
-      />
-      {renderResult(
-        combine(unitOrGroupStaffAttendance, occupancy),
-        ([staffAttendance, occupancy]) => (
-          <ContentArea opaque fullHeight>
+    <PageWithNavigation
+      selected="staff"
+      selectedGroup={selectedGroup}
+      onChangeGroup={changeGroup}
+    >
+      <ContentArea opaque style={{ height: '100%' }}>
+        {renderResult(
+          combine(unitOrGroupStaffAttendance, occupancy),
+          ([staffAttendance, occupancy]) => (
             <StaffAttendanceEditor
               // Force re-render if the selected group changes
               key={selectedGroup?.id}
@@ -98,10 +97,9 @@ export default React.memo(function StaffPage() {
               realizedOccupancy={occupancy}
               onConfirm={updateAttendance}
             />
-          </ContentArea>
-        )
-      )}
-      <BottomNavBar selected="staff" />
-    </>
+          )
+        )}
+      </ContentArea>
+    </PageWithNavigation>
   )
 })
