@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
@@ -31,7 +32,6 @@ import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
-import java.util.UUID
 
 val invoiceQueryBase =
     """
@@ -546,7 +546,7 @@ val toInvoice = { rv: RowView ->
         dueDate = rv.mapColumn("due_date"),
         invoiceDate = rv.mapColumn("invoice_date"),
         agreementType = rv.mapColumn("agreement_type"),
-        rows = rv.mapColumn<UUID?>("invoice_row_id")?.let { rowId ->
+        rows = rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRow(
                     id = rowId,
@@ -582,7 +582,7 @@ val toDetailedInvoice = { rv: RowView ->
         dueDate = rv.mapColumn("due_date"),
         invoiceDate = rv.mapColumn("invoice_date"),
         agreementType = rv.mapColumn("agreement_type"),
-        rows = rv.mapColumn<UUID?>("invoice_row_id")?.let { rowId ->
+        rows = rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRowDetailed(
                     id = rowId,
@@ -653,7 +653,7 @@ val toInvoiceSummary = { row: RowView ->
         status = row.mapColumn("status"),
         periodStart = row.mapColumn("invoice_period_start"),
         periodEnd = row.mapColumn("invoice_period_end"),
-        rows = row.mapColumn<UUID?>("invoice_row_id")?.let { rowId ->
+        rows = row.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRowSummary(
                     id = rowId,

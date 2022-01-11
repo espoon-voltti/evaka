@@ -6,6 +6,7 @@ package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.isWeekend
@@ -14,7 +15,6 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.time.Month
-import java.util.UUID
 
 data class KoskiData(
     val oppija: Oppija,
@@ -81,7 +81,7 @@ data class KoskiVoidedDataRaw(
     val unit: KoskiUnitRaw,
     val type: OpiskeluoikeudenTyyppiKoodi,
     val voidDate: LocalDate,
-    val studyRightId: UUID,
+    val studyRightId: KoskiStudyRightId,
     val studyRightOid: String
 ) {
     fun toKoskiData(sourceSystem: String, ophOrganizationOid: String) = KoskiData(
@@ -98,7 +98,7 @@ data class KoskiVoidedDataRaw(
         tila = OpiskeluoikeudenTila(listOf(Opiskeluoikeusjakso.mitätöity(voidDate))),
         suoritukset = listOf(unit.haeSuoritus(type)),
         lähdejärjestelmänId = LähdejärjestelmäId(
-            id = studyRightId,
+            id = studyRightId.raw,
             lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
         ),
         tyyppi = OpiskeluoikeudenTyyppi(type),
@@ -128,7 +128,7 @@ data class KoskiActiveDataRaw(
     val transportBenefit: FiniteDateRange? = null,
     val specialAssistanceDecisionWithGroup: List<FiniteDateRange> = emptyList(),
     val specialAssistanceDecisionWithoutGroup: List<FiniteDateRange> = emptyList(),
-    val studyRightId: UUID,
+    val studyRightId: KoskiStudyRightId,
     val studyRightOid: String?
 ) {
     private val studyRightTimelines = calculateStudyRightTimelines(
@@ -238,7 +238,7 @@ data class KoskiActiveDataRaw(
             tila = OpiskeluoikeudenTila(haeOpiskeluoikeusjaksot(termination)),
             suoritukset = listOf(haeSuoritus(termination, ophOrganizationOid)),
             lähdejärjestelmänId = LähdejärjestelmäId(
-                id = studyRightId,
+                id = studyRightId.raw,
                 lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
             ),
             tyyppi = OpiskeluoikeudenTyyppi(type),

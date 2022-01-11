@@ -6,12 +6,12 @@ package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
 data class KoskiStudyRightKey(val childId: ChildId, val unitId: DaycareId, val type: OpiskeluoikeudenTyyppiKoodi)
 
@@ -71,7 +71,7 @@ RETURNING id, void_date IS NOT NULL AS voided
 """
     ).bindKotlin(key)
         .bind("today", today)
-        .map { row -> Pair(row.mapColumn<UUID>("id"), row.mapColumn<Boolean>("voided")) }
+        .map { row -> Pair(row.mapColumn<KoskiStudyRightId>("id"), row.mapColumn<Boolean>("voided")) }
         .single()
         .let { (id, voided) ->
             if (voided) {
@@ -132,7 +132,7 @@ RETURNING id, void_date IS NOT NULL AS voided
         }
 
 data class KoskiUploadResponse(
-    val id: UUID,
+    val id: KoskiStudyRightId,
     val studyRightOid: String,
     val personOid: String,
     val version: Int,

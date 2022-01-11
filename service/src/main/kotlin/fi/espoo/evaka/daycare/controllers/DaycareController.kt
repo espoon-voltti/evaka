@@ -25,6 +25,7 @@ import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
+import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -45,7 +46,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/daycares")
@@ -218,7 +218,7 @@ class DaycareController(
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
-        @PathVariable id: UUID,
+        @PathVariable id: DaycareCaretakerId,
         @RequestBody body: CaretakerRequest
     ) {
         Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
@@ -244,7 +244,7 @@ class DaycareController(
         user: AuthenticatedUser,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
-        @PathVariable id: UUID
+        @PathVariable id: DaycareCaretakerId
     ) {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Group.DELETE_CARETAKERS, groupId)

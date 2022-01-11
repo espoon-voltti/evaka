@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class PairingsController(
@@ -39,9 +39,9 @@ class PairingsController(
      * Pairing status is WAITING_CHALLENGE.
      */
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
-    sealed class PostPairingReq(val id: UUID) {
-        data class Unit(val unitId: DaycareId) : PostPairingReq(unitId.raw)
-        data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId.raw)
+    sealed class PostPairingReq(val id: Id<*>) {
+        data class Unit(val unitId: DaycareId) : PostPairingReq(unitId)
+        data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId)
     }
     @PostMapping("/pairings")
     fun postPairing(
