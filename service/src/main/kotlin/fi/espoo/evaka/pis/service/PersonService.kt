@@ -485,7 +485,7 @@ data class PersonWithChildrenDTO(
         id = id,
         identity = when (socialSecurityNumber) {
             is String -> ExternalIdentifier.SSN.getInstance(socialSecurityNumber)
-            else -> ExternalIdentifier.NoID()
+            else -> ExternalIdentifier.NoID
         },
         ssnAddingDisabled = false,
         dateOfBirth = dateOfBirth,
