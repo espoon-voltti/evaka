@@ -17,7 +17,7 @@ import { combine } from 'lib-common/api'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { desktopMin } from 'lib-components/breakpoints'
-import { isNestedGroupMessageAccount } from 'lib-components/employee/messages/types'
+import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, NavLinkText } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
@@ -168,16 +168,16 @@ const UserPopup = styled.div`
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
-  const { nestedAccounts, unreadCountsByAccount } = useContext(MessageContext)
+  const { accounts, unreadCountsByAccount } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
   const unreadCount = useMemo<number>(
     () =>
-      combine(nestedAccounts, unreadCountsByAccount)
-        .map(([accounts, counts]) => {
+      combine(accounts, unreadCountsByAccount)
+        .map(([allAccounts, counts]) => {
           const [group, personal] = partition(
-            accounts,
-            isNestedGroupMessageAccount
+            allAccounts,
+            isGroupMessageAccount
           )
           return (personal.length > 0 ? personal : group).reduce(
             (sum, { account: { id: accountId } }) =>
@@ -187,7 +187,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           )
         })
         .getOrElse(0),
-    [nestedAccounts, unreadCountsByAccount]
+    [accounts, unreadCountsByAccount]
   )
 
   const path = location.pathname

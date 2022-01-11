@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,7 +10,7 @@ import { Attachment } from 'lib-common/api-types/attachment'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   DraftContent,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   PostMessageBody,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
@@ -34,7 +34,7 @@ import {
   updateSelector
 } from 'lib-components/employee/messages/SelectorNode'
 import {
-  isNestedGroupMessageAccount,
+  isGroupMessageAccount,
   SaveDraftParams
 } from 'lib-components/employee/messages/types'
 import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
@@ -125,7 +125,7 @@ interface Props {
   i18n: MessageEditorI18n & FileUploadI18n
   initDraftRaw: (accountId: string) => Promise<Result<string>>
   mobileVersion?: boolean
-  nestedAccounts: NestedMessageAccount[]
+  accounts: AuthorizedMessageAccount[]
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId: UUID) => void
   onSend: (accountId: UUID, msg: PostMessageBody) => void
@@ -149,7 +149,7 @@ export default React.memo(function MessageEditor({
   i18n,
   initDraftRaw,
   mobileVersion = false,
-  nestedAccounts,
+  accounts,
   onClose,
   onDiscard,
   onSend,
@@ -246,13 +246,13 @@ export default React.memo(function MessageEditor({
   )
   useEffect(
     function updateReceiversOnSenderChange() {
-      const nestedAccount = nestedAccounts.find(
+      const acc = accounts.find(
         (account) => account.account.id === message.sender.value
       )
-      if (!nestedAccount) {
+      if (!acc) {
         throw new Error('Selected sender was not found in accounts')
       }
-      if (!isNestedGroupMessageAccount(nestedAccount)) {
+      if (!isGroupMessageAccount(acc)) {
         setReceiverTree((previousReceivers) =>
           getSelectedBottomElements(previousReceivers).reduce(
             (acc, id) =>
@@ -261,7 +261,7 @@ export default React.memo(function MessageEditor({
           )
         )
       } else {
-        const groupId = nestedAccount.daycareGroup.id
+        const groupId = acc.daycareGroup.id
         const selection = getSubTree(availableReceivers, groupId)
         if (selection) {
           setReceiverTree((previousReceivers) =>
@@ -274,7 +274,7 @@ export default React.memo(function MessageEditor({
         }
       }
     },
-    [message.sender, nestedAccounts, availableReceivers]
+    [message.sender, accounts, availableReceivers]
   )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
@@ -339,22 +339,19 @@ export default React.memo(function MessageEditor({
 
   const senderOptions = useMemo(
     () =>
-      nestedAccounts
+      accounts
         .filter(
-          (nestedAccount: NestedMessageAccount) =>
-            !isNestedGroupMessageAccount(nestedAccount) ||
-            (isNestedGroupMessageAccount(nestedAccount) &&
-              !!getSelectorName(
-                nestedAccount.daycareGroup.id,
-                availableReceivers
-              ) &&
-              nestedAccount.daycareGroup.unitId === selectedUnit.value)
+          (acc: AuthorizedMessageAccount) =>
+            !isGroupMessageAccount(acc) ||
+            (isGroupMessageAccount(acc) &&
+              !!getSelectorName(acc.daycareGroup.id, availableReceivers) &&
+              acc.daycareGroup.unitId === selectedUnit.value)
         )
-        .map((nestedAccount: NestedMessageAccount) => ({
-          value: nestedAccount.account.id,
-          label: nestedAccount.account.name
+        .map(({ account: { id, name } }: AuthorizedMessageAccount) => ({
+          value: id,
+          label: name
         })),
-    [nestedAccounts, availableReceivers, selectedUnit.value]
+    [accounts, availableReceivers, selectedUnit.value]
   )
 
   const sendEnabled =

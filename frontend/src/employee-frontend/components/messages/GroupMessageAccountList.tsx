@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { ReactNode, useContext, useState } from 'react'
 import styled from 'styled-components'
-import { NestedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { NestedGroupMessageAccount } from 'lib-components/employee/messages/types'
+import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { GroupMessageAccount } from 'lib-components/employee/messages/types'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
@@ -62,36 +62,35 @@ const CollapsibleMessageBoxesContainer = styled.div`
 `
 
 export default function GroupMessageAccountList({
-  nestedGroupAccounts,
+  accounts,
   activeView,
   setView
 }: {
-  nestedGroupAccounts: NestedGroupMessageAccount[]
+  accounts: GroupMessageAccount[]
   activeView: AccountView | undefined
   setView: (view: AccountView) => void
 }) {
   const { unreadCountsByAccount } = useContext(MessageContext)
-  const startCollapsed = (nestedAccount: NestedMessageAccount, i: number) =>
+  const startCollapsed = (acc: AuthorizedMessageAccount, i: number) =>
     i > 0 &&
     ((unreadCountsByAccount.isSuccess &&
-      !unreadCountsByAccount.value.find(
-        (x) => x.accountId === nestedAccount.account.id
-      )?.unreadCount) ||
+      !unreadCountsByAccount.value.find((a) => a.accountId === acc.account.id)
+        ?.unreadCount) ||
       !unreadCountsByAccount.isSuccess)
 
   return (
     <CollapsibleMessageBoxesContainer>
-      {nestedGroupAccounts.map((nestedAcc, i) => (
+      {accounts.map((acc, i) => (
         <CollapsibleRow
-          key={nestedAcc.account.id}
-          startCollapsed={startCollapsed(nestedAcc, i)}
-          title={nestedAcc.daycareGroup.name}
+          key={acc.account.id}
+          startCollapsed={startCollapsed(acc, i)}
+          title={acc.daycareGroup.name}
         >
           {messageBoxes.map((view) => (
             <MessageBox
               key={view}
               view={view}
-              account={nestedAcc.account}
+              account={acc.account}
               activeView={activeView}
               setView={setView}
             />

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -14,7 +14,7 @@ import {
   DraftContent,
   Message,
   MessageThread,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   SentMessage,
   ThreadReply,
   UnreadCountByAccount
@@ -41,7 +41,7 @@ const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
-  nestedAccounts: Result<NestedMessageAccount[]>
+  accounts: Result<AuthorizedMessageAccount[]>
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
@@ -66,7 +66,7 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
-  nestedAccounts: Loading.of(),
+  accounts: Loading.of(),
   selectedDraft: undefined,
   setSelectedDraft: () => undefined,
   selectedAccount: undefined,
@@ -118,7 +118,7 @@ export const MessageContextProvider = React.memo(
       () =>
         user?.accessibleFeatures.messages
           ? getMessagingAccounts()
-          : Promise.resolve(Loading.of<NestedMessageAccount[]>()),
+          : Promise.resolve(Loading.of<AuthorizedMessageAccount[]>()),
       [user]
     )
 
@@ -262,7 +262,7 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        nestedAccounts: accounts,
+        accounts,
         selectedDraft,
         setSelectedDraft,
         selectedAccount,

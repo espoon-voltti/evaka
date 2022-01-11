@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,7 +9,7 @@ import { formatDateOrTime } from 'lib-common/date'
 import {
   Message,
   MessageThread,
-  NestedMessageAccount
+  AuthorizedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -31,11 +31,11 @@ interface ThreadViewProps {
 
 const getAccountsInThread = (
   messages: Message[],
-  groupAccounts: NestedMessageAccount[]
+  accounts: AuthorizedMessageAccount[]
 ) => {
   const allRecipients = messages.flatMap((m) => m.recipients)
 
-  return groupAccounts.filter(({ account }) =>
+  return accounts.filter(({ account }) =>
     allRecipients.some((r) => r.id === account.id)
   )
 }

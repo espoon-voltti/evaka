@@ -1,25 +1,25 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
   Group,
   MessageReceiver,
-  NestedMessageAccount,
+  AuthorizedMessageAccount,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-export interface NestedGroupMessageAccount extends NestedMessageAccount {
+export interface GroupMessageAccount extends AuthorizedMessageAccount {
   daycareGroup: Group
 }
 
-export const isNestedGroupMessageAccount = (
-  nestedAccount: NestedMessageAccount
-): nestedAccount is NestedGroupMessageAccount =>
-  nestedAccount.account.type === 'GROUP' && nestedAccount.daycareGroup != null
+export const isGroupMessageAccount = (
+  acc: AuthorizedMessageAccount
+): acc is GroupMessageAccount =>
+  acc.account.type === 'GROUP' && acc.daycareGroup !== null
 
 export interface SaveDraftParams {
   accountId: UUID

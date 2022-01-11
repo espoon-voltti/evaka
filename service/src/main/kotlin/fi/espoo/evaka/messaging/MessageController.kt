@@ -49,10 +49,10 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database, user: AuthenticatedUser): Set<NestedMessageAccount> {
+    fun getAccountsByUser(db: Database, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
-        return db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(EmployeeId(user.id)) } }
+        return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(EmployeeId(user.id)) } }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
@@ -60,12 +60,12 @@ class MessageController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId
-    ): Set<NestedMessageAccount> {
+    ): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         @Suppress("DEPRECATION")
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
         return if (user is AuthenticatedUser.MobileDevice && user.employeeId != null) {
-            db.connect { dbc -> dbc.read { it.getEmployeeNestedMessageAccounts(user.employeeId) } }
+            db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) } }
         } else setOf()
     }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -48,8 +48,7 @@ export default function MessageEditorPage() {
 
   const history = useHistory()
 
-  const { nestedAccounts, selectedAccount, selectedUnit } =
-    useContext(MessageContext)
+  const { accounts, selectedAccount, selectedUnit } = useContext(MessageContext)
 
   const [sending, setSending] = useState(false)
 
@@ -98,7 +97,7 @@ export default function MessageEditorPage() {
     history.goBack()
   }, [history])
 
-  return renderResult(nestedAccounts, (accounts) =>
+  return renderResult(accounts, (accounts) =>
     selectedReceivers && selectedAccount && selectedUnit ? (
       <MessageEditor
         availableReceivers={selectedReceivers}
@@ -119,7 +118,7 @@ export default function MessageEditorPage() {
         }}
         initDraftRaw={initDraft}
         mobileVersion={true}
-        nestedAccounts={accounts}
+        accounts={accounts}
         onClose={onHide}
         onDiscard={onDiscard}
         onSend={onSend}

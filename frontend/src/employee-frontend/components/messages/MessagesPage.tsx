@@ -38,7 +38,7 @@ const PanelContainer = styled.div`
 
 export default function MessagesPage() {
   const {
-    nestedAccounts,
+    accounts,
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
@@ -55,16 +55,13 @@ export default function MessagesPage() {
 
   // pre-select first account on page load and on unit change
   useEffect(() => {
-    if (!nestedAccounts.isSuccess) {
+    if (!accounts.isSuccess) {
       return
     }
-    const { value: data } = nestedAccounts
+    const { value: data } = accounts
     const unitSelectionChange =
       selectedAccount &&
-      !data.find(
-        (nestedAccount) =>
-          nestedAccount.account.id === selectedAccount.account.id
-      )
+      !data.find((acc) => acc.account.id === selectedAccount.account.id)
     if ((!selectedAccount || unitSelectionChange) && data.length > 0) {
       setSelectedAccount({
         view: 'RECEIVED',
@@ -73,7 +70,7 @@ export default function MessagesPage() {
           data[0].account
       })
     }
-  }, [nestedAccounts, setSelectedAccount, selectedAccount])
+  }, [accounts, setSelectedAccount, selectedAccount])
 
   const [showEditor, setShowEditor] = useState<boolean>(false)
 
@@ -143,7 +140,7 @@ export default function MessagesPage() {
           />
         )}
         {showEditor &&
-          nestedAccounts.isSuccess &&
+          accounts.isSuccess &&
           selectedReceivers &&
           selectedAccount &&
           selectedUnit && (
@@ -165,7 +162,7 @@ export default function MessagesPage() {
                 ...i18n.common
               }}
               initDraftRaw={initDraft}
-              nestedAccounts={nestedAccounts.value}
+              accounts={accounts.value}
               onClose={onHide}
               onDiscard={onDiscard}
               onSend={onSend}
