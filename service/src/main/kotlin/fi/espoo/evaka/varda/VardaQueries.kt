@@ -331,7 +331,6 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
                     FROM placement_plan pp
                     WHERE pp.unit_id = p.unit_id AND pp.application_id = a.id
                       AND daterange(pp.start_date, pp.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
-                      AND unit_confirmation_status = 'ACCEPTED'
                 )
             ORDER BY a.sentdate, a.id
             LIMIT 1
