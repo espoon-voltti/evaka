@@ -91,6 +91,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                   operationalDays={data.operationalDays}
                   reservations={selectedGroup.children}
                   onMakeReservationForChild={setCreatingReservationChild}
+                  selectedDate={selectedDate}
                 />
               )}
               {groupId === 'no-group' && (
@@ -98,6 +99,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                   operationalDays={data.operationalDays}
                   reservations={data.ungrouped}
                   onMakeReservationForChild={setCreatingReservationChild}
+                  selectedDate={selectedDate}
                 />
               )}
             </FixedSpaceColumn>
