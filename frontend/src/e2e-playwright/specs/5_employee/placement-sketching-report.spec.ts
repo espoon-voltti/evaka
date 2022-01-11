@@ -78,7 +78,6 @@ describe('Placement sketching report', () => {
     const preferredUnit = daycareFixture
 
     const report = await openPlacementSketchingReport()
-    await page.pause()
     await report.assertRow(
       createdApplication.id,
       preferredUnit.name,

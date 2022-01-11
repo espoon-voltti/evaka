@@ -4,6 +4,7 @@
 
 module.exports = {
   rules: {
+    'no-page-pause': require('./rules/no-page-pause'),
     'no-testonly': require('./rules/no-testonly'),
     'no-relative-lib-imports': require('./rules/no-relative-lib-imports')
   },
@@ -11,6 +12,7 @@ module.exports = {
     recommended: {
       plugins: ['@evaka'],
       rules: {
+        '@evaka/no-page-pause': 'error',
         '@evaka/no-testonly': 'error',
         '@evaka/no-relative-lib-imports': 'error'
       }

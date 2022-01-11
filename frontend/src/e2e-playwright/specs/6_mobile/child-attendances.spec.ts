@@ -234,7 +234,6 @@ describe('Child mobile attendance list', () => {
     await childAttendancePage.setTime('14:00')
     await childAttendancePage.selectMarkDepartedButton()
 
-    await page.pause()
     await assertAttendanceCounts(2, 0, 1, 0, 3)
 
     await listPage.selectDepartedChildren()

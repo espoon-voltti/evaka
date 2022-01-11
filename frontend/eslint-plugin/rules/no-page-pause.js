@@ -4,11 +4,11 @@
 
 const { isCallExpression, isMethodOf, isCallOf } = require('./utils')
 
-function isTestOnlyCall(node) {
+function isPagePauseCall(node) {
   return (
     isCallExpression(node) &&
-    isMethodOf(['test', 'it', 'describe', 'fixture'], node) &&
-    isCallOf(['only'], node)
+    isMethodOf(['page'], node) &&
+    isCallOf(['pause'], node)
   )
 }
 
@@ -16,7 +16,7 @@ module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'disallow test.only and similar',
+      description: 'disallow page.pause()',
       category: 'Best Practices',
       recommended: true
     },
@@ -25,10 +25,10 @@ module.exports = {
   create: function (context) {
     return {
       CallExpression(node) {
-        if (isTestOnlyCall(node)) {
+        if (isPagePauseCall(node)) {
           context.report({
             node,
-            message: 'Use of .only'
+            message: 'Use of page.pause()'
           })
         }
       }
