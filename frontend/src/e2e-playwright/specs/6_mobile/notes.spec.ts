@@ -181,8 +181,6 @@ describe('Child and group notes (backup care)', () => {
     await listPage.openChildNotes(child.id)
     await notePage.deleteChildDailyNote()
     await listPage.assertChildNoteDoesntExist(child.id)
-
-    await page.pause()
   })
 
   test('Child group note can be created', async () => {
