@@ -5,11 +5,12 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.decision.DecisionSendAddress
+import fi.espoo.evaka.invoicing.domain.EmployeeWithName
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
@@ -22,15 +23,17 @@ import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -45,7 +48,7 @@ class PdfServiceTest {
         decisionNumber = testDecision1.decisionNumber,
         decisionType = FeeDecisionType.NORMAL,
         validDuring = testDecision1.validDuring,
-        headOfFamily = PersonData.Detailed(
+        headOfFamily = PersonDetailed(
             id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "John",
@@ -55,7 +58,7 @@ class PdfServiceTest {
             postOffice = "Espoo",
             restrictedDetailsEnabled = false
         ),
-        partner = PersonData.Detailed(
+        partner = PersonDetailed(
             id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "Joan",
@@ -69,15 +72,15 @@ class PdfServiceTest {
         partnerIncome = testDecisionIncome.copy(total = 413195),
         familySize = 3,
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
-        approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
-        approvedBy = PersonData.WithName(
-            UUID.randomUUID(),
+        approvedAt = HelsinkiDateTime.of(LocalDate.of(2019, 4, 15), LocalTime.of(10, 15, 30)),
+        approvedBy = EmployeeWithName(
+            EmployeeId(UUID.randomUUID()),
             "Pirkko",
             "Päättäjä"
         ),
         children = testDecision1.children.map {
             FeeDecisionChildDetailed(
-                child = PersonData.Detailed(
+                child = PersonDetailed(
                     id = PersonId(UUID.randomUUID()),
                     dateOfBirth = LocalDate.of(2017, 1, 1),
                     firstName = "Johnny",
@@ -85,7 +88,7 @@ class PdfServiceTest {
                     restrictedDetailsEnabled = false
                 ),
                 placementType = it.placement.type,
-                placementUnit = UnitData.Detailed(
+                placementUnit = UnitData(
                     id = DaycareId(UUID.randomUUID()),
                     name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
                     language = "fi",
@@ -111,16 +114,16 @@ class PdfServiceTest {
 
     private val normalVoucherValueDecision = VoucherValueDecisionDetailed(
         id = VoucherValueDecisionId(testDecision1.id.raw),
-        approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
-        approvedBy = PersonData.WithName(
-            UUID.randomUUID(),
+        approvedAt = HelsinkiDateTime.of(LocalDate.of(2019, 4, 15), LocalTime.of(10, 15, 30)),
+        approvedBy = EmployeeWithName(
+            EmployeeId(UUID.randomUUID()),
             "Erkki",
             "Pelimerkki"
         ),
         decisionNumber = testDecision1.decisionNumber,
         decisionType = VoucherValueDecisionType.NORMAL,
         status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
-        headOfFamily = PersonData.Detailed(
+        headOfFamily = PersonDetailed(
             id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "Anselmi Aataminpoika",
@@ -130,7 +133,7 @@ class PdfServiceTest {
             postOffice = "Espoo",
             restrictedDetailsEnabled = false
         ),
-        partner = PersonData.Detailed(
+        partner = PersonDetailed(
             id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(1980, 1, 1),
             firstName = "Cynthia Elisabeth",
@@ -148,7 +151,7 @@ class PdfServiceTest {
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
-        child = PersonData.Detailed(
+        child = PersonDetailed(
             id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(2017, 1, 1),
             firstName = "Iisakki Anselminpoika",
@@ -157,7 +160,7 @@ class PdfServiceTest {
         ),
         childAge = 3,
         placement = VoucherValueDecisionPlacementDetailed(
-            UnitData.Detailed(
+            UnitData(
                 id = DaycareId(UUID.randomUUID()),
                 name = "Test Daycare",
                 language = "fi",

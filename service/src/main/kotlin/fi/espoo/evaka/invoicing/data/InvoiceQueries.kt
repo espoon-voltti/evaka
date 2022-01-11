@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
+import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
@@ -14,7 +15,8 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
-import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.PersonBasic
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -460,8 +462,8 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
                     .bind("due_date", invoice.dueDate)
                     .bind("invoice_date", invoice.invoiceDate)
                     .bind("agreement_type", invoice.agreementType)
-                    .bind("head_of_family", invoice.headOfFamily.id)
-                    .bind("codebtor", invoice.codebtor?.id)
+                    .bind("head_of_family", invoice.headOfFamily)
+                    .bind("codebtor", invoice.codebtor)
                     .add()
             }
         }
@@ -548,7 +550,7 @@ val toInvoice = { rv: RowView ->
             listOf(
                 InvoiceRow(
                     id = rowId,
-                    child = PersonData.WithDateOfBirth(
+                    child = ChildWithDateOfBirth(
                         id = rv.mapColumn("child"),
                         dateOfBirth = rv.mapColumn("date_of_birth")
                     ),
@@ -563,8 +565,8 @@ val toInvoice = { rv: RowView ->
                 )
             )
         } ?: listOf(),
-        headOfFamily = PersonData.JustId(rv.mapColumn("head_of_family")),
-        codebtor = rv.mapColumn<UUID?>("codebtor")?.let { PersonData.JustId(it) },
+        headOfFamily = rv.mapColumn("head_of_family"),
+        codebtor = rv.mapColumn("codebtor"),
         sentBy = rv.mapColumn("sent_by"),
         sentAt = rv.mapColumn("sent_at")
     )
@@ -584,7 +586,7 @@ val toDetailedInvoice = { rv: RowView ->
             listOf(
                 InvoiceRowDetailed(
                     id = rowId,
-                    child = PersonData.Detailed(
+                    child = PersonDetailed(
                         id = rv.mapColumn("child"),
                         dateOfBirth = rv.mapColumn("child_date_of_birth"),
                         firstName = rv.mapColumn("child_first_name"),
@@ -606,7 +608,7 @@ val toDetailedInvoice = { rv: RowView ->
                 )
             )
         } ?: listOf(),
-        headOfFamily = PersonData.Detailed(
+        headOfFamily = PersonDetailed(
             id = rv.mapColumn("head_of_family"),
             dateOfBirth = rv.mapColumn("head_date_of_birth"),
             firstName = rv.mapColumn("head_first_name"),
@@ -625,7 +627,7 @@ val toDetailedInvoice = { rv: RowView ->
             restrictedDetailsEnabled = rv.mapColumn("head_restricted_details_enabled")
         ),
         codebtor = rv.mapColumn<PersonId?>("codebtor")?.let { id ->
-            PersonData.Detailed(
+            PersonDetailed(
                 id = id,
                 dateOfBirth = rv.mapColumn("codebtor_date_of_birth"),
                 firstName = rv.mapColumn("codebtor_first_name"),
@@ -655,7 +657,7 @@ val toInvoiceSummary = { row: RowView ->
             listOf(
                 InvoiceRowSummary(
                     id = rowId,
-                    child = PersonData.Basic(
+                    child = PersonBasic(
                         id = row.mapColumn("child"),
                         dateOfBirth = row.mapColumn("child_date_of_birth"),
                         firstName = row.mapColumn("child_first_name"),
@@ -667,7 +669,7 @@ val toInvoiceSummary = { row: RowView ->
                 )
             )
         } ?: listOf(),
-        headOfFamily = PersonData.Detailed(
+        headOfFamily = PersonDetailed(
             id = row.mapColumn("head_of_family"),
             dateOfBirth = row.mapColumn("head_date_of_birth"),
             firstName = row.mapColumn("head_first_name"),
@@ -679,7 +681,7 @@ val toInvoiceSummary = { row: RowView ->
             restrictedDetailsEnabled = row.mapColumn("head_restricted_details_enabled")
         ),
         codebtor = row.mapColumn<PersonId?>("codebtor")?.let { id ->
-            PersonData.Detailed(
+            PersonDetailed(
                 id = id,
                 dateOfBirth = row.mapColumn("codebtor_date_of_birth"),
                 firstName = row.mapColumn("codebtor_first_name"),

@@ -8,9 +8,13 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { Unit } from '../types/invoicing'
 import { CareArea } from '../types/unit'
 import { client } from './client'
+
+export interface Unit {
+  id: string
+  name: string
+}
 
 export async function getUnits(
   areas: string[],

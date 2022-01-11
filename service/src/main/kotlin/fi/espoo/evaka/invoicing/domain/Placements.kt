@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
@@ -20,16 +19,13 @@ data class PermanentPlacement(
 
 data class TemporaryPlacement(override val unit: DaycareId, val partDay: Boolean) : Placement(unit)
 
-sealed class UnitData {
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class JustId(val id: DaycareId) : UnitData()
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class InvoicedByMunicipality(val id: DaycareId, val invoicedByMunicipality: Boolean) : UnitData()
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class Detailed(val id: DaycareId, val name: String, val areaId: AreaId, val areaName: String, val language: String) : UnitData()
-}
+data class UnitData(
+    val id: DaycareId,
+    val name: String,
+    val areaId: AreaId,
+    val areaName: String,
+    val language: String
+)
 
 data class PlacementWithServiceNeed(
     val unitId: DaycareId,

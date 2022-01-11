@@ -52,7 +52,7 @@ class ChildImageTest : FullApplicationTest() {
         val file = FileMock()
         controller.putImage(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN)),
             testChild_1.id,
             file
         )
@@ -85,7 +85,7 @@ class ChildImageTest : FullApplicationTest() {
         val file = FileMock()
         controller.putImage(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN)),
             testChild_1.id,
             file
         )
@@ -123,7 +123,7 @@ class ChildImageTest : FullApplicationTest() {
 
         controller.deleteImage(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN)),
             testChild_1.id
         )
 
@@ -152,7 +152,7 @@ class ChildImageTest : FullApplicationTest() {
 
         val response = controller.getImage(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN)),
             oldImageId
         )
 
@@ -188,7 +188,7 @@ class ChildImageTest : FullApplicationTest() {
 
         val response = controller.getImage(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN)),
             oldImageId
         )
 

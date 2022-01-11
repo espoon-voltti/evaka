@@ -34,7 +34,6 @@ import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -88,9 +87,9 @@ class FeeDecisionService(
 
         val conflicts = decisions
             .flatMap {
-                tx.lockFeeDecisionsForHeadOfFamily(PersonId(it.headOfFamily.id))
+                tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamilyId)
                 tx.findFeeDecisionsForHeadOfFamily(
-                    PersonId(it.headOfFamily.id),
+                    it.headOfFamilyId,
                     DateRange(it.validFrom, it.validTo),
                     listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                 )
@@ -167,7 +166,7 @@ class FeeDecisionService(
             error("Cannot send fee decision ${decision.id} - missing document key")
         }
 
-        if (decision.requiresManualSending()) {
+        if (decision.requiresManualSending) {
             tx.setFeeDecisionWaitingForManualSending(decision.id)
             return false
         }

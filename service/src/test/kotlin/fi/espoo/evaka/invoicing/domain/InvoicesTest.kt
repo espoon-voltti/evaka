@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.PersonId
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
@@ -19,7 +20,7 @@ class InvoicesTest {
             periodStart = LocalDate.of(2019, 1, 1),
             periodEnd = LocalDate.of(2019, 1, 31),
             agreementType = 100,
-            headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            headOfFamily = PersonId(UUID.randomUUID()),
             codebtor = null,
             rows = listOf()
         )
@@ -35,7 +36,7 @@ class InvoicesTest {
             periodStart = LocalDate.of(2019, 7, 1),
             periodEnd = LocalDate.of(2019, 7, 31),
             agreementType = 100,
-            headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            headOfFamily = PersonId(UUID.randomUUID()),
             codebtor = null,
             rows = listOf()
         )
@@ -51,7 +52,7 @@ class InvoicesTest {
             periodStart = LocalDate.of(2019, 5, 1),
             periodEnd = LocalDate.of(2019, 5, 31),
             agreementType = 100,
-            headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            headOfFamily = PersonId(UUID.randomUUID()),
             codebtor = null,
             rows = listOf()
         )
@@ -67,7 +68,7 @@ class InvoicesTest {
             periodStart = LocalDate.of(2019, 1, 1),
             periodEnd = LocalDate.of(2019, 1, 31),
             agreementType = 100,
-            headOfFamily = PersonData.JustId(UUID.randomUUID()),
+            headOfFamily = PersonId(UUID.randomUUID()),
             codebtor = null,
             rows = listOf()
         )

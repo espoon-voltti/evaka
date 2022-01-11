@@ -4,16 +4,16 @@
 
 import React, { Fragment, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
+import {
+  DistinctiveParams,
+  FeeDecisionStatus
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 import { getAreas, getUnits } from '../../api/daycare'
 import { getFinanceDecisionHandlers } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import {
-  DecisionDistinctiveDetails,
-  FeeDecisionStatus
-} from '../../types/invoicing'
 import {
   AreaFilter,
   Filters,
@@ -106,7 +106,7 @@ function FeeDecisionFilters() {
     })
   }
 
-  const toggleServiceNeed = (id: DecisionDistinctiveDetails) => () => {
+  const toggleServiceNeed = (id: DistinctiveParams) => () => {
     searchFilters.distinctiveDetails.includes(id)
       ? setSearchFilters({
           ...searchFilters,

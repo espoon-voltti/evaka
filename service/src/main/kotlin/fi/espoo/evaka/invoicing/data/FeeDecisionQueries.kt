@@ -165,8 +165,6 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
     decisions.forEach { decision ->
         batch
             .bindKotlin(decision)
-            .bind("headOfFamilyId", decision.headOfFamily.id)
-            .bind("partnerId", decision.partner?.id)
             .add()
     }
     batch.execute()
@@ -225,7 +223,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecision
                 .bind("feeDecisionId", decisionId)
                 .bind("childId", child.child.id)
                 .bind("childDateOfBirth", child.child.dateOfBirth)
-                .bind("placementUnitId", child.placement.unit.id)
+                .bind("placementUnitId", child.placement.unitId)
                 .bind("placementType", child.placement.type)
                 .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
                 .bind("serviceNeedDescriptionFi", child.serviceNeed.descriptionFi)

@@ -104,8 +104,8 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
                 .takeIf { Id::class.java.isAssignableFrom(GenericTypes.getErasedType(elementType)) }
         )
     }
-    jdbi.registerRowMapper(FeeDecision::class.java, feeDecisionRowMapper(objectMapper))
-    jdbi.registerRowMapper(FeeDecisionDetailed::class.java, feeDecisionDetailedRowMapper(objectMapper))
+    jdbi.registerRowMapper(FeeDecision::class.java, feeDecisionRowMapper)
+    jdbi.registerRowMapper(FeeDecisionDetailed::class.java, feeDecisionDetailedRowMapper)
     jdbi.registerRowMapper(FeeDecisionSummary::class.java, feeDecisionSummaryRowMapper)
     return jdbi
 }

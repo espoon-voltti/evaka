@@ -10,7 +10,7 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
-import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.Product
 import mu.KotlinLogging
 import java.time.LocalDate
@@ -139,7 +139,7 @@ const val fallbackStreetAddress = "PL 30"
 const val fallbackPostalCode = "02070"
 const val fallbackPostOffice = "ESPOON KAUPUNKI"
 
-private fun asClient(headOfFamily: PersonData.Detailed, lang: CommunityLang): CommunityClient {
+private fun asClient(headOfFamily: PersonDetailed, lang: CommunityLang): CommunityClient {
     val (streetAddress, postalCode, postOffice) = Triple(
         headOfFamily.streetAddress.trim(),
         headOfFamily.postalCode.trim(),
@@ -157,7 +157,7 @@ private fun asClient(headOfFamily: PersonData.Detailed, lang: CommunityLang): Co
     )
 }
 
-private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
+private fun asRecipient(headOfFamily: PersonDetailed): CommunityRecipient {
     val (lastname, firstnames) =
         if (headOfFamily.invoiceRecipientName.isNotBlank()) headOfFamily.invoiceRecipientName to ""
         else headOfFamily.lastName to headOfFamily.firstName
@@ -186,7 +186,7 @@ private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
     return CommunityRecipient(lastname.take(communityLastNameMaxLength), firstnames.take(communityFirstNameMaxLength), street, post, postalCode)
 }
 
-private fun asCodebtor(codebtor: PersonData.Detailed?): CommunityCodebtor? {
+private fun asCodebtor(codebtor: PersonDetailed?): CommunityCodebtor? {
     if (codebtor?.ssn == null) {
         return null
     }

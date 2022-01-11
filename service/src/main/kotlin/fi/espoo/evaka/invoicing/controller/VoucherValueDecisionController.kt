@@ -26,7 +26,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
@@ -216,9 +215,9 @@ fun sendVoucherValueDecisions(
 
     val conflicts = decisions
         .flatMap {
-            tx.lockValueDecisionsForChild(ChildId(it.child.id))
+            tx.lockValueDecisionsForChild(it.child.id)
             tx.findValueDecisionsForChild(
-                ChildId(it.child.id),
+                it.child.id,
                 DateRange(it.validFrom, it.validTo),
                 listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
             )

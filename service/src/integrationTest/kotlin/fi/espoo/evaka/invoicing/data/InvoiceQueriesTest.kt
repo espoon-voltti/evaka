@@ -10,12 +10,11 @@ import fi.espoo.evaka.invoicing.createInvoiceFixture
 import fi.espoo.evaka.invoicing.createInvoiceRowFixture
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.getInvoicedHeadsOfFamily
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAreaCode
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import org.junit.jupiter.api.AfterEach
@@ -30,20 +29,20 @@ class InvoiceQueriesTest : PureJdbiTest() {
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             number = 5000000001L,
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         )
@@ -136,7 +135,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                     createInvoiceFixture(
                         status = InvoiceStatus.SENT,
                         headOfFamilyId = testAdult_1.id,
-                        agreementType = testAreaCode,
+                        agreementType = testArea.areaCode!!,
                         number = 5000000123L,
                         rows = listOf(createInvoiceRowFixture(testChild_1.id))
                     )
@@ -157,7 +156,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                     createInvoiceFixture(
                         status = InvoiceStatus.SENT,
                         headOfFamilyId = testAdult_1.id,
-                        agreementType = testAreaCode,
+                        agreementType = testArea.areaCode!!,
                         number = it,
                         rows = listOf(createInvoiceRowFixture(testChild_1.id))
                     )
@@ -177,7 +176,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
 
             val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
             assertEquals(1, result.size)
-            assertEquals(listOf(PersonId(testInvoices[0].headOfFamily.id)), result)
+            assertEquals(listOf(testInvoices[0].headOfFamily), result)
         }
     }
 
@@ -223,7 +222,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                     createInvoiceFixture(
                         status = InvoiceStatus.DRAFT,
                         headOfFamilyId = testAdult_2.id,
-                        agreementType = testAreaCode,
+                        agreementType = testArea.areaCode!!,
                         rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
                     )
                 )

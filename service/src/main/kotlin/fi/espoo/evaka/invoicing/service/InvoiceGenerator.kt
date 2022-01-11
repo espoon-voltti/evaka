@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.upsertInvoices
+import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -17,7 +18,6 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.PermanentPlacement
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Placement
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.domain.TemporaryPlacement
@@ -53,8 +53,8 @@ import java.util.UUID
 fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMonthRange()) {
     createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
 
-    val effectiveDecisions = getInvoiceableFeeDecisions(range).groupBy { PersonId(it.headOfFamily.id) }
-    val placements = getInvoiceablePlacements(range).groupBy { PersonId(it.headOfFamily.id) }
+    val effectiveDecisions = getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
+    val placements = getInvoiceablePlacements(range).groupBy { it.headOfFamily }
     val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(range)
 
     val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
@@ -64,7 +64,7 @@ fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMo
 
     val absences: List<AbsenceStub> = getAbsenceStubs(range, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
 
-    val freeChildren: List<ChildId> =
+    val freeChildren =
         if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
             getFreeJulyChildren(range.start.year)
         } else emptyList()
@@ -95,7 +95,7 @@ internal fun generateDraftInvoices(
     operationalDays: OperationalDays,
     absences: List<AbsenceStub> = listOf(),
     freeChildren: List<ChildId> = listOf(),
-    codebtors: Map<PersonId, PersonData.JustId?> = mapOf()
+    codebtors: Map<PersonId, PersonId?> = mapOf()
 ): List<Invoice> {
     return placements.keys.mapNotNull { headOfFamilyId ->
         try {
@@ -116,7 +116,7 @@ internal fun generateDraftInvoices(
 }
 
 data class InvoiceRowStub(
-    val child: PersonData.WithDateOfBirth,
+    val child: ChildWithDateOfBirth,
     val placement: Placement,
     val priceBeforeFeeAlterations: Int,
     val feeAlterations: List<Pair<FeeAlteration.Type, Int>>
@@ -130,7 +130,7 @@ internal fun generateDraftInvoice(
     operationalDays: OperationalDays,
     absences: List<AbsenceStub>,
     freeChildren: List<ChildId>,
-    codebtors: Map<PersonId, PersonData.JustId?>
+    codebtors: Map<PersonId, PersonId?>
 ): Invoice? {
     val headOfFamily = placements.first().headOfFamily
 
@@ -147,7 +147,7 @@ internal fun generateDraftInvoice(
                 when (placement) {
                     is PlacementStub.Temporary -> listOf(
                         relevantPeriod to InvoiceRowStub(
-                            PersonData.WithDateOfBirth(child.id, child.dateOfBirth),
+                            ChildWithDateOfBirth(child.id, child.dateOfBirth),
                             TemporaryPlacement(placement.unit, placement.partDay),
                             calculatePriceForTemporary(placement.partDay, index + 1),
                             listOf()
@@ -160,14 +160,14 @@ internal fun generateDraftInvoice(
                                     ?.let { DateRange(decision.validFrom, decision.validTo) to it }
                             }
                             .filterNot { (_, part) -> part.finalFee == 0 }
-                            .filterNot { (_, part) -> freeChildren.contains(ChildId(part.child.id)) }
+                            .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                             .map { (decisionPeriod, part) ->
                                 DateRange(
                                     maxOf(relevantPeriod.start, decisionPeriod.start),
                                     minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
                                 ) to InvoiceRowStub(
-                                    PersonData.WithDateOfBirth(part.child.id, part.child.dateOfBirth),
-                                    PermanentPlacement(part.placement.unit.id, part.placement.type),
+                                    ChildWithDateOfBirth(part.child.id, part.child.dateOfBirth),
+                                    PermanentPlacement(part.placement.unitId, part.placement.type),
                                     part.fee,
                                     part.feeAlterations.map { feeAlteration ->
                                         Pair(feeAlteration.type, feeAlteration.effect)
@@ -192,7 +192,7 @@ internal fun generateDraftInvoice(
                     rowStub,
                     codes,
                     operationalDays,
-                    absences.filter { it.childId.raw == rowStub.child.id }
+                    absences.filter { it.childId == rowStub.child.id }
                 )
             }
         }
@@ -215,20 +215,20 @@ internal fun generateDraftInvoice(
         periodEnd = invoicePeriod.end!!,
         agreementType = agreementType,
         headOfFamily = headOfFamily,
-        codebtor = codebtors[PersonId(headOfFamily.id)],
+        codebtor = codebtors[headOfFamily],
         rows = rows
     )
 }
 
-private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonData.JustId? {
-    val partners = decisions.map { it.partner }.distinct()
+private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonId? {
+    val partners = decisions.map { it.partnerId }.distinct()
     if (partners.size != 1) return null
 
-    val familyCompositions = decisions.map { Triple(it.headOfFamily, it.partner, it.children.map { it.child }) }
+    val familyCompositions = decisions.map { Triple(it.headOfFamilyId, it.partnerId, it.children.map { it.child }) }
     return partners.first().takeIf {
         familyCompositions.all { (head, partner, children) ->
             if (partner == null) false
-            else tx.isElementaryFamily(PersonId(head.id), PersonId(partner.id), children.map { ChildId(it.id) })
+            else tx.isElementaryFamily(head, partner, children.map { it.id })
         }
     }
 }
@@ -272,7 +272,7 @@ internal fun toInvoiceRows(
 
 private fun toTemporaryPlacementInvoiceRows(
     period: DateRange,
-    child: PersonData.WithDateOfBirth,
+    child: ChildWithDateOfBirth,
     price: Int,
     codes: DaycareCodes,
     operationalDays: List<LocalDate>,
@@ -302,7 +302,7 @@ private fun toTemporaryPlacementInvoiceRows(
 private fun toPermanentPlacementInvoiceRows(
     period: DateRange,
     processedPeriods: List<DateRange>,
-    child: PersonData.WithDateOfBirth,
+    child: ChildWithDateOfBirth,
     placement: PermanentPlacement,
     price: Int,
     codes: DaycareCodes,
@@ -588,8 +588,8 @@ sealed class PlacementStub(open val unit: DaycareId) {
 
 data class Placements(
     val period: DateRange,
-    val headOfFamily: PersonData.JustId,
-    val placements: List<Pair<PersonData.WithDateOfBirth, PlacementStub>>
+    val headOfFamily: PersonId,
+    val placements: List<Pair<ChildWithDateOfBirth, PlacementStub>>
 )
 
 internal fun Database.Read.getInvoiceablePlacements(
@@ -621,7 +621,7 @@ internal fun Database.Read.getInvoiceablePlacements(
         .map { (headOfFamily, families) ->
             val relevantPlacements = families.flatMap { (period, children) ->
                 children.flatMap { child ->
-                    (placements[ChildId(child.id)] ?: listOf())
+                    (placements[child.id] ?: listOf())
                         .filter { it.dateRange.overlaps(period) }
                         .map { (placementPeriod, placementUnit, placementType) ->
                             val placement = when (placementType) {
@@ -666,9 +666,9 @@ internal fun Database.Read.getInvoiceablePlacements(
 }
 
 internal fun toFamilyCompositions(
-    relationships: List<Triple<DateRange, PersonData.JustId, PersonData.WithDateOfBirth>>,
+    relationships: List<Triple<DateRange, PersonId, ChildWithDateOfBirth>>,
     spanningPeriod: DateRange
-): Map<PersonData.JustId, List<Pair<DateRange, List<PersonData.WithDateOfBirth>>>> {
+): Map<PersonId, List<Pair<DateRange, List<ChildWithDateOfBirth>>>> {
     return relationships
         .groupBy { (_, headOfFamily) -> headOfFamily }
         .mapValues { (_, value) -> value.map { it.first to it.third } }
@@ -685,7 +685,7 @@ internal fun toFamilyCompositions(
 fun Database.Read.getChildrenWithHeadOfFamilies(
     childIds: Collection<ChildId>,
     dateRange: DateRange
-): List<Triple<DateRange, PersonData.JustId, PersonData.WithDateOfBirth>> {
+): List<Triple<DateRange, PersonId, ChildWithDateOfBirth>> {
     if (childIds.isEmpty()) return listOf()
 
     val sql =
@@ -706,16 +706,13 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
     return createQuery(sql)
         .bind("dateRange", dateRange)
         .bind("childIds", childIds.toTypedArray())
-        .map { rs, _ ->
+        .map { rv ->
             Triple(
-                DateRange(
-                    rs.getDate("start_date").toLocalDate(),
-                    rs.getDate("end_date").toLocalDate()
-                ),
-                PersonData.JustId(id = UUID.fromString(rs.getString("head_of_child"))),
-                PersonData.WithDateOfBirth(
-                    id = UUID.fromString(rs.getString("child_id")),
-                    dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate()
+                DateRange(rv.mapColumn("start_date"), rv.mapColumn("end_date")),
+                rv.mapColumn<PersonId>("head_of_child"),
+                ChildWithDateOfBirth(
+                    id = rv.mapColumn("child_id"),
+                    dateOfBirth = rv.mapColumn("child_date_of_birth")
                 )
             )
         }

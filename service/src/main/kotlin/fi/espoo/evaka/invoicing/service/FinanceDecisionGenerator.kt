@@ -6,11 +6,11 @@ package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
 import fi.espoo.evaka.pis.getParentships
@@ -52,7 +52,7 @@ class FinanceDecisionGenerator(
             objectMapper,
             incomeTypesProvider,
             from, // intentionally does not care about feeDecisionMinDate
-            PersonData.JustId(headOfFamily.raw),
+            headOfFamily,
             families
         )
     }
@@ -214,16 +214,22 @@ private fun generateFamilyCompositions(
                 .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
                 .map { it.child }
             period to Quadruple(
-                PersonData.JustId(headOfFamily.raw),
-                partner?.let { PersonData.JustId(it.id.raw) },
-                children.map { PersonData.WithDateOfBirth(it.id.raw, it.dateOfBirth) },
-                fridgePartnerChildren.map { PersonData.WithDateOfBirth(it.id.raw, it.dateOfBirth) }
+                headOfFamily,
+                partner?.id,
+                children.map { ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth) },
+                fridgePartnerChildren.map { ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth) }
             )
         }
 
     return mergePeriods(familyPeriods).map { (period, familyData) ->
-        val (children, fridgeChildren) = if (familyData.second?.id != null) {
-            getChildrenAndFridgeChildren(headOfFamily, PersonId(familyData.second.id), familyData.third, familyData.fourth, fridgePartnerParentshipsWithGuardianship)
+        val (children, fridgeChildren) = if (familyData.second != null) {
+            getChildrenAndFridgeChildren(
+                headOfFamily,
+                familyData.second,
+                familyData.third,
+                familyData.fourth,
+                fridgePartnerParentshipsWithGuardianship
+            )
         } else {
             Pair(familyData.third, listOf())
         }
@@ -241,12 +247,11 @@ private fun generateFamilyCompositions(
 fun getChildrenAndFridgeChildren(
     headOfFamily: PersonId,
     fridgePartner: PersonId,
-    children: List<PersonData.WithDateOfBirth>,
-    fridgePartnerChildren: List<PersonData.WithDateOfBirth>,
+    children: List<ChildWithDateOfBirth>,
+    fridgePartnerChildren: List<ChildWithDateOfBirth>,
     fridgePartnerParentshipsWithGuardianship: Iterable<Parentship>
-):
-    Pair<List<PersonData.WithDateOfBirth>, List<PersonData.WithDateOfBirth>> =
-    if (fridgePartnerChildren.map { PersonId(it.id) }.toSet() == fridgePartnerParentshipsWithGuardianship.map { it.child.id }.toSet()) {
+): Pair<List<ChildWithDateOfBirth>, List<ChildWithDateOfBirth>> =
+    if (fridgePartnerChildren.map { it.id }.toSet() == fridgePartnerParentshipsWithGuardianship.map { it.child.id }.toSet()) {
         if (shouldReceiveFeeDecision(headOfFamily, fridgePartner, children, fridgePartnerChildren)) {
             Pair(children + fridgePartnerChildren, listOf())
         } else {
@@ -264,10 +269,9 @@ fun getChildrenAndFridgeChildren(
 fun shouldReceiveFeeDecision(
     headOfFamily: PersonId,
     fridgePartner: PersonId,
-    children: List<PersonData.WithDateOfBirth>,
-    fridgePartnerChildren: List<PersonData.WithDateOfBirth>
-):
-    Boolean =
+    children: List<ChildWithDateOfBirth>,
+    fridgePartnerChildren: List<ChildWithDateOfBirth>
+): Boolean =
     if (children.size != fridgePartnerChildren.size) {
         children.size > fridgePartnerChildren.size
     } else {
@@ -415,10 +419,10 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
 }
 
 internal fun addECHAFeeAlterations(
-    children: List<PersonData.WithDateOfBirth>,
+    children: List<ChildWithDateOfBirth>,
     incomes: List<Income>
 ): List<FeeAlteration> {
     return incomes.filter { it.worksAtECHA }.flatMap { income ->
-        children.map { child -> getECHAIncrease(ChildId(child.id), DateRange(income.validFrom, income.validTo)) }
+        children.map { child -> getECHAIncrease(child.id, DateRange(income.validFrom, income.validTo)) }
     }
 }

@@ -22,6 +22,7 @@ import {
   Fixture,
   voucherValueDecisionsFixture
 } from 'e2e-test-common/dev-api/fixtures'
+import LocalDate from 'lib-common/local-date'
 
 let page: Page
 let report: VoucherServiceProvidersReport
@@ -40,8 +41,8 @@ beforeEach(async () => {
       fixtures.daycareFixture.id,
       null,
       'SENT',
-      '2020-01-01',
-      '2020-12-31'
+      LocalDate.of(2020, 1, 1),
+      LocalDate.of(2020, 12, 31)
     ),
     voucherValueDecisionsFixture(
       'ed462aca-f74e-4384-910f-628823201023',
@@ -50,8 +51,8 @@ beforeEach(async () => {
       daycare2Fixture.id,
       null,
       'SENT',
-      '2020-01-01',
-      '2020-12-31'
+      LocalDate.of(2020, 1, 1),
+      LocalDate.of(2020, 12, 31)
     )
   ])
   const admin = await Fixture.employeeAdmin().save()

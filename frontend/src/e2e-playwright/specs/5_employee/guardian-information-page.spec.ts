@@ -26,6 +26,7 @@ import {
   invoiceFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
+import LocalDate from 'lib-common/local-date'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -105,10 +106,9 @@ describe('Employee - Guardian Information', () => {
       invoiceFixture(
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id,
         'DRAFT',
-        '2020-01-01',
-        '2020-02-01'
+        LocalDate.of(2020, 1, 1),
+        LocalDate.of(2020, 1, 31)
       )
     ])
 
@@ -117,6 +117,6 @@ describe('Employee - Guardian Information', () => {
 
     const invoiceSection = await guardianPage.openCollapsible('invoices')
     await invoiceSection.assertInvoiceCount(1)
-    await invoiceSection.assertInvoice(0, '01.01.2020', '01.02.2020', 'Luonnos')
+    await invoiceSection.assertInvoice(0, '01.01.2020', '31.01.2020', 'Luonnos')
   })
 })

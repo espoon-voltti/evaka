@@ -4,26 +4,23 @@
 
 package fi.espoo.evaka.shared.db
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.domain.DecisionIncome
+import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
+import fi.espoo.evaka.invoicing.domain.EmployeeWithName
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
-import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
-import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.PersonBasic
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.UnitData
-import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.Coordinate
@@ -36,7 +33,7 @@ import org.jdbi.v3.core.argument.NullArgument
 import org.jdbi.v3.core.config.ConfigRegistry
 import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.mapper.ColumnMapper
-import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.mapper.RowViewMapper
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.geometric.PGpoint
 import org.postgresql.util.PGobject
@@ -161,170 +158,170 @@ class PgObjectColumnMapper<T>(private inline val deserializer: (PGobject) -> T?)
     }
 }
 
-fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapper { rs, ctx ->
+val feeDecisionRowMapper = RowViewMapper { rv ->
     FeeDecision(
-        id = FeeDecisionId(rs.getUUID("id")),
-        status = FeeDecisionStatus.valueOf(rs.getString("status")),
-        decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
-        decisionType = rs.getEnum("decision_type"),
-        validDuring = ctx.mapColumn(rs, "valid_during"),
-        headOfFamily = PersonData.JustId(rs.getUUID("head_of_family_id")),
-        partner = rs.getString("partner_id")?.let { PersonData.JustId(UUID.fromString(it)) },
-        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        familySize = rs.getInt("family_size"),
-        feeThresholds = mapper.readValue(rs.getString("fee_thresholds")),
+        id = rv.mapColumn("id"),
+        status = rv.mapColumn("status"),
+        decisionNumber = rv.mapColumn("decision_number"),
+        decisionType = rv.mapColumn("decision_type"),
+        validDuring = rv.mapColumn("valid_during"),
+        headOfFamilyId = rv.mapColumn("head_of_family_id"),
+        partnerId = rv.mapColumn("partner_id"),
+        headOfFamilyIncome = rv.mapJsonColumn("head_of_family_income"),
+        partnerIncome = rv.mapJsonColumn("partner_income"),
+        familySize = rv.mapColumn("family_size"),
+        feeThresholds = rv.mapJsonColumn("fee_thresholds"),
         // child is not nullable so if it's missing there was nothing to join to the decision
-        children = rs.getString("child_id")?.let {
+        children = rv.mapColumn<ChildId?>("child_id")?.let { childId ->
             listOf(
                 FeeDecisionChild(
-                    child = PersonData.WithDateOfBirth(
-                        id = rs.getUUID("child_id"),
-                        dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate()
+                    child = ChildWithDateOfBirth(
+                        id = childId,
+                        dateOfBirth = rv.mapColumn("child_date_of_birth")
                     ),
                     placement = FeeDecisionPlacement(
-                        unit = UnitData.JustId(DaycareId(rs.getUUID("placement_unit_id"))),
-                        type = rs.getEnum("placement_type"),
+                        unitId = rv.mapColumn("placement_unit_id"),
+                        type = rv.mapColumn("placement_type"),
                     ),
                     serviceNeed = FeeDecisionServiceNeed(
-                        feeCoefficient = rs.getBigDecimal("service_need_fee_coefficient"),
-                        descriptionFi = rs.getString("service_need_description_fi"),
-                        descriptionSv = rs.getString("service_need_description_sv"),
-                        missing = rs.getBoolean("service_need_missing"),
+                        feeCoefficient = rv.mapColumn("service_need_fee_coefficient"),
+                        descriptionFi = rv.mapColumn("service_need_description_fi"),
+                        descriptionSv = rv.mapColumn("service_need_description_sv"),
+                        missing = rv.mapColumn("service_need_missing"),
                     ),
-                    baseFee = rs.getInt("base_fee"),
-                    siblingDiscount = rs.getInt("sibling_discount"),
-                    fee = rs.getInt("fee"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
-                    finalFee = rs.getInt("final_fee")
+                    baseFee = rv.mapColumn("base_fee"),
+                    siblingDiscount = rv.mapColumn("sibling_discount"),
+                    fee = rv.mapColumn("fee"),
+                    feeAlterations = rv.mapJsonColumn("fee_alterations"),
+                    finalFee = rv.mapColumn("final_fee")
                 )
             )
         } ?: emptyList(),
-        documentKey = rs.getString("document_key"),
-        approvedBy = rs.getString("approved_by_id")?.let { PersonData.JustId(UUID.fromString(it)) },
-        approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
-        decisionHandler = rs.getString("decision_handler_id")?.let { PersonData.JustId(UUID.fromString(it)) },
-        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        created = rs.getTimestamp("created").toInstant()
+        documentKey = rv.mapColumn("document_key"),
+        approvedById = rv.mapColumn("approved_by_id"),
+        approvedAt = rv.mapColumn("approved_at"),
+        decisionHandlerId = rv.mapColumn("decision_handler_id"),
+        sentAt = rv.mapColumn("sent_at"),
+        created = rv.mapColumn("created")
     )
 }
 
-fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDetailed> = RowMapper { rs, ctx ->
+val feeDecisionDetailedRowMapper = RowViewMapper { rv ->
     FeeDecisionDetailed(
-        id = FeeDecisionId(rs.getUUID("id")),
-        status = FeeDecisionStatus.valueOf(rs.getString("status")),
-        decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
-        decisionType = FeeDecisionType.valueOf(rs.getString("decision_type")),
-        validDuring = ctx.mapColumn(rs, "valid_during"),
-        headOfFamily = PersonData.Detailed(
-            id = PersonId(UUID.fromString(rs.getString("head_of_family_id"))),
-            dateOfBirth = rs.getDate("head_date_of_birth").toLocalDate(),
-            firstName = rs.getString("head_first_name"),
-            lastName = rs.getString("head_last_name"),
-            ssn = rs.getString("head_ssn"),
-            streetAddress = rs.getString("head_street_address"),
-            postalCode = rs.getString("head_postal_code"),
-            postOffice = rs.getString("head_post_office"),
-            language = rs.getString("head_language"),
-            restrictedDetailsEnabled = rs.getBoolean("head_restricted_details_enabled"),
-            forceManualFeeDecisions = rs.getBoolean("head_force_manual_fee_decisions")
+        id = rv.mapColumn("id"),
+        status = rv.mapColumn("status"),
+        decisionNumber = rv.mapColumn("decision_number"),
+        decisionType = rv.mapColumn("decision_type"),
+        validDuring = rv.mapColumn("valid_during"),
+        headOfFamily = PersonDetailed(
+            id = rv.mapColumn("head_of_family_id"),
+            dateOfBirth = rv.mapColumn("head_date_of_birth"),
+            firstName = rv.mapColumn("head_first_name"),
+            lastName = rv.mapColumn("head_last_name"),
+            ssn = rv.mapColumn("head_ssn"),
+            streetAddress = rv.mapColumn("head_street_address"),
+            postalCode = rv.mapColumn("head_postal_code"),
+            postOffice = rv.mapColumn("head_post_office"),
+            language = rv.mapColumn("head_language"),
+            restrictedDetailsEnabled = rv.mapColumn("head_restricted_details_enabled"),
+            forceManualFeeDecisions = rv.mapColumn("head_force_manual_fee_decisions")
         ),
-        partner = rs.getString("partner_id")?.let { id ->
-            PersonData.Detailed(
-                id = PersonId(UUID.fromString(id)),
-                dateOfBirth = rs.getDate("partner_date_of_birth").toLocalDate(),
-                firstName = rs.getString("partner_first_name"),
-                lastName = rs.getString("partner_last_name"),
-                ssn = rs.getString("partner_ssn"),
-                streetAddress = rs.getString("partner_street_address"),
-                postalCode = rs.getString("partner_postal_code"),
-                postOffice = rs.getString("partner_post_office"),
-                restrictedDetailsEnabled = rs.getBoolean("partner_restricted_details_enabled")
+        partner = rv.mapColumn<PersonId?>("partner_id")?.let { id ->
+            PersonDetailed(
+                id = id,
+                dateOfBirth = rv.mapColumn("partner_date_of_birth"),
+                firstName = rv.mapColumn("partner_first_name"),
+                lastName = rv.mapColumn("partner_last_name"),
+                ssn = rv.mapColumn("partner_ssn"),
+                streetAddress = rv.mapColumn("partner_street_address"),
+                postalCode = rv.mapColumn("partner_postal_code"),
+                postOffice = rv.mapColumn("partner_post_office"),
+                restrictedDetailsEnabled = rv.mapColumn("partner_restricted_details_enabled")
             )
         },
-        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        familySize = rs.getInt("family_size"),
-        feeThresholds = mapper.readValue(rs.getString("fee_thresholds")),
+        headOfFamilyIncome = rv.mapJsonColumn("head_of_family_income"),
+        partnerIncome = rv.mapJsonColumn("partner_income"),
+        familySize = rv.mapColumn("family_size"),
+        feeThresholds = rv.mapJsonColumn("fee_thresholds"),
         // child is not nullable so if it's missing there was nothing to join to the decision
-        children = rs.getString("child_id")?.let {
+        children = rv.mapColumn<PersonId?>("child_id")?.let { childId ->
             listOf(
                 FeeDecisionChildDetailed(
-                    child = PersonData.Detailed(
-                        id = PersonId(UUID.fromString(rs.getString("child_id"))),
-                        dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate(),
-                        firstName = rs.getString("child_first_name"),
-                        lastName = rs.getString("child_last_name"),
-                        ssn = rs.getString("child_ssn"),
-                        streetAddress = rs.getString("child_address"),
-                        postalCode = rs.getString("child_postal_code"),
-                        postOffice = rs.getString("child_post_office"),
-                        restrictedDetailsEnabled = rs.getBoolean("child_restricted_details_enabled")
+                    child = PersonDetailed(
+                        id = childId,
+                        dateOfBirth = rv.mapColumn("child_date_of_birth"),
+                        firstName = rv.mapColumn("child_first_name"),
+                        lastName = rv.mapColumn("child_last_name"),
+                        ssn = rv.mapColumn("child_ssn"),
+                        streetAddress = rv.mapColumn("child_address"),
+                        postalCode = rv.mapColumn("child_postal_code"),
+                        postOffice = rv.mapColumn("child_post_office"),
+                        restrictedDetailsEnabled = rv.mapColumn("child_restricted_details_enabled")
                     ),
-                    placementType = rs.getEnum("placement_type"),
-                    placementUnit = UnitData.Detailed(
-                        id = DaycareId(rs.getUUID("placement_unit_id")),
-                        name = rs.getString("placement_unit_name"),
-                        language = rs.getString("placement_unit_lang"),
-                        areaId = AreaId(rs.getUUID("placement_unit_area_id")),
-                        areaName = rs.getString("placement_unit_area_name")
+                    placementType = rv.mapColumn("placement_type"),
+                    placementUnit = UnitData(
+                        id = rv.mapColumn("placement_unit_id"),
+                        name = rv.mapColumn("placement_unit_name"),
+                        language = rv.mapColumn("placement_unit_lang"),
+                        areaId = rv.mapColumn("placement_unit_area_id"),
+                        areaName = rv.mapColumn("placement_unit_area_name")
                     ),
-                    serviceNeedFeeCoefficient = rs.getBigDecimal("service_need_fee_coefficient"),
-                    serviceNeedDescriptionFi = rs.getString("service_need_description_fi"),
-                    serviceNeedDescriptionSv = rs.getString("service_need_description_sv"),
-                    serviceNeedMissing = rs.getBoolean("service_need_missing"),
-                    baseFee = rs.getInt("base_fee"),
-                    siblingDiscount = rs.getInt("sibling_discount"),
-                    fee = rs.getInt("fee"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
-                    finalFee = rs.getInt("final_fee")
+                    serviceNeedFeeCoefficient = rv.mapColumn("service_need_fee_coefficient"),
+                    serviceNeedDescriptionFi = rv.mapColumn("service_need_description_fi"),
+                    serviceNeedDescriptionSv = rv.mapColumn("service_need_description_sv"),
+                    serviceNeedMissing = rv.mapColumn("service_need_missing"),
+                    baseFee = rv.mapColumn("base_fee"),
+                    siblingDiscount = rv.mapColumn("sibling_discount"),
+                    fee = rv.mapColumn("fee"),
+                    feeAlterations = rv.mapJsonColumn("fee_alterations"),
+                    finalFee = rv.mapColumn("final_fee")
                 )
             )
         } ?: emptyList(),
-        documentKey = rs.getString("document_key"),
-        approvedBy = rs.getString("approved_by_id")?.let { id ->
-            PersonData.WithName(
-                id = UUID.fromString(id),
-                firstName = rs.getString("approved_by_first_name"),
-                lastName = rs.getString("approved_by_last_name")
+        documentKey = rv.mapColumn("document_key"),
+        approvedBy = rv.mapColumn<EmployeeId?>("approved_by_id")?.let { id ->
+            EmployeeWithName(
+                id = id,
+                firstName = rv.mapColumn("approved_by_first_name"),
+                lastName = rv.mapColumn("approved_by_last_name")
             )
         },
-        approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
-        created = rs.getTimestamp("created").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        financeDecisionHandlerFirstName = rs.getString("finance_decision_handler_first_name"),
-        financeDecisionHandlerLastName = rs.getString("finance_decision_handler_last_name")
+        approvedAt = rv.mapColumn("approved_at"),
+        created = rv.mapColumn("created"),
+        sentAt = rv.mapColumn("sent_at"),
+        financeDecisionHandlerFirstName = rv.mapColumn("finance_decision_handler_first_name"),
+        financeDecisionHandlerLastName = rv.mapColumn("finance_decision_handler_last_name")
     )
 }
 
-val feeDecisionSummaryRowMapper: RowMapper<FeeDecisionSummary> = RowMapper { rs, ctx ->
+val feeDecisionSummaryRowMapper = RowViewMapper { rv ->
     FeeDecisionSummary(
-        id = FeeDecisionId(rs.getUUID("id")),
-        status = rs.getEnum("status"),
-        decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
-        validDuring = ctx.mapColumn(rs, "valid_during"),
-        headOfFamily = PersonData.Basic(
-            id = PersonId(rs.getUUID("head_of_family_id")),
-            dateOfBirth = rs.getObject("head_date_of_birth", LocalDate::class.java),
-            firstName = rs.getString("head_first_name"),
-            lastName = rs.getString("head_last_name"),
-            ssn = rs.getString("head_ssn")
+        id = rv.mapColumn("id"),
+        status = rv.mapColumn("status"),
+        decisionNumber = rv.mapColumn("decision_number"),
+        validDuring = rv.mapColumn("valid_during"),
+        headOfFamily = PersonBasic(
+            id = rv.mapColumn("head_of_family_id"),
+            dateOfBirth = rv.mapColumn("head_date_of_birth"),
+            firstName = rv.mapColumn("head_first_name"),
+            lastName = rv.mapColumn("head_last_name"),
+            ssn = rv.mapColumn("head_ssn")
         ),
         // child is not nullable so if it's missing there was nothing to join to the decision
-        children = rs.getString("child_id")?.let {
+        children = rv.mapColumn<PersonId?>("child_id")?.let { id ->
             listOf(
-                PersonData.Basic(
-                    id = PersonId(rs.getUUID("child_id")),
-                    dateOfBirth = rs.getObject("child_date_of_birth", LocalDate::class.java),
-                    firstName = rs.getString("child_first_name"),
-                    lastName = rs.getString("child_last_name"),
-                    ssn = rs.getString("child_ssn")
+                PersonBasic(
+                    id = id,
+                    dateOfBirth = rv.mapColumn("child_date_of_birth"),
+                    firstName = rv.mapColumn("child_first_name"),
+                    lastName = rv.mapColumn("child_last_name"),
+                    ssn = rv.mapColumn("child_ssn")
                 )
             )
         } ?: emptyList(),
-        approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
-        created = rs.getTimestamp("created").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        finalPrice = rs.getInt("sum")
+        approvedAt = rv.mapColumn("approved_at"),
+        created = rv.mapColumn("created"),
+        sentAt = rv.mapColumn("sent_at"),
+        finalPrice = rv.mapColumn("sum")
     )
 }

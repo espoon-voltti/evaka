@@ -5,8 +5,8 @@
 package fi.espoo.evaka
 
 import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.dev.DevPerson
 import java.time.LocalDate
 import fi.espoo.evaka.application.persistence.daycare.Address as DaycareFormAddress
 import fi.espoo.evaka.application.persistence.daycare.Adult as DaycareFormAdult
@@ -22,7 +22,7 @@ fun PlacementType.toApplicationType(): ApplicationType = when (this) {
         error("Unsupported placement type ($this)")
 }
 
-fun PersonData.Detailed.toDaycareFormChild(
+fun DevPerson.toDaycareFormChild(
     dateOfBirth: LocalDate? = null,
     nationality: String = "FI",
     language: String = "fi",
@@ -42,7 +42,7 @@ fun PersonData.Detailed.toDaycareFormChild(
     restricted = restricted
 )
 
-fun PersonData.Detailed.toDaycareFormAdult(restricted: Boolean = false) = DaycareFormAdult(
+fun DevPerson.toDaycareFormAdult(restricted: Boolean = false) = DaycareFormAdult(
     firstName = firstName,
     lastName = lastName,
     socialSecurityNumber = ssn ?: "",

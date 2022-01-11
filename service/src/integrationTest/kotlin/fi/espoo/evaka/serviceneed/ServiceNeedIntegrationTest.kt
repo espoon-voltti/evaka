@@ -34,7 +34,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ServiceNeedIntegrationTest : FullApplicationTest() {
-    private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id.raw, setOf(UserRole.UNIT_SUPERVISOR))
 
     lateinit var placementId: PlacementId
 

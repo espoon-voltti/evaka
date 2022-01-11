@@ -4,11 +4,11 @@
 
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
+import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
-import { FeeDecisionDetailed } from '../../types/invoicing'
 import { formatName } from '../../utils'
 
 interface Props {

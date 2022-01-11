@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -21,12 +20,10 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.result.RowView
 import java.time.Instant
 import java.time.LocalDate
 
@@ -134,11 +131,11 @@ INSERT INTO voucher_value_decision (
     decisions.forEach { decision ->
         batch
             .bindKotlin(decision)
-            .bind("headOfFamilyId", decision.headOfFamily.id)
-            .bind("partnerId", decision.partner?.id)
+            .bind("headOfFamilyId", decision.headOfFamilyId)
+            .bind("partnerId", decision.partnerId)
             .bind("childId", decision.child.id)
             .bind("childDateOfBirth", decision.child.dateOfBirth)
-            .bind("placementUnitId", decision.placement.unit.id)
+            .bind("placementUnitId", decision.placement.unitId)
             .bind("placementType", decision.placement.type)
             .bind("serviceNeedFeeCoefficient", decision.serviceNeed.feeCoefficient)
             .bind("serviceNeedVoucherValueCoefficient", decision.serviceNeed.voucherValueCoefficient)
@@ -317,7 +314,7 @@ SELECT
     decision.decision_number,
     decision.valid_from,
     decision.valid_to,
-    decision.head_of_family_id,
+    decision.head_of_family_id AS head_id,
     decision.child_id,
     decision.child_date_of_birth,
     decision.final_co_payment,
@@ -349,7 +346,7 @@ LIMIT :pageSize OFFSET :pageSize * :page
 """
     return this.createQuery(sql)
         .bindMap(params + freeTextParams)
-        .mapToPaged(pageSize, toVoucherValueDecisionSummary)
+        .mapToPaged(pageSize)
 }
 
 fun Database.Read.getVoucherValueDecision(id: VoucherValueDecisionId): VoucherValueDecisionDetailed? {
@@ -445,7 +442,7 @@ WHERE decision.head_of_family_id = :headOfFamilyId
 """
     )
         .bind("headOfFamilyId", headOfFamilyId)
-        .map(toVoucherValueDecisionSummary)
+        .mapTo<VoucherValueDecisionSummary>()
         .toList()
 }
 
@@ -566,33 +563,4 @@ fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids.toTypedArray())
         .execute()
-}
-
-val toVoucherValueDecisionSummary = { row: RowView ->
-    VoucherValueDecisionSummary(
-        id = row.mapColumn("id"),
-        status = row.mapColumn("status"),
-        decisionNumber = row.mapColumn("decision_number"),
-        validFrom = row.mapColumn("valid_from"),
-        validTo = row.mapColumn("valid_to"),
-        headOfFamily = PersonData.Basic(
-            id = row.mapColumn("head_of_family_id"),
-            dateOfBirth = row.mapColumn("head_date_of_birth"),
-            firstName = row.mapColumn("head_first_name"),
-            lastName = row.mapColumn("head_last_name"),
-            ssn = row.mapColumn("head_ssn")
-        ),
-        child = PersonData.Basic(
-            id = row.mapColumn("child_id"),
-            dateOfBirth = row.mapColumn("child_date_of_birth"),
-            firstName = row.mapColumn("child_first_name"),
-            lastName = row.mapColumn("child_last_name"),
-            ssn = row.mapColumn("child_ssn")
-        ),
-        finalCoPayment = row.mapColumn("final_co_payment"),
-        voucherValue = row.mapColumn("voucher_value"),
-        approvedAt = row.mapColumn("approved_at"),
-        sentAt = row.mapColumn("sent_at"),
-        created = row.mapColumn("created")
-    )
 }

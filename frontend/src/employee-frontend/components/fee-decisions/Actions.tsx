@@ -4,10 +4,10 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { FeeDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { confirmFeeDecisions } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { FeeDecisionStatus } from '../../types/invoicing'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import StickyActionBar from '../common/StickyActionBar'
 

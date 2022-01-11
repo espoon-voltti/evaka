@@ -29,7 +29,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PairingIntegrationTest : FullApplicationTest() {
-    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, emptySet())
+    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, emptySet())
     private val testUnitId = testDaycare.id
 
     @BeforeEach

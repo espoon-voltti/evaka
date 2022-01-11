@@ -1131,7 +1131,7 @@ data class DevChild(
 )
 
 data class DevDaycare(
-    val id: DaycareId? = DaycareId(UUID.randomUUID()),
+    val id: DaycareId = DaycareId(UUID.randomUUID()),
     val name: String = "Test Daycare",
     val openingDate: LocalDate? = null,
     val closingDate: LocalDate? = null,
@@ -1246,9 +1246,11 @@ data class DevPerson(
     val nationalities: List<String> = emptyList(),
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate? = null,
+    val invoiceRecipientName: String = "",
     val invoicingStreetAddress: String = "",
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
+    val forceManualFeeDecisions: Boolean = false,
     val dependants: List<DevPerson> = emptyList(),
     val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,

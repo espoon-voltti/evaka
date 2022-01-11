@@ -6,10 +6,10 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -57,7 +57,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         )
     }
 
-    fun getDto(person: PersonData.Detailed) = PersonWithChildrenDTO(
+    fun getDto(person: DevPerson) = PersonWithChildrenDTO(
         id = person.id,
         socialSecurityNumber = person.ssn,
         dateOfBirth = person.dateOfBirth,

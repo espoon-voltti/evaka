@@ -4,31 +4,30 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.util.UUID
 
-@ExcludeCodeGen
+@IncludeCodeGen
 data class VoucherValueDecision(
     override val id: VoucherValueDecisionId,
     override val validFrom: LocalDate,
     override val validTo: LocalDate?,
-    @Nested("head_of_family")
-    override val headOfFamily: PersonData.JustId,
+    override val headOfFamilyId: PersonId,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: VoucherValueDecisionType,
-    @Nested("partner")
-    val partner: PersonData.JustId?,
+    val partnerId: PersonId?,
     @Json
     val headOfFamilyIncome: DecisionIncome?,
     @Json
@@ -37,7 +36,7 @@ data class VoucherValueDecision(
     @Json
     val feeThresholds: FeeDecisionThresholds,
     @Nested("child")
-    val child: PersonData.WithDateOfBirth,
+    val child: ChildWithDateOfBirth,
     @Nested("placement")
     val placement: VoucherValueDecisionPlacement,
     @Nested("service_need")
@@ -53,17 +52,16 @@ data class VoucherValueDecision(
     val capacityFactor: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
-    @Nested("approved_by")
-    val approvedBy: PersonData.JustId? = null,
-    val approvedAt: Instant? = null,
-    val sentAt: Instant? = null,
-    val created: Instant = Instant.now()
+    val approvedById: EmployeeId? = null,
+    val approvedAt: HelsinkiDateTime? = null,
+    val sentAt: HelsinkiDateTime? = null,
+    val created: HelsinkiDateTime = HelsinkiDateTime.now()
 ) : FinanceDecision<VoucherValueDecision> {
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: VoucherValueDecision): Boolean {
-        return this.headOfFamily == decision.headOfFamily &&
-            this.partner == decision.partner &&
+        return this.headOfFamilyId == decision.headOfFamilyId &&
+            this.partnerId == decision.partnerId &&
             this.headOfFamilyIncome == decision.headOfFamilyIncome &&
             this.partnerIncome == decision.partnerIncome &&
             this.familySize == decision.familySize &&
@@ -114,7 +112,6 @@ enum class VoucherValueDecisionStatus {
     }
 }
 
-@ExcludeCodeGen
 data class VoucherValueDecisionDetailed(
     val id: VoucherValueDecisionId,
     val validFrom: LocalDate,
@@ -123,9 +120,9 @@ data class VoucherValueDecisionDetailed(
     val decisionNumber: Long? = null,
     val decisionType: VoucherValueDecisionType,
     @Nested("head")
-    val headOfFamily: PersonData.Detailed,
+    val headOfFamily: PersonDetailed,
     @Nested("partner")
-    val partner: PersonData.Detailed?,
+    val partner: PersonDetailed?,
     @Json
     val headOfFamilyIncome: DecisionIncome?,
     @Json
@@ -134,7 +131,7 @@ data class VoucherValueDecisionDetailed(
     @Json
     val feeThresholds: FeeDecisionThresholds,
     @Nested("child")
-    val child: PersonData.Detailed,
+    val child: PersonDetailed,
     @Nested("placement")
     val placement: VoucherValueDecisionPlacementDetailed,
     @Nested("service_need")
@@ -152,43 +149,38 @@ data class VoucherValueDecisionDetailed(
     val voucherValue: Int,
     val documentKey: String? = null,
     @Nested("approved_by")
-    val approvedBy: PersonData.WithName? = null,
-    val approvedAt: Instant? = null,
-    val sentAt: Instant? = null,
-    val created: Instant = Instant.now(),
+    val approvedBy: EmployeeWithName? = null,
+    val approvedAt: HelsinkiDateTime? = null,
+    val sentAt: HelsinkiDateTime? = null,
+    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
     val isElementaryFamily: Boolean? = false
 ) {
-    @JsonProperty("incomeEffect")
-    fun incomeEffect(): IncomeEffect =
-        getTotalIncomeEffect(partner != null, headOfFamilyIncome?.effect, partnerIncome?.effect)
+    val incomeEffect
+        get() = getTotalIncomeEffect(partner != null, headOfFamilyIncome?.effect, partnerIncome?.effect)
 
-    @JsonProperty("totalIncome")
-    fun totalIncome(): Int? = getTotalIncome(
-        partner != null,
-        headOfFamilyIncome?.effect,
-        headOfFamilyIncome?.total,
-        partnerIncome?.effect,
-        partnerIncome?.total
-    )
+    val totalIncome
+        get() = getTotalIncome(
+            partner != null,
+            headOfFamilyIncome?.effect,
+            headOfFamilyIncome?.total,
+            partnerIncome?.effect,
+            partnerIncome?.total
+        )
 
-    @JsonProperty("requiresManualSending")
-    fun requiresManualSending(): Boolean {
-        if (decisionType !== VoucherValueDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
-            return true
+    val requiresManualSending
+        get(): Boolean {
+            if (decisionType !== VoucherValueDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
+                return true
+            }
+            return this.headOfFamily.let {
+                listOf(it.ssn, it.streetAddress, it.postalCode, it.postOffice).any { item -> item.isNullOrBlank() }
+            }
         }
-        return this.headOfFamily.let {
-            listOf(it.ssn, it.streetAddress, it.postalCode, it.postOffice).any { item -> item.isNullOrBlank() }
-        }
-    }
 
-    @JsonProperty("isRetroactive")
-    fun isRetroactive(): Boolean {
-        val sentAtLocalDate = sentAt?.atZone(ZoneId.of("UTC"))
-        val retroThreshold = LocalDate.from(sentAtLocalDate ?: LocalDate.now()).withDayOfMonth(1)
-        return this.validFrom.isBefore(retroThreshold)
-    }
+    val isRetroactive
+        get() = isRetroactive(this.validFrom, sentAt?.toLocalDate() ?: LocalDate.now())
 }
 
 data class VoucherValueDecisionSummary(
@@ -197,26 +189,25 @@ data class VoucherValueDecisionSummary(
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
-    val headOfFamily: PersonData.Basic,
-    val child: PersonData.Basic,
+    @Nested("head")
+    val headOfFamily: PersonBasic,
+    @Nested("child")
+    val child: PersonBasic,
     val finalCoPayment: Int,
     val voucherValue: Int,
-    val approvedAt: Instant? = null,
-    val sentAt: Instant? = null,
-    val created: Instant = Instant.now(),
+    val approvedAt: HelsinkiDateTime? = null,
+    val sentAt: HelsinkiDateTime? = null,
+    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
-@ExcludeCodeGen
 data class VoucherValueDecisionPlacement(
-    @Nested("unit")
-    val unit: UnitData.JustId,
+    val unitId: DaycareId,
     val type: PlacementType
 )
 
-@ExcludeCodeGen
 data class VoucherValueDecisionPlacementDetailed(
     @Nested("unit")
-    val unit: UnitData.Detailed,
+    val unit: UnitData,
     val type: PlacementType
 )
 

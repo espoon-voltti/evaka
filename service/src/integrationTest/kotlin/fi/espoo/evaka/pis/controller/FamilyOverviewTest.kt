@@ -147,7 +147,7 @@ class FamilyOverviewTest : FullApplicationTest() {
         assertEquals(null, result.headOfFamily.income)
     }
 
-    private val financeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
 
     private fun fetchAndParseFamilyDetails(personId: PersonId, user: AuthenticatedUser = financeUser): FamilyOverview {
         val (_, response, result) = http.get("/family/by-adult/$personId")
@@ -210,7 +210,7 @@ class FamilyOverviewTest : FullApplicationTest() {
                     personId = personId,
                     effect = IncomeEffect.INCOME,
                     data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
             )
         }

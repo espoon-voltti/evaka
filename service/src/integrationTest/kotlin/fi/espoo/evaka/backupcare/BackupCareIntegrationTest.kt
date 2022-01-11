@@ -40,7 +40,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class BackupCareIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -146,7 +146,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                 )
             )
             tx.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id),
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 period = serviceNeedPeriod,
                 placementId = placementId,
                 optionId = snDefaultDaycare.id

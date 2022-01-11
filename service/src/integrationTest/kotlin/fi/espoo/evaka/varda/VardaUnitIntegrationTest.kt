@@ -8,13 +8,11 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.testAreaCode
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testPurchasedDaycare
@@ -35,9 +33,9 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
-            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
+            tx.insertTestCareArea(testArea)
+            tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare.id, name = testDaycare.name))
+            tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name))
         }
 
         mockEndpoint.cleanUp()
@@ -60,7 +58,7 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.insertTestDaycare(
                 DevDaycare(
-                    areaId = testAreaId,
+                    areaId = testArea.id,
                     id = testPurchasedDaycare.id,
                     name = testPurchasedDaycare.name,
                     providerType = ProviderType.PURCHASED

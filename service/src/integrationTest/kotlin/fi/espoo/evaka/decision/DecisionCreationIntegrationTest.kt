@@ -18,8 +18,6 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
@@ -28,6 +26,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -54,7 +54,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DecisionCreationIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @Autowired
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -309,10 +309,10 @@ WHERE id = :unitId
 
     private fun checkDecisionDrafts(
         applicationId: ApplicationId,
-        unit: UnitData.Detailed = testDaycare,
-        adult: PersonData.Detailed = testAdult_5,
-        child: PersonData.Detailed = testChild_6,
-        otherGuardian: PersonData.Detailed? = null,
+        unit: DevDaycare = testDaycare,
+        adult: DevPerson = testAdult_5,
+        child: DevPerson = testChild_6,
+        otherGuardian: DevPerson? = null,
         decisions: List<DecisionDraft>
     ) {
         val (_, _, body) = http.get("/v2/applications/$applicationId/decision-drafts")
@@ -398,7 +398,7 @@ WHERE id = :unitId
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.get("/v2/applications/$applicationId/decision-drafts")
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }
@@ -406,9 +406,9 @@ WHERE id = :unitId
 
     private fun insertInitialData(
         type: PlacementType,
-        unit: UnitData.Detailed = testDaycare,
-        adult: PersonData.Detailed = testAdult_5,
-        child: PersonData.Detailed = testChild_6,
+        unit: DevDaycare = testDaycare,
+        adult: DevPerson = testAdult_5,
+        child: DevPerson = testChild_6,
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false

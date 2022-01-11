@@ -4,24 +4,24 @@
 
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Detailed as PersonDetailed } from 'lib-common/generated/api-types/invoicing'
+import {
+  PersonDetailed,
+  VoucherValueDecisionPlacementDetailed,
+  VoucherValueDecisionServiceNeed
+} from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faUserFriends } from 'lib-icons'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import {
-  VoucherValueDecisionPlacement,
-  VoucherValueDecisionServiceNeed
-} from '../../types/invoicing'
 import { formatName } from '../../utils'
 
 interface Props {
   child: PersonDetailed
-  placement: VoucherValueDecisionPlacement
+  placement: VoucherValueDecisionPlacementDetailed
   serviceNeed: VoucherValueDecisionServiceNeed
 }
 
-const ChildSection = React.memo(function ChildSection({
+export default React.memo(function ChildSection({
   child,
   placement,
   serviceNeed
@@ -74,5 +74,3 @@ const ChildSection = React.memo(function ChildSection({
     </CollapsibleSection>
   )
 })
-
-export default ChildSection

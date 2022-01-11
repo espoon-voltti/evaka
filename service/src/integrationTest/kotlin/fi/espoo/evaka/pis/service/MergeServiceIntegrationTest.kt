@@ -128,7 +128,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
                     adultIdDuplicate,
                     validFrom = validFrom,
                     validTo = validTo,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
             )
         }

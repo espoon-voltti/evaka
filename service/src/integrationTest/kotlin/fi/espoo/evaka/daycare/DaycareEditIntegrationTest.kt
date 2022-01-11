@@ -15,15 +15,13 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.testAreaCode
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
@@ -33,12 +31,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DaycareEditIntegrationTest : FullApplicationTest() {
-    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
     private val fields = DaycareFields(
         name = "Uusi päiväkoti",
         openingDate = LocalDate.of(2020, 1, 1),
         closingDate = LocalDate.of(2120, 1, 1),
-        areaId = testAreaId,
+        areaId = testArea.id,
         type = setOf(CareType.CENTRE),
         daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
         preschoolApplyPeriod = null,
@@ -89,8 +87,8 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            tx.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testAreaId, name = testDaycare.name))
+            tx.insertTestCareArea(testArea)
+            tx.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testArea.id, name = testDaycare.name))
         }
     }
 

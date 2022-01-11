@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import {
-  Detailed as PersonDetailed,
+  PersonDetailed,
   InvoiceCodes,
   InvoiceRowDetailed
 } from 'lib-common/generated/api-types/invoicing'

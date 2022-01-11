@@ -4,6 +4,7 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Paged, Result } from 'lib-common/api'
+import { FeeDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -15,7 +16,6 @@ import {
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
-import { FeeDecisionSummary } from '../../types/invoicing'
 import Actions from './Actions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import FeeDecisions from './FeeDecisions'

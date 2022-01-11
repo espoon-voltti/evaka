@@ -52,7 +52,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
     private val personId = testChild_1.id
 
     private val testFeeAlteration = FeeAlteration(
@@ -64,7 +64,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         validFrom = LocalDate.of(2019, 1, 1),
         validTo = LocalDate.of(2019, 1, 31),
         notes = "",
-        updatedBy = EvakaUserId(testDecisionMaker_1.id)
+        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
     )
 
     @Test
@@ -124,7 +124,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(testFeeAlteration.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id))),
+            listOf(testFeeAlteration.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
             deserializeResult(result.get()).data
         )
     }
@@ -155,7 +155,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(updated.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id))),
+            listOf(updated.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
             deserializeResult(result.get()).data
         )
     }

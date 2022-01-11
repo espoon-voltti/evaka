@@ -73,7 +73,7 @@ class VoucherValueDecisionService(
             "Cannot send voucher value decision ${decision.id} - missing document key"
         }
 
-        if (decision.requiresManualSending()) {
+        if (decision.requiresManualSending) {
             tx.updateVoucherValueDecisionStatus(
                 listOf(decision.id),
                 VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
@@ -149,7 +149,7 @@ ORDER BY start_date ASC
 """
                     )
                     .bind("childId", decision.child.id)
-                    .bind("unitId", decision.placement.unit.id)
+                    .bind("unitId", decision.placement.unitId)
                     .bind("dateRange", DateRange(decision.validFrom, decision.validTo))
                     .mapTo<FiniteDateRange>()
                     .fold(listOf<FiniteDateRange>()) { periods, period ->

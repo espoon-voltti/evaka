@@ -7,7 +7,6 @@ package fi.espoo.evaka
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ChildId
@@ -61,7 +60,7 @@ class FixtureBuilder(
         private val fixtureBuilder: FixtureBuilder
     ) {
         private var dateOfBirth: LocalDate? = null
-        private var person: PersonData.Detailed? = null
+        private var person: DevPerson? = null
 
         fun withDateOfBirth(dateOfBirth: LocalDate) = this.apply {
             this.dateOfBirth = dateOfBirth
@@ -71,7 +70,7 @@ class FixtureBuilder(
             this.dateOfBirth = today.minusYears(years.toLong()).minusMonths(months.toLong()).minusDays(days.toLong())
         }
 
-        fun usePerson(person: PersonData.Detailed) = this.apply { this.person = person }
+        fun usePerson(person: DevPerson) = this.apply { this.person = person }
 
         fun save(): FixtureBuilder {
             doInsert()

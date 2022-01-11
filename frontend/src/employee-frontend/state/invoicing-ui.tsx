@@ -11,17 +11,17 @@ import React, {
   createContext
 } from 'react'
 import { Loading, Result } from 'lib-common/api'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import { useDebounce } from 'lib-common/utils/useDebounce'
 import {
-  DecisionDistinctiveDetails,
   FeeDecisionStatus,
   VoucherValueDecisionStatus,
   InvoiceStatus,
-  Unit,
-  InvoiceDistinctiveDetails
-} from '../types/invoicing'
+  InvoiceDistinctiveParams,
+  DistinctiveParams
+} from 'lib-common/generated/api-types/invoicing'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { useDebounce } from 'lib-common/utils/useDebounce'
+import { Unit } from '../api/daycare'
 import { CareArea } from '../types/unit'
 
 export interface Checked {
@@ -39,7 +39,7 @@ interface FeeDecisionSearchFilters {
   area: string[]
   unit?: string
   status: FeeDecisionStatus
-  distinctiveDetails: DecisionDistinctiveDetails[]
+  distinctiveDetails: DistinctiveParams[]
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   searchByStartDate: boolean
@@ -78,7 +78,7 @@ export interface InvoiceSearchFilters {
   area: string[]
   unit?: string
   status: InvoiceStatus
-  distinctiveDetails: InvoiceDistinctiveDetails[]
+  distinctiveDetails: InvoiceDistinctiveParams[]
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   useCustomDatesForInvoiceSending: boolean

@@ -11,7 +11,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -158,21 +158,21 @@ class ReportSmokeTests : FullApplicationTest() {
         assertOkResponse(
             http.get(
                 "/reports/occupancy-by-unit",
-                listOf("type" to "PLANNED", "careAreaId" to testAreaId, "year" to 2020, "month" to 1)
+                listOf("type" to "PLANNED", "careAreaId" to testArea.id, "year" to 2020, "month" to 1)
             )
         )
 
         assertOkResponse(
             http.get(
                 "/reports/occupancy-by-unit",
-                listOf("type" to "CONFIRMED", "careAreaId" to testAreaId, "year" to 2020, "month" to 1)
+                listOf("type" to "CONFIRMED", "careAreaId" to testArea.id, "year" to 2020, "month" to 1)
             )
         )
 
         assertOkResponse(
             http.get(
                 "/reports/occupancy-by-unit",
-                listOf("type" to "REALIZED", "careAreaId" to testAreaId, "year" to 2020, "month" to 1)
+                listOf("type" to "REALIZED", "careAreaId" to testArea.id, "year" to 2020, "month" to 1)
             )
         )
     }
@@ -182,14 +182,14 @@ class ReportSmokeTests : FullApplicationTest() {
         assertOkResponse(
             http.get(
                 "/reports/occupancy-by-group",
-                listOf("type" to "CONFIRMED", "careAreaId" to testAreaId, "year" to 2020, "month" to 1)
+                listOf("type" to "CONFIRMED", "careAreaId" to testArea.id, "year" to 2020, "month" to 1)
             )
         )
 
         assertOkResponse(
             http.get(
                 "/reports/occupancy-by-group",
-                listOf("type" to "REALIZED", "careAreaId" to testAreaId, "year" to 2020, "month" to 1)
+                listOf("type" to "REALIZED", "careAreaId" to testArea.id, "year" to 2020, "month" to 1)
             )
         )
     }

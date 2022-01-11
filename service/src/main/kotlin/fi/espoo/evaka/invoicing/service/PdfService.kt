@@ -28,9 +28,7 @@ import java.io.OutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.file.Paths
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
@@ -64,9 +62,6 @@ fun formatCents(amountInCents: Int?): String? =
     ).toDecimalString() else null
 
 fun dateFmt(date: LocalDate?): String = date?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: ""
-
-fun instantFmt(instant: Instant?): String =
-    instant?.atZone(ZoneId.of("Europe/Helsinki"))?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: ""
 
 @Component
 class PDFService(
@@ -142,7 +137,7 @@ class PDFService(
 
         return mapOf(
             "child" to decision.child,
-            "approvedAt" to instantFmt(decision.approvedAt),
+            "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
             "validFrom" to dateFmt(decision.validFrom),
             "validTo" to dateFmt(decision.validTo),
             "placementUnit" to decision.placement.unit,
@@ -223,7 +218,7 @@ class PDFService(
         val isReliefDecision = decision.decisionType !== FeeDecisionType.NORMAL
 
         return mapOf(
-            "approvedAt" to instantFmt(decision.approvedAt),
+            "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
             "decisionNumber" to decision.decisionNumber,
             "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
@@ -249,7 +244,7 @@ class PDFService(
                 )
             },
             "sendAddress" to sendAddress,
-            "totalFee" to formatCents(decision.totalFee()),
+            "totalFee" to formatCents(decision.totalFee),
             "totalIncome" to formatCents(totalIncome),
             "showTotalIncome" to !hideTotalIncome,
             "validFor" to with(decision) { "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}" },

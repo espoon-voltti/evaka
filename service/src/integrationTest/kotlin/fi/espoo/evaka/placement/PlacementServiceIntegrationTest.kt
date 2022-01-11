@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -521,7 +522,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 endDate = oldPlacement.endDate
             )
             it.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id),
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 placementId = oldPlacement.id,
                 period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
                 optionId = snDefaultDaycare.id
@@ -578,7 +579,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 endDate = oldPlacement.endDate
             )
             it.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id),
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 placementId = oldPlacement.id,
                 period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
                 optionId = snDefaultDaycare.id
@@ -763,7 +764,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                     daycare = DaycareBasics(
                         testDaycare2.id,
                         testDaycare2.name,
-                        testDaycare2.areaName,
+                        testArea2.name,
                         ProviderType.MUNICIPAL,
                         listOf(PilotFeature.MESSAGING)
                     ),
@@ -847,7 +848,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                     daycare = DaycareBasics(
                         testDaycare2.id,
                         testDaycare2.name,
-                        testDaycare2.areaName,
+                        testArea2.name,
                         ProviderType.MUNICIPAL,
                         listOf(PilotFeature.MESSAGING)
                     ),

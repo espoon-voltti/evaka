@@ -54,9 +54,9 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     @Autowired
     lateinit var scheduledJobs: ScheduledJobs
 
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
     private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw)
-    private val testDaycareSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf())
+    private val testDaycareSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id.raw, setOf())
     private val testRoundTheClockDaycareSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
     private val testRoundTheClockDaycareSupervisor = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
 

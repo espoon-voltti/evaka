@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.allAdults
-import fi.espoo.evaka.allBasicChildren
 import fi.espoo.evaka.allChildren
 import fi.espoo.evaka.allDaycares
 import fi.espoo.evaka.allWorkers
@@ -18,7 +17,10 @@ import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
-import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.toEmployeeWithName
+import fi.espoo.evaka.toPersonBasic
+import fi.espoo.evaka.toPersonDetailed
+import fi.espoo.evaka.toUnitData
 
 fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetailed(
     id = feeDecision.id,
@@ -26,17 +28,17 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
     decisionNumber = feeDecision.decisionNumber,
     decisionType = feeDecision.decisionType,
     validDuring = feeDecision.validDuring,
-    headOfFamily = allAdults.find { it.id.raw == feeDecision.headOfFamily.id }!!,
-    partner = allAdults.find { it.id.raw == feeDecision.partner?.id },
+    headOfFamily = allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonDetailed(),
+    partner = allAdults.find { it.id == feeDecision.partnerId }?.toPersonDetailed(),
     headOfFamilyIncome = feeDecision.headOfFamilyIncome,
     partnerIncome = feeDecision.partnerIncome,
     familySize = feeDecision.familySize,
     feeThresholds = feeDecision.feeThresholds,
     children = feeDecision.children.map { child ->
         FeeDecisionChildDetailed(
-            child = allChildren.find { it.id.raw == child.child.id }!!,
+            child = allChildren.find { it.id == child.child.id }!!.toPersonDetailed(),
             placementType = child.placement.type,
-            placementUnit = allDaycares.find { it.id == child.placement.unit.id }!!,
+            placementUnit = allDaycares.find { it.id == child.placement.unitId }!!.toUnitData(),
             serviceNeedFeeCoefficient = child.serviceNeed.feeCoefficient,
             serviceNeedDescriptionFi = child.serviceNeed.descriptionFi,
             serviceNeedDescriptionSv = child.serviceNeed.descriptionSv,
@@ -49,12 +51,10 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
         )
     },
     documentKey = feeDecision.documentKey,
-    approvedBy = allWorkers.find { it.id == feeDecision.approvedBy?.id },
+    approvedBy = allWorkers.find { it.id == feeDecision.approvedById }?.toEmployeeWithName(),
     approvedAt = feeDecision.approvedAt,
-    financeDecisionHandlerFirstName = allWorkers.find { it.id == feeDecision.decisionHandler?.id }
-        ?.let { it.firstName },
-    financeDecisionHandlerLastName = allWorkers.find { it.id == feeDecision.decisionHandler?.id }
-        ?.let { it.lastName },
+    financeDecisionHandlerFirstName = allWorkers.find { it.id == feeDecision.decisionHandlerId }?.firstName,
+    financeDecisionHandlerLastName = allWorkers.find { it.id == feeDecision.decisionHandlerId }?.lastName,
     created = feeDecision.created
 )
 
@@ -63,25 +63,9 @@ fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary = FeeDecisionSummary
     status = feeDecision.status,
     decisionNumber = feeDecision.decisionNumber,
     validDuring = feeDecision.validDuring,
-    headOfFamily = allAdults.find { it.id.raw == feeDecision.headOfFamily.id }!!.let {
-        PersonData.Basic(
-            id = it.id,
-            dateOfBirth = it.dateOfBirth,
-            firstName = it.firstName,
-            lastName = it.lastName,
-            ssn = it.ssn
-        )
-    },
+    headOfFamily = allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonBasic(),
     children = feeDecision.children.map { child ->
-        allChildren.find { it.id.raw == child.child.id }!!.let {
-            PersonData.Basic(
-                id = it.id,
-                dateOfBirth = it.dateOfBirth,
-                firstName = it.firstName,
-                lastName = it.lastName,
-                ssn = it.ssn
-            )
-        }
+        allChildren.find { it.id == child.child.id }!!.toPersonBasic()
     },
     approvedAt = feeDecision.approvedAt,
     finalPrice = feeDecision.children.fold(0) { sum, child -> sum + child.finalFee },
@@ -96,12 +80,12 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
     dueDate = invoice.dueDate,
     invoiceDate = invoice.invoiceDate,
     agreementType = invoice.agreementType,
-    headOfFamily = allAdults.find { it.id.raw == invoice.headOfFamily.id }!!,
-    codebtor = allAdults.find { it.id.raw == invoice.codebtor?.id },
+    headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
+    codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
     rows = invoice.rows.map { row ->
         InvoiceRowDetailed(
             id = row.id!!,
-            child = allChildren.find { it.id.raw == row.child.id }!!,
+            child = allChildren.find { it.id == row.child.id }!!.toPersonDetailed(),
             amount = row.amount,
             unitPrice = row.unitPrice,
             periodStart = row.periodStart,
@@ -122,12 +106,12 @@ fun toSummary(invoice: Invoice): InvoiceSummary = InvoiceSummary(
     status = invoice.status,
     periodStart = invoice.periodStart,
     periodEnd = invoice.periodEnd,
-    headOfFamily = allAdults.find { it.id.raw == invoice.headOfFamily.id }!!,
-    codebtor = allAdults.find { it.id.raw == invoice.codebtor?.id },
+    headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
+    codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
     rows = invoice.rows.map { row ->
         InvoiceRowSummary(
             id = row.id!!,
-            child = allBasicChildren.find { it.id.raw == row.child.id }!!,
+            child = allChildren.find { it.id == row.child.id }!!.toPersonBasic(),
             amount = row.amount,
             unitPrice = row.unitPrice
         )

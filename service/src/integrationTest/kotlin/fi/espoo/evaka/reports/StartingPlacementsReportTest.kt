@@ -7,13 +7,14 @@ package fi.espoo.evaka.reports
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.AfterEach
@@ -135,13 +136,13 @@ class StartingPlacementsReportTest : FullApplicationTest() {
             )
         }
 
-    private fun toReportRow(child: PersonData.Detailed, startDate: LocalDate) = StartingPlacementsRow(
+    private fun toReportRow(child: DevPerson, startDate: LocalDate) = StartingPlacementsRow(
         childId = child.id,
         firstName = child.firstName,
         lastName = child.lastName,
         dateOfBirth = child.dateOfBirth,
         ssn = child.ssn,
         placementStart = startDate,
-        careAreaName = testDaycare.areaName
+        careAreaName = testArea.name
     )
 }

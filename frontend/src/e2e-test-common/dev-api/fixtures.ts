@@ -6,6 +6,12 @@ import { format } from 'date-fns'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
 import { ApplicationForm } from 'lib-common/generated/api-types/application'
+import {
+  FeeDecision,
+  FeeDecisionStatus,
+  Invoice,
+  VoucherValueDecision
+} from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
@@ -26,16 +32,12 @@ import {
   DevIncome,
   EmployeeDetail,
   EmployeePin,
-  FeeDecision,
-  FeeDecisionStatus,
-  Invoice,
   OtherGuardianAgreementStatus,
   PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
   PlacementPlan,
-  ServiceNeedFixture,
-  VoucherValueDecision
+  ServiceNeedFixture
 } from './types'
 import {
   insertAssistanceNeedFixtures,
@@ -722,15 +724,22 @@ export const feeDecisionsFixture = (
   status,
   decisionType: 'NORMAL',
   validDuring,
-  headOfFamily: { id: adult.id },
-  partner: partner ? { id: partner.id } : undefined,
+  validFrom: validDuring.start,
+  validTo: validDuring.end,
+  headOfFamilyId: adult.id,
+  partnerId: partner?.id ?? null,
+  headOfFamilyIncome: null,
+  partnerIncome: null,
   familySize: 2,
   feeThresholds: feeThresholds,
   children: [
     {
-      child: { id: child.id, dateOfBirth: child.dateOfBirth },
+      child: {
+        id: child.id,
+        dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
+      },
       placement: {
-        unit: { id: daycareId },
+        unitId: daycareId,
         type: 'DAYCARE'
       },
       serviceNeed: {
@@ -746,7 +755,14 @@ export const feeDecisionsFixture = (
       finalFee: 28900
     }
   ],
-  sentAt
+  totalFee: 28900,
+  sentAt,
+  approvedAt: null,
+  approvedById: null,
+  decisionHandlerId: null,
+  decisionNumber: null,
+  documentKey: null,
+  created: new Date()
 })
 
 export const voucherValueDecisionsFixture = (
@@ -756,21 +772,23 @@ export const voucherValueDecisionsFixture = (
   daycareId: UUID,
   partner: PersonDetail | null = null,
   status: 'DRAFT' | 'SENT' = 'DRAFT',
-  validFrom = LocalDate.today().subYears(1).formatIso(),
-  validTo = LocalDate.today().addYears(1).formatIso()
+  validFrom = LocalDate.today().subYears(1),
+  validTo = LocalDate.today().addYears(1)
 ): VoucherValueDecision => ({
   id,
   status,
   validFrom,
   validTo,
-  headOfFamily: { id: adultId },
-  partner: partner ? { id: partner.id } : undefined,
+  headOfFamilyId: adultId,
+  partnerId: partner?.id ?? null,
+  headOfFamilyIncome: null,
+  partnerIncome: null,
   decisionType: 'NORMAL',
   familySize: 2,
   feeThresholds: feeThresholds,
-  child: { id: childId, dateOfBirth: '2017-06-30' },
+  child: { id: childId, dateOfBirth: LocalDate.of(2017, 6, 30) },
   placement: {
-    unit: { id: daycareId },
+    unitId: daycareId,
     type: 'DAYCARE'
   },
   serviceNeed: {
@@ -789,28 +807,38 @@ export const voucherValueDecisionsFixture = (
   baseValue: 87000,
   ageCoefficient: 1.0,
   capacityFactor: 1.0,
-  voucherValue: 87000
+  voucherValue: 87000,
+  sentAt: null,
+  approvedAt: null,
+  approvedById: null,
+  decisionNumber: null,
+  documentKey: null,
+  created: new Date()
 })
 
 export const invoiceFixture = (
   adultId: UUID,
   childId: UUID,
-  daycareId: UUID,
   status: Invoice['status'],
-  periodStart = '2019-01-01',
-  periodEnd = '2019-01-01'
+  periodStart = LocalDate.of(2019, 1, 1),
+  periodEnd = LocalDate.of(2019, 1, 1)
 ): Invoice => ({
   id: uuidv4(),
   status,
-  headOfFamily: { id: adultId },
+  headOfFamily: adultId,
+  codebtor: null,
   agreementType: 200,
   periodStart,
   periodEnd,
+  invoiceDate: periodStart,
+  dueDate: periodEnd,
+  number: null,
+  sentAt: null,
+  sentBy: null,
   rows: [
     {
       id: uuidv4(),
-      child: { id: childId, dateOfBirth: '2017-06-30' },
-      placementUnit: { id: daycareId },
+      child: { id: childId, dateOfBirth: LocalDate.of(2017, 6, 30) },
       amount: 1,
       unitPrice: 10000,
       periodStart: periodStart,
@@ -818,9 +846,11 @@ export const invoiceFixture = (
       product: 'DAYCARE',
       costCenter: '20000',
       subCostCenter: '00',
-      modifiers: []
+      description: '',
+      price: 10000
     }
-  ]
+  ],
+  totalPrice: 10000
 })
 
 export const daycareGroupFixture: DaycareGroup = {

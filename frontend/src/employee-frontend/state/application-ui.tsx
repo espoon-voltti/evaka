@@ -15,6 +15,7 @@ import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
+import { Unit } from '../api/daycare'
 import {
   ApplicationDateType,
   ApplicationTypeToggle,
@@ -25,7 +26,6 @@ import {
   ApplicationDistinctions,
   TransferApplicationFilter
 } from '../components/common/Filters'
-import { Unit } from '../types/invoicing'
 import { CareArea } from '../types/unit'
 
 // Nothing in here yet. Filters will be added here in next PR.

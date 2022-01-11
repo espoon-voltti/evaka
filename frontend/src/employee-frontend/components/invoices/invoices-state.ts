@@ -12,6 +12,7 @@ import {
   useState
 } from 'react'
 import { Paged, Result } from 'lib-common/api'
+import { InvoiceSummary } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
@@ -24,7 +25,6 @@ import {
 } from '../../api/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
-import { InvoiceSummary } from '../../types/invoicing'
 
 const pageSize = 200
 

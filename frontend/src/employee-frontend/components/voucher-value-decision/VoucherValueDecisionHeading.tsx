@@ -7,11 +7,9 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { formatDate } from 'lib-common/date'
 import {
-  Detailed as PersonDetailed,
-  VoucherValueDecisionStatus
+  VoucherValueDecisionDetailed,
+  VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -23,39 +21,29 @@ import { formatName } from '../../utils'
 import { TypeSelect } from '../fee-decision-details/TypeSelect'
 
 type Props = {
-  id: string
-  status: VoucherValueDecisionStatus
-  headOfFamily: PersonDetailed
-  partner: PersonDetailed | null
-  decisionNumber: number | null
-  validFrom: LocalDate
-  validTo: LocalDate | null
-  sentAt: Date | null
-  documentKey: string | null
-  financeDecisionHandlerFirstName: string | null
-  financeDecisionHandlerLastName: string | null
-  decisionType: VoucherValueDecisionType
+  decision: VoucherValueDecisionDetailed
   changeDecisionType: (type: VoucherValueDecisionType) => void
   newDecisionType: VoucherValueDecisionType
-  isElementaryFamily: boolean | null
 }
 
 export default React.memo(function VoucherValueDecisionHeading({
-  id,
-  status,
-  headOfFamily,
-  partner,
-  decisionNumber,
-  validFrom,
-  validTo,
-  sentAt,
-  financeDecisionHandlerFirstName,
-  financeDecisionHandlerLastName,
-  decisionType,
+  decision: {
+    id,
+    status,
+    headOfFamily,
+    partner,
+    decisionNumber,
+    validFrom,
+    validTo,
+    sentAt,
+    financeDecisionHandlerFirstName,
+    financeDecisionHandlerLastName,
+    decisionType,
+    documentKey,
+    isElementaryFamily
+  },
   changeDecisionType,
-  newDecisionType,
-  documentKey,
-  isElementaryFamily
+  newDecisionType
 }: Props) {
   const { i18n } = useTranslation()
 

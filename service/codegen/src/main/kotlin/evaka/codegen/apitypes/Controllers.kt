@@ -5,6 +5,7 @@
 package evaka.codegen.apitypes
 
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.IncludeCodeGen
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -53,6 +54,10 @@ private fun scanClassPath(packageName: String): Set<KClass<Any>> {
 }
 
 private fun <T : Any> scanController(packageName: String, clazz: KClass<T>): Set<KClass<*>> {
+    if (clazz.annotations.any { it.annotationClass == IncludeCodeGen::class }) {
+        return setOf(clazz)
+    }
+
     if (clazz.annotations.none { it.annotationClass == Controller::class || it.annotationClass == RestController::class })
         return emptySet()
 

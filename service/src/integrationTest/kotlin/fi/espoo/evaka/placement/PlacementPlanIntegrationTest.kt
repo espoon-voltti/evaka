@@ -15,12 +15,12 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -43,7 +43,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class PlacementPlanIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -256,7 +256,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.get("/v2/applications/$applicationId/placement-draft")
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }
@@ -267,7 +267,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
                 .jsonBody(objectMapper.writeValueAsString(proposal))
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }
@@ -276,8 +276,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
     private fun checkPlacementPlanDraft(
         applicationId: ApplicationId,
         type: PlacementType,
-        child: PersonData.Detailed = testChild_1,
-        preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
+        child: DevPerson = testChild_1,
+        preferredUnits: List<DevDaycare> = listOf(testDaycare, testDaycare2),
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         placements: List<PlacementDraftPlacement> = emptyList(),
@@ -336,11 +336,11 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         status: ApplicationStatus,
         type: ApplicationType,
         preferredStartDate: LocalDate,
-        adult: PersonData.Detailed = testAdult_1,
-        child: PersonData.Detailed = testChild_1,
+        adult: DevPerson = testAdult_1,
+        child: DevPerson = testChild_1,
         partTime: Boolean = false,
         preschoolDaycare: Boolean = false,
-        preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
+        preferredUnits: List<DevDaycare> = listOf(testDaycare, testDaycare2),
         preparatory: Boolean = false
     ): ApplicationId = db.transaction { tx ->
         val applicationId = tx.insertTestApplication(

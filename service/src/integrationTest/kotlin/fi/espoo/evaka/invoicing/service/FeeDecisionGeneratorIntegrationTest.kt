@@ -49,6 +49,7 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDayPartWeek25
 import fi.espoo.evaka.snDefaultDaycare
@@ -79,7 +80,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -216,13 +216,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         result.first().let {
             assertEquals(periodInPast.start, it.validFrom)
             assertEquals(periodInPast.end, it.validTo)
-            assertEquals(testAdult_1.id.raw, it.headOfFamily.id)
+            assertEquals(testAdult_1.id, it.headOfFamilyId)
             assertEquals(oldDraft.children, it.children)
         }
         result.last().let {
             assertEquals(placementPeriod.start, it.validFrom)
             assertEquals(placementPeriod.end, it.validTo)
-            assertEquals(testAdult_1.id.raw, it.headOfFamily.id)
+            assertEquals(testAdult_1.id, it.headOfFamilyId)
         }
     }
 
@@ -487,7 +487,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(23100 + 11600, decision.totalFee())
+            assertEquals(23100 + 11600, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -522,7 +522,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(17300 + 11600, decision.totalFee())
+            assertEquals(17300 + 11600, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -557,7 +557,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(10100 + 11600, decision.totalFee())
+            assertEquals(10100 + 11600, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -590,10 +590,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(11600, decision.totalFee())
+            assertEquals(11600, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children.first().let { child ->
-                assertEquals(testChild_2.id.raw, child.child.id)
+                assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
                 assertEquals(snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -618,7 +618,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(23100 + 11600, decision.totalFee())
+            assertEquals(23100 + 11600, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -653,7 +653,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(17300 + 11600, decision.totalFee())
+            assertEquals(17300 + 11600, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -688,7 +688,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(10100 + 11600, decision.totalFee())
+            assertEquals(10100 + 11600, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -721,10 +721,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(11600, decision.totalFee())
+            assertEquals(11600, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children.first().let { child ->
-                assertEquals(testChild_2.id.raw, child.child.id)
+                assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
                 assertEquals(snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -751,7 +751,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(2, decisions.size)
         decisions.first().let { decision ->
             assertEquals(3, decision.familySize)
-            assertEquals(6300, decision.totalFee())
+            assertEquals(6300, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(6300, child.baseFee)
@@ -764,7 +764,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
         decisions.last().let { decision ->
             assertEquals(2, decision.familySize)
-            assertEquals(12800, decision.totalFee())
+            assertEquals(12800, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(12800, child.baseFee)
@@ -900,7 +900,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         drafts.first().let { draft ->
             assertEquals(shorterPeriod.start, draft.validFrom)
             assertEquals(shorterPeriod.end, draft.validTo)
-            assertEquals(17300, draft.totalFee())
+            assertEquals(17300, draft.totalFee)
             assertEquals(1, draft.children.size)
             draft.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -914,7 +914,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         drafts.last().let { draft ->
             assertEquals(shorterPeriod.end.plusDays(1), draft.validFrom)
             assertEquals(period.end, draft.validTo)
-            assertEquals(28900, draft.totalFee())
+            assertEquals(28900, draft.totalFee)
             assertEquals(1, draft.children.size)
             draft.children.first().let { child ->
                 assertEquals(28900, child.baseFee)
@@ -1031,10 +1031,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(4, decision.familySize)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.start.plusMonths(1).minusDays(1), decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1047,10 +1047,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(4, decision.familySize)
             assertEquals(period.start.plusMonths(1), decision.validFrom)
             assertEquals(period.start.plusMonths(2).minusDays(1), decision.validTo)
-            assertEquals(43400, decision.totalFee())
+            assertEquals(43400, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1059,7 +1059,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, child.finalFee)
             }
             decision.children[1].let { child ->
-                assertEquals(testChild_2.id.raw, child.child.id)
+                assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1072,10 +1072,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(4, decision.familySize)
             assertEquals(period.start.plusMonths(2), decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(49200, decision.totalFee())
+            assertEquals(49200, decision.totalFee)
             assertEquals(3, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_3.id.raw, child.child.id)
+                assertEquals(testChild_3.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1084,7 +1084,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, child.finalFee)
             }
             decision.children[1].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1093,7 +1093,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(14500, child.finalFee)
             }
             decision.children[2].let { child ->
-                assertEquals(testChild_2.id.raw, child.child.id)
+                assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1126,10 +1126,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(4, decision.familySize)
             assertEquals(period_1.start, decision.validFrom)
             assertEquals(period_1.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1142,10 +1142,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(4, decision.familySize)
             assertEquals(period_2.start, decision.validFrom)
             assertEquals(period_2.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_2.id.raw, child.child.id)
+                assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1158,10 +1158,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(4, decision.familySize)
             assertEquals(period_3.start, decision.validFrom)
             assertEquals(period_3.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_3.id.raw, child.child.id)
+                assertEquals(testChild_3.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1189,11 +1189,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         decisions[0].let { decision ->
             assertEquals(subPeriod_1.start, decision.validFrom)
             assertEquals(subPeriod_1.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
                 assertEquals(2, decision.familySize)
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1206,10 +1206,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(subPeriod_2.start, decision.validFrom)
             assertEquals(subPeriod_2.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_2.id.raw, child.child.id)
+                assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1237,10 +1237,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(subPeriod_1.start, decision.validFrom)
             assertEquals(subPeriod_1.end, decision.validTo)
-            assertEquals(10700, decision.totalFee())
+            assertEquals(10700, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(10700, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1253,10 +1253,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(subPeriod_2.start, decision.validFrom)
             assertEquals(subPeriod_2.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1283,10 +1283,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(10700, decision.totalFee())
+            assertEquals(10700, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(10700, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1305,10 +1305,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1336,10 +1336,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(subPeriod_1.start, decision.validFrom)
             assertEquals(subPeriod_1.end, decision.validTo)
-            assertEquals(10700, decision.totalFee())
+            assertEquals(10700, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(10700, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1352,10 +1352,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(subPeriod_2.start, decision.validFrom)
             assertEquals(subPeriod_2.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1374,10 +1374,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1406,10 +1406,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, wholePeriod.start) }
 
-        val testAdult1decisions = getAllFeeDecisions().filter { it.headOfFamily.id == testAdult_1.id.raw }
+        val testAdult1decisions = getAllFeeDecisions().filter { it.headOfFamilyId == testAdult_1.id }
         assertEquals(2, testAdult1decisions.size)
         assertEquals(listOf(4, 4), testAdult1decisions.map { it.familySize })
-        assertEquals(listOf(testChild_1.id, testChild_1.id), testAdult1decisions.flatMap { it.children.map { ChildId(it.child.id) } })
+        assertEquals(
+            listOf(testChild_1.id, testChild_1.id),
+            testAdult1decisions.flatMap { it.children.map { it.child.id } }
+        )
         assertEquals(listOf(50, 50), testAdult1decisions.flatMap { it.children.map { child -> child.siblingDiscount } })
     }
 
@@ -1440,7 +1443,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         decisions[0].let { decision ->
             assertEquals(5, decision.familySize)
             assertEquals(3, decision.children.size)
-            assertEquals(testAdult_1.id.raw, decision.headOfFamily.id)
+            assertEquals(testAdult_1.id, decision.headOfFamilyId)
             assertEquals(listOf(0, 50, 80), decision.children.sortedByDescending { it.child.dateOfBirth }.map { it.siblingDiscount })
         }
     }
@@ -1470,12 +1473,15 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(2, decisions.size)
         assertEquals(setOf(5), decisions.map { it.familySize }.toSet())
-        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { PersonId(it.headOfFamily.id) }.toSet())
+        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamilyId }.toSet())
 
-        val decisionForAdult1 = decisions.find { it.headOfFamily.id == testAdult_1.id.raw }
-        val decisionForAdult2 = decisions.find { it.headOfFamily.id == testAdult_2.id.raw }
-        assertEquals(listOf(testChild_1, testChild_2).sortedByDescending { it.dateOfBirth }.map { it.id }, decisionForAdult1?.children?.sortedByDescending { it.child.dateOfBirth }?.map { ChildId(it.child.id) })
-        assertEquals(setOf(testChild_8.id), decisionForAdult2?.children?.map { ChildId(it.child.id) }?.toSet())
+        val decisionForAdult1 = decisions.find { it.headOfFamilyId == testAdult_1.id }
+        val decisionForAdult2 = decisions.find { it.headOfFamilyId == testAdult_2.id }
+        assertEquals(
+            listOf(testChild_1, testChild_2).sortedByDescending { it.dateOfBirth }.map { it.id },
+            decisionForAdult1?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.child.id }
+        )
+        assertEquals(setOf(testChild_8.id), decisionForAdult2?.children?.map { it.child.id }?.toSet())
 
         assertEquals(listOf(0, 50, 80), decisions.flatMap { it.children }.sortedByDescending { it.child.dateOfBirth }.map { it.siblingDiscount })
     }
@@ -1505,13 +1511,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
         val decisions = getAllFeeDecisions()
         assertEquals(2, decisions.size)
-        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { PersonId(it.headOfFamily.id) }.toSet())
+        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamilyId }.toSet())
         assertEquals(setOf(6), decisions.map { it.familySize }.toSet())
 
-        val decisionForAdult1 = decisions.find { it.headOfFamily.id == testAdult_1.id.raw }
-        val decisionForAdult2 = decisions.find { it.headOfFamily.id == testAdult_2.id.raw }
-        assertEquals(setOf(testChild_1.id, testChild_2.id), decisionForAdult1?.children?.map { ChildId(it.child.id) }?.toSet())
-        assertEquals(setOf(testChild_3.id, testChild_4.id), decisionForAdult2?.children?.map { ChildId(it.child.id) }?.toSet())
+        val decisionForAdult1 = decisions.find { it.headOfFamilyId == testAdult_1.id }
+        val decisionForAdult2 = decisions.find { it.headOfFamilyId == testAdult_2.id }
+        assertEquals(
+            setOf(testChild_1.id, testChild_2.id),
+            decisionForAdult1?.children?.map { it.child.id }?.toSet()
+        )
+        assertEquals(
+            setOf(testChild_3.id, testChild_4.id),
+            decisionForAdult2?.children?.map { it.child.id }?.toSet()
+        )
         assertEquals(listOf(0, 50, 80, 80), decisions.flatMap { it.children }.sortedByDescending { it.child.dateOfBirth }.map { it.siblingDiscount })
     }
 
@@ -1538,15 +1550,15 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val decisions = getAllFeeDecisions()
         assertEquals(2, decisions.size)
         assertEquals(setOf(3, 2), decisions.map { it.familySize }.toSet())
-        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { PersonId(it.headOfFamily.id) }.toSet())
+        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamilyId }.toSet())
 
-        val decisionForAdult1 = decisions.find { it.headOfFamily.id == testAdult_1.id.raw }
-        val decisionForAdult2 = decisions.find { it.headOfFamily.id == testAdult_2.id.raw }
+        val decisionForAdult1 = decisions.find { it.headOfFamilyId == testAdult_1.id }
+        val decisionForAdult2 = decisions.find { it.headOfFamilyId == testAdult_2.id }
         assertEquals(
             setOf(testChild_1.id, testChild_2.id),
-            decisionForAdult1?.children?.map { ChildId(it.child.id) }?.toSet()
+            decisionForAdult1?.children?.map { it.child.id }?.toSet()
         )
-        assertEquals(setOf(testChild_8.id), decisionForAdult2?.children?.map { ChildId(it.child.id) }?.toSet())
+        assertEquals(setOf(testChild_8.id), decisionForAdult2?.children?.map { it.child.id }?.toSet())
 
         assertEquals(listOf(0, 50), decisionForAdult1?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.siblingDiscount })
         assertEquals(listOf(0), decisionForAdult2?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.siblingDiscount })
@@ -1571,10 +1583,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(subPeriod_1.start, decision.validFrom)
             assertEquals(subPeriod_1.end, decision.validTo)
-            assertEquals(10700, decision.totalFee())
+            assertEquals(10700, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(10700, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1587,10 +1599,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(3, decision.familySize)
             assertEquals(subPeriod_2.start, decision.validFrom)
             assertEquals(subPeriod_2.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1619,10 +1631,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(subPeriod_1.start, decision.validFrom)
             assertEquals(subPeriod_1.end, decision.validTo)
-            assertEquals(10700, decision.totalFee())
+            assertEquals(10700, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(10700, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1635,10 +1647,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(3, decision.familySize)
             assertEquals(subPeriod_2.start, decision.validFrom)
             assertEquals(subPeriod_2.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1664,10 +1676,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, decision.familySize)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(14450, decision.totalFee())
+            assertEquals(14450, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children[0].let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
+                assertEquals(testChild_1.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(DAYCARE, child.placement.type)
                 assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -1860,7 +1872,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(period.end, sent.validTo)
         assertEquals(1, sent.children.size)
         assertEquals(oldTestFeeThresholds.getFeeDecisionThresholds(2), sent.feeThresholds)
-        assertEquals(0, sent.totalFee())
+        assertEquals(0, sent.totalFee)
 
         val draft = decisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         assertEquals(FeeDecisionStatus.DRAFT, draft.status)
@@ -1868,7 +1880,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(period.end, draft.validTo)
         assertEquals(0, draft.children.size)
         assertEquals(testFeeThresholds.getFeeDecisionThresholds(1), draft.feeThresholds)
-        assertEquals(0, draft.totalFee())
+        assertEquals(0, draft.totalFee)
     }
 
     @Test
@@ -1891,25 +1903,25 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(FeeDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(28900, decision.totalFee())
+            assertEquals(28900, decision.totalFee)
             assertEquals(1, decision.children.size)
             decision.children.first().let { child ->
-                assertEquals(testChild_1.id.raw, child.child.id)
-                assertEquals(testDaycare.id, child.placement.unit.id)
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(testDaycare.id, child.placement.unitId)
                 assertEquals(28900, child.fee)
             }
         }
     }
 
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
-        val createdAt = Instant.now()
+        val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(expected.copy(id = uuid, created = createdAt), actual.copy(id = uuid, created = createdAt))
         }
     }
 
     private fun assertEqualEnoughDecisions(expected: List<FeeDecision>, actual: List<FeeDecision>) {
-        val createdAt = Instant.now()
+        val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(
                 expected.map { it.copy(id = uuid, created = createdAt) },
@@ -1959,7 +1971,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     ) {
         db.transaction { tx ->
             tx.insertTestServiceNeed(
-                EvakaUserId(testDecisionMaker_1.id),
+                EvakaUserId(testDecisionMaker_1.id.raw),
                 placementId,
                 period,
                 optionId
@@ -1976,7 +1988,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                     validTo = period.end,
                     effect = IncomeEffect.INCOME,
                     data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
             )
         }
@@ -1997,7 +2009,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 isAbsolute = false,
                 validFrom = period.start,
                 validTo = period.end,
-                updatedBy = EvakaUserId(testDecisionMaker_1.id)
+                updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
             )
         }
     }

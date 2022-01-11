@@ -61,7 +61,7 @@ class ScheduledJobsTest : FullApplicationTest() {
     @Autowired
     private lateinit var applicationStateService: ApplicationStateService
 
-    private val serviceWorker = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
