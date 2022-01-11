@@ -419,7 +419,7 @@ SELECT
     decision.decision_number,
     decision.valid_from,
     decision.valid_to,
-    decision.head_of_family_id,
+    decision.head_of_family_id AS head_id,
     decision.child_id,
     decision.child_date_of_birth,
     decision.final_co_payment,
