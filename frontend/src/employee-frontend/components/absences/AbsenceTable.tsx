@@ -24,6 +24,7 @@ interface AbsenceRowProps {
   emptyCols: number[]
   operationDays: LocalDate[]
   i18n: Translations
+  selectedDate: LocalDate
 }
 
 const shortChildName = (
@@ -48,7 +49,8 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
   dateCols,
   emptyCols,
   operationDays,
-  i18n
+  i18n,
+  selectedDate
 }: AbsenceRowProps) {
   const { id, placements, absences, backupCares } = child
 
@@ -56,7 +58,9 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
     <tr data-qa="absence-child-row">
       <td className="absence-child-name hover-highlight">
         <FixedSpaceRow spacing="xs">
-          <AgeIndicatorIcon dateOfBirth={child.dob} />
+          <AgeIndicatorIcon
+            isUnder3={selectedDate.differenceInYears(child.dob) < 3}
+          />
           <Tooltip
             tooltipId={`tooltip_absence-child-name-${child.id}`}
             tooltipText={`${child.lastName}, ${child.firstName}`}
@@ -204,6 +208,7 @@ export default React.memo(function AbsenceTable({
             emptyCols={emptyCols}
             operationDays={operationDays}
             i18n={i18n}
+            selectedDate={selectedDate}
           />
         ))}
         {renderEmptyRow()}
