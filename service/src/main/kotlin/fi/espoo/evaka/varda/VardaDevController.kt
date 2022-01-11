@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.varda
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -40,5 +41,13 @@ class VardaDevController(
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
         db.connect { dbc -> vardaResetService.planResetByVardaChildrenErrorReport(dbc, organizerId = organizerId, limit = limit) }
+    }
+
+    @PostMapping("/mark-child-for-reset/{childId}")
+    fun markChildForVardaReset(
+        db: Database,
+        @PathVariable childId: ChildId,
+    ) {
+        db.connect { dbc -> dbc.transaction { it.resetChildResetTimestamp(childId) } }
     }
 }
