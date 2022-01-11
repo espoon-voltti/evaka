@@ -566,6 +566,11 @@ export default React.memo(function Group({
                         (item) => item.childId === placement.child.id
                       ) ?? {}
 
+                    const multipliedCapacityFactor =
+                      serviceNeedFactor && assistanceNeedFactor
+                        ? serviceNeedFactor * assistanceNeedFactor
+                        : undefined
+
                     return (
                       <Tr
                         key={placement.id || ''}
@@ -673,11 +678,16 @@ export default React.memo(function Group({
                                 <ChildCapacityFactorList>
                                   <li>
                                     {i18n.unit.groups.childServiceNeedFactor}:{' '}
-                                    {serviceNeedFactor}
+                                    {serviceNeedFactor === 1
+                                      ? '—'
+                                      : serviceNeedFactor}
                                   </li>
                                   <li>
                                     {i18n.unit.groups.childAssistanceNeedFactor}
-                                    : {assistanceNeedFactor}
+                                    :{' '}
+                                    {assistanceNeedFactor === 1
+                                      ? '—'
+                                      : assistanceNeedFactor}
                                   </li>
                                 </ChildCapacityFactorList>
                               }
@@ -685,10 +695,10 @@ export default React.memo(function Group({
                               <span
                                 data-qa={`child-capacity-factor-${placement.child.id}`}
                               >
-                                {serviceNeedFactor && assistanceNeedFactor
-                                  ? (
-                                      serviceNeedFactor * assistanceNeedFactor
-                                    ).toFixed(2)
+                                {multipliedCapacityFactor
+                                  ? multipliedCapacityFactor === 1
+                                    ? '—'
+                                    : multipliedCapacityFactor.toFixed(2)
                                   : ''}
                               </span>
                             </Tooltip>

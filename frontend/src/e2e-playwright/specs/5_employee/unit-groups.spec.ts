@@ -4,6 +4,7 @@
 
 import { UnitPage } from 'e2e-playwright/pages/employee/units/unit'
 import { employeeLogin } from 'e2e-playwright/utils/user'
+import config from 'e2e-test-common/config'
 import {
   insertDefaultServiceNeedOptions,
   resetDatabase,
@@ -14,11 +15,16 @@ import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { Child, Daycare, EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import ChildInformationPage, {
+  AssistanceNeedSection
+} from '../../pages/employee/child-information'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 
 let page: Page
 let unitPage: UnitPage
+let childInformationPage: ChildInformationPage
+let assistanceNeeds: AssistanceNeedSection
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
 let child2Fixture: Child
@@ -159,7 +165,7 @@ describe('Unit groups - unit supervisor', () => {
     await groupsPage.assertGroupCollapsibleIsOpen(groupId)
   })
 
-  test('Supervisor sees child occupancy factor', async () => {
+  test('Supervisor sees child occupancy factor 1 as —', async () => {
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
@@ -175,7 +181,37 @@ describe('Unit groups - unit supervisor', () => {
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
     await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
-    await groupsPage.assertChildCapacityFactor(child1Fixture.id, '1.00')
+    await groupsPage.assertChildCapacityFactor(child1Fixture.id, '—')
+  })
+
+  test('Supervisor sees numeric child occupancy factor when not equal to 1', async () => {
+    await page.goto(
+      config.employeeUrl + '/child-information/' + child1Fixture.id
+    )
+    childInformationPage = new ChildInformationPage(page)
+    assistanceNeeds = await childInformationPage.openCollapsible(
+      'assistanceNeed'
+    )
+    await assistanceNeeds.createNewAssistanceNeed()
+    await assistanceNeeds.setAssistanceNeedMultiplier('1,5')
+    await assistanceNeeds.confirmAssistanceNeed()
+
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.missingPlacementsSection.assertRowCount(2)
+
+    await Fixture.groupPlacement()
+      .with({
+        daycareGroupId: groupId,
+        daycarePlacementId: child1DaycarePlacementId,
+        startDate: placementStartDate.format('yyyy-MM-dd'),
+        endDate: placementEndDate.format('yyyy-MM-dd')
+      })
+      .save()
+
+    await page.reload()
+    await groupsPage.openGroupCollapsible(groupId)
+    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await groupsPage.assertChildCapacityFactor(child1Fixture.id, '1.50')
   })
 })
 
