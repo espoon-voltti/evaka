@@ -10,6 +10,7 @@ import {
   ChildReservations,
   OperationalDay
 } from 'lib-common/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H4 } from 'lib-components/typography'
@@ -24,12 +25,14 @@ interface Props {
   operationalDays: OperationalDay[]
   reservations: ChildReservations[]
   onMakeReservationForChild: (child: Child) => void
+  selectedDate: LocalDate
 }
 
 export default React.memo(function ReservationsTable({
   operationalDays,
   reservations,
-  onMakeReservationForChild
+  onMakeReservationForChild,
+  selectedDate
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -65,7 +68,11 @@ export default React.memo(function ReservationsTable({
               <NameTd>
                 <ChildName>
                   <AgeIndicatorIcon
-                    dateOfBirth={childReservations.child.dateOfBirth}
+                    isUnder3={
+                      selectedDate.differenceInYears(
+                        childReservations.child.dateOfBirth
+                      ) < 3
+                    }
                   />
                   <Link to={`/child-information/${childReservations.child.id}`}>
                     {childName}

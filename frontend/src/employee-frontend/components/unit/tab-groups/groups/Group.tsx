@@ -561,11 +561,6 @@ export default React.memo(function Group({
                         ? placement.child.dateOfBirth
                         : placement.child.birthDate
 
-                    const placementStart =
-                      'type' in placement
-                        ? placement.startDate
-                        : placement.period.start
-
                     const { assistanceNeedFactor, serviceNeedFactor } =
                       unitChildrenCapacityFactors.find(
                         (item) => item.childId === placement.child.id
@@ -592,8 +587,9 @@ export default React.memo(function Group({
                           <FixedSpaceRow spacing="xs">
                             <AgeIndicatorIconWithTooltip
                               isUnder3={
-                                placementStart.differenceInYears(dateOfBirth) <
-                                3
+                                filters.startDate.differenceInYears(
+                                  dateOfBirth
+                                ) < 3
                               }
                             />
                             <span data-qa="child-dob">
