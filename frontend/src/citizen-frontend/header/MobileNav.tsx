@@ -234,9 +234,19 @@ const Navigation = React.memo(function Navigation({
   )
   return (
     <Nav>
-      <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
-        {t.header.nav.applying} {maybeLockElem}
-      </StyledNavLink>
+      {user.accessibleFeatures.reservations && (
+        <StyledNavLink to="/calendar" onClick={close} data-qa="nav-calendar">
+          {t.header.nav.calendar}
+        </StyledNavLink>
+      )}
+      {user.accessibleFeatures.messages && (
+        <StyledNavLink to="/messages" onClick={close} data-qa="nav-messages">
+          {t.header.nav.messages}
+          {unreadMessagesCount > 0 && (
+            <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
+          )}
+        </StyledNavLink>
+      )}
       {user.accessibleFeatures.pedagogicalDocumentation && (
         <StyledNavLink
           to="/pedagogical-documents"
@@ -252,21 +262,11 @@ const Navigation = React.memo(function Navigation({
           )}
         </StyledNavLink>
       )}
-      {user.accessibleFeatures.messages && (
-        <StyledNavLink to="/messages" onClick={close} data-qa="nav-messages">
-          {t.header.nav.messages}
-          {unreadMessagesCount > 0 && (
-            <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
-          )}
-        </StyledNavLink>
-      )}
-      {user.accessibleFeatures.reservations && (
-        <StyledNavLink to="/calendar" onClick={close} data-qa="nav-calendar">
-          {t.header.nav.calendar}
-        </StyledNavLink>
-      )}
       <StyledNavLink to="/children" onClick={close} data-qa="nav-children">
         {t.header.nav.children} {maybeLockElem}
+      </StyledNavLink>
+      <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
+        {t.header.nav.applying} {maybeLockElem}
       </StyledNavLink>
     </Nav>
   )
