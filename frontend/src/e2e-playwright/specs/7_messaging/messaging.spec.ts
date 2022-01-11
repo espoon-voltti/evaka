@@ -72,6 +72,10 @@ async function initCitizenPage() {
   await enduserLogin(citizenPage)
 }
 
+const defaultTitle = 'Otsikko'
+const defaultContent = 'Testiviestin sisältö'
+const defaultReply = 'Testivastaus testiviestiin'
+
 describe('Sending and receiving messages', () => {
   describe('Interactions', () => {
     beforeEach(async () => {
@@ -79,40 +83,63 @@ describe('Sending and receiving messages', () => {
     })
 
     test('Unit supervisor sends message and citizen replies', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
-      const reply = 'Testivastaus testiviestiin'
-
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(title, content)
+      await messagesPage.sendNewMessage(defaultTitle, defaultContent)
 
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.assertThreadContent(title, content)
-      await citizenMessagesPage.replyToFirstThread(reply)
+      await citizenMessagesPage.assertThreadContent(
+        defaultTitle,
+        defaultContent
+      )
+      await citizenMessagesPage.replyToFirstThread(defaultReply)
       await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
-      await messagesPage.assertMessageContent(1, reply)
+      await messagesPage.assertMessageContent(1, defaultReply)
     })
 
     test('Employee can send attachments', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
-
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(title, content, 2)
+      await messagesPage.sendNewMessage(defaultTitle, defaultContent, 2)
 
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.assertThreadContent(title, content)
+      await citizenMessagesPage.assertThreadContent(
+        defaultTitle,
+        defaultContent
+      )
       await waitUntilEqual(
         () => citizenMessagesPage.getThreadAttachmentCount(),
         2
       )
+    })
+
+    test('Employee can discard thread reply', async () => {
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.sendNewMessage(defaultTitle, defaultContent)
+
+      await citizenPage.goto(config.enduserMessagesUrl)
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.assertThreadContent(
+        defaultTitle,
+        defaultContent
+      )
+      await citizenMessagesPage.replyToFirstThread(defaultReply)
+
+      await messagesPage.openInbox(0)
+
+      await messagesPage.openFirstThreadReplyEditor()
+      await messagesPage.discardMessageButton.waitUntilVisible()
+      await messagesPage.fillReplyContent(defaultContent)
+      await messagesPage.discardReplyEditor()
+      await messagesPage.discardMessageButton.waitUntilHidden()
+      await messagesPage.openReplyEditor()
+      await messagesPage.assertReplyContentIsEmpty()
     })
 
     test('Admin sends a message and blocked guardian does not get it', async () => {
@@ -142,12 +169,14 @@ describe('Sending and receiving messages', () => {
     })
 
     test('Citizen sends a message to the unit supervisor', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
       const receivers = ['Esimies Essi']
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.sendNewMessage(title, content, receivers)
+      await citizenMessagesPage.sendNewMessage(
+        defaultTitle,
+        defaultContent,
+        receivers
+      )
 
       await employeeLogin(unitSupervisorPage, unitSupervisor)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -159,12 +188,14 @@ describe('Sending and receiving messages', () => {
     })
 
     test('Citizen sends message to the unit supervisor and the group', async () => {
-      const title = 'Otsikko'
-      const content = 'Testiviestin sisältö'
       const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-      await citizenMessagesPage.sendNewMessage(title, content, receivers)
+      await citizenMessagesPage.sendNewMessage(
+        defaultTitle,
+        defaultContent,
+        receivers
+      )
 
       await employeeLogin(unitSupervisorPage, unitSupervisor)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -174,6 +205,22 @@ describe('Sending and receiving messages', () => {
       await messagesPage.openInbox(1)
       await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
     })
+
+    test('Citizen can discard message', async () => {
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.sendNewMessage(defaultTitle, defaultContent)
+
+      await citizenPage.goto(config.enduserMessagesUrl)
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThreadReplyEditor()
+      await citizenMessagesPage.discardMessageButton.waitUntilVisible()
+      await citizenMessagesPage.fillReplyContent(defaultContent)
+      await citizenMessagesPage.discardReplyEditor()
+      await citizenMessagesPage.discardMessageButton.waitUntilHidden()
+      await citizenMessagesPage.openFirstThreadReplyEditor()
+      await citizenMessagesPage.assertReplyContentIsEmpty()
+    })
   })
 
   describe('Drafts', () => {
@@ -181,34 +228,25 @@ describe('Sending and receiving messages', () => {
       await initSupervisorPage()
     })
     test('A draft is saved correctly', async () => {
-      const title = 'Luonnos'
-      const content = 'Tässä luonnostellaan'
-
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.draftNewMessage(title, content)
+      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
       await messagesPage.closeMessageEditor()
-      await messagesPage.assertDraftContent(title, content)
+      await messagesPage.assertDraftContent(defaultTitle, defaultContent)
     })
 
     test('A draft is not saved when a message is sent', async () => {
-      const title = 'Luonnos'
-      const content = 'Tässä luonnostellaan'
-
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.draftNewMessage(title, content)
+      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
       await messagesPage.sendEditedMessage()
       await messagesPage.assertNoDrafts()
     })
 
     test("A draft is not saved when it's discarded", async () => {
-      const title = 'Luonnos'
-      const content = 'Tässä luonnostellaan'
-
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.draftNewMessage(title, content)
+      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
       await messagesPage.discardMessage()
       await messagesPage.assertNoDrafts()
     })

@@ -162,6 +162,11 @@ export default React.memo(function ThreadView({
     [setReplyContent, threadId]
   )
 
+  const onDiscard = useCallback(() => {
+    setReplyContent(threadId, '')
+    setReplyEditorVisible(false)
+  }, [setReplyContent, setReplyEditorVisible, threadId])
+
   const replyContent = getReplyContent(threadId)
   const onSubmit = () =>
     sendReply({
@@ -180,7 +185,8 @@ export default React.memo(function ThreadView({
       messagePlaceholder: i18n.messages.messagePlaceholder,
       recipients: i18n.messages.recipients,
       send: i18n.messages.send,
-      sending: `${i18n.messages.sending}...`
+      sending: `${i18n.messages.sending}...`,
+      discard: i18n.messages.messageEditor.discard
     }),
     [i18n]
   )
@@ -213,6 +219,7 @@ export default React.memo(function ThreadView({
               replyState={replyState}
               onSubmit={onSubmit}
               onUpdateContent={onUpdateContent}
+              onDiscard={onDiscard}
               recipients={recipients}
               onToggleRecipient={onToggleRecipient}
               replyContent={replyContent}

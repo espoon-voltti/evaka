@@ -2779,6 +2779,7 @@ export const fi = {
       receivers: 'Vastaanottajat',
       title: 'Otsikko',
       message: 'Viesti',
+      discard: 'Hylkää',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       sending: 'Lähetetään'

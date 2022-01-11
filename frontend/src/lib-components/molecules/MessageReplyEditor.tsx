@@ -7,8 +7,9 @@ import React from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
-import { faTimes } from 'lib-icons'
+import { faTimes, faTrash } from 'lib-icons'
 import Button from '../atoms/buttons/Button'
+import InlineButton from '../atoms/buttons/InlineButton'
 import TextArea from '../atoms/form/TextArea'
 import ButtonContainer from '../layout/ButtonContainer'
 import { fontWeights, Label } from '../typography'
@@ -92,12 +93,14 @@ interface Labels {
   messagePlaceholder?: string
   send: string
   sending: string
+  discard: string
 }
 
 interface Props {
   recipients: SelectableAccount[]
   onToggleRecipient: (id: UUID, selected: boolean) => void
   onSubmit: () => void
+  onDiscard: () => void
   replyState: Result<void> | undefined
   onUpdateContent: (content: string) => void
   replyContent: string
@@ -107,6 +110,7 @@ interface Props {
 export const MessageReplyEditor = React.memo(function MessageReplyEditor({
   i18n,
   onSubmit,
+  onDiscard,
   onUpdateContent,
   onToggleRecipient,
   recipients,
@@ -141,13 +145,19 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
         />
       </EditorRow>
       <EditorRow>
-        <ButtonContainer justify="flex-start">
+        <ButtonContainer justify="space-between">
           <Button
             text={replyState?.isLoading ? i18n.sending : i18n.send}
             primary
             data-qa="message-send-btn"
             onClick={onSubmit}
             disabled={!sendEnabled}
+          />
+          <InlineButton
+            text={i18n.discard}
+            icon={faTrash}
+            data-qa="message-discard-btn"
+            onClick={onDiscard}
           />
         </ButtonContainer>
       </EditorRow>

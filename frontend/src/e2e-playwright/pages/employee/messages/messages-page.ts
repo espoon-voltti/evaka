@@ -29,12 +29,14 @@ export default class MessagesPage {
   #draftMessage = this.page.find('[data-qa="draft-message-row"]')
   #messageContent = (index = 0) =>
     this.page.find(`[data-qa="message-content"][data-index="${index}"]`)
-  #inboxes = this.page.findAll('[data-qa="message-box-row-RECEIVED"]')
 
-  async inboxVisible() {
-    const inboxCount = await this.#inboxes.count()
-    return inboxCount > 0
-  }
+  #openReplyEditorButton = this.page.find(
+    `[data-qa="message-reply-editor-btn"]`
+  )
+  discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
+  #messageReplyContent = new TextInput(
+    this.page.find('[data-qa="message-reply-content"]')
+  )
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
@@ -50,6 +52,27 @@ export default class MessagesPage {
 
   async openInbox(index: number) {
     await this.page.findAll(':text("Saapuneet")').nth(index).click()
+  }
+
+  async openReplyEditor() {
+    await this.#openReplyEditorButton.click()
+  }
+
+  async openFirstThreadReplyEditor() {
+    await this.#receivedMessage.click()
+    await this.#openReplyEditorButton.click()
+  }
+
+  async discardReplyEditor() {
+    await this.discardMessageButton.click()
+  }
+
+  async fillReplyContent(content: string) {
+    await this.#messageReplyContent.fill(content)
+  }
+
+  async assertReplyContentIsEmpty() {
+    return waitUntilEqual(() => this.#messageReplyContent.textContent, '')
   }
 
   async sendNewMessage(title: string, content: string, attachmentCount = 0) {

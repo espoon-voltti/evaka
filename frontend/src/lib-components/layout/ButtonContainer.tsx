@@ -7,7 +7,7 @@ import { tabletMin } from '../breakpoints'
 import { defaultMargins } from '../white-space'
 
 type Props = {
-  justify?: 'flex-start' | 'flex-end' | 'center'
+  justify?: 'flex-start' | 'flex-end' | 'center' | 'space-between'
 }
 
 const ButtonContainer = styled.div<Props>`
