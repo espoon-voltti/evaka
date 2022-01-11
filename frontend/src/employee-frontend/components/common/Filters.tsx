@@ -5,6 +5,13 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
+import {
+  DistinctiveParams,
+  FeeDecisionStatus,
+  InvoiceDistinctiveParams,
+  InvoiceStatus,
+  VoucherValueDecisionStatus
+} from 'lib-common/generated/api-types/invoicing'
 import { ApplicationType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -36,13 +43,6 @@ import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationSummaryStatus } from '../../types/application'
-import {
-  DecisionDistinctiveDetails,
-  FeeDecisionStatus,
-  InvoiceDistinctiveDetails,
-  InvoiceStatus,
-  VoucherValueDecisionStatus
-} from '../../types/invoicing'
 import { CareArea } from '../../types/unit'
 import { FlexRow } from './styled/containers'
 
@@ -363,8 +363,8 @@ export function FeeDecisionStatusFilter({
 }
 
 interface FeeDecisionDistinctionsFilterProps {
-  toggled: DecisionDistinctiveDetails[]
-  toggle: (distinctiveDetails: DecisionDistinctiveDetails) => () => void
+  toggled: DistinctiveParams[]
+  toggle: (distinctiveDetails: DistinctiveParams) => () => void
 }
 
 export function FeeDecisionDistinctionsFilter({
@@ -373,7 +373,7 @@ export function FeeDecisionDistinctionsFilter({
 }: FeeDecisionDistinctionsFilterProps) {
   const { i18n } = useTranslation()
 
-  const distinctiveDetails: DecisionDistinctiveDetails[] = [
+  const distinctiveDetails: DistinctiveParams[] = [
     'UNCONFIRMED_HOURS',
     'EXTERNAL_CHILD',
     'RETROACTIVE'
@@ -660,8 +660,8 @@ export function InvoiceDateFilter({
 }
 
 interface InvoiceDistinctionsFilterProps {
-  toggled: InvoiceDistinctiveDetails[]
-  toggle: (distinctiveDetails: InvoiceDistinctiveDetails) => () => void
+  toggled: InvoiceDistinctiveParams[]
+  toggle: (distinctiveDetails: InvoiceDistinctiveParams) => () => void
 }
 
 export function InvoiceDistinctionsFilter({
@@ -670,7 +670,7 @@ export function InvoiceDistinctionsFilter({
 }: InvoiceDistinctionsFilterProps) {
   const { i18n } = useTranslation()
 
-  const distinctiveDetails: InvoiceDistinctiveDetails[] = ['MISSING_ADDRESS']
+  const distinctiveDetails: InvoiceDistinctiveParams[] = ['MISSING_ADDRESS']
 
   return (
     <>

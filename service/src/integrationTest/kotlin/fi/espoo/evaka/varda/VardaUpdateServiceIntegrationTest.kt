@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -940,8 +939,8 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun createServiceNeedAndFeeData(
-        child: PersonData.Detailed,
-        adult: PersonData.Detailed,
+        child: DevPerson,
+        adult: DevPerson,
         since: HelsinkiDateTime,
         serviceNeedPeriod: DateRange,
         feeDecisionPeriod: DateRange,
@@ -953,7 +952,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         return id
     }
 
-    private fun asVardaGuardian(g: PersonData.Detailed): VardaGuardian = VardaGuardian(henkilotunnus = g.ssn ?: "", etunimet = g.firstName, sukunimi = g.lastName)
+    private fun asVardaGuardian(g: DevPerson): VardaGuardian = VardaGuardian(henkilotunnus = g.ssn ?: "", etunimet = g.firstName, sukunimi = g.lastName)
 
     private fun assertVardaDecision(
         vardaDecision: VardaDecision,
@@ -998,7 +997,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         assertEquals(expectedDeletes, diff.deletes.size)
     }
 
-    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate(), placementType: PlacementType = PlacementType.DAYCARE, unitId: DaycareId = testDaycare.id): ServiceNeedId {
+    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: DevPerson = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate(), placementType: PlacementType = PlacementType.DAYCARE, unitId: DaycareId = testDaycare.id): ServiceNeedId {
         val serviceNeedId = ServiceNeedId(UUID.randomUUID())
         db.transaction { tx ->
             FixtureBuilder(tx, HelsinkiDateTime.now().toLocalDate())
@@ -1007,7 +1006,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                         addServiceNeed()
                             .withId(serviceNeedId)
                             .withUpdated(updated)
-                            .createdBy(EvakaUserId(testDecisionMaker_1.id))
+                            .createdBy(EvakaUserId(testDecisionMaker_1.id.raw))
                             .withOption(option)
                             .save()
                     }
@@ -1016,7 +1015,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         return serviceNeedId
     }
 
-    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: PersonId, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT, daycareId: DaycareId = testDaycare.id): FeeDecisionId {
+    private fun createFeeDecision(db: Database.Connection, child: DevPerson, headOfFamilyId: PersonId, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT, daycareId: DaycareId = testDaycare.id): FeeDecisionId {
         val fd = createFeeDecisionFixture(
             status,
             FeeDecisionType.NORMAL,
@@ -1048,7 +1047,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         value: Int,
         coPayment: Int,
         adultId: PersonId,
-        child: PersonData.Detailed,
+        child: DevPerson,
         sentAt: Instant,
         status: VoucherValueDecisionStatus = VoucherValueDecisionStatus.DRAFT
     ): VoucherValueDecision {

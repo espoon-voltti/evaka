@@ -6,7 +6,6 @@ import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
 import { ApplicationForm } from 'lib-common/generated/api-types/application'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
 import {
@@ -19,8 +18,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 type ISODate = string
-type Timestamp = string
-export type FeeDecisionStatus = 'DRAFT' | 'SENT'
 
 export type Language = 'fi' | 'sv' | 'en'
 
@@ -35,131 +32,6 @@ export interface FeeDecisionThresholds {
   minFee: number
   maxFee: number
   incomeMultiplier: number
-}
-
-export interface FeeDecision {
-  id: UUID
-  status: FeeDecisionStatus
-  decisionType:
-    | 'NORMAL'
-    | 'RELIEF_ACCEPTED'
-    | 'RELIEF_PARTLY_ACCEPTED'
-    | 'RELIEF_REJECTED'
-  validDuring: DateRange
-  headOfFamily: { id: UUID }
-  partner?: { id: UUID | null }
-  familySize: number
-  feeThresholds: FeeDecisionThresholds
-  children: [
-    {
-      child: {
-        id: UUID
-        dateOfBirth: string
-      }
-      placement: {
-        unit: { id: UUID }
-        type:
-          | 'DAYCARE'
-          | 'PRESCHOOL_WITH_DAYCARE'
-          | 'PREPARATORY_WITH_DAYCARE'
-          | 'FIVE_YEARS_OLD_DAYCARE'
-      }
-      serviceNeed: {
-        feeCoefficient: number
-        descriptionFi: string
-        descriptionSv: string
-        missing: boolean
-      }
-      baseFee: number
-      siblingDiscount: number
-      fee: number
-      feeAlterations: Array<{
-        type: 'DISCOUNT' | 'INCREASE' | 'RELIEF'
-        amount: number
-        isAbsolute: boolean
-        effect: number
-      }>
-      finalFee: number
-    }
-  ]
-  sentAt?: Date | null
-}
-
-export interface VoucherValueDecision {
-  id: UUID
-  status: 'DRAFT' | 'SENT'
-  validFrom: ISODate
-  validTo: ISODate
-  decisionType: VoucherValueDecisionType
-  headOfFamily: { id: UUID }
-  partner?: { id: UUID | null }
-  familySize: number
-  feeThresholds: FeeDecisionThresholds
-  child: {
-    id: UUID
-    dateOfBirth: string
-  }
-  placement: {
-    unit: { id: UUID }
-    type: PlacementType
-  }
-  serviceNeed: {
-    feeCoefficient: number
-    voucherValueCoefficient: number
-    feeDescriptionFi: string
-    feeDescriptionSv: string
-    voucherValueDescriptionFi: string
-    voucherValueDescriptionSv: string
-  }
-  baseCoPayment: number
-  siblingDiscount: number
-  coPayment: number
-  feeAlterations: Array<{
-    type: 'DISCOUNT' | 'INCREASE' | 'RELIEF'
-    amount: number
-    isAbsolute: boolean
-    effect: number
-  }>
-  finalCoPayment: number
-  baseValue: number
-  ageCoefficient: number
-  capacityFactor: number
-  voucherValue: number
-}
-
-export interface Invoice {
-  id: UUID
-  status: 'DRAFT' | 'WAITING_FOR_SENDING' | 'SENT'
-  periodStart: ISODate
-  periodEnd: ISODate
-  dueDate?: ISODate
-  invoiceDate?: ISODate
-  agreementType: number
-  headOfFamily: { id: UUID }
-  rows: {
-    id: UUID
-    child: { id: UUID; dateOfBirth: ISODate }
-    placementUnit: { id: UUID }
-    amount: number
-    unitPrice: number
-    periodStart: ISODate
-    periodEnd: ISODate
-    product: 'DAYCARE'
-    costCenter: string
-    subCostCenter?: string
-    modifiers: {
-      product: 'DAYCARE'
-      costCenter: string
-      subCostCenter?: string
-      amount: number
-      unitPrice: number
-      periodStart: ISODate
-      periodEnd: ISODate
-    }[]
-  }[]
-  number?: number
-  sentBy?: UUID
-  sentAt?: Timestamp
 }
 
 export type HighestFeeFixture = Pick<

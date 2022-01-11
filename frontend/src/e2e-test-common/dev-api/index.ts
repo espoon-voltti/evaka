@@ -13,6 +13,11 @@ import {
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import { FeeThresholds } from 'lib-common/api-types/finance'
 import {
+  FeeDecision,
+  Invoice,
+  VoucherValueDecision
+} from 'lib-common/generated/api-types/invoicing'
+import {
   ChildDailyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
@@ -36,12 +41,9 @@ import {
   DecisionFixture,
   deserializeDecision,
   EmployeeDetail,
-  FeeDecision,
-  Invoice,
   PersonDetail,
   PlacementPlan,
   SuomiFiMessage,
-  VoucherValueDecision,
   VtjPerson,
   FamilyContact,
   BackupPickup,

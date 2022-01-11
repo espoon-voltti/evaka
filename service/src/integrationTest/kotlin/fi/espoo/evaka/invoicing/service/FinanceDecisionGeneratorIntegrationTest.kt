@@ -99,16 +99,16 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(FeeDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(43400, decision.totalFee())
+            assertEquals(43400, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { part ->
-                assertEquals(testChild_3.id.raw, part.child.id)
-                assertEquals(testDaycare.id, part.placement.unit.id)
+                assertEquals(testChild_3.id, part.child.id)
+                assertEquals(testDaycare.id, part.placement.unitId)
                 assertEquals(28900, part.fee)
             }
             decision.children.last().let { part ->
-                assertEquals(testChild_1.id.raw, part.child.id)
-                assertEquals(testDaycare.id, part.placement.unit.id)
+                assertEquals(testChild_1.id, part.child.id)
+                assertEquals(testDaycare.id, part.placement.unitId)
                 assertEquals(14500, part.fee)
             }
         }
@@ -119,8 +119,8 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id.raw, decision.child.id)
-            assertEquals(testVoucherDaycare.id, decision.placement.unit.id)
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(testVoucherDaycare.id, decision.placement.unitId)
             assertEquals(5800, decision.coPayment)
             assertEquals(87000, decision.baseValue)
             assertEquals(BigDecimal("1.00"), decision.ageCoefficient)

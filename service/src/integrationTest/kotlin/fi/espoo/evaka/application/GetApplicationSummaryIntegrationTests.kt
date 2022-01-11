@@ -9,11 +9,11 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -70,7 +70,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
         return result.get()
     }
 
-    private fun createApplication(child: PersonData.Detailed, guardian: PersonData.Detailed, attachment: Boolean = false, urgent: Boolean = false, extendedCare: Boolean = false) {
+    private fun createApplication(child: DevPerson, guardian: DevPerson, attachment: Boolean = false, urgent: Boolean = false, extendedCare: Boolean = false) {
         val applicationId = db.transaction { tx ->
             tx.insertTestApplication(childId = child.id, guardianId = guardian.id).also { id ->
                 val form = DaycareFormV0.fromApplication2(validDaycareApplication.copy(childId = child.id, guardianId = guardian.id)).copy(urgent = urgent).copy(extendedCare = extendedCare)

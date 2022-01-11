@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing
 
+import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
@@ -20,9 +21,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
-import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
@@ -37,8 +36,8 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -50,9 +49,9 @@ val uuid5 = UUID.fromString("1b533dbb-9871-4406-b48e-735153d8f36c")
 val testDecisionFrom = LocalDate.of(2019, 5, 1)
 val testDecisionTo = LocalDate.of(2019, 5, 31)
 
-val testChild1 = PersonData.WithDateOfBirth(uuid4, LocalDate.of(2016, 1, 1))
+val testChild1 = ChildWithDateOfBirth(PersonId(uuid4), LocalDate.of(2016, 1, 1))
 
-val testChild2 = testChild1.copy(id = uuid5, dateOfBirth = testChild1.dateOfBirth.plusDays(1))
+val testChild2 = ChildWithDateOfBirth(PersonId(uuid5), testChild1.dateOfBirth.plusDays(1))
 
 val oldTestFeeThresholds = FeeThresholds(
     validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
@@ -105,7 +104,7 @@ val testFeeThresholds = FeeThresholds(
 val testDecisionChild1 =
     FeeDecisionChild(
         child = testChild1,
-        placement = FeeDecisionPlacement(UnitData.JustId(DaycareId(UUID.randomUUID())), PlacementType.DAYCARE),
+        placement = FeeDecisionPlacement(DaycareId(UUID.randomUUID()), PlacementType.DAYCARE),
         serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -118,7 +117,7 @@ val testDecisionChild1 =
 val testDecisionChild2 =
     FeeDecisionChild(
         child = testChild2,
-        placement = FeeDecisionPlacement(UnitData.JustId(DaycareId(UUID.randomUUID())), PlacementType.DAYCARE),
+        placement = FeeDecisionPlacement(DaycareId(UUID.randomUUID()), PlacementType.DAYCARE),
         serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -135,20 +134,20 @@ val testDecision1 = FeeDecision(
     decisionNumber = 1010101010L,
     decisionType = FeeDecisionType.NORMAL,
     validDuring = DateRange(testDecisionFrom, testDecisionTo),
-    headOfFamily = PersonData.JustId(uuid3),
-    partner = null,
+    headOfFamilyId = PersonId(uuid3),
+    partnerId = null,
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = 3,
     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
     children = listOf(testDecisionChild1, testDecisionChild2.copy(siblingDiscount = 50, fee = 14500, finalFee = 14500)),
-    created = Instant.now()
+    created = HelsinkiDateTime.now()
 )
 
 val testInvoiceRow = InvoiceRow(
     id = UUID.randomUUID(),
     amount = 1,
-    child = PersonData.WithDateOfBirth(testChild2.id, testChild2.dateOfBirth),
+    child = ChildWithDateOfBirth(testChild2.id, testChild2.dateOfBirth),
     periodStart = LocalDate.of(2019, 5, 1),
     periodEnd = LocalDate.of(2019, 5, 31),
     unitPrice = 28900,
@@ -163,7 +162,7 @@ val testInvoice = Invoice(
     periodStart = LocalDate.of(2019, 5, 1),
     periodEnd = LocalDate.of(2019, 5, 31),
     agreementType = 100,
-    headOfFamily = testDecision1.headOfFamily,
+    headOfFamily = testDecision1.headOfFamilyId,
     codebtor = null,
     rows = listOf(testInvoiceRow)
 )
@@ -207,8 +206,8 @@ fun createFeeDecisionChildFixture(
     fee: Int = 28900,
     feeAlterations: List<FeeAlterationWithEffect> = listOf(),
 ) = FeeDecisionChild(
-    child = PersonData.WithDateOfBirth(id = childId.raw, dateOfBirth = dateOfBirth),
-    placement = FeeDecisionPlacement(UnitData.JustId(placementUnitId), placementType),
+    child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    placement = FeeDecisionPlacement(placementUnitId, placementType),
     serviceNeed = serviceNeed,
     baseFee = baseFee,
     siblingDiscount = siblingDiscount,
@@ -231,8 +230,8 @@ fun createFeeDecisionFixture(
     status = status,
     decisionType = decisionType,
     validDuring = period,
-    headOfFamily = PersonData.JustId(headOfFamilyId.raw),
-    partner = if (partnerId != null) PersonData.JustId(partnerId.raw) else null,
+    headOfFamilyId = headOfFamilyId,
+    partnerId = partnerId,
     headOfFamilyIncome = headOfFamilyIncome,
     partnerIncome = null,
     familySize = children.size + 1,
@@ -265,14 +264,14 @@ fun createVoucherValueDecisionFixture(
     decisionType = VoucherValueDecisionType.NORMAL,
     validFrom = validFrom,
     validTo = validTo,
-    headOfFamily = PersonData.JustId(headOfFamilyId.raw),
-    partner = null,
+    headOfFamilyId = headOfFamilyId,
+    partnerId = null,
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = familySize,
     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
-    child = PersonData.WithDateOfBirth(id = childId.raw, dateOfBirth = dateOfBirth),
-    placement = VoucherValueDecisionPlacement(UnitData.JustId(unitId), placementType),
+    child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    placement = VoucherValueDecisionPlacement(unitId, placementType),
     serviceNeed = serviceNeed,
     baseValue = baseValue,
     ageCoefficient = ageCoefficient,
@@ -287,7 +286,7 @@ fun createVoucherValueDecisionFixture(
 
 fun createInvoiceRowFixture(childId: ChildId) = InvoiceRow(
     id = UUID.randomUUID(),
-    child = PersonData.WithDateOfBirth(childId.raw, LocalDate.of(2017, 1, 1)),
+    child = ChildWithDateOfBirth(childId, LocalDate.of(2017, 1, 1)),
     amount = 1,
     unitPrice = 28900,
     product = Product.DAYCARE,
@@ -309,7 +308,7 @@ fun createInvoiceFixture(
     status = status,
     number = number,
     agreementType = agreementType,
-    headOfFamily = PersonData.JustId(headOfFamilyId.raw),
+    headOfFamily = headOfFamilyId,
     codebtor = null,
     periodStart = period.start,
     periodEnd = period.end!!,

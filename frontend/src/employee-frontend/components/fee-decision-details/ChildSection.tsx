@@ -4,19 +4,21 @@
 
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Detailed as PersonDetailed } from 'lib-common/generated/api-types/invoicing'
+import {
+  PersonDetailed,
+  UnitData
+} from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/enums'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faUserFriends } from 'lib-icons'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import { UnitDetailed } from '../../types/invoicing'
 import { formatName } from '../../utils'
 
 interface Props {
   child: PersonDetailed
   placementType: PlacementType
-  placementUnit: UnitDetailed
+  placementUnit: UnitData
   serviceNeedDescription: string
 }
 

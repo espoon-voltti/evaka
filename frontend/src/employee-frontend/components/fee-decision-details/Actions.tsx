@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
+import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -12,7 +13,6 @@ import {
   setFeeDecisionType
 } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { FeeDecisionDetailed } from '../../types/invoicing'
 import { ErrorMessage } from './FeeDecisionDetailsPage'
 
 interface Props {

@@ -8,7 +8,6 @@ import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
@@ -26,7 +25,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -48,7 +46,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
@@ -85,7 +83,7 @@ class MessageIntegrationTest : FullApplicationTest() {
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
-    private fun insertChild(tx: Database.Transaction, child: PersonData.Detailed) {
+    private fun insertChild(tx: Database.Transaction, child: DevPerson) {
         tx.insertTestPerson(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
         tx.insertTestChild(DevChild(id = child.id))
 
@@ -110,14 +108,10 @@ class MessageIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
 
-            tx.insertTestCareArea(
-                DevCareArea(
-                    id = testAreaId,
-                )
-            )
+            tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(
                 DevDaycare(
-                    areaId = testAreaId,
+                    areaId = testArea.id,
                     id = testDaycare.id,
                     name = testDaycare.name,
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
@@ -125,7 +119,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             )
             tx.insertTestDaycare(
                 DevDaycare(
-                    areaId = testAreaId,
+                    areaId = testArea.id,
                     id = testDaycare2.id,
                     name = testDaycare2.name,
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING)

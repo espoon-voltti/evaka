@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
+import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
@@ -13,7 +14,6 @@ import {
 import StickyActionBar from '../../components/common/StickyActionBar'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

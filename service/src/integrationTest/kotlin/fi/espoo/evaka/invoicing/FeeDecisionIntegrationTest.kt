@@ -18,7 +18,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -28,6 +27,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -49,7 +49,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -60,7 +59,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
 
     private val testDecisions = listOf(
         createFeeDecisionFixture(
@@ -195,7 +194,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     )
 
     private fun assertEqualEnough(expected: List<FeeDecisionSummary>, actual: List<FeeDecisionSummary>) {
-        val created = Instant.now()
+        val created = HelsinkiDateTime.now()
         assertEquals(
             expected.map { it.copy(created = created, approvedAt = null, sentAt = null) }.toSet(),
             actual.map { it.copy(created = created, approvedAt = null, sentAt = null) }.toSet()
@@ -203,7 +202,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     private fun assertEqualEnough(expected: FeeDecisionDetailed, actual: FeeDecisionDetailed) {
-        val created = Instant.now()
+        val created = HelsinkiDateTime.now()
         assertEquals(
             expected.copy(created = created, approvedAt = null, sentAt = null, headOfFamily = expected.headOfFamily.copy(email = null)),
             actual.copy(created = created, approvedAt = null, sentAt = null)
@@ -447,7 +446,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .responseString()
 
         val expected =
-            testDecisions.filter { decision -> decision.children.any { it.placement.unit.id == testDaycare.id } }
+            testDecisions.filter { decision -> decision.children.any { it.placement.unitId == testDaycare.id } }
         assertEqualEnough(
             expected.map(::toSummary),
             deserializeListResult(result.get()).data
@@ -481,7 +480,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .asUser(user)
             .responseString()
 
-        val expectedDecisions = testDecisions.filter { it.headOfFamily.id != testAdult_3.id.raw }
+        val expectedDecisions = testDecisions.filter { it.headOfFamilyId != testAdult_3.id }
 
         assertEqualEnough(
             expectedDecisions.map(::toSummary),
@@ -635,13 +634,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(2, feeDecisions.size)
         feeDecisions.find { it.status == FeeDecisionStatus.DRAFT }.let { draft ->
             assertNotNull(draft)
-            assertEquals(testAdult_1.id.raw, draft.headOfFamily.id)
-            assertEquals(28900 + 14500, draft.totalFee())
+            assertEquals(testAdult_1.id, draft.headOfFamilyId)
+            assertEquals(28900 + 14500, draft.totalFee)
         }
         feeDecisions.find { it.status == FeeDecisionStatus.SENT }.let { sent ->
             assertNotNull(sent)
-            assertEquals(testAdult_1.id.raw, sent.headOfFamily.id)
-            assertEquals(28900, sent.totalFee())
+            assertEquals(testAdult_1.id, sent.headOfFamilyId)
+            assertEquals(28900, sent.totalFee)
         }
     }
 
@@ -672,8 +671,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = draft.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.SENT,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -702,8 +701,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = draft.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -732,8 +731,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = draft.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -762,8 +761,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = draft.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -786,7 +785,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             it.execute(
                 "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
                 testDecisionMaker_2.id,
-                draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unit.id
+                draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId
             )
         }
 
@@ -800,8 +799,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = draft.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.SENT,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_2.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_2.id,
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -823,7 +822,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             it.execute(
                 "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
                 testDecisionMaker_2.id,
-                draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unit.id
+                draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId
             )
         }
 
@@ -837,8 +836,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = draft.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -863,7 +862,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             it.execute(
                 "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
                 testDecisionMaker_2.id,
-                oldDecision.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unit.id
+                oldDecision.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId
             )
         }
 
@@ -877,8 +876,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = oldDecision.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.SENT,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${oldDecision.id}_fi.pdf"
         )
 
@@ -895,7 +894,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Test
     fun `sendDecisions does not send if ssn missing`() {
         val draft =
-            testDecisions.find { it.status === FeeDecisionStatus.DRAFT && it.headOfFamily.id === testAdult_3.id.raw }!!
+            testDecisions.find { it.status === FeeDecisionStatus.DRAFT && it.headOfFamilyId === testAdult_3.id }!!
 
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
@@ -913,8 +912,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val activated = draft.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -975,13 +974,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val expected = draftWithFutureDates.copy(
             decisionNumber = 1,
             status = FeeDecisionStatus.SENT,
-            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
-            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            approvedById = testDecisionMaker_1.id,
+            decisionHandlerId = testDecisionMaker_1.id,
             documentKey = "feedecision_${draftWithFutureDates.id}_fi.pdf"
         )
         val actual = deserializeResult(result.get()).data
         assertEqualEnough(expected.let(::toDetailed), actual)
-        assertEquals(now.toInstant(), actual.approvedAt)
+        assertEquals(now, actual.approvedAt)
     }
 
     @Test
@@ -1423,12 +1422,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .responseString()
 
         deserializeResult(result0.get()).data.let { beforeForcing ->
-            assertEquals(false, beforeForcing.requiresManualSending())
+            assertEquals(false, beforeForcing.requiresManualSending)
         }
 
         db.transaction { tx ->
             tx.createUpdate("update person set force_manual_fee_decisions = true where id = :id")
-                .bind("id", decision.headOfFamily.id)
+                .bind("id", decision.headOfFamilyId)
                 .execute()
         }
 
@@ -1446,7 +1445,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .responseString()
 
         deserializeResult(result1.get()).data.let { confirmed ->
-            assertEquals(true, confirmed.requiresManualSending())
+            assertEquals(true, confirmed.requiresManualSending)
             assertEquals(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING, confirmed.status)
         }
     }
@@ -1525,7 +1524,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun createFeeDecisionsForFamily(headOfFamily: PersonData.Detailed, partner: PersonData.Detailed?, familyChildren: List<PersonData.Detailed>): FeeDecision {
+    private fun createFeeDecisionsForFamily(
+        headOfFamily: DevPerson,
+        partner: DevPerson?,
+        familyChildren: List<DevPerson>
+    ): FeeDecision {
         return createFeeDecisionFixture(
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,

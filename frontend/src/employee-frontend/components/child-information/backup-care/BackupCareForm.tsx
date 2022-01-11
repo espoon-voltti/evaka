@@ -26,12 +26,11 @@ import {
   getChildBackupCares,
   updateBackupCare
 } from '../../../api/child/backup-care'
-import { getUnits } from '../../../api/daycare'
+import { getUnits, Unit } from '../../../api/daycare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { ChildBackupCare } from '../../../types/child'
-import { Unit } from '../../../types/invoicing'
 import { DateRange } from '../../../utils/date'
 import {
   isDateRangeInverted,

@@ -267,7 +267,7 @@ private fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection
             val decision = db.read { it.getFeeDecisionsByIds(listOf(feeId)) }.first()
 
             // If head of family is not a guardian, fee data is not supposed to be sent to varda (https://wiki.eduuni.fi/display/OPHPALV/Huoltajan+tiedot)
-            if (guardians.none { it.id.raw == decision.headOfFamily.id }) {
+            if (guardians.none { it.id == decision.headOfFamilyId }) {
                 logger.info("VardaUpdate: refusing to send fee data for fee decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}")
                 null
             } else sendFeeDecisionToVarda(
@@ -275,7 +275,7 @@ private fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection
                 decision = decision,
                 vardaChildId = newVardaServiceNeed.vardaChildId!!,
                 evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardiansResponsibleForFeeData(PersonId(decision.headOfFamily.id), guardians)
+                guardians = guardiansResponsibleForFeeData(decision.headOfFamilyId, guardians)
             )
         } catch (e: Exception) {
             error("VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
@@ -333,7 +333,7 @@ private fun sendFeeDecisionToVarda(
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
     guardians: List<VardaGuardianWithId>
 ): Long {
-    val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId.raw }
+    val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
 
     check(childPart != null) {
         "VardaUpdate: fee decision ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}, service need ${evakaServiceNeedInfoForVarda.id}"

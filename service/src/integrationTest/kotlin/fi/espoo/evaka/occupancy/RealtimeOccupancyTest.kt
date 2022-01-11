@@ -60,7 +60,7 @@ class RealtimeOccupancyTest : FullApplicationTest() {
                 .withAge(2, 11)
                 .saveAnd {
                     addPlacement().toUnit(testDaycare.id).save()
-                    addAssistanceNeed().createdBy(EvakaUserId(testDecisionMaker_1.id)).withFactor(2.0).save()
+                    addAssistanceNeed().createdBy(EvakaUserId(testDecisionMaker_1.id.raw)).withFactor(2.0).save()
                     addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(8, 15)).departing(LocalTime.of(16, 30)).save()
                 }
                 .addChild()
@@ -151,7 +151,7 @@ class RealtimeOccupancyTest : FullApplicationTest() {
 
     private fun getRealtimeOccupancy(): RealtimeOccupancyResponse {
         val (_, res, result) = http.get("/occupancy/by-unit/${testDaycare.id}/realtime?date=${date.format(DateTimeFormatter.ISO_DATE)}")
-            .asUser(AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR)))
+            .asUser(AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id.raw, setOf(UserRole.UNIT_SUPERVISOR)))
             .responseObject<RealtimeOccupancyResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)

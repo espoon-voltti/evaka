@@ -7,17 +7,16 @@
 
 import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
+import { DecisionIncome } from '../../api-types/income'
+import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.PersonData.Basic
+* Generated from fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 */
-export interface Basic {
+export interface ChildWithDateOfBirth {
   dateOfBirth: LocalDate
-  firstName: string
   id: UUID
-  lastName: string
-  ssn: string | null
 }
 
 /**
@@ -28,28 +27,20 @@ export interface CreateRetroactiveFeeDecisionsBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.PersonData.Detailed
+* Generated from fi.espoo.evaka.invoicing.controller.DistinctiveParams
 */
-export interface Detailed {
-  dateOfBirth: LocalDate
-  dateOfDeath: LocalDate | null
-  email: string | null
+export type DistinctiveParams = 
+  | 'UNCONFIRMED_HOURS'
+  | 'EXTERNAL_CHILD'
+  | 'RETROACTIVE'
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.EmployeeWithName
+*/
+export interface EmployeeWithName {
   firstName: string
-  forceManualFeeDecisions: boolean
   id: UUID
-  invoiceRecipientName: string
-  invoicingPostOffice: string
-  invoicingPostalCode: string
-  invoicingStreetAddress: string
-  language: string | null
   lastName: string
-  phone: string
-  postOffice: string
-  postalCode: string
-  residenceCode: string
-  restrictedDetailsEnabled: boolean
-  ssn: string | null
-  streetAddress: string
 }
 
 /**
@@ -66,6 +57,124 @@ export interface FeeAlteration {
   updatedBy: UUID | null
   validFrom: LocalDate
   validTo: LocalDate | null
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
+*/
+export interface FeeAlterationWithEffect {
+  amount: number
+  effect: number
+  isAbsolute: boolean
+  type: Type
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecision
+*/
+export interface FeeDecision {
+  approvedAt: Date | null
+  approvedById: UUID | null
+  children: FeeDecisionChild[]
+  created: Date
+  decisionHandlerId: UUID | null
+  decisionNumber: number | null
+  decisionType: FeeDecisionType
+  documentKey: string | null
+  familySize: number
+  feeThresholds: FeeDecisionThresholds
+  headOfFamilyId: UUID
+  headOfFamilyIncome: DecisionIncome | null
+  id: UUID
+  partnerId: UUID | null
+  partnerIncome: DecisionIncome | null
+  sentAt: Date | null
+  status: FeeDecisionStatus
+  totalFee: number
+  validDuring: DateRange
+  validFrom: LocalDate
+  validTo: LocalDate | null
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionChild
+*/
+export interface FeeDecisionChild {
+  baseFee: number
+  child: ChildWithDateOfBirth
+  fee: number
+  feeAlterations: FeeAlterationWithEffect[]
+  finalFee: number
+  placement: FeeDecisionPlacement
+  serviceNeed: FeeDecisionServiceNeed
+  siblingDiscount: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
+*/
+export interface FeeDecisionChildDetailed {
+  baseFee: number
+  child: PersonDetailed
+  fee: number
+  feeAlterations: FeeAlterationWithEffect[]
+  finalFee: number
+  placementType: PlacementType
+  placementUnit: UnitData
+  serviceNeedDescriptionFi: string
+  serviceNeedDescriptionSv: string
+  serviceNeedFeeCoefficient: number
+  serviceNeedMissing: boolean
+  siblingDiscount: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+*/
+export interface FeeDecisionDetailed {
+  approvedAt: Date | null
+  approvedBy: EmployeeWithName | null
+  children: FeeDecisionChildDetailed[]
+  created: Date
+  decisionNumber: number | null
+  decisionType: FeeDecisionType
+  documentKey: string | null
+  familySize: number
+  feeThresholds: FeeDecisionThresholds
+  financeDecisionHandlerFirstName: string | null
+  financeDecisionHandlerLastName: string | null
+  headOfFamily: PersonDetailed
+  headOfFamilyIncome: DecisionIncome | null
+  id: UUID
+  incomeEffect: IncomeEffect
+  isElementaryFamily: boolean | null
+  isRetroactive: boolean
+  partner: PersonDetailed | null
+  partnerIncome: DecisionIncome | null
+  requiresManualSending: boolean
+  sentAt: Date | null
+  status: FeeDecisionStatus
+  totalFee: number
+  totalIncome: number | null
+  validDuring: DateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
+*/
+export interface FeeDecisionPlacement {
+  type: PlacementType
+  unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
+*/
+export interface FeeDecisionServiceNeed {
+  descriptionFi: string
+  descriptionSv: string
+  feeCoefficient: number
+  missing: boolean
 }
 
 /**
@@ -95,15 +204,26 @@ export type FeeDecisionStatus =
 */
 export interface FeeDecisionSummary {
   approvedAt: Date | null
-  children: Basic[]
+  children: PersonBasic[]
   created: Date
   decisionNumber: number | null
   finalPrice: number
-  headOfFamily: Basic
+  headOfFamily: PersonBasic
   id: UUID
   sentAt: Date | null
   status: FeeDecisionStatus
   validDuring: DateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
+*/
+export interface FeeDecisionThresholds {
+  incomeMultiplier: number
+  maxFee: number
+  maxIncomeThreshold: number
+  minFee: number
+  minIncomeThreshold: number
 }
 
 /**
@@ -179,9 +299,9 @@ export type IncomeEffect =
 */
 export interface Invoice {
   agreementType: number
-  codebtor: JustId | null
+  codebtor: UUID | null
   dueDate: LocalDate
-  headOfFamily: JustId
+  headOfFamily: UUID
   id: UUID
   invoiceDate: LocalDate
   number: number | null
@@ -210,9 +330,9 @@ export interface InvoiceCodes {
 export interface InvoiceDetailed {
   account: number
   agreementType: number
-  codebtor: Detailed | null
+  codebtor: PersonDetailed | null
   dueDate: LocalDate
-  headOfFamily: Detailed
+  headOfFamily: PersonDetailed
   id: UUID
   invoiceDate: LocalDate
   number: number | null
@@ -224,6 +344,12 @@ export interface InvoiceDetailed {
   status: InvoiceStatus
   totalPrice: number
 }
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
+*/
+export type InvoiceDistinctiveParams = 
+  | 'MISSING_ADDRESS'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoicePayload
@@ -241,7 +367,7 @@ export interface InvoicePayload {
 */
 export interface InvoiceRow {
   amount: number
-  child: WithDateOfBirth
+  child: ChildWithDateOfBirth
   costCenter: string
   description: string
   id: UUID | null
@@ -258,7 +384,7 @@ export interface InvoiceRow {
 */
 export interface InvoiceRowDetailed {
   amount: number
-  child: Detailed
+  child: PersonDetailed
   costCenter: string
   description: string
   id: UUID
@@ -275,7 +401,7 @@ export interface InvoiceRowDetailed {
 */
 export interface InvoiceRowSummary {
   amount: number
-  child: Basic
+  child: PersonBasic
   id: UUID
   price: number
   unitPrice: number
@@ -307,9 +433,9 @@ export type InvoiceStatus =
 */
 export interface InvoiceSummary {
   account: number
-  codebtor: Detailed | null
+  codebtor: PersonDetailed | null
   createdAt: Date | null
-  headOfFamily: Detailed
+  headOfFamily: PersonDetailed
   id: UUID
   periodEnd: LocalDate
   periodStart: LocalDate
@@ -321,10 +447,39 @@ export interface InvoiceSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.PersonData.JustId
+* Generated from fi.espoo.evaka.invoicing.domain.PersonBasic
 */
-export interface JustId {
+export interface PersonBasic {
+  dateOfBirth: LocalDate
+  firstName: string
   id: UUID
+  lastName: string
+  ssn: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.PersonDetailed
+*/
+export interface PersonDetailed {
+  dateOfBirth: LocalDate
+  dateOfDeath: LocalDate | null
+  email: string | null
+  firstName: string
+  forceManualFeeDecisions: boolean
+  id: UUID
+  invoiceRecipientName: string
+  invoicingPostOffice: string
+  invoicingPostalCode: string
+  invoicingStreetAddress: string
+  language: string | null
+  lastName: string
+  phone: string
+  postOffice: string
+  postalCode: string
+  residenceCode: string
+  restrictedDetailsEnabled: boolean
+  ssn: string | null
+  streetAddress: string
 }
 
 /**
@@ -414,6 +569,123 @@ export type Type =
   | 'RELIEF'
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.UnitData
+*/
+export interface UnitData {
+  areaId: UUID
+  areaName: string
+  id: UUID
+  language: string
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+*/
+export interface VoucherValueDecision {
+  ageCoefficient: number
+  approvedAt: Date | null
+  approvedById: UUID | null
+  baseCoPayment: number
+  baseValue: number
+  capacityFactor: number
+  child: ChildWithDateOfBirth
+  coPayment: number
+  created: Date
+  decisionNumber: number | null
+  decisionType: VoucherValueDecisionType
+  documentKey: string | null
+  familySize: number
+  feeAlterations: FeeAlterationWithEffect[]
+  feeThresholds: FeeDecisionThresholds
+  finalCoPayment: number
+  headOfFamilyId: UUID
+  headOfFamilyIncome: DecisionIncome | null
+  id: UUID
+  partnerId: UUID | null
+  partnerIncome: DecisionIncome | null
+  placement: VoucherValueDecisionPlacement
+  sentAt: Date | null
+  serviceNeed: VoucherValueDecisionServiceNeed
+  siblingDiscount: number
+  status: VoucherValueDecisionStatus
+  validFrom: LocalDate
+  validTo: LocalDate | null
+  voucherValue: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+*/
+export interface VoucherValueDecisionDetailed {
+  ageCoefficient: number
+  approvedAt: Date | null
+  approvedBy: EmployeeWithName | null
+  baseCoPayment: number
+  baseValue: number
+  capacityFactor: number
+  child: PersonDetailed
+  childAge: number
+  coPayment: number
+  created: Date
+  decisionNumber: number | null
+  decisionType: VoucherValueDecisionType
+  documentKey: string | null
+  familySize: number
+  feeAlterations: FeeAlterationWithEffect[]
+  feeThresholds: FeeDecisionThresholds
+  finalCoPayment: number
+  financeDecisionHandlerFirstName: string | null
+  financeDecisionHandlerLastName: string | null
+  headOfFamily: PersonDetailed
+  headOfFamilyIncome: DecisionIncome | null
+  id: UUID
+  incomeEffect: IncomeEffect
+  isElementaryFamily: boolean | null
+  isRetroactive: boolean
+  partner: PersonDetailed | null
+  partnerIncome: DecisionIncome | null
+  placement: VoucherValueDecisionPlacementDetailed
+  requiresManualSending: boolean
+  sentAt: Date | null
+  serviceNeed: VoucherValueDecisionServiceNeed
+  siblingDiscount: number
+  status: VoucherValueDecisionStatus
+  totalIncome: number | null
+  validFrom: LocalDate
+  validTo: LocalDate | null
+  voucherValue: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
+*/
+export interface VoucherValueDecisionPlacement {
+  type: PlacementType
+  unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
+*/
+export interface VoucherValueDecisionPlacementDetailed {
+  type: PlacementType
+  unit: UnitData
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
+*/
+export interface VoucherValueDecisionServiceNeed {
+  feeCoefficient: number
+  feeDescriptionFi: string
+  feeDescriptionSv: string
+  voucherValueCoefficient: number
+  voucherValueDescriptionFi: string
+  voucherValueDescriptionSv: string
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
 */
 export type VoucherValueDecisionSortParam = 
@@ -435,11 +707,11 @@ export type VoucherValueDecisionStatus =
 */
 export interface VoucherValueDecisionSummary {
   approvedAt: Date | null
-  child: Basic
+  child: PersonBasic
   created: Date
   decisionNumber: number | null
   finalCoPayment: number
-  headOfFamily: Basic
+  headOfFamily: PersonBasic
   id: UUID
   sentAt: Date | null
   status: VoucherValueDecisionStatus
@@ -462,12 +734,4 @@ export type VoucherValueDecisionType =
 */
 export interface VoucherValueDecisionTypeRequest {
   type: VoucherValueDecisionType
-}
-
-/**
-* Generated from fi.espoo.evaka.invoicing.domain.PersonData.WithDateOfBirth
-*/
-export interface WithDateOfBirth {
-  dateOfBirth: LocalDate
-  id: UUID
 }

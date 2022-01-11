@@ -5,11 +5,9 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -23,7 +21,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -40,8 +38,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
     fun beforeEach() {
         db.transaction {
             it.resetDatabase()
-            it.insertTestCareArea(DevCareArea(id = testAreaId, name = "Test Area"))
-            it.insertTestDaycare(DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testAreaId))
+            it.insertTestCareArea(testArea)
+            it.insertTestDaycare(DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testArea.id))
         }
     }
 
@@ -224,7 +222,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
         assertEquals(cleanedUpPeople, result)
     }
 
-    private fun Database.Transaction.insertPerson(person: PersonData.Detailed) = insertTestPerson(
+    private fun Database.Transaction.insertPerson(person: DevPerson) = insertTestPerson(
         DevPerson(
             id = person.id,
             dateOfBirth = person.dateOfBirth,
@@ -239,7 +237,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
         )
     )
 
-    private fun Database.Transaction.insertChild(person: PersonData.Detailed) {
+    private fun Database.Transaction.insertChild(person: DevPerson) {
         insertPerson(person)
         insertTestChild(DevChild(id = person.id))
     }

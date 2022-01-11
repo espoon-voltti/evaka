@@ -6,11 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-
-interface Unit {
-  id: UUID
-  name: string
-}
+import { Unit } from '../api/daycare'
 
 interface Child {
   id: UUID

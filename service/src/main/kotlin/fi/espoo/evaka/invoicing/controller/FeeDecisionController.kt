@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.searchFeeDecisions
@@ -57,6 +58,7 @@ enum class SortDirection {
     DESC
 }
 
+@IncludeCodeGen
 enum class DistinctiveParams {
     UNCONFIRMED_HOURS,
     EXTERNAL_CHILD,
@@ -157,21 +159,17 @@ class FeeDecisionController(
         return ResponseEntity.ok(Wrapper(res))
     }
 
-    @GetMapping("/head-of-family/{uuid}")
+    @GetMapping("/head-of-family/{id}")
     fun getHeadOfFamilyFeeDecisions(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable uuid: PersonId
+        @PathVariable id: PersonId
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
-        Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.Person.READ_FEE_DECISIONS, uuid)
+        Audit.FeeDecisionHeadOfFamilyRead.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.Person.READ_FEE_DECISIONS, id)
         val res = db.connect { dbc ->
             dbc.read {
-                it.findFeeDecisionsForHeadOfFamily(
-                    uuid,
-                    null,
-                    null
-                )
+                it.findFeeDecisionsForHeadOfFamily(id, null, null)
             }
         }
         return ResponseEntity.ok(Wrapper(res))

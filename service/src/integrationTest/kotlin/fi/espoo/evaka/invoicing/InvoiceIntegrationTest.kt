@@ -30,11 +30,9 @@ import fi.espoo.evaka.invoicing.integration.fallbackPostOffice
 import fi.espoo.evaka.invoicing.integration.fallbackPostalCode
 import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -46,7 +44,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAreaCode
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -82,13 +80,13 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             number = 5000000001L,
             period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
@@ -96,7 +94,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_2.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         )
@@ -159,7 +157,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         )
     )
 
-    private val testUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val testUser = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
 
     @BeforeEach
     fun beforeEach() {
@@ -293,7 +291,9 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            invoices.filter { it.status == InvoiceStatus.DRAFT && it.agreementType == testAreaCode }.map(::toSummary),
+            invoices.filter {
+                it.status == InvoiceStatus.DRAFT && it.agreementType == testArea.areaCode
+            }.map(::toSummary),
             deserializeListResult(result.get()).data
         )
     }
@@ -553,7 +553,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .asUser(testUser)
             .responseString()
 
-        val updated = draft.copy(status = InvoiceStatus.SENT, number = 5000000002L, sentBy = EvakaUserId(testDecisionMaker_1.id))
+        val updated = draft.copy(status = InvoiceStatus.SENT, number = 5000000002L, sentBy = EvakaUserId(testDecisionMaker_1.id.raw))
 
         assertEqualEnough(
             listOf(updated.let(::toSummary)),
@@ -562,7 +562,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         objectMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
             assertEquals(InvoiceStatus.SENT, it.data.status)
-            assertEquals(testDecisionMaker_1.id, it.data.sentBy?.raw)
+            assertEquals(testDecisionMaker_1.id.raw, it.data.sentBy?.raw)
             assertNotNull(it.data.sentAt)
         }
     }
@@ -573,7 +573,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             createInvoiceFixture(
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
-                agreementType = testAreaCode,
+                agreementType = testArea.areaCode!!,
                 rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
             )
         }
@@ -634,7 +634,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .asUser(testUser)
             .responseString()
 
-        val updated = invoice.copy(status = InvoiceStatus.SENT, sentBy = EvakaUserId(testDecisionMaker_1.id))
+        val updated = invoice.copy(status = InvoiceStatus.SENT, sentBy = EvakaUserId(testDecisionMaker_1.id.raw))
 
         assertEqualEnough(
             listOf(updated.let(::toSummary)),
@@ -643,7 +643,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         objectMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
             assertEquals(InvoiceStatus.SENT, it.data.status)
-            assertEquals(testDecisionMaker_1.id, it.data.sentBy?.raw)
+            assertEquals(testDecisionMaker_1.id.raw, it.data.sentBy?.raw)
             assertNotNull(it.data.sentAt)
         }
     }
@@ -1049,7 +1049,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val draft = createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             rows = listOf(
                 createInvoiceRowFixture(childId = testChild_2.id),
                 createInvoiceRowFixture(childId = testChild_1.id),
@@ -1085,15 +1085,15 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             decision.children.forEach { part ->
                 tx.insertTestPlacement(
                     DevPlacement(
-                        childId = ChildId(part.child.id),
-                        unitId = part.placement.unit.id,
+                        childId = part.child.id,
+                        unitId = part.placement.unitId,
                         startDate = decision.validFrom,
                         endDate = decision.validTo!!
                     )
                 )
                 tx.insertTestParentship(
-                    headOfChild = PersonId(decision.headOfFamily.id),
-                    childId = ChildId(part.child.id),
+                    headOfChild = decision.headOfFamilyId,
+                    childId = part.child.id,
                     startDate = decision.validFrom,
                     endDate = decision.validTo!!
                 )

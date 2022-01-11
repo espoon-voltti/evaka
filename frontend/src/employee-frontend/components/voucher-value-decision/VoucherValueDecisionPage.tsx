@@ -6,14 +6,16 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import {
+  VoucherValueDecisionDetailed,
+  VoucherValueDecisionType
+} from 'lib-common/generated/api-types/invoicing'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
 import { getVoucherValueDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
-import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
@@ -74,7 +76,7 @@ export default React.memo(function VoucherValueDecisionPage() {
         <>
           <ContentArea opaque>
             <VoucherValueDecisionHeading
-              {...decision.value}
+              decision={decision.value}
               changeDecisionType={changeDecisionType}
               newDecisionType={newDecisionType}
             />

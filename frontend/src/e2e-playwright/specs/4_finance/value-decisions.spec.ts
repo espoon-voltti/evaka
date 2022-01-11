@@ -61,8 +61,8 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
       daycareFixture.id,
       null,
       'DRAFT',
-      decision1DateFrom.formatIso(),
-      decision1DateTo.formatIso()
+      decision1DateFrom,
+      decision1DateTo
     ),
     voucherValueDecisionsFixture(
       'ed462aca-f74e-4384-910f-628823201023',
@@ -71,8 +71,8 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
       daycare2Fixture.id,
       null,
       'DRAFT',
-      decision2DateFrom.formatIso(),
-      decision2DateTo.formatIso()
+      decision2DateFrom,
+      decision2DateTo
     )
   ])
   await new EmployeeNav(page).openTab('finance')
@@ -89,8 +89,8 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions =
         daycareFixture.id,
         familyWithTwoGuardians.otherGuardian,
         'DRAFT',
-        decision1DateFrom.formatIso(),
-        decision1DateTo.formatIso()
+        decision1DateFrom,
+        decision1DateTo
       )
     ])
     await new EmployeeNav(page).openTab('finance')

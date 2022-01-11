@@ -17,8 +17,8 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea2Code
-import fi.espoo.evaka.testAreaCode
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import org.junit.jupiter.api.AfterEach
@@ -54,7 +54,7 @@ class InvoicingReportTest : FullApplicationTest() {
             InvoiceReport(
                 reportRows = listOf(
                     InvoiceReportRow(
-                        areaCode = testAreaCode,
+                        areaCode = testArea.areaCode!!,
                         amountOfInvoices = 1,
                         totalSumCents = 28900,
                         amountWithoutSSN = 0,
@@ -62,7 +62,7 @@ class InvoicingReportTest : FullApplicationTest() {
                         amountWithZeroPrice = 0
                     ),
                     InvoiceReportRow(
-                        areaCode = testArea2Code,
+                        areaCode = testArea2.areaCode!!,
                         amountOfInvoices = 2,
                         totalSumCents = 28900,
                         amountWithoutSSN = 0,
@@ -92,19 +92,19 @@ class InvoicingReportTest : FullApplicationTest() {
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testAreaCode,
+            agreementType = testArea.areaCode!!,
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_2.id,
-            agreementType = testArea2Code,
+            agreementType = testArea2.areaCode!!,
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_2.id,
-            agreementType = testArea2Code,
+            agreementType = testArea2.areaCode!!,
             rows = listOf()
         )
     )

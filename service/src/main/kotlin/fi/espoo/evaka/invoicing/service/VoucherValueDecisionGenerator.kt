@@ -14,13 +14,12 @@ import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
+import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
-import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
@@ -34,9 +33,7 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -52,7 +49,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     objectMapper: ObjectMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
-    child: PersonData.WithDateOfBirth,
+    child: ChildWithDateOfBirth,
     families: List<FridgeFamily>
 ) {
     val children = families.flatMap { it.children }
@@ -60,10 +57,10 @@ internal fun Database.Transaction.handleValueDecisionChanges(
 
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
-    val adults = families.flatMap { listOfNotNull(PersonId(it.headOfFamily.id), it.partner?.id?.let(::PersonId)) }
+    val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, adults, from)
-    val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(ChildId(child.id)) else listOf()
-    val feeAlterations = getFeeAlterationsFrom(listOf(ChildId(child.id)), from) + addECHAFeeAlterations(listOf(child), incomes)
+    val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
+    val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
     val serviceVoucherUnits = getServiceVoucherUnits()
@@ -82,12 +79,12 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             serviceVoucherUnits
         )
 
-    lockValueDecisionsForChild(ChildId(child.id))
+    lockValueDecisionsForChild(child.id)
 
     val existingDrafts =
-        findValueDecisionsForChild(ChildId(child.id), null, listOf(VoucherValueDecisionStatus.DRAFT))
+        findValueDecisionsForChild(child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
     val activeDecisions = findValueDecisionsForChild(
-        ChildId(child.id),
+        child.id,
         null,
         listOf(
             VoucherValueDecisionStatus.WAITING_FOR_SENDING,
@@ -103,9 +100,9 @@ internal fun Database.Transaction.handleValueDecisionChanges(
 
 private fun generateNewValueDecisions(
     from: LocalDate,
-    voucherChild: PersonData.WithDateOfBirth,
+    voucherChild: ChildWithDateOfBirth,
     families: List<FridgeFamily>,
-    allPlacements: Map<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>,
+    allPlacements: Map<ChildWithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
     voucherValues: List<VoucherValue>,
     incomes: List<Income>,
@@ -137,13 +134,13 @@ private fun generateNewValueDecisions(
                 ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
-                .find { family.headOfFamily.id == it.personId.raw && DateRange(it.validFrom, it.validTo).contains(period) }
+                .find { family.headOfFamily == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
             val partnerIncome = family.partner?.let { partner ->
                 incomes
                     .find {
-                        partner.id == it.personId.raw && DateRange(
+                        partner == it.personId && DateRange(
                             it.validFrom,
                             it.validTo
                         ).contains(period)
@@ -194,8 +191,8 @@ private fun generateNewValueDecisions(
                         id = VoucherValueDecisionId(UUID.randomUUID()),
                         status = VoucherValueDecisionStatus.DRAFT,
                         decisionType = VoucherValueDecisionType.NORMAL,
-                        headOfFamily = family.headOfFamily,
-                        partner = family.partner,
+                        headOfFamilyId = family.headOfFamily,
+                        partnerId = family.partner,
                         headOfFamilyIncome = income,
                         partnerIncome = partnerIncome,
                         familySize = family.getSize(),
@@ -203,7 +200,7 @@ private fun generateNewValueDecisions(
                         validFrom = period.start,
                         validTo = period.end,
                         child = voucherChild,
-                        placement = VoucherValueDecisionPlacement(UnitData.JustId(placement.unitId), placement.type),
+                        placement = VoucherValueDecisionPlacement(placement.unitId, placement.type),
                         serviceNeed = VoucherValueDecisionServiceNeed(
                             placement.serviceNeed.feeCoefficient,
                             placement.serviceNeed.voucherValueCoefficient,

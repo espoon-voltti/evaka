@@ -5,6 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useIncomeTypeOptions } from 'employee-frontend/utils/income'
+import { DecisionIncome } from 'lib-common/api-types/income'
+import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -12,8 +14,6 @@ import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import { Income } from '../../types/income'
-import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import { formatName, formatPercent } from '../../utils'
 
 type Props = {
@@ -35,7 +35,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
 
   const { incomeTypes } = incomeTypeOptions.value
 
-  const personIncome = (income: Income | null) => {
+  const personIncome = (income: DecisionIncome | null) => {
     if (!income || income.effect !== 'INCOME') {
       return (
         <span>

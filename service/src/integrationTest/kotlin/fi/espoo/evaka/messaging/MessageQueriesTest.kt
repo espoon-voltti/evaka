@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -36,8 +35,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.testAreaCode
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
@@ -347,10 +345,10 @@ class MessageQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             // When there is a daycare with two groups and employee1 as the supervisor
             listOf(employee1Id, employee2Id).forEach { tx.upsertEmployeeMessageAccount(it) }
-            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(
                 DevDaycare(
-                    areaId = testAreaId,
+                    areaId = testArea.id,
                     id = testDaycare.id,
                     name = testDaycare.name,
                     language = Language.fi,
@@ -408,10 +406,10 @@ class MessageQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             // When there is a daycare with a group and employee1 as the supervisor
             listOf(employee1Id, employee2Id).forEach { tx.upsertEmployeeMessageAccount(it) }
-            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(
                 DevDaycare(
-                    areaId = testAreaId,
+                    areaId = testArea.id,
                     id = testDaycare.id,
                     name = testDaycare.name,
                     language = Language.fi

@@ -14,15 +14,13 @@ import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.testAreaCode
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import org.jdbi.v3.core.kotlin.mapTo
@@ -49,9 +47,9 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
                 tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))).raw,
                 roles = setOf(UserRole.ADMIN)
             )
-            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
-            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
+            tx.insertTestCareArea(testArea)
+            tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare.id, name = testDaycare.name))
+            tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name))
             employee.also {
                 tx.insertTestEmployee(
                     DevEmployee(

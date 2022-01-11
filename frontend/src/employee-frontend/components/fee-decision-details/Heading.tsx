@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { formatDate } from 'lib-common/date'
 import DateRange from 'lib-common/date-range'
 import {
-  Detailed as PersonDetailed,
+  PersonDetailed,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'

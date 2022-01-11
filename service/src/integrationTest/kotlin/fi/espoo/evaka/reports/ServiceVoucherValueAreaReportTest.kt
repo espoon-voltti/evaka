@@ -10,7 +10,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -23,14 +22,15 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testArea2Id
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -72,7 +72,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     fun `unfrozen area voucher report includes value decisions that begin in the beginning of reports month`() {
         val sum = createTestSetOfDecisions()
 
-        val janReport = getAreaReport(testAreaId, janFirst.year, janFirst.monthValue)
+        val janReport = getAreaReport(testArea.id, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
         janReport.assertContainsSum(testDaycare.id, sum)
     }
@@ -82,7 +82,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         val sum = createTestSetOfDecisions()
         db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
 
-        val janReport = getAreaReport(testAreaId, janFirst.year, janFirst.monthValue)
+        val janReport = getAreaReport(testArea.id, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
         janReport.assertContainsSum(testDaycare.id, sum)
     }
@@ -94,7 +94,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         // co payment is dropped from 28800 to 0
         createVoucherDecision(janFirst, testDaycare.id, 87000, 0, testAdult_1.id, testChild_1, janFreeze.plusSeconds(3600))
 
-        val febReport = getAreaReport(testAreaId, febFirst.year, febFirst.monthValue)
+        val febReport = getAreaReport(testArea.id, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReport.size)
         febReport.assertContainsSum(testDaycare.id, sum + 2 * 28800)
     }
@@ -106,11 +106,11 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         // child is placed into another area
         createVoucherDecision(janFirst, testDaycare2.id, 87000, 28800, testAdult_1.id, testChild_1, janFreeze.plusSeconds(3600))
 
-        val febReportOldArea = getAreaReport(testAreaId, febFirst.year, febFirst.monthValue)
+        val febReportOldArea = getAreaReport(testArea.id, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReportOldArea.size)
         febReportOldArea.assertContainsSum(testDaycare.id, sum - 2 * 58200)
 
-        val febReportNewArea = getAreaReport(testArea2Id, febFirst.year, febFirst.monthValue)
+        val febReportNewArea = getAreaReport(testArea2.id, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReportNewArea.size)
         febReportNewArea.assertContainsSum(testDaycare2.id, 2 * 58200)
     }
@@ -121,7 +121,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         assertEquals(sum, row.monthlyPaymentSum)
     }
 
-    private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.ADMIN))
 
     private fun getAreaReport(areaId: AreaId, year: Int, month: Int): List<ServiceVoucherValueUnitAggregate> {
         val (_, response, data) = http.get(
@@ -145,7 +145,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         }
     }
 
-    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.FINANCE_ADMIN))
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
@@ -153,7 +153,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         value: Int,
         coPayment: Int,
         adultId: PersonId,
-        child: PersonData.Detailed,
+        child: DevPerson,
         approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), europeHelsinki).toInstant()
     ): VoucherValueDecision {
         val decision = db.transaction {

@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
+import {
+  InvoiceDistinctiveParams,
+  InvoiceStatus
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 import { getAreas, getUnits } from '../../api/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { InvoiceDistinctiveDetails, InvoiceStatus } from '../../types/invoicing'
 import {
   AreaFilter,
   Filters,
@@ -80,7 +83,7 @@ export default React.memo(function InvoiceFilters() {
   )
 
   const toggleServiceNeed = useCallback(
-    (id: InvoiceDistinctiveDetails) => () =>
+    (id: InvoiceDistinctiveParams) => () =>
       setSearchFilters((old) =>
         old.distinctiveDetails.includes(id)
           ? {

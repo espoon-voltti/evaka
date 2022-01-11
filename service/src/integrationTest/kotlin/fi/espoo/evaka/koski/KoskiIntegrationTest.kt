@@ -12,7 +12,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -22,6 +21,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
@@ -31,7 +31,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
@@ -344,7 +344,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
             testCases.forEach {
                 tx.insertTestAssistanceNeed(
                     DevAssistanceNeed(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id),
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         childId = testChild_1.id,
                         startDate = it.period.start,
                         endDate = it.period.end,
@@ -390,7 +390,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
             testCases.forEach {
                 tx.insertTestAssistanceAction(
                     DevAssistanceAction(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id),
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         childId = testChild_1.id,
                         startDate = it.period.start,
                         endDate = it.period.end,
@@ -585,7 +585,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `a daycare with purchased provider type is marked as such in study rights`() {
         val daycareId = db.transaction {
             it.insertTestDaycare(
-                DevDaycare(areaId = testAreaId, providerType = ProviderType.PURCHASED)
+                DevDaycare(areaId = testArea.id, providerType = ProviderType.PURCHASED)
             )
         }
         insertPlacement(daycareId = daycareId)
@@ -601,7 +601,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `a daycare with private provider type is marked as purchased in study rights`() {
         val daycareId = db.transaction {
             it.insertTestDaycare(
-                DevDaycare(areaId = testAreaId, providerType = ProviderType.PRIVATE)
+                DevDaycare(areaId = testArea.id, providerType = ProviderType.PRIVATE)
             )
         }
         insertPlacement(daycareId = daycareId)
@@ -785,7 +785,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertPlacement(
-        child: PersonData.Detailed = testChild_1,
+        child: DevPerson = testChild_1,
         daycareId: DaycareId = testDaycare.id,
         period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL

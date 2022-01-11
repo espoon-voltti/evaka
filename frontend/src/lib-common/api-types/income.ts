@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
+
 export const incomeCoefficients = [
   'MONTHLY_WITH_HOLIDAY_BONUS',
   'MONTHLY_NO_HOLIDAY_BONUS',
@@ -26,4 +28,15 @@ export type IncomeValue = {
   amount: number
   coefficient: IncomeCoefficient
   monthlyAmount: number
+}
+
+export interface DecisionIncome {
+  effect: IncomeEffect
+  data: Record<string, number>
+  totalIncome: number
+  totalExpenses: number
+  total: number
+  worksAtECHA: boolean
+  validFrom: LocalDate | null
+  validTo: LocalDate | null
 }

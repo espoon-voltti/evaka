@@ -9,7 +9,6 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
@@ -29,6 +28,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -174,7 +174,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(testAdult_1.id.raw, decisions.first().headOfFamily.id)
+            assertEquals(testAdult_1.id, decisions.first().headOfFamilyId)
         }
 
         changeHeadOfFamily(testChild_1, testAdult_2.id)
@@ -184,10 +184,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             assertEquals(2, decisions.size)
             val annulled = decisions.find { it.status == VoucherValueDecisionStatus.ANNULLED }
             assertNotNull(annulled)
-            assertEquals(testAdult_1.id.raw, annulled.headOfFamily.id)
+            assertEquals(testAdult_1.id, annulled.headOfFamilyId)
             val sent = decisions.find { it.status == VoucherValueDecisionStatus.SENT }
             assertNotNull(sent)
-            assertEquals(testAdult_2.id.raw, sent.headOfFamily.id)
+            assertEquals(testAdult_2.id, sent.headOfFamilyId)
         }
     }
 
@@ -260,7 +260,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(testAdult_1.id.raw, decisions.first().headOfFamily.id)
+            assertEquals(testAdult_1.id, decisions.first().headOfFamilyId)
         }
 
         deletePlacement(placementId)
@@ -269,7 +269,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.ANNULLED, decisions.first().status)
-            assertEquals(testAdult_1.id.raw, decisions.first().headOfFamily.id)
+            assertEquals(testAdult_1.id, decisions.first().headOfFamilyId)
         }
     }
 
@@ -291,8 +291,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(0, searchValueDecisions(status = "SENT", searchTerms = "Foobar").total)
     }
 
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
+    private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
 
     private fun createPlacement(
         startDate: LocalDate,
@@ -352,7 +352,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         asyncJobRunner.runPendingJobsSync()
     }
 
-    private fun changeHeadOfFamily(child: PersonData.Detailed, headOfFamilyId: PersonId) {
+    private fun changeHeadOfFamily(child: DevPerson, headOfFamilyId: PersonId) {
         db.transaction { it.execute("DELETE FROM fridge_child WHERE child_id = ?", child.id) }
 
         val body = ParentshipController.ParentshipRequest(

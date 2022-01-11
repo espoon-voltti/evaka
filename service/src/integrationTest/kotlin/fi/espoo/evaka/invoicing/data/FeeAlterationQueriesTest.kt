@@ -48,7 +48,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
         validFrom = LocalDate.of(2019, 1, 1),
         validTo = LocalDate.of(2019, 1, 31),
         notes = "",
-        updatedBy = EvakaUserId(testDecisionMaker_1.id)
+        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
     )
 
     @Test

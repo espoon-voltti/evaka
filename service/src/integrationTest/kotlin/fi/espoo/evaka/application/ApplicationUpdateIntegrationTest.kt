@@ -29,7 +29,7 @@ import kotlin.test.assertTrue
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest() {
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id.raw)
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {

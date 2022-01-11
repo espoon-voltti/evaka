@@ -20,10 +20,11 @@ import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
-import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
@@ -41,12 +42,12 @@ data class Invoice(
     val dueDate: LocalDate = getDueDate(periodEnd),
     val invoiceDate: LocalDate = dueDate.minusWeeks(2),
     val agreementType: Int,
-    val headOfFamily: PersonData.JustId,
-    val codebtor: PersonData.JustId?,
+    val headOfFamily: PersonId,
+    val codebtor: PersonId?,
     val rows: List<InvoiceRow>,
     val number: Long? = null,
     val sentBy: EvakaUserId? = null,
-    val sentAt: Instant? = null
+    val sentAt: HelsinkiDateTime? = null
 ) {
     val totalPrice
         get() = invoiceRowTotal(rows)
@@ -62,7 +63,7 @@ enum class InvoiceStatus {
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRow(
     val id: UUID?,
-    val child: PersonData.WithDateOfBirth,
+    val child: ChildWithDateOfBirth,
     val amount: Int,
     val unitPrice: Int,
     val periodStart: LocalDate,
@@ -85,12 +86,12 @@ data class InvoiceDetailed(
     val dueDate: LocalDate,
     val invoiceDate: LocalDate,
     val agreementType: Int,
-    val headOfFamily: PersonData.Detailed,
-    val codebtor: PersonData.Detailed?,
+    val headOfFamily: PersonDetailed,
+    val codebtor: PersonDetailed?,
     val rows: List<InvoiceRowDetailed>,
     val number: Long?,
     val sentBy: EvakaUserId?,
-    val sentAt: Instant?
+    val sentAt: HelsinkiDateTime?
 ) {
     val account: Int = 3295
     val totalPrice
@@ -100,7 +101,7 @@ data class InvoiceDetailed(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRowDetailed(
     val id: UUID,
-    val child: PersonData.Detailed,
+    val child: PersonDetailed,
     val amount: Int,
     val unitPrice: Int,
     val periodStart: LocalDate,
@@ -120,12 +121,12 @@ data class InvoiceSummary(
     val status: InvoiceStatus,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
-    val headOfFamily: PersonData.Detailed,
-    val codebtor: PersonData.Detailed?,
+    val headOfFamily: PersonDetailed,
+    val codebtor: PersonDetailed?,
     val rows: List<InvoiceRowSummary>,
     val sentBy: EvakaUserId?,
-    val sentAt: Instant?,
-    val createdAt: Instant? = null
+    val sentAt: HelsinkiDateTime?,
+    val createdAt: HelsinkiDateTime? = null
 ) {
     val account: Int = 3295
     val totalPrice
@@ -135,7 +136,7 @@ data class InvoiceSummary(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRowSummary(
     val id: UUID,
-    val child: PersonData.Basic,
+    val child: PersonBasic,
     val amount: Int,
     val unitPrice: Int
 ) : RowWithPrice {

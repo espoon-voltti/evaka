@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
-import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -40,10 +39,3 @@ export interface IncomeOption {
   withCoefficient: boolean
   isSubType: boolean
 }
-
-export const deserializeIncome = (json: JsonOf<Income>): Income => ({
-  ...json,
-  validFrom: LocalDate.parseIso(json.validFrom),
-  validTo: json.validTo ? LocalDate.parseIso(json.validTo) : undefined,
-  updatedAt: new Date(json.updatedAt)
-})

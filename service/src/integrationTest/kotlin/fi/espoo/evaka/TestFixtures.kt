@@ -23,8 +23,10 @@ import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.invoicing.domain.EmployeeWithName
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
-import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.PersonBasic
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
@@ -65,83 +67,91 @@ import java.util.UUID
  Queries and data classes for initializing integration tests with person and unit data
  */
 
-val testAreaId = AreaId(UUID.randomUUID())
-val testAreaCode = 200
-val testArea2Id = AreaId(UUID.randomUUID())
-val testArea2Code = 300
-val svebiTestId = AreaId(UUID.randomUUID())
-val svebiTestCode = 400
+val testArea = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Test Area", areaCode = 200)
+val testArea2 = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Lwiz Foo", shortName = "short name 2", areaCode = 300)
+val testAreaSvebi = DevCareArea(
+    id = AreaId(UUID.randomUUID()),
+    name = "Svenska Bildningstjanster",
+    shortName = "svenska-bildningstjanster",
+    areaCode = 400
+)
+
+val allAreas = listOf(testArea, testArea2, testAreaSvebi)
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
 
 val unitSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
 
-val testDaycare =
-    UnitData.Detailed(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Daycare",
-        areaId = testAreaId,
-        areaName = "Test Area",
-        language = "fi"
-    )
-val testDaycare2 =
-    UnitData.Detailed(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Daycare 2",
-        areaId = testArea2Id,
-        areaName = "Lwiz Foo",
-        language = "fi"
-    )
-val testDaycareNotInvoiced = UnitData.InvoicedByMunicipality(id = DaycareId(UUID.randomUUID()), invoicedByMunicipality = false)
-val testSvebiDaycare =
-    UnitData.Detailed(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Svebi Daycare",
-        areaId = svebiTestId,
-        areaName = "Svenska Bildningstjanster",
-        language = "sv"
-    )
-
-val testPurchasedDaycare =
-    UnitData.Detailed(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Purchased Daycare",
-        areaId = testAreaId,
-        areaName = "Lwiz Foo",
-        language = "fi"
-    )
-
-val testExternalPurchasedDaycare = UnitData.Detailed(
+val testDaycare = DevDaycare(
     id = DaycareId(UUID.randomUUID()),
-    name = "Test External Purchased Daycare",
-    areaId = testAreaId,
-    areaName = "Private Area",
-    language = "fi"
+    name = "Test Daycare",
+    areaId = testArea.id,
+    ophOrganizerOid = defaultMunicipalOrganizerOid,
+    enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS)
 )
 
-val testVoucherDaycare =
-    UnitData.Detailed(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Voucher Daycare",
-        areaId = testAreaId,
-        areaName = "Lwiz Foo",
-        language = "fi"
-    )
+val testDaycare2 = DevDaycare(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Test Daycare 2",
+    areaId = testArea2.id,
+    enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+)
 
-val testVoucherDaycare2 =
-    UnitData.Detailed(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Voucher Daycare 2",
-        areaId = testAreaId,
-        areaName = "Lwiz Foo",
-        language = "fi"
-    )
+val testDaycareNotInvoiced = DevDaycare(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Not Invoiced",
+    areaId = testArea2.id,
+    invoicedByMunicipality = false
+)
+
+val testSvebiDaycare = DevDaycare(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Test Svebi Daycare",
+    areaId = testAreaSvebi.id,
+    language = Language.sv
+)
+
+val testPurchasedDaycare = DevDaycare(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Test Purchased Daycare",
+    areaId = testArea.id,
+    providerType = ProviderType.PURCHASED,
+    ophOrganizerOid = defaultPurchasedOrganizerOid,
+    invoicedByMunicipality = false
+)
+
+val testExternalPurchasedDaycare = DevDaycare(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Test External Purchased Daycare",
+    areaId = testArea.id,
+    providerType = ProviderType.EXTERNAL_PURCHASED,
+    ophOrganizerOid = defaultPurchasedOrganizerOid,
+    invoicedByMunicipality = false
+)
+
+val testVoucherDaycare = DevDaycare(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Test Voucher Daycare",
+    areaId = testArea.id,
+    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+    ophOrganizerOid = defaultPurchasedOrganizerOid,
+    invoicedByMunicipality = false
+)
+
+val testVoucherDaycare2 = DevDaycare(
+    id = DaycareId(UUID.randomUUID()),
+    name = "Test Voucher Daycare 2",
+    areaId = testArea.id,
+    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+    ophOrganizerOid = defaultPurchasedOrganizerOid,
+    invoicedByMunicipality = false
+)
 
 val testClub = DevDaycare(
     id = DaycareId(UUID.randomUUID()),
     name = "Test Club",
-    areaId = testAreaId,
+    areaId = testArea.id,
     type = setOf(CareType.CLUB),
     clubApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
     daycareApplyPeriod = null,
@@ -154,7 +164,7 @@ val testClub = DevDaycare(
 val testGhostUnitDaycare = DevDaycare(
     id = DaycareId(UUID.randomUUID()),
     name = "Test Ghost Unit Daycare",
-    areaId = testAreaId,
+    areaId = testArea.id,
     type = setOf(CareType.CENTRE),
     uploadToVarda = false,
     uploadChildrenToVarda = false,
@@ -166,31 +176,31 @@ val testGhostUnitDaycare = DevDaycare(
 val testRoundTheClockDaycare = DevDaycare(
     id = DaycareId(UUID.randomUUID()),
     name = "Test Ghost Unit Daycare",
-    areaId = testAreaId,
+    areaId = testArea.id,
     type = setOf(CareType.CENTRE),
     roundTheClock = true,
     operationDays = setOf(1, 2, 3, 4, 5, 6, 7)
 )
 
-val testDecisionMaker_1 = PersonData.WithName(
-    id = UUID.randomUUID(),
+val testDecisionMaker_1 = DevEmployee(
+    id = EmployeeId(UUID.randomUUID()),
     firstName = "Decision",
     lastName = "Maker"
 )
 
-val testDecisionMaker_2 = PersonData.WithName(
-    id = UUID.randomUUID(),
+val testDecisionMaker_2 = DevEmployee(
+    id = EmployeeId(UUID.randomUUID()),
     firstName = "Decision",
     lastName = "Maker 2"
 )
 
-val unitSupervisorOfTestDaycare = PersonData.WithName(
-    id = UUID.randomUUID(),
+val unitSupervisorOfTestDaycare = DevEmployee(
+    id = EmployeeId(UUID.randomUUID()),
     firstName = "Sammy",
     lastName = "Supervisor"
 )
 
-val testAdult_1 = PersonData.Detailed(
+val testAdult_1 = DevPerson(
     id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1980, 1, 1),
     ssn = "010180-1232",
@@ -202,7 +212,7 @@ val testAdult_1 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testAdult_2 = PersonData.Detailed(
+val testAdult_2 = DevPerson(
     id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1979, 2, 1),
     ssn = "010279-123L",
@@ -215,7 +225,7 @@ val testAdult_2 = PersonData.Detailed(
     email = "joan.doe@example.com"
 )
 
-val testAdult_3 = PersonData.Detailed(
+val testAdult_3 = DevPerson(
     id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1985, 6, 7),
     ssn = null,
@@ -228,7 +238,7 @@ val testAdult_3 = PersonData.Detailed(
     email = "mark.foo@example.com"
 )
 
-val testAdult_4 = PersonData.Detailed(
+val testAdult_4 = DevPerson(
     id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1981, 3, 2),
     ssn = null,
@@ -242,7 +252,7 @@ val testAdult_4 = PersonData.Detailed(
 )
 
 // Matches VTJ mock person Johannes Karhula
-val testAdult_5 = PersonData.Detailed(
+val testAdult_5 = DevPerson(
     id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1944, 6, 7),
     ssn = "070644-937X",
@@ -255,7 +265,7 @@ val testAdult_5 = PersonData.Detailed(
 )
 
 // Matches VTJ mock person Ville Vilkas
-val testAdult_6 = PersonData.Detailed(
+val testAdult_6 = DevPerson(
     id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1999, 12, 31),
     ssn = "311299-999E",
@@ -268,7 +278,7 @@ val testAdult_6 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testAdult_7 = PersonData.Detailed(
+val testAdult_7 = DevPerson(
     id = PersonId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(1980, 1, 1),
     ssn = "010180-969B",
@@ -280,7 +290,7 @@ val testAdult_7 = PersonData.Detailed(
     restrictedDetailsEnabled = true
 )
 
-val testChild_1 = PersonData.Detailed(
+val testChild_1 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2017, 6, 1),
     ssn = "010617A123U",
@@ -292,7 +302,7 @@ val testChild_1 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testChild_2 = PersonData.Detailed(
+val testChild_2 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2016, 3, 1),
     ssn = "010316A1235",
@@ -304,7 +314,7 @@ val testChild_2 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testChild_3 = PersonData.Detailed(
+val testChild_3 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 9, 1),
     ssn = "120220A995L",
@@ -316,7 +326,7 @@ val testChild_3 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testChild_4 = PersonData.Detailed(
+val testChild_4 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2019, 3, 2),
     ssn = "020319A990J",
@@ -328,7 +338,7 @@ val testChild_4 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testChild_5 = PersonData.Detailed(
+val testChild_5 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 11, 13),
     ssn = "131118A111F",
@@ -341,7 +351,7 @@ val testChild_5 = PersonData.Detailed(
 )
 
 // Matches vtj mock child Jari-Petteri Karhula
-val testChild_6 = PersonData.Detailed(
+val testChild_6 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 11, 13),
     ssn = "070714A9126",
@@ -353,7 +363,7 @@ val testChild_6 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testChild_7 = PersonData.Detailed(
+val testChild_7 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 7, 28),
     ssn = null,
@@ -365,7 +375,7 @@ val testChild_7 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testChild_8 = PersonData.Detailed(
+val testChild_8 = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2016, 3, 10),
     ssn = "010316A1237",
@@ -377,7 +387,7 @@ val testChild_8 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val testChildWithNamelessGuardian = PersonData.Detailed(
+val testChildWithNamelessGuardian = DevPerson(
     id = ChildId(UUID.randomUUID()),
     dateOfBirth = LocalDate.of(2018, 12, 31),
     ssn = "311218A999J",
@@ -402,93 +412,20 @@ val allChildren = setOf(
     testChild_8,
     testChildWithNamelessGuardian
 )
-val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth, it.firstName, it.lastName, it.ssn) }
 val allDaycares = setOf(testDaycare, testDaycare2)
 
 fun Database.Transaction.insertGeneralTestFixtures() {
-    insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-    insertTestCareArea(
-        DevCareArea(
-            id = testArea2Id,
-            name = testDaycare2.areaName,
-            shortName = "short name 2",
-            areaCode = testArea2Code
-        )
-    )
-    insertTestCareArea(
-        DevCareArea(
-            id = svebiTestId,
-            name = testSvebiDaycare.areaName,
-            shortName = "svenska-bildningstjanster",
-            areaCode = svebiTestCode
-        )
-    )
-    insertTestDaycare(
-        DevDaycare(
-            areaId = svebiTestId,
-            id = testSvebiDaycare.id,
-            name = testSvebiDaycare.name,
-            language = Language.sv,
-        )
-    )
-    insertTestDaycare(
-        DevDaycare(
-            areaId = testAreaId,
-            id = testDaycare.id,
-            name = testDaycare.name,
-            ophOrganizerOid = defaultMunicipalOrganizerOid,
-            enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS)
-        )
-    )
-    insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name, enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
-    insertTestDaycare(
-        DevDaycare(
-            areaId = testArea2Id,
-            id = testDaycareNotInvoiced.id,
-            name = "Not Invoiced",
-            invoicedByMunicipality = testDaycareNotInvoiced.invoicedByMunicipality
-        )
-    )
-    insertTestDaycare(
-        DevDaycare(
-            areaId = testAreaId,
-            id = testPurchasedDaycare.id,
-            name = testPurchasedDaycare.name,
-            providerType = ProviderType.PURCHASED,
-            ophOrganizerOid = defaultPurchasedOrganizerOid,
-            invoicedByMunicipality = false
-        )
-    )
-    insertTestDaycare(
-        DevDaycare(
-            areaId = testExternalPurchasedDaycare.areaId,
-            id = testExternalPurchasedDaycare.id,
-            name = testExternalPurchasedDaycare.name,
-            providerType = ProviderType.EXTERNAL_PURCHASED,
-            ophOrganizerOid = defaultPurchasedOrganizerOid,
-            invoicedByMunicipality = false
-        )
-    )
-    insertTestDaycare(
-        DevDaycare(
-            areaId = testVoucherDaycare.areaId,
-            id = testVoucherDaycare.id,
-            name = testVoucherDaycare.name,
-            providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
-            ophOrganizerOid = defaultPurchasedOrganizerOid,
-            invoicedByMunicipality = false
-        )
-    )
-    insertTestDaycare(
-        DevDaycare(
-            areaId = testVoucherDaycare2.areaId,
-            id = testVoucherDaycare2.id,
-            name = testVoucherDaycare2.name,
-            providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
-            ophOrganizerOid = defaultPurchasedOrganizerOid,
-            invoicedByMunicipality = false
-        )
-    )
+    insertTestCareArea(testArea)
+    insertTestCareArea(testArea2)
+    insertTestCareArea(testAreaSvebi)
+    insertTestDaycare(testSvebiDaycare)
+    insertTestDaycare(testDaycare)
+    insertTestDaycare(testDaycare2)
+    insertTestDaycare(testDaycareNotInvoiced)
+    insertTestDaycare(testPurchasedDaycare)
+    insertTestDaycare(testExternalPurchasedDaycare)
+    insertTestDaycare(testVoucherDaycare)
+    insertTestDaycare(testVoucherDaycare2)
 
     insertTestDaycare(testClub)
     insertTestDaycare(testGhostUnitDaycare)
@@ -497,7 +434,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     testDecisionMaker_1.let {
         insertTestEmployee(
             DevEmployee(
-                id = EmployeeId(it.id),
+                id = it.id,
                 firstName = it.firstName,
                 lastName = it.lastName,
                 roles = setOf(UserRole.SERVICE_WORKER)
@@ -508,7 +445,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     testDecisionMaker_2.let {
         insertTestEmployee(
             DevEmployee(
-                id = EmployeeId(it.id),
+                id = it.id,
                 firstName = it.firstName,
                 lastName = it.lastName
             )
@@ -518,7 +455,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     unitSupervisorOfTestDaycare.let {
         insertTestEmployee(
             DevEmployee(
-                id = EmployeeId(it.id),
+                id = it.id,
                 firstName = it.firstName,
                 lastName = it.lastName,
                 externalId = unitSupervisorExternalId
@@ -707,8 +644,8 @@ INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_ord
 }
 
 fun Database.Transaction.insertApplication(
-    guardian: PersonData.Detailed = testAdult_5,
-    child: PersonData.Detailed = testChild_6,
+    guardian: DevPerson = testAdult_5,
+    child: DevPerson = testChild_6,
     appliedType: PlacementType = PlacementType.PRESCHOOL_DAYCARE,
     urgent: Boolean = false,
     hasAdditionalInfo: Boolean = false,
@@ -819,5 +756,49 @@ fun Database.Transaction.insertApplication(
     return application
 }
 
-private fun addressOf(person: PersonData.Detailed): Address =
+private fun addressOf(person: DevPerson): Address =
     Address(street = person.streetAddress, postalCode = person.postalCode, postOffice = person.postOffice)
+
+fun DevPerson.toPersonBasic() = PersonBasic(
+    id = this.id,
+    dateOfBirth = this.dateOfBirth,
+    firstName = this.firstName,
+    lastName = this.lastName,
+    ssn = this.ssn
+)
+
+fun DevPerson.toPersonDetailed() = PersonDetailed(
+    id = this.id,
+    dateOfBirth = this.dateOfBirth,
+    dateOfDeath = this.dateOfDeath,
+    firstName = this.firstName,
+    lastName = this.lastName,
+    ssn = this.ssn,
+    streetAddress = this.streetAddress,
+    postalCode = this.postalCode,
+    postOffice = this.postOffice,
+    residenceCode = this.residenceCode,
+    email = this.email,
+    phone = this.phone,
+    language = this.language,
+    invoiceRecipientName = this.invoiceRecipientName,
+    invoicingStreetAddress = this.invoicingStreetAddress,
+    invoicingPostalCode = this.invoicingPostalCode,
+    invoicingPostOffice = this.invoicingPostOffice,
+    restrictedDetailsEnabled = this.restrictedDetailsEnabled,
+    forceManualFeeDecisions = this.forceManualFeeDecisions
+)
+
+fun DevEmployee.toEmployeeWithName() = EmployeeWithName(
+    id = this.id,
+    firstName = this.firstName,
+    lastName = this.lastName
+)
+
+fun DevDaycare.toUnitData() = UnitData(
+    id = this.id,
+    name = this.name,
+    areaId = this.areaId,
+    areaName = allAreas.find { it.id == this.areaId }?.name ?: "",
+    language = this.language.name
+)

@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.AfterEach
@@ -63,8 +63,8 @@ class TimeIntegrationTest : PureJdbiTest() {
         var secondUnitId: DaycareId? = null
         var thirdUnitId: DaycareId? = null
         db.transaction { tx ->
-            secondUnitId = tx.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "second round the clock unit"))
-            thirdUnitId = tx.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "third round the clock unit"))
+            secondUnitId = tx.insertTestDaycare(DevDaycare(areaId = testArea.id, name = "second round the clock unit"))
+            thirdUnitId = tx.insertTestDaycare(DevDaycare(areaId = testArea.id, name = "third round the clock unit"))
             tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)")
                 .bind("ids", arrayOf(secondUnitId, thirdUnitId))
                 .execute()

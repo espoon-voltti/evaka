@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class PeopleTest {
-    private val testPerson = PersonData.Detailed(
+    private val testPerson = PersonDetailed(
         id = PersonId(UUID.randomUUID()),
         dateOfBirth = LocalDate.of(1980, 1, 1),
         firstName = "John",

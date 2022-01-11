@@ -2,33 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { SearchOrder } from 'employee-frontend/types'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
 import {
   Absence,
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
+import { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import {
+  FeeDecision,
+  FeeDecisionDetailed,
+  FeeDecisionSummary,
+  Invoice,
   InvoiceCodes,
-  InvoiceDetailed
+  InvoiceDetailed,
+  InvoiceSummary,
+  PersonBasic,
+  PersonDetailed,
+  VoucherValueDecisionDetailed,
+  VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { SearchOrder } from '../types'
-import { deserializeIncome } from '../types/income'
-import {
-  deserializePeriodic,
-  deserializePersonBasic,
-  deserializePersonDetailed,
-  FeeDecision,
-  FeeDecisionDetailed,
-  FeeDecisionSummary,
-  VoucherValueDecisionDetailed,
-  Invoice,
-  VoucherValueDecisionSummary,
-  InvoiceSummary
-} from '../types/invoicing'
 import { API_URL, client } from './client'
 
 export interface SearchParams {
@@ -280,8 +277,24 @@ export async function getPersonFeeDecisions(
         res.data.data.map((json) => ({
           ...json,
           validDuring: DateRange.parseJson(json.validDuring),
+          validFrom: LocalDate.parseIso(json.validFrom),
+          validTo: LocalDate.parseNullableIso(json.validTo),
           sentAt: json.sentAt ? new Date(json.sentAt) : null,
-          created: new Date(json.created)
+          approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
+          created: new Date(json.created),
+          headOfFamilyIncome: json.headOfFamilyIncome
+            ? deserializeIncome(json.headOfFamilyIncome)
+            : null,
+          partnerIncome: json.partnerIncome
+            ? deserializeIncome(json.partnerIncome)
+            : null,
+          children: json.children.map((childJson) => ({
+            ...childJson,
+            child: {
+              ...childJson.child,
+              dateOfBirth: LocalDate.parseIso(childJson.child.dateOfBirth)
+            }
+          }))
         }))
       )
     )
@@ -352,8 +365,20 @@ export async function getPersonInvoices(
       Success.of(
         res.data.data.map((json) => ({
           ...json,
-          ...deserializePeriodic(json),
-          sentAt: json.sentAt ? new Date(json.sentAt) : null
+          periodStart: LocalDate.parseIso(json.periodStart),
+          periodEnd: LocalDate.parseIso(json.periodEnd),
+          dueDate: LocalDate.parseIso(json.dueDate),
+          invoiceDate: LocalDate.parseIso(json.invoiceDate),
+          sentAt: json.sentAt ? new Date(json.sentAt) : null,
+          rows: json.rows.map((rowJson) => ({
+            ...rowJson,
+            periodStart: LocalDate.parseIso(rowJson.periodStart),
+            periodEnd: LocalDate.parseIso(rowJson.periodEnd),
+            child: {
+              ...rowJson.child,
+              dateOfBirth: LocalDate.parseIso(rowJson.child.dateOfBirth)
+            }
+          }))
         }))
       )
     )
@@ -365,14 +390,16 @@ export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
     .get<JsonOf<Response<InvoiceDetailed>>>(`/invoices/${id}`)
     .then(({ data: { data: json } }) => ({
       ...json,
-      ...deserializePeriodic(json),
+      periodStart: LocalDate.parseIso(json.periodStart),
+      periodEnd: LocalDate.parseIso(json.periodEnd),
       dueDate: LocalDate.parseIso(json.dueDate),
       invoiceDate: LocalDate.parseIso(json.invoiceDate),
       headOfFamily: deserializePersonDetailed(json.headOfFamily),
       codebtor: json.codebtor ? deserializePersonDetailed(json.codebtor) : null,
       rows: json.rows.map((rowJson) => ({
         ...rowJson,
-        ...deserializePeriodic(rowJson),
+        periodStart: LocalDate.parseIso(rowJson.periodStart),
+        periodEnd: LocalDate.parseIso(rowJson.periodEnd),
         child: deserializePersonDetailed(rowJson.child)
       })),
       sentAt: json.sentAt ? new Date(json.sentAt) : null
@@ -400,14 +427,17 @@ export async function getInvoices(
       ...data,
       data: data.data.map((json) => ({
         ...json,
-        ...deserializePeriodic(json),
+        periodStart: LocalDate.parseIso(json.periodStart),
+        periodEnd: LocalDate.parseIso(json.periodEnd),
         headOfFamily: deserializePersonDetailed(json.headOfFamily),
+        codebtor: json.codebtor
+          ? deserializePersonDetailed(json.codebtor)
+          : null,
         createdAt: json.createdAt ? new Date(json.createdAt) : null,
+        sentAt: json.sentAt ? new Date(json.sentAt) : null,
         rows: json.rows.map((rowJson) => ({
-          child: {
-            ...rowJson.child,
-            dateOfBirth: LocalDate.parseIso(rowJson.child.dateOfBirth)
-          }
+          ...rowJson,
+          child: deserializePersonBasic(rowJson.child)
         }))
       }))
     }))
@@ -418,8 +448,13 @@ export async function getInvoices(
 export async function updateInvoice(
   invoice: InvoiceDetailed
 ): Promise<Result<void>> {
+  const body: Invoice = {
+    ...invoice,
+    headOfFamily: invoice.headOfFamily.id,
+    codebtor: invoice.codebtor?.id ?? null
+  }
   return client
-    .put<void>(`/invoices/${invoice.id}`, invoice)
+    .put<void>(`/invoices/${invoice.id}`, body)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -541,3 +576,22 @@ export async function createRetroactiveValueDecisions(
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
+
+const deserializePersonBasic = (json: JsonOf<PersonBasic>): PersonBasic => ({
+  ...json,
+  dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+})
+
+const deserializePersonDetailed = (
+  json: JsonOf<PersonDetailed>
+): PersonDetailed => ({
+  ...json,
+  dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+  dateOfDeath: LocalDate.parseNullableIso(json.dateOfDeath)
+})
+
+const deserializeIncome = (json: JsonOf<DecisionIncome>): DecisionIncome => ({
+  ...json,
+  validFrom: LocalDate.parseNullableIso(json.validFrom),
+  validTo: LocalDate.parseNullableIso(json.validTo)
+})

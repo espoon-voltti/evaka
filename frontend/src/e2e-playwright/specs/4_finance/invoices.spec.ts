@@ -29,8 +29,8 @@ import {
   invoiceFixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
-import { FeeDecision } from 'e2e-test-common/dev-api/types'
 import DateRange from 'lib-common/date-range'
+import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Page } from '../../utils/page'
 
@@ -130,13 +130,11 @@ describe('Invoices', () => {
       invoiceFixture(
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id,
         'DRAFT'
       ),
       invoiceFixture(
         fixtures.familyWithRestrictedDetailsGuardian.guardian.id,
         fixtures.familyWithRestrictedDetailsGuardian.children[0].id,
-        fixtures.daycareFixture.id,
         'DRAFT'
       )
     ])
@@ -156,7 +154,6 @@ describe('Invoices', () => {
       invoiceFixture(
         adultWithoutSSN.id,
         fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id,
         'DRAFT'
       )
     ])
