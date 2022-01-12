@@ -30,6 +30,8 @@ import {
   DaycarePlacement,
   DecisionFixture,
   DevIncome,
+  DevVardaReset,
+  DevVardaServiceNeed,
   EmployeeDetail,
   EmployeePin,
   OtherGuardianAgreementStatus,
@@ -40,6 +42,8 @@ import {
   ServiceNeedFixture
 } from './types'
 import {
+  addVardaReset,
+  addVardaServiceNeed,
   insertAssistanceNeedFixtures,
   insertBackupCareFixtures,
   insertCareAreaFixtures,
@@ -1229,6 +1233,23 @@ export class Fixture {
       updatedBy: 'not_set'
     })
   }
+
+  static vardaReset(): VardaResetBuilder {
+    return new VardaResetBuilder({
+      evakaChildId: uuidv4(),
+      resetTimestamp: new Date()
+    })
+  }
+
+  static vardaServiceNeed(): VardaServiceNeedBuilder {
+    return new VardaServiceNeedBuilder({
+      evakaServiceNeedId: uuidv4(),
+      evakaChildId: uuidv4(),
+      evakaServiceNeedUpdated: new Date(),
+      updateFailed: false,
+      errors: []
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1531,5 +1552,27 @@ export class IncomeBuilder extends FixtureBuilder<DevIncome> {
 
   copy() {
     return new IncomeBuilder({ ...this.data })
+  }
+}
+
+export class VardaResetBuilder extends FixtureBuilder<DevVardaReset> {
+  async save() {
+    await addVardaReset(this.data)
+    return this
+  }
+
+  copy() {
+    return new VardaResetBuilder({ ...this.data })
+  }
+}
+
+export class VardaServiceNeedBuilder extends FixtureBuilder<DevVardaServiceNeed> {
+  async save() {
+    await addVardaServiceNeed(this.data)
+    return this
+  }
+
+  copy() {
+    return new VardaServiceNeedBuilder({ ...this.data })
   }
 }

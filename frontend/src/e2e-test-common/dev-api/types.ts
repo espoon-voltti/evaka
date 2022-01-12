@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -463,4 +463,17 @@ export interface DevIncome {
   effect: IncomeEffect
   updatedAt: Date
   updatedBy: string
+}
+
+export interface DevVardaReset {
+  evakaChildId: string
+  resetTimestamp: Date | null
+}
+
+export interface DevVardaServiceNeed {
+  evakaServiceNeedId: string
+  evakaServiceNeedUpdated: Date
+  evakaChildId: string
+  updateFailed: boolean
+  errors: string[]
 }

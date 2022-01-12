@@ -7,7 +7,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   RawReportRow,
   ServiceVoucherReport,
-  ServiceVoucherUnitReport
+  ServiceVoucherUnitReport,
+  VardaErrorReportRow
 } from 'lib-common/generated/api-types/reports'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -31,8 +32,7 @@ import {
   PlacementSketchingRow,
   PresenceReportRow,
   ServiceNeedReportRow,
-  StartingPlacementsRow,
-  VardaErrorReportRow
+  StartingPlacementsRow
 } from '../types/reports'
 import { client } from './client'
 
@@ -465,8 +465,27 @@ export async function getVardaErrorsReport(): Promise<
         res.data.map((row) => ({
           ...row,
           updated: new Date(row.updated),
-          created: new Date(row.created)
+          created: new Date(row.created),
+          resetTimeStamp: row.resetTimeStamp
+            ? new Date(row.resetTimeStamp)
+            : null
         }))
       )
     )
+}
+
+export async function markChildForVardaReset(
+  childId: string
+): Promise<Result<void>> {
+  return client
+    .post<void>(`/varda/mark-child-for-reset/${childId}`)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function runResetChildren(): Promise<Result<void>> {
+  return client
+    .post<void>(`/varda/reset-children`)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

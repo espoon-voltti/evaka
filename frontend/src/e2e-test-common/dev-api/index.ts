@@ -55,7 +55,9 @@ import {
   PedagogicalDocument,
   ServiceNeedFixture,
   AssistanceNeed,
-  DevIncome
+  DevIncome,
+  DevVardaReset,
+  DevVardaServiceNeed
 } from './types'
 
 export class DevApiError extends BaseError {
@@ -905,6 +907,24 @@ export async function terminatePlacement(
       terminationRequestedDate,
       terminatedBy
     })
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function addVardaReset(vardaReset: DevVardaReset): Promise<void> {
+  try {
+    await devClient.post('/varda/reset-child', vardaReset)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function addVardaServiceNeed(
+  vardaServiceNeed: DevVardaServiceNeed
+): Promise<void> {
+  try {
+    await devClient.post('/varda/varda-service-need', vardaServiceNeed)
   } catch (e) {
     throw new DevApiError(e)
   }

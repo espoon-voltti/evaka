@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/varda-dev")
-class VardaDevController(
+@RequestMapping("/varda")
+class VardaController(
     private val vardaUpdateService: VardaUpdateService,
     private val vardaResetService: VardaResetService
 ) {

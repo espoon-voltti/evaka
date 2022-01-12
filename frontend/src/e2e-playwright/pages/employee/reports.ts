@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { captureTextualDownload } from 'e2e-playwright/browser'
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 import {
   Combobox,
   DatePickerDeprecated,
@@ -28,6 +28,11 @@ export default class ReportsPage {
   async openVoucherServiceProvidersReport() {
     await this.page.find('[data-qa="report-voucher-service-providers"]').click()
     return new VoucherServiceProvidersReport(this.page)
+  }
+
+  async openVardaErrorsReport() {
+    await this.page.find('[data-qa="report-varda-errors"]').click()
+    return new VardaErrorsReport(this.page)
   }
 }
 
@@ -164,5 +169,30 @@ export class VoucherServiceProvidersReport {
       this.#downloadCsvLink.click()
     ])
     return captureTextualDownload(download)
+  }
+}
+
+export class VardaErrorsReport {
+  constructor(private page: Page) {}
+
+  #errorsTable = this.page.find('[data-qa="varda-errors-table"]')
+  #errorRows = this.page.findAll('[data-qa="varda-error-row"]')
+  #errors = (childId: string) => this.page.find(`[data-qa="errors-${childId}"]`)
+  #resetChild = (childId: string) =>
+    this.page.find(`[data-qa="reset-button-${childId}"]`)
+
+  async assertErrorsContains(childId: string, expected: string) {
+    await waitUntilTrue(async () =>
+      ((await this.#errors(childId).textContent) || '').includes(expected)
+    )
+  }
+
+  async resetChild(childId: string) {
+    await this.#resetChild(childId).click()
+  }
+
+  async assertErrorRowCount(expected: number) {
+    await waitUntilTrue(() => this.#errorsTable.visible)
+    await waitUntilEqual(() => this.#errorRows.count(), expected)
   }
 }

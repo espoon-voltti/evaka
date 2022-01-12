@@ -2556,7 +2556,11 @@ export const fi = {
       age: 'Ikä (päivää)',
       child: 'Lapsi',
       serviceNeed: 'Palveluntarve',
-      error: 'Virhe'
+      error: 'Virhe',
+      childLastReset: 'Resetoitu viimeksi',
+      childMarkedForRest: 'Lapsen tiedot nollataan seuraavalla ajolla',
+      resetChild: 'Resetoi',
+      updating: 'Päivittää'
     }
   },
   unitEditor: {
