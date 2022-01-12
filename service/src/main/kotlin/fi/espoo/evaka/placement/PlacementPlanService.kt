@@ -219,7 +219,7 @@ class PlacementPlanService(
         }
     }
 
-    private fun resolveServiceNeedFromApplication(tx: Database.Transaction, application: ApplicationDetails): ApplicationServiceNeed? {
+    private fun resolveServiceNeedFromApplication(tx: Database.Read, application: ApplicationDetails): ApplicationServiceNeed? {
         val serviceNeedOptionId = application.form.preferences.serviceNeed?.serviceNeedOption?.id ?: return null
         if (tx.findServiceNeedOptionById(serviceNeedOptionId) == null) {
             logger.warn { "Application ${application.id} has non-existing service need option: $serviceNeedOptionId" }

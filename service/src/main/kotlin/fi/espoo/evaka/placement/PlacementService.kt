@@ -384,7 +384,7 @@ private fun addMissingGroupPlacements(daycarePlacement: DaycarePlacementWithDeta
     return daycarePlacement.copy(groupPlacements = groupPlacements)
 }
 
-private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: ChildId, type: PlacementType, startDate: LocalDate, endDate: LocalDate): List<Pair<FiniteDateRange, PlacementType>> {
+private fun handleFiveYearOldDaycare(tx: Database.Read, childId: ChildId, type: PlacementType, startDate: LocalDate, endDate: LocalDate): List<Pair<FiniteDateRange, PlacementType>> {
     val (normalPlacementType, fiveYearOldPlacementType) = when (type) {
         PlacementType.DAYCARE, PlacementType.DAYCARE_FIVE_YEAR_OLDS ->
             PlacementType.DAYCARE to PlacementType.DAYCARE_FIVE_YEAR_OLDS
