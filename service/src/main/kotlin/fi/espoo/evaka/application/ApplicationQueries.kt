@@ -254,7 +254,7 @@ fun Database.Read.fetchApplicationSummaries(
             child.social_security_number,
             f.document,
             f.document ->> 'type' as type,
-            f.document -> 'serviceNeedOption' ->> 'id' as serviceNeedId,
+            (f.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
             f.document -> 'serviceNeedOption' ->> 'nameFi' as serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
@@ -680,7 +680,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
         SELECT
             a.id,
             f.document ->> 'type' AS type,
-            f.document -> 'serviceNeedOption' ->> 'id' AS serviceNeedId,
+            (f.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
             f.document -> 'serviceNeedOption' ->> 'nameFi' AS serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
