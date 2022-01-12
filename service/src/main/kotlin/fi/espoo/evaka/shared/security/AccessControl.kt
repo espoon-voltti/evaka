@@ -357,6 +357,7 @@ WHERE employee_id = :userId
                 UserRole.STAFF,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             ),
+            createUnits = hasPermissionFor(user, Action.Global.CREATE_UNIT),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
             personalMobileDevice = user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR),
         )

@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
@@ -25,6 +25,7 @@ import { faSearch } from 'lib-icons'
 import { getDaycares } from '../api/unit'
 import { useTranslation } from '../state/i18n'
 import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
+import { UserContext } from '../state/user'
 import { Unit } from '../types/unit'
 import { RequireRole } from '../utils/roles'
 
@@ -39,7 +40,9 @@ const TopBar = styled.div`
 `
 
 function Units() {
+  const history = useHistory()
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
   const {
     units,
     setUnits,
@@ -101,6 +104,14 @@ function Units() {
           })
       )
       .getOrElse(null)
+
+  if (
+    units.isSuccess &&
+    units.value.length === 1 &&
+    !user?.accessibleFeatures.createUnits
+  ) {
+    history.replace(`/units/${units.value[0].id}`)
+  }
 
   return (
     <Container data-qa="units-page">

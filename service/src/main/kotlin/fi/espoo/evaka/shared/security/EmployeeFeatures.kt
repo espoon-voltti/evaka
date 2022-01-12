@@ -15,6 +15,7 @@ data class EmployeeFeatures(
     val settings: Boolean,
     val unitFeatures: Boolean,
     val units: Boolean,
+    val createUnits: Boolean,
     val vasuTemplates: Boolean,
     val personalMobileDevice: Boolean,
 )
