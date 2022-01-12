@@ -174,6 +174,7 @@ export default React.memo(function MarkDeparted() {
                   }
                 />
               </TimeWrapper>
+              <Gap size="xs" />
               {child && absentFrom.length > 0 ? (
                 <FixedSpaceColumn>
                   <AbsentFrom child={child} absentFrom={absentFrom} />

@@ -6,112 +6,150 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { HTMLAttributes, RefObject, useState } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { faTimes } from 'lib-icons'
 import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
 import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
+import IconButton from '../buttons/IconButton'
 
-const Wrapper = styled.div`
-  display: inline-block;
-  min-width: 0; // needed for correct overflow behavior
-`
-
-type InputWidth = 'xs' | 's' | 'm' | 'L' | 'XL' | 'full'
-
-const inputWidths: Record<InputWidth, string> = {
+const inputWidths = {
   xs: '60px',
   s: '120px',
   m: '240px',
   L: '480px',
   XL: '720px',
   full: '100%'
-}
+} as const
 
-interface StyledInputProps {
-  width: InputWidth
-  clearable: boolean
-  align?: 'left' | 'right'
-}
-export const StyledInput = styled.input<StyledInputProps>`
-  width: ${(p) => inputWidths[p.width]};
+type InputWidth = keyof typeof inputWidths
+
+const width = (width: InputWidth) => css`
+  width: ${inputWidths[width]};
+  max-width: ${inputWidths[width]};
 
   @media (max-width: ${tabletMin}) {
-    ${(p) => (p.width === 'L' || p.width === 'XL' ? 'width: 100%;' : '')}
+    ${width === 'L' || width === 'XL'
+      ? css`
+          width: 100%;
+          max-width: 100%;
+        `
+      : ''}
   }
 
   @media (max-width: 700px) {
-    ${(p) => (p.width === 'XL' ? 'width: 100%; min-width: 100%;' : '')}
+    ${width === 'XL'
+      ? css`
+          width: 100%;
+          max-width: 100%;
+        `
+      : ''}
   }
+`
 
-  border-style: none none solid none;
-  border-width: 1px;
-  border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
-  border-radius: 2px;
+const Wrapper = styled.div<{ width: InputWidth }>`
+  position: relative;
+  display: inline-block;
+  min-width: 0; // needed for correct overflow behavior
+  ${(p) => width(p.width)}
+`
+
+interface StyledInputProps {
+  width: InputWidth
+  align?: 'left' | 'right'
+  icon?: boolean
+}
+
+export const StyledInput = styled.input<StyledInputProps>`
+  ${(p) => width(p.width)}
+  margin: 0;
+  border: none;
+  border-top: 2px solid transparent;
+  border-bottom: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
+  border-radius: 0;
   outline: none;
-  box-sizing: border-box;
   text-align: ${(p) => p.align ?? 'left'};
   background-color: ${({ theme: { colors } }) => colors.greyscale.white};
-
   font-size: 1rem;
   color: ${({ theme: { colors } }) => colors.greyscale.darkest};
-  padding: 6px ${(p) => (p.clearable ? '36px' : '12px')} 6px 12px;
+  padding: 6px 10px;
+  ${({ icon }) =>
+    icon
+      ? css`
+          padding-right: calc(10px + 1rem + 12px);
+        `
+      : ''}
 
   &::placeholder {
     color: ${({ theme: { colors } }) => colors.greyscale.dark};
-    font-size: 15px;
     font-family: 'Open Sans', 'Arial', sans-serif;
   }
 
-  &:focus {
-    border-width: 2px;
-    border-style: solid;
-    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
-    margin-top: -2px;
-    margin-bottom: -1px;
-    padding-${(p) => (p.align === 'right' ? 'right' : 'left')}: 10px;
-  }
-
+  &:focus,
   &.success,
   &.warning {
-    border-width: 2px;
+    border-bottom-width: 2px;
     margin-bottom: -1px;
-    &:focus {
-      margin-bottom: -1px;
-    }
+  }
+
+  &:focus {
+    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    border-radius: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
+    ${({ icon }) =>
+      icon
+        ? css`
+            padding-right: calc(8px + 1rem + 12px);
+          `
+        : ''}
   }
 
   &.success {
-    border-color: ${({ theme: { colors } }) => colors.accents.successGreen};
+    border-bottom-color: ${({ theme: { colors } }) =>
+      colors.accents.successGreen};
+
+    &:focus {
+      border-color: ${({ theme: { colors } }) => colors.accents.successGreen};
+    }
   }
 
   &.warning {
-    border-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
+    border-bottom-color: ${({ theme: { colors } }) =>
+      colors.accents.warningOrange};
+
+    &:focus {
+      border-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
+    }
   }
 
   &:read-only {
-    border-bottom-style: dotted;
+    border-bottom-style: dashed;
     color: ${({ theme: { colors } }) => colors.greyscale.dark};
     background: none;
   }
 `
 
-export const InputRow = styled.div`
-  position: relative;
-  width: 100%;
-`
-
-const InputIcon = styled.div`
-  font-size: 20px;
+const IconContainer = styled.div<{ clickable: boolean }>`
   position: absolute;
-  right: 8px;
+  right: 12px;
   top: 0;
   bottom: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
-  cursor: pointer;
+  align-items: center;
+  font-size: 1rem;
+
+  ${(p) =>
+    !p.clickable
+      ? css`
+          pointer-events: none;
+        `
+      : ''}
+`
+
+const StyledIconButton = styled(IconButton)`
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
   &:hover {
@@ -120,19 +158,12 @@ const InputIcon = styled.div`
 `
 
 export const InputFieldUnderRow = styled.div`
-  height: 16px;
-  padding: 0 12px;
-  margin-top: ${defaultMargins.xxs};
-  margin-bottom: -20px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-start;
-
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: fit-content;
+  font-size: 1rem;
+  line-height: 1rem;
+  margin-top: ${defaultMargins.xxs};
 
   color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
@@ -141,12 +172,8 @@ export const InputFieldUnderRow = styled.div`
   }
 
   &.warning {
-    color: ${({ theme: { colors } }) => colors.accents.warningOrange};
+    color: ${({ theme: { colors } }) => colors.accents.orangeDark};
   }
-`
-
-const Symbol = styled.span`
-  margin-left: ${defaultMargins.xxs};
 `
 
 export type InputInfo = {
@@ -216,8 +243,7 @@ export default React.memo(function InputField({
   inputRef,
   'aria-describedby': ariaId,
   required,
-  autoFocus,
-  wrapperClassName = undefined
+  autoFocus
 }: TextInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -226,54 +252,58 @@ export default React.memo(function InputField({
   const infoText = hideError ? undefined : info?.text
   const infoStatus = hideError ? undefined : info?.status
 
+  const showIcon = !!(clearable || icon || symbol)
+
   return (
-    <Wrapper className={wrapperClassName}>
-      <InputRow>
-        <StyledInput
-          autoComplete={autoComplete}
-          value={value}
-          onChange={(e) => {
-            e.preventDefault()
-            if (onChange && !readonly) onChange(e.target.value)
-          }}
-          onFocus={onFocus}
-          onBlur={(e) => {
-            setTouched(true)
-            onBlur && onBlur(e)
-          }}
-          onKeyPress={onKeyPress}
-          placeholder={placeholder}
-          readOnly={readonly}
-          disabled={readonly}
-          width={width}
-          clearable={clearable}
-          inputMode={inputMode}
-          align={align}
-          className={classNames(className, infoStatus)}
-          data-qa={dataQa}
-          type={type}
-          min={min}
-          max={max}
-          maxLength={maxLength}
-          step={step}
-          id={id}
-          aria-describedby={ariaId}
-          required={required ?? false}
-          ref={inputRef}
-          autoFocus={autoFocus}
-        />
-        {clearable && (
-          <InputIcon onClick={() => onChange && onChange('')}>
-            <FontAwesomeIcon icon={faTimes} />
-          </InputIcon>
-        )}
-        {!clearable && icon && (
-          <InputIcon>
+    <Wrapper className={className} width={width}>
+      <StyledInput
+        autoComplete={autoComplete}
+        value={value}
+        onChange={(e) => {
+          e.preventDefault()
+          if (onChange && !readonly) onChange(e.target.value)
+        }}
+        onFocus={onFocus}
+        onBlur={(e) => {
+          setTouched(true)
+          onBlur && onBlur(e)
+        }}
+        onKeyPress={onKeyPress}
+        placeholder={placeholder}
+        readOnly={readonly}
+        disabled={readonly}
+        width={width}
+        icon={showIcon}
+        inputMode={inputMode}
+        align={align}
+        className={classNames(className, infoStatus)}
+        data-qa={dataQa}
+        type={type}
+        min={min}
+        max={max}
+        maxLength={maxLength}
+        step={step}
+        id={id}
+        aria-describedby={ariaId}
+        required={required ?? false}
+        ref={inputRef}
+        autoFocus={autoFocus}
+      />
+      {showIcon && (
+        <IconContainer clickable={clearable}>
+          {clearable ? (
+            <StyledIconButton
+              icon={faTimes}
+              onClick={() => onChange && onChange('')}
+              altText="clear"
+            />
+          ) : icon ? (
             <FontAwesomeIcon icon={icon} />
-          </InputIcon>
-        )}
-        {!clearable && !icon && symbol ? <Symbol>{symbol}</Symbol> : null}
-      </InputRow>
+          ) : (
+            symbol
+          )}
+        </IconContainer>
+      )}
       {infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
           <span data-qa={dataQa ? `${dataQa}-info` : undefined}>

@@ -30,9 +30,7 @@ import { useLang, useTranslation } from '../../../localization'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 const Hyphenbox = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  padding-top: 36px;
 `
 
 type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
@@ -202,7 +200,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
           <Gap size="s" />
 
-          <FixedSpaceRow spacing="m">
+          <FixedSpaceRow spacing="s">
             <FixedSpaceColumn spacing="xs">
               <Label htmlFor="daily-time-starts">
                 {t.applications.editor.serviceNeed.dailyTime.starts}
@@ -217,7 +215,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               />
             </FixedSpaceColumn>
 
-            <Hyphenbox>-</Hyphenbox>
+            <Hyphenbox>–</Hyphenbox>
 
             <FixedSpaceColumn spacing="xs">
               <Label htmlFor="daily-time-ends">

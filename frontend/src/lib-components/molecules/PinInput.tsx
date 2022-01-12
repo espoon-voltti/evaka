@@ -106,7 +106,6 @@ export const PinInput = React.memo(function PinInput({
             inputMode="numeric"
             maxLength={1}
             invalid={invalid}
-            clearable={false}
             autoFocus={i === 0}
             value={pin[i]}
             ref={refs[i]}
