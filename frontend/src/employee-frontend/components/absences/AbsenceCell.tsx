@@ -100,7 +100,7 @@ export function DisabledCell() {
   return <div className="absence-cell absence-cell-disabled" />
 }
 
-const Cell = React.memo(function Cell({
+const AbsenceCellParts = React.memo(function AbsenceCellParts({
   childId,
   date,
   careTypes,
@@ -158,18 +158,20 @@ export default React.memo(function AbsenceCell({
 
   const tooltipText = useMemo(
     () =>
-      absences
-        .map(
-          ({ careType, absenceType, modifiedAt, modifiedByType }) =>
-            `${i18n.absences.careTypes[careType]}: ${
-              i18n.absences.absenceTypes[absenceType]
-            }<br/>
+      backupCare
+        ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
+        : absences
+            .map(
+              ({ careType, absenceType, modifiedAt, modifiedByType }) =>
+                `${i18n.absences.careTypes[careType]}: ${
+                  i18n.absences.absenceTypes[absenceType]
+                }<br/>
             ${formatDate(modifiedAt)} ${
-              i18n.absences.modifiedByType[modifiedByType]
-            }`
-        )
-        .join('<br/>'),
-    [absences, i18n]
+                  i18n.absences.modifiedByType[modifiedByType]
+                }`
+            )
+            .join('<br/>'),
+    [absences, backupCare, i18n]
   )
 
   const toggle = useCallback(
@@ -185,7 +187,7 @@ export default React.memo(function AbsenceCell({
       className="absence-tooltip"
       delayShow={750}
     >
-      <Cell
+      <AbsenceCellParts
         id={id}
         childId={childId}
         selectedCells={selectedCells}

@@ -17,6 +17,7 @@ const absenceTypesInLegend: CalendarAbsenceType[] = [
   'UNKNOWN_ABSENCE',
   'PLANNED_ABSENCE',
   'SICKLEAVE',
+  'TEMPORARY_RELOCATION',
   'PARENTLEAVE',
   'FORCE_MAJEURE'
 ]
