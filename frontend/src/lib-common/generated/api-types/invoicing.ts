@@ -318,7 +318,6 @@ export interface Invoice {
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceCodes
 */
 export interface InvoiceCodes {
-  agreementTypes: number[]
   costCenters: string[]
   products: Product[]
   subCostCenters: string[]

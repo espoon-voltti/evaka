@@ -32,7 +32,6 @@ data class DaycareCodes(val areaCode: Int?, val costCenter: String?, val subCost
 
 data class InvoiceCodes(
     val products: List<Product>,
-    val agreementTypes: List<Int>,
     val subCostCenters: List<String>,
     val costCenters: List<String>
 )
@@ -111,12 +110,10 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
 fun Database.Read.getInvoiceCodes(): InvoiceCodes {
     val daycareCodes = getDaycareCodes()
 
-    val specialAreaCode = 255
     val specialSubCostCenter = "06"
 
     return InvoiceCodes(
         Product.values().toList(),
-        daycareCodes.values.mapNotNull { it.areaCode }.plus(specialAreaCode).distinct().sorted().toList(),
         daycareCodes.values.mapNotNull { it.subCostCenter }.plus(specialSubCostCenter).distinct().sorted().toList(),
         daycareCodes.values.mapNotNull { it.costCenter }.distinct().sorted()
     )
