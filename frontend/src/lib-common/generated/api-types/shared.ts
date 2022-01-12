@@ -48,6 +48,7 @@ export interface DaycareAclRowEmployee {
 */
 export interface EmployeeFeatures {
   applications: boolean
+  createUnits: boolean
   employees: boolean
   finance: boolean
   financeBasics: boolean
