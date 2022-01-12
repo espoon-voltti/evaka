@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -25,10 +25,6 @@ import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.Product
-import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
-import fi.espoo.evaka.invoicing.integration.fallbackPostOffice
-import fi.espoo.evaka.invoicing.integration.fallbackPostalCode
-import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -52,21 +48,15 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
 class InvoiceIntegrationTest : FullApplicationTest() {
-    @Autowired
-    lateinit var integrationClient: InvoiceIntegrationClient
-
     private fun assertEqualEnough(expected: List<InvoiceSummary>, actual: List<InvoiceSummary>) {
         assertEquals(
             expected.map { it.copy(sentAt = null, createdAt = null, headOfFamily = it.headOfFamily.copy(email = null)) }.toSet(),
@@ -163,16 +153,9 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
+            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
-        }
-        (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches.clear()
     }
 
     @Test
@@ -909,175 +892,6 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
         }
         assertEquals(1, newDrafts.size)
-    }
-
-    @Test
-    fun `sending an invoice uses the recipient's actual address if it's valid`() {
-        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
-
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(204, response.statusCode)
-
-        val sentBatch = (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches[0]
-
-        assertEquals(1, sentBatch.invoices.size)
-        sentBatch.invoices.first().let { invoice ->
-            assertEquals(testAdult_1.streetAddress, invoice.client.street)
-            assertEquals(testAdult_1.postalCode, invoice.client.postalCode)
-            assertEquals(testAdult_1.postOffice, invoice.client.post)
-            assertEquals(testAdult_1.streetAddress, invoice.recipient.street)
-            assertEquals(testAdult_1.postalCode, invoice.recipient.postalCode)
-            assertEquals(testAdult_1.postOffice, invoice.recipient.post)
-        }
-    }
-
-    @Test
-    fun `sending an invoice trims whitespace from recipient's address`() {
-        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
-        val postalCodeWithWhiteSpace = " 56789 "
-        db.transaction { tx ->
-            tx.createUpdate("UPDATE person SET postal_code = :postalCode WHERE id = :id")
-                .bind("id", testAdult_1.id)
-                .bind("postalCode", postalCodeWithWhiteSpace)
-                .execute()
-        }
-
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(204, response.statusCode)
-
-        val sentBatch = (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches[0]
-
-        assertEquals(1, sentBatch.invoices.size)
-        sentBatch.invoices.first().let { invoice ->
-            assertEquals(testAdult_1.streetAddress, invoice.client.street)
-            assertNotEquals(postalCodeWithWhiteSpace, invoice.client.postalCode)
-            assertEquals(postalCodeWithWhiteSpace.trim(), invoice.client.postalCode)
-            assertEquals(testAdult_1.postOffice, invoice.client.post)
-            assertEquals(testAdult_1.streetAddress, invoice.recipient.street)
-            assertNotEquals(postalCodeWithWhiteSpace, invoice.recipient.postalCode)
-            assertEquals(postalCodeWithWhiteSpace.trim(), invoice.recipient.postalCode)
-            assertEquals(testAdult_1.postOffice, invoice.recipient.post)
-        }
-    }
-
-    @Test
-    fun `sending an invoice uses a fallback address when the recipient's actual address is partially incomplete`() {
-        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
-
-        db.transaction { tx ->
-            tx
-                .createUpdate("UPDATE person SET street_address = :emptyStreetAddress WHERE id = :id")
-                .bind("emptyStreetAddress", "")
-                .bind("id", testAdult_1.id)
-                .execute()
-        }
-
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(204, response.statusCode)
-
-        val sentBatch = (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches[0]
-
-        assertEquals(1, sentBatch.invoices.size)
-        sentBatch.invoices.first().let { invoice ->
-            assertEquals(null, invoice.client.street)
-            assertEquals(null, invoice.client.postalCode)
-            assertEquals(null, invoice.client.post)
-            assertEquals(fallbackStreetAddress, invoice.recipient.street)
-            assertEquals(fallbackPostalCode, invoice.recipient.postalCode)
-            assertEquals(fallbackPostOffice, invoice.recipient.post)
-        }
-    }
-
-    @Test
-    fun `sending an invoice uses the recipient's invoicing address when it's complete`() {
-        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
-
-        val streetAddress = "Testikatu 1"
-        val postalCode = "00100"
-        val postOffice = "Helsinki"
-        db.transaction { tx ->
-            tx
-                .createUpdate(
-                    """
-                UPDATE person SET
-                    invoicing_street_address = :streetAddress,
-                    invoicing_postal_code = :postalCode,
-                    invoicing_post_office = :postOffice
-                WHERE id = :id
-                    """.trimIndent()
-                )
-                .bind("streetAddress", streetAddress)
-                .bind("postalCode", postalCode)
-                .bind("postOffice", postOffice)
-                .bind("id", testAdult_1.id)
-                .execute()
-        }
-
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(204, response.statusCode)
-
-        val sentBatch = (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches[0]
-
-        assertEquals(1, sentBatch.invoices.size)
-        sentBatch.invoices.first().let { invoice ->
-            assertEquals(testAdult_1.streetAddress, invoice.client.street)
-            assertEquals(testAdult_1.postalCode, invoice.client.postalCode)
-            assertEquals(testAdult_1.postOffice, invoice.client.post)
-            assertEquals(streetAddress, invoice.recipient.street)
-            assertEquals(postalCode, invoice.recipient.postalCode)
-            assertEquals(postOffice, invoice.recipient.post)
-        }
-    }
-
-    @Test
-    fun `invoice sent to Community has the rows grouped by child`() {
-        val draft = createInvoiceFixture(
-            status = InvoiceStatus.DRAFT,
-            headOfFamilyId = testAdult_1.id,
-            agreementType = testArea.areaCode!!,
-            rows = listOf(
-                createInvoiceRowFixture(childId = testChild_2.id),
-                createInvoiceRowFixture(childId = testChild_1.id),
-                createInvoiceRowFixture(childId = testChild_1.id)
-            )
-        )
-        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
-
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(204, response.statusCode)
-
-        val sentBatch = (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches[0]
-
-        assertEquals(1, sentBatch.invoices.size)
-        sentBatch.invoices.first().let { invoice ->
-            assertEquals(7, invoice.rows.size)
-            assertEquals("${testChild_1.lastName} ${testChild_1.firstName}", invoice.rows[0].description)
-            assertEquals("Varhaiskasvatus", invoice.rows[1].description)
-            assertEquals("Varhaiskasvatus", invoice.rows[2].description)
-            assertEquals("", invoice.rows[3].description)
-            assertEquals("${testChild_2.lastName} ${testChild_2.firstName}", invoice.rows[4].description)
-            assertEquals("Varhaiskasvatus", invoice.rows[5].description)
-            assertEquals("", invoice.rows[6].description)
-        }
     }
 
     private fun insertDecisions(decisions: List<FeeDecision>) = db.transaction { tx ->

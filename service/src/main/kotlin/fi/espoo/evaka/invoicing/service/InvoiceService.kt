@@ -60,21 +60,12 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
             )
         }
 
-        val (succeeded, _) = updatedInvoices
-            .groupBy { it.agreementType }
-            .map { (agreementType, invoices) ->
-                val wasSuccessful = integrationClient.sendBatch(invoices, agreementType)
-                wasSuccessful to invoices
-            }
-            .flatMap { (wasSuccessful, invoices) ->
-                invoices.map { invoice -> wasSuccessful to invoice }
-            }
-            .partition { (succeeded, _) -> succeeded }
+        val (succeeded, _) = integrationClient.send(updatedInvoices)
 
         if (invoiceDate != null && dueDate != null) {
-            tx.updateInvoiceDates(invoices.map { it.id }, invoiceDate, dueDate)
+            tx.updateInvoiceDates(succeeded.map { it.id }, invoiceDate, dueDate)
         }
-        tx.setDraftsSent(succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.evakaUserId)
+        tx.setDraftsSent(succeeded.map { it.id to it.number!! }, user.evakaUserId)
         tx.updateToWaitingForSending(withoutSSNs.map { it.id })
     }
 
