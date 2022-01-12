@@ -59,7 +59,7 @@ class PlacementPlanService(
 
         val startDate = form.preferences.preferredStartDate!!
 
-        when (application.type) {
+        return when (application.type) {
             ApplicationType.PRESCHOOL -> {
                 val preschoolTerms = tx.getActivePreschoolTermAt(startDate)
                     ?: throw Exception("No suitable preschool term found for start date $startDate")
@@ -69,7 +69,7 @@ class PlacementPlanService(
                     FiniteDateRange(startDate, LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31))
                 } else null
 
-                return PlacementPlanDraft(
+                PlacementPlanDraft(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
@@ -87,7 +87,7 @@ class PlacementPlanService(
                     LocalDate.of(startDate.year, 7, 31)
                 val period =
                     FiniteDateRange(startDate, if (endFromBirthDate < startDate) endFromStartDate else endFromBirthDate)
-                return PlacementPlanDraft(
+                PlacementPlanDraft(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
@@ -101,7 +101,7 @@ class PlacementPlanService(
                 val (term) = tx.getActiveClubTermAt(startDate)
                     ?: throw Exception("No suitable club term found for start date $startDate")
                 val period = FiniteDateRange(startDate, term.end)
-                return PlacementPlanDraft(
+                PlacementPlanDraft(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
@@ -111,7 +111,6 @@ class PlacementPlanService(
                     guardianHasRestrictedDetails = guardianHasRestrictedDetails
                 )
             }
-            else -> throw IllegalArgumentException("Unsupported application form type ${application.type}")
         }
     }
 
