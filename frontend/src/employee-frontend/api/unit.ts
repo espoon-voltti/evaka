@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,7 +13,10 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import {
+  OccupancyResponseSpeculated,
+  RealtimeOccupancy
+} from 'lib-common/generated/api-types/occupancy'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import {
@@ -38,7 +41,6 @@ import {
   DecisionCustomization,
   MailingAddress,
   Occupancy,
-  OccupancyType,
   Stats,
   TerminatedPlacement,
   Unit,
@@ -108,6 +110,12 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
       })
     )
     .catch((e) => Failure.fromError(e))
+}
+
+export type OccupancyResponse = {
+  occupancies: Occupancy[]
+  max?: Occupancy
+  min?: Occupancy
 }
 
 export type UnitOccupancies = {
@@ -347,6 +355,19 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
   }))
 }
 
+const mapOccupancyPeriod = (p: JsonOf<Occupancy>): Occupancy => ({
+  ...p,
+  period: FiniteDateRange.parseJson(p.period)
+})
+
+const mapOccupancyResponse = (
+  r: JsonOf<OccupancyResponse>
+): OccupancyResponse => ({
+  occupancies: r.occupancies.map(mapOccupancyPeriod),
+  min: r.min && mapOccupancyPeriod(r.min),
+  max: r.max && mapOccupancyPeriod(r.max)
+})
+
 function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
   return {
     planned: mapOccupancyResponse(data.planned),
@@ -532,41 +553,27 @@ export async function deleteGroup(daycareId: UUID, groupId: UUID) {
   await client.delete(url)
 }
 
-export type OccupancyResponse = {
-  occupancies: Occupancy[]
-  max?: Occupancy
-  min?: Occupancy
-}
-
-const mapOccupancyPeriod = (p: JsonOf<Occupancy>): Occupancy => ({
-  ...p,
-  period: FiniteDateRange.parseJson(p.period)
-})
-
-const mapOccupancyResponse = (
-  r: JsonOf<OccupancyResponse>
-): OccupancyResponse => ({
-  occupancies: r.occupancies.map(mapOccupancyPeriod),
-  min: r.min && mapOccupancyPeriod(r.min),
-  max: r.max && mapOccupancyPeriod(r.max)
-})
-
-export async function getOccupancyRates(
+export async function getSpeculatedOccupancyRates(
+  applicationId: UUID,
   unitId: UUID,
   from: LocalDate,
   to: LocalDate,
-  type: OccupancyType
-): Promise<Result<OccupancyResponse>> {
+  preschoolDaycareFrom?: LocalDate,
+  preschoolDaycareTo?: LocalDate
+): Promise<Result<OccupancyResponseSpeculated>> {
   return client
-    .get<JsonOf<OccupancyResponse>>(`/occupancy/by-unit/${unitId}`, {
-      params: {
-        from: from.formatIso(),
-        to: to.formatIso(),
-        type
+    .get<JsonOf<OccupancyResponseSpeculated>>(
+      `/occupancy/by-unit/${unitId}/speculated/${applicationId}`,
+      {
+        params: {
+          from: from.formatIso(),
+          to: to.formatIso(),
+          preschoolDaycareFrom: preschoolDaycareFrom?.formatIso(),
+          preschoolDaycareTo: preschoolDaycareTo?.formatIso()
+        }
       }
-    })
-    .then(({ data }) => mapOccupancyResponse(data))
-    .then((v) => Success.of(v))
+    )
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
