@@ -723,7 +723,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
 fun Database.Read.getDaycareCodes(): Map<DaycareId, DaycareCodes> {
     val sql =
         """
-        SELECT daycare.id, daycare.cost_center, area.id AS area_id, area.area_code, area.sub_cost_center
+        SELECT daycare.id, daycare.cost_center, area.id AS area_id, area.sub_cost_center
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
     return createQuery(sql)

@@ -29,7 +29,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-data class DaycareCodes(val areaId: AreaId, val areaCode: Int?, val costCenter: String?, val subCostCenter: String?)
+data class DaycareCodes(val areaId: AreaId, val costCenter: String?, val subCostCenter: String?)
 
 data class InvoiceCodes(
     val products: List<Product>,
