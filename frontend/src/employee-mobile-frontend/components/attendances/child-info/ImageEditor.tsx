@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,6 +8,7 @@ import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { uploadChildImage } from '../../../api/childImages'
 import { useTranslation } from '../../../state/i18n'
@@ -148,6 +149,10 @@ export default React.memo(function ImageEditor({
       </CropWrapper>
 
       <Gap />
+
+      <InformationText centered>
+        {i18n.childInfo.image.modalMenu.disclaimer}
+      </InformationText>
 
       <ButtonRow>
         <Button
