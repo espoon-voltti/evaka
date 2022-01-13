@@ -79,6 +79,7 @@ class VasuTest {
         ),
         minSelections = 1,
         maxSelections = null,
-        value = value
+        value = value,
+        textValue = emptyMap()
     )
 }

@@ -75,6 +75,7 @@ describe('Child Information - Leops documents section', () => {
     await vasuTemplatesList.selectType.selectOption('PRESCHOOL')
     await vasuTemplatesList.okButton.click()
     await new VasuTemplateEditPage(page).saveButton.click()
+    await vasuTemplatesList.templateTable.waitUntilVisible()
   }
 
   test('Can create a leops template', async () => {

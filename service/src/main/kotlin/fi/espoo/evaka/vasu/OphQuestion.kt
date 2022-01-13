@@ -253,7 +253,8 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = emptyList()
+                    value = emptyList(),
+                    textValue = emptyMap()
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
@@ -475,7 +476,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 ),
                 VasuQuestion.RadioGroupQuestion(
                     name = "Suomen kielen taitotaso",
@@ -515,7 +517,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 )
             )
         ),
@@ -545,7 +548,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 ),
                 VasuQuestion.TextQuestion(
                     name = "Tuen edellyttämä yhteistyö ja palvelut",
@@ -570,7 +574,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 )
             )
         ),
@@ -634,7 +639,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = emptyList()
+                    value = emptyList(),
+                    textValue = emptyMap()
                 ),
                 VasuQuestion.MultiFieldList(
                     name = "Päiväykset ja allekirjoitukset",

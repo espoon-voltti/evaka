@@ -944,7 +944,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @DeleteMapping("/vasu/templates")
     fun deleteVasuTemplates(db: Database) {
-        db.connect { dbc -> dbc.transaction { it.createUpdate("DELETE FROM curriculum_template").execute()} }
+        db.connect { dbc -> dbc.transaction { it.createUpdate("DELETE FROM curriculum_template").execute() } }
     }
 
     @PostMapping("/vasu/doc")
