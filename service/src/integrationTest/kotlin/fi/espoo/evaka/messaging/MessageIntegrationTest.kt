@@ -603,7 +603,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         deleteAttachment(employee2, attachmentId, 403)
         // then the author can read and delete the attachment
         downloadAttachment(employee1, attachmentId, 200)
-        deleteAttachment(employee1, attachmentId, 204)
+        deleteAttachment(employee1, attachmentId, 200)
 
         // a user cannot upload attachments to another user's draft
         assertAttachmentUploadFails(employee2, draftId)
@@ -650,7 +650,7 @@ class MessageIntegrationTest : FullApplicationTest() {
     private fun deleteAttachment(
         user: AuthenticatedUser.Employee,
         attachmentId: AttachmentId,
-        expectedStatus: Int = 204
+        expectedStatus: Int = 200
     ) =
         http.delete("/attachments/$attachmentId")
             .asUser(user)

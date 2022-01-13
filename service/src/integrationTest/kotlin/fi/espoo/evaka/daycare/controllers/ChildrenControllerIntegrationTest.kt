@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -70,10 +69,8 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {
-        val response = childController.getAdditionalInfo(Database(jdbi), user, childId)
-        val body = response.body!!
+        val body = childController.getAdditionalInfo(Database(jdbi), user, childId)
 
-        assertEquals(HttpStatus.OK, response.statusCode)
         assertEquals(child.additionalInformation.diet, body.diet)
         assertEquals(child.additionalInformation.additionalInfo, body.additionalInfo)
         assertEquals(child.additionalInformation.allergies, body.allergies)

@@ -6,7 +6,6 @@ package fi.espoo.evaka.varda.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.kittinunf.fuel.core.Client
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Response
@@ -45,7 +44,7 @@ class VardaClientTest {
     fun `refreshes API token on invalid token error and retries request`() {
         val fuel = FuelManager()
 
-        fuel.client = mock<Client>()
+        fuel.client = mock()
         `when`(fuel.client.executeRequest(any()))
             .thenReturn(
                 Response(

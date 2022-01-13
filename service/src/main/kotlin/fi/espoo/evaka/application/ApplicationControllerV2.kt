@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.currentDateInFinland
-import fi.espoo.evaka.application.utils.ok
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
 import fi.espoo.evaka.decision.DecisionDraftService
@@ -44,8 +43,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.upsertCitizenUser
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -128,11 +125,11 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
-    ): ResponseEntity<ApplicationId> {
+    ): ApplicationId {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         accessControl.requirePermissionFor(user, Action.Global.CREATE_PAPER_APPLICATION)
 
-        val id = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.transaction { tx ->
                 val child = tx.getPersonById(body.childId)
                     ?: throw BadRequest("Could not find the child with id ${body.childId}")
@@ -168,8 +165,6 @@ class ApplicationControllerV2(
                 id
             }
         }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(id)
     }
 
     @PostMapping("/search")
@@ -177,7 +172,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchApplicationRequest
-    ): ResponseEntity<Paged<ApplicationSummary>> {
+    ): Paged<ApplicationSummary> {
         Audit.ApplicationSearch.log()
         if (body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd)
             throw BadRequest("Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)")
@@ -226,7 +221,7 @@ class ApplicationControllerV2(
                     canReadServiceWorkerNotes = canReadServiceWorkerNotes
                 )
             }
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     @GetMapping("/by-guardian/{guardianId}")
@@ -234,12 +229,11 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "guardianId") guardianId: PersonId
-    ): ResponseEntity<List<PersonApplicationSummary>> {
+    ): List<PersonApplicationSummary> {
         Audit.ApplicationRead.log(targetId = guardianId)
         accessControl.requirePermissionFor(user, Action.Global.READ_PERSON_APPLICATION)
 
         return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) } }
-            .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -247,12 +241,11 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "childId") childId: ChildId
-    ): ResponseEntity<List<PersonApplicationSummary>> {
+    ): List<PersonApplicationSummary> {
         Audit.ApplicationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_APPLICATION, childId)
 
         return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForChild(childId) } }
-            .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/{applicationId}")
@@ -260,7 +253,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
-    ): ResponseEntity<ApplicationResponse> {
+    ): ApplicationResponse {
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
 
@@ -292,13 +285,11 @@ class ApplicationControllerV2(
                     else -> listOf()
                 }
 
-                ResponseEntity.ok(
-                    ApplicationResponse(
-                        application = application.copy(attachments = attachments),
-                        decisions = decisions,
-                        guardians = guardians,
-                        attachments = attachments
-                    )
+                ApplicationResponse(
+                    application = application.copy(attachments = attachments),
+                    decisions = decisions,
+                    guardians = guardians,
+                    attachments = attachments
                 )
             }
         }
@@ -310,7 +301,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ApplicationUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.UPDATE, applicationId)
 
@@ -326,7 +317,6 @@ class ApplicationControllerV2(
                 )
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/send-application")
@@ -334,9 +324,8 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
-    ): ResponseEntity<Unit> {
+    ) {
         db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland()) } }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{applicationId}/placement-draft")
@@ -344,11 +333,10 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
-    ): ResponseEntity<PlacementPlanDraft> {
+    ): PlacementPlanDraft {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
         return db.connect { dbc -> dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) } }
-            .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
@@ -356,7 +344,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
-    ): ResponseEntity<DecisionDraftJSON> {
+    ): DecisionDraftJSON {
         Audit.DecisionDraftRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_DECISION_DRAFT, applicationId)
 
@@ -383,32 +371,30 @@ class ApplicationControllerV2(
                 val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
                 val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
 
-                ok(
-                    DecisionDraftJSON(
-                        decisions = decisionDrafts,
-                        placementUnitName = placementUnitName,
-                        unit = unit,
-                        guardian = GuardianInfo(
-                            firstName = applicationGuardian.firstName,
-                            lastName = applicationGuardian.lastName,
-                            ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
-                            isVtjGuardian = applicationGuardianIsVtjGuardian
-                        ),
-                        child = ChildInfo(
-                            firstName = child.firstName,
-                            lastName = child.lastName,
-                            ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
-                        ),
-                        otherGuardian = otherGuardian?.let {
-                            GuardianInfo(
-                                id = it.id,
-                                firstName = it.firstName,
-                                lastName = it.lastName,
-                                ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
-                                isVtjGuardian = true
-                            )
-                        }
-                    )
+                DecisionDraftJSON(
+                    decisions = decisionDrafts,
+                    placementUnitName = placementUnitName,
+                    unit = unit,
+                    guardian = GuardianInfo(
+                        firstName = applicationGuardian.firstName,
+                        lastName = applicationGuardian.lastName,
+                        ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
+                        isVtjGuardian = applicationGuardianIsVtjGuardian
+                    ),
+                    child = ChildInfo(
+                        firstName = child.firstName,
+                        lastName = child.lastName,
+                        ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
+                    ),
+                    otherGuardian = otherGuardian?.let {
+                        GuardianInfo(
+                            id = it.id,
+                            firstName = it.firstName,
+                            lastName = it.lastName,
+                            ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
+                            isVtjGuardian = true
+                        )
+                    }
                 )
             }
         }
@@ -420,12 +406,11 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
 
         db.connect { dbc -> dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
@@ -433,9 +418,8 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "unitId") unitId: DaycareId
-    ): ResponseEntity<Unit> {
+    ) {
         db.connect { dbc -> dbc.transaction { applicationStateService.confirmPlacementProposalChanges(it, user, unitId) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/batch/actions/{action}")
@@ -444,7 +428,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable action: String,
         @RequestBody body: SimpleBatchRequest
-    ): ResponseEntity<Unit> {
+    ) {
         val simpleBatchActions = mapOf(
             "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
             "return-to-sent" to applicationStateService::returnToSent,
@@ -461,8 +445,6 @@ class ApplicationControllerV2(
                 body.applicationIds.forEach { applicationId -> actionFn.invoke(tx, user, applicationId) }
             }
         }
-
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/create-placement-plan")
@@ -471,12 +453,11 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
         db.connect { dbc -> dbc.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")
@@ -485,7 +466,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate
-    ): ResponseEntity<Unit> {
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 applicationStateService.respondToPlacementProposal(
@@ -498,7 +479,6 @@ class ApplicationControllerV2(
                 )
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/accept-decision")
@@ -507,13 +487,12 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
-    ): ResponseEntity<Unit> {
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 applicationStateService.acceptDecision(it, user, applicationId, body.decisionId, body.requestedStartDate)
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/reject-decision")
@@ -522,9 +501,8 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
-    ): ResponseEntity<Unit> {
+    ) {
         db.connect { dbc -> dbc.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/{action}")
@@ -533,7 +511,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
-    ): ResponseEntity<Unit> {
+    ) {
         val simpleActions = mapOf(
             "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
             "return-to-sent" to applicationStateService::returnToSent,
@@ -549,7 +527,6 @@ class ApplicationControllerV2(
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
         db.connect { dbc -> dbc.transaction { actionFn.invoke(it, user, applicationId) } }
-        return ResponseEntity.noContent().build()
     }
 }
 

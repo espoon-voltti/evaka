@@ -55,7 +55,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .responseString()
 
         // then
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         val result = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(sentDate.plusMonths(4), result?.dueDate)
     }
@@ -76,7 +76,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .responseString()
 
         // then
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         val beforeSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertNull(beforeSendingAttachment?.dueDate)
 
@@ -108,7 +108,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .responseString()
 
         // then
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         val result = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(originalDueDate, result?.dueDate)
     }
@@ -128,7 +128,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .responseString()
 
         // then
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         val beforeSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(manuallySetDueDate, beforeSendingAttachment!!.dueDate)
         assertTrue(HelsinkiDateTime.now().durationSince(beforeSendingAttachment.dueDateSetManuallyAt ?: throw Error("dueDateSetManuallyAt should have been set")).seconds <= 5, "dueDateSetManuallyAt should have been about now")
@@ -162,7 +162,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .asUser(citizen)
             .responseString()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         // then
         val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -192,7 +192,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .asUser(serviceWorker)
             .responseString()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         // then
         val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -226,7 +226,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .asUser(citizen)
             .responseString()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -260,7 +260,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
             .asUser(serviceWorker)
             .responseString()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }

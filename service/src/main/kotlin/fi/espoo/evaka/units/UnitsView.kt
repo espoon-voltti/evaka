@@ -47,15 +47,14 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
-@Controller
+@RestController
 @RequestMapping("/views/units")
 class UnitsView(private val accessControl: AccessControl) {
     private val terminatedPlacementsViewWeeks = 2L
@@ -71,12 +70,12 @@ class UnitsView(private val accessControl: AccessControl) {
             value = "to",
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
-    ): ResponseEntity<UnitDataResponse> {
+    ): UnitDataResponse {
         Audit.UnitView.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_BASIC, unitId)
 
         val period = FiniteDateRange(from, to)
-        val unitData = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.read { tx ->
                 val groups = tx.getDaycareGroups(unitId, from, to)
                 val placements = tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
@@ -153,7 +152,6 @@ class UnitsView(private val accessControl: AccessControl) {
                 }
             }
         }
-        return ResponseEntity.ok(unitData)
     }
 }
 

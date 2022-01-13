@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -41,22 +40,22 @@ import org.springframework.web.bind.annotation.RestController
 class EmployeeController(private val accessControl: AccessControl) {
 
     @GetMapping
-    fun getEmployees(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getEmployees(db: Database, user: AuthenticatedUser): List<Employee> {
         Audit.EmployeesRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getEmployees() } }.sortedBy { it.email })
+        return db.connect { dbc -> dbc.read { it.getEmployees() } }.sortedBy { it.email }
     }
 
     @GetMapping("/finance-decision-handler")
-    fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser): List<Employee> {
         Audit.EmployeesRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_FINANCE_DECISION_HANDLERS)
-        return ResponseEntity.ok(db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email })
+        return db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email }
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Employee> {
+    fun getEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): Employee {
         Audit.EmployeeRead.log(targetId = id)
         if (user.id != id.raw) {
             @Suppress("DEPRECATION")
@@ -70,8 +69,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 UserRole.REPORT_VIEWER,
             )
         }
-        return db.connect { dbc -> dbc.read { it.getEmployee(id) } }?.let { ResponseEntity.ok().body(it) }
-            ?: ResponseEntity.notFound().build()
+        return db.connect { dbc -> dbc.read { it.getEmployee(id) } } ?: throw NotFound()
     }
 
     data class EmployeeUpdate(
@@ -83,7 +81,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: EmployeeId,
         @RequestBody body: EmployeeUpdate
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
@@ -96,8 +94,6 @@ class EmployeeController(private val accessControl: AccessControl) {
                 )
             }
         }
-
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{id}/details")
@@ -105,31 +101,29 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: EmployeeId
-    ): ResponseEntity<EmployeeWithDaycareRoles> {
+    ): EmployeeWithDaycareRoles {
         Audit.EmployeeRead.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.connect { dbc -> dbc.read { it.getEmployeeWithRoles(id) } }
-            ?.let { ResponseEntity.ok().body(it) }
             ?: throw NotFound("employee $id not found")
     }
 
     @PostMapping("")
-    fun createEmployee(db: Database, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
+    fun createEmployee(db: Database, user: AuthenticatedUser, @RequestBody employee: NewEmployee): Employee {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
-        return ResponseEntity.ok().body(db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } })
+        return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): ResponseEntity<Unit> {
+    fun deleteEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId) {
         Audit.EmployeeDelete.log(targetId = id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
         db.connect { dbc -> dbc.transaction { it.deleteEmployee(id) } }
-        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/pin-code")
@@ -137,17 +131,9 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PinCode
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.PinCodeUpdate.log(targetId = user.id)
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.upsertPinCode(
-                    EmployeeId(user.id), body
-                )
-            }
-        }.let {
-            ResponseEntity.noContent().build()
-        }
+        db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(EmployeeId(user.id), body) } }
     }
 
     @GetMapping("/pin-code/is-pin-locked")
@@ -156,11 +142,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser
     ): Boolean {
         Audit.PinCodeLockedRead.log(targetId = user.id)
-        return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.isPinLocked(EmployeeId(user.id))
-            }
-        }
+        return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(EmployeeId(user.id)) } }
     }
 
     @PostMapping("/search")
@@ -168,7 +150,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchEmployeeRequest
-    ): ResponseEntity<Paged<EmployeeWithDaycareRoles>> {
+    ): Paged<EmployeeWithDaycareRoles> {
         Audit.EmployeesRead.log()
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN)
@@ -176,7 +158,7 @@ class EmployeeController(private val accessControl: AccessControl) {
             dbc.read { tx ->
                 getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
             }
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 }
 

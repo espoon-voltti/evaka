@@ -5,16 +5,12 @@
 package fi.espoo.evaka.assistanceneed
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.controllers.utils.created
-import fi.espoo.evaka.daycare.controllers.utils.noContent
-import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -22,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.net.URI
 
 @RestController
 class AssistanceNeedController(
@@ -35,7 +30,7 @@ class AssistanceNeedController(
         user: AuthenticatedUser,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedRequest
-    ): ResponseEntity<AssistanceNeed> {
+    ): AssistanceNeed {
         Audit.ChildAssistanceNeedCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
@@ -45,7 +40,7 @@ class AssistanceNeedController(
                 childId = childId,
                 data = body
             )
-        }.let { created(it, URI.create("/children/$childId/assistance-needs/${it.id}")) }
+        }
     }
 
     @GetMapping("/children/{childId}/assistance-needs")
@@ -69,7 +64,7 @@ class AssistanceNeedController(
         user: AuthenticatedUser,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId,
         @RequestBody body: AssistanceNeedRequest
-    ): ResponseEntity<AssistanceNeed> {
+    ): AssistanceNeed {
         Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId)
         accessControl.requirePermissionFor(user, Action.AssistanceNeed.UPDATE, assistanceNeedId)
         return db.connect { dbc ->
@@ -79,7 +74,7 @@ class AssistanceNeedController(
                 id = assistanceNeedId,
                 data = body
             )
-        }.let(::ok)
+        }
     }
 
     @DeleteMapping("/assistance-needs/{id}")
@@ -87,11 +82,10 @@ class AssistanceNeedController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
         accessControl.requirePermissionFor(user, Action.AssistanceNeed.DELETE, assistanceNeedId)
         db.connect { dbc -> assistanceNeedService.deleteAssistanceNeed(dbc, assistanceNeedId) }
-        return noContent()
     }
 
     @GetMapping("/assistance-basis-options")

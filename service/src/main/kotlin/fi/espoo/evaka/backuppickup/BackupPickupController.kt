@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -30,16 +29,10 @@ class BackupPickupController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable("childId") childId: ChildId,
         @RequestBody body: ChildBackupPickupContent
-    ): ResponseEntity<ChildBackupPickupCreateResponse> {
+    ): ChildBackupPickupCreateResponse {
         Audit.ChildBackupPickupCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_PICKUP, childId)
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.createBackupPickup(childId, body)
-            }
-        }.let {
-            ResponseEntity.ok(ChildBackupPickupCreateResponse(it))
-        }
+        return ChildBackupPickupCreateResponse(db.connect { dbc -> dbc.transaction { tx -> tx.createBackupPickup(childId, body) } })
     }
 
     @GetMapping("/children/{childId}/backup-pickups")
@@ -47,15 +40,10 @@ class BackupPickupController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: ChildId
-    ): ResponseEntity<List<ChildBackupPickup>> {
+    ): List<ChildBackupPickup> {
         Audit.ChildBackupPickupRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_PICKUP, childId)
-
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.getBackupPickupsForChild(childId)
-            }
-        }.let { ResponseEntity.ok(it) }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.getBackupPickupsForChild(childId) } }
     }
 
     @PutMapping("/backup-pickups/{id}")
@@ -64,16 +52,10 @@ class BackupPickupController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable("id") id: BackupPickupId,
         @RequestBody body: ChildBackupPickupContent
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ChildBackupPickupUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.BackupPickup.UPDATE, id)
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.updateBackupPickup(id, body)
-            }
-        }.let {
-            ResponseEntity.noContent().build()
-        }
+        db.connect { dbc -> dbc.transaction { tx -> tx.updateBackupPickup(id, body) } }
     }
 
     @DeleteMapping("/backup-pickups/{id}")
@@ -81,15 +63,10 @@ class BackupPickupController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") id: BackupPickupId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ChildBackupPickupDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.BackupPickup.DELETE, id)
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.deleteBackupPickup(id)
-            }
-        }
-        return ResponseEntity.noContent().build()
+        db.connect { dbc -> dbc.transaction { tx -> tx.deleteBackupPickup(id) } }
     }
 }
 

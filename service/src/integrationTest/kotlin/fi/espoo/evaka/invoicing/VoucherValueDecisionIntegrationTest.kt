@@ -393,7 +393,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .asUser(financeWorker)
             .response()
             .also { (_, res, _) ->
-                assertEquals(204, res.statusCode)
+                assertEquals(200, res.statusCode)
             }
 
         asyncJobRunner.runPendingJobsSync()

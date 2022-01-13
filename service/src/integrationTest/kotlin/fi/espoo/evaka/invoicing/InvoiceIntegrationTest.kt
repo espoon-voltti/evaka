@@ -10,7 +10,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
-import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
@@ -33,6 +32,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -507,7 +507,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
     }
 
     @Test
@@ -531,7 +531,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/invoices/${draft.id}")
             .asUser(testUser)
@@ -568,7 +568,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(drafts.map { it.id }))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val sentInvoices = db.transaction { tx -> tx.getInvoicesByIds(drafts.map { it.id }) }
 
@@ -597,7 +597,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(drafts.map { it.id }))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val maxInvoiceNumber = db.transaction { tx -> tx.getMaxInvoiceNumber() }
         assertEquals(sentInvoice.number!! + drafts.size, maxInvoiceNumber)
@@ -612,7 +612,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(listOf(invoice.id)))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/invoices/${invoice.id}")
             .asUser(testUser)
@@ -665,7 +665,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(draft))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
     }
 
     @Test
@@ -702,7 +702,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(updated))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/invoices/${updated.id}")
             .asUser(testUser)
@@ -730,7 +730,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(updated))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/invoices/${updated.id}")
             .asUser(testUser)
@@ -756,7 +756,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val drafts = db.read { tx ->
             tx.paginatedSearch(
@@ -782,7 +782,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response.statusCode)
+        assertEquals(200, response.statusCode)
 
         val drafts = db.read { tx ->
             tx.paginatedSearch(
@@ -809,7 +809,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             val (_, response, _) = http.post("/invoices/create-drafts")
                 .asUser(testUser)
                 .responseString()
-            assertEquals(204, response.statusCode)
+            assertEquals(200, response.statusCode)
         }
 
         val drafts = db.read { tx ->
@@ -836,7 +836,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response1.statusCode)
+        assertEquals(200, response1.statusCode)
 
         val draftIds = db.transaction { tx ->
             tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf()).map { it.id }
@@ -847,7 +847,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(draftIds))
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response2.statusCode)
+        assertEquals(200, response2.statusCode)
 
         val sent = db.transaction { tx ->
             tx.searchInvoices(listOf(InvoiceStatus.SENT), listOf(), null, listOf())
@@ -857,7 +857,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val (_, response3, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response3.statusCode)
+        assertEquals(200, response3.statusCode)
 
         val drafts = db.transaction { tx ->
             tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
@@ -873,7 +873,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response1.statusCode)
+        assertEquals(200, response1.statusCode)
 
         val originalDrafts = db.transaction { tx ->
             tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
@@ -883,7 +883,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val (_, response3, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
-        assertEquals(204, response3.statusCode)
+        assertEquals(200, response3.statusCode)
 
         val originalDraft = db.transaction { tx -> tx.getInvoice(originalDrafts.first().id) }
         assertEquals(null, originalDraft)

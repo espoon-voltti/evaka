@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -139,9 +138,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     private fun updateContactInfo(user: AuthenticatedUser) {
         val person = createPerson()
-        val actual = controller.updateContactInfo(Database(jdbi), user, person.id, contactInfo)
-
-        assertEquals(HttpStatus.OK, actual.statusCode)
+        controller.updateContactInfo(Database(jdbi), user, person.id, contactInfo)
 
         val updated = db.read { it.getPersonById(person.id) }
         assertEquals(contactInfo.email, updated?.email)

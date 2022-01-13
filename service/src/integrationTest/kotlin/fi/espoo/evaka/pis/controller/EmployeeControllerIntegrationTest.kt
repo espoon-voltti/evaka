@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -28,57 +27,52 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `no employees return empty list`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = employeeController.getEmployees(Database(jdbi), user)
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals(emptyList<Employee>(), response.body)
+        val employees = employeeController.getEmployees(Database(jdbi), user)
+        assertEquals(listOf(), employees)
     }
 
     @Test
     fun `admin can add employee`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals(employee1.firstName, response.body!!.firstName)
-        assertEquals(employee1.lastName, response.body!!.lastName)
-        assertEquals(employee1.email, response.body!!.email)
-        assertEquals(employee1.externalId, response.body!!.externalId)
+        val emp = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
+        assertEquals(employee1.firstName, emp.firstName)
+        assertEquals(employee1.lastName, emp.lastName)
+        assertEquals(employee1.email, emp.email)
+        assertEquals(employee1.externalId, emp.externalId)
     }
 
     @Test
     fun `admin gets all employees`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        assertEquals(HttpStatus.OK, employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1)).statusCode)
-        assertEquals(HttpStatus.OK, employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee2)).statusCode)
-        val response = employeeController.getEmployees(Database(jdbi), user)
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals(2, response.body?.size)
-        assertEquals(employee1.email, response.body?.get(0)?.email)
-        assertEquals(employee2.email, response.body?.get(1)?.email)
+        employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
+        employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee2))
+        val employees = employeeController.getEmployees(Database(jdbi), user)
+        assertEquals(2, employees.size)
+        assertEquals(employee1.email, employees[0].email)
+        assertEquals(employee2.email, employees[1].email)
     }
 
     @Test
     fun `admin can first create, then get employee`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        assertEquals(0, employeeController.getEmployees(Database(jdbi), user).body?.size)
+        assertEquals(0, employeeController.getEmployees(Database(jdbi), user).size)
 
         val responseCreate = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
-        assertEquals(HttpStatus.OK, responseCreate.statusCode)
-        assertEquals(1, employeeController.getEmployees(Database(jdbi), user).body?.size)
+        assertEquals(1, employeeController.getEmployees(Database(jdbi), user).size)
 
-        val responseGet = employeeController.getEmployee(Database(jdbi), user, responseCreate.body!!.id)
-        assertEquals(HttpStatus.OK, responseGet.statusCode)
-        assertEquals(1, employeeController.getEmployees(Database(jdbi), user).body?.size)
-        assertEquals(responseCreate.body?.id, responseGet.body?.id)
+        val responseGet = employeeController.getEmployee(Database(jdbi), user, responseCreate.id)
+        assertEquals(1, employeeController.getEmployees(Database(jdbi), user).size)
+        assertEquals(responseCreate.id, responseGet.id)
     }
 
     @Test
     fun `admin can delete employee`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val createdEmployeeResponse = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
-        assertEquals(HttpStatus.OK, createdEmployeeResponse.statusCode)
-        val response = employeeController.deleteEmployee(Database(jdbi), user, createdEmployeeResponse.body?.id!!)
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals(0, employeeController.getEmployees(Database(jdbi), user).body?.size)
+        val body = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
+
+        employeeController.deleteEmployee(Database(jdbi), user, body.id)
+
+        assertEquals(0, employeeController.getEmployees(Database(jdbi), user).size)
     }
 
     fun requestFromEmployee(employee: Employee) = NewEmployee(

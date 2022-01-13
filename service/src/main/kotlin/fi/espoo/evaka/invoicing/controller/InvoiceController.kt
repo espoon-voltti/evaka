@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -31,7 +32,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -69,7 +69,7 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: SearchInvoicesRequest
-    ): ResponseEntity<Paged<InvoiceSummary>> {
+    ): Paged<InvoiceSummary> {
         Audit.InvoicesSearch.log()
         accessControl.requirePermissionFor(user, Action.Global.SEARCH_INVOICES)
         val maxPageSize = 5000
@@ -92,23 +92,20 @@ class InvoiceController(
                     )
                 }
         }
-            .let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/create-drafts")
-    fun createDraftInvoices(db: Database, user: AuthenticatedUser): ResponseEntity<Unit> {
+    fun createDraftInvoices(db: Database, user: AuthenticatedUser) {
         Audit.InvoicesCreate.log()
         accessControl.requirePermissionFor(user, Action.Global.CREATE_DRAFT_INVOICES)
         db.connect { dbc -> dbc.transaction { it.createAllDraftInvoices() } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/delete-drafts")
-    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>): ResponseEntity<Unit> {
+    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>) {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, Action.Invoice.DELETE, *invoiceIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/send")
@@ -120,7 +117,7 @@ class InvoiceController(
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         @RequestParam(required = false) dueDate: LocalDate?,
         @RequestBody invoiceIds: List<InvoiceId>
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.InvoicesSend.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, Action.Invoice.SEND, *invoiceIds.toTypedArray())
         db.connect { dbc ->
@@ -128,7 +125,6 @@ class InvoiceController(
                 service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/send/by-date")
@@ -136,7 +132,7 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody payload: InvoicePayload
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.InvoicesSendByDate.log()
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -145,24 +141,22 @@ class InvoiceController(
                 service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/mark-sent")
-    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>): ResponseEntity<Unit> {
+    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>) {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, *invoiceIds.toTypedArray())
         db.connect { dbc -> dbc.transaction { it.markManuallySent(user, invoiceIds) } }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{id}")
-    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable id: InvoiceId): ResponseEntity<Wrapper<InvoiceDetailed>> {
+    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable id: InvoiceId): Wrapper<InvoiceDetailed> {
         Audit.InvoicesRead.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Invoice.READ, id)
         val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(id) } }
             ?: throw NotFound("No invoice found with given ID ($id)")
-        return ResponseEntity.ok(Wrapper(res))
+        return Wrapper(res)
     }
 
     @GetMapping("/head-of-family/{uuid}")
@@ -170,11 +164,10 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: PersonId
-    ): ResponseEntity<Wrapper<List<Invoice>>> {
+    ): Wrapper<List<Invoice>> {
         Audit.InvoicesRead.log(targetId = uuid)
         accessControl.requirePermissionFor(user, Action.Person.READ_INVOICES, uuid)
-        val res = db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } }
-        return ResponseEntity.ok(Wrapper(res))
+        return Wrapper(db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } })
     }
 
     @PutMapping("/{id}")
@@ -183,18 +176,16 @@ class InvoiceController(
         user: AuthenticatedUser,
         @PathVariable id: InvoiceId,
         @RequestBody invoice: Invoice
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.InvoicesUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, id)
         db.connect { dbc -> dbc.transaction { service.updateInvoice(it, id, invoice) } }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/codes")
-    fun getInvoiceCodes(db: Database, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
+    fun getInvoiceCodes(db: Database, user: AuthenticatedUser): Wrapper<InvoiceCodes> {
         accessControl.requirePermissionFor(user, Action.Global.READ_INVOICE_CODES)
-        val codes = db.connect { dbc -> dbc.read { it.getInvoiceCodes() } }
-        return ResponseEntity.ok(Wrapper(codes))
+        return Wrapper(db.connect { dbc -> dbc.read { it.getInvoiceCodes() } })
     }
 }
 

@@ -10,7 +10,6 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
@@ -22,6 +21,7 @@ import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testDecisionMaker_1
@@ -256,7 +256,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .asUser(financeUser)
             .jsonBody(objectMapper.writeValueAsString(updated))
             .responseString()
-        assertEquals(204, putResponse.statusCode)
+        assertEquals(200, putResponse.statusCode)
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -314,7 +314,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .asUser(financeUser)
             .jsonBody(objectMapper.writeValueAsString(updated))
             .responseString()
-        assertEquals(204, putResponse.statusCode)
+        assertEquals(200, putResponse.statusCode)
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -348,7 +348,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .asUser(financeUser)
             .jsonBody(objectMapper.writeValueAsString(updated))
             .responseString()
-        assertEquals(204, putResponse.statusCode)
+        assertEquals(200, putResponse.statusCode)
 
         val (_, responseAfterUpdate, resultAfterUpdate) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -382,7 +382,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .asUser(financeUser)
             .responseString()
 
-        assertEquals(204, deleteResponse.statusCode)
+        assertEquals(200, deleteResponse.statusCode)
 
         val resultAfterDelete = db.transaction { tx -> tx.getIncomesForPerson(mapper, incomeTypesProvider, testIncome.personId) }
 

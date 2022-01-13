@@ -40,13 +40,11 @@ class ChildImageController(
         user: AuthenticatedUser,
         @PathVariable childId: ChildId,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ChildImageUpload.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.UPLOAD_IMAGE, childId)
 
         db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file) }
-
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/children/{childId}/image")
@@ -54,13 +52,11 @@ class ChildImageController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.ChildImageDelete.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.DELETE_IMAGE, childId)
 
         db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
-
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping(value = ["/child-images/{imageId}", "/citizen/child-images/{imageId}"])

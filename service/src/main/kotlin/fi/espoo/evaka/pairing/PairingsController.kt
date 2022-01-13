@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -48,7 +47,7 @@ class PairingsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         @RequestBody body: PostPairingReq
-    ): ResponseEntity<Pairing> {
+    ): Pairing {
         Audit.PairingInit.log(targetId = body.id)
         @Suppress("DEPRECATION")
         when (body) {
@@ -62,20 +61,18 @@ class PairingsController(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val pairing = when (body) {
+                when (body) {
                     is PostPairingReq.Unit -> tx.initPairing(unitId = body.unitId)
                     is PostPairingReq.Employee -> tx.initPairing(employeeId = body.employeeId)
+                }.also {
+                    asyncJobRunner.plan(
+                        tx = tx,
+                        payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = it.id)),
+                        runAt = it.expires.plusDays(1)
+                    )
                 }
-
-                asyncJobRunner.plan(
-                    tx = tx,
-                    payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = pairing.id)),
-                    runAt = pairing.expires.plusDays(1)
-                )
-
-                pairing
             }
-        }.let { ResponseEntity.ok(it) }
+        }
     }
 
     /**
@@ -93,13 +90,9 @@ class PairingsController(
     fun postPairingChallenge(
         db: Database,
         @RequestBody body: PostPairingChallengeReq
-    ): ResponseEntity<Pairing> {
+    ): Pairing {
         Audit.PairingChallenge.log(targetId = body.challengeKey)
-        return db.connect { dbc ->
-            dbc
-                .transaction { it.challengePairing(body.challengeKey) }
-        }
-            .let { ResponseEntity.ok(it) }
+        return db.connect { dbc -> dbc.transaction { it.challengePairing(body.challengeKey) } }
     }
 
     /**
@@ -119,7 +112,7 @@ class PairingsController(
         user: AuthenticatedUser,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
-    ): ResponseEntity<Pairing> {
+    ): Pairing {
         Audit.PairingResponse.log(targetId = id)
         return db.connect { dbc ->
             val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
@@ -135,11 +128,9 @@ class PairingsController(
             }
             dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
 
-            dbc
-                .transaction {
-                    it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
-                }
-                .let { ResponseEntity.ok(it) }
+            dbc.transaction {
+                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+            }
         }
     }
 
@@ -163,7 +154,6 @@ class PairingsController(
         Audit.PairingValidation.log(targetId = id)
         return db.connect { dbc ->
             dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
-
             dbc.transaction { tx ->
                 tx.validatePairing(id, body.challengeKey, body.responseKey).also {
                     tx.upsertMobileDeviceUser(it.id)
@@ -185,12 +175,8 @@ class PairingsController(
     fun getPairingStatus(
         db: Database,
         @PathVariable id: PairingId
-    ): ResponseEntity<PairingStatusRes> {
+    ): PairingStatusRes {
         Audit.PairingStatusRead.log(targetId = id)
-        return db.connect { dbc ->
-            dbc
-                .read { it.fetchPairingStatus(id) }
-        }
-            .let { ResponseEntity.ok(PairingStatusRes(status = it)) }
+        return PairingStatusRes(db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } })
     }
 }

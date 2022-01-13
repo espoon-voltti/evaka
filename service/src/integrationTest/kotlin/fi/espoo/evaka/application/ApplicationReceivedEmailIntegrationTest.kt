@@ -99,7 +99,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(endUser)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
 
         assertEquals(1, asyncJobRunner.getPendingJobCount())
@@ -138,7 +138,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(endUser)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         assertApplicationIsSent(applicationId)
         asyncJobRunner.runPendingJobsSync(1)
@@ -177,7 +177,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(serviceWorker)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
@@ -211,7 +211,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(endUser)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(1)
@@ -242,7 +242,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(endUser)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(1)
@@ -281,7 +281,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(serviceWorker)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
         assertEquals(0, asyncJobRunner.getPendingJobCount())
 
@@ -313,7 +313,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(endUser)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
@@ -344,7 +344,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .asUser(endUser)
             .response()
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 

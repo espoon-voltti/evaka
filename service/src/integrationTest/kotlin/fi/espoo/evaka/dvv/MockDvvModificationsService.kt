@@ -6,7 +6,6 @@ package fi.espoo.evaka.dvv
 
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,27 +21,25 @@ private val logger = KotlinLogging.logger {}
 class MockDvvModificationsService {
 
     @GetMapping("/v1/kirjausavain/{date}")
-    fun getApiKey(@PathVariable("date") date: String?): ResponseEntity<String> {
+    fun getApiKey(@PathVariable("date") date: String?): String {
         logger.info { "Mock dvv GET /kirjausavain/$date called" }
-        return ResponseEntity.ok("{\"viimeisinKirjausavain\":100000021}")
+        return "{\"viimeisinKirjausavain\":100000021}"
     }
 
     @PostMapping("/v1/muutokset")
     fun getModifications(
         @RequestBody body: ModificationsRequest
-    ): ResponseEntity<String> {
+    ): String {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
 
         val nextToken = body.viimeisinKirjausavain.toInt() + 1
-        return ResponseEntity.ok(
-            """
+        return """
             {
               "viimeisinKirjausavain": $nextToken,
               "muutokset": [${getModifications(body.hetulista)}],
               "ajanTasalla": ${nextToken > 0}
             }
         """
-        )
     }
 }
 

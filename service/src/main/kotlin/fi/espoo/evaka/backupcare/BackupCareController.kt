@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -34,11 +33,10 @@ class BackupCareController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: ChildId
-    ): ResponseEntity<ChildBackupCaresResponse> {
+    ): ChildBackupCaresResponse {
         Audit.ChildBackupCareRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_CARE, childId)
-        val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForChild(childId) } }
-        return ResponseEntity.ok(ChildBackupCaresResponse(backupCares))
+        return ChildBackupCaresResponse(db.connect { dbc -> dbc.read { it.getBackupCaresForChild(childId) } })
     }
 
     @PostMapping("/children/{childId}/backup-cares")
@@ -47,12 +45,12 @@ class BackupCareController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable("childId") childId: ChildId,
         @RequestBody body: NewBackupCare
-    ): ResponseEntity<BackupCareCreateResponse> {
+    ): BackupCareCreateResponse {
         Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
             val id = db.connect { dbc -> dbc.transaction { it.createBackupCare(childId, body) } }
-            return ResponseEntity.ok(BackupCareCreateResponse(id))
+            return BackupCareCreateResponse(id)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
@@ -64,12 +62,11 @@ class BackupCareController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
         accessControl.requirePermissionFor(user, Action.BackupCare.UPDATE, backupCareId)
         try {
             db.connect { dbc -> dbc.transaction { it.updateBackupCare(backupCareId, body.period, body.groupId) } }
-            return ResponseEntity.noContent().build()
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
@@ -80,11 +77,10 @@ class BackupCareController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") backupCareId: BackupCareId
-    ): ResponseEntity<Unit> {
+    ) {
         Audit.BackupCareDelete.log(targetId = backupCareId)
         accessControl.requirePermissionFor(user, Action.BackupCare.DELETE, backupCareId)
         db.connect { dbc -> dbc.transaction { it.deleteBackupCare(backupCareId) } }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
@@ -94,11 +90,11 @@ class BackupCareController(private val accessControl: AccessControl) {
         @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
-    ): ResponseEntity<UnitBackupCaresResponse> {
+    ): UnitBackupCaresResponse {
         Audit.DaycareBackupCareRead.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_BACKUP_CARE, daycareId)
         val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) } }
-        return ResponseEntity.ok(UnitBackupCaresResponse(backupCares))
+        return UnitBackupCaresResponse(backupCares)
     }
 }
 

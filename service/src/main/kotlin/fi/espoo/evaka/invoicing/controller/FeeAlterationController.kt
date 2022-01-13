@@ -15,12 +15,12 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,16 +36,14 @@ import java.util.UUID
 @RequestMapping("/fee-alterations")
 class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
     @GetMapping
-    fun getFeeAlterations(db: Database, user: AuthenticatedUser, @RequestParam personId: PersonId): ResponseEntity<Wrapper<List<FeeAlteration>>> {
+    fun getFeeAlterations(db: Database, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<FeeAlteration>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FEE_ALTERATIONS, personId)
-
-        val feeAlterations = db.connect { dbc -> dbc.read { it.getFeeAlterationsForPerson(personId) } }
-        return ResponseEntity.ok(Wrapper(feeAlterations))
+        return Wrapper(db.connect { dbc -> dbc.read { it.getFeeAlterationsForPerson(personId) } })
     }
 
     @PostMapping
-    fun createFeeAlteration(db: Database, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun createFeeAlteration(db: Database, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration) {
         Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_FEE_ALTERATION, feeAlteration.personId)
         db.connect { dbc ->
@@ -62,12 +60,10 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 )
             }
         }
-
-        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/{feeAlterationId}")
-    fun updateFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: FeeAlterationId, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun updateFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: FeeAlterationId, @RequestBody feeAlteration: FeeAlteration) {
         Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
         accessControl.requirePermissionFor(user, Action.FeeAlteration.UPDATE, feeAlterationId)
         db.connect { dbc ->
@@ -82,12 +78,10 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
             }
         }
-
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{feeAlterationId}")
-    fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: FeeAlterationId): ResponseEntity<Unit> {
+    fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: FeeAlterationId) {
         Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
         accessControl.requirePermissionFor(user, Action.FeeAlteration.DELETE, feeAlterationId)
         db.connect { dbc ->
@@ -108,7 +102,5 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 }
             }
         }
-
-        return ResponseEntity.noContent().build()
     }
 }
