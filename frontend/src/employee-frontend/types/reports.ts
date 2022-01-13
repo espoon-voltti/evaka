@@ -13,24 +13,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { UnitProviderType } from 'lib-customizations/types'
 
-export interface InvoiceReportRow {
-  areaCode: number
-  amountOfInvoices: number
-  totalSumCents: number
-  amountWithoutSSN: number
-  amountWithoutAddress: number
-  amountWithZeroPrice: number
-}
-
-export interface InvoiceReport {
-  totalAmountOfInvoices: number
-  totalSumCents: number
-  totalAmountWithoutSSN: number
-  totalAmountWithoutAddress: number
-  totalAmountWithZeroPrice: number
-  reportRows: InvoiceReportRow[]
-}
-
 export interface FamilyConflictReportRow {
   careAreaName: string
   unitId: UUID

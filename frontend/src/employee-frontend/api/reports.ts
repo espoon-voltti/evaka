@@ -5,6 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  InvoiceReport,
   RawReportRow,
   ServiceVoucherReport,
   ServiceVoucherUnitReport,
@@ -24,7 +25,6 @@ import {
   FamilyConflictReportRow,
   FamilyContactsReportRow,
   InvalidServiceNeedReportRow,
-  InvoiceReport,
   MissingHeadOfFamilyReportRow,
   MissingServiceNeedReportRow,
   OccupancyReportRow,
