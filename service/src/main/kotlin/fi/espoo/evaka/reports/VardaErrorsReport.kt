@@ -39,12 +39,13 @@ SELECT
     vsn.evaka_child_id AS child_id,
     vsn.updated,
     CASE WHEN vrc.reset_timestamp IS NULL THEN vrc.created ELSE vsn.created END AS created,
-    vsn.errors
+    vsn.errors,
+    vrc.reset_timestamp
 FROM varda_service_need vsn
 JOIN service_need sn on vsn.evaka_service_need_id = sn.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 LEFT JOIN varda_reset_child vrc ON vrc.evaka_child_id = vsn.evaka_child_id
-WHERE vsn.update_failed = true
+WHERE vsn.update_failed = true AND vrc.reset_timestamp IS NOT NULL
 ORDER BY vsn.updated DESC
     """.trimIndent()
 )
@@ -59,5 +60,6 @@ data class VardaErrorReportRow(
     val childId: ChildId,
     val updated: HelsinkiDateTime,
     val created: HelsinkiDateTime,
-    val errors: List<String>
+    val errors: List<String>,
+    val resetTimeStamp: HelsinkiDateTime?
 )

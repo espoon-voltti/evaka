@@ -1000,6 +1000,46 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
             }
         }
     }
+
+    data class DevVardaReset(
+        val evakaChildId: ChildId,
+        val resetTimestamp: Instant?
+    )
+
+    @PostMapping("/varda/reset-child")
+    fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                    "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (:evakaChildId, :resetTimestamp)"
+                )
+                    .bindKotlin(body)
+                    .execute()
+            }
+        }
+    }
+
+    data class DevVardaServiceNeed(
+        val evakaServiceNeedId: ServiceNeedId,
+        val evakaServiceNeedUpdated: Instant,
+        val evakaChildId: ChildId,
+        val updateFailed: Boolean?,
+        val errors: List<String>?
+    )
+
+    @PostMapping("/varda/varda-service-need")
+    fun createVardaServiceNeed(db: Database, @RequestBody body: DevVardaServiceNeed) {
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                    "INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors) " +
+                        "VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :updateFailed, :errors)"
+                )
+                    .bindKotlin(body)
+                    .execute()
+            }
+        }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
