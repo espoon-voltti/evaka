@@ -221,7 +221,7 @@ export interface InvoiceReportRow {
   amountWithZeroPrice: number
   amountWithoutAddress: number
   amountWithoutSSN: number
-  areaCode: number
+  areaCode: number | null
   totalSumCents: number
 }
 

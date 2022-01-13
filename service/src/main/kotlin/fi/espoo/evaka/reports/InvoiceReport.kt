@@ -74,7 +74,7 @@ private fun withoutAddress(invoice: InvoiceDetailed): Boolean = !addressUsable(
 )
 
 data class InvoiceReportRow(
-    val areaCode: Int,
+    val areaCode: Int?,
     val amountOfInvoices: Int,
     val totalSumCents: Int,
     val amountWithoutSSN: Int,
