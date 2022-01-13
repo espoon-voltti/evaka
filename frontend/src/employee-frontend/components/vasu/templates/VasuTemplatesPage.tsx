@@ -52,7 +52,7 @@ export default React.memo(function VasuTemplatesPage() {
               text={t.addNewTemplate}
               data-qa="add-button"
             />
-            <Table>
+            <Table data-qa="template-table">
               <Thead>
                 <Tr>
                   <Th>{t.name}</Th>
@@ -65,8 +65,8 @@ export default React.memo(function VasuTemplatesPage() {
               </Thead>
               <Tbody>
                 {templates.value.map((template) => (
-                  <Tr key={template.id}>
-                    <Td>
+                  <Tr data-qa="template-row" key={template.id}>
+                    <Td data-qa="template-name">
                       <Link to={`/vasu-templates/${template.id}`}>
                         {template.name}
                       </Link>

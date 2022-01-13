@@ -8,16 +8,12 @@ import ChildInformationPage, {
 import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import {
-  insertDaycarePlacementFixtures,
+  deleteVasuTemplates,
   insertDefaultServiceNeedOptions,
   resetDatabase
 } from 'e2e-test-common/dev-api'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import {
-  createDaycarePlacementFixture,
-  Fixture,
-  uuidv4
-} from 'e2e-test-common/dev-api/fixtures'
+import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -47,22 +43,25 @@ beforeAll(async () => {
   const unitId = fixtures.preschoolFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
-  const preschooldPlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    childId,
-    unitId,
-    LocalDate.today().formatIso(),
-    LocalDate.today().addYears(1).formatIso(),
-    'PRESCHOOL'
-  )
-
-  await insertDaycarePlacementFixtures([preschooldPlacementFixture])
+  await Fixture.placement()
+    .with({
+      id: uuidv4(),
+      childId,
+      unitId,
+      startDate: LocalDate.today().formatIso(),
+      endDate: LocalDate.today().addYears(1).formatIso(),
+      type: 'PRESCHOOL'
+    })
+    .save()
 })
 
 describe('Child Information - Leops documents section', () => {
   let section: VasuAndLeopsSection
+  let vasuTemplatesList: VasuTemplatesListPage
+
   beforeEach(async () => {
     page = await Page.open()
+    await deleteVasuTemplates()
     await employeeLogin(page, admin)
     await page.goto(`${config.employeeUrl}/child-information/${childId}`)
     childInformationPage = new ChildInformationPage(page)
@@ -70,7 +69,7 @@ describe('Child Information - Leops documents section', () => {
 
   const createLeopsTemplate = async (templateName: string) => {
     await new EmployeeNav(page).openAndClickDropdownMenuItem('vasu-templates')
-    const vasuTemplatesList = new VasuTemplatesListPage(page)
+    vasuTemplatesList = new VasuTemplatesListPage(page)
     await vasuTemplatesList.addTemplateButton.click()
     await vasuTemplatesList.nameInput.fill(templateName)
     await vasuTemplatesList.selectType.selectOption('PRESCHOOL')
@@ -78,7 +77,14 @@ describe('Child Information - Leops documents section', () => {
     await new VasuTemplateEditPage(page).saveButton.click()
   }
 
-  test('Can add a new vasu document', async () => {
+  test('Can create a leops template', async () => {
+    const templateName = 'Test template'
+    await createLeopsTemplate(templateName)
+    await vasuTemplatesList.assertTemplateRowCount(1)
+    await vasuTemplatesList.assertTemplate(0, templateName)
+  })
+
+  test('Can fill a leops questionnaire', async () => {
     const templateName = 'Test template'
     await createLeopsTemplate(templateName)
     await page.goto(`${config.employeeUrl}/child-information/${childId}`)

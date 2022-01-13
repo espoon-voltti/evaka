@@ -877,6 +877,14 @@ export async function insertVasuTemplateFixture(): Promise<UUID> {
   }
 }
 
+export async function deleteVasuTemplates(): Promise<void> {
+  try {
+    await devClient.delete<void>('/vasu/templates')
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function insertVasuDocument(
   childId: UUID,
   templateId: UUID

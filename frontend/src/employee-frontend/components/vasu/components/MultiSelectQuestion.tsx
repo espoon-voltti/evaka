@@ -67,7 +67,7 @@ export function MultiSelectQuestion({
             .filter((option) => selectedValues.includes(option.key))
             .map((o) =>
               textValue && textValue[o.key]
-                ? `${o.name} (${textValue[o.key]})`
+                ? `${o.name}: ${textValue[o.key]}`
                 : o.name
             )
             .join(', ')}
