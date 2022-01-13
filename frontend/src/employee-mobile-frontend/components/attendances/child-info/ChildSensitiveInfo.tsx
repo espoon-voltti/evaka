@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -69,30 +69,27 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
     <FixedSpaceColumn spacing="m">
       <ContentArea shadow opaque paddingHorizontal="s" paddingVertical="xs">
         <FixedSpaceColumn alignItems="center" spacing="m">
-          <Title noMargin>{i18n.attendances.childInfo.header}</Title>
+          <Title noMargin>{i18n.childInfo.header}</Title>
         </FixedSpaceColumn>
       </ContentArea>
 
       <ContentArea shadow opaque>
-        <CollapsibleSection
-          fitted
-          title={i18n.attendances.childInfo.personalInfoHeader}
-        >
+        <CollapsibleSection fitted title={i18n.childInfo.personalInfoHeader}>
           <Gap size="s" />
           <FixedSpaceColumn>
             <KeyValue>
-              <Key>{i18n.attendances.childInfo.childName}</Key>
+              <Key>{i18n.childInfo.childName}</Key>
               <span data-qa="child-info-name">{`${child.firstName} ${child.lastName}`}</span>
             </KeyValue>
 
             {renderKeyValue(
-              i18n.attendances.childInfo.preferredName,
+              i18n.childInfo.preferredName,
               child.preferredName,
               'child-info-preferred-name'
             )}
 
             {renderKeyValue(
-              i18n.attendances.childInfo.dateOfBirth,
+              i18n.childInfo.dateOfBirth,
               `${child.dateOfBirth.format()}, ${getAge(child.dateOfBirth)}${
                 i18n.common.yearsShort
               }.`,
@@ -100,13 +97,13 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
             )}
 
             {renderKeyValue(
-              i18n.attendances.childInfo.address,
+              i18n.childInfo.address,
               child.childAddress,
               'child-info-child-address'
             )}
 
             {renderKeyValue(
-              i18n.attendances.childInfo.type,
+              i18n.childInfo.type,
               child.placementType
                 ? i18n.common.placement[child.placementType]
                 : '-',
@@ -117,26 +114,19 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
       </ContentArea>
 
       <ContentArea shadow opaque>
-        <CollapsibleSection
-          fitted
-          title={i18n.attendances.childInfo.allergiesHeader}
-        >
+        <CollapsibleSection fitted title={i18n.childInfo.allergiesHeader}>
           <Gap size="s" />
           <FixedSpaceColumn>
             {renderKeyValue(
-              i18n.attendances.childInfo.allergies,
+              i18n.childInfo.allergies,
               child.allergies,
               'child-info-allergies'
             )}
 
-            {renderKeyValue(
-              i18n.attendances.childInfo.diet,
-              child.diet,
-              'child-info-diet'
-            )}
+            {renderKeyValue(i18n.childInfo.diet, child.diet, 'child-info-diet')}
 
             {renderKeyValue(
-              i18n.attendances.childInfo.medication,
+              i18n.childInfo.medication,
               child.medication,
               'child-info-medication'
             )}
@@ -145,42 +135,39 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
       </ContentArea>
 
       <ContentArea shadow opaque>
-        <CollapsibleSection
-          fitted
-          title={i18n.attendances.childInfo.contactInfoHeader}
-        >
+        <CollapsibleSection fitted title={i18n.childInfo.contactInfoHeader}>
           <Gap size="s" />
           <FixedSpaceColumn>
             {child.contacts.map((contact, index) => (
               <div key={contact.id}>
-                <Title size={4} noMargin>{`${
-                  i18n.attendances.childInfo.contact
-                } ${index + 1}`}</Title>
+                <Title size={4} noMargin>{`${i18n.childInfo.contact} ${
+                  index + 1
+                }`}</Title>
                 <Gap size="s" />
                 <FixedSpaceColumn>
                   <KeyValue>
-                    <Key>{i18n.attendances.childInfo.name}</Key>
+                    <Key>{i18n.childInfo.name}</Key>
                     <span data-qa={`child-info-contact${index + 1}-name`}>{`${
                       contact.firstName || ''
                     } ${contact.lastName || ''}`}</span>
                   </KeyValue>
 
                   {renderKeyValue(
-                    i18n.attendances.childInfo.phone,
+                    i18n.childInfo.phone,
                     contact.phone,
                     `child-info-contact${index + 1}-phone`,
                     true
                   )}
 
                   {renderKeyValue(
-                    i18n.attendances.childInfo.backupPhone,
+                    i18n.childInfo.backupPhone,
                     contact.backupPhone,
                     `child-info-contact${index + 1}-backup-phone`,
                     true
                   )}
 
                   {renderKeyValue(
-                    i18n.attendances.childInfo.email,
+                    i18n.childInfo.email,
                     contact.email,
                     `child-info-contact${index + 1}-email`
                   )}
@@ -194,17 +181,17 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
           {child.backupPickups?.map((backupPickup, index) => (
             <div key={backupPickup.id}>
               <Title size={4}>
-                {`${i18n.attendances.childInfo.backupPickup} ${index + 1}`}
+                {`${i18n.childInfo.backupPickup} ${index + 1}`}
               </Title>
               <FixedSpaceColumn>
                 {renderKeyValue(
-                  i18n.attendances.childInfo.backupPickupName,
+                  i18n.childInfo.backupPickupName,
                   backupPickup.firstName,
                   `child-info-backup-pickup${index + 1}-name`
                 )}
 
                 {renderKeyValue(
-                  i18n.attendances.childInfo.phone,
+                  i18n.childInfo.phone,
                   backupPickup.phone,
                   `child-info-backup-pickup${index + 1}-phone`,
                   true

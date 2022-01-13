@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -210,39 +210,6 @@ export const fi = {
       childStickyNotes: 'Huomioitavaa lähipäivinä'
     },
     absenceTitle: 'Poissaolomerkintä',
-    childInfo: {
-      header: 'Lapsen tiedot',
-      personalInfoHeader: 'Lapsen henkilötiedot',
-      childName: 'Lapsen nimi',
-      preferredName: 'Kutsumanimi',
-      dateOfBirth: 'Syntymäaika',
-      address: 'Lapsen kotiosoite',
-      type: 'Sijoitusmuoto',
-      allergiesHeader: 'Allergiat, ruokavalio, lääkitys',
-      allergies: 'Allergiat',
-      diet: 'Ruokavalio',
-      medication: 'Lääkitys',
-      contactInfoHeader: 'Yhteystiedot',
-      contact: 'Yhteyshenkilö',
-      name: 'Nimi',
-      phone: 'Puhelinnumero',
-      backupPhone: 'Varapuhelinnumero',
-      email: 'Sähköpostiosoite',
-      backupPickup: 'Varahakija',
-      backupPickupName: 'Varahakijan nimi',
-      image: {
-        modalMenu: {
-          title: 'Lapsen profiilikuva',
-          takeImageButton: 'Valitse kuva',
-          deleteImageButton: 'Poista kuva',
-          deleteConfirm: {
-            title: 'Haluatko varmasti poistaa lapsen kuvan?',
-            resolve: 'Poista kuva',
-            reject: 'Älä poista'
-          }
-        }
-      }
-    },
     staff: {
       errors: {
         employeeNotFound: 'Työntekijää ei löytynyt',
@@ -256,6 +223,41 @@ export const fi = {
       loginWithPin: 'Kirjaudu PIN-koodilla',
       pinNotSet: 'Aseta itsellesi PIN-koodi',
       pinLocked: 'Vaihda lukkiutunut PIN-koodi'
+    }
+  },
+  childInfo: {
+    header: 'Lapsen tiedot',
+    personalInfoHeader: 'Lapsen henkilötiedot',
+    childName: 'Lapsen nimi',
+    preferredName: 'Kutsumanimi',
+    dateOfBirth: 'Syntymäaika',
+    address: 'Lapsen kotiosoite',
+    type: 'Sijoitusmuoto',
+    allergiesHeader: 'Allergiat, ruokavalio, lääkitys',
+    allergies: 'Allergiat',
+    diet: 'Ruokavalio',
+    medication: 'Lääkitys',
+    contactInfoHeader: 'Yhteystiedot',
+    contact: 'Yhteyshenkilö',
+    name: 'Nimi',
+    phone: 'Puhelinnumero',
+    backupPhone: 'Varapuhelinnumero',
+    email: 'Sähköpostiosoite',
+    backupPickup: 'Varahakija',
+    backupPickupName: 'Varahakijan nimi',
+    image: {
+      modalMenu: {
+        title: 'Lapsen profiilikuva',
+        takeImageButton: 'Valitse kuva',
+        deleteImageButton: 'Poista kuva',
+        deleteConfirm: {
+          title: 'Haluatko varmasti poistaa lapsen kuvan?',
+          resolve: 'Poista kuva',
+          reject: 'Älä poista'
+        },
+        disclaimer:
+          'Kuvan tallennuksessa on lyhyt viive, jonka aikana kuva ei näy. Kuva alkaa näkyä viimeistään noin minuutti tallennuksen jälkeen.'
+      }
     }
   },
   staff: {

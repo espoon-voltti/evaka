@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 import { tabletMin } from './breakpoints'
 
@@ -201,10 +201,16 @@ export const BigNumber = styled.span`
   color: ${(p) => p.theme.colors.main.dark};
 `
 
-export const InformationText = styled.span`
+export const InformationText = styled.span<{ centered?: boolean }>`
   color: ${(p) => p.theme.colors.greyscale.dark};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
+  ${(p) =>
+    p.centered
+      ? css`
+          text-align: center;
+        `
+      : ''}
 `
 
 export const NavLinkText = styled.span`

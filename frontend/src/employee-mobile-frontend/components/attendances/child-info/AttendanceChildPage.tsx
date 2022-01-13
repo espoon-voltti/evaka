@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -218,14 +218,12 @@ export default React.memo(function AttendanceChildPage() {
       {uiMode === 'img-modal' && (
         <>
           <BottomModalMenu
-            title={i18n.attendances.childInfo.image.modalMenu.title}
+            title={i18n.childInfo.image.modalMenu.title}
             onClose={() => setUiMode('default')}
           >
             <FixedSpaceColumn>
               <Button
-                text={
-                  i18n.attendances.childInfo.image.modalMenu.takeImageButton
-                }
+                text={i18n.childInfo.image.modalMenu.takeImageButton}
                 primary
                 onClick={() => {
                   if (uploadInputRef.current) uploadInputRef.current.click()
@@ -234,10 +232,7 @@ export default React.memo(function AttendanceChildPage() {
               {childInfoResult.isSuccess &&
                 childInfoResult.value.child?.imageUrl && (
                   <Button
-                    text={
-                      i18n.attendances.childInfo.image.modalMenu
-                        .deleteImageButton
-                    }
+                    text={i18n.childInfo.image.modalMenu.deleteImageButton}
                     onClick={() => setUiMode('img-delete')}
                   />
                 )}
@@ -271,10 +266,9 @@ export default React.memo(function AttendanceChildPage() {
         <InfoModal
           icon={faQuestion}
           iconColor="orange"
-          title={i18n.attendances.childInfo.image.modalMenu.deleteConfirm.title}
+          title={i18n.childInfo.image.modalMenu.deleteConfirm.title}
           resolve={{
-            label:
-              i18n.attendances.childInfo.image.modalMenu.deleteConfirm.resolve,
+            label: i18n.childInfo.image.modalMenu.deleteConfirm.resolve,
             action: () => {
               void deleteChildImage(childId).then((res) => {
                 if (res.isFailure) {
@@ -287,8 +281,7 @@ export default React.memo(function AttendanceChildPage() {
             }
           }}
           reject={{
-            label:
-              i18n.attendances.childInfo.image.modalMenu.deleteConfirm.reject,
+            label: i18n.childInfo.image.modalMenu.deleteConfirm.reject,
             action: () => setUiMode('default')
           }}
         />
