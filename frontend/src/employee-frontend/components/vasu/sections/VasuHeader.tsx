@@ -59,7 +59,7 @@ export function VasuHeader({
   return (
     <HeaderSection opaque>
       <Titles>
-        <H1>{templateName}</H1>
+        <H1 data-qa="template-name">{templateName}</H1>
         <H2>
           {firstName} {lastName}
         </H2>

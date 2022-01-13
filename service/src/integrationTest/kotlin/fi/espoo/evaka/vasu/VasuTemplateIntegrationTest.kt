@@ -109,7 +109,8 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
                             ),
                             minSelections = 1,
                             maxSelections = 2,
-                            value = listOf("vaihtoehto 1")
+                            value = listOf("vaihtoehto 1"),
+                            textValue = emptyMap()
                         )
                     )
                 ),

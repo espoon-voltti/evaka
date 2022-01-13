@@ -253,7 +253,8 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = emptyList()
+                    value = emptyList(),
+                    textValue = emptyMap()
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
@@ -462,26 +463,28 @@ fun getDefaultLeopsContent() = VasuContent(
             questions = listOf(
                 VasuQuestion.MultiSelectQuestion(
                     name = "Lapsen kielimaailma ja suomen kielen taitotason seuranta",
+                    info = "Lomake 2 tehdään kaikille kaksi- ja monikielisille lapsille. Lomake 3 tehdään kaksi- ja monikielisille lapsille, joiden äidinkieli ei ole suomi tai jotka vasta harjoittelevat suomen kieltä.",
                     options = listOf(
                         QuestionOption(
                             key = "finnish_form2",
-                            name = "Lapselle laaditaan kielipeda-työvälineen lomake 2: monikielisen lapsen kielimaailma"
+                            name = "Lapselle laaditaan KieliPeda-työvälineen lomake 2: monikielisen lapsen kielimaailma"
                         ),
                         QuestionOption(
                             key = "finnish_form3",
-                            name = "Lapselle laaditaan kielipeda-työvälineen lomake 3: lapsen suomenkielen taitotason seuranta"
+                            name = "Lapselle laaditaan KieliPeda-työvälineen lomake 3: lapsen suomenkielen taitotason seuranta"
                         )
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 ),
                 VasuQuestion.RadioGroupQuestion(
                     name = "Suomen kielen taitotaso",
                     options = listOf(
                         QuestionOption(
                             key = "pre_a1",
-                            name = "Esi A1"
+                            name = "Esi-A1"
                         ),
                         QuestionOption(
                             key = "a1",
@@ -514,7 +517,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 )
             )
         ),
@@ -544,7 +548,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 ),
                 VasuQuestion.TextQuestion(
                     name = "Tuen edellyttämä yhteistyö ja palvelut",
@@ -569,7 +574,8 @@ fun getDefaultLeopsContent() = VasuContent(
                     ),
                     minSelections = 0,
                     maxSelections = null,
-                    value = listOf()
+                    value = listOf(),
+                    textValue = emptyMap()
                 )
             )
         ),
@@ -604,6 +610,48 @@ fun getDefaultLeopsContent() = VasuContent(
             )
         ),
         VasuSection(
+            name = "Tiedonsaajatahot",
+            questions = listOf(
+                VasuQuestion.MultiSelectQuestion(
+                    name = "Tämä oppimissuunnitelma luovutetaan huoltajan/huoltajien luvalla",
+                    options = listOf(
+                        QuestionOption(
+                            key = "tiedonsaajataho_tuleva_esiopetusryhma",
+                            name = "Tulevaan esiopetusryhmään"
+                        ),
+                        QuestionOption(
+                            key = "tiedonsaajataho_neuvola",
+                            name = "Neuvolaan"
+                        ),
+                        QuestionOption(
+                            key = "tiedonsaajataho_terapiapalveluihin",
+                            name = "Lasten terapiapalveluihin"
+                        ),
+                        QuestionOption(
+                            key = "tiedonsaajataho_erikoissairaanhoitoon",
+                            name = "Erikoissairaanhoitoon"
+                        ),
+                        QuestionOption(
+                            key = "tiedonsaajataho_muualle",
+                            name = "Muualle, minne?",
+                            textAnswer = true
+                        )
+                    ),
+                    minSelections = 0,
+                    maxSelections = null,
+                    value = emptyList(),
+                    textValue = emptyMap()
+                ),
+                VasuQuestion.MultiFieldList(
+                    name = "Päiväykset ja allekirjoitukset",
+                    info = "Allekirjoittamalla annan suostumuksen tämän oppimissuunnitelman siirtämiseen yllämainituille tahoille",
+                    keys = listOf(Field("Päiväys"), Field("Huoltajan allekirjoitus"), Field("Nimenselvennys")),
+                    value = listOf(listOf("", "", ""))
+                )
+            ),
+        ),
+
+        VasuSection(
             name = "Perusopetukseen siirtyminen",
             hideBeforeReady = true,
             questions = listOf(
@@ -625,12 +673,7 @@ fun getDefaultLeopsContent() = VasuContent(
                 ),
                 VasuQuestion.Paragraph(
                     title = "Lapsen esiopetuksen oppimissuunnitelman tiedonsiirtokeskustelu koulun kanssa",
-                    paragraph = ""
-                ),
-                VasuQuestion.TextQuestion(
-                    name = "Lapsen kasvun ja oppimisen kannalta oleellisimmat huomiot tiedoksi tulevalle koululle",
-                    multiline = true,
-                    value = ""
+                    paragraph = "Lähtökohtaisesti pyydämme vanhemmilta luvan lapsen esiopetuksen oppimissuunnitelman luovuttamiselle toiselle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle. Suunnitelma voidaan kuitenkin luovuttaa edellä mainituille tahoille myös ilman vanhempien lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (varhaiskasvatuslaki 41 §, perusopetuslaki 40 § ja 41 §)."
                 ),
                 VasuQuestion.DateQuestion(
                     name = "Tiedonsiirtokeskustelun päivämäärä",

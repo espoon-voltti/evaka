@@ -90,13 +90,12 @@ export class OtherDocsAndPlansSection extends SimpleTextAreaSection {
 }
 
 export class InfoSharedToSection extends Element {
-  readonly #values = this.findAll('[data-qa="value-or-no-record"]')
-
-  recipientsOptions = this.findAll('[data-qa="multi-select-question-option"]')
+  recipientsOptions = (key: string) =>
+    this.find(`[data-qa="multi-select-question-option-${key}"]`)
   otherInput = new TextInput(this.find('[data-qa="text-question-input"]'))
 
-  recipients = this.#values.nth(0).innerText
-  other = this.#values.nth(1).innerText
+  recipients = this.find(`[data-qa="value-or-no-record-8.1"]`)
+  other = this.find(`[data-qa="value-or-no-record"]`)
 }
 
 export class AdditionalInfoSection extends SimpleTextAreaSection {

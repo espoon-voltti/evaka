@@ -173,7 +173,7 @@ export const preschoolFixture: Daycare = {
     lat: 60.2040261560435,
     lon: 24.65517745652623
   },
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'VASU_AND_PEDADOC']
 }
 
 export const enduserGuardianFixture: PersonDetail = {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 import { Page, TextInput, Element } from '../../../utils/page'
 import {
   AdditionalInfoSection,
@@ -109,6 +109,23 @@ export class VasuEditPage extends VasuPageCommon {
   readonly #vasuPreviewBtn = this.page.find('[data-qa="vasu-preview-btn"]')
   readonly #vasuContainer = this.page.find('[data-qa="vasu-container"]')
 
+  readonly #multiSelectQuestionOption = (text: string) =>
+    this.page.find(`[data-qa="multi-select-question-option-${text}"]`)
+  readonly #multiSelectQuestionOptionTextInput = (text: string) =>
+    new TextInput(
+      this.page.find(
+        `[data-qa="multi-select-question-option-text-input-${text}"]`
+      )
+    )
+
+  async clickMultiSelectQuestionOption(key: string) {
+    await this.#multiSelectQuestionOption(key).click()
+  }
+
+  async setMultiSelectQuestionOptionText(key: string, text: string) {
+    await this.#multiSelectQuestionOptionTextInput(key).fill(text)
+  }
+
   async inputFollowupComment(comment: string) {
     await this.#followupNewInput.type(comment)
     await this.#followupNewSaveButton.click()
@@ -161,6 +178,9 @@ export class VasuPage extends VasuPageCommon {
     '[data-qa="vasu-event-list"] [data-qa="vasu-state-chip"]'
   )
 
+  readonly #templateName = this.page.find('[data-qa="template-name"]')
+  readonly #editButton = this.page.find('[data-qa="edit-button"]')
+
   documentState = () => this.#vasuEventListDocState.innerText
 
   // The (first) label for the state chip has no corresponding span, so the index is off by one.
@@ -182,4 +202,28 @@ export class VasuPage extends VasuPageCommon {
   publishedDate = () => this.#valueForLabel('Julkaistu Laadittu-tilaan')
   reviewedDate = () => this.#valueForLabel('Julkaistu Arvioitu-tilaan')
   closedDate = () => this.#valueForLabel('Päättynyt')
+
+  async assertTemplateName(expected: string) {
+    await waitUntilEqual(() => this.#templateName.textContent, expected)
+  }
+
+  async edit() {
+    await this.#editButton.click()
+  }
+}
+
+export class VasuPreviewPage extends VasuPageCommon {
+  readonly #multiselectAnswer = (questionNumber: string) =>
+    this.page.find(`[data-qa="value-or-no-record-${questionNumber}"]`)
+
+  async assertMultiSelectContains(
+    questionNumber: string,
+    expectedText: string
+  ) {
+    await waitUntilTrue(async () =>
+      (
+        await this.#multiselectAnswer(questionNumber).innerText
+      ).includes(expectedText)
+    )
+  }
 }

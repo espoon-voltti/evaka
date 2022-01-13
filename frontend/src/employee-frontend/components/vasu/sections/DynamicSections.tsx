@@ -170,22 +170,33 @@ export function DynamicSections({
                       }
                       onChange={
                         setContent
-                          ? (option, checked) =>
+                          ? (option, value) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 = clone.sections[sectionIndex]
                                   .questions[
                                   questionIndex
                                 ] as MultiSelectQuestion
-                                if (
-                                  checked &&
-                                  !question1.value.includes(option.key)
-                                )
-                                  question1.value.push(option.key)
-                                if (!checked)
-                                  question1.value = question1.value.filter(
-                                    (i) => i !== option.key
+                                if (typeof value == 'boolean') {
+                                  if (
+                                    value &&
+                                    !question1.value.includes(option.key)
                                   )
+                                    question1.value.push(option.key)
+                                  if (!value) {
+                                    question1.value = question1.value.filter(
+                                      (i) => i !== option.key
+                                    )
+                                    if (question1.textValue)
+                                      delete question1.textValue[option.key]
+                                  }
+                                } else {
+                                  question1.textValue
+                                    ? (question1.textValue[option.key] = value)
+                                    : (question.textValue = {
+                                        [option.key]: value
+                                      })
+                                }
                                 return clone
                               })
                           : undefined
