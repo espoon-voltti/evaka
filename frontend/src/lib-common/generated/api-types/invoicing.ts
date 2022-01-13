@@ -328,7 +328,7 @@ export interface InvoiceCodes {
 */
 export interface InvoiceDetailed {
   account: number
-  agreementType: number
+  agreementType: number | null
   areaId: UUID
   codebtor: PersonDetailed | null
   dueDate: LocalDate

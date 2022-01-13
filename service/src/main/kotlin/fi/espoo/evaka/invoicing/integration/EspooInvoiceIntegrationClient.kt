@@ -26,7 +26,13 @@ class EspooInvoiceIntegrationClient(
         return invoices
             .groupBy { it.agreementType }
             .map { (agreementType, invoices) ->
-                val success = sendBatch(invoices, agreementType)
+                val success = if (agreementType != null) {
+                    sendBatch(invoices, agreementType)
+                } else {
+                    val areaIds = invoices.asSequence().map { it.areaId }.distinct().sorted()
+                    logger.error("Failed to send ${invoices.size} invoices due to missing areaCode in the following areas: ${areaIds.joinToString()}")
+                    false
+                }
                 success to invoices
             }
             .fold(InvoiceIntegrationClient.SendResult()) { result, (success, invoices) ->

@@ -86,7 +86,7 @@ data class InvoiceDetailed(
     val periodEnd: LocalDate,
     val dueDate: LocalDate,
     val invoiceDate: LocalDate,
-    val agreementType: Int,
+    val agreementType: Int?,
     val areaId: AreaId,
     val headOfFamily: PersonDetailed,
     val codebtor: PersonDetailed?,

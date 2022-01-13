@@ -20,10 +20,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 class EspooInvoiceIntegrationClientTest {
+    private val agreementType = 100
+
     @Test
     fun `sending an invoice uses the recipient's actual address if it's valid`() {
         val testInvoice = testInvoice()
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), testInvoice.agreementType, true)
+        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(testInvoice.headOfFamily.streetAddress, invoice.client.street)
@@ -39,7 +41,7 @@ class EspooInvoiceIntegrationClientTest {
     fun `sending an invoice trims whitespace from recipient's address`() {
         val postalCodeWithWhiteSpace = " 12345 "
         val testInvoice = testInvoice(headOfFamily = testPerson(postalCode = postalCodeWithWhiteSpace))
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), testInvoice.agreementType, true)
+        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(testInvoice.headOfFamily.streetAddress, invoice.client.street)
@@ -56,7 +58,7 @@ class EspooInvoiceIntegrationClientTest {
     @Test
     fun `sending an invoice uses a fallback address when the recipient's actual address is partially incomplete`() {
         val testInvoice = testInvoice(headOfFamily = testPerson(streetAddress = ""))
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), testInvoice.agreementType, true)
+        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(null, invoice.client.street)
@@ -80,7 +82,7 @@ class EspooInvoiceIntegrationClientTest {
                 invoicingPostOffice = invoicingPostOffice
             )
         )
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), testInvoice.agreementType, true)
+        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(testInvoice.headOfFamily.streetAddress, invoice.client.street)
@@ -103,7 +105,7 @@ class EspooInvoiceIntegrationClientTest {
                 testInvoiceRow(child = firstChild)
             )
         )
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), testInvoice.agreementType, true)
+        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(7, invoice.rows.size)
@@ -128,7 +130,7 @@ class EspooInvoiceIntegrationClientTest {
         periodEnd = LocalDate.of(2020, 1, 31),
         dueDate = LocalDate.of(2020, 2, 28),
         invoiceDate = LocalDate.of(2020, 2, 14),
-        agreementType = 100,
+        agreementType = agreementType,
         areaId = AreaId(UUID.randomUUID()),
         headOfFamily = headOfFamily,
         codebtor = codebtor,

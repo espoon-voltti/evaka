@@ -5,6 +5,10 @@
 import * as _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { Loading, Result } from 'lib-common/api'
+import {
+  InvoiceReport,
+  InvoiceReportRow
+} from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import Loader from 'lib-components/atoms/Loader'
@@ -16,7 +20,6 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { getInvoiceReport, InvoiceReportFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { InvoiceReport, InvoiceReportRow } from '../../types/reports'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 function ReportInvoices() {
@@ -47,7 +50,7 @@ function ReportInvoices() {
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {report.isSuccess && (
           <>
-            <ReportDownload
+            <ReportDownload<InvoiceReportRow>
               data={report.value.reportRows}
               headers={[
                 { label: 'Alue', key: 'areaCode' },
