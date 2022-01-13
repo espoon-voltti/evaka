@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.Product
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
@@ -128,6 +129,7 @@ class EspooInvoiceIntegrationClientTest {
         dueDate = LocalDate.of(2020, 2, 28),
         invoiceDate = LocalDate.of(2020, 2, 14),
         agreementType = 100,
+        areaId = AreaId(UUID.randomUUID()),
         headOfFamily = headOfFamily,
         codebtor = codebtor,
         number = 1L,

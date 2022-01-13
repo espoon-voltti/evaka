@@ -130,11 +130,13 @@ describe('Invoices', () => {
       invoiceFixture(
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureJari.id,
+        fixtures.careAreaFixture.id,
         'DRAFT'
       ),
       invoiceFixture(
         fixtures.familyWithRestrictedDetailsGuardian.guardian.id,
         fixtures.familyWithRestrictedDetailsGuardian.children[0].id,
+        fixtures.careAreaFixture.id,
         'DRAFT'
       )
     ])
@@ -154,6 +156,7 @@ describe('Invoices', () => {
       invoiceFixture(
         adultWithoutSSN.id,
         fixtures.enduserChildFixtureJari.id,
+        fixtures.careAreaFixture.id,
         'DRAFT'
       )
     ])

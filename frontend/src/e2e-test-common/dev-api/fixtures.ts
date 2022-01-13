@@ -820,6 +820,7 @@ export const voucherValueDecisionsFixture = (
 export const invoiceFixture = (
   adultId: UUID,
   childId: UUID,
+  areaId: UUID,
   status: Invoice['status'],
   periodStart = LocalDate.of(2019, 1, 1),
   periodEnd = LocalDate.of(2019, 1, 1)
@@ -828,7 +829,7 @@ export const invoiceFixture = (
   status,
   headOfFamily: adultId,
   codebtor: null,
-  agreementType: 200,
+  areaId,
   periodStart,
   periodEnd,
   invoiceDate: periodStart,

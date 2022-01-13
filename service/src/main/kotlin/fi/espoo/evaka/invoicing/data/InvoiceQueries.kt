@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.mapToPaged
+import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
@@ -56,6 +57,7 @@ val invoiceDetailedQueryBase =
     """
     SELECT
         invoice.*,
+        care_area.area_code AS agreement_type,
         head.date_of_birth as head_date_of_birth,
         head.first_name as head_first_name,
         head.last_name as head_last_name,
@@ -103,6 +105,7 @@ val invoiceDetailedQueryBase =
         child.post_office as child_post_office,
         child.restricted_details_enabled as child_restricted_details_enabled
     FROM invoice
+        JOIN care_area ON invoice.area_id = care_area.id
         LEFT JOIN person as head ON invoice.head_of_family = head.id
         LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
         LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
@@ -168,7 +171,7 @@ fun Database.Read.getInvoiceIdsByDates(range: FiniteDateRange, areas: List<Strin
         """
         SELECT id FROM invoice
         WHERE between_start_and_end(:range, invoice_date)
-        AND agreement_type IN (SELECT area_code FROM care_area WHERE short_name = ANY(:areas))
+        AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:areas))
         AND status = :draft::invoice_status
     """
 
@@ -218,7 +221,7 @@ fun Database.Read.paginatedSearch(
 
     val conditions = listOfNotNull(
         if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
-        if (areas.isNotEmpty()) "invoice.agreement_type IN (SELECT area_code FROM care_area WHERE short_name = ANY(:area))" else null,
+        if (areas.isNotEmpty()) "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))" else null,
         if (unit != null) "row.cost_center = (SELECT cost_center FROM daycare WHERE id = :unit)" else null,
         if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
         if (searchTerms.isNotBlank()) freeTextQuery else null,
@@ -251,7 +254,7 @@ fun Database.Read.paginatedSearch(
             invoice.codebtor,
             invoice.sent_at,
             invoice.sent_by,
-            invoice.agreement_type,
+            invoice.area_id,
             invoice.created_at,
             head.date_of_birth as head_date_of_birth,
             head.first_name as head_first_name,
@@ -310,7 +313,7 @@ fun Database.Read.searchInvoices(
 
     val conditions = listOfNotNull(
         if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
-        if (areas.isNotEmpty()) "invoice.agreement_type IN (SELECT area_code FROM care_area WHERE short_name = ANY(:area))" else null,
+        if (areas.isNotEmpty()) "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))" else null,
         if (unit != null) "row.cost_center = (SELECT cost_center FROM daycare WHERE id = :unit)" else null,
         if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
         if (sentAt != null) "daterange(:sentAtStart, :sentAtEnd) @> invoice.sent_at::date" else null
@@ -433,19 +436,19 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
             period_end,
             due_date,
             invoice_date,
-            agreement_type,
+            area_id,
             head_of_family,
             codebtor
         ) VALUES (
             :id,
             :number,
             :status::invoice_status,
-            :period_start,
-            :period_end,
-            :due_date,
-            :invoice_date,
-            :agreement_type,
-            :head_of_family,
+            :periodStart,
+            :periodEnd,
+            :dueDate,
+            :invoiceDate,
+            :areaId,
+            :headOfFamily,
             :codebtor
         ) ON CONFLICT (id) DO NOTHING
     """
@@ -453,18 +456,7 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
     val batch = prepareBatch(sql)
         .also { batch ->
             invoices.forEach { invoice ->
-                batch
-                    .bind("id", invoice.id)
-                    .bind("number", invoice.number)
-                    .bind("status", invoice.status.toString())
-                    .bind("period_start", invoice.periodStart)
-                    .bind("period_end", invoice.periodEnd)
-                    .bind("due_date", invoice.dueDate)
-                    .bind("invoice_date", invoice.invoiceDate)
-                    .bind("agreement_type", invoice.agreementType)
-                    .bind("head_of_family", invoice.headOfFamily)
-                    .bind("codebtor", invoice.codebtor)
-                    .add()
+                batch.bindKotlin(invoice).add()
             }
         }
 
@@ -545,7 +537,7 @@ val toInvoice = { rv: RowView ->
         periodEnd = rv.mapColumn("period_end"),
         dueDate = rv.mapColumn("due_date"),
         invoiceDate = rv.mapColumn("invoice_date"),
-        agreementType = rv.mapColumn("agreement_type"),
+        areaId = rv.mapColumn("area_id"),
         rows = rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRow(
@@ -582,6 +574,7 @@ val toDetailedInvoice = { rv: RowView ->
         dueDate = rv.mapColumn("due_date"),
         invoiceDate = rv.mapColumn("invoice_date"),
         agreementType = rv.mapColumn("agreement_type"),
+        areaId = rv.mapColumn("area_id"),
         rows = rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
             listOf(
                 InvoiceRowDetailed(

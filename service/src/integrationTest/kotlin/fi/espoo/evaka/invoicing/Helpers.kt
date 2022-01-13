@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.allAdults
+import fi.espoo.evaka.allAreas
 import fi.espoo.evaka.allChildren
 import fi.espoo.evaka.allDaycares
 import fi.espoo.evaka.allWorkers
@@ -79,7 +80,8 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
     periodEnd = invoice.periodEnd,
     dueDate = invoice.dueDate,
     invoiceDate = invoice.invoiceDate,
-    agreementType = invoice.agreementType,
+    agreementType = allAreas.find { it.id == invoice.areaId }?.areaCode!!,
+    areaId = invoice.areaId,
     headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
     codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
     rows = invoice.rows.map { row ->

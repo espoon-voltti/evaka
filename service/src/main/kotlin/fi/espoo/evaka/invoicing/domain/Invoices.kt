@@ -18,6 +18,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
@@ -41,7 +42,7 @@ data class Invoice(
     val periodEnd: LocalDate,
     val dueDate: LocalDate = getDueDate(periodEnd),
     val invoiceDate: LocalDate = dueDate.minusWeeks(2),
-    val agreementType: Int,
+    val areaId: AreaId,
     val headOfFamily: PersonId,
     val codebtor: PersonId?,
     val rows: List<InvoiceRow>,
@@ -86,6 +87,7 @@ data class InvoiceDetailed(
     val dueDate: LocalDate,
     val invoiceDate: LocalDate,
     val agreementType: Int,
+    val areaId: AreaId,
     val headOfFamily: PersonDetailed,
     val codebtor: PersonDetailed?,
     val rows: List<InvoiceRowDetailed>,

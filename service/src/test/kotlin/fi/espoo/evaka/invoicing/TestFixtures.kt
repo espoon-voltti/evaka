@@ -28,6 +28,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -155,17 +156,6 @@ val testInvoiceRow = InvoiceRow(
     costCenter = "31450",
     subCostCenter = "01",
     product = Product.DAYCARE
-)
-
-val testInvoice = Invoice(
-    id = InvoiceId(uuid1),
-    status = InvoiceStatus.DRAFT,
-    periodStart = LocalDate.of(2019, 5, 1),
-    periodEnd = LocalDate.of(2019, 5, 31),
-    agreementType = 100,
-    headOfFamily = testDecision1.headOfFamilyId,
-    codebtor = null,
-    rows = listOf(testInvoiceRow)
 )
 
 val testIncome = Income(
@@ -300,7 +290,7 @@ fun createInvoiceRowFixture(childId: ChildId) = InvoiceRow(
 fun createInvoiceFixture(
     status: InvoiceStatus,
     headOfFamilyId: PersonId,
-    agreementType: Int,
+    areaId: AreaId,
     number: Long? = null,
     period: DateRange = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
     rows: List<InvoiceRow>
@@ -308,7 +298,7 @@ fun createInvoiceFixture(
     id = InvoiceId(UUID.randomUUID()),
     status = status,
     number = number,
-    agreementType = agreementType,
+    areaId = areaId,
     headOfFamily = headOfFamilyId,
     codebtor = null,
     periodStart = period.start,

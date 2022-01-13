@@ -106,6 +106,7 @@ describe('Employee - Guardian Information', () => {
       invoiceFixture(
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureJari.id,
+        fixtures.careAreaFixture.id,
         'DRAFT',
         LocalDate.of(2020, 1, 1),
         LocalDate.of(2020, 1, 31)
