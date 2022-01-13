@@ -7,6 +7,7 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
@@ -35,11 +36,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val newPlacements = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                startDate,
-                endDate,
+                FiniteDateRange(startDate, endDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }
@@ -70,11 +70,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val newPlacements = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                startDate,
-                endDate,
+                FiniteDateRange(startDate, endDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = false
             )
         }
@@ -95,11 +94,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val newPlacements = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE_PART_TIME,
                 childId,
                 testDaycare.id,
-                startDate,
-                endDate,
+                FiniteDateRange(startDate, endDate),
+                PlacementType.DAYCARE_PART_TIME,
                 useFiveYearsOldDaycare = true
             )
         }
@@ -120,11 +118,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                originalStartDate,
-                originalEndDate,
+                FiniteDateRange(originalStartDate, originalEndDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -156,11 +153,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                originalStartDate,
-                originalEndDate,
+                FiniteDateRange(originalStartDate, originalEndDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -192,11 +188,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                originalStartDate,
-                originalEndDate,
+                FiniteDateRange(originalStartDate, originalEndDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -228,11 +223,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                originalStartDate,
-                originalEndDate,
+                FiniteDateRange(originalStartDate, originalEndDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -264,11 +258,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                originalStartDate,
-                originalEndDate,
+                FiniteDateRange(originalStartDate, originalEndDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -296,11 +289,10 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 testDaycare.id,
-                originalStartDate,
-                originalEndDate,
+                FiniteDateRange(originalStartDate, originalEndDate),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = false
             )
         }.first()

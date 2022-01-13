@@ -482,6 +482,15 @@ class ApplicationStateService(
         val plan = tx.getPlacementPlan(applicationId)
             ?: throw IllegalStateException("Application $applicationId has no placement plan")
 
+        val allowPreschool = decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
+        val allowPreschoolDaycare = decision.type in listOf(DecisionType.PRESCHOOL_DAYCARE)
+
+        if (plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE) &&
+            !(allowPreschool || allowPreschoolDaycare)
+        ) {
+            throw IllegalStateException("Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}")
+        }
+
         // everything validated now!
 
         tx.markDecisionAccepted(user, decision.id, requestedStartDate)
@@ -490,9 +499,9 @@ class ApplicationStateService(
             tx,
             application,
             plan,
-            allowPreschool = decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION),
-            allowPreschoolDaycare = decision.type in listOf(DecisionType.PRESCHOOL_DAYCARE),
-            requestedStartDate = requestedStartDate
+            allowPreschool,
+            allowPreschoolDaycare,
+            requestedStartDate
         )
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
