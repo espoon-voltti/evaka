@@ -2846,6 +2846,11 @@ export const fi = {
       siblingDiscounts: 'Sisaralennukset',
       siblingDiscount2: 'Alennus% 1. sisarus',
       siblingDiscount2Plus: 'Alennus% muut sisarukset',
+      temporaryFees: 'Tilapäisen varhaiskasvatuksen maksut',
+      temporaryFee: 'Perushinta',
+      temporaryFeePartDay: 'Osapäiväinen',
+      temporaryFeeSibling: 'Perushinta, toinen lapsi',
+      temporaryFeeSiblingPartDay: 'Osapäiväinen, toinen lapsi',
       errors: {
         'date-overlap':
           'Maksuasetukset menevät päällekkäin jonkin muun voimassaolevan asetuksen kanssa. Päivitä muiden maksuasetusten voimassaoloaika ensin.'
