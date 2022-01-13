@@ -11,11 +11,16 @@ import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { getVardaErrorsReport, markChildForVardaReset } from '../../api/reports'
+import {
+  getVardaErrorsReport,
+  markChildForVardaReset,
+  runResetVardaChildren
+} from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 import { TableScrollable } from './common'
 
@@ -53,11 +58,20 @@ function VardaErrors() {
     setDirty(true)
   }
 
+  const startResetVardaChildren = async () => {
+    await runResetVardaChildren()
+  }
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.vardaErrors.title}</Title>
+        <AsyncButton
+          text={i18n.reports.vardaErrors.vardaResetButton}
+          onClick={startResetVardaChildren}
+          onSuccess={() => null}
+        />
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && (

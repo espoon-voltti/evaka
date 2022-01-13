@@ -2550,6 +2550,7 @@ export const fi = {
     },
     vardaErrors: {
       title: 'Varda-virheet',
+      vardaResetButton: 'Käynnistä lasten resetointi',
       description:
         'Varda-päivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
       updated: 'Muokattu',

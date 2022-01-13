@@ -483,7 +483,7 @@ export async function markChildForVardaReset(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function runResetChildren(): Promise<Result<void>> {
+export async function runResetVardaChildren(): Promise<Result<void>> {
   return client
     .post<void>(`/varda/reset-children`)
     .then((res) => Success.of(res.data))
