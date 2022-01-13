@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -28,11 +29,10 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-data class DaycareCodes(val areaCode: Int?, val costCenter: String?, val subCostCenter: String?)
+data class DaycareCodes(val areaId: AreaId, val costCenter: String?, val subCostCenter: String?)
 
 data class InvoiceCodes(
     val products: List<Product>,
-    val agreementTypes: List<Int>,
     val subCostCenters: List<String>,
     val costCenters: List<String>
 )
@@ -111,12 +111,10 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
 fun Database.Read.getInvoiceCodes(): InvoiceCodes {
     val daycareCodes = getDaycareCodes()
 
-    val specialAreaCode = 255
     val specialSubCostCenter = "06"
 
     return InvoiceCodes(
         Product.values().toList(),
-        daycareCodes.values.mapNotNull { it.areaCode }.plus(specialAreaCode).distinct().sorted().toList(),
         daycareCodes.values.mapNotNull { it.subCostCenter }.plus(specialSubCostCenter).distinct().sorted().toList(),
         daycareCodes.values.mapNotNull { it.costCenter }.distinct().sorted()
     )

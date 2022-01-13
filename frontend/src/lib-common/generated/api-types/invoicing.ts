@@ -298,7 +298,7 @@ export type IncomeEffect =
 * Generated from fi.espoo.evaka.invoicing.domain.Invoice
 */
 export interface Invoice {
-  agreementType: number
+  areaId: UUID
   codebtor: UUID | null
   dueDate: LocalDate
   headOfFamily: UUID
@@ -318,7 +318,6 @@ export interface Invoice {
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceCodes
 */
 export interface InvoiceCodes {
-  agreementTypes: number[]
   costCenters: string[]
   products: Product[]
   subCostCenters: string[]
@@ -330,6 +329,7 @@ export interface InvoiceCodes {
 export interface InvoiceDetailed {
   account: number
   agreementType: number
+  areaId: UUID
   codebtor: PersonDetailed | null
   dueDate: LocalDate
   headOfFamily: PersonDetailed

@@ -92,19 +92,19 @@ class InvoicingReportTest : FullApplicationTest() {
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testArea.areaCode!!,
+            areaId = testArea.id,
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_2.id,
-            agreementType = testArea2.areaCode!!,
+            areaId = testArea2.id,
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_2.id,
-            agreementType = testArea2.areaCode!!,
+            areaId = testArea2.id,
             rows = listOf()
         )
     )

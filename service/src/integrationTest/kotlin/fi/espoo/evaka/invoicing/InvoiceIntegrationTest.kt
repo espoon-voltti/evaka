@@ -71,13 +71,13 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testArea.areaCode!!,
+            areaId = testArea.id,
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testArea.areaCode!!,
+            areaId = testArea.id,
             number = 5000000001L,
             period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
@@ -85,7 +85,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_2.id,
-            agreementType = testArea.areaCode!!,
+            areaId = testArea.id,
             period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         )
@@ -276,7 +276,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         assertEqualEnough(
             invoices.filter {
-                it.status == InvoiceStatus.DRAFT && it.agreementType == testArea.areaCode
+                it.status == InvoiceStatus.DRAFT && it.areaId == testArea.id
             }.map(::toSummary),
             deserializeListResult(result.get()).data
         )
@@ -557,7 +557,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             createInvoiceFixture(
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
-                agreementType = testArea.areaCode!!,
+                areaId = testArea.id,
                 rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
             )
         }

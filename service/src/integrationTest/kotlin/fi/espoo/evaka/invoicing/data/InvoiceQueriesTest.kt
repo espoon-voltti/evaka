@@ -29,20 +29,20 @@ class InvoiceQueriesTest : PureJdbiTest() {
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testArea.areaCode!!,
+            areaId = testArea.id,
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testArea.areaCode!!,
+            areaId = testArea.id,
             number = 5000000001L,
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
-            agreementType = testArea.areaCode!!,
+            areaId = testArea.id,
             period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         )
@@ -135,7 +135,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                     createInvoiceFixture(
                         status = InvoiceStatus.SENT,
                         headOfFamilyId = testAdult_1.id,
-                        agreementType = testArea.areaCode!!,
+                        areaId = testArea.id,
                         number = 5000000123L,
                         rows = listOf(createInvoiceRowFixture(testChild_1.id))
                     )
@@ -156,7 +156,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                     createInvoiceFixture(
                         status = InvoiceStatus.SENT,
                         headOfFamilyId = testAdult_1.id,
-                        agreementType = testArea.areaCode!!,
+                        areaId = testArea.id,
                         number = it,
                         rows = listOf(createInvoiceRowFixture(testChild_1.id))
                     )
@@ -222,7 +222,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                     createInvoiceFixture(
                         status = InvoiceStatus.DRAFT,
                         headOfFamilyId = testAdult_2.id,
-                        agreementType = testArea.areaCode!!,
+                        areaId = testArea.id,
                         rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
                     )
                 )

@@ -202,11 +202,11 @@ internal fun generateDraftInvoice(
 
     if (rows.isEmpty()) return null
 
-    val agreementType = rowStubs
+    val areaId = rowStubs
         .maxByOrNull { (_, stub) -> stub.child.dateOfBirth }!!
         .let { (_, stub) ->
-            daycareCodes[stub.placement.unit]?.areaCode
-                ?: error("Couldn't find areaCode for daycare (${stub.placement.unit})")
+            daycareCodes[stub.placement.unit]?.areaId
+                ?: error("Couldn't find areaId for daycare (${stub.placement.unit})")
         }
 
     return Invoice(
@@ -214,7 +214,7 @@ internal fun generateDraftInvoice(
         status = InvoiceStatus.DRAFT,
         periodStart = invoicePeriod.start,
         periodEnd = invoicePeriod.end!!,
-        agreementType = agreementType,
+        areaId = areaId,
         headOfFamily = headOfFamily,
         codebtor = codebtors[headOfFamily],
         rows = rows
@@ -723,7 +723,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
 fun Database.Read.getDaycareCodes(): Map<DaycareId, DaycareCodes> {
     val sql =
         """
-        SELECT daycare.id, daycare.cost_center, area.area_code, area.sub_cost_center
+        SELECT daycare.id, daycare.cost_center, area.id AS area_id, area.sub_cost_center
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
     return createQuery(sql)

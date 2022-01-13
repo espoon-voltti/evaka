@@ -63,7 +63,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
     private lateinit var absenceService: AbsenceService
 
-    private val areaCode = 200
     private val costCenter = "31500"
     private val subCostCenter = "00"
 
@@ -104,7 +103,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily)
-            assertEquals(areaCode, invoice.agreementType)
+            assertEquals(testDaycare.areaId, invoice.areaId)
             assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
