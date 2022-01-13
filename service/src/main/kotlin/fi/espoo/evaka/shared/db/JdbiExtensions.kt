@@ -18,6 +18,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
@@ -82,6 +83,8 @@ val helsinkiDateTimeArgumentFactory = customArgumentFactory<HelsinkiDateTime>(Ty
     CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
 }
 
+val productKeyArgumentFactory = customArgumentFactory<ProductKey>(Types.VARCHAR) { CustomStringArgument(it.value) }
+
 val finiteDateRangeColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
     it.value?.let { value ->
@@ -118,6 +121,8 @@ val idColumnMapper = ColumnMapper<Id<*>> { r, columnNumber, _ -> r.getObject(col
 
 val helsinkiDateTimeColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getObject(columnNumber, OffsetDateTime::class.java)?.let { HelsinkiDateTime.from(it.toInstant()) } }
+
+val productKeyColumnMapper = ColumnMapper { rs, columnNumber, _ -> ProductKey(rs.getString(columnNumber)) }
 
 class CustomArgumentFactory<T>(private val clazz: Class<T>, private val sqlType: Int, private inline val f: (T) -> Argument?) : ArgumentFactory.Preparable {
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = Optional.ofNullable(

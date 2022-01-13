@@ -14,7 +14,6 @@ import fi.espoo.evaka.invoicing.data.updateToWaitingForSending
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
-import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.InvoiceId
@@ -32,13 +31,16 @@ import java.util.UUID
 data class DaycareCodes(val areaId: AreaId, val costCenter: String?, val subCostCenter: String?)
 
 data class InvoiceCodes(
-    val products: List<Product>,
+    val products: List<ProductWithName>,
     val subCostCenters: List<String>,
     val costCenters: List<String>
 )
 
 @Component
-class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
+class InvoiceService(
+    private val integrationClient: InvoiceIntegrationClient,
+    private val productProvider: InvoiceProductProvider
+) {
     fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, invoiceIds: List<InvoiceId>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
         val invoices = tx.getInvoicesByIds(invoiceIds)
         if (invoices.isEmpty()) return
@@ -86,6 +88,18 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
     fun getInvoiceIds(tx: Database.Read, from: LocalDate, to: LocalDate, areas: List<String>): List<InvoiceId> {
         return tx.getInvoiceIdsByDates(FiniteDateRange(from, to), areas)
     }
+
+    fun getInvoiceCodes(tx: Database.Read): InvoiceCodes {
+        val daycareCodes = tx.getDaycareCodes()
+
+        val specialSubCostCenter = "06"
+
+        return InvoiceCodes(
+            productProvider.products,
+            daycareCodes.values.mapNotNull { it.subCostCenter }.plus(specialSubCostCenter).distinct().sorted().toList(),
+            daycareCodes.values.mapNotNull { it.costCenter }.distinct().sorted()
+        )
+    }
 }
 
 fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: List<InvoiceId>) {
@@ -106,16 +120,4 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
         .list()
 
     if (updatedIds.toSet() != invoiceIds.toSet()) throw BadRequest("Some invoices have incorrect status")
-}
-
-fun Database.Read.getInvoiceCodes(): InvoiceCodes {
-    val daycareCodes = getDaycareCodes()
-
-    val specialSubCostCenter = "06"
-
-    return InvoiceCodes(
-        Product.values().toList(),
-        daycareCodes.values.mapNotNull { it.subCostCenter }.plus(specialSubCostCenter).distinct().sorted().toList(),
-        daycareCodes.values.mapNotNull { it.costCenter }.distinct().sorted()
-    )
 }

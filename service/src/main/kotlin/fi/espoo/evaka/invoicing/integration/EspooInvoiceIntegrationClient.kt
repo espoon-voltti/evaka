@@ -11,7 +11,8 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
-import fi.espoo.evaka.invoicing.domain.Product
+import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
+import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 import java.time.LocalDate
@@ -213,7 +214,7 @@ class EspooInvoiceIntegrationClient(
             lang: EspooLang,
             agType: Int,
             acc: Int,
-            product: Product,
+            product: ProductKey,
             periodStart: LocalDate,
             periodEnd: LocalDate,
             n: Int,
@@ -223,7 +224,9 @@ class EspooInvoiceIntegrationClient(
             costC: String,
             subCostC: String?
         ): EspooInvoiceRow {
-            val productCode = "$agType${product.code}"
+            val espooProduct = EspooInvoiceProducts.findProduct(product)
+
+            val productCode = "$agType${espooProduct.code}"
             require(productCode.length <= communityProductCodeLength) {
                 "Invoice product code can be at most $communityProductCodeLength characters long, was '$productCode'"
             }
@@ -238,9 +241,14 @@ class EspooInvoiceIntegrationClient(
                 unitCount = 100 * n,
                 unitPrice = unitP,
                 amount = price,
-                description = (
-                    desc.ifBlank { localizedProduct(lang, product) }
-                    ).take(communityDescriptionMaxLength),
+                description = desc
+                    .ifBlank {
+                        when (lang) {
+                            EspooLang.FI -> espooProduct.nameOnInvoiceFi
+                            EspooLang.SV -> espooProduct.nameOnInvoiceSv
+                        }
+                    }
+                    .take(communityDescriptionMaxLength),
                 account = acc,
                 costCenter = costC,
                 subCostCenter1 =
@@ -376,37 +384,6 @@ class EspooInvoiceIntegrationClient(
         enum class EspooLang(val value: String) {
             FI("fi"),
             SV("sv")
-        }
-
-        private fun localizedProduct(lang: EspooLang, product: Product) = when (lang) {
-            EspooLang.FI -> when (product) {
-                Product.DAYCARE -> "Varhaiskasvatus"
-                Product.DAYCARE_DISCOUNT -> "Alennus"
-                Product.DAYCARE_INCREASE -> "Lisä"
-                Product.PRESCHOOL_WITH_DAYCARE -> "Varhaiskasvatus + esiopetus"
-                Product.PRESCHOOL_WITH_DAYCARE_DISCOUNT -> "Alennus"
-                Product.PRESCHOOL_WITH_DAYCARE_INCREASE -> "Lisä"
-                Product.TEMPORARY_CARE -> "Tilapäinen varhaiskasvatus"
-                Product.SICK_LEAVE_100 -> "Laskuun vaikuttava poissaolo 100%"
-                Product.SICK_LEAVE_50 -> "Laskuun vaikuttava poissaolo 50%"
-                Product.ABSENCE -> "Poissaolovähennys"
-                Product.SCHOOL_SHIFT_CARE -> "Koululaisten vuorohoito"
-                Product.FREE_OF_CHARGE -> "Poissaolovähennys"
-            }
-            EspooLang.SV -> when (product) {
-                Product.DAYCARE -> "Småbarnspedagogik"
-                Product.DAYCARE_DISCOUNT -> "Avdrag"
-                Product.DAYCARE_INCREASE -> "Lisä"
-                Product.PRESCHOOL_WITH_DAYCARE -> "Småbarnspedagogik + FKL"
-                Product.PRESCHOOL_WITH_DAYCARE_DISCOUNT -> "Avdrag"
-                Product.PRESCHOOL_WITH_DAYCARE_INCREASE -> "Lisä"
-                Product.TEMPORARY_CARE -> "Temporär småbarnspedagogik"
-                Product.SICK_LEAVE_100 -> "Frånvaro som påverkar faktureringen 100%"
-                Product.SICK_LEAVE_50 -> "Frånvaro som påverkar faktureringen 50%"
-                Product.ABSENCE -> "Avdrag annan frånvaro"
-                Product.SCHOOL_SHIFT_CARE -> "Koululaisten vuorohoito (sv)"
-                Product.FREE_OF_CHARGE -> "Avdrag annan frånvaro"
-            }
         }
     }
 }

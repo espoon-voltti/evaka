@@ -15,9 +15,8 @@ import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.service.InvoiceCodes
+import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.InvoiceService
-import fi.espoo.evaka.invoicing.service.createAllDraftInvoices
-import fi.espoo.evaka.invoicing.service.getInvoiceCodes
 import fi.espoo.evaka.invoicing.service.markManuallySent
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
@@ -62,6 +61,7 @@ enum class InvoiceSortParam {
 @RequestMapping("/invoices")
 class InvoiceController(
     private val service: InvoiceService,
+    private val generator: InvoiceGenerator,
     private val accessControl: AccessControl
 ) {
     @PostMapping("/search")
@@ -98,7 +98,7 @@ class InvoiceController(
     fun createDraftInvoices(db: Database, user: AuthenticatedUser) {
         Audit.InvoicesCreate.log()
         accessControl.requirePermissionFor(user, Action.Global.CREATE_DRAFT_INVOICES)
-        db.connect { dbc -> dbc.transaction { it.createAllDraftInvoices() } }
+        db.connect { dbc -> dbc.transaction { generator.createAllDraftInvoices(it) } }
     }
 
     @PostMapping("/delete-drafts")
@@ -185,7 +185,7 @@ class InvoiceController(
     @GetMapping("/codes")
     fun getInvoiceCodes(db: Database, user: AuthenticatedUser): Wrapper<InvoiceCodes> {
         accessControl.requirePermissionFor(user, Action.Global.READ_INVOICE_CODES)
-        return Wrapper(db.connect { dbc -> dbc.read { it.getInvoiceCodes() } })
+        return Wrapper(db.connect { dbc -> dbc.read { service.getInvoiceCodes(it) } })
     }
 }
 

@@ -21,12 +21,12 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
-import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -163,7 +163,7 @@ val testInvoiceRow = InvoiceRow(
     unitPrice = 28900,
     costCenter = "31450",
     subCostCenter = "01",
-    product = Product.DAYCARE
+    product = ProductKey("DAYCARE")
 )
 
 val testIncome = Income(
@@ -288,7 +288,7 @@ fun createInvoiceRowFixture(childId: ChildId) = InvoiceRow(
     child = ChildWithDateOfBirth(childId, LocalDate.of(2017, 1, 1)),
     amount = 1,
     unitPrice = 28900,
-    product = Product.DAYCARE,
+    product = ProductKey("DAYCARE"),
     costCenter = "200",
     subCostCenter = "09",
     periodStart = LocalDate.of(2019, 1, 1),

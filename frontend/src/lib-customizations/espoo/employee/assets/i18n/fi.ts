@@ -1833,22 +1833,6 @@ export const fi = {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
     }
   },
-  product: {
-    DAYCARE: 'Varhaiskasvatus',
-    DAYCARE_DISCOUNT: 'Alennus (maksup.)',
-    DAYCARE_INCREASE: 'Korotus (maksup.)',
-    PRESCHOOL_WITH_DAYCARE: 'Varhaiskasvatus + Esiopetus',
-    SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
-    PRESCHOOL_WITH_DAYCARE_DISCOUNT: 'Alennus (maksup.)',
-    PRESCHOOL_WITH_DAYCARE_INCREASE: 'Korotus (maksup.)',
-    TEMPORARY_CARE: 'Tilapäinen varhaiskasvatus',
-    SICK_LEAVE_100: 'Laskuun vaikuttava poissaolo 100%',
-    SICK_LEAVE_50: 'Laskuun vaikuttava poissaolo 50%',
-    ABSENCE: 'Poissaolovähennys',
-    EU_CHEMICAL_AGENCY: 'Kemikaaliviraston varhaiskasvatuksen laskut',
-    OTHER_MUNICIPALITY: 'Ulkopaikkakuntalaisten lasten varhaiskasvatus',
-    FREE_OF_CHARGE: 'Poissaolovähennys'
-  },
   feeAlteration: {
     DISCOUNT: 'Alennus',
     INCREASE: 'Korotus',

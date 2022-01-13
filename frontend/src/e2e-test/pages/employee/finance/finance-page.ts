@@ -10,6 +10,7 @@ import {
   Checkbox,
   DatePickerDeprecated,
   Page,
+  Select,
   TextInput
 } from '../../../utils/page'
 import GuardianInformationPage from '../guardian-information'
@@ -241,6 +242,7 @@ export class InvoicesPage {
       `[data-qa="invoice-details-invoice-row"]:nth-child(${index + 1})`
     )
     return {
+      productSelect: new Select(row.find('[data-qa="select-product"]')),
       costCenterInput: new TextInput(row.find('[data-qa="input-cost-center"]')),
       amountInput: new TextInput(row.find('[data-qa="input-amount"]')),
       unitPriceInput: new TextInput(row.find('[data-qa="input-price"]')),
@@ -323,12 +325,14 @@ export class InvoicesPage {
   }
 
   async addNewInvoiceRow(
+    product: string,
     costCenter: string,
     amount: number,
     unitPrice: number
   ) {
     await this.#addInvoiceRowButton.click()
     const invoiceRow = this.#invoiceRow(1)
+    await invoiceRow.productSelect.selectOption(product)
     await invoiceRow.costCenterInput.fill('')
     await invoiceRow.costCenterInput.type(costCenter)
     await invoiceRow.amountInput.fill('')

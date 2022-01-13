@@ -19,12 +19,6 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
-import fi.espoo.evaka.invoicing.domain.PermanentPlacement
-import fi.espoo.evaka.invoicing.domain.Placement
-import fi.espoo.evaka.invoicing.domain.Product
-import fi.espoo.evaka.invoicing.domain.TemporaryPlacement
-import fi.espoo.evaka.invoicing.domain.getFeeAlterationProduct
-import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
@@ -43,6 +37,7 @@ import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.domain.orMax
 import org.jdbi.v3.core.kotlin.mapTo
+import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -52,487 +47,507 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
-fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMonthRange()) {
-    createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
+@Component
+class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
+    fun createAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
+        tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
 
-    val effectiveDecisions = getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
-    val placements = getInvoiceablePlacements(range).groupBy { it.headOfFamily }
-    val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(range)
+        val feeThresholds = tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
+            ?: error("Missing prices for period ${range.start} - ${range.end}, cannot generate invoices")
 
-    val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
-    val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
-    val daycareCodes = getDaycareCodes()
-    val operationalDays = operationalDays(range.start.year, range.start.month)
+        val effectiveDecisions = tx.getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
+        val placements = tx.getInvoiceablePlacements(range).groupBy { it.headOfFamily }
+        val invoicedHeadsOfFamily = tx.getInvoicedHeadsOfFamily(range)
 
-    val absences: List<AbsenceStub> = getAbsenceStubs(range, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
+        val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
+        val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
+        val daycareCodes = tx.getDaycareCodes()
+        val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
-    val freeChildren =
-        if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
-            getFreeJulyChildren(range.start.year)
-        } else emptyList()
+        val absences: List<AbsenceStub> =
+            tx.getAbsenceStubs(range, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
 
-    val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(this, decisions) }
+        val freeChildren =
+            if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
+                tx.getFreeJulyChildren(range.start.year)
+            } else emptyList()
 
-    val feeThresholds = getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
-        ?: error("Missing prices for period ${range.start} - ${range.end}, cannot generate invoices")
+        val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(tx, decisions) }
 
-    val invoices =
-        generateDraftInvoices(
-            unhandledDecisions,
-            unhandledPlacements,
-            range,
-            daycareCodes,
-            operationalDays,
-            absences,
-            freeChildren,
-            codebtors,
-            feeThresholds
-        )
-
-    deleteDraftInvoicesByDateRange(range)
-    upsertInvoices(invoices)
-}
-
-internal fun generateDraftInvoices(
-    decisions: Map<PersonId, List<FeeDecision>>,
-    placements: Map<PersonId, List<Placements>>,
-    period: DateRange,
-    daycareCodes: Map<DaycareId, DaycareCodes>,
-    operationalDays: OperationalDays,
-    absences: List<AbsenceStub> = listOf(),
-    freeChildren: List<ChildId> = listOf(),
-    codebtors: Map<PersonId, PersonId?> = mapOf(),
-    feeThresholds: FeeThresholds
-): List<Invoice> {
-    return placements.keys.mapNotNull { headOfFamilyId ->
-        try {
-            generateDraftInvoice(
-                decisions[headOfFamilyId] ?: listOf(),
-                placements[headOfFamilyId] ?: listOf(),
-                period,
+        val invoices =
+            generateDraftInvoices(
+                unhandledDecisions,
+                unhandledPlacements,
+                range,
                 daycareCodes,
                 operationalDays,
+                feeThresholds,
                 absences,
                 freeChildren,
-                codebtors,
-                feeThresholds
+                codebtors
             )
-        } catch (e: Exception) {
-            error("Failed to generate invoice for head of family $headOfFamilyId: $e")
+
+        tx.deleteDraftInvoicesByDateRange(range)
+        tx.upsertInvoices(invoices)
+    }
+
+    private fun generateDraftInvoices(
+        decisions: Map<PersonId, List<FeeDecision>>,
+        placements: Map<PersonId, List<Placements>>,
+        period: DateRange,
+        daycareCodes: Map<DaycareId, DaycareCodes>,
+        operationalDays: OperationalDays,
+        feeThresholds: FeeThresholds,
+        absences: List<AbsenceStub> = listOf(),
+        freeChildren: List<ChildId> = listOf(),
+        codebtors: Map<PersonId, PersonId?> = mapOf()
+    ): List<Invoice> {
+        return placements.keys.mapNotNull { headOfFamilyId ->
+            try {
+                generateDraftInvoice(
+                    decisions[headOfFamilyId] ?: listOf(),
+                    placements[headOfFamilyId] ?: listOf(),
+                    period,
+                    daycareCodes,
+                    operationalDays,
+                    feeThresholds,
+                    absences,
+                    freeChildren,
+                    codebtors
+                )
+            } catch (e: Exception) {
+                error("Failed to generate invoice for head of family $headOfFamilyId: $e")
+            }
         }
     }
-}
 
-data class InvoiceRowStub(
-    val child: ChildWithDateOfBirth,
-    val placement: Placement,
-    val priceBeforeFeeAlterations: Int,
-    val feeAlterations: List<Pair<FeeAlteration.Type, Int>>
-)
+    private data class InvoiceRowStub(
+        val child: ChildWithDateOfBirth,
+        val placement: PlacementStub,
+        val priceBeforeFeeAlterations: Int,
+        val feeAlterations: List<Pair<FeeAlteration.Type, Int>>
+    )
 
-internal fun generateDraftInvoice(
-    decisions: List<FeeDecision>,
-    placements: List<Placements>,
-    invoicePeriod: DateRange,
-    daycareCodes: Map<DaycareId, DaycareCodes>,
-    operationalDays: OperationalDays,
-    absences: List<AbsenceStub>,
-    freeChildren: List<ChildId>,
-    codebtors: Map<PersonId, PersonId?>,
-    feeThresholds: FeeThresholds
-): Invoice? {
-    val headOfFamily = placements.first().headOfFamily
+    private fun generateDraftInvoice(
+        decisions: List<FeeDecision>,
+        placements: List<Placements>,
+        invoicePeriod: DateRange,
+        daycareCodes: Map<DaycareId, DaycareCodes>,
+        operationalDays: OperationalDays,
+        feeThresholds: FeeThresholds,
+        absences: List<AbsenceStub>,
+        freeChildren: List<ChildId>,
+        codebtors: Map<PersonId, PersonId?>
+    ): Invoice? {
+        val headOfFamily = placements.first().headOfFamily
 
-    val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
-        val relevantPeriod = DateRange(
-            maxOf(invoicePeriod.start, placementsPeriod.start),
-            minOf(orMax(invoicePeriod.end), orMax(placementsPeriod.end))
-        )
-        val periodDecisions = decisions.filter { placementsPeriod.overlaps(DateRange(it.validFrom, it.validTo)) }
+        val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
+            val relevantPeriod = DateRange(
+                maxOf(invoicePeriod.start, placementsPeriod.start),
+                minOf(orMax(invoicePeriod.end), orMax(placementsPeriod.end))
+            )
+            val periodDecisions = decisions.filter { placementsPeriod.overlaps(DateRange(it.validFrom, it.validTo)) }
 
-        childPlacementPairs
-            .sortedByDescending { (child) -> child.dateOfBirth }
-            .mapIndexed { index, (child, placement) ->
-                when (placement) {
-                    is PlacementStub.Temporary -> listOf(
-                        relevantPeriod to InvoiceRowStub(
-                            ChildWithDateOfBirth(child.id, child.dateOfBirth),
-                            TemporaryPlacement(placement.unit, placement.partDay),
-                            feeThresholds.calculatePriceForTemporary(placement.partDay, index + 1),
-                            listOf()
-                        )
-                    )
-                    is PlacementStub.Permanent ->
-                        periodDecisions
-                            .mapNotNull { decision ->
-                                decision.children.find { part -> part.child == child }
-                                    ?.let { DateRange(decision.validFrom, decision.validTo) to it }
-                            }
-                            .filterNot { (_, part) -> part.finalFee == 0 }
-                            .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
-                            .map { (decisionPeriod, part) ->
-                                DateRange(
-                                    maxOf(relevantPeriod.start, decisionPeriod.start),
-                                    minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
-                                ) to InvoiceRowStub(
-                                    ChildWithDateOfBirth(part.child.id, part.child.dateOfBirth),
-                                    PermanentPlacement(part.placement.unitId, part.placement.type),
-                                    part.fee,
-                                    part.feeAlterations.map { feeAlteration ->
-                                        Pair(feeAlteration.type, feeAlteration.effect)
-                                    }
+            childPlacementPairs
+                .sortedByDescending { (child) -> child.dateOfBirth }
+                .mapIndexed { index, (child, placement) ->
+                    when (placement.type) {
+                        PlacementType.TEMPORARY_DAYCARE,
+                        PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
+                            val partDay = placement.type == PlacementType.TEMPORARY_DAYCARE_PART_DAY
+                            listOf(
+                                relevantPeriod to InvoiceRowStub(
+                                    ChildWithDateOfBirth(child.id, child.dateOfBirth),
+                                    placement,
+                                    feeThresholds.calculatePriceForTemporary(partDay, index + 1),
+                                    listOf()
                                 )
-                            }
+                            )
+                        }
+                        else ->
+                            periodDecisions
+                                .mapNotNull { decision ->
+                                    decision.children.find { part -> part.child == child }
+                                        ?.let { DateRange(decision.validFrom, decision.validTo) to it }
+                                }
+                                .filterNot { (_, part) -> part.finalFee == 0 }
+                                .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
+                                .map { (decisionPeriod, part) ->
+                                    DateRange(
+                                        maxOf(relevantPeriod.start, decisionPeriod.start),
+                                        minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
+                                    ) to InvoiceRowStub(
+                                        ChildWithDateOfBirth(part.child.id, part.child.dateOfBirth),
+                                        PlacementStub(part.placement.unitId, part.placement.type),
+                                        part.fee,
+                                        part.feeAlterations.map { feeAlteration ->
+                                            Pair(feeAlteration.type, feeAlteration.effect)
+                                        }
+                                    )
+                                }
+                    }
+                }
+                .flatten()
+        }
+
+        val rows = rowStubs
+            .groupBy { (_, stub) -> stub.child }
+            .flatMap { (_, childStubs) ->
+                mergePeriods(childStubs).fold(listOf<InvoiceRow>()) { existingRows, (period, rowStub) ->
+                    val placementUnit = rowStub.placement.unit
+                    val codes = daycareCodes[placementUnit]
+                        ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
+                    existingRows + toInvoiceRows(
+                        period,
+                        existingRows.map { DateRange(it.periodStart, it.periodEnd) },
+                        rowStub,
+                        codes,
+                        operationalDays,
+                        absences.filter { it.childId == rowStub.child.id }
+                    )
                 }
             }
-            .flatten()
+            .let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
+            .filter { row -> row.price != 0 }
+
+        if (rows.isEmpty()) return null
+
+        val areaId = rowStubs
+            .maxByOrNull { (_, stub) -> stub.child.dateOfBirth }!!
+            .let { (_, stub) ->
+                daycareCodes[stub.placement.unit]?.areaId
+                    ?: error("Couldn't find areaId for daycare (${stub.placement.unit})")
+            }
+
+        return Invoice(
+            id = InvoiceId(UUID.randomUUID()),
+            status = InvoiceStatus.DRAFT,
+            periodStart = invoicePeriod.start,
+            periodEnd = invoicePeriod.end!!,
+            areaId = areaId,
+            headOfFamily = headOfFamily,
+            codebtor = codebtors[headOfFamily],
+            rows = rows
+        )
     }
 
-    val rows = rowStubs
-        .groupBy { (_, stub) -> stub.child }
-        .flatMap { (_, childStubs) ->
-            mergePeriods(childStubs).fold(listOf<InvoiceRow>()) { existingRows, (period, rowStub) ->
-                val placementUnit = rowStub.placement.unit
-                val codes = daycareCodes[placementUnit]
-                    ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
-                existingRows + toInvoiceRows(
-                    period,
-                    existingRows.map { DateRange(it.periodStart, it.periodEnd) },
-                    rowStub,
-                    codes,
-                    operationalDays,
-                    absences.filter { it.childId == rowStub.child.id }
-                )
+    private fun toInvoiceRows(
+        period: DateRange,
+        processedPeriods: List<DateRange>,
+        invoiceRowStub: InvoiceRowStub,
+        codes: DaycareCodes,
+        operationalDays: OperationalDays,
+        absences: List<AbsenceStub>
+    ): List<InvoiceRow> {
+        val (child, placement, price, feeAlterations) = invoiceRowStub
+
+        return when (placement.type) {
+            PlacementType.TEMPORARY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE_PART_DAY -> toTemporaryPlacementInvoiceRows(
+                period,
+                child,
+                placement,
+                price,
+                codes,
+                operationalDays.forUnit(placement.unit),
+                absences
+            )
+            else -> toPermanentPlacementInvoiceRows(
+                period,
+                processedPeriods,
+                child,
+                placement,
+                price,
+                codes,
+                operationalDays,
+                feeAlterations,
+                absences
+            )
+        }
+    }
+
+    private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonId? {
+        val partners = decisions.map { it.partnerId }.distinct()
+        if (partners.size != 1) return null
+
+        val familyCompositions = decisions.map { Triple(it.headOfFamilyId, it.partnerId, it.children.map { it.child }) }
+        return partners.first().takeIf {
+            familyCompositions.all { (head, partner, children) ->
+                if (partner == null) false
+                else tx.isElementaryFamily(head, partner, children.map { it.id })
             }
         }
-        .let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
-        .filter { row -> row.price != 0 }
-
-    if (rows.isEmpty()) return null
-
-    val areaId = rowStubs
-        .maxByOrNull { (_, stub) -> stub.child.dateOfBirth }!!
-        .let { (_, stub) ->
-            daycareCodes[stub.placement.unit]?.areaId
-                ?: error("Couldn't find areaId for daycare (${stub.placement.unit})")
-        }
-
-    return Invoice(
-        id = InvoiceId(UUID.randomUUID()),
-        status = InvoiceStatus.DRAFT,
-        periodStart = invoicePeriod.start,
-        periodEnd = invoicePeriod.end!!,
-        areaId = areaId,
-        headOfFamily = headOfFamily,
-        codebtor = codebtors[headOfFamily],
-        rows = rows
-    )
-}
-
-private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonId? {
-    val partners = decisions.map { it.partnerId }.distinct()
-    if (partners.size != 1) return null
-
-    val familyCompositions = decisions.map { Triple(it.headOfFamilyId, it.partnerId, it.children.map { it.child }) }
-    return partners.first().takeIf {
-        familyCompositions.all { (head, partner, children) ->
-            if (partner == null) false
-            else tx.isElementaryFamily(head, partner, children.map { it.id })
-        }
     }
-}
 
-internal fun calculateDailyPriceForInvoiceRow(price: Int, operationalDays: Int): Int {
-    return BigDecimal(price).divide(BigDecimal(operationalDays), 0, RoundingMode.HALF_UP).toInt()
-}
+    private fun calculateDailyPriceForInvoiceRow(price: Int, operationalDays: Int): Int {
+        return BigDecimal(price).divide(BigDecimal(operationalDays), 0, RoundingMode.HALF_UP).toInt()
+    }
 
-internal fun toInvoiceRows(
-    period: DateRange,
-    processedPeriods: List<DateRange>,
-    invoiceRowStub: InvoiceRowStub,
-    codes: DaycareCodes,
-    operationalDays: OperationalDays,
-    absences: List<AbsenceStub>
-): List<InvoiceRow> {
-    val (child, placement, price, feeAlterations) = invoiceRowStub
+    private fun toTemporaryPlacementInvoiceRows(
+        period: DateRange,
+        child: ChildWithDateOfBirth,
+        placement: PlacementStub,
+        price: Int,
+        codes: DaycareCodes,
+        operationalDays: List<LocalDate>,
+        absences: List<AbsenceStub>
+    ): List<InvoiceRow> {
+        val amount = operationalDays
+            .filter { day -> period.includes(day) }
+            .filter { day -> absences.none { absence -> absence.date == day } }
+            .size
 
-    return when (placement) {
-        is PermanentPlacement -> toPermanentPlacementInvoiceRows(
+        return if (amount == 0) listOf()
+        else listOf(
+            InvoiceRow(
+                id = InvoiceRowId(UUID.randomUUID()),
+                periodStart = period.start,
+                periodEnd = period.end!!,
+                child = child,
+                amount = amount,
+                unitPrice = price,
+                costCenter = codes.costCenter!!,
+                subCostCenter = codes.subCostCenter,
+                product = productProvider.mapToProduct(placement.type)
+            )
+        )
+    }
+
+    private fun toPermanentPlacementInvoiceRows(
+        period: DateRange,
+        processedPeriods: List<DateRange>,
+        child: ChildWithDateOfBirth,
+        placement: PlacementStub,
+        price: Int,
+        codes: DaycareCodes,
+        operationalDays: OperationalDays,
+        feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
+        absences: List<AbsenceStub>
+    ): List<InvoiceRow> {
+        val relevantDays = run {
+            val unitOperationalDays = operationalDays.forUnit(placement.unit)
+            if (operationalDays.generalCase == unitOperationalDays) {
+                operationalDays.generalCase.filter { day -> period.includes(day) }
+            }
+
+            val weeks = operationalDays.fullMonth.fold(listOf<List<LocalDate>>()) { weeks, date ->
+                if (weeks.isEmpty()) listOf(listOf(date))
+                else {
+                    if (date.dayOfWeek == DayOfWeek.MONDAY) weeks.plusElement(listOf(date))
+                    else weeks.subList(0, weeks.size - 1).plusElement(weeks.last() + date)
+                }
+            }
+
+            weeks.flatMap { week ->
+                val operationalWeekDays = week.filter { unitOperationalDays.contains(it) }
+                val (alreadyProcessedDays, daysLeftToProcess) = operationalWeekDays.partition { day ->
+                    processedPeriods.any { it.includes(day) }
+                }
+                daysLeftToProcess
+                    .filter { period.includes(it) }
+                    .take(maxOf(0, operationalDays.generalCase.intersect(week).size - alreadyProcessedDays.size))
+            }
+        }
+        if (relevantDays.isEmpty()) return listOf()
+
+        val product = productProvider.mapToProduct(placement.type)
+        val (amount, unitPrice) = if (relevantDays.size == operationalDays.generalCase.size) Pair(
+            1,
+            { p: Int -> p }
+        ) else Pair(
+            relevantDays.size,
+            { p: Int -> calculateDailyPriceForInvoiceRow(p, operationalDays.generalCase.size) }
+        )
+
+        val initialRows = listOf(
+            InvoiceRow(
+                id = InvoiceRowId(UUID.randomUUID()),
+                child = child,
+                periodStart = period.start,
+                periodEnd = period.end!!,
+                amount = amount,
+                unitPrice = unitPrice(price),
+                costCenter = codes.costCenter!!,
+                subCostCenter = codes.subCostCenter,
+                product = product
+            )
+        ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
+            InvoiceRow(
+                id = InvoiceRowId(UUID.randomUUID()),
+                periodStart = period.start,
+                periodEnd = period.end,
+                child = child,
+                product = productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
+                costCenter = codes.costCenter,
+                subCostCenter = codes.subCostCenter,
+                amount = amount,
+                unitPrice = unitPrice(feeAlterationEffect)
+            )
+        }
+
+        val withDailyModifiers = initialRows + dailyAbsenceRefund(
+            initialRows,
             period,
-            processedPeriods,
             child,
             placement,
-            price,
-            codes,
-            operationalDays,
-            feeAlterations,
-            absences
-        )
-        is TemporaryPlacement -> toTemporaryPlacementInvoiceRows(
-            period,
-            child,
-            price,
-            codes,
-            operationalDays.forUnit(placement.unit),
-            absences
-        )
-    }
-}
-
-private fun toTemporaryPlacementInvoiceRows(
-    period: DateRange,
-    child: ChildWithDateOfBirth,
-    price: Int,
-    codes: DaycareCodes,
-    operationalDays: List<LocalDate>,
-    absences: List<AbsenceStub>
-): List<InvoiceRow> {
-    val amount = operationalDays
-        .filter { day -> period.includes(day) }
-        .filter { day -> absences.none { absence -> absence.date == day } }
-        .size
-
-    return if (amount == 0) listOf()
-    else listOf(
-        InvoiceRow(
-            id = InvoiceRowId(UUID.randomUUID()),
-            periodStart = period.start,
-            periodEnd = period.end!!,
-            child = child,
-            amount = amount,
-            unitPrice = price,
-            costCenter = codes.costCenter!!,
-            subCostCenter = codes.subCostCenter,
-            product = Product.TEMPORARY_CARE
-        )
-    )
-}
-
-private fun toPermanentPlacementInvoiceRows(
-    period: DateRange,
-    processedPeriods: List<DateRange>,
-    child: ChildWithDateOfBirth,
-    placement: PermanentPlacement,
-    price: Int,
-    codes: DaycareCodes,
-    operationalDays: OperationalDays,
-    feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
-    absences: List<AbsenceStub>
-): List<InvoiceRow> {
-    val relevantDays = run {
-        val unitOperationalDays = operationalDays.forUnit(placement.unit)
-        if (operationalDays.generalCase == unitOperationalDays) {
-            operationalDays.generalCase.filter { day -> period.includes(day) }
-        }
-
-        val weeks = operationalDays.fullMonth.fold(listOf<List<LocalDate>>()) { weeks, date ->
-            if (weeks.isEmpty()) listOf(listOf(date))
-            else {
-                if (date.dayOfWeek == DayOfWeek.MONDAY) weeks.plusElement(listOf(date))
-                else weeks.subList(0, weeks.size - 1).plusElement(weeks.last() + date)
-            }
-        }
-
-        weeks.flatMap { week ->
-            val operationalWeekDays = week.filter { unitOperationalDays.contains(it) }
-            val (alreadyProcessedDays, daysLeftToProcess) = operationalWeekDays.partition { day ->
-                processedPeriods.any { it.includes(day) }
-            }
-            daysLeftToProcess
-                .filter { period.includes(it) }
-                .take(maxOf(0, operationalDays.generalCase.intersect(week).size - alreadyProcessedDays.size))
-        }
-    }
-    if (relevantDays.isEmpty()) return listOf()
-
-    val product = getProductFromActivity(placement.type)
-    val (amount, unitPrice) = if (relevantDays.size == operationalDays.generalCase.size) Pair(
-        1,
-        { p: Int -> p }
-    ) else Pair(
-        relevantDays.size,
-        { p: Int -> calculateDailyPriceForInvoiceRow(p, operationalDays.generalCase.size) }
-    )
-
-    fun getDailyAbsenceModifiers(price: Int): List<InvoiceRow> =
-        if (price == 0) listOf()
-        else getDailyDiscountDates(
-            period,
-            child.dateOfBirth,
             absences,
-            operationalDays.forUnit(placement.unit),
-            operationalDays.generalCase.size
-        ).map { (dates, product) ->
-            if (dates.size == operationalDays.generalCase.size) InvoiceRow(
+            operationalDays
+        ) { refundProduct, refundAmount, refundUnitPrice ->
+            InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
                 child = child,
                 periodStart = period.start,
-                periodEnd = period.end!!,
-                product = product,
-                costCenter = codes.costCenter!!,
+                periodEnd = period.end,
+                amount = refundAmount,
+                unitPrice = refundUnitPrice,
+                costCenter = codes.costCenter,
                 subCostCenter = codes.subCostCenter,
-                amount = 1,
-                unitPrice = -price
-            )
-            else InvoiceRow(
-                id = InvoiceRowId(UUID.randomUUID()),
-                child = child,
-                periodStart = period.start,
-                periodEnd = period.end!!,
-                product = product,
-                costCenter = codes.costCenter!!,
-                subCostCenter = codes.subCostCenter,
-                amount = dates.size,
-                unitPrice = -getDailyDiscount(period, price, operationalDays.generalCase)
+                product = refundProduct
             )
         }
-
-    fun getMonthlyAbsenceModifiers(price: Int): List<InvoiceRow> =
-        if (price == 0) listOf()
-        else listOfNotNull(
-            getAbsenceProduct(absences, operationalDays.forUnit(placement.unit), operationalDays.generalCase.size)?.let {
-                InvoiceRow(
-                    id = InvoiceRowId(UUID.randomUUID()),
-                    child = child,
-                    periodStart = period.start,
-                    periodEnd = period.end!!,
-                    product = it,
-                    costCenter = codes.costCenter!!,
-                    subCostCenter = codes.subCostCenter,
-                    amount = amount,
-                    unitPrice = BigDecimal(
-                        when (it) {
-                            Product.ABSENCE,
-                            Product.SICK_LEAVE_50 ->
-                                BigDecimal(-price).divide(BigDecimal(2), 0, RoundingMode.HALF_UP).toInt()
-                            Product.SICK_LEAVE_100 -> -price
-                            else -> 0
-                        }
-                    ).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt()
-                )
-            }
-        )
-
-    val initialRows = listOf(
-        InvoiceRow(
-            id = InvoiceRowId(UUID.randomUUID()),
-            child = child,
-            periodStart = period.start,
-            periodEnd = period.end!!,
-            amount = amount,
-            unitPrice = unitPrice(price),
-            costCenter = codes.costCenter!!,
-            subCostCenter = codes.subCostCenter,
-            product = product
-        )
-    ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
-        InvoiceRow(
-            id = InvoiceRowId(UUID.randomUUID()),
-            periodStart = period.start,
-            periodEnd = period.end,
-            child = child,
-            product = getFeeAlterationProduct(product, feeAlterationType),
-            costCenter = codes.costCenter,
-            subCostCenter = codes.subCostCenter,
-            amount = amount,
-            unitPrice = unitPrice(feeAlterationEffect)
-        )
+        return withDailyModifiers + monthlyAbsenceDicount(
+            withDailyModifiers,
+            placement,
+            absences,
+            operationalDays
+        ) { absenceProduct, absenceDiscount ->
+            InvoiceRow(
+                id = InvoiceRowId(UUID.randomUUID()),
+                child = child,
+                periodStart = period.start,
+                periodEnd = period.end,
+                product = absenceProduct,
+                costCenter = codes.costCenter,
+                subCostCenter = codes.subCostCenter,
+                amount = amount,
+                unitPrice = BigDecimal(absenceDiscount).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt()
+            )
+        }
     }
 
-    val withDailyDiscountModifiers = initialRows + getDailyAbsenceModifiers(invoiceRowTotal(initialRows))
-    return withDailyDiscountModifiers + getMonthlyAbsenceModifiers(invoiceRowTotal(withDailyDiscountModifiers))
-}
+    private fun dailyAbsenceRefund(
+        rows: List<InvoiceRow>,
+        period: DateRange,
+        child: ChildWithDateOfBirth,
+        placement: PlacementStub,
+        absences: List<AbsenceStub>,
+        operationalDays: OperationalDays,
+        toInvoiceRow: (ProductKey, Int, Int) -> InvoiceRow
+    ): List<InvoiceRow> {
+        val total = invoiceRowTotal(rows)
+        if (total == 0) return listOf()
 
-internal fun getAbsenceProduct(
-    absences: List<AbsenceStub>,
-    unitOperationalDays: List<LocalDate>,
-    monthlyOperationalDays: Int
-): Product? {
-    val relevantAbsences = absences.filter { unitOperationalDays.contains(it.date) }
-    val sickAbsences = relevantAbsences.filter { it.absenceType == AbsenceType.SICKLEAVE }.map { it.date }
-    val allAbsences = relevantAbsences.map { it.date }
+        val refundedDates = getRefundedDays(period, child, placement, absences, operationalDays)
+        if (refundedDates.isEmpty()) return listOf()
 
-    return when {
-        sickAbsences.size == monthlyOperationalDays -> Product.SICK_LEAVE_100
-        sickAbsences.size >= 11 -> Product.SICK_LEAVE_50
-        allAbsences.size == monthlyOperationalDays -> Product.ABSENCE
-        else -> null
+        val (amount, unitPrice) =
+            if (refundedDates.size == operationalDays.generalCase.size) 1 to -total
+            else refundedDates.size to -getDailyDiscount(period, total, operationalDays.generalCase)
+
+        return listOf(toInvoiceRow(productProvider.dailyRefund, amount, unitPrice))
     }
-}
 
-internal fun getDailyDiscountDates(
-    period: DateRange,
-    childDob: LocalDate,
-    absences: List<AbsenceStub>,
-    operationalDays: List<LocalDate>,
-    monthlyOperationalDays: Int
-): List<Pair<List<LocalDate>, Product>> {
-    val relevantOperationalDays = operationalDays.filter { period.includes(it) }
+    private fun getRefundedDays(
+        period: DateRange,
+        child: ChildWithDateOfBirth,
+        placement: PlacementStub,
+        absences: List<AbsenceStub>,
+        operationalDays: OperationalDays
+    ): List<LocalDate> {
+        val relevantOperationalDays = operationalDays.forUnit(placement.unit).filter { period.includes(it) }
 
-    val forceMajeureAbsences = absences.filter { it.absenceType == AbsenceType.FORCE_MAJEURE }
-    val forceMajeureDays =
-        relevantOperationalDays.filter { day -> forceMajeureAbsences.find { day == it.date } != null }
+        val forceMajeureAbsences = absences.filter { it.absenceType == AbsenceType.FORCE_MAJEURE }
+        val forceMajeureDays =
+            relevantOperationalDays.filter { day -> forceMajeureAbsences.find { day == it.date } != null }
 
-    val parentLeaveAbsences = absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }
-    val parentLeaveDays = relevantOperationalDays
-        .filter { ChronoUnit.YEARS.between(childDob, it) < 2 }
-        .filter { day -> parentLeaveAbsences.find { day == it.date } != null }
+        val parentLeaveAbsences = absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }
+        val parentLeaveDays = relevantOperationalDays
+            .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it) < 2 }
+            .filter { day -> parentLeaveAbsences.find { day == it.date } != null }
 
-    val combinedDays = (forceMajeureDays + parentLeaveDays).distinct().take(monthlyOperationalDays)
+        return (forceMajeureDays + parentLeaveDays).distinct().take(operationalDays.generalCase.size)
+    }
 
-    return listOfNotNull(
-        if (combinedDays.isNotEmpty()) combinedDays to Product.FREE_OF_CHARGE else null
-    )
-}
+    private fun getDailyDiscount(period: DateRange, totalSoFar: Int, operationalDays: List<LocalDate>): Int {
+        val dayAmount = operationalDays.filter { period.includes(it) }.size
+        return BigDecimal(totalSoFar).divide(BigDecimal(dayAmount), 0, RoundingMode.HALF_UP).toInt()
+    }
 
-internal fun getDailyDiscount(period: DateRange, totalSoFar: Int, operationalDays: List<LocalDate>): Int {
-    val dayAmount = operationalDays.filter { period.includes(it) }.size
-    return BigDecimal(totalSoFar).divide(BigDecimal(dayAmount), 0, RoundingMode.HALF_UP).toInt()
-}
+    private fun monthlyAbsenceDicount(
+        rows: List<InvoiceRow>,
+        placement: PlacementStub,
+        absences: List<AbsenceStub>,
+        operationalDays: OperationalDays,
+        toInvoiceRow: (ProductKey, Int) -> InvoiceRow
+    ): List<InvoiceRow> {
+        val total = invoiceRowTotal(rows)
+        if (total == 0) return listOf()
 
-internal fun getPreviousMonthRange(): DateRange {
-    val lastMonth = LocalDate.now().minusMonths(1)
-    val from = lastMonth.with(TemporalAdjusters.firstDayOfMonth())
-    val to = lastMonth.with(TemporalAdjusters.lastDayOfMonth())
-    return DateRange(from, to)
-}
+        val relevantAbsences = absences.filter { operationalDays.forUnit(placement.unit).contains(it.date) }
+        val sickAbsences = relevantAbsences.filter { it.absenceType == AbsenceType.SICKLEAVE }.map { it.date }
+        val allAbsences = relevantAbsences.map { it.date }
 
-/*
- An extra invoice row is added for a child in case their invoice row sum is within 0.5€ of the monthly fee.
- These are typically used only when the child changes placement units and has for accounting reasons their monthly fee
- split into two invoice rows with daily prices. Daily prices are always rounded to whole cents so rounding mismatch
- is inevitable.
+        val halfPrice = { price: Int ->
+            BigDecimal(price).divide(BigDecimal(2), 0, RoundingMode.HALF_UP).toInt()
+        }
+        val (product, totalDiscount) = when {
+            sickAbsences.size >= operationalDays.generalCase.size -> productProvider.fullMonthSickLeave to -total
+            sickAbsences.size >= 11 -> productProvider.partMonthSickLeave to -halfPrice(total)
+            allAbsences.size >= operationalDays.generalCase.size -> productProvider.fullMonthAbsence to -halfPrice(total)
+            else -> return listOf()
+        }
 
- A difference of 0.2€ is chosen because it's a bit over the maximum rounding error, which is 0.005€ * 31 (max amount of days in a month)
- */
-internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List<FeeDecision>, invoicePeriod: DateRange): List<InvoiceRow> {
-    return invoiceRows
-        .groupBy { it.child }
-        .flatMap { (child, rows) ->
-            val uniqueChildFees = feeDecisions
-                .flatMap { it.children }
-                .filter { it.child.id == child.id }
-                .map { it.finalFee }
-                .distinct()
+        return listOf(toInvoiceRow(product, totalDiscount))
+    }
 
-            val invoiceRowSum = rows.sumOf { it.price }
+    private fun getPreviousMonthRange(): DateRange {
+        val lastMonth = LocalDate.now().minusMonths(1)
+        val from = lastMonth.with(TemporalAdjusters.firstDayOfMonth())
+        val to = lastMonth.with(TemporalAdjusters.lastDayOfMonth())
+        return DateRange(from, to)
+    }
 
-            val roundingRow = if (uniqueChildFees.size == 1) {
-                val difference = uniqueChildFees.first() - invoiceRowSum
+    /*
+     An extra invoice row is added for a child in case their invoice row sum is within 0.5€ of the monthly fee.
+     These are typically used only when the child changes placement units and has for accounting reasons their monthly fee
+     split into two invoice rows with daily prices. Daily prices are always rounded to whole cents so rounding mismatch
+     is inevitable.
 
-                if (difference != 0 && -20 < difference && difference < 20) {
-                    rows.first().copy(
-                        id = InvoiceRowId(UUID.randomUUID()),
-                        periodStart = invoicePeriod.start,
-                        periodEnd = invoicePeriod.end!!,
-                        amount = 1,
-                        unitPrice = difference
-                    )
+     A difference of 0.2€ is chosen because it's a bit over the maximum rounding error, which is 0.005€ * 31 (max amount of days in a month)
+     */
+    private fun applyRoundingRows(
+        invoiceRows: List<InvoiceRow>,
+        feeDecisions: List<FeeDecision>,
+        invoicePeriod: DateRange
+    ): List<InvoiceRow> {
+        return invoiceRows
+            .groupBy { it.child }
+            .flatMap { (child, rows) ->
+                val uniqueChildFees = feeDecisions
+                    .flatMap { it.children }
+                    .filter { it.child.id == child.id }
+                    .map { it.finalFee }
+                    .distinct()
+
+                val invoiceRowSum = rows.sumOf { it.price }
+
+                val roundingRow = if (uniqueChildFees.size == 1) {
+                    val difference = uniqueChildFees.first() - invoiceRowSum
+
+                    if (difference != 0 && -20 < difference && difference < 20) {
+                        rows.first().copy(
+                            id = InvoiceRowId(UUID.randomUUID()),
+                            periodStart = invoicePeriod.start,
+                            periodEnd = invoicePeriod.end!!,
+                            amount = 1,
+                            unitPrice = difference
+                        )
+                    } else null
                 } else null
-            } else null
 
-            if (roundingRow != null) rows + roundingRow else rows
-        }
+                if (roundingRow != null) rows + roundingRow else rows
+            }
+    }
 }
 
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {
@@ -590,10 +605,7 @@ fun Database.Read.getAbsenceStubs(spanningRange: DateRange, careTypes: List<Abse
         .toList()
 }
 
-sealed class PlacementStub(open val unit: DaycareId) {
-    data class Temporary(override val unit: DaycareId, val partDay: Boolean) : PlacementStub(unit)
-    data class Permanent(override val unit: DaycareId) : PlacementStub(unit)
-}
+data class PlacementStub(val unit: DaycareId, val type: PlacementType)
 
 data class Placements(
     val period: DateRange,
@@ -633,14 +645,7 @@ internal fun Database.Read.getInvoiceablePlacements(
                     (placements[child.id] ?: listOf())
                         .filter { it.dateRange.overlaps(period) }
                         .map { (placementPeriod, placementUnit, placementType) ->
-                            val placement = when (placementType) {
-                                PlacementType.TEMPORARY_DAYCARE ->
-                                    PlacementStub.Temporary(placementUnit, partDay = false)
-                                PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
-                                    PlacementStub.Temporary(placementUnit, partDay = true)
-                                else -> PlacementStub.Permanent(placementUnit)
-                            }
-                            Triple(placementPeriod, child, placement)
+                            Triple(placementPeriod, child, PlacementStub(placementUnit, placementType))
                         }
                 }
             }

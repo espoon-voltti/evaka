@@ -110,7 +110,7 @@ describe('Invoices', () => {
     await invoicesPage.createInvoiceDrafts()
     await invoicesPage.openFirstInvoice()
     await invoicesPage.assertInvoiceRowCount(1)
-    await invoicesPage.addNewInvoiceRow('12345', 10, 100)
+    await invoicesPage.addNewInvoiceRow('DAYCARE_INCREASE', '12345', 10, 100)
     await invoicesPage.navigateBackToInvoices()
     const originalInvoiceTotal = feeDecisionFixture.children.reduce(
       (sum, { finalFee }) => sum + finalFee / 100,

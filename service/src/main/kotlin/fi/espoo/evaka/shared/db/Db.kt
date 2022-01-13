@@ -85,6 +85,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(externalIdArgumentFactory)
     jdbi.registerArgument(idArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
+    jdbi.registerArgument(productKeyArgumentFactory)
     jdbi.register(finiteDateRangeColumnMapper)
     jdbi.register(dateRangeColumnMapper)
     jdbi.register(coordinateColumnMapper)
@@ -97,6 +98,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         Id::class.java.isAssignableFrom(GenericTypes.getErasedType(type))
     }
     jdbi.register(helsinkiDateTimeColumnMapper)
+    jdbi.register(productKeyColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(

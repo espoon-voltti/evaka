@@ -5,25 +5,14 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.PlacementType.CLUB
-import fi.espoo.evaka.placement.PlacementType.DAYCARE
-import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
-import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME
-import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
-import fi.espoo.evaka.placement.PlacementType.PREPARATORY
-import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
-import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
-import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
-import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
-import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
-import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
+import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import org.jdbi.v3.core.mapper.Nested
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -62,12 +51,13 @@ enum class InvoiceStatus {
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRow(
     val id: InvoiceRowId?,
+    @Nested
     val child: ChildWithDateOfBirth,
     val amount: Int,
     val unitPrice: Int,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
-    val product: Product,
+    val product: ProductKey,
     val costCenter: String,
     val subCostCenter: String?,
     val description: String = ""
@@ -106,7 +96,7 @@ data class InvoiceRowDetailed(
     val unitPrice: Int,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
-    val product: Product,
+    val product: ProductKey,
     val costCenter: String,
     val subCostCenter: String?,
     val description: String = ""
@@ -144,51 +134,12 @@ data class InvoiceRowSummary(
         get() = amount * unitPrice
 }
 
-enum class Product(val code: String) {
-    DAYCARE("01001"),
-    DAYCARE_DISCOUNT("01001"),
-    DAYCARE_INCREASE("01001"),
-    PRESCHOOL_WITH_DAYCARE("01002"),
-    PRESCHOOL_WITH_DAYCARE_DISCOUNT("01002"),
-    PRESCHOOL_WITH_DAYCARE_INCREASE("01002"),
-    TEMPORARY_CARE("01005"),
-    SCHOOL_SHIFT_CARE("unsupported"),
-    SICK_LEAVE_100("01101"),
-    SICK_LEAVE_50("01102"),
-    ABSENCE("01103"),
-    FREE_OF_CHARGE("01103")
-}
-
 fun getDueDate(periodEnd: LocalDate): LocalDate {
     val lastDayOfMonth = periodEnd.plusMonths(1).with(TemporalAdjusters.lastDayOfMonth())
     return when (lastDayOfMonth.dayOfWeek) {
         DayOfWeek.SUNDAY -> lastDayOfMonth.minusDays(2)
         DayOfWeek.SATURDAY -> lastDayOfMonth.minusDays(1)
         else -> lastDayOfMonth
-    }
-}
-
-fun getProductFromActivity(placementType: PlacementType): Product {
-    return when (placementType) {
-        DAYCARE, DAYCARE_PART_TIME, DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> Product.DAYCARE
-        PRESCHOOL_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
-        PREPARATORY_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
-        SCHOOL_SHIFT_CARE -> Product.SCHOOL_SHIFT_CARE
-        TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY -> Product.TEMPORARY_CARE
-        PRESCHOOL, PREPARATORY, CLUB ->
-            error("Club and preschool or preparatory without daycare shouldn't be invoiced.")
-    }
-}
-
-fun getFeeAlterationProduct(product: Product, feeAlterationType: FeeAlteration.Type): Product {
-    return when (product to feeAlterationType) {
-        Product.DAYCARE to FeeAlteration.Type.DISCOUNT,
-        Product.DAYCARE to FeeAlteration.Type.RELIEF -> Product.DAYCARE_DISCOUNT
-        Product.DAYCARE to FeeAlteration.Type.INCREASE -> Product.DAYCARE_INCREASE
-        Product.PRESCHOOL_WITH_DAYCARE to FeeAlteration.Type.DISCOUNT,
-        Product.PRESCHOOL_WITH_DAYCARE to FeeAlteration.Type.RELIEF -> Product.PRESCHOOL_WITH_DAYCARE_DISCOUNT
-        Product.PRESCHOOL_WITH_DAYCARE to FeeAlteration.Type.INCREASE -> Product.PRESCHOOL_WITH_DAYCARE_INCREASE
-        else -> error("Unknown product + fee alteration type combo ($product + $feeAlterationType)")
     }
 }
 
