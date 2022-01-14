@@ -15,6 +15,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -40,6 +41,7 @@ import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
@@ -531,6 +533,24 @@ fun Database.Transaction.insertTestIncome(income: DevIncome): IncomeId {
         .execute()
     return income.id
 }
+
+data class DevIncomeStatement(
+    val id: IncomeStatementId,
+    val personId: PersonId,
+    val startDate: LocalDate,
+    val type: IncomeStatementType,
+    val grossEstimatedMonthlyIncome: Int
+)
+
+fun Database.Transaction.insertIncomeStatement(
+    incomeStatement: DevIncomeStatement
+) = createUpdate(
+    """
+INSERT INTO income_statement (id, person_id, start_date, type, gross_estimated_monthly_income)
+VALUES (:id, :personId, :startDate, :type, :grossEstimatedMonthlyIncome)
+    """.trimIndent()
+).bindKotlin(incomeStatement)
+    .execute()
 
 fun Database.Transaction.insertTestFeeAlteration(
     childId: ChildId,

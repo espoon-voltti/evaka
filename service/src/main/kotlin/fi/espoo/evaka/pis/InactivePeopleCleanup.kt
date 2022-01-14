@@ -35,6 +35,7 @@ WITH people_with_no_archive_data AS (
     )
     AND NOT EXISTS (SELECT 1 FROM absence WHERE absence.child_id = person.id)
     AND NOT EXISTS (SELECT 1 FROM child_attendance WHERE child_attendance.child_id = person.id)
+    AND NOT EXISTS (SELECT 1 FROM income_statement WHERE income_statement.person_id = person.id)
 )
 DELETE FROM person p
 WHERE id IN (SELECT id FROM people_with_no_archive_data)
