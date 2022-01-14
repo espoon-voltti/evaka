@@ -281,7 +281,7 @@ sealed class VasuQuestion(
         val minSelections: Int,
         val maxSelections: Int?,
         val value: List<String>,
-        val textValue: Map<String, String>
+        val textValue: Map<String, String> = mapOf()
     ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is MultiSelectQuestion && question.copy(value = this.value, textValue = this.textValue) == this
