@@ -76,6 +76,8 @@ beforeEach(async () => {
     )
   ])
 
+  await Fixture.feeThresholds().save()
+
   page = await Page.open({ acceptDownloads: true })
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
