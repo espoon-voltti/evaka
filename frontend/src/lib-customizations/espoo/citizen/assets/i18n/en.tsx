@@ -1304,6 +1304,7 @@ const en: Translations = {
     ),
     noEmailAlert:
       'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
+    noPhoneAlert: 'Your phone number is missing. Please fill it down below.',
     personalInfo: 'Personal information',
     name: 'Name',
     preferredName: 'Preferred first name',
@@ -1314,6 +1315,7 @@ const en: Translations = {
     backupPhonePlaceholder: 'Eg. work phone number',
     email: 'Email',
     emailMissing: 'Email missing',
+    phoneMissing: 'Phone number missing',
     noEmail: 'I have no email address',
     emailInfo:
       'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'

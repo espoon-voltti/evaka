@@ -1256,6 +1256,7 @@ const sv: Translations = {
     ),
     noEmailAlert:
       'Din epostadress saknas. Var god och fyll i den nedan, så att du kan ta emot notiser från eVaka.',
+    noPhoneAlert: 'Din telefonnummer saknas.',
     personalInfo: 'Personuppgifter',
     name: 'Namn',
     preferredName: 'Tilltalsnamn',
@@ -1266,6 +1267,7 @@ const sv: Translations = {
     backupPhonePlaceholder: 'T.ex. arbetstelefon',
     email: 'E-postadress',
     emailMissing: 'E-postadress saknas',
+    phoneMissing: 'Telefonnummer saknas',
     noEmail: 'Jag har ingen e-postadress',
     emailInfo:
       'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.'
