@@ -57,7 +57,11 @@ describe('Finance basics', () => {
       maxIncomeThreshold6: 600000,
       incomeThresholdIncrease6Plus: 100000,
       siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
+      siblingDiscount2Plus: 0.8,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
     }
     await nav.openAndClickDropdownMenuItem('financeBasics')
 
@@ -92,7 +96,11 @@ describe('Finance basics', () => {
       maxIncomeThreshold6: 600000,
       incomeThresholdIncrease6Plus: 100000,
       siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
+      siblingDiscount2Plus: 0.8,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
     }
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')
@@ -145,7 +153,11 @@ describe('Finance basics', () => {
       maxIncomeThreshold6: 600000,
       incomeThresholdIncrease6Plus: 100000,
       siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
+      siblingDiscount2Plus: 0.8,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
     }
     await nav.openAndClickDropdownMenuItem('financeBasics')
 
@@ -180,7 +192,11 @@ describe('Finance basics', () => {
       maxIncomeThreshold6: 600000,
       incomeThresholdIncrease6Plus: 100000,
       siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
+      siblingDiscount2Plus: 0.8,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
     }
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')
@@ -240,7 +256,11 @@ describe('Finance basics', () => {
       maxIncomeThreshold6: 600000,
       incomeThresholdIncrease6Plus: 100000,
       siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
+      siblingDiscount2Plus: 0.8,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
     }
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')
@@ -250,11 +270,13 @@ describe('Finance basics', () => {
 
     await thresholdsItem.edit()
     await financeBasicsPage.feesSection.editor.minFeeInput.fill('20')
+    await financeBasicsPage.feesSection.editor.temporaryFee.fill('39')
     await financeBasicsPage.feesSection.editor.save(true)
 
     await thresholdsItem.assertItemContains({
       ...originalData,
-      minFee: 2000
+      minFee: 2000,
+      temporaryFee: 3900
     })
   })
 
@@ -283,7 +305,11 @@ describe('Finance basics', () => {
       maxIncomeThreshold6: 600000,
       incomeThresholdIncrease6Plus: 100000,
       siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
+      siblingDiscount2Plus: 0.8,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
     }
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')

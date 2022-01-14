@@ -61,7 +61,11 @@ beforeEach(async () => {
     siblingDiscount2: 0.5,
     siblingDiscount2Plus: 0.8,
     minFee: 2700,
-    maxFee: 28900
+    maxFee: 28900,
+    temporaryFee: 2800,
+    temporaryFeePartDay: 1500,
+    temporaryFeeSibling: 1500,
+    temporaryFeeSiblingPartDay: 800
   })
 
   const admin = await Fixture.employeeAdmin().save()

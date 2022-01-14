@@ -109,6 +109,16 @@ export default class FinanceBasicsPage {
       siblingDiscount2Plus: new TextInput(
         this.page.find('[data-qa="sibling-discount-2-plus"]')
       ),
+      temporaryFee: new TextInput(this.page.find('[data-qa="temporary-fee"]')),
+      temporaryFeePartDay: new TextInput(
+        this.page.find('[data-qa="temporary-fee-part-day"]')
+      ),
+      temporaryFeeSibling: new TextInput(
+        this.page.find('[data-qa="temporary-fee-sibling"]')
+      ),
+      temporaryFeeSiblingPartDay: new TextInput(
+        this.page.find('[data-qa="temporary-fee-sibling-part-day"]')
+      ),
       saveButton: new AsyncButton(this.page.find('[data-qa="save"]')),
       fillInThresholds: async (feeThresholds: FeeThresholds) => {
         await this.feesSection.editor.validFromInput.fill(
@@ -143,6 +153,18 @@ export default class FinanceBasicsPage {
         )
         await this.feesSection.editor.siblingDiscount2Plus.fill(
           formatDecimal(feeThresholds.siblingDiscount2Plus)
+        )
+        await this.feesSection.editor.temporaryFee.fill(
+          formatDecimal(feeThresholds.temporaryFee)
+        )
+        await this.feesSection.editor.temporaryFeePartDay.fill(
+          formatDecimal(feeThresholds.temporaryFeePartDay)
+        )
+        await this.feesSection.editor.temporaryFeeSibling.fill(
+          formatDecimal(feeThresholds.temporaryFeeSibling)
+        )
+        await this.feesSection.editor.temporaryFeeSiblingPartDay.fill(
+          formatDecimal(feeThresholds.temporaryFeeSiblingPartDay)
         )
       },
       assertSaveIsDisabled: async () => {
