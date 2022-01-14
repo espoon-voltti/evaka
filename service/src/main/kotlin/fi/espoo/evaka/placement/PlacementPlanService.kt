@@ -16,6 +16,8 @@ import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -26,6 +28,7 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -64,11 +67,16 @@ class PlacementPlanService(
             ApplicationType.PRESCHOOL -> {
                 val preschoolTerms = tx.getActivePreschoolTermAt(startDate)
                     ?: throw Exception("No suitable preschool term found for start date $startDate")
-                val exactTerm = if (isSvebiUnit(tx, preferredUnits[0].id)) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
+                val exactTerm = if (isSvebiUnit(
+                        tx,
+                        preferredUnits[0].id
+                    )
+                ) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
                 val period = FiniteDateRange(startDate, exactTerm.end)
-                val preschoolDaycarePeriod = if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
-                    FiniteDateRange(startDate, LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31))
-                } else null
+                val preschoolDaycarePeriod =
+                    if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
+                        FiniteDateRange(startDate, LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31))
+                    } else null
 
                 PlacementPlanDraft(
                     child = child,
@@ -118,7 +126,11 @@ class PlacementPlanService(
     fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: ApplicationId) =
         tx.softDeletePlacementPlanIfUnused(applicationId)
 
-    fun createPlacementPlan(tx: Database.Transaction, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
+    fun createPlacementPlan(
+        tx: Database.Transaction,
+        application: ApplicationDetails,
+        placementPlan: DaycarePlacementPlan
+    ) =
         tx.createPlacementPlan(application.id, derivePlacementType(application), placementPlan)
 
     fun getPlacementTypePeriods(
@@ -131,7 +143,8 @@ class PlacementPlanService(
     ): List<Pair<FiniteDateRange, PlacementType>> =
         if (plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)) {
             if (allowPreschool) {
-                val type = if (plan.type == PlacementType.PRESCHOOL_DAYCARE) PlacementType.PRESCHOOL else PlacementType.PREPARATORY
+                val type =
+                    if (plan.type == PlacementType.PRESCHOOL_DAYCARE) PlacementType.PRESCHOOL else PlacementType.PREPARATORY
                 val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
                 listOf(period to type)
             } else if (allowPreschoolDaycare) {
@@ -143,7 +156,11 @@ class PlacementPlanService(
                 val preschoolTerms = tx.getActivePreschoolTermAt(period.start)
                     ?: throw Exception("No suitable preschool term found for start date ${period.start}")
 
-                val exactTerm = if (isSvebiUnit(tx, plan.unitId)) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
+                val exactTerm = if (isSvebiUnit(
+                        tx,
+                        plan.unitId
+                    )
+                ) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
 
                 // if the preschool daycare extends beyond the end of the preschool term, a normal daycare
                 // placement is used because invoices are handled differently
@@ -203,7 +220,51 @@ class PlacementPlanService(
         }
     }
 
-    private fun resolveServiceNeedFromApplication(tx: Database.Read, application: ApplicationDetails): ApplicationServiceNeed? {
+    fun calculateSpeculatedPlacements(
+        tx: Database.Read,
+        unitId: DaycareId,
+        application: ApplicationDetails,
+        period: FiniteDateRange,
+        preschoolDaycarePeriod: FiniteDateRange?
+    ): List<Placement> {
+        val placementType = derivePlacementType(application)
+
+        val allowPreschool = placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PREPARATORY)
+        val allowPreschoolDaycare = placementType in listOf(PlacementType.PRESCHOOL_DAYCARE)
+
+        val placementTypePeriods = getPlacementTypePeriods(
+            tx,
+            childId = application.childId,
+            plan = PlacementPlan(
+                id = PlacementPlanId(UUID.randomUUID()),
+                unitId = unitId,
+                applicationId = application.id,
+                type = placementType,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+            ),
+            allowPreschool = allowPreschool,
+            allowPreschoolDaycare = allowPreschoolDaycare,
+        )
+
+        return placementTypePeriods.map { (period, placementType) ->
+            Placement(
+                id = PlacementId(UUID.randomUUID()),
+                type = placementType,
+                childId = application.childId,
+                unitId = unitId,
+                startDate = period.start,
+                endDate = period.end,
+                terminationRequestedBy = null,
+                terminationRequestedDate = null,
+            )
+        }
+    }
+
+    private fun resolveServiceNeedFromApplication(
+        tx: Database.Read,
+        application: ApplicationDetails
+    ): ApplicationServiceNeed? {
         val serviceNeedOptionId = application.form.preferences.serviceNeed?.serviceNeedOption?.id ?: return null
         if (tx.findServiceNeedOptionById(serviceNeedOptionId) == null) {
             logger.warn { "Application ${application.id} has non-existing service need option: $serviceNeedOptionId" }

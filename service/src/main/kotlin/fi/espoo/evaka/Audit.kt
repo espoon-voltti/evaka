@@ -179,6 +179,7 @@ enum class Audit(
     NotesByGroupRead("evaka.note.group.read"),
     OccupancyRead("evaka.occupancy.read"),
     OccupancyReportRead("evaka.occupancy-report.read"),
+    OccupancySpeculatedRead("evaka.occupancy-speculated.read"),
     PairingInit("pairing.init", securityEvent = true),
     PairingChallenge("pairing.challenge", securityEvent = true),
     PairingResponse("pairing.response", securityEvent = true, securityLevel = "high"),

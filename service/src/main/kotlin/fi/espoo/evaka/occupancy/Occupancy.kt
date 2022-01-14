@@ -92,7 +92,8 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
     areaId: AreaId? = null,
-    unitId: DaycareId? = null
+    unitId: DaycareId? = null,
+    speculatedPlacements: List<Placement> = listOf(),
 ): List<DailyOccupancyValues<UnitKey>> {
     if (areaId == null && unitId == null) error("Must provide areaId or unitId")
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
@@ -112,6 +113,9 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     val placements = when (type) {
         OccupancyType.REALIZED -> getRealizedPlacements(caretakerCounts.keys, period)
         else -> getPlacements(caretakerCounts.keys, period)
+    }.let { placements ->
+        val childrenToRemove = speculatedPlacements.map { it.childId }
+        placements.filterNot { childrenToRemove.contains(it.childId) } + speculatedPlacements
     }
 
     return calculateDailyOccupancies(caretakerCounts, placements, period, type)
@@ -385,14 +389,16 @@ WHERE sn.placement_id = ANY(:placementIds)
         .mapTo<ServiceNeed>()
         .groupBy { it.placementId }
 
-    val defaultServiceNeedCoefficients = this.createQuery("SELECT occupancy_coefficient, valid_placement_type FROM service_need_option WHERE default_option")
-        .map { row -> row.mapColumn<PlacementType>("valid_placement_type") to row.mapColumn<BigDecimal>("occupancy_coefficient") }
-        .toMap()
+    val defaultServiceNeedCoefficients =
+        this.createQuery("SELECT occupancy_coefficient, valid_placement_type FROM service_need_option WHERE default_option")
+            .map { row -> row.mapColumn<PlacementType>("valid_placement_type") to row.mapColumn<BigDecimal>("occupancy_coefficient") }
+            .toMap()
 
-    val assistanceNeeds = this.createQuery("SELECT child_id, capacity_factor, daterange(start_date, end_date, '[]') AS period FROM assistance_need WHERE child_id = ANY(:childIds)")
-        .bind("childIds", childIds)
-        .mapTo<AssistanceNeed>()
-        .groupBy { it.childId }
+    val assistanceNeeds =
+        this.createQuery("SELECT child_id, capacity_factor, daterange(start_date, end_date, '[]') AS period FROM assistance_need WHERE child_id = ANY(:childIds)")
+            .bind("childIds", childIds)
+            .mapTo<AssistanceNeed>()
+            .groupBy { it.childId }
 
     val absences =
         if (type == OccupancyType.REALIZED)
@@ -435,7 +441,13 @@ WHERE sn.placement_id = ANY(:placementIds)
                 .associate { caretakers ->
                     val placementsOnDate = (placementsAndPlans[key.groupingId] ?: listOf())
                         .filter { it.period.includes(caretakers.date) }
-                        .filterNot { childWasAbsentWholeDay(caretakers.date, it.type, absences[it.childId] ?: listOf()) }
+                        .filterNot {
+                            childWasAbsentWholeDay(
+                                caretakers.date,
+                                it.type,
+                                absences[it.childId] ?: listOf()
+                            )
+                        }
 
                     val coefficientSum = placementsOnDate
                         .groupBy { it.childId }
