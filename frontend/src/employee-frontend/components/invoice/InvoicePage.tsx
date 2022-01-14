@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import { Loading, Result } from 'lib-common/api'
 import {
@@ -33,7 +33,7 @@ export default React.memo(function InvoiceDetailsPage() {
   )
   const { setTitle } = useContext<TitleState>(TitleContext)
 
-  const loadInvoice = () => getInvoice(id).then(setInvoice)
+  const loadInvoice = useCallback(() => getInvoice(id).then(setInvoice), [id])
   useEffect(() => void loadInvoice(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => void getInvoiceCodes().then(setInvoiceCodes), [])
 
@@ -48,14 +48,17 @@ export default React.memo(function InvoiceDetailsPage() {
 
   const editable = invoice.map((inv) => inv.status === 'DRAFT').getOrElse(false)
 
+  const updateRows = useCallback(
+    (rows: InvoiceRowDetailed[]) =>
+      setInvoice((previous: Result<InvoiceDetailed>) =>
+        previous.map((inv) => ({ ...inv, rows }))
+      ),
+    []
+  )
+
   if (invoice.isFailure) {
     return <Redirect to="/finance/invoices" />
   }
-
-  const updateRows = (rows: InvoiceRowDetailed[]) =>
-    setInvoice((previous: Result<InvoiceDetailed>) =>
-      previous.map((inv) => ({ ...inv, rows }))
-    )
 
   return (
     <div className="invoice-details-page" data-qa="invoice-details-page">

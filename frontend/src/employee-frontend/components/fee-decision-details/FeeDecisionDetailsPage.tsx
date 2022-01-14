@@ -34,7 +34,10 @@ export default React.memo(function FeeDecisionDetailsPage() {
     useState<FeeDecisionType>('NORMAL')
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
 
-  const loadDecision = () => getFeeDecision(id).then((dec) => setDecision(dec))
+  const loadDecision = useCallback(
+    () => getFeeDecision(id).then((dec) => setDecision(dec)),
+    [id]
+  )
   useEffect(() => void loadDecision(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -50,18 +53,18 @@ export default React.memo(function FeeDecisionDetailsPage() {
     }
   }, [decision]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const changeDecisionType = (type: FeeDecisionType) => {
-    if (decision.isSuccess) {
-      setNewDecisionType(type)
-      decision.value.decisionType === type
-        ? setModified(false)
-        : setModified(true)
-    }
-  }
+  const decisionType = decision.map(({ decisionType }) => decisionType)
+  const changeDecisionType = useCallback(
+    (type: FeeDecisionType) => {
+      if (decisionType.isSuccess) {
+        setNewDecisionType(type)
+        decisionType.value === type ? setModified(false) : setModified(true)
+      }
+    },
+    [decisionType]
+  )
 
-  const goBack = () => history.goBack()
-
-  const goToDecisions = useCallback(() => goBack(), [history]) // eslint-disable-line react-hooks/exhaustive-deps
+  const goBack = useCallback(() => history.goBack(), [history])
 
   if (decision.isFailure) {
     return <Redirect to="/finance/fee-decisions" />
@@ -100,7 +103,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
             <Summary decision={decision.value} />
             <Actions
               decision={decision.value}
-              goToDecisions={goToDecisions}
+              goToDecisions={goBack}
               loadDecision={loadDecision}
               modified={modified}
               setModified={setModified}

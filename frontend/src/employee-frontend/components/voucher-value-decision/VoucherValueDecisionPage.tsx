@@ -49,14 +49,16 @@ export default React.memo(function VoucherValueDecisionPage() {
     }
   }, [decision, formatTitleName, setTitle, i18n])
 
-  const changeDecisionType = (type: VoucherValueDecisionType) => {
-    if (decision.isSuccess) {
-      setNewDecisionType(type)
-      decision.value.decisionType === type
-        ? setModified(false)
-        : setModified(true)
-    }
-  }
+  const decisionType = decision.map(({ decisionType }) => decisionType)
+  const changeDecisionType = useCallback(
+    (type: VoucherValueDecisionType) => {
+      if (decisionType.isSuccess) {
+        setNewDecisionType(type)
+        decisionType.value === type ? setModified(false) : setModified(true)
+      }
+    },
+    [decisionType]
+  )
 
   if (decision.isFailure) {
     return <Redirect to="/finance/value-decisions" />
