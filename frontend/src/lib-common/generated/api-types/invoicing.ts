@@ -322,9 +322,17 @@ export interface Invoice {
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceCodes
 */
 export interface InvoiceCodes {
-  costCenters: string[]
   products: ProductWithName[]
-  subCostCenters: string[]
+  units: InvoiceDaycare[]
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceDaycare
+*/
+export interface InvoiceDaycare {
+  costCenter: string | null
+  id: UUID
+  name: string
 }
 
 /**
@@ -372,14 +380,13 @@ export interface InvoicePayload {
 export interface InvoiceRow {
   amount: number
   child: ChildWithDateOfBirth
-  costCenter: string
   description: string
   id: UUID | null
   periodEnd: LocalDate
   periodStart: LocalDate
   price: number
   product: string
-  subCostCenter: string | null
+  unitId: UUID
   unitPrice: number
 }
 
@@ -397,6 +404,7 @@ export interface InvoiceRowDetailed {
   price: number
   product: string
   subCostCenter: string | null
+  unitId: UUID
   unitPrice: number
 }
 

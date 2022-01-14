@@ -21,6 +21,8 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -93,13 +95,13 @@ class InvoicingReportTest : FullApplicationTest() {
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
             areaId = testArea.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_2.id,
             areaId = testArea2.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare2.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,

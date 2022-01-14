@@ -26,7 +26,7 @@ export interface ComboboxProps<T> extends DropdownProps<T, HTMLInputElement> {
   fullWidth?: boolean
 }
 
-interface MenuItemProps<T> {
+export interface MenuItemProps<T> {
   item: T
   highlighted: boolean
 }

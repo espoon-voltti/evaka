@@ -110,7 +110,12 @@ describe('Invoices', () => {
     await invoicesPage.createInvoiceDrafts()
     await invoicesPage.openFirstInvoice()
     await invoicesPage.assertInvoiceRowCount(1)
-    await invoicesPage.addNewInvoiceRow('DAYCARE_INCREASE', '12345', 10, 100)
+    await invoicesPage.addNewInvoiceRow(
+      'DAYCARE_INCREASE',
+      fixtures.daycareFixture.name,
+      10,
+      100
+    )
     await invoicesPage.navigateBackToInvoices()
     const originalInvoiceTotal = feeDecisionFixture.children.reduce(
       (sum, { finalFee }) => sum + finalFee / 100,
@@ -133,12 +138,14 @@ describe('Invoices', () => {
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureJari.id,
         fixtures.careAreaFixture.id,
+        fixtures.daycareFixture.id,
         'DRAFT'
       ),
       invoiceFixture(
         fixtures.familyWithRestrictedDetailsGuardian.guardian.id,
         fixtures.familyWithRestrictedDetailsGuardian.children[0].id,
         fixtures.careAreaFixture.id,
+        fixtures.daycareFixture.id,
         'DRAFT'
       )
     ])
@@ -159,6 +166,7 @@ describe('Invoices', () => {
         adultWithoutSSN.id,
         fixtures.enduserChildFixtureJari.id,
         fixtures.careAreaFixture.id,
+        fixtures.daycareFixture.id,
         'DRAFT'
       )
     ])

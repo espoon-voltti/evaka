@@ -45,6 +45,7 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.assertj.core.api.Assertions.assertThat
@@ -72,7 +73,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
             areaId = testArea.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
@@ -80,14 +81,14 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             areaId = testArea.id,
             number = 5000000001L,
             period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_2.id,
             areaId = testArea.id,
             period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
         )
     )
 
@@ -558,7 +559,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
-                rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+                rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
             )
         }
 
@@ -681,17 +682,16 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updateInvoice updates invoice row areaCode, costCenter, subCostCenter and adds a new row`() {
+    fun `updateInvoice updates invoice row unitId and adds a new row`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
         val updated = original.copy(
             rows = original.rows.map {
                 it.copy(
                     description = "UPDATED",
-                    costCenter = "UPDATED",
-                    subCostCenter = "UPDATED"
+                    unitId = testDaycare2.id,
                 )
-            } + createInvoiceRowFixture(testChild_1.id).copy(
+            } + createInvoiceRowFixture(testChild_1.id, testDaycare.id).copy(
                 product = ProductKey("PRESCHOOL_WITH_DAYCARE"),
                 amount = 100,
                 unitPrice = 100000

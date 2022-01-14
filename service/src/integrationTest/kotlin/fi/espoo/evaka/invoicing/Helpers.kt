@@ -93,8 +93,9 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
             periodStart = row.periodStart,
             periodEnd = row.periodEnd,
             product = row.product,
-            costCenter = row.costCenter,
-            subCostCenter = row.subCostCenter,
+            unitId = row.unitId,
+            costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!,
+            subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
             description = row.description
         )
     },

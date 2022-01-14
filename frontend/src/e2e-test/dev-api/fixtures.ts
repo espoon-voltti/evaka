@@ -836,6 +836,7 @@ export const invoiceFixture = (
   adultId: UUID,
   childId: UUID,
   areaId: UUID,
+  unitId: UUID,
   status: Invoice['status'],
   periodStart = LocalDate.of(2019, 1, 1),
   periodEnd = LocalDate.of(2019, 1, 1)
@@ -861,8 +862,7 @@ export const invoiceFixture = (
       periodStart: periodStart,
       periodEnd: periodEnd,
       product: 'DAYCARE',
-      costCenter: '20000',
-      subCostCenter: '00',
+      unitId,
       description: '',
       price: 10000
     }
