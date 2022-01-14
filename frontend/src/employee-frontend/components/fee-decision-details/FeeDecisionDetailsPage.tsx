@@ -4,7 +4,6 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
-import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import {
   FeeDecisionDetailed,
@@ -13,7 +12,6 @@ import {
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
 import { getFeeDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
@@ -22,13 +20,6 @@ import Actions from './Actions'
 import ChildSection from './ChildSection'
 import Heading from './Heading'
 import Summary from './Summary'
-
-export const ErrorMessage = styled.div`
-  color: ${colors.accents.dangerRed};
-  margin-right: 20px;
-  display: flex;
-  align-items: center;
-`
 
 export default React.memo(function FeeDecisionDetailsPage() {
   const history = useHistory()

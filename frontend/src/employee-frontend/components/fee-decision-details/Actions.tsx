@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback } from 'react'
 import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -13,7 +13,6 @@ import {
   setFeeDecisionType
 } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { ErrorMessage } from './FeeDecisionDetailsPage'
 
 interface Props {
   decision: FeeDecisionDetailed
@@ -33,29 +32,24 @@ const Actions = React.memo(function Actions({
   newDecisionType
 }: Props) {
   const { i18n } = useTranslation()
-  const [error, setError] = useState(false)
-
-  const updateType = () =>
-    setFeeDecisionType(decision.id, newDecisionType)
-      .then(() => setError(false))
-      .catch(() => setError(true))
-
-  const confirmDecision = () =>
-    confirmFeeDecisions([decision.id])
-      .then(() => setError(false))
-      .catch(() => setError(true))
-
-  const markSent = () =>
-    markFeeDecisionSent([decision.id])
-      .then(() => setError(false))
-      .catch(() => setError(true))
+  const updateType = useCallback(
+    () => setFeeDecisionType(decision.id, newDecisionType),
+    [decision.id, newDecisionType]
+  )
+  const confirmDecision = useCallback(
+    () => confirmFeeDecisions([decision.id]),
+    [decision.id]
+  )
+  const markSent = useCallback(
+    () => markFeeDecisionSent([decision.id]),
+    [decision.id]
+  )
 
   const isDraft = decision.status === 'DRAFT'
   const isWaiting = decision.status === 'WAITING_FOR_MANUAL_SENDING'
 
   return (
     <FixedSpaceRow justifyContent="flex-end">
-      {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
       {isDraft ? (
         <>
           <Button
