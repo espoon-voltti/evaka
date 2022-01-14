@@ -91,7 +91,7 @@ export type CareType =
   | 'PREPARATORY_EDUCATION'
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.CaretakerAmount
+* Generated from fi.espoo.evaka.daycare.CaretakerAmount
 */
 export interface CaretakerAmount {
   amount: number
