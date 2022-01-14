@@ -8,15 +8,13 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.statement.StatementContext
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.Month
 
@@ -52,7 +50,7 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
     //language=SQL
     val sql =
         """
-        SELECT p.child_id, p.start_date, c.first_name, c.last_name, c.date_of_birth, c.social_security_number, ca.name as care_area_name
+        SELECT p.child_id, p.start_date AS placementStart, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn, ca.name as care_area_name
         FROM placement p
         JOIN person c ON p.child_id = c.id
         JOIN daycare u ON p.unit_id = u.id
@@ -63,18 +61,6 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
 
     return createQuery(sql)
         .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))
-        .map(toRow)
+        .mapTo<StartingPlacementsRow>()
         .toList()
-}
-
-private val toRow = { rs: ResultSet, _: StatementContext ->
-    StartingPlacementsRow(
-        childId = ChildId(rs.getUUID("child_id")),
-        firstName = rs.getString("first_name"),
-        lastName = rs.getString("last_name"),
-        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-        ssn = rs.getString("social_security_number"),
-        placementStart = rs.getDate("start_date").toLocalDate(),
-        careAreaName = rs.getString("care_area_name")
-    )
 }

@@ -8,10 +8,10 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -51,7 +51,7 @@ private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<
             t::date AS date,
             daycare.id AS daycare_id,
             p.social_security_number,
-            dg.name,
+            dg.name AS daycareGroupName,
             NOT EXISTS (SELECT 1 FROM absence a WHERE t = a.date AND a.child_id = p.id) AS present
         FROM days
         LEFT JOIN daycare_group_placement dgp ON daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
@@ -67,15 +67,7 @@ private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
-        .map { rs, _ ->
-            PresenceReportRow(
-                date = rs.getDate("date").toLocalDate(),
-                socialSecurityNumber = rs.getString("social_security_number"),
-                daycareId = rs.getNullableUUID("daycare_id")?.let(::DaycareId),
-                daycareGroupName = rs.getString("name"),
-                present = rs.getBoolean("present").takeIf { rs.getString("daycare_id") != null }
-            )
-        }
+        .mapTo<PresenceReportRow>()
         .toList()
 }
 
