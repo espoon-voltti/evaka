@@ -28,7 +28,11 @@ data class FeeThresholds(
     val siblingDiscount2: BigDecimal,
     val siblingDiscount2Plus: BigDecimal,
     val maxFee: Int,
-    val minFee: Int
+    val minFee: Int,
+    val temporaryFee: Int,
+    val temporaryFeePartDay: Int,
+    val temporaryFeeSibling: Int,
+    val temporaryFeeSiblingPartDay: Int
 ) {
     fun incomeMultiplier(familySize: Int): BigDecimal =
         if (familySize <= 1) error("Family size must be greater than 1 (was $familySize)")
@@ -89,6 +93,18 @@ data class FeeThresholds(
             maxFee = this.maxFee,
             minFee = this.minFee
         )
+
+    fun calculatePriceForTemporary(partDay: Boolean, siblingOrdinal: Int): Int {
+        return if (siblingOrdinal == 1 && !partDay) {
+            temporaryFee
+        } else if (siblingOrdinal == 1 && partDay) {
+            temporaryFeePartDay
+        } else if (siblingOrdinal != 1 && !partDay) {
+            temporaryFeeSibling
+        } else if (siblingOrdinal != 1 && partDay) {
+            temporaryFeeSiblingPartDay
+        } else error("Inexhaustive if-else in calculatePriceForTemporary")
+    }
 }
 
 data class FeeDecisionThresholds(

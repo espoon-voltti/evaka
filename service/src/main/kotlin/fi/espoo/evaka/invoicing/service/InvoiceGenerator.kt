@@ -8,12 +8,14 @@ import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
+import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -21,7 +23,6 @@ import fi.espoo.evaka.invoicing.domain.PermanentPlacement
 import fi.espoo.evaka.invoicing.domain.Placement
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.domain.TemporaryPlacement
-import fi.espoo.evaka.invoicing.domain.calculatePriceForTemporary
 import fi.espoo.evaka.invoicing.domain.getFeeAlterationProduct
 import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
@@ -72,6 +73,9 @@ fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMo
 
     val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(this, decisions) }
 
+    val feeThresholds = getFeeThresholds(range.start).find { it.validDuring.contains(range) }
+        ?: error("Missing prices for period ${range.start} - ${range.end}, cannot generate invoices")
+
     val invoices =
         generateDraftInvoices(
             unhandledDecisions,
@@ -81,7 +85,8 @@ fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMo
             operationalDays,
             absences,
             freeChildren,
-            codebtors
+            codebtors,
+            feeThresholds
         )
 
     deleteDraftInvoicesByDateRange(range)
@@ -96,7 +101,8 @@ internal fun generateDraftInvoices(
     operationalDays: OperationalDays,
     absences: List<AbsenceStub> = listOf(),
     freeChildren: List<ChildId> = listOf(),
-    codebtors: Map<PersonId, PersonId?> = mapOf()
+    codebtors: Map<PersonId, PersonId?> = mapOf(),
+    feeThresholds: FeeThresholds
 ): List<Invoice> {
     return placements.keys.mapNotNull { headOfFamilyId ->
         try {
@@ -108,7 +114,8 @@ internal fun generateDraftInvoices(
                 operationalDays,
                 absences,
                 freeChildren,
-                codebtors
+                codebtors,
+                feeThresholds
             )
         } catch (e: Exception) {
             error("Failed to generate invoice for head of family $headOfFamilyId: $e")
@@ -131,7 +138,8 @@ internal fun generateDraftInvoice(
     operationalDays: OperationalDays,
     absences: List<AbsenceStub>,
     freeChildren: List<ChildId>,
-    codebtors: Map<PersonId, PersonId?>
+    codebtors: Map<PersonId, PersonId?>,
+    feeThresholds: FeeThresholds
 ): Invoice? {
     val headOfFamily = placements.first().headOfFamily
 
@@ -150,7 +158,7 @@ internal fun generateDraftInvoice(
                         relevantPeriod to InvoiceRowStub(
                             ChildWithDateOfBirth(child.id, child.dateOfBirth),
                             TemporaryPlacement(placement.unit, placement.partDay),
-                            calculatePriceForTemporary(placement.partDay, index + 1),
+                            feeThresholds.calculatePriceForTemporary(placement.partDay, index + 1),
                             listOf()
                         )
                     )

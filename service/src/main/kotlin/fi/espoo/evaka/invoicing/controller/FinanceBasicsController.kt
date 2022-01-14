@@ -164,7 +164,11 @@ SELECT
     sibling_discount_2,
     sibling_discount_2_plus,
     max_fee,
-    min_fee
+    min_fee,
+    temporary_fee,
+    temporary_fee_part_day,
+    temporary_fee_sibling,
+    temporary_fee_sibling_part_day
 FROM fee_thresholds
         """.trimIndent()
     )
@@ -196,7 +200,11 @@ INSERT INTO fee_thresholds (
     sibling_discount_2,
     sibling_discount_2_plus,
     max_fee,
-    min_fee
+    min_fee,
+    temporary_fee,
+    temporary_fee_part_day,
+    temporary_fee_sibling,
+    temporary_fee_sibling_part_day
 ) VALUES (
     :id,
     :validDuring,
@@ -219,7 +227,11 @@ INSERT INTO fee_thresholds (
     :siblingDiscount2,
     :siblingDiscount2Plus,
     :maxFee,
-    :minFee
+    :minFee,
+    :temporaryFee,
+    :temporaryFeePartDay,
+    :temporaryFeeSibling,
+    :temporaryFeeSiblingPartDay
 )
 """
     )
@@ -258,7 +270,11 @@ SET
     sibling_discount_2 = :siblingDiscount2,
     sibling_discount_2_plus = :siblingDiscount2Plus,
     max_fee = :maxFee,
-    min_fee = :minFee
+    min_fee = :minFee,
+    temporary_fee = :temporaryFee,
+    temporary_fee_part_day = :temporaryFeePartDay,
+    temporary_fee_sibling = :temporaryFeeSibling,
+    temporary_fee_sibling_part_day = :temporaryFeeSiblingPartDay
 WHERE id = :id
 """
     )
