@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -32,20 +32,47 @@ export default React.memo(function VoucherValueDecisionActionBar({
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage, clearErrorMessage } = useContext(UIContext)
-
-  const updateType = () =>
-    setVoucherDecisionType(decision.id, newDecisionType).then((result) => {
-      if (result.isSuccess) {
-        clearErrorMessage()
-      } else if (result.isFailure) {
-        setErrorMessage({
-          title: i18n.common.error.unknown,
-          text: i18n.common.error.saveFailed,
-          type: 'error',
-          resolveLabel: i18n.common.ok
-        })
-      }
-    })
+  const updateType = useCallback(
+    () =>
+      setVoucherDecisionType(decision.id, newDecisionType).then((result) => {
+        if (result.isSuccess) {
+          clearErrorMessage()
+        } else if (result.isFailure) {
+          setErrorMessage({
+            title: i18n.common.error.unknown,
+            text: i18n.common.error.saveFailed,
+            type: 'error',
+            resolveLabel: i18n.common.ok
+          })
+        }
+        return result
+      }),
+    [i18n, decision.id, newDecisionType, setErrorMessage, clearErrorMessage]
+  )
+  const reloadDecision = useCallback(
+    () => loadDecision().then(() => setModified(false)),
+    [loadDecision, setModified]
+  )
+  const sendDecision = useCallback(
+    () =>
+      sendVoucherValueDecisions([decision.id]).then((result) => {
+        if (result.isSuccess) {
+          clearErrorMessage()
+        } else if (result.isFailure) {
+          setErrorMessage({
+            title: i18n.common.error.unknown,
+            text:
+              result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
+                ? i18n.valueDecisions.buttons.errors.WAITING_FOR_MANUAL_SENDING
+                : i18n.common.error.saveFailed,
+            type: 'error',
+            resolveLabel: i18n.common.ok
+          })
+        }
+        return result
+      }),
+    [i18n, decision.id, setErrorMessage, clearErrorMessage]
+  )
 
   const isDraft = decision.status === 'DRAFT'
   const isWaiting = decision.status === 'WAITING_FOR_MANUAL_SENDING'
@@ -59,7 +86,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
             textInProgress={i18n.common.saving}
             textDone={i18n.common.saved}
             onClick={updateType}
-            onSuccess={() => loadDecision().then(() => setModified(false))}
+            onSuccess={reloadDecision}
             disabled={!modified}
             data-qa="button-save-decision"
           />
@@ -67,25 +94,8 @@ export default React.memo(function VoucherValueDecisionActionBar({
             primary
             data-qa="button-send-decision"
             disabled={modified}
-            text="Lähetä"
-            onClick={() =>
-              sendVoucherValueDecisions([decision.id]).then((result) => {
-                if (result.isSuccess) {
-                  clearErrorMessage()
-                } else if (result.isFailure) {
-                  setErrorMessage({
-                    title: i18n.common.error.unknown,
-                    text:
-                      result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
-                        ? i18n.valueDecisions.buttons.errors
-                            .WAITING_FOR_MANUAL_SENDING
-                        : i18n.common.error.saveFailed,
-                    type: 'error',
-                    resolveLabel: i18n.common.ok
-                  })
-                }
-              })
-            }
+            text={i18n.common.send}
+            onClick={sendDecision}
             onSuccess={loadDecision}
           />
         </>

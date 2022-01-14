@@ -2,19 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import React, { useCallback } from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import colors from 'lib-customizations/common'
 import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
-
-const ErrorMessage = styled.div`
-  color: ${colors.accents.dangerRed};
-  margin-right: 20px;
-`
 
 type Props = {
   invoice: InvoiceDetailed
@@ -28,21 +21,14 @@ const Actions = React.memo(function Actions({
   editable
 }: Props) {
   const { i18n } = useTranslation()
-  const [error, setError] = useState(false)
-
-  const saveChanges = () =>
-    updateInvoice(invoice)
-      .then(() => setError(false))
-      .catch(() => setError(true))
-
-  const markSent = () =>
-    markInvoiceSent([invoice.id])
-      .then(() => setError(false))
-      .catch(() => setError(true))
+  const saveChanges = () => updateInvoice(invoice)
+  const markSent = useCallback(
+    () => markInvoiceSent([invoice.id]),
+    [invoice.id]
+  )
 
   return (
     <FixedSpaceRow justifyContent="flex-end">
-      {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
       {invoice.status === 'WAITING_FOR_SENDING' ? (
         <AsyncButton
           primary

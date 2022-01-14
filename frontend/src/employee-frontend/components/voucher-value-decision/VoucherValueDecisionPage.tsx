@@ -4,7 +4,6 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
-import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import {
   VoucherValueDecisionDetailed,
@@ -12,7 +11,6 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import colors from 'lib-customizations/common'
 import { getVoucherValueDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
@@ -20,11 +18,6 @@ import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
-
-export const ErrorMessage = styled.div`
-  color: ${colors.accents.dangerRed};
-  margin-right: 20px;
-`
 
 export default React.memo(function VoucherValueDecisionPage() {
   const { id } = useParams<{ id: string }>()
@@ -56,14 +49,16 @@ export default React.memo(function VoucherValueDecisionPage() {
     }
   }, [decision, formatTitleName, setTitle, i18n])
 
-  const changeDecisionType = (type: VoucherValueDecisionType) => {
-    if (decision.isSuccess) {
-      setNewDecisionType(type)
-      decision.value.decisionType === type
-        ? setModified(false)
-        : setModified(true)
-    }
-  }
+  const decisionType = decision.map(({ decisionType }) => decisionType)
+  const changeDecisionType = useCallback(
+    (type: VoucherValueDecisionType) => {
+      if (decisionType.isSuccess) {
+        setNewDecisionType(type)
+        decisionType.value === type ? setModified(false) : setModified(true)
+      }
+    },
+    [decisionType]
+  )
 
   if (decision.isFailure) {
     return <Redirect to="/finance/value-decisions" />
