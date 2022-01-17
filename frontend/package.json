@@ -18,9 +18,8 @@
     "test": "jest src/*-frontend src/lib-*",
     "test:watch": "jest --watchAll src/*-frontend src/lib-*",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
-    "e2e-playwright": "LANG=fi-FI LANGUAGE=fi_FI jest --testTimeout 60000 --runInBand src/e2e-playwright/specs",
-    "e2e-dev-playwright": "LANG=fi-FI LANGUAGE=fi_FI jest --testTimeout 60000",
-    "e2e-ci-playwright": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://evaka-proxy:8080} jest --testTimeout 60000 --runInBand --bail 1 --retries=2"
+    "e2e-test": "LANG=fi-FI LANGUAGE=fi_FI jest --testTimeout 60000 --runInBand src/e2e-test/specs",
+    "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://evaka-proxy:8080} jest --testTimeout 60000 --runInBand --bail 1 --retries=2"
   },
   "dependencies": {
     "@evaka/eslint-plugin": "link:eslint-plugin",
@@ -40,7 +39,6 @@
     "csstype": "^3.0.9",
     "date-fns": "^2.25.0",
     "downshift": "^6.1.7",
-    "e2e-test-common": "link:src/e2e-test-common",
     "history": "^4.10.1",
     "leaflet": "^1.7.1",
     "lib-common": "link:src/lib-common",
@@ -92,7 +90,6 @@
     "concurrently": "^6.4.0",
     "css-loader": "^6.5.1",
     "csstype": "^3.0.9",
-    "e2e-playwright": "link:src/e2e-playwright",
     "esbuild": "^0.14.2",
     "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",
@@ -172,7 +169,7 @@
     "testRunner": "jest-circus/runner",
     "projects": [
       "./src/citizen-frontend",
-      "./src/e2e-playwright",
+      "./src/e2e-test",
       "./src/employee-frontend",
       "./src/lib-common"
     ],
@@ -222,7 +219,7 @@
       "react-hooks"
     ],
     "settings": {
-      "import/internal-regex": "^(citizen-frontend|e2e-playwright|e2e-test-common|employee-frontend|employee-mobile-frontend|lib-common|lib-components|lib-customizations|lib-icons|maintenance-page-frontend)(/|$)",
+      "import/internal-regex": "^(citizen-frontend|e2e-test|employee-frontend|employee-mobile-frontend|lib-common|lib-components|lib-customizations|lib-icons|maintenance-page-frontend)(/|$)",
       "react": {
         "version": "detect"
       }

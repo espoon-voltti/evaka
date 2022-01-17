@@ -23,4 +23,4 @@ echo 'INFO: Waiting for compose stack to be up...'
 ./wait-for-dev-api.sh "$PROXY_URL"
 
 mapfile -t FILENAMES < playwright-filenames.txt
-yarn e2e-ci-playwright "${FILENAMES[@]}"
+yarn e2e-ci "${FILENAMES[@]}"

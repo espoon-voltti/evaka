@@ -965,14 +965,14 @@ jobs:
 
   # E2E JOBS
 
-  e2e-build-playwright:
+  e2e-build:
     executor: aws_docker_executor
     steps:
       - e2e_build:
           test_runner: playwright
       - notify_slack
 
-  e2e-test-playwright:
+  e2e-test:
     executor: e2e_executor
     parallelism: 8
     steps:
@@ -1221,14 +1221,14 @@ workflows:
           requires:
             - checkout_repo
 
-      - e2e-build-playwright:
+      - e2e-build:
           <<: *aws_docker_contexts
           requires:
             - checkout_repo
-      - e2e-test-playwright:
+      - e2e-test:
           <<: *default_contexts
           requires:
-            - e2e-build-playwright
+            - e2e-build
             - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
@@ -1286,7 +1286,7 @@ workflows:
             - check_licenses
             - lint_scripts
             - frontend_build_misc_and_test
-            - e2e-test-playwright
+            - e2e-test
             - apigw_build_and_push_image
             - proxy_build_and_push_image
             - service_build_and_push_image
