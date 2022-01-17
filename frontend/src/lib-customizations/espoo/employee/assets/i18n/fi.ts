@@ -155,6 +155,7 @@ export const fi = {
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
       week: 'Viikko',
       weekShort: 'Vk',
+      monthShort: 'Kk',
       weekdays: [
         'Maanantai',
         'Tiistai',
@@ -791,7 +792,7 @@ export const fi = {
       },
       warning: {
         overlap: 'Ajalle on jo sijoitus',
-        ghostUnit: 'Yksikkö on merkitty haamuyksiköksi.'
+        ghostUnit: 'Yksikkö on merkitty haamuyksiköksi'
       },
       serviceNeeds: {
         title: 'Sijoituksen palveluntarpeet',
@@ -2151,13 +2152,14 @@ export const fi = {
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',
     card: {
-      title: 'Korkein täyttöaste ennen sijoitusta',
-      unitLink: 'Yksikön tiedot',
-      remove: 'Poista'
+      title: 'Korkein täyttöaste alkaen sijoituspäivästä',
+      titleSpeculated: 'Täyttöaste mikäli lapsi sijoitetaan'
     },
     upcoming: 'Tulossa',
     active: 'Aktiivinen',
     currentPlacements: 'Olemassa olevat sijoitukset',
+    noCurrentPlacements: 'Ei olemassaolevia sijoituksia',
+    addOtherUnit: 'Lisää muu yksikkö',
     placementOverlapError:
       'Aiemmat päällekäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
     createPlacementDraft: 'Luo sijoitushahmotelma',
@@ -2167,6 +2169,7 @@ export const fi = {
     dateError: 'Päällekkäinen sijoitus ajanjaksolle.',
     preparatoryPeriod: 'Valmistava opetus',
     dateOfBirth: 'Syntymäaika',
+    selectUnit: 'Valitse yksikkö',
     selectedUnit: 'Valittu yksikkö',
     restrictedDetails: 'Huoltajalla on turvakielto',
     restrictedDetailsTooltip:

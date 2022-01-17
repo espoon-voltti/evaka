@@ -32,25 +32,6 @@ export class SearchFilter {
   }
 }
 
-export class PlacementPage {
-  constructor(private page: Page) {}
-
-  #list = this.page
-    .find('[data-qa="placement-list"]')
-    .findAll('[data-qa="placement-item"]')
-
-  async placeIn(placementNumber: number) {
-    await this.#list
-      .nth(placementNumber)
-      .find('[data-qa="select-placement-unit"]')
-      .click()
-  }
-
-  async sendPlacement() {
-    await this.page.find('[data-qa="send-placement-button"').click()
-  }
-}
-
 export class DecisionEditorPage {
   constructor(private page: Page) {}
 
@@ -67,7 +48,6 @@ export class ApplicationWorkbenchPage {
   constructor(private page: Page) {}
 
   searchFilter = new SearchFilter(this.page)
-  placementPage = new PlacementPage(this.page)
   decisionEditorPage = new DecisionEditorPage(this.page)
 
   #applicationNoteContent = this.page.find(
@@ -201,10 +181,6 @@ export class ApplicationWorkbenchPage {
     await waitUntilTrue(async () =>
       (await this.#applicationNoteContent.innerText).includes(note)
     )
-  }
-
-  async waitUntilApplicationsLoaded() {
-    await this.page.find('[data-qa="applications-list"]').waitUntilVisible()
   }
 
   async fillNote(note: string) {

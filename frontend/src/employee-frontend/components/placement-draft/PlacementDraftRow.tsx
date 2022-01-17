@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,10 +8,10 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
-import Title from 'lib-components/atoms/Title'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
@@ -52,10 +52,6 @@ const DateRowSpacer = styled.span`
   margin-bottom: auto;
 `
 
-const Container = styled.section`
-  margin-bottom: 45px;
-`
-
 const OverlapError = styled.span`
   font-size: 12px;
   font-style: italic;
@@ -70,10 +66,6 @@ const OverlapError = styled.span`
     margin-left: 10px;
     margin-right: 10px;
   }
-`
-
-const DateTitle = styled.div`
-  margin-bottom: 30px;
 `
 
 interface Props {
@@ -127,10 +119,9 @@ export default React.memo(function PlacementDraftSection({
   if (!placement.period) return null
 
   return (
-    <Container>
-      <DateTitle>
-        <Title size={4}>{i18n.placementDraft.datesTitle}</Title>
-      </DateTitle>
+    <section>
+      <H2 noMargin>{i18n.placementDraft.datesTitle}</H2>
+      <Gap size="s" />
       <DateRow>
         <DateRowItem width="225px" strong={true}>
           {i18n.placementDraft.type}
@@ -192,6 +183,6 @@ export default React.memo(function PlacementDraftSection({
           )}
         </DateRow>
       )}
-    </Container>
+    </section>
   )
 })

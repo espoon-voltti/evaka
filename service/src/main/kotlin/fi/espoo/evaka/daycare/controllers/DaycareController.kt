@@ -6,22 +6,25 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.daycare.CaretakerAmount
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
 import fi.espoo.evaka.daycare.UnitFeatures
 import fi.espoo.evaka.daycare.createDaycare
+import fi.espoo.evaka.daycare.deleteCaretakers
+import fi.espoo.evaka.daycare.getCaretakers
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.getUnitFeatures
-import fi.espoo.evaka.daycare.service.CaretakerAmount
-import fi.espoo.evaka.daycare.service.CaretakerService
+import fi.espoo.evaka.daycare.insertCaretakers
 import fi.espoo.evaka.daycare.service.DaycareCapacityStats
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.setUnitFeatures
+import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
@@ -51,7 +54,6 @@ import java.time.LocalDate
 @RequestMapping("/daycares")
 class DaycareController(
     private val daycareService: DaycareService,
-    private val caretakerService: CaretakerService,
     private val acl: AccessControlList,
     private val accessControl: AccessControl
 ) {
@@ -180,7 +182,7 @@ class DaycareController(
         return db.connect { dbc ->
             dbc.read {
                 CaretakersResponse(
-                    caretakers = caretakerService.getCaretakers(it, groupId),
+                    caretakers = getCaretakers(it, groupId),
                     unitName = it.getDaycareStub(daycareId)?.name ?: "",
                     groupName = it.getDaycareGroup(groupId)?.name ?: ""
                 )
@@ -201,7 +203,7 @@ class DaycareController(
 
         db.connect { dbc ->
             dbc.transaction {
-                caretakerService.insert(
+                insertCaretakers(
                     it,
                     groupId = groupId,
                     startDate = body.startDate,
@@ -226,7 +228,7 @@ class DaycareController(
 
         db.connect { dbc ->
             dbc.transaction {
-                caretakerService.update(
+                updateCaretakers(
                     it,
                     groupId = groupId,
                     id = id,
@@ -251,7 +253,7 @@ class DaycareController(
 
         db.connect { dbc ->
             dbc.transaction {
-                caretakerService.delete(
+                deleteCaretakers(
                     it,
                     groupId = groupId,
                     id = id

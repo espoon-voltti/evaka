@@ -14,7 +14,10 @@ import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -25,6 +28,7 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -59,17 +63,22 @@ class PlacementPlanService(
 
         val startDate = form.preferences.preferredStartDate!!
 
-        when (application.type) {
+        return when (application.type) {
             ApplicationType.PRESCHOOL -> {
                 val preschoolTerms = tx.getActivePreschoolTermAt(startDate)
                     ?: throw Exception("No suitable preschool term found for start date $startDate")
-                val exactTerm = if (isSvebiUnit(tx, preferredUnits[0].id)) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
+                val exactTerm = if (isSvebiUnit(
+                        tx,
+                        preferredUnits[0].id
+                    )
+                ) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
                 val period = FiniteDateRange(startDate, exactTerm.end)
-                val preschoolDaycarePeriod = if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
-                    FiniteDateRange(startDate, LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31))
-                } else null
+                val preschoolDaycarePeriod =
+                    if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
+                        FiniteDateRange(startDate, LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31))
+                    } else null
 
-                return PlacementPlanDraft(
+                PlacementPlanDraft(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
@@ -87,7 +96,7 @@ class PlacementPlanService(
                     LocalDate.of(startDate.year, 7, 31)
                 val period =
                     FiniteDateRange(startDate, if (endFromBirthDate < startDate) endFromStartDate else endFromBirthDate)
-                return PlacementPlanDraft(
+                PlacementPlanDraft(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
@@ -101,7 +110,7 @@ class PlacementPlanService(
                 val (term) = tx.getActiveClubTermAt(startDate)
                     ?: throw Exception("No suitable club term found for start date $startDate")
                 val period = FiniteDateRange(startDate, term.end)
-                return PlacementPlanDraft(
+                PlacementPlanDraft(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
@@ -111,43 +120,34 @@ class PlacementPlanService(
                     guardianHasRestrictedDetails = guardianHasRestrictedDetails
                 )
             }
-            else -> throw IllegalArgumentException("Unsupported application form type ${application.type}")
         }
     }
 
     fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: ApplicationId) =
         tx.softDeletePlacementPlanIfUnused(applicationId)
 
-    fun createPlacementPlan(tx: Database.Transaction, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
-        tx.createPlacementPlan(application.id, derivePlacementType(application), placementPlan)
-
-    fun applyPlacementPlan(
+    fun createPlacementPlan(
         tx: Database.Transaction,
         application: ApplicationDetails,
+        placementPlan: DaycarePlacementPlan
+    ) =
+        tx.createPlacementPlan(application.id, derivePlacementType(application), placementPlan)
+
+    fun getPlacementTypePeriods(
+        tx: Database.Read,
+        childId: ChildId,
         plan: PlacementPlan,
-        allowPreschool: Boolean = true,
-        allowPreschoolDaycare: Boolean = false,
+        allowPreschool: Boolean,
+        allowPreschoolDaycare: Boolean,
         requestedStartDate: LocalDate? = null
-    ) {
-        val childId = application.childId
-        val serviceNeed = resolveServiceNeedFromApplication(tx, application)
-        var effectivePeriod: FiniteDateRange? = null
+    ): List<Pair<FiniteDateRange, PlacementType>> =
         if (plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)) {
             if (allowPreschool) {
+                val type =
+                    if (plan.type == PlacementType.PRESCHOOL_DAYCARE) PlacementType.PRESCHOOL else PlacementType.PREPARATORY
                 val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
-                createPlacement(
-                    tx,
-                    type = if (plan.type == PlacementType.PRESCHOOL_DAYCARE) PlacementType.PRESCHOOL else PlacementType.PREPARATORY,
-                    childId = childId,
-                    unitId = plan.unitId,
-                    startDate = period.start,
-                    endDate = period.end,
-                    useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                    serviceNeed
-                )
-                effectivePeriod = period
-            }
-            if (allowPreschoolDaycare) {
+                listOf(period to type)
+            } else if (allowPreschoolDaycare) {
                 val period = (
                     requestedStartDate?.let { plan.preschoolDaycarePeriod?.copy(start = it) }
                         ?: plan.preschoolDaycarePeriod
@@ -156,70 +156,115 @@ class PlacementPlanService(
                 val preschoolTerms = tx.getActivePreschoolTermAt(period.start)
                     ?: throw Exception("No suitable preschool term found for start date ${period.start}")
 
-                val exactTerm = if (isSvebiUnit(tx, plan.unitId)) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
+                val exactTerm = if (isSvebiUnit(
+                        tx,
+                        plan.unitId
+                    )
+                ) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
 
                 // if the preschool daycare extends beyond the end of the preschool term, a normal daycare
                 // placement is used because invoices are handled differently
                 if (period.end.isAfter(exactTerm.end)) {
-                    createPlacement(
-                        tx,
-                        type = plan.type,
-                        childId = childId,
-                        unitId = plan.unitId,
-                        startDate = period.start,
-                        endDate = exactTerm.end,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                        serviceNeed
-                    )
-                    createPlacement(
-                        tx,
-                        type = PlacementType.DAYCARE,
-                        childId = childId,
-                        unitId = plan.unitId,
-                        startDate = exactTerm.end.plusDays(1),
-                        endDate = period.end,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                        serviceNeed
+                    listOf(
+                        FiniteDateRange(period.start, exactTerm.end) to plan.type,
+                        FiniteDateRange(exactTerm.end.plusDays(1), period.end) to PlacementType.DAYCARE
                     )
                 } else {
-                    createPlacement(
-                        tx,
-                        type = plan.type,
-                        childId = childId,
-                        unitId = plan.unitId,
-                        startDate = period.start,
-                        endDate = period.end,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                        serviceNeed
-                    )
+                    listOf(period to plan.type)
                 }
-                effectivePeriod = effectivePeriod?.let {
-                    FiniteDateRange(
-                        start = minOf(it.start, period.start),
-                        end = maxOf(it.end, period.end)
-                    )
-                } ?: period
+            } else {
+                throw Exception("Unable to create a placement")
             }
         } else {
             val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
-            createPlacement(
-                tx,
-                type = plan.type,
-                childId = childId,
-                unitId = plan.unitId,
-                startDate = period.start,
-                endDate = period.end,
-                useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                serviceNeed
-            )
-            effectivePeriod = period
+            listOf(period to plan.type)
+        }.let { placementPeriods ->
+            if (useFiveYearsOldDaycare) {
+                resolveFiveYearOldPlacementPeriods(tx, childId, placementPeriods)
+            } else {
+                placementPeriods
+            }
         }
-        effectivePeriod?.also {
-            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, it.asDateRange())))
+
+    fun applyPlacementPlan(
+        tx: Database.Transaction,
+        application: ApplicationDetails,
+        plan: PlacementPlan,
+        allowPreschool: Boolean,
+        allowPreschoolDaycare: Boolean,
+        requestedStartDate: LocalDate?
+    ) {
+        val childId = application.childId
+        val placementTypePeriods = getPlacementTypePeriods(
+            tx,
+            childId,
+            plan,
+            allowPreschool,
+            allowPreschoolDaycare,
+            requestedStartDate
+        )
+        val serviceNeed = resolveServiceNeedFromApplication(tx, application)
+
+        createPlacements(
+            tx,
+            childId = childId,
+            unitId = plan.unitId,
+            placementTypePeriods = placementTypePeriods,
+            serviceNeed = serviceNeed
+        )
+        getPlacementTypePeriodBounds(placementTypePeriods)?.let { effectivePeriod ->
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, effectivePeriod.asDateRange()))
+            )
         }
     }
 
-    private fun resolveServiceNeedFromApplication(tx: Database.Transaction, application: ApplicationDetails): ApplicationServiceNeed? {
+    fun calculateSpeculatedPlacements(
+        tx: Database.Read,
+        unitId: DaycareId,
+        application: ApplicationDetails,
+        period: FiniteDateRange,
+        preschoolDaycarePeriod: FiniteDateRange?
+    ): List<Placement> {
+        val placementType = derivePlacementType(application)
+
+        val allowPreschool = placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PREPARATORY)
+        val allowPreschoolDaycare = placementType in listOf(PlacementType.PRESCHOOL_DAYCARE)
+
+        val placementTypePeriods = getPlacementTypePeriods(
+            tx,
+            childId = application.childId,
+            plan = PlacementPlan(
+                id = PlacementPlanId(UUID.randomUUID()),
+                unitId = unitId,
+                applicationId = application.id,
+                type = placementType,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+            ),
+            allowPreschool = allowPreschool,
+            allowPreschoolDaycare = allowPreschoolDaycare,
+        )
+
+        return placementTypePeriods.map { (period, placementType) ->
+            Placement(
+                id = PlacementId(UUID.randomUUID()),
+                type = placementType,
+                childId = application.childId,
+                unitId = unitId,
+                startDate = period.start,
+                endDate = period.end,
+                terminationRequestedBy = null,
+                terminationRequestedDate = null,
+            )
+        }
+    }
+
+    private fun resolveServiceNeedFromApplication(
+        tx: Database.Read,
+        application: ApplicationDetails
+    ): ApplicationServiceNeed? {
         val serviceNeedOptionId = application.form.preferences.serviceNeed?.serviceNeedOption?.id ?: return null
         if (tx.findServiceNeedOptionById(serviceNeedOptionId) == null) {
             logger.warn { "Application ${application.id} has non-existing service need option: $serviceNeedOptionId" }

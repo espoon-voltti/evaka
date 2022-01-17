@@ -196,7 +196,7 @@ export const Light = styled.span`
 export const Title = styled.span<{ primary?: boolean }>`
   font-family: Montserrat, sans-serif;
   color: ${(p) =>
-    p.primary ? p.theme.colors.main.dark : p.theme.colors.greyscale.darkest};
+    p.primary ? p.theme.colors.main.primary : p.theme.colors.greyscale.darkest};
   font-size: 20px;
   font-weight: ${fontWeights.semibold};
 `

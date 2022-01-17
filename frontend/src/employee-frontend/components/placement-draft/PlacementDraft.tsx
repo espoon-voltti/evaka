@@ -2,31 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { History } from 'history'
 import React, {
   Dispatch,
-  Fragment,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useState
 } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
-import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { isLoading, Loading, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import Title from 'lib-components/atoms/Title'
+import { InternalLink } from 'lib-components/atoms/InternalLink'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { fontWeights } from 'lib-components/typography'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faLink } from 'lib-icons'
 import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import { getApplicationUnits } from '../../api/daycare'
 import Tooltip from '../../components/common/Tooltip'
@@ -44,49 +41,9 @@ import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
 import UnitCards from './UnitCards'
 
-const ContainerNarrow = styled(Container)`
-  max-width: 990px;
-`
-
 const SendButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-`
-
-const PlacementDraftInfo = styled.section`
-  margin-bottom: 60px;
-
-  h1.title.is-2 {
-    margin-bottom: 55px;
-  }
-`
-
-const ChildName = styled.div`
-  display: flex;
-  justify-content: space-between;
-
-  a {
-    margin-left: 50px;
-    min-width: 120px;
-    display: flex;
-    align-items: center;
-  }
-
-  h2.title.is-3 {
-    width: 650px;
-  }
-
-  svg {
-    margin-left: 5px;
-  }
-`
-
-const ChildDateOfBirth = styled.div``
-
-const DOBTitle = styled.span`
-  width: 225px;
-  font-weight: ${fontWeights.semibold};
-  display: inline-block;
 `
 
 const SelectContainer = styled.div`
@@ -128,14 +85,10 @@ function hasOverlap(
   )
 }
 
-function redirectToMainPage(history: History) {
-  history.push('/applications')
-}
-
 export default React.memo(function PlacementDraft({
   match
 }: RouteComponentProps<{ id: UUID }>) {
-  const { id } = match.params
+  const { id: applicationId } = match.params
   const { i18n } = useTranslation()
   const history = useHistory()
   const [placementDraft, setPlacementDraft] = useState<Result<PlacementDraft>>(
@@ -176,9 +129,14 @@ export default React.memo(function PlacementDraft({
     }))
   }
 
+  const redirectToMainPage = useCallback(
+    () => history.push('/applications'),
+    [history]
+  )
+
   useEffect(() => {
     setPlacementDraft(Loading.of())
-    void getPlacementDraft(id).then((placementDraft) => {
+    void getPlacementDraft(applicationId).then((placementDraft) => {
       const withoutOldPlacements = removeOldPlacements(placementDraft)
       setPlacementDraft(withoutOldPlacements)
       if (withoutOldPlacements.isSuccess) {
@@ -193,10 +151,10 @@ export default React.memo(function PlacementDraft({
 
       // Application has already changed its status
       if (placementDraft.isFailure && placementDraft.statusCode === 409) {
-        redirectToMainPage(history)
+        redirectToMainPage()
       }
     })
-  }, [id, history])
+  }, [applicationId, redirectToMainPage])
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -284,7 +242,7 @@ export default React.memo(function PlacementDraft({
   }
 
   return (
-    <ContainerNarrow
+    <Container
       data-qa="placement-draft-page"
       data-isloading={isLoading(placementDraft)}
     >
@@ -292,8 +250,8 @@ export default React.memo(function PlacementDraft({
         <Gap size="xs" />
         {renderResult(placementDraft, (placementDraft) =>
           placement.period ? (
-            <Fragment>
-              <PlacementDraftInfo>
+            <>
+              <section>
                 {placementDraft.guardianHasRestrictedDetails && (
                   <FloatRight>
                     <Tooltip
@@ -309,27 +267,34 @@ export default React.memo(function PlacementDraft({
                     </Tooltip>
                   </FloatRight>
                 )}
-                <Title size={1}>
-                  {i18n.placementDraft.createPlacementDraft}
-                </Title>
-                <ChildName>
-                  <Title size={3}>
-                    {formatName(
-                      placementDraft.child.firstName,
-                      placementDraft.child.lastName,
-                      i18n
-                    )}
-                  </Title>
-                  <Link to={`/child-information/${placementDraft.child.id}`}>
-                    {i18n.childInformation.title}
-                    <FontAwesomeIcon icon={faLink} />
-                  </Link>
-                </ChildName>
-                <ChildDateOfBirth>
-                  <DOBTitle>{i18n.placementDraft.dateOfBirth}</DOBTitle>
-                  {placementDraft.child.dob.format()}
-                </ChildDateOfBirth>
-              </PlacementDraftInfo>
+                <H1 noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
+                <Gap size="xs" />
+                <H2 noMargin>
+                  {formatName(
+                    placementDraft.child.firstName,
+                    placementDraft.child.lastName,
+                    i18n
+                  )}
+                </H2>
+                <Gap size="L" />
+                <ListGrid>
+                  <Label>{i18n.placementDraft.dateOfBirth}</Label>
+                  <span>{placementDraft.child.dob.format()}</span>
+                </ListGrid>
+                <Gap size="s" />
+                <InternalLink
+                  to={`/child-information/${placementDraft.child.id}`}
+                  text={i18n.childInformation.title}
+                  newTab
+                />
+              </section>
+              {placementDraft.placements && (
+                <>
+                  <Gap size="XL" />
+                  <Placements placements={placementDraft.placements} />
+                </>
+              )}
+              <Gap size="XL" />
               <PlacementDraftRow
                 placementDraft={placementDraft}
                 placement={placement}
@@ -344,10 +309,19 @@ export default React.memo(function PlacementDraft({
                   'end'
                 )}
               />
-              {placementDraft.placements && (
-                <Placements placementDraft={placementDraft} />
-              )}
+              <Gap size="L" />
+              <UnitCards
+                additionalUnits={additionalUnits}
+                setAdditionalUnits={setAdditionalUnits}
+                applicationId={applicationId}
+                placement={placement}
+                setPlacement={setPlacement}
+                placementDraft={placementDraft}
+                selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
+              />
+              <Gap size="XL" />
               <SelectContainer>
+                <Label>{i18n.placementDraft.addOtherUnit}</Label>
                 <Combobox
                   placeholder={i18n.filters.unitPlaceholder}
                   selectedItem={null}
@@ -364,16 +338,9 @@ export default React.memo(function PlacementDraft({
                   }
                   isLoading={units.isLoading}
                   menuEmptyLabel={i18n.common.noResults}
+                  data-qa="add-other-unit"
                 />
               </SelectContainer>
-              <UnitCards
-                additionalUnits={additionalUnits}
-                setAdditionalUnits={setAdditionalUnits}
-                placement={placement}
-                setPlacement={setPlacement}
-                placementDraft={placementDraft}
-                selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
-              />
               <SendButtonContainer>
                 <AsyncButton
                   primary
@@ -381,15 +348,15 @@ export default React.memo(function PlacementDraft({
                     placement.unitId === undefined || selectedUnitIsGhostUnit
                   }
                   data-qa="send-placement-button"
-                  onClick={() => createPlacementPlan(id, placement)}
-                  onSuccess={() => redirectToMainPage(history)}
+                  onClick={() => createPlacementPlan(applicationId, placement)}
+                  onSuccess={redirectToMainPage}
                   text={i18n.placementDraft.createPlacementDraft}
                 />
               </SendButtonContainer>
-            </Fragment>
+            </>
           ) : null
         )}
       </ContentArea>
-    </ContainerNarrow>
+    </Container>
   )
 })

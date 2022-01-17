@@ -5,6 +5,9 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.daycare.getCaretakers
+import fi.espoo.evaka.daycare.insertCaretakers
+import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -20,8 +23,6 @@ import java.util.UUID
 import kotlin.test.assertEquals
 
 class CaretakerServiceIntegrationTest : PureJdbiTest() {
-    val service = CaretakerService()
-
     private val daycareId = testDaycare.id
     private val groupId = GroupId(UUID.randomUUID())
     private val groupStart = LocalDate.of(2000, 1, 1)
@@ -48,7 +49,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `group initially has one row`() {
-        val caretakers = db.transaction { service.getCaretakers(it, groupId) }
+        val caretakers = db.transaction { getCaretakers(it, groupId) }
         assertEquals(1, caretakers.size)
         assertEquals(groupId, caretakers[0].groupId)
         assertEquals(groupStart, caretakers[0].startDate)
@@ -60,14 +61,14 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
     fun `inserting caretaker row`() {
         val start2 = LocalDate.of(2000, 6, 1)
         val caretakers = db.transaction { tx ->
-            service.insert(
+            insertCaretakers(
                 tx,
                 groupId = groupId,
                 startDate = start2,
                 endDate = null,
                 amount = 5.0
             )
-            service.getCaretakers(tx, groupId)
+            getCaretakers(tx, groupId)
         }
         assertEquals(2, caretakers.size)
 
@@ -83,8 +84,8 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
     @Test
     fun `updating caretaker row`() {
         val rows = db.transaction { tx ->
-            val id = service.getCaretakers(tx, groupId).first().id
-            service.update(
+            val id = getCaretakers(tx, groupId).first().id
+            updateCaretakers(
                 tx,
                 groupId = groupId,
                 id = id,
@@ -93,7 +94,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
                 amount = 2.0
             )
 
-            service.getCaretakers(tx, groupId)
+            getCaretakers(tx, groupId)
         }
         assertEquals(1, rows.size)
         val updated = rows.first()
@@ -106,7 +107,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
     fun `creating two caretaker rows with overlapping dates should conflict`() {
         assertThrows<Conflict> {
             db.transaction { tx ->
-                service.insert(
+                insertCaretakers(
                     tx,
                     groupId = groupId,
                     startDate = groupStart.minusDays(3),
@@ -121,7 +122,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
     fun `creating two caretaker rows with the same start date should conflict`() {
         assertThrows<Conflict> {
             db.transaction { tx ->
-                service.insert(
+                insertCaretakers(
                     tx,
                     groupId = groupId,
                     startDate = groupStart,

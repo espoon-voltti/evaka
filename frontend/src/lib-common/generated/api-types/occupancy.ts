@@ -64,6 +64,26 @@ export interface OccupancyResponseGroupLevel {
 }
 
 /**
+* Generated from fi.espoo.evaka.occupancy.OccupancyResponseSpeculated
+*/
+export interface OccupancyResponseSpeculated {
+  max3Months: OccupancyValues | null
+  max3MonthsSpeculated: OccupancyValues | null
+  max6Months: OccupancyValues | null
+  max6MonthsSpeculated: OccupancyValues | null
+}
+
+/**
+* Generated from fi.espoo.evaka.occupancy.OccupancyValues
+*/
+export interface OccupancyValues {
+  caretakers: number | null
+  headcount: number
+  percentage: number | null
+  sum: number
+}
+
+/**
 * Generated from fi.espoo.evaka.occupancy.RealtimeOccupancy
 */
 export interface RealtimeOccupancy {

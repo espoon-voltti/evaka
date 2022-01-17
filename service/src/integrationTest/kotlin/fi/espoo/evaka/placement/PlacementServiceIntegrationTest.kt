@@ -101,11 +101,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 21),
-                LocalDate.of(year, month, 30),
+                FiniteDateRange(LocalDate.of(year, month, 21), LocalDate.of(year, month, 30)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -126,11 +125,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacements = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20),
+                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }
@@ -150,11 +148,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 11),
-                LocalDate.of(year, month, 20),
+                FiniteDateRange(LocalDate.of(year, month, 11), LocalDate.of(year, month, 20)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -177,11 +174,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 21),
-                LocalDate.of(year, month, 30),
+                FiniteDateRange(LocalDate.of(year, month, 21), LocalDate.of(year, month, 30)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -222,11 +218,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 11),
-                LocalDate.of(year, month, 21),
+                FiniteDateRange(LocalDate.of(year, month, 11), LocalDate.of(year, month, 21)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -254,11 +249,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 11),
-                LocalDate.of(year, month, 19),
+                FiniteDateRange(LocalDate.of(year, month, 11), LocalDate.of(year, month, 19)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -293,11 +287,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 21),
+                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 21)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -318,11 +311,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 19),
+                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 19)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -350,11 +342,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 9),
-                LocalDate.of(year, month, 20),
+                FiniteDateRange(LocalDate.of(year, month, 9), LocalDate.of(year, month, 20)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -375,11 +366,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 9),
-                LocalDate.of(year, month, 21),
+                FiniteDateRange(LocalDate.of(year, month, 9), LocalDate.of(year, month, 21)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -400,11 +390,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 9),
-                LocalDate.of(year, month, 19),
+                FiniteDateRange(LocalDate.of(year, month, 9), LocalDate.of(year, month, 19)),
+                PlacementType.PRESCHOOL,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -432,22 +421,20 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val old2 = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL_DAYCARE,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 21),
-                LocalDate.of(year, month, 31),
+                FiniteDateRange(LocalDate.of(year, month, 21), LocalDate.of(year, month, 31)),
+                PlacementType.PRESCHOOL_DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
         val newPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.PREPARATORY,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 15),
-                LocalDate.of(year, month, 25),
+                FiniteDateRange(LocalDate.of(year, month, 15), LocalDate.of(year, month, 25)),
+                PlacementType.PREPARATORY,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -477,11 +464,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20),
+                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -505,11 +491,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20),
+                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -562,11 +547,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 1),
-                LocalDate.of(year, month, 30),
+                FiniteDateRange(LocalDate.of(year, month, 1), LocalDate.of(year, month, 30)),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -589,11 +573,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         db.transaction {
             createPlacement(
                 it,
-                PlacementType.PRESCHOOL_DAYCARE,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 15),
-                LocalDate.of(year, month, 30),
+                FiniteDateRange(LocalDate.of(year, month, 15), LocalDate.of(year, month, 30)),
+                PlacementType.PRESCHOOL_DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }
@@ -631,11 +614,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20),
+                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
@@ -659,11 +641,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val oldPlacement = db.transaction {
             createPlacement(
                 it,
-                PlacementType.DAYCARE,
                 childId,
                 unitId,
-                LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20),
+                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
+                PlacementType.DAYCARE,
                 useFiveYearsOldDaycare = true
             )
         }.first()
