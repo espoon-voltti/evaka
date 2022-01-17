@@ -1618,11 +1618,4 @@ export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
   copy() {
     return new FeeThresholdBuilder({ ...this.data })
   }
-
-  copyWith(foo: Partial<FeeThresholds>) {
-    return new FeeThresholdBuilder({
-      ...this.data,
-      ...foo
-    })
-  }
 }

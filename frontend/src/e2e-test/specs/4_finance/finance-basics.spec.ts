@@ -80,7 +80,7 @@ describe('Finance basics', () => {
 
   test('Creating fee thresholds shows a validation error when max fees do not match', async () => {
     // Family size 2 has a different max fee
-    const { data } = Fixture.feeThresholds().copyWith({
+    const { data } = Fixture.feeThresholds().with({
       maxIncomeThreshold2: 300000
     })
     await nav.openAndClickDropdownMenuItem('financeBasics')
@@ -155,7 +155,7 @@ describe('Finance basics', () => {
   })
 
   test('Date overlap on fee thresholds with an end date prevents saving new fee thresholds', async () => {
-    const originalData = Fixture.feeThresholds().copyWith({
+    const originalData = Fixture.feeThresholds().with({
       validDuring: new DateRange(
         LocalDate.of(2020, 1, 1),
         LocalDate.of(2020, 12, 31)
