@@ -64,6 +64,8 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 
             UPDATE child SET allergies = '', diet = '', additionalinfo = '' WHERE id = :id_duplicate;
             
+            UPDATE evaka_user SET citizen_id = NULL WHERE citizen_id = :id_duplicate;
+
             ${personReferences.joinToString(separator = "") { (table, column) ->
                 """
                 UPDATE $table SET $column = :id_master WHERE $column = :id_duplicate;
