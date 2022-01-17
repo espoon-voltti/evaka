@@ -4,7 +4,7 @@
 
 import React, { Fragment, ReactNode } from 'react'
 import styled from 'styled-components'
-import { Label } from 'lib-components/typography'
+import { LabelLike } from 'lib-components/typography'
 
 type Spacing = 'small' | 'large'
 type LabelWidth = '25%' | 'fit-content(40%)'
@@ -66,7 +66,7 @@ const GridContainer = styled.div<{
   align-items: baseline;
 `
 
-const GridLabel = styled(Label)<{ index: number }>`
+const GridLabel = styled(LabelLike)<{ index: number }>`
   grid-column: 1;
   grid-row: ${({ index }) => index};
 `

@@ -112,7 +112,7 @@ interface LabelProps {
   white?: boolean
 }
 
-export const Label = styled.label<LabelProps>`
+const labelMixin = css<LabelProps>`
   font-weight: ${fontWeights.semibold};
   color: ${(p) =>
     p.primary
@@ -121,6 +121,14 @@ export const Label = styled.label<LabelProps>`
       ? p.theme.colors.greyscale.white
       : p.theme.colors.greyscale.darkest};
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
+`
+
+export const Label = styled.label<LabelProps>`
+  ${labelMixin}
+`
+
+export const LabelLike = styled.div<LabelProps>`
+  ${labelMixin}
 `
 
 type ParagraphProps = {
