@@ -12,7 +12,9 @@ import { Page, Checkbox, Select, TextInput } from 'e2e-playwright/utils/page'
 export default class CitizenPersonalDetails {
   constructor(private readonly page: Page) {}
 
-  #missingEmailBox = this.page.find('[data-qa="missing-email-box"]')
+  #missingEmailOrPhoneBox = this.page.find(
+    '[data-qa="missing-email-or-phone-box"]'
+  )
   #startEditing = this.page.find('[data-qa="start-editing"]')
   #preferredName = this.page.find('[data-qa="preferred-name"]')
   #phone = this.page.find('[data-qa="phone"]')
@@ -22,20 +24,42 @@ export default class CitizenPersonalDetails {
   #save = this.page.find('[data-qa="save"]')
 
   async checkMissingEmailWarningIsShown() {
-    await waitUntilTrue(() => this.#missingEmailBox.visible)
+    await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
+    await waitUntilTrue(async () =>
+      ((await this.#missingEmailOrPhoneBox.textContent) ?? '').includes(
+        'Sähköpostiosoitteesi puuttuu'
+      )
+    )
   }
 
-  async editPersonalData(data: {
-    preferredName: string
-    phone: string
-    backupPhone: string
-    email: string | null
-  }) {
+  async checkMissingPhoneWarningIsShown() {
+    await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
+    await waitUntilTrue(async () =>
+      ((await this.#missingEmailOrPhoneBox.textContent) ?? '').includes(
+        'Puhelinnumerosi puuttuu'
+      )
+    )
+  }
+
+  async assertAlertIsNotShown() {
+    await waitUntilFalse(() => this.#missingEmailOrPhoneBox.visible)
+  }
+
+  async editPersonalData(
+    data: {
+      preferredName: string
+      phone: string | null
+      backupPhone: string
+      email: string | null
+    },
+    expectValid: boolean
+  ) {
     await this.#startEditing.click()
     await new Select(this.#preferredName).selectOption({
       label: data.preferredName
     })
-    await new TextInput(this.#phone.find('input')).fill(data.phone)
+    if (data.phone)
+      await new TextInput(this.#phone.find('input')).fill(data.phone)
     await new TextInput(this.#backupPhone.find('input')).fill(data.backupPhone)
     if (data.email === null) {
       if (!(await this.#noEmail.checked)) {
@@ -44,13 +68,20 @@ export default class CitizenPersonalDetails {
     } else {
       await new TextInput(this.#email.find('input')).fill(data.email)
     }
-    await this.#save.click()
-    await waitUntilFalse(() => this.#startEditing.disabled)
+
+    if (expectValid) {
+      await this.#save.click()
+      await waitUntilFalse(() => this.#startEditing.disabled)
+    }
+  }
+
+  async assertSaveIsDisabled() {
+    await waitUntilTrue(() => this.#save.hasAttribute('disabled'))
   }
 
   async checkPersonalData(data: {
     preferredName: string
-    phone: string
+    phone: string | null
     backupPhone: string
     email: string | null
   }) {
@@ -58,7 +89,10 @@ export default class CitizenPersonalDetails {
       () => this.#preferredName.textContent,
       data.preferredName
     )
-    await waitUntilEqual(() => this.#phone.textContent, data.phone)
+    await waitUntilEqual(
+      () => this.#phone.textContent,
+      data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone
+    )
     await waitUntilEqual(() => this.#backupPhone.textContent, data.backupPhone)
     await waitUntilEqual(
       () => this.#email.textContent,

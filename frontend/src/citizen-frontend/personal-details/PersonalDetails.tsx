@@ -88,6 +88,16 @@ export default React.memo(function PersonalDetails() {
       </>
     )
 
+  const getAlertMessage = (
+    email: string | null,
+    phone: string | null
+  ): string => {
+    const alerts = []
+    if (email === null) alerts.push(t.personalDetails.noEmailAlert)
+    if (!phone) alerts.push(t.personalDetails.noPhoneAlert)
+    return alerts.join('. ').concat('.')
+  }
+
   return (
     <>
       <Container>
@@ -117,10 +127,10 @@ export default React.memo(function PersonalDetails() {
 
             return (
               <>
-                {email === null && (
+                {(email === null || !phone) && (
                   <AlertBox
-                    message={t.personalDetails.noEmailAlert}
-                    data-qa="missing-email-box"
+                    message={getAlertMessage(email, phone)}
+                    data-qa="missing-email-or-phone-box"
                   />
                 )}
                 <HorizontalLine />
@@ -173,7 +183,15 @@ export default React.memo(function PersonalDetails() {
                             placeholder="0401234567"
                           />
                         ) : (
-                          phone
+                          <div>
+                            {phone ? (
+                              phone
+                            ) : (
+                              <MandatoryValueMissingWarning
+                                text={t.personalDetails.phoneMissing}
+                              />
+                            )}
+                          </div>
                         )}
                       </div>
                       <Label>{t.personalDetails.backupPhone}</Label>
@@ -224,7 +242,13 @@ export default React.memo(function PersonalDetails() {
                         </FixedSpaceColumn>
                       ) : (
                         <div data-qa="email">
-                          {email ? email : <EmailMissing />}
+                          {email ? (
+                            email
+                          ) : (
+                            <MandatoryValueMissingWarning
+                              text={t.personalDetails.emailMissing}
+                            />
+                          )}
                         </div>
                       )}
                     </ListGrid>
@@ -270,6 +294,7 @@ function useEditState(
     > = {}
 
     const phoneError = editorState.phone ? phone(editorState.phone) : 'required'
+
     if (phoneError) {
       errors['phone'] = {
         status: 'warning',
@@ -400,13 +425,18 @@ const EditButtonRow = styled.div`
   margin-top: -20px;
 `
 
-const EmailMissing = styled(
-  React.memo(function EmailMissing({ className }: { className?: string }) {
-    const t = useTranslation()
+const MandatoryValueMissingWarning = styled(
+  React.memo(function EmailMissing({
+    text,
+    className
+  }: {
+    text: string
+    className?: string
+  }) {
     const { colors } = useTheme()
     return (
       <Light className={className}>
-        {t.personalDetails.emailMissing}
+        {text}
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
           color={colors.accents.warningOrange}
