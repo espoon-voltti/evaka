@@ -1241,8 +1241,8 @@ export default {
       </P>
     ),
     noEmailAlert:
-      'Sähköpostiosoitteesi puuttuu. Ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset.',
-    noPhoneAlert: 'Puhelinnumerosi puuttuu. Ole hyvä ja täydennä se alle.',
+      'Sähköpostiosoitteesi puuttuu, ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset',
+    noPhoneAlert: 'Puhelinnumerosi puuttuu, ole hyvä ja täydennä se alle',
     personalInfo: 'Henkilötiedot',
     name: 'Nimi',
     preferredName: 'Kutsumanimi',

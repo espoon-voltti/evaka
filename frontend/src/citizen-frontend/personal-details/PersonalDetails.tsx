@@ -88,6 +88,16 @@ export default React.memo(function PersonalDetails() {
       </>
     )
 
+  const getAlertMessage = (
+    email: string | null,
+    phone: string | null
+  ): string => {
+    const alerts = []
+    if (email === null) alerts.push(t.personalDetails.noEmailAlert)
+    if (!phone) alerts.push(t.personalDetails.noPhoneAlert)
+    return alerts.join('. ').concat('.')
+  }
+
   return (
     <>
       <Container>
@@ -117,16 +127,10 @@ export default React.memo(function PersonalDetails() {
 
             return (
               <>
-                {email === null && (
+                {(email === null || !phone) && (
                   <AlertBox
-                    message={t.personalDetails.noEmailAlert}
-                    data-qa="missing-email-box"
-                  />
-                )}
-                {!phone && (
-                  <AlertBox
-                    message={t.personalDetails.noPhoneAlert}
-                    data-qa="missing-phone-box"
+                    message={getAlertMessage(email, phone)}
+                    data-qa="missing-email-or-phone-box"
                   />
                 )}
                 <HorizontalLine />

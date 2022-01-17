@@ -35,13 +35,14 @@ beforeEach(async () => {
 })
 
 describe('Citizen personal details', () => {
-  test('Citizen sees indications of missing email', async () => {
+  test('Citizen sees indications of missing email and phone', async () => {
     await header.checkPersonalDetailsAttentionIndicatorsAreShown()
     await header.navigateToPersonalDetailsPage()
     await personalDetailsPage.checkMissingEmailWarningIsShown()
+    await personalDetailsPage.checkMissingPhoneWarningIsShown()
   })
 
-  test('Citizen fills in personal data', async () => {
+  test('Citizen fills successfully personal data without email by selecting I have no email -option', async () => {
     const data = {
       preferredName: enduserGuardianFixture.firstName.split(' ')[1],
       phone: '123123',
@@ -50,7 +51,35 @@ describe('Citizen personal details', () => {
     }
 
     await header.navigateToPersonalDetailsPage()
-    await personalDetailsPage.editPersonalData(data)
+    await personalDetailsPage.editPersonalData(data, true)
     await personalDetailsPage.checkPersonalData(data)
+    await personalDetailsPage.assertAlertIsNotShown()
+  })
+
+  test('Citizen fills in personal data but cannot save without phone', async () => {
+    const data = {
+      preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+      phone: null,
+      backupPhone: '456456',
+      email: 'a@b.com'
+    }
+
+    await header.navigateToPersonalDetailsPage()
+    await personalDetailsPage.editPersonalData(data, false)
+    await personalDetailsPage.assertSaveIsDisabled()
+  })
+
+  test('Citizen fills in personal data correctly and saves', async () => {
+    const data = {
+      preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+      phone: '123456789',
+      backupPhone: '456456',
+      email: 'a@b.com'
+    }
+
+    await header.navigateToPersonalDetailsPage()
+    await personalDetailsPage.editPersonalData(data, true)
+    await personalDetailsPage.checkPersonalData(data)
+    await personalDetailsPage.assertAlertIsNotShown()
   })
 })
