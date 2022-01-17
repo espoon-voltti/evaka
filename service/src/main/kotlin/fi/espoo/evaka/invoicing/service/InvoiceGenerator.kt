@@ -73,7 +73,7 @@ fun Database.Transaction.createAllDraftInvoices(range: DateRange = getPreviousMo
 
     val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(this, decisions) }
 
-    val feeThresholds = getFeeThresholds(range.start).find { it.validDuring.contains(range) }
+    val feeThresholds = getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
         ?: error("Missing prices for period ${range.start} - ${range.end}, cannot generate invoices")
 
     val invoices =
