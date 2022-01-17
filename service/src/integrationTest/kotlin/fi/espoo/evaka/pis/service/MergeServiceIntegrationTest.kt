@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
@@ -34,6 +35,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
@@ -335,5 +337,40 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
             any(),
             any()
         )
+    }
+
+    @Test
+    fun `evaka_user reference to duplicate person is removed but the data is left intact`() {
+        val person = DevPerson()
+        val duplicate = DevPerson()
+        db.transaction {
+            it.insertTestPerson(person)
+            it.upsertCitizenUser(person.id)
+            it.insertTestPerson(duplicate)
+            it.upsertCitizenUser(duplicate.id)
+        }
+        db.read {
+            val (citizenId, name) = it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
+                .bind("id", duplicate.id)
+                .map { r -> r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name") }
+                .first()
+
+            assertEquals(duplicate.id, citizenId)
+            assertEquals("${duplicate.firstName} ${duplicate.lastName}", name)
+        }
+
+        db.transaction {
+            mergeService.mergePeople(it, person.id, duplicate.id)
+            mergeService.deleteEmptyPerson(it, duplicate.id)
+        }
+        db.read {
+            val (citizenId, name) = it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
+                .bind("id", duplicate.id)
+                .map { r -> r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name") }
+                .first()
+
+            assertEquals(null, citizenId)
+            assertEquals("${duplicate.firstName} ${duplicate.lastName}", name)
+        }
     }
 }
