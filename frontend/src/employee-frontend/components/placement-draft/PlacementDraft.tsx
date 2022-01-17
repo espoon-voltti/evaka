@@ -338,6 +338,7 @@ export default React.memo(function PlacementDraft({
                   }
                   isLoading={units.isLoading}
                   menuEmptyLabel={i18n.common.noResults}
+                  data-qa="add-other-unit"
                 />
               </SelectContainer>
               <SendButtonContainer>

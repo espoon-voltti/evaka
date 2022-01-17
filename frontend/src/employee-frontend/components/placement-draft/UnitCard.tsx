@@ -40,26 +40,32 @@ interface OccupancyNumbersProps {
   title: string
   num3: number | null | undefined
   num6: number | null | undefined
+  'data-qa'?: string
 }
 
-function OccupancyNumbers({ title, num3, num6 }: OccupancyNumbersProps) {
+function OccupancyNumbers({
+  title,
+  num3,
+  num6,
+  'data-qa': dataQa
+}: OccupancyNumbersProps) {
   const { i18n } = useTranslation()
   return (
     <>
       <Bold>{title}</Bold>
       <Gap size="xs" />
-      <Numbers>
+      <Numbers data-qa={dataQa}>
         <div>
           <InformationText>
             3 {i18n.common.datetime.monthShort.toLowerCase()}
           </InformationText>
-          <Number>{formatPercentage(num3)}</Number>
+          <Number data-qa="3months">{formatPercentage(num3)}</Number>
         </div>
         <div>
           <InformationText>
             6 {i18n.common.datetime.monthShort.toLowerCase()}
           </InformationText>
-          <Number>{formatPercentage(num6)}</Number>
+          <Number data-qa="6months">{formatPercentage(num6)}</Number>
         </div>
       </Numbers>
     </>
@@ -172,7 +178,7 @@ export default React.memo(function UnitCard({
 
   return (
     <Card
-      data-qa="placement-item"
+      data-qa={`placement-item-${unitId}`}
       data-isloading={isLoading(occupancies)}
       selected={isSelectedUnit}
     >
@@ -198,12 +204,14 @@ export default React.memo(function UnitCard({
                 title={i18n.placementDraft.card.title}
                 num3={occupancies.max3Months.percentage}
                 num6={occupancies.max6Months.percentage}
+                data-qa="current-occupancies"
               />
               <Gap size="m" />
               <OccupancyNumbers
                 title={i18n.placementDraft.card.titleSpeculated}
                 num3={occupancies.max3MonthsSpeculated?.percentage}
                 num6={occupancies.max6MonthsSpeculated?.percentage}
+                data-qa="speculated-occupancies"
               />
             </div>
           )

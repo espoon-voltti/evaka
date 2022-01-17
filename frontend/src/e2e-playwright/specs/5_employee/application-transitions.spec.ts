@@ -8,6 +8,7 @@ import {
   execSimpleApplicationActions,
   insertApplications,
   insertDecisionFixtures,
+  insertDefaultServiceNeedOptions,
   insertPlacementPlan,
   rejectDecisionByCitizen,
   resetDatabase
@@ -18,6 +19,7 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
+  daycareFixture,
   decisionFixture,
   Fixture,
   placementPlanFixture,
@@ -162,6 +164,100 @@ describe('Application transitions', () => {
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertApplicationStatus('Odottaa postitusta')
+  })
+
+  test('Placement dialog works', async () => {
+    const preferredStartDate = LocalDate.of(2021, 8, 16)
+    await insertDefaultServiceNeedOptions()
+
+    const group = await Fixture.daycareGroup()
+      .with({ daycareId: fixtures.daycareFixture.id })
+      .save()
+    await Fixture.daycareCaretakers()
+      .with({
+        groupId: group.data.id,
+        startDate: preferredStartDate,
+        amount: 1
+      })
+      .save()
+
+    const group2 = await Fixture.daycareGroup()
+      .with({ daycareId: fixtures.preschoolFixture.id })
+      .save()
+    await Fixture.daycareCaretakers()
+      .with({
+        groupId: group2.data.id,
+        startDate: preferredStartDate,
+        amount: 2
+      })
+      .save()
+
+    // Create existing placements to show meaningful occupancy values
+    await Fixture.placement()
+      .with({
+        unitId: fixtures.daycareFixture.id,
+        childId: fixtures.enduserChildFixturePorriHatterRestricted.id,
+        startDate: preferredStartDate.formatIso()
+      })
+      .save()
+    await Fixture.placement()
+      .with({
+        unitId: fixtures.preschoolFixture.id,
+        childId: fixtures.enduserChildFixtureJari.id,
+        startDate: preferredStartDate.formatIso()
+      })
+      .save()
+
+    const fixture = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureKaarina,
+        fixtures.familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [daycareFixture.id],
+        true,
+        'SENT',
+        preferredStartDate
+      ),
+      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+    }
+    const applicationId = fixture.id
+
+    await insertApplications([fixture])
+
+    await execSimpleApplicationActions(applicationId, [
+      'move-to-waiting-placement'
+    ])
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+
+    await applicationWorkbench.openPlacementQueue()
+    const placementDraftPage =
+      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await placementDraftPage.waitUntilLoaded()
+
+    await placementDraftPage.assertOccupancies(fixtures.daycareFixture.id, {
+      max3Months: '14,3 %',
+      max6Months: '14,3 %',
+      max3MonthsSpeculated: '28,6 %',
+      max6MonthsSpeculated: '28,6 %'
+    })
+
+    await placementDraftPage.addOtherUnit(fixtures.preschoolFixture.name)
+    await placementDraftPage.assertOccupancies(fixtures.preschoolFixture.id, {
+      max3Months: '7,1 %',
+      max6Months: '7,1 %',
+      max3MonthsSpeculated: '14,3 %',
+      max6MonthsSpeculated: '14,3 %'
+    })
+
+    await placementDraftPage.placeToUnit(fixtures.preschoolFixture.id)
+    await placementDraftPage.submit()
+
+    await applicationWorkbench.waitUntilLoaded()
   })
 
   test('Placement dialog shows warning if guardian has restricted details', async () => {
