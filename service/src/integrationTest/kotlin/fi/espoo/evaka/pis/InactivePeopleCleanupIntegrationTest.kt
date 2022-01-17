@@ -5,12 +5,16 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertIncomeStatement
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -28,6 +32,7 @@ import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
 
 class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
@@ -210,6 +215,24 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testUnit.id
+            )
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `adult with income statement is not cleaned up`() {
+        db.transaction { tx ->
+            tx.insertPerson(testAdult_1)
+            tx.insertIncomeStatement(
+                DevIncomeStatement(
+                    IncomeStatementId(UUID.randomUUID()),
+                    testAdult_1.id,
+                    LocalDate.now(),
+                    IncomeStatementType.INCOME,
+                    42
+                )
             )
         }
 
