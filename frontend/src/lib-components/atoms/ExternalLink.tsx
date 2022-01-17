@@ -4,10 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
-import styled from 'styled-components'
 import { faExternalLink } from 'lib-icons'
-import { fontWeights } from '../typography'
-import { defaultMargins } from '../white-space'
 
 type ExternalLinkProps = {
   text: string | JSX.Element
@@ -20,22 +17,12 @@ export default React.memo(function ExternalLink({
   href,
   newTab
 }: ExternalLinkProps) {
+  const targetProps = newTab
+    ? { target: '_blank', rel: 'noreferrer' }
+    : undefined
   return (
-    <StyledLink
-      href={href}
-      target={newTab ? '_blank' : undefined}
-      rel={newTab ? 'noreferrer' : undefined}
-    >
-      {typeof text === 'string' ? <span>{text}</span> : text}
-      <FontAwesomeIcon icon={faExternalLink} />
-    </StyledLink>
+    <a href={href} {...targetProps}>
+      {text} <FontAwesomeIcon icon={faExternalLink} />
+    </a>
   )
 })
-
-const StyledLink = styled.a`
-  display: inline-block;
-  font-weight: ${fontWeights.semibold};
-  svg {
-    margin-left: ${defaultMargins.xs};
-  }
-`
