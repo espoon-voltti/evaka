@@ -45,7 +45,7 @@ function CollapsibleRow({
         <FontAwesomeIcon
           icon={expanded ? faChevronUp : faChevronDown}
           size="xs"
-          color={colors.greyscale.darkest}
+          color={colors.grayscale.g100}
         />
       </CollapseToggle>
       <Content visible={expanded}>{children}</Content>

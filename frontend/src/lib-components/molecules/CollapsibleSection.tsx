@@ -25,7 +25,7 @@ const Wrapper = styled.div`
 const Row = styled.div`
   display: flex;
   align-items: center;
-  color: ${(p) => p.theme.colors.greyscale.medium};
+  color: ${(p) => p.theme.colors.grayscale.g35};
   margin-bottom: ${defaultMargins.m};
 
   &.fitted {
@@ -40,13 +40,13 @@ const Row = styled.div`
     cursor: pointer;
 
     h3 {
-      color: ${(p) => p.theme.colors.main.primaryHover};
+      color: ${(p) => p.theme.colors.main.m2Hover};
     }
   }
 `
 
 const IconWrapper = styled.div`
-  color: ${(p) => p.theme.colors.greyscale.medium};
+  color: ${(p) => p.theme.colors.grayscale.g35};
   font-size: 28px;
   width: 35px;
   margin-right: ${defaultMargins.s};
@@ -117,7 +117,7 @@ export default React.memo(function CollapsibleSection({
         <ToggleWrapper data-qa="collapsible-trigger">
           <FontAwesomeIcon
             icon={collapsed ? faAngleDown : faAngleUp}
-            color={colors.main.primary}
+            color={colors.main.m2}
           />
         </ToggleWrapper>
       </Row>

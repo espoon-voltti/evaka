@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -1282,7 +1282,7 @@ const LabelError = styled(
       <span className={className}>
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={colors.accents.warningOrange}
+          color={colors.status.warning}
         />
         {text}
       </span>
@@ -1291,7 +1291,7 @@ const LabelError = styled(
 )`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
-  color: ${(p) => p.theme.colors.accents.orangeDark};
+  color: ${(p) => p.theme.colors.accents.a2orangeDark};
 
   > :first-child {
     margin-right: ${defaultMargins.xs};

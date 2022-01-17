@@ -172,7 +172,7 @@ export default React.memo(function ThreadListContainer({
         (view === 'SENT' && sentMessages.isLoading) ||
         (view === 'DRAFTS' && messageDrafts.isLoading)
       }
-      iconColor={colors.greyscale.medium}
+      iconColor={colors.grayscale.g35}
       text={i18n.messages.emptyInbox}
     />
   )

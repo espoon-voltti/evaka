@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,7 +15,7 @@ defaults.font = {
   family: '"Open Sans", "Arial", sans-serif',
   ...defaults.font
 }
-defaults.color = colors.greyscale.darkest
+defaults.color = colors.grayscale.g100
 
 type DatePoint = { x: Date; y: number | null | undefined }
 
@@ -113,8 +113,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(occupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.main.dark,
-      borderColor: colors.main.dark
+      pointBackgroundColor: colors.main.m1,
+      borderColor: colors.main.m1
     })
   if (planned)
     datasets.push({
@@ -122,8 +122,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(plannedOccupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.accents.turquoise,
-      borderColor: colors.accents.turquoise
+      pointBackgroundColor: colors.accents.a6turquoise,
+      borderColor: colors.accents.a6turquoise
     })
   if (realized)
     datasets.push({
@@ -131,8 +131,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(realizedOccupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.accents.successGreen,
-      borderColor: colors.accents.successGreen
+      pointBackgroundColor: colors.status.success,
+      borderColor: colors.status.success
     })
 
   return (

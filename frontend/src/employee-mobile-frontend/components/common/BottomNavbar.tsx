@@ -45,7 +45,7 @@ const Root = styled.div`
   justify-content: space-evenly;
   align-items: center;
 
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.15);
   margin-bottom: 0 !important;
 `
@@ -60,14 +60,14 @@ const Button = styled.div`
 `
 
 const CustomIcon = styled(FontAwesomeIcon)<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.main.dark : colors.greyscale.dark)};
+  color: ${(p) => (p.selected ? colors.main.m1 : colors.grayscale.g70)};
   height: 24px !important;
   width: 24px !important;
   margin: 0;
 `
 
 const IconText = styled.span<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.main.dark : colors.greyscale.dark)};
+  color: ${(p) => (p.selected ? colors.main.m1 : colors.grayscale.g70)};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
 `
@@ -193,5 +193,5 @@ const UnreadMessagesIndicator = styled.div`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
   border-radius: 100%;
-  background-color: ${colors.accents.warningOrange};
+  background-color: ${colors.status.warning};
 `

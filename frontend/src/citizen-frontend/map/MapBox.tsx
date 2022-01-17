@@ -286,7 +286,7 @@ const FooterWrapper = styled.div`
   left: 0;
   bottom: 0;
   width: fit-content;
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
   z-index: 999;
   margin-right: 250px;
 
@@ -332,7 +332,7 @@ const UnitDetails = styled.div`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   line-height: 21px;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `
 
 const UnitDetailsLeft = styled.div`

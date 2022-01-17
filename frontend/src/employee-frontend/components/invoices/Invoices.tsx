@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -313,7 +313,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
                 tooltipText={`${i18n.personProfile.restrictedDetails}`}
                 place="right"
               >
-                <StatusIconContainer color={colors.accents.dangerRed}>
+                <StatusIconContainer color={colors.status.danger}>
                   <FontAwesomeIcon icon={faExclamation} inverse />
                 </StatusIconContainer>
               </Tooltip>

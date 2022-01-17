@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -38,9 +38,9 @@ const IconContainer = styled.div<IconContainerProps>`
   align-items: center;
 
   border-radius: 100%;
-  border: 2px solid ${(props) => props.color};
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
-  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
+  border: 2px solid ${(p) => p.color};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+  color: ${(p) => p.theme.colors.grayscale.g100};
   user-select: none;
 
   font-family: Montserrat, sans-serif;
@@ -48,18 +48,22 @@ const IconContainer = styled.div<IconContainerProps>`
 
   &.active {
     background-color: ${(props) => props.color};
-    color: ${({ theme: { colors }, color }) =>
-      readableColor(color, colors.greyscale.white, colors.greyscale.darkest)};
+    color: ${(p) =>
+      readableColor(
+        p.color,
+        p.theme.colors.grayscale.g0,
+        p.theme.colors.grayscale.g100
+      )};
   }
 
   &.clickable:hover {
-    background-color: ${(props) => shade(0.2, props.color)};
-    border-color: ${(props) => shade(0.2, props.color)};
-    color: ${({ theme: { colors }, color }) =>
+    background-color: ${(p) => shade(0.2, p.color)};
+    border-color: ${(p) => shade(0.2, p.color)};
+    color: ${(p) =>
       readableColor(
-        shade(0.2, color),
-        colors.greyscale.white,
-        colors.greyscale.darkest
+        shade(0.2, p.color),
+        p.theme.colors.grayscale.g0,
+        p.theme.colors.grayscale.g100
       )};
     cursor: pointer;
   }
@@ -250,9 +254,9 @@ const Circle = styled.span<{ smaller: boolean; color?: string }>`
   font-size: ${(p) => (p.smaller ? '12px' : '16px')};
   line-height: ${(p) => (p.smaller ? '10px' : '13px')};
   border-radius: 10px;
-  background-color: ${({ theme: { colors }, ...p }) =>
-    p.color ? p.color : colors.accents.successGreen};
-  color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) =>
+    p.color ? p.color : p.theme.colors.status.success};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   display: inline-block;
   position: absolute;
   right: -3px;

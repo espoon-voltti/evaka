@@ -124,5 +124,5 @@ const WeekPicker = styled.div`
 
 const WeekPickerButton = styled(IconButton)`
   margin: 0 ${defaultMargins.s};
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `

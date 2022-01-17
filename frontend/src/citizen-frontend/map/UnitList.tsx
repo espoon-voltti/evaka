@@ -141,7 +141,7 @@ const Wrapper = styled(ContentArea)`
 const Info = styled.div`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
 `
 
 const Centered = styled.div`

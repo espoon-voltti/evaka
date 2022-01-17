@@ -382,7 +382,7 @@ function UploadedFiles({ files }: { files: Attachment[] }) {
 }
 
 const FileIcon = styled(FontAwesomeIcon)`
-  color: ${(p) => p.theme.colors.main.primary};
+  color: ${(p) => p.theme.colors.main.m2};
   margin-right: ${defaultMargins.s};
 `
 

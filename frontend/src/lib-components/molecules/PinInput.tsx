@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,14 +18,14 @@ import { defaultMargins } from '../white-space'
 
 const SingleNumberInput = styled(StyledInput)<{ invalid?: boolean }>`
   border: 1px solid
-    ${({ theme, invalid }) =>
-      invalid ? theme.colors.accents.dangerRed : theme.colors.main.primary};
+    ${(p) =>
+      p.invalid ? p.theme.colors.status.danger : p.theme.colors.main.m2};
   text-align: center;
 
   font-family: 'Montserrat', sans-serif;
   font-size: 2rem;
   font-weight: ${fontWeights.semibold};
-  color: ${(p) => p.theme.colors.main.dark};
+  color: ${(p) => p.theme.colors.main.m1};
 `
 
 const Centered = styled.div`

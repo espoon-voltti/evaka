@@ -186,7 +186,7 @@ const OptionWrapper = styled.div`
 
   &:hover,
   &.focused {
-    background-color: ${colors.main.lighter};
+    background-color: ${colors.main.m4};
   }
 
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
@@ -207,7 +207,7 @@ const OptionContents = React.memo(function Option({
       {isUnit && (
         <FontAwesomeIcon
           icon={fasMapMarkerAlt}
-          color={colors.main.primary}
+          color={colors.main.m2}
           style={{ fontSize: '24px' }}
         />
       )}
@@ -223,5 +223,5 @@ const SecondaryText = styled.span`
   font-size: 14px;
   line-height: 21px;
   font-weight: ${fontWeights.semibold};
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `

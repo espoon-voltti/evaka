@@ -165,7 +165,7 @@ const ChildSearch = React.memo(function Search({
           value={freeText}
           setValue={setFreeText}
           placeholder={i18n.attendances.searchPlaceholder}
-          background={colors.greyscale.white}
+          background={colors.grayscale.g0}
           setShowSearch={toggleShow}
           searchResults={searchResults}
         />
@@ -181,7 +181,7 @@ const ChildSearch = React.memo(function Search({
 
 const SearchContainer = animated(styled.div`
   position: absolute;
-  background: ${colors.greyscale.lightest};
+  background: ${colors.grayscale.g4};
   width: 100vw;
   overflow: hidden;
   z-index: ${zIndex.searchBar};

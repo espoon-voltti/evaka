@@ -17,5 +17,5 @@ export const StatusIconContainer = styled.div<StatusIconContainerProps>`
   align-items: center;
   width: 30px;
   height: 30px;
-  color: ${colors.greyscale.white};
+  color: ${colors.grayscale.g0};
 `

@@ -439,7 +439,7 @@ const MandatoryValueMissingWarning = styled(
         {text}
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={colors.accents.warningOrange}
+          color={colors.status.warning}
         />
       </Light>
     )

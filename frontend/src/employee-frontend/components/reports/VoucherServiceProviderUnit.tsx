@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -56,7 +56,7 @@ const FilterWrapper = styled.div`
 
 const LockedDate = styled(FixedSpaceRow)`
   float: right;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   margin-bottom: ${defaultMargins.xs};
 `
 
@@ -93,12 +93,12 @@ const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
   right: -1px;
   background-color: ${(p) =>
     p.type === 'REFUND'
-      ? colors.accents.warningOrange
+      ? colors.status.warning
       : p.type === 'CORRECTION'
-      ? colors.accents.peach
+      ? colors.accents.a5orangeLight
       : p.type === 'NEW'
-      ? colors.main.primary
-      : colors.greyscale.white};
+      ? colors.main.m2
+      : colors.grayscale.g0};
 `
 
 const StyledTh = styled(Th)`

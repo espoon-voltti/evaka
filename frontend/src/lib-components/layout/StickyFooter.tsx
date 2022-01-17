@@ -22,7 +22,7 @@ export default React.memo(function StickyFooter({ children }: Props) {
 const Footer = styled.footer`
   position: sticky;
   bottom: 0;
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.1);
 
   @media print {

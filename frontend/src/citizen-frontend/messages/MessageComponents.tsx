@@ -8,7 +8,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 export const MessageContainer = styled.div`
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
   padding: ${defaultMargins.s};
 
   @media (min-width: ${desktopMin}) {

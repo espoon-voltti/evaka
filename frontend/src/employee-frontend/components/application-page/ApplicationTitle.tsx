@@ -65,7 +65,7 @@ const TitleRow = styled.div`
   align-items: center;
 
   .title-labels {
-    color: ${colors.greyscale.medium};
+    color: ${colors.grayscale.g35};
     margin-left: ${defaultMargins.m};
     white-space: nowrap;
   }

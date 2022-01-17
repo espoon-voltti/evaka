@@ -39,8 +39,8 @@ const GroupSelectorButton = styled(InlineButton)`
 `
 
 const GroupSelectorWrapper = animated(styled.div`
-  background-color: ${colors.greyscale.white};
-  box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
+  background-color: ${colors.grayscale.g0};
+  box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
   position: absolute;
   display: flex;
   flex-direction: column;

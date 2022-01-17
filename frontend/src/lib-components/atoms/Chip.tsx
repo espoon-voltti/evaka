@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -24,14 +24,18 @@ export const StaticChip = styled.div<{ color: string }>`
   border: 1px solid ${(p) => p.color};
   border-radius: 1000px;
   background-color: ${(p) => p.color};
-  color: ${({ theme: { colors }, ...p }) =>
-    readableColor(p.color, colors.greyscale.white, colors.greyscale.darkest)};
+  color: ${(p) =>
+    readableColor(
+      p.color,
+      p.theme.colors.grayscale.g0,
+      p.theme.colors.grayscale.g100
+    )};
   padding: ${defaultMargins.xxs}
     calc(${defaultMargins.xs} + ${defaultMargins.xxs});
 
   outline: none;
   &:focus {
-    outline: 2px solid ${({ theme: { colors } }) => colors.main.light};
+    outline: 2px solid ${(p) => p.theme.colors.main.m3};
     outline-offset: 2px;
   }
 `
@@ -132,7 +136,7 @@ const SelectionChipWrapper = styled.div`
 
   &:focus,
   &:focus-within {
-    border: 2px solid ${({ theme: { colors } }) => colors.main.dark};
+    border: 2px solid ${(p) => p.theme.colors.main.m1};
     border-radius: 1000px;
     margin: -2px;
   }
@@ -146,12 +150,12 @@ const SelectionChipInnerWrapper = styled.div`
   position: relative;
   border-radius: 1000px;
   padding: 0 calc(${defaultMargins.xs} + ${defaultMargins.xxs});
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
-  color: ${({ theme: { colors } }) => colors.main.primary};
-  border: 1px solid ${({ theme: { colors } }) => colors.main.primary};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+  color: ${(p) => p.theme.colors.main.m2};
+  border: 1px solid ${(p) => p.theme.colors.main.m2};
   &.checked {
-    background-color: ${({ theme: { colors } }) => colors.main.primary};
-    color: ${({ theme: { colors } }) => colors.greyscale.white};
+    background-color: ${(p) => p.theme.colors.main.m2};
+    color: ${(p) => p.theme.colors.grayscale.g0};
   }
 
   @media (max-width: ${tabletMin}) {
@@ -181,7 +185,7 @@ const IconWrapper = styled.div`
   height: 32px;
 
   font-size: 24px;
-  color: ${({ theme: { colors } }) => colors.greyscale.white};
+  color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
 export const ChipWrapper = styled.div<{ noMargin?: boolean }>`

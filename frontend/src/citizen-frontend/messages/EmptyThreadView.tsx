@@ -19,11 +19,7 @@ export default React.memo(function EmptyThreadView({ inboxEmpty }: Props) {
   const i18n = useTranslation()
   return inboxEmpty ? (
     <EmptyThreadViewContainer data-qa="inbox-empty">
-      <FontAwesomeIcon
-        icon={faInbox}
-        size="7x"
-        color={colors.greyscale.medium}
-      />
+      <FontAwesomeIcon icon={faInbox} size="7x" color={colors.grayscale.g35} />
       <H3>{i18n.messages.emptyInbox}</H3>
     </EmptyThreadViewContainer>
   ) : (
@@ -36,7 +32,7 @@ export default React.memo(function EmptyThreadView({ inboxEmpty }: Props) {
 const EmptyThreadViewContainer = styled.div`
   text-align: center;
   width: 100%;
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   padding-top: 10%;
 
   display: none;

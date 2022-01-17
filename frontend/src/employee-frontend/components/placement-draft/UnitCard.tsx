@@ -31,7 +31,7 @@ const Numbers = styled.div`
 
 const Number = styled(H1)`
   margin: 0;
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
 `
 const formatPercentage = (num?: number | null) =>
   num ? `${num.toFixed(1).replace('.', ',')} %` : '–'
@@ -77,13 +77,12 @@ const Card = styled.div<{ selected: boolean }>`
   flex-direction: column;
   align-items: center;
 
-  border-color: ${(p) =>
-    p.selected ? colors.main.primary : colors.greyscale.medium};
+  border-color: ${(p) => (p.selected ? colors.main.m2 : colors.grayscale.g35)};
   border-width: 2px;
   border-style: solid;
   border-radius: 4px;
-  background: ${colors.greyscale.white};
-  box-shadow: 0 4px 4px 0 ${colors.greyscale.darkest}26; // 26 = 15 % opacity
+  background: ${colors.grayscale.g0};
+  box-shadow: 0 4px 4px 0 ${colors.grayscale.g100}26; // 26 = 15 % opacity
   padding: ${defaultMargins.L};
   flex: 1 0 30%;
   max-width: calc(33% - 1.5rem);

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -69,11 +69,11 @@ const Tab = styled.div<{ active?: boolean }>`
   border-bottom-width: 2px;
   border-bottom-style: solid;
   border-bottom-color: ${({ active, theme }) =>
-    active ? theme.colors.main.primary : 'transparent'};
+    active ? theme.colors.main.m2 : 'transparent'};
 
   font-size: 15px;
   font-weight: ${fontWeights.bold};
-  color: ${({ theme }) => theme.colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
   text-transform: uppercase;
   cursor: pointer;
 `
@@ -212,7 +212,7 @@ export default React.memo(function NotesModal({
           {indicator && (
             <>
               <Gap horizontal size="xs" />
-              <RoundIcon content="" color={colors.main.light} size="xs" />
+              <RoundIcon content="" color={colors.main.m3} size="xs" />
             </>
           )}
         </Tab>

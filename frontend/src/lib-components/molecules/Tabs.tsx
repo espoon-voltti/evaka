@@ -55,7 +55,7 @@ const TabsContainer = styled.div<{ shadow?: boolean }>`
   ${(p) =>
     p.shadow
       ? `
-      box-shadow: 0 2px 6px 0 ${p.theme.colors.greyscale.lighter};
+      box-shadow: 0 2px 6px 0 ${p.theme.colors.grayscale.g15};
       margin-bottom: ${defaultMargins.xxs};
       `
       : ''}
@@ -72,7 +72,7 @@ const TabLinkContainer = styled(NavLink)<{
   padding: 12px;
   flex-basis: content;
   flex-grow: 1;
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   text-align: center;
   max-width: ${(p) => p.$maxWidth ?? 'unset'};
 
@@ -84,20 +84,20 @@ const TabLinkContainer = styled(NavLink)<{
   border-bottom: ${(p) => (p.$mobile ? '3px solid transparent' : 'unset')};
 
   &.active {
-    background-color: ${({ theme: { colors }, ...p }) =>
-      p.$mobile ? colors.greyscale.white : `${colors.main.light}33`};
-    border-bottom: ${({ theme: { colors }, ...p }) =>
-      p.$mobile ? `3px solid ${colors.main.dark}` : 'unset'};
+    background-color: ${(p) =>
+      p.$mobile ? p.theme.colors.grayscale.g0 : `${p.theme.colors.main.m3}33`};
+    border-bottom: ${(p) =>
+      p.$mobile ? `3px solid ${p.theme.colors.main.m1}` : 'unset'};
 
     ${NavLinkText} {
-      color: ${(p) => p.theme.colors.main.dark};
+      color: ${(p) => p.theme.colors.main.m1};
       font-weight: ${fontWeights.bold};
     }
   }
 
   :hover {
     ${NavLinkText} {
-      color: ${(p) => p.theme.colors.main.dark};
+      color: ${(p) => p.theme.colors.main.m1};
     }
   }
 `
@@ -110,8 +110,8 @@ const TabCounter = styled.div`
   align-items: center;
 
   border-radius: 50%;
-  background-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
-  color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.status.warning};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   margin-left: ${defaultMargins.xs};
   font-weight: ${fontWeights.bold};
   font-size: 1em;

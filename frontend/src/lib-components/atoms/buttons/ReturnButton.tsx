@@ -49,7 +49,7 @@ export default React.memo(function ReturnButton({
         onClick={() => history.goBack()}
         data-qa={dataQa}
         disabled={history.length <= 1}
-        color={colors.main.dark}
+        color={colors.main.m1}
       />
     </ReturnButtonWrapper>
   )

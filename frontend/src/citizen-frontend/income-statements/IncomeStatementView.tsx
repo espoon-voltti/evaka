@@ -368,7 +368,7 @@ const UploadedFiles = React.memo(function UploadedFiles({
 })
 
 const FileIcon = styled(FontAwesomeIcon)`
-  color: ${(p) => p.theme.colors.main.primary};
+  color: ${(p) => p.theme.colors.main.m2};
   margin-right: ${defaultMargins.s};
 `
 

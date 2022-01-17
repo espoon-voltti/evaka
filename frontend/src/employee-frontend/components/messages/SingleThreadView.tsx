@@ -39,7 +39,7 @@ import { MessageTypeChip } from './MessageTypeChip'
 import { View } from './types-view'
 
 const MessageContainer = styled.div`
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
   padding: ${defaultMargins.L};
   margin-top: ${defaultMargins.s};
 
@@ -63,7 +63,7 @@ const StickyTitleRow = styled(TitleRow)`
   position: sticky;
   top: 0;
   padding: ${defaultMargins.L};
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   max-height: 100px;
   overflow: auto;
 
@@ -226,7 +226,7 @@ export function SingleThreadView({
           icon={faAngleLeft}
           text={i18n.common.goBack}
           onClick={goBack}
-          color={colors.main.primary}
+          color={colors.main.m2}
         />
       </ContentArea>
       <Gap size="xs" />

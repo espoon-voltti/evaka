@@ -325,7 +325,7 @@ export default React.memo(function Group({
             active={childNote != null || notes.childStickyNotes.length > 0}
             data-qa={`daycare-daily-note-icon-${placement.child.id}`}
             content={faStickyNote}
-            color={colors.main.primary}
+            color={colors.main.m2}
             size="m"
             onClick={() =>
               setNotesModal({
@@ -507,7 +507,7 @@ export default React.memo(function Group({
                           >
                             <FontAwesomeIcon
                               icon={faStickyNote}
-                              color={colors.greyscale.dark}
+                              color={colors.grayscale.g70}
                             />
                           </Tooltip>
                         </IconContainer>
@@ -649,7 +649,7 @@ export default React.memo(function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={colors.accents.warningOrange}
+                                  color={colors.status.warning}
                                 >
                                   <FontAwesomeIcon icon={faTimes} inverse />
                                 </StatusIconContainer>
@@ -663,7 +663,7 @@ export default React.memo(function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={colors.accents.successGreen}
+                                  color={colors.status.success}
                                 >
                                   <FontAwesomeIcon icon={faCheck} inverse />
                                 </StatusIconContainer>
@@ -795,7 +795,7 @@ const Toolbar = styled.div`
 `
 
 const DaycareGroup = styled.div`
-  border: ${colors.greyscale.medium} solid 1px;
+  border: ${colors.grayscale.g35} solid 1px;
   padding: 16px;
   margin-bottom: 16px;
 `

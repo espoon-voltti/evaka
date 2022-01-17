@@ -19,7 +19,7 @@ const BackButtonMargin = styled(BackButton)`
 `
 
 const Shadow = styled.div`
-  box-shadow: 0 4px 4px 0 ${colors.greyscale.lighter};
+  box-shadow: 0 4px 4px 0 ${colors.grayscale.g15};
   z-index: 1;
   display: flex;
   flex-direction: column;

@@ -71,7 +71,7 @@ const Menu = styled.div`
   top: 0;
   right: 40px;
   z-index: 2;
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -86,6 +86,6 @@ const MenuItem = styled.span`
   cursor: pointer;
 
   &:hover {
-    color: ${colors.greyscale.medium};
+    color: ${colors.grayscale.g35};
   }
 `

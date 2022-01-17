@@ -147,7 +147,7 @@ const Subtitle = styled.h2`
   font-size: 16px;
   line-height: 24px;
   margin: 0;
-  color: ${colors.greyscale.darkest};
+  color: ${colors.grayscale.g100};
   text-align: center;
 `
 

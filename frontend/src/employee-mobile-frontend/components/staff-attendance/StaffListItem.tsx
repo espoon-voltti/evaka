@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,15 +17,15 @@ const StaffBox = styled.div`
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  color: ${colors.greyscale.darkest};
+  color: ${colors.grayscale.g100};
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-radius: 2px;
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
 
   &:after {
     content: '';
     width: calc(100% - ${defaultMargins.s});
-    background: ${colors.greyscale.lighter};
+    background: ${colors.grayscale.g15};
     height: 1px;
     display: block;
     margin: 8px 0 -8px;
@@ -52,13 +52,13 @@ const StaffBoxInfo = styled.div`
 
 export const IconBox = styled.div<{ present: boolean }>`
   background-color: ${(p) =>
-    p.present ? colors.accents.successGreen : colors.accents.turquoise};
+    p.present ? colors.status.success : colors.accents.a6turquoise};
   border-radius: 50%;
   box-shadow: ${(p) =>
     p.present
-      ? `0 0 0 2px ${colors.accents.successGreen}`
-      : `0 0 0 2px ${colors.accents.turquoise}`};
-  border: 2px solid ${colors.greyscale.white};
+      ? `0 0 0 2px ${colors.status.success}`
+      : `0 0 0 2px ${colors.accents.a6turquoise}`};
+  border: 2px solid ${colors.grayscale.g0};
 `
 
 export default React.memo(function StaffListItem({
@@ -81,9 +81,7 @@ export default React.memo(function StaffListItem({
         <IconBox present={present}>
           <RoundIcon
             content={farUser}
-            color={
-              present ? colors.accents.successGreen : colors.accents.turquoise
-            }
+            color={present ? colors.status.success : colors.accents.a6turquoise}
             size="XL"
           />
         </IconBox>

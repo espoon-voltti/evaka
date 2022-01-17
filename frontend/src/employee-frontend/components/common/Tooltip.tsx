@@ -21,29 +21,29 @@ const ContentWrapper = styled.div`
   width: fit-content;
 
   .type-dark {
-    background: ${colors.greyscale.dark};
-    color: ${colors.greyscale.white};
+    background: ${colors.grayscale.g70};
+    color: ${colors.grayscale.g0};
     font-family: 'Open Sans', 'Arial', sans-serif;
     padding: 8px 12px;
 
     &.place-right {
       &:after {
-        border-right-color: ${colors.greyscale.dark};
+        border-right-color: ${colors.grayscale.g70};
       }
     }
     &.place-left {
       &:after {
-        border-left-color: ${colors.greyscale.dark};
+        border-left-color: ${colors.grayscale.g70};
       }
     }
     &.place-top {
       &:after {
-        border-top-color: ${colors.greyscale.dark};
+        border-top-color: ${colors.grayscale.g70};
       }
     }
     &.place-bottom {
       &:after {
-        border-bottom-color: ${colors.greyscale.dark};
+        border-bottom-color: ${colors.grayscale.g70};
       }
     }
   }

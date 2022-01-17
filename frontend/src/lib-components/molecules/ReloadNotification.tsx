@@ -46,7 +46,7 @@ export default function ReloadNotification({ apiVersion, i18n }: Props) {
   }, [maybeShow])
 
   return show ? (
-    <Toast icon={faInfo} iconColor={theme.colors.main.dark} onClose={close}>
+    <Toast icon={faInfo} iconColor={theme.colors.main.m1} onClose={close}>
       <div>{i18n.title}</div>
       <div>
         <InlineButton

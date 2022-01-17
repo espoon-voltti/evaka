@@ -708,11 +708,11 @@ const ElementContainer = styled.div`
   position: relative;
   padding: 24px 80px 24px 24px;
 
-  border: dashed 1px ${colors.greyscale.white};
+  border: dashed 1px ${colors.grayscale.g0};
   border-radius: 8px;
 
   &:hover {
-    border-color: ${colors.greyscale.medium};
+    border-color: ${colors.grayscale.g35};
   }
 
   &:not(:hover) {
@@ -729,7 +729,7 @@ const ElementContainer = styled.div`
 `
 
 const QuestionDetails = styled.i`
-  color: ${({ theme }) => theme.colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
 const AddNewContainer = styled.div<{ showOnHover: boolean }>`

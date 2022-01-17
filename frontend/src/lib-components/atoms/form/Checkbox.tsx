@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,19 +28,19 @@ const Wrapper = styled.div`
     cursor: not-allowed;
 
     label {
-      color: ${({ theme: { colors } }) => colors.greyscale.medium};
+      color: ${(p) => p.theme.colors.grayscale.g35};
       cursor: not-allowed;
     }
   }
 
   &:hover:not(.disabled) {
     input:checked {
-      border-color: ${({ theme: { colors } }) => colors.main.primaryHover};
-      background-color: ${({ theme: { colors } }) => colors.main.primaryHover};
+      border-color: ${(p) => p.theme.colors.main.m2Hover};
+      background-color: ${(p) => p.theme.colors.main.m2Hover};
     }
 
     input:not(:checked) {
-      border-color: ${({ theme: { colors } }) => colors.greyscale.darkest};
+      border-color: ${(p) => p.theme.colors.grayscale.g100};
     }
   }
 `
@@ -60,27 +60,27 @@ const CheckboxInput = styled.input`
   border-radius: 2px;
   border-width: 1px;
   border-style: solid;
-  border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  border-color: ${(p) => p.theme.colors.grayscale.g70};
   margin: 0;
 
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
 
   &:checked {
-    border-color: ${({ theme: { colors } }) => colors.main.primary};
-    background-color: ${({ theme: { colors } }) => colors.main.primary};
+    border-color: ${(p) => p.theme.colors.main.m2};
+    background-color: ${(p) => p.theme.colors.main.m2};
 
     &:disabled {
-      background-color: ${({ theme: { colors } }) => colors.greyscale.medium};
+      background-color: ${(p) => p.theme.colors.grayscale.g35};
     }
   }
 
   &:focus {
     border-width: 2px;
-    border-color: ${({ theme: { colors } }) => colors.main.primaryFocus};
+    border-color: ${(p) => p.theme.colors.main.m2Focus};
   }
 
   &:disabled {
-    border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
+    border-color: ${(p) => p.theme.colors.grayscale.g35};
   }
 `
 
@@ -96,7 +96,7 @@ const IconWrapper = styled.div`
   height: ${diameter};
 
   font-size: 25px;
-  color: ${({ theme: { colors } }) => colors.greyscale.white};
+  color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
 interface CommonProps extends BaseProps {

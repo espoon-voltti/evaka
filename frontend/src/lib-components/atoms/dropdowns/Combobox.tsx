@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -34,7 +34,7 @@ interface MenuItemProps<T> {
 const InputWrapper = styled.div`
   display: flex;
   align-items: center;
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   ${borderStyles};
   &.active {
     border-color: transparent;
@@ -59,9 +59,9 @@ const Menu = styled.div`
     display: none;
   }
 
-  border: 1px solid ${(p) => p.theme.colors.greyscale.dark};
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g70};
   border-radius: ${borderRadius};
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   max-height: 300px;
   overflow-y: auto;
 `
@@ -75,7 +75,7 @@ const MenuItem = styled.div`
   padding: 8px 10px;
 
   &.highlighted {
-    background-color: ${(p) => p.theme.colors.main.lighter};
+    background-color: ${(p) => p.theme.colors.main.m4};
   }
 
   &.clickable {
@@ -93,29 +93,29 @@ const Input = styled.input`
   outline: 0;
 
   &:read-only {
-    color: ${(p) => p.theme.colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.grayscale.g70};
   }
 `
 
 const Separator = styled.div`
   width: 1px;
   margin: 5px 0 5px;
-  border-left: 1px solid ${(p) => p.theme.colors.greyscale.lighter};
+  border-left: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 `
 
 const Button = styled.button`
-  color: ${(p) => p.theme.colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 
   &:hover {
-    color: ${(p) => p.theme.colors.main.primaryHover};
+    color: ${(p) => p.theme.colors.main.m2Hover};
   }
 
   &:active {
-    color: ${(p) => p.theme.colors.main.primaryActive};
+    color: ${(p) => p.theme.colors.main.m2Active};
   }
 
   &:disabled {
-    color: ${(p) => p.theme.colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.grayscale.g70};
     cursor: not-allowed;
   }
 

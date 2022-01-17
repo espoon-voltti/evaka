@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -27,7 +27,7 @@ const LoginButton = styled.a`
   min-width: 100px;
   text-align: center;
   overflow-x: hidden;
-  border: 1px solid ${(p) => p.theme.colors.main.primary};
+  border: 1px solid ${(p) => p.theme.colors.main.m2};
   border-radius: 2px;
   outline: none;
   cursor: pointer;
@@ -38,8 +38,8 @@ const LoginButton = styled.a`
   text-transform: uppercase;
   white-space: nowrap;
   letter-spacing: 0.2px;
-  color: ${(p) => p.theme.colors.greyscale.white};
-  background-color: ${(p) => p.theme.colors.main.primary};
+  color: ${(p) => p.theme.colors.grayscale.g0};
+  background-color: ${(p) => p.theme.colors.main.m2};
   margin-right: 0;
   text-decoration: none;
   display: flex;
@@ -47,13 +47,13 @@ const LoginButton = styled.a`
   align-items: center;
 
   :hover {
-    background-color: ${(p) => p.theme.colors.main.primaryHover};
+    background-color: ${(p) => p.theme.colors.main.m2Hover};
   }
   :focus {
-    background-color: ${(p) => p.theme.colors.main.primaryFocus};
+    background-color: ${(p) => p.theme.colors.main.m2Focus};
   }
   :active {
-    background-color: ${(p) => p.theme.colors.main.primaryActive};
+    background-color: ${(p) => p.theme.colors.main.m2Active};
   }
 `
 

@@ -46,7 +46,7 @@ const FilterWrapper = styled.div`
 
 const LockedDate = styled(FixedSpaceRow)`
   float: right;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   margin-bottom: ${defaultMargins.xs};
 `
 

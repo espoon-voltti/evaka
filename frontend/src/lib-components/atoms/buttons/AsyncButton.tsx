@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -160,7 +160,7 @@ export default React.memo(function AsyncButton({
               )
             }}
           >
-            <FontAwesomeIcon icon={faCheck} color={colors.main.primary} />
+            <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
           </IconWrapper>
           <IconWrapper
             style={{
@@ -168,7 +168,7 @@ export default React.memo(function AsyncButton({
               transform: cross.opacity.interpolate((x) => `scale(${x ?? 0})`)
             }}
           >
-            <FontAwesomeIcon icon={faTimes} color={colors.accents.dangerRed} />
+            <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
           </IconWrapper>
         </IconContainer>
         <span>
@@ -202,8 +202,8 @@ const Spinner = animated(styled.div`
   width: 20px;
   height: 20px;
 
-  border: 2px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
-  border-left-color: ${({ theme: { colors } }) => colors.main.primary};
+  border: 2px solid ${(p) => p.theme.colors.grayscale.g15};
+  border-left-color: ${(p) => p.theme.colors.main.m2};
   animation: spin 1s infinite linear;
 
   @keyframes spin {

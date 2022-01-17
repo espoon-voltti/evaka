@@ -25,9 +25,9 @@ const UserMenuContainer = styled.div`
   display: flex;
   flex-direction: column;
 
-  background-color: ${colors.greyscale.white};
-  color: ${colors.greyscale.darkest};
-  box-shadow: 0 4px 4px 0 ${colors.greyscale.lighter};
+  background-color: ${colors.grayscale.g0};
+  color: ${colors.grayscale.g100};
+  box-shadow: 0 4px 4px 0 ${colors.grayscale.g15};
 `
 
 interface Props {
@@ -44,11 +44,7 @@ export const UserMenu = React.memo(function UserMenu(props: Props) {
       <Gap size="xxs" />
 
       <FixedSpaceRow justifyContent="flex-start">
-        <FontAwesomeIcon
-          icon={faUserUnlock}
-          size="lg"
-          color={colors.main.dark}
-        />{' '}
+        <FontAwesomeIcon icon={faUserUnlock} size="lg" color={colors.main.m1} />{' '}
         <span data-qa="full-name">{props.name}</span>
       </FixedSpaceRow>
 

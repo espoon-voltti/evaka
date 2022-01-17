@@ -44,7 +44,7 @@ const PhaseTitle = styled.h1`
   font-size: 20px;
   line-height: 30px;
   text-align: center;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
 `
 
 export const ResponseKey = styled.div`
@@ -55,7 +55,7 @@ export const ResponseKey = styled.div`
   line-height: 30px;
   text-align: center;
   letter-spacing: 0.08em;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `
 
 const Bottom = styled.div``

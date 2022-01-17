@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,7 +18,7 @@ import { Decision, DecisionSummary } from '../decisions/types'
 
 export const Status = styled.span`
   text-transform: uppercase;
-  color: ${colors.greyscale.darkest}
+  color: ${colors.grayscale.g100}
   font-size: 16px;
   font-weight: ${fontWeights.normal};
 `
@@ -26,15 +26,15 @@ export const Status = styled.span`
 export const decisionStatusIcon = {
   PENDING: {
     icon: faGavel,
-    color: colors.accents.warningOrange
+    color: colors.status.warning
   },
   ACCEPTED: {
     icon: faCheck,
-    color: colors.accents.successGreen
+    color: colors.status.success
   },
   REJECTED: {
     icon: faTimes,
-    color: colors.accents.dangerRed
+    color: colors.status.danger
   }
 }
 
@@ -43,27 +43,27 @@ export const applicationStatusIcon: {
 } = {
   PROCESSING: {
     icon: faPlay,
-    color: colors.main.dark
+    color: colors.main.m1
   },
   PENDING: {
     icon: faGavel,
-    color: colors.accents.warningOrange
+    color: colors.status.warning
   },
   ACCEPTED: {
     icon: faCheck,
-    color: colors.accents.successGreen
+    color: colors.status.success
   },
   REJECTED: {
     icon: faTimes,
-    color: colors.accents.dangerRed
+    color: colors.status.danger
   },
   CREATED: {
     icon: faFile,
-    color: colors.greyscale.dark
+    color: colors.grayscale.g70
   },
   SENT: {
     icon: faEnvelope,
-    color: colors.main.dark
+    color: colors.main.m1
   }
 }
 

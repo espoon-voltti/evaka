@@ -137,7 +137,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
 
 const DisabledStaffIcon = styled(FontAwesomeIcon)`
   font-size: 15px;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `
 
 const InactiveCell = ({ date }: { date: LocalDate }) => {

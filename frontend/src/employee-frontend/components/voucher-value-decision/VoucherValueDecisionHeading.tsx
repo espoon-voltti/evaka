@@ -159,7 +159,7 @@ const TitleRow = styled.div`
 `
 
 const DisabledLink = styled.span`
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
 `
 
 const Cursive = styled.span`

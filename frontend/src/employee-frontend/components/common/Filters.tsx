@@ -136,7 +136,7 @@ const SearchInputContainer = styled.div`
 const SearchInput = styled.input<{ background?: string }>`
   width: 100%;
   border: none;
-  background: ${(p) => p.background ?? colors.greyscale.lightest};
+  background: ${(p) => p.background ?? colors.grayscale.g4};
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -146,19 +146,19 @@ const SearchInput = styled.input<{ background?: string }>`
   outline: none;
   margin-left: -38px;
   margin-right: -25px;
-  color: ${colors.greyscale.darkest};
+  color: ${colors.grayscale.g100};
 
   &::placeholder {
     font-style: italic;
     font-size: 17px;
-    color: ${colors.greyscale.dark};
+    color: ${colors.grayscale.g70};
   }
 
   &:focus {
     border-width: 2px;
     border-radius: 2px;
     border-style: solid;
-    border-color: ${colors.main.primaryFocus};
+    border-color: ${colors.main.m2Focus};
     margin-top: -2px;
     padding-left: 53px;
     margin-bottom: -2px;
@@ -166,7 +166,7 @@ const SearchInput = styled.input<{ background?: string }>`
 `
 
 const CustomIcon = styled(FontAwesomeIcon)`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   margin: 0 0.5rem;
   position: relative;
   left: 10px;
@@ -176,7 +176,7 @@ const CustomIcon = styled(FontAwesomeIcon)`
 const CustomIconButton = styled(IconButton)`
   float: right;
   position: relative;
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
   right: 20px;
 `
 
@@ -443,7 +443,7 @@ export function FeeDecisionDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.warningOrange}
+              color={colors.status.warning}
             />
           </span>
         </>
@@ -543,7 +543,7 @@ export function ValueDecisionDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.warningOrange}
+              color={colors.status.warning}
             />
           </span>
         </>
@@ -641,7 +641,7 @@ export function InvoiceDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.warningOrange}
+              color={colors.status.warning}
             />
           </span>
         </>
@@ -711,7 +711,7 @@ interface ApplicationTypeFilterProps {
 const CustomDiv = styled(FixedSpaceColumn)`
   margin-left: 18px;
   padding-left: 32px;
-  border-left: 1px solid ${colors.greyscale.dark};
+  border-left: 1px solid ${colors.grayscale.g70};
 `
 
 const ApplicationOpenIcon = styled(FontAwesomeIcon)`
@@ -753,7 +753,7 @@ export function ApplicationTypeFilter({
                     <ApplicationOpenIcon
                       icon={toggled === id ? faAngleUp : faAngleDown}
                       size="lg"
-                      color={colors.greyscale.dark}
+                      color={colors.grayscale.g70}
                     />
                   </>
                 }
@@ -849,7 +849,7 @@ export function ApplicationStatusFilter({
                   <ApplicationOpenIcon
                     icon={toggled === id ? faAngleUp : faAngleDown}
                     size="lg"
-                    color={colors.greyscale.dark}
+                    color={colors.grayscale.g70}
                   />
                 ) : undefined}
               </>
@@ -941,7 +941,7 @@ export function ApplicationDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={colors.accents.warningOrange}
+              color={colors.status.warning}
             />
           </span>
         </>

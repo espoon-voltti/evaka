@@ -99,12 +99,11 @@ const RadioInput = styled.input`
 
 const RadioLabel = styled.label<{ selected: boolean }>`
   padding: 6px 22px;
-  border: 1px solid ${colors.main.primary};
-  color: ${colors.main.primary};
+  border: 1px solid ${colors.main.m2};
+  color: ${colors.main.m2};
 
-  ${({ selected }) => (selected ? `color: ${colors.greyscale.white};` : '')}
-  ${({ selected }) =>
-    selected ? `background-color: ${colors.main.primary};` : ''}
+  ${({ selected }) => (selected ? `color: ${colors.grayscale.g0};` : '')}
+  ${({ selected }) => (selected ? `background-color: ${colors.main.m2};` : '')}
 `
 
 const RadioLabelLeft = styled(RadioLabel)`

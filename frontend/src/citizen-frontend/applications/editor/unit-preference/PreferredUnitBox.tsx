@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -45,13 +45,13 @@ export default React.memo(function PreferredUnitBox({
     switch (unit.providerType) {
       case 'MUNICIPAL':
       case 'MUNICIPAL_SCHOOL':
-        return { color: colors.accents.turquoise }
+        return { color: colors.accents.a6turquoise }
       case 'PRIVATE':
       case 'PRIVATE_SERVICE_VOUCHER':
-        return { color: colors.accents.emerald }
+        return { color: colors.accents.a3emerald }
       case 'PURCHASED':
       case 'EXTERNAL_PURCHASED':
-        return { color: colors.main.lighter }
+        return { color: colors.main.m4 }
     }
   }
 
@@ -75,11 +75,11 @@ export default React.memo(function PreferredUnitBox({
           </FixedSpaceColumn>
           <FixedSpaceFlexWrap horizontalSpacing="xs" verticalSpacing="xs">
             {unit.language === 'sv' ? (
-              <StaticChip color={colors.accents.peach}>
+              <StaticChip color={colors.accents.a5orangeLight}>
                 {t.applications.editor.unitPreference.units.preferences.sv}
               </StaticChip>
             ) : (
-              <StaticChip color={colors.main.light}>
+              <StaticChip color={colors.main.m3}>
                 {t.applications.editor.unitPreference.units.preferences.fi}
               </StaticChip>
             )}
@@ -139,7 +139,7 @@ const noOp = () => undefined
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
-  border: 1px solid ${colors.main.primary};
+  border: 1px solid ${colors.main.m2};
   box-sizing: border-box;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
   border-radius: 2px;
@@ -150,7 +150,7 @@ const MainColLeft = styled.div`
   font-family: Montserrat, sans-serif;
   font-style: normal;
   font-weight: ${fontWeights.light};
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
   text-align: center;
 
   font-size: 70px;

@@ -140,7 +140,7 @@ export function VasuStateTransitionButtons({
       </ButtonContainer>
       {(state === 'DRAFT' || state === 'READY') && (
         <PublishingDisclaimer alignItems="center" spacing="xs">
-          <RoundIcon content="!" color={colors.main.primary} size="m" />
+          <RoundIcon content="!" color={colors.main.m2} size="m" />
           <span>{i18n.vasu.transitions.vasuIsPublishedToGuardians}</span>
         </PublishingDisclaimer>
       )}

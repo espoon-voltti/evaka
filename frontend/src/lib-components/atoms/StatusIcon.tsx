@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -29,14 +29,11 @@ export default React.memo(function UnderRowStatusIcon({
       {status === 'warning' && (
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={colors.accents.warningOrange}
+          color={colors.status.warning}
         />
       )}
       {status === 'success' && (
-        <FontAwesomeIcon
-          icon={fasCheckCircle}
-          color={colors.accents.successGreen}
-        />
+        <FontAwesomeIcon icon={fasCheckCircle} color={colors.status.success} />
       )}
     </StatusIcon>
   )

@@ -50,13 +50,13 @@ const Wrapper = styled.div`
   margin: ${dM.xs} -${dM.s} -${dM.xs} -${dM.L};
 
   &:hover {
-    background-color: ${colors.main.lighter};
+    background-color: ${colors.main.m4};
   }
 
   &:after {
     content: '';
     width: calc(100% - ${dM.X3L});
-    background: ${colors.greyscale.lighter};
+    background: ${colors.grayscale.g15};
     height: 1px;
     display: block;
     position: absolute;
@@ -86,5 +86,5 @@ const UnitDetails = styled.div`
   font-weight: ${fontWeights.semibold};
   font-size: 14px;
   line-height: 21px;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `

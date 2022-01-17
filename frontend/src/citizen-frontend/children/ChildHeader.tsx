@@ -45,7 +45,7 @@ export default React.memo(function ChildHeader({
           imageId ? `/api/application/citizen/child-images/${imageId}` : null
         }
         fallbackContent={farUser}
-        fallbackColor={colors.greyscale.lighter}
+        fallbackColor={colors.grayscale.g15}
         alt={t.children.childPicture}
       />
       <div>

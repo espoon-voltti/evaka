@@ -73,7 +73,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   content={faCopy}
                 />
                 <LinkTitle to="/reports/duplicate-people">
@@ -97,7 +97,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   content={faUsers}
                 />
                 <LinkTitle to="/reports/family-conflicts">
@@ -121,7 +121,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   content={faUserAltSlash}
                 />
                 <LinkTitle to="/reports/missing-head-of-family">
@@ -145,7 +145,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   content={faClock}
                 />
                 <LinkTitle to="/reports/missing-service-need">
@@ -162,7 +162,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   content={faHome}
                 />
                 <LinkTitle to="/reports/partners-in-different-address">
@@ -179,7 +179,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.peach}
+                  color={colors.accents.a5orangeLight}
                   content={faHome}
                 />
                 <LinkTitle to="/reports/children-in-different-address">
@@ -198,7 +198,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faFileAlt}
                 />
                 <LinkTitle
@@ -216,11 +216,7 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.main.primary}
-                  content={faGavel}
-                />
+                <RoundIcon size="L" color={colors.main.m2} content={faGavel} />
                 <LinkTitle data-qa="report-decisions" to="/reports/decisions">
                   {i18n.reports.decisions.title}
                 </LinkTitle>
@@ -235,7 +231,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faPercentage}
                 />
                 <LinkTitle to="/reports/occupancies">
@@ -256,11 +252,7 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.main.primary}
-                  content={faChild}
-                />
+                <RoundIcon size="L" color={colors.main.m2} content={faChild} />
                 <LinkTitle to="/reports/child-age-language">
                   {i18n.reports.childAgeLanguage.title}
                 </LinkTitle>
@@ -281,11 +273,7 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.main.primary}
-                  content={faChild}
-                />
+                <RoundIcon size="L" color={colors.main.m2} content={faChild} />
                 <LinkTitle to="/reports/service-needs">
                   {i18n.reports.serviceNeeds.title}
                 </LinkTitle>
@@ -307,7 +295,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faHandHolding}
                 />
                 <LinkTitle to="/reports/assistance-needs-and-actions">
@@ -324,7 +312,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faEuroSign}
                 />
                 <LinkTitle to="/reports/invoices">
@@ -339,7 +327,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faHourglassStart}
                 />
                 <LinkTitle to="/reports/starting-placements">
@@ -356,7 +344,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faHourglassEnd}
                 />
                 <LinkTitle to="/reports/ended-placements">
@@ -373,7 +361,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faDiagnoses}
                 />
                 <LinkTitle to="/reports/presences">
@@ -396,7 +384,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faMoneyBillWave}
                 />
                 <LinkTitle
@@ -416,7 +404,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.main.primary}
+                  color={colors.main.m2}
                   content={faDatabase}
                 />
                 <LinkTitle to="/reports/raw">
@@ -431,7 +419,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   content={faUsers}
                 />
                 <LinkTitle
@@ -451,7 +439,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   content={faDiagnoses}
                 />
                 <LinkTitle

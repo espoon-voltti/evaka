@@ -68,7 +68,7 @@ export default React.memo(function Placements({ placements }: Props) {
                 <Gap size="xxs" horizontal />
                 <FontAwesomeIcon
                   icon={fasExclamationTriangle}
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                 />
               </>
             )}

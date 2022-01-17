@@ -77,7 +77,7 @@ const WarningContainer = styled.div<{ visible: boolean }>`
 `
 
 const WarningText = styled.span<{ smaller?: boolean }>`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   font-style: italic;
   margin-left: 12px;
   font-size: ${(props) => (props.smaller === true ? '0.8em' : '1em')};
@@ -87,7 +87,7 @@ const WarningIcon = () => (
   <FontAwesomeIcon
     icon={faExclamationTriangle}
     size="1x"
-    color={colors.accents.warningOrange}
+    color={colors.status.warning}
   />
 )
 

@@ -56,13 +56,13 @@ const OverlapError = styled.span`
   font-size: 12px;
   font-style: italic;
   font-weight: ${fontWeights.normal};
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   margin-bottom: auto;
   margin-top: auto;
 
   svg {
     font-size: 1rem;
-    color: ${colors.accents.warningOrange};
+    color: ${colors.status.warning};
     margin-left: 10px;
     margin-right: 10px;
   }

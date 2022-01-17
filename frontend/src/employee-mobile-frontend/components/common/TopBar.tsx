@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -26,16 +26,14 @@ const StickyTopBar = styled.section<{ invertedColors?: boolean }>`
   align-items: center;
   flex-shrink: 0;
 
-  background: ${({ theme, invertedColors }) =>
-    invertedColors
-      ? theme.colors.greyscale.lightest
-      : theme.colors.main.primary};
-  color: ${({ theme, invertedColors }) =>
-    invertedColors ? theme.colors.main.dark : theme.colors.greyscale.white};
+  background: ${(p) =>
+    p.invertedColors ? p.theme.colors.grayscale.g4 : p.theme.colors.main.m2};
+  color: ${(p) =>
+    p.invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
 
   button {
-    color: ${({ theme, invertedColors }) =>
-      invertedColors ? theme.colors.main.dark : theme.colors.greyscale.white};
+    color: ${(p) =>
+      p.invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
   }
 `
 

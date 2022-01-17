@@ -583,7 +583,7 @@ const Container = styled.div`
   box-shadow: 0 8px 8px 8px rgba(15, 15, 15, 0.15);
   display: flex;
   flex-direction: column;
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   overflow: auto;
 
   &.fullscreen {
@@ -600,7 +600,7 @@ const ContainerMobile = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   overflow: auto;
   height: 100vh;
 `
@@ -608,8 +608,8 @@ const ContainerMobile = styled.div`
 const TopBar = styled.div`
   width: 100%;
   height: 60px;
-  background-color: ${(p) => p.theme.colors.main.primary};
-  color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.main.m2};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -619,8 +619,8 @@ const TopBar = styled.div`
 const TopBarMobile = styled.div`
   width: 100%;
   height: 60px;
-  background-color: ${(p) => p.theme.colors.greyscale.lightest};
-  color: ${(p) => p.theme.colors.main.primary};
+  background-color: ${(p) => p.theme.colors.grayscale.g4};
+  color: ${(p) => p.theme.colors.main.m2};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -638,7 +638,7 @@ const MessageAreaMobile = styled.textarea`
   width: 100%;
   resize: none;
   flex-grow: 1;
-  border: 1px solid ${(p) => p.theme.colors.greyscale.dark};
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g70};
   min-height: 100px;
 `
 
@@ -669,7 +669,7 @@ const StyledTextArea = styled.textarea`
 
 const BottomBar = styled.div`
   width: 100%;
-  border-top: 1px solid ${(p) => p.theme.colors.greyscale.medium};
+  border-top: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -678,7 +678,7 @@ const BottomBar = styled.div`
 
 const BottomBarMobile = styled.div`
   width: 100%;
-  border-top: 1px solid ${(p) => p.theme.colors.greyscale.medium};
+  border-top: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   display: flex;
   justify-content: space-between;
   align-items: center;

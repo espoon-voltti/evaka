@@ -64,7 +64,7 @@ export const ArrivalTime = styled.span`
   line-height: 27px;
   letter-spacing: 0em;
   display: flex;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 
   span:first-child {
     margin-right: ${defaultMargins.xs};
@@ -79,7 +79,7 @@ export const CustomHorizontalLine = styled(HorizontalLine)`
 
 export const ServiceTime = styled.div`
   padding: ${defaultMargins.xxs};
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   text-align: center;
 `
 
@@ -103,7 +103,7 @@ export const DailyNotes = styled.div`
 `
 
 export const BackButtonInline = styled(InlineButton)`
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
   margin-bottom: ${defaultMargins.s};
@@ -117,12 +117,12 @@ export const TimeWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   font-size: 60px;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   font-weight: ${fontWeights.semibold};
 
   input {
     font-size: 60px;
-    color: ${colors.main.dark};
+    color: ${colors.main.m1};
     font-family: Montserrat, sans-serif;
     font-weight: ${fontWeights.light};
     border-bottom: none;

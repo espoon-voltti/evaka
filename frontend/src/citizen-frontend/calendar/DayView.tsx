@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -544,12 +544,11 @@ const Reservations = React.memo(function Reservations({
 })
 
 const Content = styled.div<{ highlight: boolean }>`
-  background: ${(p) => p.theme.colors.greyscale.white};
+  background: ${(p) => p.theme.colors.grayscale.g0};
   padding: ${defaultMargins.L};
   padding-left: calc(${defaultMargins.L} - 4px);
   border-left: 4px solid
-    ${(p) =>
-      p.highlight ? p.theme.colors.accents.successGreen : 'transparent'};
+    ${(p) => (p.highlight ? p.theme.colors.status.success : 'transparent')};
 
   @media (max-width: ${tabletMin}) {
     padding: ${defaultMargins.s};
@@ -586,17 +585,17 @@ const Grid = styled.div`
 `
 
 const NoReservation = styled.span`
-  color: ${(p) => p.theme.colors.accents.orangeDark};
+  color: ${(p) => p.theme.colors.accents.a2orangeDark};
 `
 
 const Separator = styled.div`
-  border-top: 2px dotted ${(p) => p.theme.colors.greyscale.lighter};
+  border-top: 2px dotted ${(p) => p.theme.colors.grayscale.g15};
   margin: ${defaultMargins.s} 0;
 `
 
 const BottomBar = styled.div`
-  background: ${(p) => p.theme.colors.greyscale.white};
-  border-top: 2px solid ${({ theme }) => theme.colors.greyscale.lighter};
+  background: ${(p) => p.theme.colors.grayscale.g0};
+  border-top: 2px solid ${(p) => p.theme.colors.grayscale.g15};
 `
 
 const AbsenceButton = styled(InlineButton)`

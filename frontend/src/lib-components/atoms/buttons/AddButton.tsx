@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,19 +28,19 @@ const StyledButton = styled.button`
   cursor: pointer;
 
   &.disabled {
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.grayscale.g70};
     cursor: not-allowed;
 
     .icon-wrapper-inner {
-      background: ${({ theme: { colors } }) => colors.greyscale.dark};
+      background: ${(p) => p.theme.colors.grayscale.g70};
     }
   }
 
   &.darker:not(.disabled) {
-    color: ${({ theme: { colors } }) => colors.main.primaryActive};
+    color: ${(p) => p.theme.colors.main.m2Active};
 
     .icon-wrapper-inner {
-      background: ${({ theme: { colors } }) => colors.main.primaryActive};
+      background: ${(p) => p.theme.colors.main.m2Active};
     }
   }
 
@@ -55,7 +55,7 @@ const StyledButton = styled.button`
   }
 
   &:focus .icon-wrapper-outer {
-    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     border-radius: 100%;
   }
 
@@ -67,9 +67,9 @@ const StyledButton = styled.button`
     align-items: center;
 
     font-size: 18px;
-    color: ${({ theme: { colors } }) => colors.greyscale.white};
+    color: ${(p) => p.theme.colors.grayscale.g0};
     font-weight: ${fontWeights.normal};
-    background: ${({ theme: { colors } }) => colors.main.primary};
+    background: ${(p) => p.theme.colors.main.m2};
     border-radius: 100%;
   }
 
@@ -81,7 +81,7 @@ const StyledButton = styled.button`
     }
   }
 
-  ${({ theme }) => defaultButtonTextStyle(theme)}
+  ${(p) => defaultButtonTextStyle(p.theme)}
 `
 
 export interface AddButtonProps extends BaseProps {

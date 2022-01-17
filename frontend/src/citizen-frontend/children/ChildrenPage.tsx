@@ -44,7 +44,7 @@ const ChildContainer = styled(ContentArea)`
   display: flex;
   align-items: center;
 
-  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-bottom: 1px solid ${colors.grayscale.g15};
   gap: ${defaultMargins.s};
   min-height: 80px;
   @media (min-width: ${desktopMin}) {
@@ -87,7 +87,7 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
             : null
         }
         fallbackContent={faUser}
-        fallbackColor={colors.greyscale.lighter}
+        fallbackColor={colors.grayscale.g15}
         alt={t.children.childPicture}
       />
       <MobileAndTablet>

@@ -212,7 +212,7 @@ const FollowupQuestionContainer = styled.div<{ editable: boolean }>`
   ${(p) =>
     p.editable &&
     css`
-      border-left: 5px solid ${colors.main.dark};
+      border-left: 5px solid ${colors.main.m1};
       box-shadow: 0px -4px 4px rgba(15, 15, 15, 0.1);
       width: calc(100% + 2 * ${defaultMargins.L});
       padding: ${defaultMargins.L};

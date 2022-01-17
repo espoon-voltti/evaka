@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,7 +12,7 @@ import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import StickyActionBar from '../common/StickyActionBar'
 
 const ErrorMessage = styled.div`
-  color: ${(p) => p.theme.colors.accents.orangeDark};
+  color: ${(p) => p.theme.colors.accents.a2orangeDark};
   margin: 0 20px;
 `
 

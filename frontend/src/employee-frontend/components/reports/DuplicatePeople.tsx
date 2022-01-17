@@ -30,7 +30,7 @@ interface RowProps {
 }
 
 const StyledRow = styled(Tr)<RowProps>`
-  ${(props) => (props.odd ? `background: ${colors.main.lighter};` : '')}
+  ${(props) => (props.odd ? `background: ${colors.main.m4};` : '')}
 `
 const NoWrapTd = styled(Td)`
   white-space: nowrap;

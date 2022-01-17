@@ -28,7 +28,7 @@ const Button = styled(IconButton)`
 `
 
 const ToggleButton = styled(Button)`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `
 
 const Row = styled(FixedSpaceRow)`

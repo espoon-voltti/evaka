@@ -274,6 +274,6 @@ const FixedWidthDiv = styled.div`
 `
 
 const Info = styled(P)`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   margin: 0;
 `

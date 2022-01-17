@@ -107,11 +107,11 @@ const CustomTh = styled(Th)`
 
 const DateTh = styled(CustomTh)<{ faded: boolean }>`
   width: 0; // causes the column to take as little space as possible
-  ${({ faded }) => (faded ? `color: ${colors.greyscale.medium};` : '')}
+  ${({ faded }) => (faded ? `color: ${colors.grayscale.g35};` : '')}
 `
 
 const StyledTd = styled(Td)`
-  border-right: 1px solid ${colors.greyscale.medium};
+  border-right: 1px solid ${colors.grayscale.g35};
   vertical-align: middle;
 `
 

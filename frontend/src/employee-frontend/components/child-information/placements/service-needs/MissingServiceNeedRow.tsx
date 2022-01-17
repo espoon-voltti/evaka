@@ -37,7 +37,7 @@ function MissingServiceNeedRow({
         {t.missing}{' '}
         <FontAwesomeIcon
           icon={faExclamationTriangle}
-          color={colors.accents.warningOrange}
+          color={colors.status.warning}
         />
       </InfoTd>
       <Td />
@@ -59,7 +59,7 @@ function MissingServiceNeedRow({
 
 const InfoTd = styled(Td)`
   vertical-align: middle;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   font-style: italic;
 `
 

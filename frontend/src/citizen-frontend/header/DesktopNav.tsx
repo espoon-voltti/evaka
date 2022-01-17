@@ -136,7 +136,7 @@ const StyledNavLink = styled(NavLink)`
   border-bottom: 3px solid transparent;
 
   &.active {
-    border-color: ${colors.greyscale.white};
+    border-color: ${colors.grayscale.g0};
     font-weight: ${fontWeights.bold};
   }
 `
@@ -160,7 +160,7 @@ const Icon = styled(FontAwesomeIcon)`
 export const CircledChar = styled.div`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
-  border: 1px solid ${colors.greyscale.white};
+  border: 1px solid ${colors.grayscale.g0};
   padding: 10px;
   display: flex;
   justify-content: center;
@@ -248,7 +248,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
             {showUserAttentionIndicator && (
               <RoundIcon
                 content={faExclamation}
-                color={theme.colors.accents.warningOrange}
+                color={theme.colors.status.warning}
                 size="s"
                 data-qa="personal-details-attention-indicator-desktop"
               />
@@ -307,8 +307,8 @@ const DropDown = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
-  background: ${colors.greyscale.white};
-  box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
+  background: ${colors.grayscale.g0};
+  box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
 `
 
 const DropDownItem = styled.button<{ selected: boolean }>`
@@ -321,7 +321,7 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   cursor: pointer;
   font-family: Open Sans;
   color: ${({ selected }) =>
-    selected ? colors.main.dark : colors.greyscale.darkest};
+    selected ? colors.main.m1 : colors.grayscale.g100};
   font-size: 1em;
   font-weight: ${({ selected }) =>
     selected ? fontWeights.semibold : fontWeights.normal};
@@ -329,7 +329,7 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   width: 100%;
 
   &:hover {
-    background: ${colors.main.lighter};
+    background: ${colors.main.m4};
   }
 `
 

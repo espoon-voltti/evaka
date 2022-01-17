@@ -35,11 +35,11 @@ const Bar = styled.div`
   justify-content: center;
   position: sticky;
   bottom: 0;
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   padding: 16px 0;
   margin: 0 -9999rem;
   margin-top: 50px;
-  box-shadow: 0px -8px 8px -6px ${colors.greyscale.lightest};
+  box-shadow: 0px -8px 8px -6px ${colors.grayscale.g4};
 `
 
 const Content = styled(Container)<Props>`
