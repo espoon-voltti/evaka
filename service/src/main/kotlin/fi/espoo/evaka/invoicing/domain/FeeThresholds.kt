@@ -95,15 +95,10 @@ data class FeeThresholds(
         )
 
     fun calculatePriceForTemporary(partDay: Boolean, siblingOrdinal: Int): Int {
-        return if (siblingOrdinal == 1 && !partDay) {
-            temporaryFee
-        } else if (siblingOrdinal == 1 && partDay) {
-            temporaryFeePartDay
-        } else if (siblingOrdinal != 1 && !partDay) {
-            temporaryFeeSibling
-        } else if (siblingOrdinal != 1 && partDay) {
-            temporaryFeeSiblingPartDay
-        } else error("Inexhaustive if-else in calculatePriceForTemporary")
+        return when (siblingOrdinal) {
+            1 -> if (partDay) temporaryFeePartDay else temporaryFee
+            else -> if (partDay) temporaryFeeSiblingPartDay else temporaryFeeSibling
+        }
     }
 }
 
