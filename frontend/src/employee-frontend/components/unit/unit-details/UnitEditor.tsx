@@ -164,7 +164,7 @@ const AddressSecondRowContainer = styled.div`
   justify-content: space-between;
 
   & > :first-child {
-    margin-right: 20px;
+    margin-right: 120px;
   }
 `
 
@@ -214,6 +214,7 @@ function AddressEditor({
         value={address.streetAddress}
         placeholder={i18n.unitEditor.placeholder.streetAddress}
         onChange={(value) => update({ streetAddress: value })}
+        width="L"
         data-qa={`${dataQaPrefix}-street-input`}
       />
       <AddressSecondRowContainer>
