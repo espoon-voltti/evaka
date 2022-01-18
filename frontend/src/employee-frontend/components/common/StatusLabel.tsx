@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,12 +12,11 @@ import { getStatusLabelByDateRange } from '../../utils/date'
 export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'
 
 const colorsByStatus: Record<StatusLabelType, string> = {
-  active: colors.accents.emerald,
-  coming: colors.accents.mint,
-  completed: colors.accents.lightBlue,
-  conflict: colors.accents.warningOrange
+  active: colors.accents.a3emerald,
+  coming: colors.accents.a7mint,
+  completed: colors.accents.a8lightBlue,
+  conflict: colors.status.warning
 }
-
 type Props =
   | {
       status: StatusLabelType

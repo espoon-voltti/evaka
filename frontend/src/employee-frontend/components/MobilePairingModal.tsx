@@ -39,7 +39,7 @@ const ResponseKey = styled.div`
   line-height: 30px;
   text-align: center;
   letter-spacing: 0.08em;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `
 
 export default React.memo(function MobilePairingModal({

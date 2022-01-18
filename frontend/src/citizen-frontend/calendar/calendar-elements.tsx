@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -41,7 +41,7 @@ export const NoReservation = React.memo(function NoReservation() {
 })
 
 const NoReservationNote = styled.span`
-  color: ${({ theme }) => theme.colors.accents.orangeDark};
+  color: ${(p) => p.theme.colors.accents.a2orangeDark};
 `
 
 const uniqueReservations = (

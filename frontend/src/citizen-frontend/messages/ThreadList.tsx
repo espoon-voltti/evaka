@@ -89,7 +89,7 @@ export default React.memo(function ThreadList({
             <SolidLine />
             <ThreadListContainer>
               <Gap size="s" />
-              <span style={{ color: `${colors.greyscale.dark}` }}>
+              <span style={{ color: `${colors.grayscale.g70}` }}>
                 {t.messages.noMessagesInfo}
               </span>
             </ThreadListContainer>
@@ -124,13 +124,13 @@ const MobileOnly = styled.div`
 
 const DottedLine = styled.hr`
   width: 100%;
-  border: 1px dashed ${colors.greyscale.medium};
+  border: 1px dashed ${colors.grayscale.g35};
   border-top-width: 0px;
 `
 
 const SolidLine = styled.hr`
   width: 100%;
-  border: 1px solid ${colors.greyscale.lighter};
+  border: 1px solid ${colors.grayscale.g15};
   border-top-width: 0px;
 `
 
@@ -142,7 +142,7 @@ const Container = styled.div`
   min-width: 35%;
   max-width: 400px;
   min-height: 500px;
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
   overflow-y: auto;
 
   @media (max-width: 750px) {

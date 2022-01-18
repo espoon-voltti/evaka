@@ -23,7 +23,7 @@ const SearchInput = styled.input<{ background?: string; showClose: boolean }>`
   width: 100%;
   border: none;
   font-size: 1rem;
-  background: ${(p) => p.background ?? colors.greyscale.lightest};
+  background: ${(p) => p.background ?? colors.grayscale.g4};
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -33,24 +33,24 @@ const SearchInput = styled.input<{ background?: string; showClose: boolean }>`
   outline: none;
   margin-left: -38px;
   margin-right: ${(p) => (p.showClose ? '-25px' : '0')};
-  color: ${colors.greyscale.darkest};
+  color: ${colors.grayscale.g100};
   height: 100%;
 
   &::placeholder {
-    color: ${colors.greyscale.dark};
+    color: ${colors.grayscale.g70};
   }
 
   &:focus {
     border-width: 2px;
     border-radius: 2px;
     border-style: solid;
-    border-color: ${colors.main.primaryFocus};
+    border-color: ${colors.main.m2Focus};
     padding-left: 53px;
   }
 `
 
 const CustomIcon = styled(FontAwesomeIcon)`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   margin: 0 0.5rem;
   position: relative;
   left: 10px;
@@ -61,7 +61,7 @@ const CustomIcon = styled(FontAwesomeIcon)`
 const CustomIconButton = styled(IconButton)`
   float: right;
   position: relative;
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
   right: 20px;
 `
 

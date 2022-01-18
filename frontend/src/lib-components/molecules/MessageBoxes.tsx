@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -127,7 +127,7 @@ export const InfoBox = React.memo(function InfoBox({
       title={title}
       message={message}
       icon={notNullIcon}
-      color={theme.colors.accents.infoBlue}
+      color={theme.colors.status.info}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
       noMargin={noMargin}
@@ -153,15 +153,13 @@ export const AlertBox = React.memo(function AlertBox({
   noMargin,
   ...props
 }: AlertBoxProps) {
-  const {
-    colors: { accents: accentColors }
-  } = useTheme()
+  const { colors } = useTheme()
   return (
     <MessageBox
       title={title}
       message={message}
       icon={faExclamation}
-      color={accentColors.warningOrange}
+      color={colors.status.warning}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
       noMargin={noMargin}

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -34,14 +34,14 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   text-align: left;
   width: 100%;
 
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   padding: ${defaultMargins.s} ${defaultMargins.m};
   cursor: pointer;
 
-  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 
   &:focus {
-    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     margin: -1px 0;
     padding: ${defaultMargins.s} calc(${defaultMargins.m} - 1px);
   }
@@ -49,14 +49,13 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   ${(p) =>
     !p.isRead
       ? `
-    border-left-color: ${p.theme.colors.main.light} !important;
+    border-left-color: ${p.theme.colors.main.m3} !important;
     border-left-width: 6px !important;
     padding-left: calc(${defaultMargins.m} - 6px) !important;
   `
       : ''}
 
-  ${(p) =>
-    p.active ? `background-color: ${p.theme.colors.main.lighter};` : ''}
+  ${(p) => (p.active ? `background-color: ${p.theme.colors.main.m4};` : '')}
 `
 
 export const ThreadContainer = styled.div`

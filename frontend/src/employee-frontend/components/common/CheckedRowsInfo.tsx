@@ -7,7 +7,7 @@ import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 
 export const CheckedRowsInfo = styled.div`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   font-style: italic;
   font-weight: ${fontWeights.bold};
   margin: 0 20px;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -66,13 +66,13 @@ export const StyledInput = styled.input<StyledInputProps>`
   margin: 0;
   border: none;
   border-top: 2px solid transparent;
-  border-bottom: 1px solid ${({ theme: { colors } }) => colors.greyscale.dark};
+  border-bottom: 1px solid ${(p) => p.theme.colors.grayscale.g70};
   border-radius: 0;
   outline: none;
   text-align: ${(p) => p.align ?? 'left'};
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   font-size: 1rem;
-  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
+  color: ${(p) => p.theme.colors.grayscale.g100};
   padding: 6px 10px;
   ${({ icon }) =>
     icon
@@ -82,7 +82,7 @@ export const StyledInput = styled.input<StyledInputProps>`
       : ''}
 
   &::placeholder {
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.grayscale.g70};
     font-family: 'Open Sans', 'Arial', sans-serif;
   }
 
@@ -94,7 +94,7 @@ export const StyledInput = styled.input<StyledInputProps>`
   }
 
   &:focus {
-    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     border-radius: 2px;
     padding-left: 8px;
     padding-right: 8px;
@@ -107,26 +107,24 @@ export const StyledInput = styled.input<StyledInputProps>`
   }
 
   &.success {
-    border-bottom-color: ${({ theme: { colors } }) =>
-      colors.accents.successGreen};
+    border-bottom-color: ${(p) => p.theme.colors.status.success};
 
     &:focus {
-      border-color: ${({ theme: { colors } }) => colors.accents.successGreen};
+      border-color: ${(p) => p.theme.colors.status.success};
     }
   }
 
   &.warning {
-    border-bottom-color: ${({ theme: { colors } }) =>
-      colors.accents.warningOrange};
+    border-bottom-color: ${(p) => p.theme.colors.status.warning};
 
     &:focus {
-      border-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
+      border-color: ${(p) => p.theme.colors.status.warning};
     }
   }
 
   &:read-only {
     border-bottom-style: dashed;
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.grayscale.g70};
     background: none;
   }
 `
@@ -150,10 +148,10 @@ const IconContainer = styled.div<{ clickable: boolean }>`
 `
 
 const StyledIconButton = styled(IconButton)`
-  color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 
   &:hover {
-    color: ${({ theme: { colors } }) => colors.greyscale.darkest};
+    color: ${(p) => p.theme.colors.grayscale.g100};
   }
 `
 
@@ -165,14 +163,14 @@ export const InputFieldUnderRow = styled.div`
   line-height: 1rem;
   margin-top: ${defaultMargins.xxs};
 
-  color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 
   &.success {
-    color: ${({ theme: { colors } }) => colors.accents.greenDark};
+    color: ${(p) => p.theme.colors.accents.a1greenDark};
   }
 
   &.warning {
-    color: ${({ theme: { colors } }) => colors.accents.orangeDark};
+    color: ${(p) => p.theme.colors.accents.a2orangeDark};
   }
 `
 

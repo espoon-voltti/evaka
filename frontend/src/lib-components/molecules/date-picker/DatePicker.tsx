@@ -34,7 +34,7 @@ const DayPickerPositioner = styled.div<{ openAbove?: boolean }>`
 `
 
 const DayPickerDiv = styled.div`
-  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   padding: ${defaultMargins.s} 0;
   border-radius: 2px;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);

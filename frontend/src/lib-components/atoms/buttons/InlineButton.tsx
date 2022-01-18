@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -25,25 +25,25 @@ const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
   cursor: pointer;
 
   &:hover {
-    color: ${({ theme: { colors } }) => colors.main.primaryHover};
+    color: ${(p) => p.theme.colors.main.m2Hover};
   }
 
   &:active {
-    color: ${({ theme: { colors } }) => colors.main.primaryActive};
+    color: ${(p) => p.theme.colors.main.m2Active};
   }
 
   &:focus {
-    outline: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     outline-offset: 2px;
   }
 
   &.disabled {
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.grayscale.g70};
     cursor: not-allowed;
   }
 
   &.darker:not(.disabled) {
-    color: ${({ theme: { colors } }) => colors.main.dark};
+    color: ${(p) => p.theme.colors.main.m1};
   }
 
   svg {
@@ -52,8 +52,8 @@ const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
     font-size: 1.25em;
   }
 
-  ${({ theme }) => defaultButtonTextStyle(theme)}
-  color: ${(p) => p.color ?? p.theme.colors.main.primary};
+  ${(p) => defaultButtonTextStyle(p.theme)}
+  color: ${(p) => p.color ?? p.theme.colors.main.m2};
 `
 
 export interface InlineButtonProps extends BaseProps {

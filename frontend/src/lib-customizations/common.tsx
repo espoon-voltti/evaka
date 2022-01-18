@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,48 +18,48 @@ export { theme }
 
 export const { colors } = theme
 
-const { main, greyscale, accents } = colors
+const { main, grayscale, accents, status } = colors
 
 export const absenceColors = {
-  UNKNOWN_ABSENCE: accents.turquoise,
-  OTHER_ABSENCE: greyscale.darkest,
-  SICKLEAVE: accents.pink,
-  PLANNED_ABSENCE: accents.successGreen,
-  PARENTLEAVE: accents.peach,
-  FORCE_MAJEURE: accents.dangerRed,
-  TEMPORARY_RELOCATION: accents.warningOrange,
-  TEMPORARY_VISITOR: accents.warningOrange,
-  NO_ABSENCE: accents.lightBlue
+  UNKNOWN_ABSENCE: accents.a6turquoise,
+  OTHER_ABSENCE: grayscale.g100,
+  SICKLEAVE: accents.a9pink,
+  PLANNED_ABSENCE: status.success,
+  PARENTLEAVE: accents.a5orangeLight,
+  FORCE_MAJEURE: status.danger,
+  TEMPORARY_RELOCATION: status.warning,
+  TEMPORARY_VISITOR: status.warning,
+  NO_ABSENCE: accents.a8lightBlue
 }
 
 export const attendanceColors = {
-  ABSENT: colors.greyscale.medium,
-  DEPARTED: colors.main.light,
-  PRESENT: colors.accents.successGreen,
-  COMING: colors.accents.peach
+  ABSENT: grayscale.g35,
+  DEPARTED: main.m3,
+  PRESENT: status.success,
+  COMING: accents.a5orangeLight
 }
 
 export const applicationBasisColors = {
-  ADDITIONAL_INFO: main.dark,
-  ASSISTANCE_NEED: accents.turquoise,
-  CLUB_CARE: accents.orangeDark,
-  DAYCARE: accents.warningOrange,
-  DUPLICATE_APPLICATION: accents.emerald,
-  EXTENDED_CARE: main.light,
-  HAS_ATTACHMENTS: accents.pink,
-  SIBLING_BASIS: accents.successGreen,
-  URGENT: accents.dangerRed
+  ADDITIONAL_INFO: main.m1,
+  ASSISTANCE_NEED: accents.a6turquoise,
+  CLUB_CARE: accents.a2orangeDark,
+  DAYCARE: status.warning,
+  DUPLICATE_APPLICATION: accents.a3emerald,
+  EXTENDED_CARE: main.m3,
+  HAS_ATTACHMENTS: accents.a9pink,
+  SIBLING_BASIS: status.success,
+  URGENT: status.danger
 }
 
 export const careTypeColors = {
-  'backup-care': colors.accents.peach,
-  club: colors.greyscale.lighter,
-  daycare: colors.accents.successGreen,
-  daycare5yo: colors.accents.greenDark,
-  preparatory: colors.accents.turquoise,
-  preschool: colors.main.dark,
-  'school-shift-care': colors.greyscale.dark,
-  temporary: colors.accents.violet
+  'backup-care': accents.a5orangeLight,
+  club: grayscale.g15,
+  daycare: status.success,
+  daycare5yo: accents.a1greenDark,
+  preparatory: accents.a6turquoise,
+  preschool: main.m1,
+  'school-shift-care': grayscale.g70,
+  temporary: accents.a4violet
 }
 
 export const translationsMergeCustomizer = (

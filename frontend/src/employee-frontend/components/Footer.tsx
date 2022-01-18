@@ -56,7 +56,7 @@ export const Footer = React.memo(function Footer() {
               {i18n.footer.linkLabel}
             </a>
           </Content>
-          <EvakaLogo color={colors.main.dark} />
+          <EvakaLogo color={colors.main.m1} />
         </FooterContainer>
       </Container>
     </footer>

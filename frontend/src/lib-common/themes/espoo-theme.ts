@@ -5,42 +5,44 @@
 import { Theme } from 'lib-common/theme'
 
 const blueColors = {
-  dark: '#00358a',
-  primary: '#0047b6',
-  light: '#4d7fcc',
-  lighter: '#d9e4f4'
+  m1: '#00358a',
+  m2: '#0047b6',
+  m3: '#4d7fcc',
+  m4: '#d9e4f4'
 }
 
 const theme: Theme = {
   colors: {
     main: {
       ...blueColors,
-      primaryHover: blueColors.dark,
-      primaryActive: blueColors.dark,
-      primaryFocus: blueColors.light
+      m2Hover: blueColors.m1,
+      m2Active: blueColors.m1,
+      m2Focus: blueColors.m3
     },
-    greyscale: {
-      darkest: '#091c3b',
-      dark: '#536076',
-      medium: '#a9b0bb',
-      lighter: '#dadde2',
-      lightest: '#f7f7f7',
-      white: '#ffffff'
+    grayscale: {
+      g100: '#091c3b',
+      g70: '#536076',
+      g35: '#a9b0bb',
+      g15: '#dadde2',
+      g4: '#f7f7f7',
+      g0: '#ffffff'
+    },
+    status: {
+      danger: '#ff4f57',
+      warning: '#ff8e31',
+      success: '#70c673',
+      info: blueColors.m3
     },
     accents: {
-      dangerRed: '#ff4f57',
-      warningOrange: '#ff8e31',
-      successGreen: '#70c673',
-      infoBlue: blueColors.light,
-      greenDark: '#014b30',
-      orangeDark: '#ad581a',
-      emerald: '#148190',
-      violet: '#8f41b9',
-      peach: '#ffc386',
-      turquoise: '#7ff6fc',
-      mint: '#bcfdce',
-      lightBlue: '#c9d4dd',
-      pink: '#fca5c7'
+      a1greenDark: '#014b30',
+      a2orangeDark: '#ad581a',
+      a3emerald: '#148190',
+      a4violet: '#8f41b9',
+      a5orangeLight: '#ffc386',
+      a6turquoise: '#7ff6fc',
+      a7mint: '#bcfdce',
+      a8lightBlue: '#c9d4dd',
+      a9pink: '#fca5c7'
     }
   },
   typography: {

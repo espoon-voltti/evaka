@@ -90,7 +90,7 @@ const Li = styled.li`
   &:after {
     content: '';
     width: calc(100% - ${defaultMargins.s});
-    background: ${colors.greyscale.lighter};
+    background: ${colors.grayscale.g15};
     height: 1px;
     display: block;
     position: absolute;

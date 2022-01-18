@@ -14,7 +14,7 @@ export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
   padding: ${defaultMargins.s};
   ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
 `
@@ -34,13 +34,12 @@ export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: ${(p) =>
-    p.$primary ? colors.main.primary : colors.greyscale.white};
-  color: ${(p) => (p.$primary ? colors.greyscale.white : colors.main.primary)};
+  background: ${(p) => (p.$primary ? colors.main.m2 : colors.grayscale.g0)};
+  color: ${(p) => (p.$primary ? colors.grayscale.g0 : colors.main.m2)};
 `
 
 export const BackButton = styled(IconButton)`
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   position: absolute;
 `
 

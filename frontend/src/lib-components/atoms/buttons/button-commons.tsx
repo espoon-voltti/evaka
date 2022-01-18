@@ -6,7 +6,7 @@ import { DefaultTheme } from 'styled-components'
 import { fontWeights } from '../../typography'
 
 export const defaultButtonTextStyle = ({ colors }: DefaultTheme) => `
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
   font-family: 'Open Sans', sans-serif;
   font-size: 1em;
   line-height: normal;

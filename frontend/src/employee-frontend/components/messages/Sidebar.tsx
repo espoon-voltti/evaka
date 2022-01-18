@@ -35,7 +35,7 @@ const Container = styled.div`
   margin-right: ${defaultMargins.m};
 
   & > div {
-    background-color: ${colors.greyscale.white};
+    background-color: ${colors.grayscale.g0};
   }
 `
 const AccountContainer = styled.div`
@@ -49,7 +49,7 @@ const HeaderContainer = styled.div`
 
 const DashedLine = styled.hr`
   width: 100%;
-  border: 1px dashed ${colors.greyscale.medium};
+  border: 1px dashed ${colors.grayscale.g35};
   border-top-width: 0;
 `
 
@@ -57,13 +57,13 @@ const AccountSection = styled.section`
   padding: 12px 0;
 
   & + & {
-    border-top: 1px dashed ${colors.greyscale.dark};
+    border-top: 1px dashed ${colors.grayscale.g70};
   }
 `
 
 const AccountHeader = styled.div`
   padding: 12px ${defaultMargins.m};
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   font-family: 'Montserrat', sans-serif;
   font-size: 20px;
   font-weight: ${fontWeights.semibold};
@@ -81,7 +81,7 @@ const Receivers = styled.div<{ active: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
   font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
-  background-color: ${(p) => (p.active ? colors.main.lighter : 'unset')};
+  background-color: ${(p) => (p.active ? colors.main.m4 : 'unset')};
 `
 
 interface AccountsParams {

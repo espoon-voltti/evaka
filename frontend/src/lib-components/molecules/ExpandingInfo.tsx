@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -24,7 +24,7 @@ const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
     }
   }
 
-  background-color: ${({ theme: { colors } }) => colors.main.lighter};
+  background-color: ${(p) => p.theme.colors.main.m4};
   overflow: hidden;
   ${({ fullWidth }) =>
     fullWidth
@@ -48,7 +48,7 @@ const InfoBoxContentArea = styled(ContentArea)`
 
 const InfoContainer = styled.div`
   flex-grow: 1;
-  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
+  color: ${(p) => p.theme.colors.grayscale.g100};
   padding: 0 ${defaultMargins.s};
 `
 
@@ -119,7 +119,7 @@ export const InfoButton = React.memo(function InfoButton({
       data-qa={dataQa}
       margin={margin ?? 'zero'}
       content={fasInfo}
-      color={colors.main.dark}
+      color={colors.main.m1}
       size="s"
       onClick={onClick}
       tabindex={0}
@@ -147,7 +147,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   return (
     <InfoBoxContainer className={className} fullWidth={fullWidth}>
       <InfoBoxContentArea opaque={false}>
-        <RoundIcon content={fasInfo} color={colors.main.dark} size="s" />
+        <RoundIcon content={fasInfo} color={colors.main.m1} size="s" />
 
         <InfoContainer data-qa={dataQa ? `${dataQa}-text` : undefined}>
           {info}

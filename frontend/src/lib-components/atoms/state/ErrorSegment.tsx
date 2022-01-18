@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -14,8 +14,8 @@ const StyledSegment = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${({ theme: { colors } }) => colors.greyscale.lightest};
-  color: ${({ theme: { colors } }) => colors.greyscale.medium};
+  background: ${(p) => p.theme.colors.grayscale.g4};
+  color: ${(p) => p.theme.colors.grayscale.g35};
 
   div {
     display: flex;

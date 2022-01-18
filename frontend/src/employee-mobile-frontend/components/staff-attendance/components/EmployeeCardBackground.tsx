@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,7 +15,7 @@ import { IconBox } from '../StaffListItem'
 import { Staff } from '../staff'
 
 function getColorByStatus(present: boolean) {
-  return present ? colors.accents.successGreen : colors.accents.turquoise
+  return present ? colors.status.success : colors.accents.a6turquoise
 }
 
 function getBackgroundColorByStatus(present: boolean) {
@@ -30,7 +30,7 @@ const Center = styled.div`
 `
 
 const EmployeeStatus = styled.div`
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
   top: 10px;
   position: relative;
 `

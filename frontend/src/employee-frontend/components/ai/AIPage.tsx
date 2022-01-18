@@ -48,8 +48,8 @@ export default React.memo(function AIPage() {
         : [],
       stepped: false,
       fill: false,
-      pointBackgroundColor: colors.accents.dangerRed,
-      borderColor: colors.accents.dangerRed
+      pointBackgroundColor: colors.status.danger,
+      borderColor: colors.status.danger
     },
     {
       label: 'childrenInOneOfPreferencesPercentage',
@@ -61,8 +61,8 @@ export default React.memo(function AIPage() {
         : [],
       stepped: false,
       fill: false,
-      pointBackgroundColor: colors.accents.warningOrange,
-      borderColor: colors.accents.warningOrange
+      pointBackgroundColor: colors.status.warning,
+      borderColor: colors.status.warning
     },
     {
       label: 'maxCapacityPercentage',
@@ -74,8 +74,8 @@ export default React.memo(function AIPage() {
         : [],
       stepped: false,
       fill: false,
-      pointBackgroundColor: colors.main.dark,
-      borderColor: colors.main.dark
+      pointBackgroundColor: colors.main.m1,
+      borderColor: colors.main.m1
     }
   ]
 

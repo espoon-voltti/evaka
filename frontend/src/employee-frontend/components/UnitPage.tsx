@@ -209,8 +209,8 @@ export const NotificationCounter = styled.div`
   align-items: center;
 
   border-radius: 50%;
-  background-color: ${({ theme: { colors } }) => colors.accents.warningOrange};
-  color: ${({ theme: { colors } }) => colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.status.warning};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   margin-left: ${defaultMargins.xs};
   font-weight: ${fontWeights.bold};
   font-size: 0.75em;

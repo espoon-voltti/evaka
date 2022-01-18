@@ -30,7 +30,7 @@ type DaycareApplicationVerificationViewProps = {
 }
 
 const AttachmentBox = styled.div`
-  border: 2px solid ${colors.main.light};
+  border: 2px solid ${colors.main.m3};
   padding: 0 ${defaultMargins.m};
   display: flex;
 `
@@ -64,11 +64,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
           : t.applications.editor.verification.notYetSaved}
         {missingAttachments && (
           <AttachmentBox>
-            <RoundIconStyled
-              content={faInfo}
-              color={colors.main.dark}
-              size="s"
-            />
+            <RoundIconStyled content={faInfo} color={colors.main.m1} size="s" />
             <div>
               <P>
                 <strong>

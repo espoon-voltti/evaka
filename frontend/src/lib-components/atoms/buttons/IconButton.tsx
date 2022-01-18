@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -69,12 +69,12 @@ const StyledButton = styled.button<ButtonProps>`
         return '20px'
     }
   }};
-  color: ${({ theme: { colors }, ...props }) =>
-    props.gray
-      ? colors.greyscale.dark
-      : props.white
-      ? colors.greyscale.white
-      : colors.main.primary};
+  color: ${(p) =>
+    p.gray
+      ? p.theme.colors.grayscale.g70
+      : p.white
+      ? p.theme.colors.grayscale.g0
+      : p.theme.colors.main.m2};
   border: none;
   border-radius: 100%;
   background: none;
@@ -84,7 +84,7 @@ const StyledButton = styled.button<ButtonProps>`
   margin: -6px;
 
   &:focus {
-    border: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
   }
 
   .icon-wrapper {
@@ -95,24 +95,24 @@ const StyledButton = styled.button<ButtonProps>`
   }
 
   &:hover .icon-wrapper {
-    color: ${({ theme: { colors }, ...props }) =>
-      props.gray
-        ? colors.greyscale.dark
-        : props.white
-        ? colors.greyscale.white
-        : colors.main.primaryHover};
+    color: ${(p) =>
+      p.gray
+        ? p.theme.colors.grayscale.g70
+        : p.white
+        ? p.theme.colors.grayscale.g0
+        : p.theme.colors.main.m2Hover};
   }
 
   &:active .icon-wrapper {
-    color: ${({ theme: { colors }, ...props }) =>
-      props.gray ? colors.greyscale.darkest : colors.main.primaryActive};
+    color: ${(p) =>
+      p.gray ? p.theme.colors.grayscale.g100 : p.theme.colors.main.m2Active};
   }
 
   &.disabled {
     cursor: not-allowed;
 
     .icon-wrapper {
-      color: ${({ theme: { colors } }) => colors.greyscale.medium};
+      color: ${(p) => p.theme.colors.grayscale.g35};
     }
   }
 `

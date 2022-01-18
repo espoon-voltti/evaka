@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -97,7 +97,7 @@ interface FileUploadProps {
 
 const FileUploadContainer = styled.div<{ slim: boolean }>`
   display: flex;
-  flex-direction: ${({ slim }) => (slim ? 'column' : 'row')};
+  flex-direction: ${(p) => (p.slim ? 'column' : 'row')};
   flex-wrap: wrap;
   align-items: flex-start;
 `
@@ -106,8 +106,8 @@ const FileInputLabel = styled.label`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: ${({ theme: { colors } }) => colors.greyscale.lightest};
-  border: 1px dashed ${({ theme: { colors } }) => colors.greyscale.medium};
+  background: ${(p) => p.theme.colors.grayscale.g4};
+  border: 1px dashed ${(p) => p.theme.colors.grayscale.g35};
   border-radius: 8px;
   width: min(500px, 70vw);
   padding: 24px;
@@ -164,14 +164,14 @@ const File = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
 const FileIcon = styled(FontAwesomeIcon)`
   margin-right: ${defaultMargins.xs};
   font-size: 20px;
   flex: 0;
-  color: ${({ theme: { colors } }) => colors.main.primary};
+  color: ${(p) => p.theme.colors.main.m2};
 `
 
 const FileDetails = styled.div`
@@ -191,7 +191,7 @@ const FileHeader = styled.div`
 
 const ProgressBarContainer = styled.div`
   position: relative;
-  background: ${({ theme: { colors } }) => colors.greyscale.medium};
+  background: ${(p) => p.theme.colors.grayscale.g35};
   height: 3px;
   border-radius: 1px;
 `
@@ -205,7 +205,7 @@ const ProgressBar = styled.div<ProgressBarProps>`
   position: absolute;
   top: 0;
   left: 0;
-  background: ${({ theme: { colors } }) => colors.main.dark};
+  background: ${(p) => p.theme.colors.main.m1};
   height: 3px;
   border-radius: 1px;
   transition: width 0.5s ease-out;
@@ -218,14 +218,14 @@ const FileDeleteButton = styled(IconButton)`
   padding: 4px;
   margin-left: 12px;
   min-width: 32px;
-  color: ${({ theme: { colors } }) => colors.greyscale.medium};
+  color: ${(p) => p.theme.colors.grayscale.g35};
 
   &:hover {
-    color: ${({ theme: { colors } }) => colors.main.dark};
+    color: ${(p) => p.theme.colors.main.m1};
   }
 
   &:disabled {
-    color: ${({ theme: { colors } }) => colors.greyscale.lighter};
+    color: ${(p) => p.theme.colors.grayscale.g15};
     cursor: not-allowed;
   }
 `
@@ -234,14 +234,14 @@ const ProgressBarDetails = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
 const ProgressBarError = styled.div`
-  color: ${({ theme: { colors } }) => colors.accents.orangeDark};
+  color: ${(p) => p.theme.colors.accents.a2orangeDark};
   margin-top: 3px;
   svg {
-    color: ${({ theme: { colors } }) => colors.accents.warningOrange};
+    color: ${(p) => p.theme.colors.status.warning};
     margin-left: 8px;
   }
 `

@@ -89,7 +89,7 @@ const Info = styled.span`
   font-weight: ${fontWeights.semibold};
   font-size: 14px;
   line-height: 21px;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `
 
 const Wrapper = styled.div`

@@ -111,7 +111,7 @@ export default React.memo(function TabWaitingConfirmation() {
                         )}
                       </Link>
                     ) : (
-                      <P noMargin color={colors.greyscale.medium}>
+                      <P noMargin color={colors.grayscale.g35}>
                         {formatName(
                           p.child.firstName,
                           p.child.lastName,
@@ -124,7 +124,7 @@ export default React.memo(function TabWaitingConfirmation() {
                   <Td
                     data-qa="child-dob"
                     color={
-                      p.rejectedByCitizen ? colors.greyscale.medium : undefined
+                      p.rejectedByCitizen ? colors.grayscale.g35 : undefined
                     }
                   >
                     {p.child.dateOfBirth.format()}

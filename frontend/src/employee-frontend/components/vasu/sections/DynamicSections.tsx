@@ -305,7 +305,7 @@ export const SectionContent = styled(ContentArea)<{
 }>`
   border-left: 5px solid
     ${({ highlighted, theme }) =>
-      highlighted ? theme.colors.main.dark : 'transparent'};
+      highlighted ? theme.colors.main.m1 : 'transparent'};
   padding: ${defaultMargins.L};
   padding-left: calc(${defaultMargins.L} - 5px);
   ${({ padBottom }) =>

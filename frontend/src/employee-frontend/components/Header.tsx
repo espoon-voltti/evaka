@@ -87,7 +87,7 @@ function HeaderContainer({
     <HeaderWrapper data-qa={dataQa} className={className}>
       <NavbarContainer>
         <LogoLink to="/">
-          <EvakaLogo color={theme.colors.main.dark} />
+          <EvakaLogo color={theme.colors.main.m1} />
         </LogoLink>
         {children}
       </NavbarContainer>
@@ -103,10 +103,10 @@ const NavbarLink = styled(NavLink)`
   border-bottom: 4px solid transparent;
 
   &.active {
-    border-bottom: 4px solid ${(p) => p.theme.colors.main.primary};
+    border-bottom: 4px solid ${(p) => p.theme.colors.main.m2};
 
     ${NavLinkText} {
-      color: ${(p) => p.theme.colors.main.primary};
+      color: ${(p) => p.theme.colors.main.m2};
       font-weight: ${fontWeights.bold};
     }
   }
@@ -115,17 +115,17 @@ const NavbarLink = styled(NavLink)`
 const LogoutLink = styled.a`
   cursor: pointer;
   text-decoration: none;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   display: flex;
   align-items: center;
   gap: ${defaultMargins.m};
 `
 
 const UnreadCount = styled.span`
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   font-weight: ${fontWeights.medium};
   margin-left: ${defaultMargins.xs};
-  border: 1px solid ${colors.main.dark};
+  border: 1px solid ${colors.main.m1};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -157,11 +157,11 @@ const UserPopup = styled.div`
   top: ${headerHeight};
   z-index: 5;
   padding: 24px 16px;
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   box-shadow: 0 4px 4px rgba(15, 15, 15, 0.25);
 
   a {
-    color: ${colors.greyscale.darkest};
+    color: ${colors.grayscale.g100};
   }
 `
 

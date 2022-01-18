@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -223,7 +223,7 @@ const StickyHeader = styled.div`
   top: ${headerHeightDesktop}px;
   z-index: 2;
   width: 100%;
-  background: ${({ theme }) => theme.colors.greyscale.white};
+  background: ${(p) => p.theme.colors.grayscale.g0};
   box-shadow: 0px 4px 8px 2px #0000000a;
 `
 
@@ -247,7 +247,7 @@ const Grid = styled.div<{ includeWeekends: boolean }>`
 `
 
 const HeadingCell = styled.div`
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   font-family: 'Open Sans', sans-serif;
   font-style: normal;
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
@@ -259,28 +259,28 @@ const WeekNumber = styled(HeadingCell)`
 `
 
 const MonthTitle = styled(H2).attrs({ noMargin: true })`
-  color: ${({ theme }) => theme.colors.main.dark};
+  color: ${(p) => p.theme.colors.main.m1};
 `
 
 const DayCell = styled.div<{ today: boolean; selected: boolean }>`
   position: relative;
   min-height: 150px;
   padding: ${defaultMargins.s};
-  background: ${({ theme }) => theme.colors.greyscale.white};
-  outline: 1px solid ${colors.greyscale.lighter};
+  background: ${(p) => p.theme.colors.grayscale.g0};
+  outline: 1px solid ${colors.grayscale.g15};
   cursor: pointer;
   user-select: none;
 
   ${(p) =>
     p.today
       ? css`
-          border-left: 4px solid ${colors.accents.successGreen};
+          border-left: 4px solid ${colors.status.success};
           padding-left: calc(${defaultMargins.s} - 3px);
         `
       : ''}
 
-  ${({ selected }) =>
-    selected
+  ${(p) =>
+    p.selected
       ? css`
           box-shadow: 0px 2px 3px 2px #00000030;
           z-index: 1;
@@ -300,7 +300,7 @@ const DayCellHeader = styled.div`
 const DayCellDate = styled.div<{ inactive: boolean }>`
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.main.dark)};
+  color: ${(p) => (p.inactive ? colors.grayscale.g70 : colors.main.m1)};
   font-weight: ${fontWeights.semibold};
   font-size: 1.25rem;
 `
@@ -315,5 +315,5 @@ const FadeOverlay = styled.div`
   height: calc(100% - 2px);
   z-index: 1;
   opacity: 0.8;
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
 `

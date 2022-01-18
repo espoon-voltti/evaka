@@ -48,7 +48,7 @@ export default React.memo(function ChildButtons({
           >
             <RoundIcon
               content={faComments}
-              color={colors.main.primary}
+              color={colors.main.m2}
               size="XL"
               label={i18n.childButtons.newMessage}
             />
@@ -62,7 +62,7 @@ export default React.memo(function ChildButtons({
         >
           <RoundIcon
             content={faPen}
-            color={colors.main.primary}
+            color={colors.main.m2}
             size="XL"
             label={i18n.common.dailyNotes}
             bubble={noteFound}
@@ -75,7 +75,7 @@ export default React.memo(function ChildButtons({
         >
           <RoundIcon
             content={faChild}
-            color={colors.main.primary}
+            color={colors.main.m2}
             size="XL"
             label={i18n.common.information}
           />

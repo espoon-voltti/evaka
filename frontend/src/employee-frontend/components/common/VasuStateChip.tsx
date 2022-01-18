@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,10 +8,10 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import colors from 'lib-customizations/common'
 
 const vasuStateChip: Record<VasuDocumentState, string> = {
-  DRAFT: colors.accents.peach,
-  READY: colors.accents.violet,
-  REVIEWED: colors.main.dark,
-  CLOSED: colors.greyscale.lighter
+  DRAFT: colors.accents.a5orangeLight,
+  READY: colors.accents.a4violet,
+  REVIEWED: colors.main.m1,
+  CLOSED: colors.grayscale.g15
 }
 
 type ChipLabels = Record<VasuDocumentState, string>

@@ -55,11 +55,11 @@ const WeekDiv = styled.div`
   justify-content: center;
   align-items: center;
   padding: ${defaultMargins.s} 0 ${defaultMargins.xs};
-  background-color: ${colors.main.lighter};
-  color: ${colors.main.dark};
+  background-color: ${colors.main.m4};
+  color: ${colors.main.m1};
   font-weight: ${fontWeights.semibold};
   font-size: 0.875rem;
-  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-bottom: 1px solid ${colors.grayscale.g15};
 `
 
 interface DayProps {
@@ -120,15 +120,15 @@ const DayElem = React.memo(function DayElem({
 const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
   position: relative;
   padding: ${defaultMargins.s} ${defaultMargins.s};
-  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-bottom: 1px solid ${colors.grayscale.g15};
   border-left: 6px solid
-    ${(p) => (p.today ? colors.accents.successGreen : 'transparent')};
+    ${(p) => (p.today ? colors.status.success : 'transparent')};
   cursor: pointer;
 `
 
 const DayColumn = styled(FixedSpaceColumn)<{ inactive: boolean }>`
   width: 3rem;
-  color: ${(p) => (p.inactive ? colors.greyscale.dark : colors.main.dark)};
+  color: ${(p) => (p.inactive ? colors.grayscale.g70 : colors.main.m1)};
   font-weight: ${fontWeights.semibold};
 `
 
@@ -139,5 +139,5 @@ const HistoryOverlay = styled.div`
   width: 100%;
   height: 100%;
   opacity: 0.3;
-  background-color: ${colors.main.lighter};
+  background-color: ${colors.main.m4};
 `

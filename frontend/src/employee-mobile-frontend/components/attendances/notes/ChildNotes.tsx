@@ -52,7 +52,7 @@ const NoteTypeTab = ({
       <RoundIcon
         data-qa={`${dataQa}-indicator`}
         content={String(noteCount)}
-        color={colors.accents.warningOrange}
+        color={colors.status.warning}
         size="xs"
       />
     )}
@@ -238,10 +238,9 @@ const Tab = styled.div<TabProps>`
   text-transform: uppercase;
 
   background: ${(props) =>
-    props.selected ? colors.main.lighter : colors.greyscale.white};
+    props.selected ? colors.main.m4 : colors.grayscale.g0};
 
-  color: ${(props) =>
-    props.selected ? colors.main.dark : colors.greyscale.dark};
+  color: ${(props) => (props.selected ? colors.main.m1 : colors.grayscale.g70)};
 `
 
 const TopRow = styled.div`

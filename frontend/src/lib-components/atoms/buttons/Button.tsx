@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -19,9 +19,9 @@ export const StyledButton = styled.button`
   text-align: center;
   overflow-x: hidden;
 
-  border: 1px solid ${({ theme: { colors } }) => colors.main.primary};
+  border: 1px solid ${(p) => p.theme.colors.main.m2};
   border-radius: 2px;
-  background: ${({ theme: { colors } }) => colors.greyscale.white};
+  background: ${(p) => p.theme.colors.grayscale.g0};
 
   outline: none;
   cursor: pointer;
@@ -31,40 +31,40 @@ export const StyledButton = styled.button`
   }
 
   &:focus {
-    outline: 2px solid ${({ theme: { colors } }) => colors.main.primaryFocus};
+    outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     outline-offset: 2px;
   }
 
   &:hover {
-    color: ${({ theme: { colors } }) => colors.main.primaryHover};
-    border-color: ${({ theme: { colors } }) => colors.main.primaryHover};
+    color: ${(p) => p.theme.colors.main.m2Hover};
+    border-color: ${(p) => p.theme.colors.main.m2Hover};
   }
 
   &:active {
-    color: ${({ theme: { colors } }) => colors.main.primaryActive};
-    border-color: ${({ theme: { colors } }) => colors.main.primaryActive};
+    color: ${(p) => p.theme.colors.main.m2Active};
+    border-color: ${(p) => p.theme.colors.main.m2Active};
   }
 
   &.disabled {
-    color: ${({ theme: { colors } }) => colors.greyscale.dark};
-    border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    color: ${(p) => p.theme.colors.grayscale.g70};
+    border-color: ${(p) => p.theme.colors.grayscale.g70};
   }
 
   &.primary {
-    color: ${({ theme: { colors } }) => colors.greyscale.white};
-    background: ${({ theme: { colors } }) => colors.main.primary};
+    color: ${(p) => p.theme.colors.grayscale.g0};
+    background: ${(p) => p.theme.colors.main.m2};
 
     &:hover {
-      background: ${({ theme: { colors } }) => colors.main.primaryHover};
+      background: ${(p) => p.theme.colors.main.m2Hover};
     }
 
     &:active {
-      background: ${({ theme: { colors } }) => colors.main.primaryActive};
+      background: ${(p) => p.theme.colors.main.m2Active};
     }
 
     &.disabled {
-      border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
-      background: ${({ theme: { colors } }) => colors.greyscale.medium};
+      border-color: ${(p) => p.theme.colors.grayscale.g35};
+      background: ${(p) => p.theme.colors.grayscale.g35};
     }
   }
 
@@ -72,7 +72,7 @@ export const StyledButton = styled.button`
     width: fit-content;
   }
 
-  ${({ theme }) => defaultButtonTextStyle(theme)}
+  ${(p) => defaultButtonTextStyle(p.theme)}
   letter-spacing: 0.2px;
 `
 

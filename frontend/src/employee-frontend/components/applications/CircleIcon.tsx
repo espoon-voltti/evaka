@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,14 +15,14 @@ const CircleIcon = styled.div`
   min-height: 34px;
   font-size: 24px;
   border-radius: 100%;
-  color: ${colors.greyscale.white};
+  color: ${colors.grayscale.g0};
 `
 
 export const CircleIconGreen = styled(CircleIcon)`
-  background-color: ${colors.accents.successGreen};
+  background-color: ${colors.status.success};
 `
 export const CircleIconRed = styled(CircleIcon)`
-  background-color: ${colors.accents.dangerRed};
+  background-color: ${colors.status.danger};
 `
 
 export const CircleIconSmallOrange = styled(CircleIcon)`
@@ -31,5 +31,5 @@ export const CircleIconSmallOrange = styled(CircleIcon)`
   width: 16px;
   height: 16px;
   font-size: 16px;
-  background-color: ${colors.accents.warningOrange};
+  background-color: ${colors.status.warning};
 `

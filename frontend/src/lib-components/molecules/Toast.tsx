@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -42,7 +42,7 @@ const ToastRoot = styled.div`
   right: 16px;
   width: 360px;
   padding: 16px;
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   border-radius: 16px;
   box-shadow: 4px 4px 8px rgba(15, 15, 15, 0.15),
     -2px 0 4px rgba(15, 15, 15, 0.15);
@@ -53,5 +53,5 @@ const CloseButton = styled(IconButton)`
   position: absolute;
   top: ${defaultMargins.s};
   right: ${defaultMargins.s};
-  color: ${(p) => p.theme.colors.main.primary};
+  color: ${(p) => p.theme.colors.main.m2};
 `

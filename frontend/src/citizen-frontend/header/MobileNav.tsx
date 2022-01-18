@@ -133,7 +133,7 @@ const Container = styled.div`
 
 const MenuButton = styled.button`
   background: transparent;
-  color: ${colors.greyscale.white};
+  color: ${colors.grayscale.g0};
   border: none;
   padding: 16px 18px;
   height: 100%;
@@ -150,7 +150,7 @@ const MenuContainer = styled.div`
   overflow-y: scroll;
   top: 0;
   right: 0;
-  background: ${colors.main.primary};
+  background: ${colors.main.m2};
   box-sizing: border-box;
   width: 100vw;
   height: 100%;
@@ -202,7 +202,7 @@ const LangListElement = styled.li`
 
 const LangButton = styled.button<{ active: boolean }>`
   background: transparent;
-  color: ${colors.greyscale.white};
+  color: ${colors.grayscale.g0};
   padding: ${defaultMargins.xs};
   font-family: Montserrat, sans-serif;
   font-size: 1em;
@@ -213,7 +213,7 @@ const LangButton = styled.button<{ active: boolean }>`
   border: none;
   border-bottom: 2px solid;
   border-color: ${(props) =>
-    props.active ? colors.greyscale.white : 'transparent'};
+    props.active ? colors.grayscale.g0 : 'transparent'};
 `
 
 const Navigation = React.memo(function Navigation({
@@ -298,12 +298,12 @@ const StyledNavLink = styled(NavLink)`
 
   &:hover {
     font-weight: ${fontWeights.bold};
-    border-color: ${colors.greyscale.white};
+    border-color: ${colors.grayscale.g0};
   }
 
   &.active {
     font-weight: ${fontWeights.bold};
-    border-color: ${colors.greyscale.white};
+    border-color: ${colors.grayscale.g0};
   }
 `
 
@@ -317,8 +317,8 @@ const UserContainer = styled.div`
 `
 
 const LogInLogOutButton = styled.button`
-  background: ${colors.main.dark};
-  color: ${colors.greyscale.white};
+  background: ${colors.main.m1};
+  color: ${colors.grayscale.g0};
   border: none;
   font-family: 'Open Sans', sans-serif;
   font-size: 1em;

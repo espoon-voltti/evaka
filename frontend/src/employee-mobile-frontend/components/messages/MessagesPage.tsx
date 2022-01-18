@@ -105,7 +105,7 @@ export default function MessagesPage() {
           ) : (
             <EmptyMessageFolder
               loading={receivedMessages.isLoading}
-              iconColor={colors.greyscale.medium}
+              iconColor={colors.grayscale.g35}
               text={i18n.messages.emptyInbox}
             />
           )}
@@ -131,7 +131,7 @@ export default function MessagesPage() {
         ) : (
           <EmptyMessageFolder
             loading={false}
-            iconColor={colors.greyscale.medium}
+            iconColor={colors.grayscale.g35}
             text={i18n.messages.emptyInbox}
           />
         )}
@@ -143,7 +143,7 @@ export default function MessagesPage() {
 
 export const HeaderContainer = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.s};
-  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-bottom: 1px solid ${colors.grayscale.g15};
 `
 
 const NoAccounts = styled.div`

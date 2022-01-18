@@ -50,7 +50,7 @@ const TitleRow = styled.div`
 const StickyTitleRow = styled(TitleRow)`
   position: sticky;
   top: 0;
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   max-height: 215px; // fits roughly 5 rows of heading text with the chip and paddings
   overflow: auto;
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -23,7 +23,7 @@ export default React.memo(function AbsenceDay({ type }: Props) {
         <FixedSpaceRow spacing="xs" alignItems="center">
           <RoundIcon
             content={faThermometer}
-            color={colors.accents.violet}
+            color={colors.accents.a4violet}
             size="m"
           />
           <div>{i18n.absences.absenceTypes.SICKLEAVE}</div>
@@ -34,7 +34,7 @@ export default React.memo(function AbsenceDay({ type }: Props) {
   return (
     <AbsenceCell>
       <FixedSpaceRow spacing="xs" alignItems="center">
-        <RoundIcon content="–" color={colors.main.primary} size="m" />
+        <RoundIcon content="–" color={colors.main.m2} size="m" />
         <div>
           {i18n.absences.absenceTypes[type] ??
             i18n.absences.absenceTypes.OTHER_ABSENCE}

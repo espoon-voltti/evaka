@@ -65,7 +65,7 @@ const TitleRowContainer = styled.div`
   position: sticky;
   top: 0;
   z-index: 3;
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
 `
 
 interface PaginationWrapperProps {
@@ -166,19 +166,19 @@ const ApplicationsList = React.memo(function Applications({
       application.status === 'WAITING_PLACEMENT' &&
       !application.checkedByAdmin
     )
-      return colors.accents.warningOrange
+      return colors.status.warning
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'ACCEPTED'
     )
-      return colors.accents.successGreen
+      return colors.status.success
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'REJECTED'
     )
-      return colors.accents.dangerRed
+      return colors.status.danger
 
-    return colors.main.light
+    return colors.main.m3
   }
 
   const dateOfBirthInfo = (application: ApplicationSummary) => {

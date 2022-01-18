@@ -135,16 +135,16 @@ const RoundIconButton = styled.button`
   min-height: ${defaultMargins.L};
   max-width: ${defaultMargins.L};
   max-height: ${defaultMargins.L};
-  background: ${colors.main.primary};
+  background: ${colors.main.m2};
   border: none;
   border-radius: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: ${colors.greyscale.white};
+  color: ${colors.grayscale.g0};
   &:disabled {
-    background: ${colors.greyscale.lighter};
+    background: ${colors.grayscale.g15};
   }
 `
 
@@ -156,13 +156,13 @@ const MessageContainer = styled.div<{ ours: boolean }>`
       ? `
       border-bottom-right-radius: 2px;
       align-self: flex-end;
-      background-color: ${colors.main.primary};
-      color: ${colors.greyscale.white};
+      background-color: ${colors.main.m2};
+      color: ${colors.grayscale.g0};
     `
       : `
       border-bottom-left-radius: 2px;
       align-self: flex-start;
-      background-color: ${colors.main.lighter};
+      background-color: ${colors.main.m4};
     `}
   padding: ${defaultMargins.s};
   margin: ${defaultMargins.xs};
@@ -171,7 +171,7 @@ const MessageContainer = styled.div<{ ours: boolean }>`
 const SentDate = styled.div<{ white: boolean }>`
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
-  color: ${(p) => (p.white ? colors.greyscale.white : colors.greyscale.dark)};
+  color: ${(p) => (p.white ? colors.grayscale.g0 : colors.grayscale.g70)};
 `
 
 const TitleRow = styled.div`
@@ -210,7 +210,7 @@ const ThreadViewReplyContainer = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
   margin-top: auto;
   padding: ${defaultMargins.xxs} ${defaultMargins.xs} ${defaultMargins.xs};
 `
@@ -225,7 +225,7 @@ const ThreadViewReply = styled.div`
     width: 100%;
   }
   .thread-view-input {
-    background: ${colors.greyscale.lightest};
+    background: ${colors.grayscale.g4};
     border-radius: ${defaultMargins.m};
   }
   .thread-view-input:not(:focus) {

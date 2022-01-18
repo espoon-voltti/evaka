@@ -204,7 +204,7 @@ export default React.memo(function AttendanceChildPage() {
                   <RoundIcon
                     size="L"
                     content={faCalendarTimes}
-                    color={colors.main.primary}
+                    color={colors.main.m2}
                   />
                   <LinkButtonText>
                     {i18n.attendances.actions.markAbsentBeforehand}
@@ -292,7 +292,7 @@ export default React.memo(function AttendanceChildPage() {
 })
 
 const ChildStatus = styled.div`
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
   top: 10px;
   position: relative;
 `
@@ -311,7 +311,7 @@ const CustomTitle = styled.h2`
   font-size: 20px;
   line-height: 30px;
   margin-top: 0;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   text-align: center;
   margin-bottom: ${defaultMargins.xs};
 `
@@ -323,7 +323,7 @@ const GroupName = styled.div`
   font-size: 15px;
   line-height: 22px;
   text-transform: uppercase;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   letter-spacing: 0.05rem;
 `
 
@@ -365,12 +365,12 @@ const BottomButtonWrapper = styled.div`
   align-items: center;
   justify-content: center;
   min-height: 74px;
-  background: ${colors.greyscale.lightest};
+  background: ${colors.grayscale.g4};
 `
 const LinkButtonWithIcon = styled(Link)``
 
 const LinkButtonText = styled.span`
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
   margin-left: ${defaultMargins.s};
   font-weight: ${fontWeights.semibold};
   font-size: 16px;
@@ -378,7 +378,7 @@ const LinkButtonText = styled.span`
 `
 
 const Shadow = styled.div`
-  box-shadow: 0 4px 4px 0 ${colors.greyscale.lighter};
+  box-shadow: 0 4px 4px 0 ${colors.grayscale.g15};
   z-index: 1;
   display: flex;
   flex-direction: column;

@@ -100,7 +100,7 @@ const UnreadCountNumber = React.memo(function UnreadCountNumber({
 const LinkToGroupMessages = styled(Link)`
   font-size: ${fontSizesMobile.h2};
   font-weight: bold;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   margin: ${defaultMargins.xs} 0;
 `
 
@@ -123,7 +123,7 @@ const UnreadCountNumberCircle = styled.div`
   font-weight: bold;
   width: ${defaultMargins.m};
   height: ${defaultMargins.m};
-  border: 1px solid ${colors.greyscale.darkest};
+  border: 1px solid ${colors.grayscale.g100};
   border-radius: 100%;
 `
 

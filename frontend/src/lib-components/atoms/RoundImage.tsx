@@ -20,7 +20,7 @@ const ImageContainer = styled.div<SizeProps>`
   align-items: center;
   border-radius: 50%;
 
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   color: ${(p) => p.color};
 
   font-size: ${(p) => fontSizeByIconSize(p.size)}px;

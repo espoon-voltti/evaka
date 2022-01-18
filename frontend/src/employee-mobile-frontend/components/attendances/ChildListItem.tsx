@@ -26,7 +26,7 @@ const ChildBox = styled.div`
   display: flex;
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-radius: 2px;
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
 `
 
 const AttendanceLinkBox = styled(Link)`
@@ -51,7 +51,7 @@ export const IconBox = styled.div<{ type: AttendanceStatus }>`
   background-color: ${(props) => attendanceColors[props.type]};
   border-radius: 50%;
   box-shadow: 0 0 0 2px ${(props) => attendanceColors[props.type]};
-  border: 2px solid ${colors.greyscale.white};
+  border: 2px solid ${colors.grayscale.g0};
 `
 
 const DetailsRow = styled.div`
@@ -59,7 +59,7 @@ const DetailsRow = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   font-size: 0.875em;
   width: 100%;
 `
@@ -132,7 +132,7 @@ export default React.memo(function ChildListItem({
           ) : (
             <RoundIcon
               content={farUser}
-              color={type ? attendanceColors[type] : colors.main.dark}
+              color={type ? attendanceColors[type] : colors.main.m1}
               size="XL"
             />
           )}
@@ -150,7 +150,7 @@ export default React.memo(function ChildListItem({
             <div>
               {infoText}
               {child.backup && (
-                <RoundIcon content="V" size="m" color={colors.main.dark} />
+                <RoundIcon content="V" size="m" color={colors.main.m1} />
               )}
             </div>
             <FixedSpaceRowWithLeftMargin>
@@ -161,7 +161,7 @@ export default React.memo(function ChildListItem({
                 >
                   <RoundIcon
                     content={farStickyNote}
-                    color={colors.accents.pink}
+                    color={colors.accents.a9pink}
                     size="m"
                   />
                 </Link>
@@ -173,7 +173,7 @@ export default React.memo(function ChildListItem({
                 >
                   <RoundIcon
                     content={farUsers}
-                    color={colors.main.lighter}
+                    color={colors.main.m4}
                     size="m"
                   />
                 </Link>

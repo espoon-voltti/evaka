@@ -55,7 +55,7 @@ export default function PlusMinus({
 }
 
 const Root = styled.div`
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   display: flex;
   justify-content: center;
 `
@@ -71,5 +71,5 @@ const TextButton = styled.button`
   outline: none;
   background-color: transparent;
   font-size: 48px;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
 `

@@ -31,7 +31,7 @@ const WarningText = styled.span<{
   smaller?: boolean
   margin?: 'left' | 'right'
 }>`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   font-style: italic;
   ${(props) =>
     props.margin === 'right' ? 'margin-right: 12px' : 'margin-left: 12px'};
@@ -42,6 +42,6 @@ const WarningIcon = () => (
   <FontAwesomeIcon
     icon={fasExclamationTriangle}
     size="1x"
-    color={colors.accents.warningOrange}
+    color={colors.status.warning}
   />
 )

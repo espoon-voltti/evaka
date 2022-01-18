@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -23,12 +23,12 @@ const Card = styled.div<CardProps>`
   cursor: pointer;
   border-left-style: solid;
   border-left-color: ${(props) =>
-    props.active ? props.color : colors.greyscale.lighter};
+    props.active ? props.color : colors.grayscale.g15};
   border-left-width: 10px;
   width: 100%;
   margin: 10px;
   padding: 10px 10px 10px 25px;
-  box-shadow: 0px 2px 4px 1px ${colors.greyscale.lighter};
+  box-shadow: 0px 2px 4px 1px ${colors.grayscale.g15};
 `
 
 const HeaderContainer = styled.div`
@@ -79,12 +79,12 @@ export default React.memo(function OccupancyCard({
 
   const color =
     type == 'confirmed'
-      ? colors.main.dark
+      ? colors.main.m1
       : type == 'planned'
-      ? colors.accents.turquoise
+      ? colors.accents.a6turquoise
       : type == 'realized'
-      ? colors.accents.successGreen
-      : colors.greyscale.lighter
+      ? colors.status.success
+      : colors.grayscale.g15
 
   return (
     <Card color={color} active={active} onClick={() => onClick()}>
@@ -94,7 +94,7 @@ export default React.memo(function OccupancyCard({
         </Title>
         <FontAwesomeIcon
           icon={active ? faEye : faEyeSlash}
-          color={active ? colors.main.dark : colors.greyscale.lighter}
+          color={active ? colors.main.m1 : colors.grayscale.g15}
           size="lg"
         />
       </HeaderContainer>
@@ -109,7 +109,7 @@ export default React.memo(function OccupancyCard({
               <IconContainer>
                 <FontAwesomeIcon
                   icon={faArrowDown}
-                  color={active ? color : colors.greyscale.lighter}
+                  color={active ? color : colors.grayscale.g15}
                 />
               </IconContainer>
               <Value data-qa={`occupancies-minimum-${type}`}>
@@ -126,7 +126,7 @@ export default React.memo(function OccupancyCard({
               <IconContainer>
                 <FontAwesomeIcon
                   icon={faArrowUp}
-                  color={active ? color : colors.greyscale.lighter}
+                  color={active ? color : colors.grayscale.g15}
                 />
               </IconContainer>
               <Value data-qa={`occupancies-maximum-${type}`}>

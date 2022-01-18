@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -67,12 +67,14 @@ export const ContentArea = styled.section<ContentAreaProps>`
     padding-right: ${(p) => spacing(p.paddingHorizontal, defaultMargins.L)};
     padding-left: ${(p) => spacing(p.paddingHorizontal, defaultMargins.L)};
   }
-  background-color: ${({ theme: { colors }, ...props }) =>
-    props.opaque ? 'white' : props.blue ? colors.main.lighter : 'transparent'};
+  background-color: ${(p) =>
+    p.opaque ? 'white' : p.blue ? p.theme.colors.main.m4 : 'transparent'};
   position: relative;
   ${(p) => (p.fullHeight ? `min-height: 100vh` : '')}
-  ${({ theme: { colors }, ...p }) =>
-    p.shadow ? `box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter}` : ''}
+  ${(p) =>
+    p.shadow
+      ? `box-shadow: 0px 4px 4px 0px ${p.theme.colors.grayscale.g15}`
+      : ''}
 `
 
 type CollapsibleContentAreaProps = ContentAreaProps & {
@@ -169,7 +171,7 @@ const TitleWrapper = styled.div`
 `
 
 const TitleIcon = styled(FontAwesomeIcon)`
-  color: ${({ theme: { colors } }) => colors.main.primary};
+  color: ${(p) => p.theme.colors.main.m2};
   height: 24px !important;
   width: 24px !important;
 `

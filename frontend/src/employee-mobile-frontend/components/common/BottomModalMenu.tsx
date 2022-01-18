@@ -18,7 +18,7 @@ const MenuBackground = styled.div`
   bottom: 0;
   width: 100%;
   min-height: 20%;
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
   box-shadow: 0 -4px 4px rgba(0, 0, 0, 0.1);
   padding: 24px 16px;
 `
@@ -29,7 +29,7 @@ const TopRow = styled.div`
   align-items: center;
   margin-bottom: 16px;
 
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   font-style: normal;
   font-weight: ${fontWeights.semibold};
   font-size: 16px;

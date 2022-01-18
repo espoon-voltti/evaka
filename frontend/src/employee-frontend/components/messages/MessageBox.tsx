@@ -16,11 +16,11 @@ export const MessageBoxRow = styled.div<{ active: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
   font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
-  background-color: ${(p) => (p.active ? colors.main.lighter : 'unset')};
+  background-color: ${(p) => (p.active ? colors.main.m4 : 'unset')};
 `
 
 const UnreadCount = styled.span`
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   padding-left: ${defaultMargins.xxs};

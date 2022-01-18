@@ -18,7 +18,7 @@ const RowRightAligned = styled.div`
 `
 
 const DisabledLink = styled.span`
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
 `
 
 const LinkText = styled.span`

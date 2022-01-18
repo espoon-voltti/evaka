@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -94,11 +94,11 @@ const TooltipPositioner = styled.div<{ position: Position }>`
 `
 
 const TooltipDiv = styled.div`
-  color: ${({ theme: { colors } }) => colors.greyscale.white};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   font-size: 15px;
   line-height: 22px;
 
-  background-color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  background-color: ${(p) => p.theme.colors.grayscale.g70};
   padding: ${defaultMargins.s};
   border-radius: 2px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
@@ -166,12 +166,12 @@ const Beak = styled.div<{ position: Position }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 
-  top: ${({ position }) => beakPositions(position).top};
-  bottom: ${({ position }) => beakPositions(position).bottom};
-  left: ${({ position }) => beakPositions(position).left};
-  right: ${({ position }) => beakPositions(position).right};
+  top: ${(p) => beakPositions(p.position).top};
+  bottom: ${(p) => beakPositions(p.position).bottom};
+  left: ${(p) => beakPositions(p.position).left};
+  right: ${(p) => beakPositions(p.position).right};
 `
 
 type Position = 'top' | 'bottom' | 'right' | 'left'

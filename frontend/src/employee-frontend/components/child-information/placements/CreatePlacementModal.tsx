@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -200,7 +200,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
 
 const ValidationError = styled.div`
   font-size: 0.9em;
-  color: ${colors.accents.dangerRed};
+  color: ${colors.status.danger};
 `
 
 export default CreatePlacementModal

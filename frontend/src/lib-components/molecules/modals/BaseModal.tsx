@@ -88,7 +88,7 @@ const CloseButton = styled(IconButton)`
   position: absolute;
   top: ${defaultMargins.s};
   right: ${defaultMargins.s};
-  color: ${({ theme }) => theme.colors.greyscale.dark};
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
 const ModalContainer = styled.div<{
@@ -98,7 +98,7 @@ const ModalContainer = styled.div<{
   position: relative;
   width: min(500px, calc(100vw - 2 * ${defaultMargins.xxs}));
   max-height: calc(100vh - 2 * ${defaultMargins.s});
-  background: ${(p) => p.theme.colors.greyscale.white};
+  background: ${(p) => p.theme.colors.grayscale.g0};
   overflow-x: visible;
   box-shadow: 0 15px 75px 0 rgba(0, 0, 0, 0.5);
   border-radius: 2px;
@@ -143,18 +143,18 @@ const ModalWrapper = styled.div<{ zIndex?: number }>`
 `
 
 const ModalIcon = styled.div<{ color?: IconColor }>`
-  background: ${({ theme: { colors }, ...props }) => {
-    switch (props.color) {
+  background: ${(p) => {
+    switch (p.color) {
       case 'blue':
-        return colors.accents.infoBlue
+        return p.theme.colors.status.info
       case 'orange':
-        return colors.accents.warningOrange
+        return p.theme.colors.status.warning
       case 'green':
-        return colors.accents.successGreen
+        return p.theme.colors.status.success
       case 'red':
-        return colors.accents.dangerRed
+        return p.theme.colors.status.danger
       default:
-        return colors.accents.infoBlue
+        return p.theme.colors.status.info
     }
   }};
   font-size: 36px;
@@ -163,7 +163,7 @@ const ModalIcon = styled.div<{ color?: IconColor }>`
   height: 60px;
   width: 60px;
   text-align: center;
-  color: ${(p) => p.theme.colors.greyscale.white};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   margin: auto;
 `
 

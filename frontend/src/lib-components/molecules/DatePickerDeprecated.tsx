@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -36,8 +36,8 @@ const StyledInput = styled.input`
   padding-top: calc(0.5em - 1px);
   position: relative;
   height: 2.5em;
-  border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
-  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
+  border-color: ${(p) => p.theme.colors.grayscale.g70};
+  color: ${(p) => p.theme.colors.grayscale.g100};
   display: block;
   box-shadow: none;
   max-width: 100%;
@@ -51,7 +51,7 @@ const StyledInput = styled.input`
   :focus {
     padding-bottom: calc(calc(0.5em - 1px) - 1px);
     border-bottom-width: 2px;
-    border-color: ${({ theme: { colors } }) => colors.main.primary};
+    border-color: ${(p) => p.theme.colors.main.m2};
     outline: none;
   }
 `
@@ -84,7 +84,7 @@ const DatePickerContainer = styled.div`
     right: 0;
     &::after {
       background-color: transparent;
-      color: ${({ theme: { colors } }) => colors.greyscale.lighter};
+      color: ${(p) => p.theme.colors.grayscale.g15};
       font-size: 25px;
     }
   }

@@ -34,7 +34,7 @@ import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 
 const StyledLink = styled(Link)`
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
   text-decoration: none;
 `
 
@@ -73,7 +73,7 @@ const Icon = styled(FontAwesomeIcon)`
 `
 
 const NoApplications = styled.p`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
 `
 
 interface ChildApplicationsBlockProps {
@@ -253,14 +253,14 @@ export default React.memo(function ChildApplicationsBlock({
 
                   {applicationStatus === 'WAITING_CONFIRMATION' && (
                     <ConfirmationContainer>
-                      <div color={colors.main.primary}>
+                      <div color={colors.main.m2}>
                         {t.applicationsList.confirmationLinkInstructions}
                       </div>
                       <StyledLink
                         to={`/decisions/by-application/${applicationId}`}
                       >
                         {t.applicationsList.confirmationLink}{' '}
-                        <Icon icon={faArrowRight} color={colors.main.primary} />
+                        <Icon icon={faArrowRight} color={colors.main.m2} />
                       </StyledLink>
                     </ConfirmationContainer>
                   )}

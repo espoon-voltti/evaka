@@ -81,6 +81,6 @@ const FooterContainer = styled(Container)`
 `
 
 const FooterLink = styled.a`
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
   text-decoration: none;
 `

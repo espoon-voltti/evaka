@@ -17,7 +17,7 @@ const MobileTabContainer = styled.div`
     display: flex;
     justify-content: stretch;
     height: ${headerHeightMobile}px;
-    background-color: ${colors.greyscale.white};
+    background-color: ${colors.grayscale.g0};
 
     position: sticky;
     top: 60px;
@@ -30,11 +30,10 @@ const Tab = styled.div<{ active: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 3px solid
-    ${(p) => (p.active ? colors.main.primary : 'transparent')};
+  border-bottom: 3px solid ${(p) => (p.active ? colors.main.m2 : 'transparent')};
   cursor: pointer;
 
-  color: ${colors.main.primary};
+  color: ${colors.main.m2};
   font-family: 'Montserrat', 'Open Sans', sans-serif;
   font-size: 14px;
   text-transform: uppercase;

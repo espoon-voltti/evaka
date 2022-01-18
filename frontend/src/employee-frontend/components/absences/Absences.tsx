@@ -223,7 +223,7 @@ const AbsencesPage = styled.div`
   .table th {
     text-align: left;
     text-transform: uppercase;
-    color: ${colors.greyscale.dark};
+    color: ${colors.grayscale.g70};
     vertical-align: bottom;
 
     &.absence-header {
@@ -233,7 +233,7 @@ const AbsencesPage = styled.div`
 
   .table td {
     text-align: left;
-    color: ${colors.greyscale.darkest};
+    color: ${colors.grayscale.g100};
 
     &.absence-cell-wrapper {
       text-align: center;
@@ -292,7 +292,7 @@ const AbsencesPage = styled.div`
 
   .absence-cell-today,
   .table tr:hover .hover-highlight {
-    background-color: ${colors.greyscale.lightest};
+    background-color: ${colors.grayscale.g4};
 
     .absence-cell-selected {
       .absence-cell-left-weekend {
@@ -305,24 +305,24 @@ const AbsencesPage = styled.div`
     }
 
     .absence-cell-left-weekend {
-      border-top-color: ${colors.greyscale.lighter};
+      border-top-color: ${colors.grayscale.g15};
     }
 
     .absence-cell-right-weekend {
-      border-bottom-color: ${colors.greyscale.lighter};
+      border-bottom-color: ${colors.grayscale.g15};
     }
   }
 
   tr:hover .hover-highlight:first-child {
-    box-shadow: -8px 0 0 ${colors.greyscale.lightest};
+    box-shadow: -8px 0 0 ${colors.grayscale.g4};
   }
 
   tr:hover .hover-highlight:last-child {
-    box-shadow: 8px 0 0 ${colors.greyscale.lightest};
+    box-shadow: 8px 0 0 ${colors.grayscale.g4};
   }
 
   .absence-header-today {
-    background-color: ${colors.greyscale.lightest};
+    background-color: ${colors.grayscale.g4};
 
     @media print {
       background: none;
@@ -332,7 +332,7 @@ const AbsencesPage = styled.div`
   }
 
   .absence-header-weekend {
-    color: ${colors.greyscale.darkest} !important;
+    color: ${colors.grayscale.g100} !important;
   }
 
   .absence-cell {
@@ -390,7 +390,7 @@ const AbsencesPage = styled.div`
     }
 
     &-weekend {
-      border-top-color: ${colors.greyscale.lightest};
+      border-top-color: ${colors.grayscale.g4};
     }
 
     &-empty {
@@ -434,7 +434,7 @@ const AbsencesPage = styled.div`
     }
 
     &-weekend {
-      border-bottom-color: ${colors.greyscale.lightest};
+      border-bottom-color: ${colors.grayscale.g4};
     }
 
     &-empty {
@@ -443,7 +443,7 @@ const AbsencesPage = styled.div`
   }
 
   .absence-cell-selected {
-    border: 2px solid ${colors.main.primary};
+    border: 2px solid ${colors.main.m2};
     border-radius: 2px;
 
     .absence-cell-left,
@@ -486,8 +486,8 @@ const AbsencesPage = styled.div`
         font-size: 0.8rem;
         height: ${cellSize};
         width: ${cellSize};
-        border-color: ${colors.greyscale.medium};
-        color: ${colors.greyscale.darkest};
+        border-color: ${colors.grayscale.g35};
+        color: ${colors.grayscale.g100};
         display: block;
         box-shadow: none;
         max-width: 100%;
@@ -497,7 +497,7 @@ const AbsencesPage = styled.div`
         background-color: transparent;
 
         :disabled {
-          color: ${colors.greyscale.medium};
+          color: ${colors.grayscale.g35};
         }
 
         @media print {

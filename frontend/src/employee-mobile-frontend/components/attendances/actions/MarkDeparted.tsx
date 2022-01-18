@@ -245,7 +245,7 @@ export default React.memo(function MarkDeparted() {
                 <span>
                   <RoundIcon
                     content={farStickyNote}
-                    color={colors.main.dark}
+                    color={colors.main.m1}
                     size="m"
                   />
                 </span>

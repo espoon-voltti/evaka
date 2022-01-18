@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,15 +15,14 @@ export const MessageRow = styled.div<{ unread?: boolean }>`
   padding: ${defaultMargins.s};
   cursor: pointer;
   :first-child {
-    border-top: 1px solid ${colors.greyscale.lighter};
+    border-top: 1px solid ${colors.grayscale.g15};
   }
-  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-bottom: 1px solid ${colors.grayscale.g15};
   border-left: 6px solid
-    ${(p) => (p.unread ? colors.accents.successGreen : 'transparent')};
+    ${(p) => (p.unread ? colors.status.success : 'transparent')};
 `
 export const Participants = styled.div<{ unread?: boolean }>`
-  color: ${(p) =>
-    p.unread ? colors.greyscale.darkest : colors.greyscale.dark};
+  color: ${(p) => (p.unread ? colors.grayscale.g100 : colors.grayscale.g70)};
   font-weight: ${fontWeights.semibold};
 `
 export const Truncated = styled.div`

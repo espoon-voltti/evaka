@@ -21,7 +21,7 @@ export const TableScrollableWrapper = styled.div`
   th {
     position: sticky;
     top: 0;
-    background: ${colors.greyscale.white};
+    background: ${colors.grayscale.g0};
     z-index: 2;
   }
 `
@@ -46,7 +46,7 @@ export const TableFooter = styled.tfoot`
   td {
     position: sticky;
     bottom: 0;
-    background: ${colors.greyscale.lightest};
+    background: ${colors.grayscale.g4};
     z-index: 2;
   }
 `

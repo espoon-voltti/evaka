@@ -41,7 +41,7 @@ export default React.memo(function EditorSection(props: Props) {
                 <ErrorsIcon
                   content={props.validationErrors.toString()}
                   size="m"
-                  color={colors.accents.warningOrange}
+                  color={colors.status.warning}
                   aria-hidden="true"
                 />
               ) : null}

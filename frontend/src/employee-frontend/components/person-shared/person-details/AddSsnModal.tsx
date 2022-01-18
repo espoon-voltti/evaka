@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,7 +17,7 @@ import { isSsnValid } from '../../../utils/validation/validations'
 const Error = styled.div`
   display: flex;
   justify-content: center;
-  color: ${colors.accents.dangerRed};
+  color: ${colors.status.danger};
   margin: 20px;
 `
 

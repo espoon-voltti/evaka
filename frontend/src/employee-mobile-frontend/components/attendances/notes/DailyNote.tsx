@@ -103,12 +103,12 @@ const NotesTitle = styled(Title)`
   font-family: Montserrat, sans-serif;
   font-size: 18px;
   font-weight: ${fontWeights.medium};
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
   margin-top: 0;
   margin-bottom: 0;
 `
 
 const DailyNoteWrapper = styled.span`
   margin-left: 16px;
-  color: ${colors.main.dark};
+  color: ${colors.main.m1};
 `

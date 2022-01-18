@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,9 +16,8 @@ export const Spinner = styled.div<{ zIndex?: number }>`
   height: ${spinnerSize};
   ${({ zIndex }) => (zIndex ? `z-index: ${zIndex};` : '')}
 
-  border: 5px solid ${({ theme: { colors } }) =>
-    transparentize(0.8, colors.main.primary)};
-  border-left-color: ${({ theme: { colors } }) => colors.main.primary};
+  border: 5px solid ${(p) => transparentize(0.8, p.theme.colors.main.m2)};
+  border-left-color: ${(p) => p.theme.colors.main.m2};
   animation: spin 1.1s infinite linear;
 
   &:after {
@@ -69,7 +68,7 @@ const SpinnerOverlayRoot = styled.div`
   left: 0;
   bottom: 0;
   min-height: 80px;
-  background-color: ${(p) => p.theme.colors.greyscale.white};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   opacity: 0.8;
   z-index: ${spinnerOverlayZIndex};
   display: flex;

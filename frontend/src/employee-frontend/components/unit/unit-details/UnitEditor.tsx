@@ -127,7 +127,7 @@ const FormPart = styled.div`
 `
 
 const FormError = styled.div`
-  color: ${colors.accents.dangerRed};
+  color: ${colors.status.danger};
   margin-bottom: 20px;
 `
 

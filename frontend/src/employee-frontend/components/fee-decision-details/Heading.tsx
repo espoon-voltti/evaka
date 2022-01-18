@@ -210,7 +210,7 @@ export const TitleRow = styled.div`
 export const InfoMarkers = styled.span``
 
 const DisabledLink = styled.span`
-  color: ${colors.greyscale.medium};
+  color: ${colors.grayscale.g35};
 `
 
 const Cursive = styled.span`

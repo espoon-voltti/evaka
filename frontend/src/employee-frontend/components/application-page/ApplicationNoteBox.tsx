@@ -26,7 +26,7 @@ const NoteContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${defaultMargins.s};
-  background: ${colors.greyscale.white};
+  background: ${colors.grayscale.g0};
 `
 
 const TopBar = styled.div`

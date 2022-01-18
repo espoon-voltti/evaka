@@ -16,7 +16,7 @@ import { useTranslation } from '../localization'
 import MapView from '../map/MapView'
 
 const WhiteBg = styled.div`
-  background-color: ${colors.greyscale.white};
+  background-color: ${colors.grayscale.g0};
 `
 
 export default React.memo(function ApplyingRouter() {

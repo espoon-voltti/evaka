@@ -125,7 +125,7 @@ export default React.memo(function MarkPresent() {
               <span>
                 <RoundIcon
                   content={farStickyNote}
-                  color={colors.main.dark}
+                  color={colors.main.m1}
                   size="m"
                 />
               </span>

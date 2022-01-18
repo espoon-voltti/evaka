@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -400,7 +400,7 @@ const ButtonRow = styled(FixedSpaceRow)`
 `
 
 const ErrorDescription = styled.span`
-  color: ${colors.greyscale.dark};
+  color: ${colors.grayscale.g70};
   font-style: italic;
 `
 
@@ -409,7 +409,7 @@ const MaxFeeError = styled(ErrorDescription)`
 `
 
 const SaveError = styled.span`
-  color: ${colors.accents.dangerRed};
+  color: ${colors.status.danger};
 `
 
 type ValidationErrors = Partial<
