@@ -230,7 +230,7 @@ class PlacementPlanService(
         val placementType = derivePlacementType(application)
 
         val allowPreschool = placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PREPARATORY)
-        val allowPreschoolDaycare = placementType in listOf(PlacementType.PRESCHOOL_DAYCARE)
+        val allowPreschoolDaycare = placementType in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
 
         val placementTypePeriods = getPlacementTypePeriods(
             tx,

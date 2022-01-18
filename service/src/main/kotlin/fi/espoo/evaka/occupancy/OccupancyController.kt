@@ -255,7 +255,7 @@ private fun calculateSpeculatedMaxOccupancies(
     from: LocalDate,
     lengthsInMonths: List<Long>,
 ): List<SpeculatedMaxOccupancies> {
-    val longestLength = lengthsInMonths.maxOrNull() ?: throw Error("TODO")
+    val longestLength = lengthsInMonths.maxOrNull() ?: throw Error("At least one period length is required")
     val longestPeriod = FiniteDateRange(from, from.plusMonths(longestLength).minusDays(1))
 
     val currentOccupancies = tx.calculateDailyUnitOccupancyValues(
