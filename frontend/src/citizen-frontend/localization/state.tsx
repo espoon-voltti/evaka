@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useContext, useMemo, useCallback } from 'react'
+import React, { createContext, useContext, useMemo, useEffect } from 'react'
 import useLocalStorage from 'lib-common/utils/useLocalStorage'
 import {
   Lang,
@@ -54,20 +54,16 @@ export const LocalizationContextProvider = React.memo(
       validateLang
     )
 
-    const setLangAndUpdateDOM = useCallback(
-      (lang: Lang) => {
-        setLang(lang)
-        document.documentElement.lang = lang
-      },
-      [setLang]
-    )
+    useEffect(() => {
+      document.documentElement.lang = lang
+    }, [lang])
 
     const value = useMemo(
       () => ({
         lang,
-        setLang: setLangAndUpdateDOM
+        setLang
       }),
-      [lang, setLangAndUpdateDOM]
+      [lang, setLang]
     )
 
     return (
