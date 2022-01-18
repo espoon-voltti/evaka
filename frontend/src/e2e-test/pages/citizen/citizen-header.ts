@@ -74,6 +74,10 @@ export default class CitizenHeader {
     await this.#languageOptionList.find(`[data-qa="lang-${lang}"]`).click()
   }
 
+  async assertDOMLangAttrib(lang: 'fi' | 'sv' | 'en') {
+    await this.page.find(`html[lang=${lang}]`).waitUntilVisible()
+  }
+
   async assertApplyingTabHasText(text: string) {
     await this.#applyingTab.findText(text).waitUntilVisible()
   }

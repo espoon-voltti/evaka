@@ -26,11 +26,14 @@ describe('Citizen page', () => {
 
     await header.selectLanguage('fi')
     await header.assertApplyingTabHasText('Hakeminen')
+    await header.assertDOMLangAttrib('fi')
 
     await header.selectLanguage('sv')
     await header.assertApplyingTabHasText('Ansökningar')
+    await header.assertDOMLangAttrib('sv')
 
     await header.selectLanguage('en')
     await header.assertApplyingTabHasText('Applications')
+    await header.assertDOMLangAttrib('en')
   })
 })
