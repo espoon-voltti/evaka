@@ -35,7 +35,7 @@ if [ "$SKIP_SPLIT" != 'true' ]; then
   # Get list of test files that should run on this node.
   if [ "$TEST_RUNNER" = "playwright" ]; then
     mapfile -t FILENAMES < <(circleci tests glob \
-        'src/e2e-playwright/specs/**/*.spec.ts' \
+        'src/e2e-test/specs/**/*.spec.ts' \
         | sort -h \
         | circleci tests split --split-by=timings --timings-type=filename)
     printf '%s\n' 'Spec files selected for node:' "${FILENAMES[@]}"

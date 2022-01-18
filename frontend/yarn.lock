@@ -4715,18 +4715,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"e2e-playwright@link:src/e2e-playwright::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "e2e-playwright@link:src/e2e-playwright::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"e2e-test-common@link:src/e2e-test-common::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "e2e-test-common@link:src/e2e-test-common::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
 "ecc-jsbn@npm:~0.1.1":
   version: 0.1.2
   resolution: "ecc-jsbn@npm:0.1.2"
@@ -5464,8 +5452,6 @@ __metadata:
     csstype: ^3.0.9
     date-fns: ^2.25.0
     downshift: ^6.1.7
-    e2e-playwright: "link:src/e2e-playwright"
-    e2e-test-common: "link:src/e2e-test-common"
     esbuild: ^0.14.2
     eslint: ^7.31.0
     eslint-config-prettier: ^8.3.0

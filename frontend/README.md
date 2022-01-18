@@ -23,7 +23,7 @@ There are also some internal subprojects:
 - `lib-customizations` - Customizable code and assets for eVaka forks, e.g. localizations
 - `lib-icons` - Icon set, switchable between free and pro Font Awesome
 - `maintenance-page-frontend` - Static website to be shown during maintenance instead of the other frontends
-- `e2e-playwright` - E2E tests
+- `e2e-test` - E2E tests
 
 **NOTE:** This project is currently under very active development.
 At this point, it is not yet adviced to start developing or running your custom
@@ -54,7 +54,7 @@ The code is organised into `src/` directory as follows:
 src/
   |- *-frontend/
   |- lib-*/
-  |- e2e-playwright
+  '- e2e-test
 ```
 
 ## Font Awesome icon library
@@ -194,7 +194,7 @@ BASE_URL=http://localhost:9999 yarn <cmd>
 All E2E tests can be run with the following command:
 
 ```sh
-yarn e2e-playwright
+yarn e2e-test
 ```
 
 If you don't want to wipe data from your dev environment,
@@ -210,7 +210,7 @@ You can run a single spec by specifying the corresponding subdirectory. For exam
 in order to only run tests related to messaging, use the following command:
 
 ```sh
-yarn jest --testTimeout 600000 --runInBand src/e2e-playwright/specs/7_messaging
+yarn jest --testTimeout 600000 --runInBand src/e2e-test/specs/7_messaging
 ```
 
 [Playwright traces](https://playwright.dev/docs/trace-viewer) are collected from
@@ -218,7 +218,7 @@ failed tests to the `traces/` directory. Use the following command to inspect a
 trace in the Playwright trace viewer:
 
 ```
-yarn playwright show-trace traces/<filename>.zip
+yarn exec playwright show-trace traces/<filename>.zip
 ```
 
 #### Scheduled CircleCI run for wip branch

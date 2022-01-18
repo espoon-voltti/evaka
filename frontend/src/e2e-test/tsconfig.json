@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "composite": true,
+    "outDir": "../../dist/e2e-test",
+    "types": ["jest", "node"]
+  },
+  "references": [{ "path": "../lib-common" }]
+}
