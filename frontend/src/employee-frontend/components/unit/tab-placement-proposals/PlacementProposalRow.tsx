@@ -129,10 +129,7 @@ export default React.memo(function PlacementProposalRow({
           </Link>
         </Td>
         <Td data-qa="child-dob">{placementPlan.child.dateOfBirth.format()}</Td>
-        <Td data-qa="placement-duration">
-          {placementPlan.period.start.format()} - $
-          {placementPlan.period.end.format()}
-        </Td>
+        <Td data-qa="placement-duration">{placementPlan.period.format()}</Td>
         <Td data-qa="placement-type">
           <CareTypeChip type={placementPlan.type} />
         </Td>
