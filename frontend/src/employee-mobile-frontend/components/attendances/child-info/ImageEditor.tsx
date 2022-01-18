@@ -126,8 +126,6 @@ export default React.memo(function ImageEditor({
 
   return (
     <Container>
-      <Gap />
-
       <CropWrapper>
         <ReactCrop
           src={image}
@@ -136,7 +134,6 @@ export default React.memo(function ImageEditor({
           onChange={(c) => setCrop(c)}
           onComplete={setCompletedCrop}
           circularCrop
-          style={{ maxHeight: '100%' }}
         />
         <canvas
           ref={previewCanvasRef}
@@ -176,9 +173,7 @@ const Container = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
+  margin: ${defaultMargins.m};
 `
 
 const ButtonRow = styled(FixedSpaceRow)`
@@ -190,7 +185,6 @@ const ButtonRow = styled(FixedSpaceRow)`
 const CropWrapper = styled.div`
   flex-grow: 1;
   flex-shrink: 1;
-  height: 100px;
 
   .ReactCrop .ord-nw {
     top: -24px;
