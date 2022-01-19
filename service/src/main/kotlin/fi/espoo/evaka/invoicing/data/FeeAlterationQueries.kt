@@ -6,14 +6,11 @@ package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.statement.StatementContext
-import java.sql.ResultSet
+import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
     val sql =
@@ -89,7 +86,7 @@ WHERE id = :id
         """.trimIndent()
     )
         .bind("id", id)
-        .map(toFeeAlteration)
+        .mapTo<FeeAlteration>()
         .firstOrNull()
 }
 
@@ -113,7 +110,7 @@ ORDER BY valid_from DESC, valid_to DESC
         """.trimIndent()
     )
         .bind("personId", personId)
-        .map(toFeeAlteration)
+        .mapTo<FeeAlteration>()
         .toList()
 }
 
@@ -141,7 +138,7 @@ WHERE
     )
         .bind("personIds", personIds.toTypedArray())
         .bind("from", from)
-        .map(toFeeAlteration)
+        .mapTo<FeeAlteration>()
         .toList()
 }
 
@@ -150,19 +147,4 @@ fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {
         .bind("id", id)
 
     handlingExceptions { update.execute() }
-}
-
-val toFeeAlteration = { rs: ResultSet, _: StatementContext ->
-    FeeAlteration(
-        id = FeeAlterationId(UUID.fromString(rs.getString("id"))),
-        personId = PersonId(UUID.fromString(rs.getString("person_id"))),
-        type = FeeAlteration.Type.valueOf(rs.getString("type")),
-        amount = rs.getInt("amount"),
-        isAbsolute = rs.getBoolean("is_absolute"),
-        validFrom = rs.getDate("valid_from").toLocalDate(),
-        validTo = rs.getDate("valid_to")?.toLocalDate(),
-        notes = rs.getString("notes"),
-        updatedAt = rs.getTimestamp("updated_at").toInstant(),
-        updatedBy = EvakaUserId(UUID.fromString((rs.getString("updated_by"))))
-    )
 }

@@ -8,9 +8,9 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -48,7 +48,7 @@ private fun Database.Read.getEndedPlacementsRows(from: LocalDate, to: LocalDate)
             GROUP BY p.id, p.first_name, p.last_name, p.social_security_number
         )
         SELECT 
-            ep.child_id, ep.first_name, ep.last_name, ep.social_security_number, 
+            ep.child_id, ep.first_name, ep.last_name, ep.social_security_number AS ssn,
             ep.placement_end, min(next.start_date) AS next_placement_start
         FROM ended_placements ep 
         LEFT JOIN placement next
@@ -60,16 +60,7 @@ private fun Database.Read.getEndedPlacementsRows(from: LocalDate, to: LocalDate)
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
-        .map { rs, _ ->
-            EndedPlacementsReportRow(
-                childId = ChildId(rs.getUUID("child_id")),
-                firstName = rs.getString("first_name"),
-                lastName = rs.getString("last_name"),
-                ssn = rs.getString("social_security_number"),
-                placementEnd = rs.getDate("placement_end").toLocalDate(),
-                nextPlacementStart = rs.getDate("next_placement_start")?.toLocalDate()
-            )
-        }
+        .mapTo<EndedPlacementsReportRow>()
         .toList()
 }
 

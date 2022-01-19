@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
@@ -38,10 +38,10 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             """.trimIndent()
         val feeAffectingDateRange = tx.createQuery(feeAffectingDatesSQL)
             .bind("id_duplicate", duplicate)
-            .map { rs, _ ->
+            .map { row ->
                 DateRange(
-                    rs.getDate("min_date").toLocalDate(),
-                    rs.getDate("max_date")?.toLocalDate()
+                    row.mapColumn("min_date"),
+                    row.mapColumn<LocalDate?>("max_date")
                         ?.takeIf { it.isBefore(LocalDate.of(2200, 1, 1)) } // infinity -> null
                 )
             }
@@ -97,7 +97,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 """.trimIndent()
             tx.createQuery(parentsSQL)
                 .bind("id", master)
-                .map { rs, _ -> PersonId(rs.getUUID("head_of_child")) }
+                .mapTo<PersonId>()
                 .forEach { parentId ->
                     sendFamilyUpdatedMessage(tx, parentId, feeAffectingDateRange)
                 }

@@ -13,11 +13,9 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
-import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
@@ -100,7 +98,7 @@ class DecisionDraftService {
             ORDER BY name
             """.trimIndent()
         return tx.createQuery(sql)
-            .map { rs, _ -> toDecisionUnit(rs) }
+            .mapTo<DecisionUnit>()
             .toList()
     }
 
@@ -114,7 +112,7 @@ class DecisionDraftService {
 
         return tx.createQuery(sql)
             .bind("id", unitId)
-            .map { rs, _ -> toDecisionUnit(rs) }
+            .mapTo<DecisionUnit>()
             .first()
     }
 
@@ -186,8 +184,8 @@ private val decisionUnitQuery =
 SELECT 
     u.id,
     u.name,
-    decision_daycare_name, 
-    decision_preschool_name, 
+    decision_daycare_name AS daycareDecisionName,
+    decision_preschool_name AS preschoolDecisionName,
     decision_handler, 
     decision_handler_address,
     m.name AS manager,
@@ -199,20 +197,3 @@ SELECT
 FROM daycare u
 LEFT JOIN unit_manager m ON u.unit_manager_id = m.id
     """.trimIndent()
-
-private val toDecisionUnit = { rs: ResultSet ->
-    DecisionUnit(
-        id = DaycareId(rs.getUUID("id")),
-        name = rs.getString("name"),
-        manager = rs.getString("manager"),
-        streetAddress = rs.getString("street_address"),
-        postalCode = rs.getString("postal_code"),
-        postOffice = rs.getString("post_office"),
-        phone = rs.getString("phone"),
-        daycareDecisionName = rs.getString("decision_daycare_name"),
-        preschoolDecisionName = rs.getString("decision_preschool_name"),
-        decisionHandler = rs.getString("decision_handler"),
-        decisionHandlerAddress = rs.getString("decision_handler_address"),
-        providerType = rs.getEnum("provider_type")
-    )
-}
