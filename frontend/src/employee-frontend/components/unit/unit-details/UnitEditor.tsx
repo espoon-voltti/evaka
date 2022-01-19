@@ -214,6 +214,7 @@ function AddressEditor({
         value={address.streetAddress}
         placeholder={i18n.unitEditor.placeholder.streetAddress}
         onChange={(value) => update({ streetAddress: value })}
+        width="L"
         data-qa={`${dataQaPrefix}-street-input`}
       />
       <AddressSecondRowContainer>

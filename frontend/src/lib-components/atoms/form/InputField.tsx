@@ -51,7 +51,6 @@ const width = (width: InputWidth) => css`
 const Wrapper = styled.div<{ width: InputWidth }>`
   position: relative;
   display: inline-block;
-  min-width: 0; // needed for correct overflow behavior
   ${(p) => width(p.width)}
 `
 
