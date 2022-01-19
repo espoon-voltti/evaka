@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,6 +11,7 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { P } from 'lib-components/typography'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
+import NonTerminatablePlacement from './NonTerminatablePlacement'
 import PlacementTerminationForm from './PlacementTerminationForm'
 import TerminatedPlacements from './TerminatedPlacements'
 import { getPlacements } from './api'
@@ -40,20 +41,27 @@ export default React.memo(function PlacementTerminationSection({
             .concat(p.additionalPlacements)
             .find((p2) => !!p2.terminationRequestedDate)
         )
-        const terminatableGroups = placements.filter(({ endDate }) =>
-          endDate.isAfter(LocalDate.today())
+        const groups = placements.filter((p) =>
+          p.endDate.isAfter(LocalDate.today())
         )
         return (
           <FixedSpaceColumn>
             <P>{t.children.placementTermination.description}</P>
-            {terminatableGroups.map((grp) => (
-              <PlacementTerminationForm
-                key={`${grp.type}-${grp.unitId}`}
-                childId={childId}
-                placementGroup={grp}
-                onSuccess={refreshPlacements}
-              />
-            ))}
+            {groups.map((grp) =>
+              grp.terminatable ? (
+                <PlacementTerminationForm
+                  key={`${grp.type}-${grp.unitId}`}
+                  childId={childId}
+                  placementGroup={grp}
+                  onSuccess={refreshPlacements}
+                />
+              ) : (
+                <NonTerminatablePlacement
+                  key={`${grp.type}-${grp.unitId}`}
+                  group={grp}
+                />
+              )
+            )}
             {terminatedPlacements.length > 0 && (
               <TerminatedPlacements placements={terminatedPlacements} />
             )}

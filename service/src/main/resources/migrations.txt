@@ -195,3 +195,4 @@ V194__evaka_user_for_paper_application_guardians.sql
 V195__evaka_user_decision_resolved_by.sql
 V196__invoice_area_id.sql
 V197__dev_temporary_fees.sql
+V198__placement_termination_pilot_feature.sql

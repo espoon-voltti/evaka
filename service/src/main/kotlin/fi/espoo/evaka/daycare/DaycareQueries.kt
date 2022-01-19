@@ -348,3 +348,14 @@ fun Database.Transaction.setUnitFeatures(daycareId: DaycareId, features: Set<Pil
         .bind("features", features.toTypedArray())
         .updateExactlyOne()
 }
+
+fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery(
+    """
+    SELECT id, name, enabled_pilot_features AS features
+    FROM daycare
+    WHERE id = :id
+    """.trimIndent()
+)
+    .bind("id", id)
+    .mapTo<UnitFeatures>()
+    .first()

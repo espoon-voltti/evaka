@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -72,6 +72,12 @@ export class CitizenChildPage {
 
   getTerminatablePlacements(): Promise<string[]> {
     return this.#placements.allInnerTexts()
+  }
+
+  getNonTerminatablePlacements(): Promise<string[]> {
+    return this.page
+      .findAllByDataQa('non-terminatable-placement')
+      .allInnerTexts()
   }
 
   getToggledPlacements(): Promise<string[]> {

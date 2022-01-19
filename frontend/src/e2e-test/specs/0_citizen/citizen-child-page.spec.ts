@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import {
   insertApplications,
@@ -61,11 +62,30 @@ describe('Citizen children page', () => {
     })
   })
 
+  async function createDaycarePlacement(
+    endDate: LocalDate,
+    unitId = fixtures.daycareFixture.id,
+    type: PlacementType = 'DAYCARE'
+  ) {
+    await insertDaycarePlacementFixtures([
+      {
+        id: uuidv4(),
+        type,
+        childId: fixtures.enduserChildFixtureKaarina.id,
+        unitId,
+        startDate: LocalDate.today().subMonths(2).formatIso(),
+        endDate: endDate.formatIso()
+      }
+    ])
+  }
+
   describe('Placement termination', () => {
     const assertToggledPlacements = async (labels: string[]) =>
       waitUntilEqual(() => childPage.getToggledPlacements(), labels)
     const assertTerminatablePlacements = async (labels: string[]) =>
       waitUntilEqual(() => childPage.getTerminatablePlacements(), labels)
+    const assertNonTerminatablePlacements = async (labels: string[]) =>
+      waitUntilEqual(() => childPage.getNonTerminatablePlacements(), labels)
     const assertTerminatedPlacements = async (labels: string | string[]) =>
       waitUntilEqual(
         () => childPage.getTerminatedPlacements(),
@@ -74,16 +94,7 @@ describe('Citizen children page', () => {
 
     test('Simple daycare placement can be terminated', async () => {
       const endDate = LocalDate.today().addYears(2)
-      await insertDaycarePlacementFixtures([
-        {
-          id: uuidv4(),
-          type: 'DAYCARE',
-          childId: fixtures.enduserChildFixtureKaarina.id,
-          unitId: fixtures.daycareFixture.id,
-          startDate: LocalDate.today().subMonths(2).formatIso(),
-          endDate: endDate.formatIso()
-        }
-      ])
+      await createDaycarePlacement(endDate)
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
@@ -104,18 +115,23 @@ describe('Citizen children page', () => {
       )
     })
 
+    test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
+      const endDate = LocalDate.today().addYears(2)
+      await createDaycarePlacement(endDate, fixtures.clubFixture.id, 'CLUB')
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openTerminationCollapsible()
+
+      await childPage.assertTerminatedPlacementCount(0)
+      await childPage.assertTerminatablePlacementCount(0)
+      await assertNonTerminatablePlacements([
+        `Alkuräjähdyksen kerho, voimassa ${endDate.format()}`
+      ])
+    })
+
     test('Upcoming transfer application is deleted when placement is terminated', async () => {
       const endDate = LocalDate.today().addYears(2)
-      await insertDaycarePlacementFixtures([
-        {
-          id: uuidv4(),
-          type: 'DAYCARE',
-          childId: fixtures.enduserChildFixtureKaarina.id,
-          unitId: fixtures.daycareFixture.id,
-          startDate: LocalDate.today().subMonths(2).formatIso(),
-          endDate: endDate.formatIso()
-        }
-      ])
+      await createDaycarePlacement(endDate)
 
       const application = applicationFixture(
         fixtures.enduserChildFixtureKaarina,

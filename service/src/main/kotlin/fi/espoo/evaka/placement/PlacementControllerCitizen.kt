@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.cancelAllActiveTransferApplicationsAfterDate
+import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
@@ -16,9 +17,11 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -41,6 +44,7 @@ class PlacementControllerCitizen(
         val endDate: LocalDate,
         val unitId: DaycareId,
         val unitName: String,
+        val terminatable: Boolean,
         val placements: List<ChildPlacement>,
         val additionalPlacements: List<ChildPlacement>
     )
@@ -101,6 +105,7 @@ class PlacementControllerCitizen(
                     endDate = placementsOfSameType.maxOf { placement -> placement.endDate },
                     unitId = placementsOfSameType[0].unitId,
                     unitName = placementsOfSameType[0].unitName,
+                    terminatable = placementsOfSameType[0].terminatable
                 )
             }
         }
@@ -152,7 +157,9 @@ class PlacementControllerCitizen(
         Audit.PlacementTerminate.log(body.unitId, body.type)
 
         db.connect { dbc ->
-
+            if (dbc.read { it.getUnitFeatures(body.unitId) }?.features?.contains(PilotFeature.PLACEMENT_TERMINATION) != true) {
+                throw Forbidden("Placement termination not enabled for unit", "PLACEMENT_TERMINATION_DISABLED")
+            }
             val terminatablePlacements = dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
                 .also {
                     // TODO list support for accessControl

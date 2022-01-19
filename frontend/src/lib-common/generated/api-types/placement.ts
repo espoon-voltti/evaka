@@ -32,6 +32,7 @@ export interface ChildPlacement {
   endDate: LocalDate
   id: UUID
   startDate: LocalDate
+  terminatable: boolean
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
@@ -246,6 +247,7 @@ export interface TerminatablePlacementGroup {
   endDate: LocalDate
   placements: ChildPlacement[]
   startDate: LocalDate
+  terminatable: boolean
   type: TerminatablePlacementType
   unitId: UUID
   unitName: string
