@@ -21,7 +21,8 @@ const {
   assistanceMeasures,
   placementTypes,
   placementPlanRejectReasons,
-  unitProviderTypes
+  unitProviderTypes,
+  voucherValueDecisionTypes
 }: EmployeeCustomizations = customizations
 export {
   appConfig,
@@ -30,7 +31,8 @@ export {
   assistanceMeasures,
   placementTypes,
   placementPlanRejectReasons,
-  unitProviderTypes
+  unitProviderTypes,
+  voucherValueDecisionTypes
 }
 
 export type Lang = 'fi'
