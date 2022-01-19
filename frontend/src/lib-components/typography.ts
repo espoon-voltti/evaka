@@ -269,12 +269,18 @@ export const Title = styled.span<{ primary?: boolean }>`
   font-weight: ${fontWeights.semibold};
 `
 
-export const BigNumber = styled.span`
+export const BigNumber = styled.span<{ centered?: boolean }>`
   font-family: Montserrat, sans-serif;
   font-size: 60px;
   font-weight: ${fontWeights.light};
   line-height: 73px;
   color: ${(p) => p.theme.colors.main.m1};
+  ${(p) =>
+    p.centered
+      ? css`
+          text-align: center;
+        `
+      : ''}
 `
 
 export const InformationText = styled.span<{ centered?: boolean }>`

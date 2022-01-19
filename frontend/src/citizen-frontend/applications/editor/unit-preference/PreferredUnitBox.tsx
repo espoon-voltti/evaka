@@ -9,11 +9,12 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap
 } from 'lib-components/layout/flex-helpers'
-import { fontWeights, H4 } from 'lib-components/typography'
+import { BigNumber, H4 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faTimes } from 'lib-icons'
@@ -57,7 +58,9 @@ export default React.memo(function PreferredUnitBox({
 
   return (
     <Wrapper>
-      <MainColLeft>{n}</MainColLeft>
+      <MainColLeft>
+        <BigNumber>{n}</BigNumber>
+      </MainColLeft>
       <MainColCenter>
         <FixedSpaceColumn>
           <FixedSpaceColumn spacing="xxs">
@@ -146,23 +149,13 @@ const Wrapper = styled.div`
 `
 
 const MainColLeft = styled.div`
-  flex-grow: 0;
-  font-family: Montserrat, sans-serif;
-  font-style: normal;
-  font-weight: ${fontWeights.light};
-  color: ${colors.main.m2};
+  flex: 0 0 52px;
   text-align: center;
+  padding: ${defaultMargins.xs};
 
-  font-size: 70px;
-  line-height: 56px;
-  width: 60px;
-  padding: ${defaultMargins.s};
-
-  @media screen and (max-width: 769px) {
-    font-size: 48px;
-    line-height: 52px;
-    width: 48px;
-    padding: ${defaultMargins.xs};
+  @media screen and (min-width: ${tabletMin}) {
+    flex-basis: 64px;
+    padding: ${defaultMargins.s};
   }
 `
 
