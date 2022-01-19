@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.application
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
@@ -97,7 +97,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
     @Autowired
-    lateinit var mapper: ObjectMapper
+    lateinit var mapper: JsonMapper
 
     @Autowired
     lateinit var incomeTypesProvider: IncomeTypesProvider

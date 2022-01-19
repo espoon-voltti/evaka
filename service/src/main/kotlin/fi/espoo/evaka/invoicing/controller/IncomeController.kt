@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.deleteIncome
 import fi.espoo.evaka.invoicing.data.getIncome
@@ -43,7 +43,7 @@ import java.util.UUID
 @RequestMapping("/incomes")
 class IncomeController(
     private val incomeTypesProvider: IncomeTypesProvider,
-    private val mapper: ObjectMapper,
+    private val mapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl
 ) {

@@ -6,7 +6,7 @@ package fi.espoo.evaka.varda.integration
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
@@ -39,7 +39,7 @@ private val logger = KotlinLogging.logger {}
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: JsonMapper,
     env: VardaEnv,
 ) {
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"

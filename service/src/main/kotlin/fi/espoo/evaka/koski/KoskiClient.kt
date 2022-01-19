@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import com.github.kittinunf.fuel.core.FuelError
@@ -38,13 +38,11 @@ class KoskiClient(
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the global defaults change.
     // This is important, because our payload diffing mechanism relies on the serialization format
-    private val objectMapper = jacksonObjectMapper()
-        .registerModule(JavaTimeModule())
-        .registerModule(JaxbAnnotationModule())
-        .registerModule(Jdk8Module())
-        .registerModule(ParameterNamesModule())
+    private val objectMapper = jacksonMapperBuilder()
+        .addModules(JavaTimeModule(), JaxbAnnotationModule(), Jdk8Module(), ParameterNamesModule())
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .build()
 
     init {
         asyncJobRunner?.registerHandler { db, msg: AsyncJob.UploadToKoski -> uploadToKoski(db, msg, today = LocalDate.now()) }

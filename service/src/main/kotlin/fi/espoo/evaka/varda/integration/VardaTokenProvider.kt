@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.varda.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import fi.espoo.evaka.VardaEnv
@@ -33,7 +33,7 @@ interface VardaTokenProvider {
 @Service
 class VardaTempTokenProvider(
     private val fuel: FuelManager,
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: JsonMapper,
     env: VardaEnv
 ) : VardaTokenProvider {
     private val basicAuth = "Basic ${env.basicAuth.value}"

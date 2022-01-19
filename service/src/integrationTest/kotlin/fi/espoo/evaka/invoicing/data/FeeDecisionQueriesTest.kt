@@ -14,7 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.config.defaultObjectMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
@@ -37,7 +37,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class FeeDecisionQueriesTest : PureJdbiTest() {
-    val objectMapper = defaultObjectMapper()
+    val objectMapper = defaultJsonMapper()
 
     private val testPeriod = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
     private val testDecisions = listOf(

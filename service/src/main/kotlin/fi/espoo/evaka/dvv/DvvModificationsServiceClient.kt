@@ -5,7 +5,7 @@
 package fi.espoo.evaka.dvv
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
@@ -25,7 +25,7 @@ private val logger = KotlinLogging.logger {}
  */
 @Service
 class DvvModificationsServiceClient(
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: JsonMapper,
     private val fuel: FuelManager,
     private val customizers: List<DvvModificationRequestCustomizer>,
     env: DvvModificationsEnv

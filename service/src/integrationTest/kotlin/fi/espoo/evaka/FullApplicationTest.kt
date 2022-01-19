@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Request
@@ -14,7 +14,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
-import fi.espoo.evaka.shared.config.defaultObjectMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -47,7 +47,7 @@ abstract class FullApplicationTest {
 
     // HTTP client for testing the application
 
-    protected val objectMapper: ObjectMapper = defaultObjectMapper()
+    protected val objectMapper: JsonMapper = defaultJsonMapper()
 
     protected lateinit var jdbi: Jdbi
 

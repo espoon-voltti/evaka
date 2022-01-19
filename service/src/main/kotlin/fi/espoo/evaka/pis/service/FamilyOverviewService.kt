@@ -5,7 +5,7 @@
 package fi.espoo.evaka.pis.service
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.data.parseIncomeDataJson
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.getTotalIncome
@@ -23,7 +23,7 @@ import java.time.LocalDate
 
 @Service
 class FamilyOverviewService(
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider
 ) {
     fun getFamilyByAdult(tx: Database.Read, adultId: PersonId): FamilyOverview? {
@@ -145,7 +145,7 @@ data class FamilyOverviewIncome(
 
 fun toFamilyOverviewPerson(
     rs: ResultSet,
-    objectMapper: ObjectMapper,
+    objectMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider
 ): FamilyOverviewPerson {
     return FamilyOverviewPerson(

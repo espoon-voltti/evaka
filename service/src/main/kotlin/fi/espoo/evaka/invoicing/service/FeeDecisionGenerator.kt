@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
@@ -45,7 +45,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 internal fun Database.Transaction.handleFeeDecisionChanges(
-    objectMapper: ObjectMapper,
+    objectMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
     headOfFamily: PersonId,

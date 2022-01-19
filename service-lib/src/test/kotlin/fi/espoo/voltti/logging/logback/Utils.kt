@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.MappingJsonFactory
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import net.logstash.logback.encoder.CompositeJsonEncoder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -196,7 +196,7 @@ private object EnvFields {
 
 // json utils
 
-fun Any.asMap(objectMapper: ObjectMapper = mapper): Map<String, Any> =
+fun Any.asMap(objectMapper: JsonMapper = mapper): Map<String, Any> =
     objectMapper.convertValue<Map<String, Any>>(this, object : TypeReference<Map<String, Any>>() {})
 
 private fun ILoggingEvent.toJson(encoder: CompositeJsonEncoder<ILoggingEvent>): JsonNode =
@@ -204,4 +204,4 @@ private fun ILoggingEvent.toJson(encoder: CompositeJsonEncoder<ILoggingEvent>): 
 
 @Suppress("DEPRECATION")
 private val factory = MappingJsonFactory().enable(JsonGenerator.Feature.ESCAPE_NON_ASCII) as JsonFactory
-private val mapper = ObjectMapper(factory)
+private val mapper = JsonMapper(factory)

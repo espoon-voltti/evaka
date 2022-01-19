@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
@@ -20,7 +20,7 @@ private val logger = KotlinLogging.logger {}
 
 class EspooInvoiceIntegrationClient(
     private val env: EspooInvoiceIntegrationEnv,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: JsonMapper
 ) : InvoiceIntegrationClient {
     override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult {
         return invoices

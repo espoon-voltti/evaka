@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.application
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
@@ -93,7 +93,7 @@ class ApplicationStateService(
     private val decisionDraftService: DecisionDraftService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val mapper: ObjectMapper,
+    private val mapper: JsonMapper,
     private val documentClient: DocumentService,
     private val incomeTypesProvider: IncomeTypesProvider,
     private val featureConfig: FeatureConfig,

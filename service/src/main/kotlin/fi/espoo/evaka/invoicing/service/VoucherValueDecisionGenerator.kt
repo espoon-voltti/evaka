@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.assistanceneed.AssistanceNeedCapacityFactor
 import fi.espoo.evaka.assistanceneed.getCapacityFactorsByChild
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
@@ -46,7 +46,7 @@ import java.util.UUID
 
 internal fun Database.Transaction.handleValueDecisionChanges(
     capacityFactorEnabled: Boolean,
-    objectMapper: ObjectMapper,
+    objectMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
     child: ChildWithDateOfBirth,

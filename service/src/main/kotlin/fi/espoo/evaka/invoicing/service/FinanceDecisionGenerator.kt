@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -38,7 +38,7 @@ data class Quadruple<out A, out B, out C, out D>(
 
 @Component
 class FinanceDecisionGenerator(
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
     env: EvakaEnv,
     featureConfig: FeatureConfig

@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
@@ -36,7 +36,7 @@ import kotlin.test.assertNull
 
 class IncomeIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var mapper: ObjectMapper
+    lateinit var mapper: JsonMapper
 
     @Autowired
     lateinit var incomeTypesProvider: IncomeTypesProvider

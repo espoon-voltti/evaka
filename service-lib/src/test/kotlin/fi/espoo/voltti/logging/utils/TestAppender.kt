@@ -8,7 +8,7 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
 import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import mu.KLogger
 import net.logstash.logback.argument.StructuredArgument
 import org.json.JSONObject
@@ -47,7 +47,7 @@ class TestAppender : AppenderBase<ILoggingEvent>() {
                 val pw = PrintWriter(sw, true)
                 JsonFactory().createGenerator(pw).use { generator ->
                     generator.run {
-                        codec = ObjectMapper()
+                        codec = JsonMapper()
                         writeStartObject()
                         args.writeTo(this)
                         writeEndObject()

@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.koski
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.google.common.collect.Multimaps
 import com.google.common.collect.SetMultimap
-import fi.espoo.evaka.shared.config.defaultObjectMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.post
 import io.javalin.apibuilder.ApiBuilder.put
@@ -24,7 +24,7 @@ private typealias Ssn = String
 
 data class MockStudyRight(val version: Int, val opiskeluoikeus: Opiskeluoikeus)
 
-class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoCloseable {
+class MockKoskiServer(private val objectMapper: JsonMapper, port: Int) : AutoCloseable {
     private val app = Javalin.create().start(port)
     private val logger = KotlinLogging.logger {}
 
@@ -131,7 +131,7 @@ class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoC
 
     companion object {
         fun start(): MockKoskiServer {
-            return MockKoskiServer(defaultObjectMapper(), port = 0)
+            return MockKoskiServer(defaultJsonMapper(), port = 0)
         }
     }
 }
