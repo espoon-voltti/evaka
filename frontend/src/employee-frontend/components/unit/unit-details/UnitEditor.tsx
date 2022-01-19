@@ -164,7 +164,7 @@ const AddressSecondRowContainer = styled.div`
   justify-content: space-between;
 
   & > :first-child {
-    margin-right: 120px;
+    margin-right: 20px;
   }
 `
 
