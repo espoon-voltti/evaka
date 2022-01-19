@@ -76,7 +76,8 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
         JOIN person ON person.id = child_id
         JOIN daycare ON daycare.id = unit_id
         JOIN care_area ca ON ca.id = daycare.care_area_id
-        ${if (authorizedUnits != AclAuthorization.All) "WHERE daycare.id = ANY(:units)" else ""}
+        WHERE person.date_of_death IS NULL
+        ${if (authorizedUnits != AclAuthorization.All) " AND daycare.id = ANY(:units)" else ""}
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
