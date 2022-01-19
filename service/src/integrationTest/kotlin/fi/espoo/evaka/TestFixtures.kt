@@ -525,7 +525,11 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             siblingDiscount2 = BigDecimal("0.5"),
             siblingDiscount2Plus = BigDecimal("0.8"),
             maxFee = 28900,
-            minFee = 2700
+            minFee = 2700,
+            temporaryFee = 2900,
+            temporaryFeePartDay = 1500,
+            temporaryFeeSibling = 1500,
+            temporaryFeeSiblingPartDay = 800
         )
     )
 

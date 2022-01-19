@@ -24,8 +24,6 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -168,22 +166,6 @@ fun getDueDate(periodEnd: LocalDate): LocalDate {
         DayOfWeek.SATURDAY -> lastDayOfMonth.minusDays(1)
         else -> lastDayOfMonth
     }
-}
-
-fun calculatePriceForTemporary(partDay: Boolean, siblingOrdinal: Int): Int {
-    val basePrice = BigDecimal(2900)
-
-    val siblingDiscountMultiplier =
-        if (siblingOrdinal == 1) BigDecimal(1)
-        else BigDecimal("0.5")
-    val afterSiblingDiscount = (basePrice * siblingDiscountMultiplier)
-        .divide(BigDecimal(100), 0, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(100))
-
-    val serviceNeedMultiplier =
-        if (partDay) BigDecimal("0.5")
-        else BigDecimal(1)
-    return roundToEuros(afterSiblingDiscount * serviceNeedMultiplier).toInt()
 }
 
 fun getProductFromActivity(placementType: PlacementType): Product {

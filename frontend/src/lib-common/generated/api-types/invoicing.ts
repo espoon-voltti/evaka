@@ -266,6 +266,10 @@ export interface FeeThresholds {
   minIncomeThreshold6: number
   siblingDiscount2: number
   siblingDiscount2Plus: number
+  temporaryFee: number
+  temporaryFeePartDay: number
+  temporaryFeeSibling: number
+  temporaryFeeSiblingPartDay: number
   validDuring: DateRange
 }
 

@@ -334,6 +334,86 @@ export default React.memo(function FeeThresholdsEditor({
           />
         </FixedSpaceColumn>
       </RowWithMargin>
+
+      <H4>{i18n.financeBasics.fees.temporaryFees}</H4>
+      <RowWithMargin spacing="XL">
+        <FixedSpaceColumn spacing="xxs">
+          <Label htmlFor="temporaryFee">
+            {i18n.financeBasics.fees.temporaryFee}
+          </Label>
+          <InputField
+            width="s"
+            value={editorState.temporaryFee}
+            onChange={(temporaryFee) =>
+              setEditorState((previousState) => ({
+                ...previousState,
+                temporaryFee
+              }))
+            }
+            symbol="€"
+            info={validationErrorInfo('temporaryFee')}
+            hideErrorsBeforeTouched
+            data-qa="temporary-fee"
+          />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="xxs">
+          <Label htmlFor="temporaryFeePartDay">
+            {i18n.financeBasics.fees.temporaryFeePartDay}
+          </Label>
+          <InputField
+            width="s"
+            value={editorState.temporaryFeePartDay}
+            onChange={(temporaryFeePartDay) =>
+              setEditorState((previousState) => ({
+                ...previousState,
+                temporaryFeePartDay
+              }))
+            }
+            symbol="€"
+            info={validationErrorInfo('temporaryFeePartDay')}
+            hideErrorsBeforeTouched
+            data-qa="temporary-fee-part-day"
+          />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="xxs">
+          <Label htmlFor="temporaryFeeSibling">
+            {i18n.financeBasics.fees.temporaryFeeSibling}
+          </Label>
+          <InputField
+            width="s"
+            value={editorState.temporaryFeeSibling}
+            onChange={(temporaryFeeSibling) =>
+              setEditorState((previousState) => ({
+                ...previousState,
+                temporaryFeeSibling
+              }))
+            }
+            symbol="€"
+            info={validationErrorInfo('temporaryFeeSibling')}
+            hideErrorsBeforeTouched
+            data-qa="temporary-fee-sibling"
+          />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="xxs">
+          <Label htmlFor="temporaryFeeSiblingPartDay">
+            {i18n.financeBasics.fees.temporaryFeeSiblingPartDay}
+          </Label>
+          <InputField
+            width="s"
+            value={editorState.temporaryFeeSiblingPartDay}
+            onChange={(temporaryFeeSiblingPartDay) =>
+              setEditorState((previousState) => ({
+                ...previousState,
+                temporaryFeeSiblingPartDay
+              }))
+            }
+            symbol="€"
+            info={validationErrorInfo('temporaryFeeSiblingPartDay')}
+            hideErrorsBeforeTouched
+            data-qa="temporary-fee-sibling-part-day"
+          />
+        </FixedSpaceColumn>
+      </RowWithMargin>
       {saveError ? (
         <SaveError>
           {i18n.financeBasics.fees.errors[saveError] ??
@@ -439,7 +519,11 @@ const centProps: readonly (keyof FormState)[] = [
   'incomeMultiplier6',
   'incomeThresholdIncrease6Plus',
   'siblingDiscount2',
-  'siblingDiscount2Plus'
+  'siblingDiscount2Plus',
+  'temporaryFee',
+  'temporaryFeePartDay',
+  'temporaryFeeSibling',
+  'temporaryFeeSiblingPartDay'
 ]
 
 function validateForm(
@@ -562,7 +646,13 @@ function parseFormOrThrow(form: FormState): FeeThresholdsPayload {
       form.incomeThresholdIncrease6Plus
     ),
     siblingDiscount2: parseMultiplier(form.siblingDiscount2),
-    siblingDiscount2Plus: parseMultiplier(form.siblingDiscount2Plus)
+    siblingDiscount2Plus: parseMultiplier(form.siblingDiscount2Plus),
+    temporaryFee: parseCentsOrThrow(form.temporaryFee),
+    temporaryFeePartDay: parseCentsOrThrow(form.temporaryFeePartDay),
+    temporaryFeeSibling: parseCentsOrThrow(form.temporaryFeeSibling),
+    temporaryFeeSiblingPartDay: parseCentsOrThrow(
+      form.temporaryFeeSiblingPartDay
+    )
   }
 }
 

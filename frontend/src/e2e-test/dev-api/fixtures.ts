@@ -9,6 +9,7 @@ import { ApplicationForm } from 'lib-common/generated/api-types/application'
 import {
   FeeDecision,
   FeeDecisionStatus,
+  FeeThresholds,
   Invoice,
   VoucherValueDecision
 } from 'lib-common/generated/api-types/invoicing'
@@ -56,6 +57,7 @@ import {
   insertDecisionFixtures,
   insertEmployeeFixture,
   insertEmployeePins,
+  insertFeeThresholds,
   insertIncome,
   insertPedagogicalDocuments,
   insertPersonFixture,
@@ -1215,6 +1217,36 @@ export class Fixture {
     })
   }
 
+  static feeThresholds(): FeeThresholdBuilder {
+    return new FeeThresholdBuilder({
+      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
+      maxFee: 10000,
+      minFee: 1000,
+      minIncomeThreshold2: 100000,
+      incomeMultiplier2: 0.1,
+      maxIncomeThreshold2: 200000,
+      minIncomeThreshold3: 200000,
+      incomeMultiplier3: 0.1,
+      maxIncomeThreshold3: 300000,
+      minIncomeThreshold4: 300000,
+      incomeMultiplier4: 0.1,
+      maxIncomeThreshold4: 400000,
+      minIncomeThreshold5: 400000,
+      incomeMultiplier5: 0.1,
+      maxIncomeThreshold5: 500000,
+      minIncomeThreshold6: 500000,
+      incomeMultiplier6: 0.1,
+      maxIncomeThreshold6: 600000,
+      incomeThresholdIncrease6Plus: 100000,
+      siblingDiscount2: 0.5,
+      siblingDiscount2Plus: 0.8,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
+    })
+  }
+
   static income(): IncomeBuilder {
     return new IncomeBuilder({
       id: uuidv4(),
@@ -1574,5 +1606,16 @@ export class VardaServiceNeedBuilder extends FixtureBuilder<DevVardaServiceNeed>
 
   copy() {
     return new VardaServiceNeedBuilder({ ...this.data })
+  }
+}
+
+export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
+  async save() {
+    await insertFeeThresholds(this.data)
+    return this
+  }
+
+  copy() {
+    return new FeeThresholdBuilder({ ...this.data })
   }
 }

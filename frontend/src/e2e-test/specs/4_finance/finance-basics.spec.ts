@@ -36,29 +36,7 @@ describe('Finance basics', () => {
   })
 
   test('Create a new set of retroactive fee thresholds', async () => {
-    const data = {
-      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-      maxFee: 10000,
-      minFee: 1000,
-      minIncomeThreshold2: 100000,
-      incomeMultiplier2: 0.1,
-      maxIncomeThreshold2: 200000,
-      minIncomeThreshold3: 200000,
-      incomeMultiplier3: 0.1,
-      maxIncomeThreshold3: 300000,
-      minIncomeThreshold4: 300000,
-      incomeMultiplier4: 0.1,
-      maxIncomeThreshold4: 400000,
-      minIncomeThreshold5: 400000,
-      incomeMultiplier5: 0.1,
-      maxIncomeThreshold5: 500000,
-      minIncomeThreshold6: 500000,
-      incomeMultiplier6: 0.1,
-      maxIncomeThreshold6: 600000,
-      incomeThresholdIncrease6Plus: 100000,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
-    }
+    const { data } = Fixture.feeThresholds()
     await nav.openAndClickDropdownMenuItem('financeBasics')
 
     await financeBasicsPage.feesSection.createFeeThresholdsButton.click()
@@ -71,29 +49,7 @@ describe('Finance basics', () => {
   })
 
   test('Creating a new set of retroactive fee thresholds ends the previous', async () => {
-    const originalData = {
-      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-      maxFee: 10000,
-      minFee: 1000,
-      minIncomeThreshold2: 100000,
-      incomeMultiplier2: 0.1,
-      maxIncomeThreshold2: 200000,
-      minIncomeThreshold3: 200000,
-      incomeMultiplier3: 0.1,
-      maxIncomeThreshold3: 300000,
-      minIncomeThreshold4: 300000,
-      incomeMultiplier4: 0.1,
-      maxIncomeThreshold4: 400000,
-      minIncomeThreshold5: 400000,
-      incomeMultiplier5: 0.1,
-      maxIncomeThreshold5: 500000,
-      minIncomeThreshold6: 500000,
-      incomeMultiplier6: 0.1,
-      maxIncomeThreshold6: 600000,
-      incomeThresholdIncrease6Plus: 100000,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
-    }
+    const originalData = Fixture.feeThresholds().data
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')
 
@@ -124,29 +80,9 @@ describe('Finance basics', () => {
 
   test('Creating fee thresholds shows a validation error when max fees do not match', async () => {
     // Family size 2 has a different max fee
-    const data = {
-      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-      maxFee: 10000,
-      minFee: 1000,
-      minIncomeThreshold2: 100000,
-      incomeMultiplier2: 0.1,
-      maxIncomeThreshold2: 300000,
-      minIncomeThreshold3: 200000,
-      incomeMultiplier3: 0.1,
-      maxIncomeThreshold3: 300000,
-      minIncomeThreshold4: 300000,
-      incomeMultiplier4: 0.1,
-      maxIncomeThreshold4: 400000,
-      minIncomeThreshold5: 400000,
-      incomeMultiplier5: 0.1,
-      maxIncomeThreshold5: 500000,
-      minIncomeThreshold6: 500000,
-      incomeMultiplier6: 0.1,
-      maxIncomeThreshold6: 600000,
-      incomeThresholdIncrease6Plus: 100000,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
-    }
+    const { data } = Fixture.feeThresholds().with({
+      maxIncomeThreshold2: 300000
+    })
     await nav.openAndClickDropdownMenuItem('financeBasics')
 
     await financeBasicsPage.feesSection.createFeeThresholdsButton.click()
@@ -159,29 +95,8 @@ describe('Finance basics', () => {
   })
 
   test('Copying existing fee thresholds', async () => {
-    const originalData = {
-      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-      maxFee: 10000,
-      minFee: 1000,
-      minIncomeThreshold2: 100000,
-      incomeMultiplier2: 0.1,
-      maxIncomeThreshold2: 200000,
-      minIncomeThreshold3: 200000,
-      incomeMultiplier3: 0.1,
-      maxIncomeThreshold3: 300000,
-      minIncomeThreshold4: 300000,
-      incomeMultiplier4: 0.1,
-      maxIncomeThreshold4: 400000,
-      minIncomeThreshold5: 400000,
-      incomeMultiplier5: 0.1,
-      maxIncomeThreshold5: 500000,
-      minIncomeThreshold6: 500000,
-      incomeMultiplier6: 0.1,
-      maxIncomeThreshold6: 600000,
-      incomeThresholdIncrease6Plus: 100000,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
-    }
+    const feeThresholdFixture = Fixture.feeThresholds()
+    const originalData = feeThresholdFixture.data
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')
 
@@ -219,29 +134,8 @@ describe('Finance basics', () => {
   })
 
   test('Editing existing fee thresholds', async () => {
-    const originalData = {
-      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-      maxFee: 10000,
-      minFee: 1000,
-      minIncomeThreshold2: 100000,
-      incomeMultiplier2: 0.1,
-      maxIncomeThreshold2: 200000,
-      minIncomeThreshold3: 200000,
-      incomeMultiplier3: 0.1,
-      maxIncomeThreshold3: 300000,
-      minIncomeThreshold4: 300000,
-      incomeMultiplier4: 0.1,
-      maxIncomeThreshold4: 400000,
-      minIncomeThreshold5: 400000,
-      incomeMultiplier5: 0.1,
-      maxIncomeThreshold5: 500000,
-      minIncomeThreshold6: 500000,
-      incomeMultiplier6: 0.1,
-      maxIncomeThreshold6: 600000,
-      incomeThresholdIncrease6Plus: 100000,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
-    }
+    const feeThresholdFixture = Fixture.feeThresholds()
+    const originalData = feeThresholdFixture.data
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')
 
@@ -250,41 +144,23 @@ describe('Finance basics', () => {
 
     await thresholdsItem.edit()
     await financeBasicsPage.feesSection.editor.minFeeInput.fill('20')
+    await financeBasicsPage.feesSection.editor.temporaryFee.fill('39')
     await financeBasicsPage.feesSection.editor.save(true)
 
     await thresholdsItem.assertItemContains({
       ...originalData,
-      minFee: 2000
+      minFee: 2000,
+      temporaryFee: 3900
     })
   })
 
   test('Date overlap on fee thresholds with an end date prevents saving new fee thresholds', async () => {
-    const originalData = {
+    const originalData = Fixture.feeThresholds().with({
       validDuring: new DateRange(
         LocalDate.of(2020, 1, 1),
         LocalDate.of(2020, 12, 31)
-      ),
-      maxFee: 10000,
-      minFee: 1000,
-      minIncomeThreshold2: 100000,
-      incomeMultiplier2: 0.1,
-      maxIncomeThreshold2: 200000,
-      minIncomeThreshold3: 200000,
-      incomeMultiplier3: 0.1,
-      maxIncomeThreshold3: 300000,
-      minIncomeThreshold4: 300000,
-      incomeMultiplier4: 0.1,
-      maxIncomeThreshold4: 400000,
-      minIncomeThreshold5: 400000,
-      incomeMultiplier5: 0.1,
-      maxIncomeThreshold5: 500000,
-      minIncomeThreshold6: 500000,
-      incomeMultiplier6: 0.1,
-      maxIncomeThreshold6: 600000,
-      incomeThresholdIncrease6Plus: 100000,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8
-    }
+      )
+    }).data
     await insertFeeThresholds(originalData)
     await nav.openAndClickDropdownMenuItem('financeBasics')
 

@@ -76,7 +76,11 @@ val oldTestFeeThresholds = FeeThresholds(
     incomeMultiplier6 = BigDecimal("0.10"),
     incomeThresholdIncrease6Plus = 50000,
     siblingDiscount2 = BigDecimal("0.5"),
-    siblingDiscount2Plus = BigDecimal("0.2")
+    siblingDiscount2Plus = BigDecimal("0.2"),
+    temporaryFee = 2900,
+    temporaryFeePartDay = 1500,
+    temporaryFeeSibling = 1500,
+    temporaryFeeSiblingPartDay = 800
 )
 
 val testFeeThresholds = FeeThresholds(
@@ -100,7 +104,11 @@ val testFeeThresholds = FeeThresholds(
     incomeMultiplier6 = BigDecimal("0.1070"),
     incomeThresholdIncrease6Plus = 14200,
     siblingDiscount2 = BigDecimal("0.5000"),
-    siblingDiscount2Plus = BigDecimal("0.8000")
+    siblingDiscount2Plus = BigDecimal("0.8000"),
+    temporaryFee = 2900,
+    temporaryFeePartDay = 1500,
+    temporaryFeeSibling = 1500,
+    temporaryFeeSiblingPartDay = 800
 )
 
 val testDecisionChild1 =

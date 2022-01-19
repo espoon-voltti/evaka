@@ -26,4 +26,8 @@ export interface FeeThresholds {
   incomeThresholdIncrease6Plus: number
   siblingDiscount2: number
   siblingDiscount2Plus: number
+  temporaryFee: number
+  temporaryFeePartDay: number
+  temporaryFeeSibling: number
+  temporaryFeeSiblingPartDay: number
 }

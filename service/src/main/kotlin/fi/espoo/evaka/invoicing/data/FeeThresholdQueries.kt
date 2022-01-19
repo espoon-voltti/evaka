@@ -34,7 +34,11 @@ SELECT
     sibling_discount_2,
     sibling_discount_2_plus,
     max_fee,
-    min_fee
+    min_fee,
+    temporary_fee,
+    temporary_fee_part_day,
+    temporary_fee_sibling,
+    temporary_fee_sibling_part_day
 FROM fee_thresholds
 WHERE valid_during && daterange(:from, null)
         """.trimIndent()
