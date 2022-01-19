@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import mu.KotlinLogging
 
@@ -18,9 +18,9 @@ interface InvoiceIntegrationClient {
 
     fun send(invoices: List<InvoiceDetailed>): SendResult
 
-    class MockClient(private val objectMapper: ObjectMapper) : InvoiceIntegrationClient {
+    class MockClient(private val jsonMapper: JsonMapper) : InvoiceIntegrationClient {
         override fun send(invoices: List<InvoiceDetailed>): SendResult {
-            logger.info("Mock invoice integration client got invoices ${objectMapper.writeValueAsString(invoices)}")
+            logger.info("Mock invoice integration client got invoices ${jsonMapper.writeValueAsString(invoices)}")
             return SendResult(invoices)
         }
     }

@@ -415,14 +415,14 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun postPairingAssertOk(unitId: DaycareId): Pairing {
         val (_, res, result) = http.post("/pairings")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     PairingsController.PostPairingReq.Unit(
                         unitId = unitId
                     )
                 )
             )
             .asUser(user)
-            .responseObject<Pairing>(objectMapper)
+            .responseObject<Pairing>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -431,13 +431,13 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun postPairingChallengeAssertOk(challengeKey: String): Pairing {
         val (_, res, result) = http.post("/public/pairings/challenge")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     PairingsController.PostPairingChallengeReq(
                         challengeKey = challengeKey
                     )
                 )
             )
-            .responseObject<Pairing>(objectMapper)
+            .responseObject<Pairing>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -446,7 +446,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun postPairingChallengeAssertFail(challengeKey: String, status: Int) {
         val (_, res, _) = http.post("/public/pairings/challenge")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     PairingsController.PostPairingChallengeReq(
                         challengeKey = challengeKey
                     )
@@ -460,7 +460,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun postPairingResponseAssertOk(id: PairingId, challengeKey: String, responseKey: String): Pairing {
         val (_, res, result) = http.post("/pairings/$id/response")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     PairingsController.PostPairingResponseReq(
                         challengeKey = challengeKey,
                         responseKey = responseKey
@@ -468,7 +468,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                 )
             )
             .asUser(user)
-            .responseObject<Pairing>(objectMapper)
+            .responseObject<Pairing>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -477,7 +477,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun postPairingResponseAssertFail(id: PairingId, challengeKey: String, responseKey: String, status: Int) {
         val (_, res, _) = http.post("/pairings/$id/response")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     PairingsController.PostPairingResponseReq(
                         challengeKey = challengeKey,
                         responseKey = responseKey
@@ -493,7 +493,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun postPairingValidationAssertOk(id: PairingId, challengeKey: String, responseKey: String): MobileDeviceIdentity {
         val (_, res, result) = http.post("/system/pairings/$id/validation")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     PairingsController.PostPairingResponseReq(
                         challengeKey = challengeKey,
                         responseKey = responseKey
@@ -501,7 +501,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                 )
             )
             .asUser(AuthenticatedUser.SystemInternalUser)
-            .responseObject<MobileDeviceIdentity>(objectMapper)
+            .responseObject<MobileDeviceIdentity>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -510,7 +510,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun postPairingValidationAssertFail(id: PairingId, challengeKey: String, responseKey: String, status: Int) {
         val (_, res, _) = http.post("/system/pairings/$id/validation")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     PairingsController.PostPairingResponseReq(
                         challengeKey = challengeKey,
                         responseKey = responseKey
@@ -526,7 +526,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun getPairingStatusAssertOk(id: PairingId, authenticated: Boolean): PairingStatus {
         val (_, res, result) = http.get("/public/pairings/$id/status")
             .let { if (authenticated) it.asUser(user) else it }
-            .responseObject<PairingsController.PairingStatusRes>(objectMapper)
+            .responseObject<PairingsController.PairingStatusRes>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get().status
@@ -535,7 +535,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun getMobileDevicesAssertOk(): List<MobileDevice> {
         val (_, res, result) = http.get("/mobile-devices?unitId=$testUnitId")
             .asUser(user)
-            .responseObject<List<MobileDevice>>(objectMapper)
+            .responseObject<List<MobileDevice>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -544,7 +544,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun getMobileDeviceAssertOk(id: MobileDeviceId): MobileDeviceDetails {
         val (_, res, result) = http.get("/system/mobile-devices/$id")
             .asUser(AuthenticatedUser.SystemInternalUser)
-            .responseObject<MobileDeviceDetails>(objectMapper)
+            .responseObject<MobileDeviceDetails>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -561,7 +561,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     private fun putMobileDeviceNameAssertOk(id: MobileDeviceId, name: String) {
         val (_, res, _) = http.put("/mobile-devices/$id/name")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     MobileDevicesController.RenameRequest(
                         name = name
                     )

@@ -227,9 +227,9 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
     private fun postNewDocument(
         user: AuthenticatedUser.Employee,
         body: PedagogicalDocumentPostBody
-    ) = objectMapper.readValue<PedagogicalDocument>(
+    ) = jsonMapper.readValue<PedagogicalDocument>(
         http.post("/pedagogical-document")
-            .jsonBody(objectMapper.writeValueAsString(body))
+            .jsonBody(jsonMapper.writeValueAsString(body))
             .asUser(user)
             .responseString()
             .third.get()
@@ -239,9 +239,9 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
         user: AuthenticatedUser.Employee,
         id: PedagogicalDocumentId,
         body: PedagogicalDocumentPostBody
-    ) = objectMapper.readValue<PedagogicalDocument>(
+    ) = jsonMapper.readValue<PedagogicalDocument>(
         http.put("/pedagogical-document/$id")
-            .jsonBody(objectMapper.writeValueAsString(body))
+            .jsonBody(jsonMapper.writeValueAsString(body))
             .asUser(user)
             .responseString()
             .third.get()

@@ -343,7 +343,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest() {
             )
         )
             .asUser(user)
-            .responseObject<OccupancyResponseSpeculated>(objectMapper)
+            .responseObject<OccupancyResponseSpeculated>(jsonMapper)
 
         return body.get()
     }

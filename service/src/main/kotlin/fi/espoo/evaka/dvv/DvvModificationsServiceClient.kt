@@ -5,7 +5,7 @@
 package fi.espoo.evaka.dvv
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
@@ -25,7 +25,7 @@ private val logger = KotlinLogging.logger {}
  */
 @Service
 class DvvModificationsServiceClient(
-    private val objectMapper: ObjectMapper,
+    private val jsonMapper: JsonMapper,
     private val fuel: FuelManager,
     private val customizers: List<DvvModificationRequestCustomizer>,
     env: DvvModificationsEnv
@@ -50,8 +50,8 @@ class DvvModificationsServiceClient(
         return when (result) {
             is Result.Success -> {
                 logger.info { "Fetching the first modification token of $date from DVV modification service succeeded" }
-                objectMapper.readValue<DvvModificationServiceModificationTokenResponse>(
-                    objectMapper.readTree(result.get()).toString()
+                jsonMapper.readValue<DvvModificationServiceModificationTokenResponse>(
+                    jsonMapper.readTree(result.get()).toString()
                 )
             }
             is Result.Failure -> {
@@ -84,8 +84,8 @@ class DvvModificationsServiceClient(
         return when (result) {
             is Result.Success -> {
                 logger.info { "Fetching modifications with token $updateToken from DVV modifications service succeeded" }
-                objectMapper.readValue<DvvModificationsResponse>(
-                    objectMapper.readTree(result.get()).toString()
+                jsonMapper.readValue<DvvModificationsResponse>(
+                    jsonMapper.readTree(result.get()).toString()
                 )
             }
             is Result.Failure -> {

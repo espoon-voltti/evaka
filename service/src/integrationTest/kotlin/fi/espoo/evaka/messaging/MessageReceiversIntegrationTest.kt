@@ -149,7 +149,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     fun `message receiver endpoint works for unit 1`() {
         val (_, res, result) = http.get("/messages/receivers?unitId=$unitId")
             .asUser(supervisor1)
-            .responseObject<List<MessageReceiversResponse>>(objectMapper)
+            .responseObject<List<MessageReceiversResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -168,7 +168,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     fun `message receiver endpoint works for unit 2`() {
         val (_, res, result) = http.get("/messages/receivers?unitId=$secondUnitId")
             .asUser(supervisor2)
-            .responseObject<List<MessageReceiversResponse>>(objectMapper)
+            .responseObject<List<MessageReceiversResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -263,7 +263,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         user: AuthenticatedUser.Employee,
     ) = http.post("/messages/$sender")
         .jsonBody(
-            objectMapper.writeValueAsString(
+            jsonMapper.writeValueAsString(
                 MessageController.PostMessageBody(
                     "Juhannus",
                     "Juhannus tulee pian",

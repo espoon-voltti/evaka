@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
@@ -36,7 +36,7 @@ import kotlin.test.assertNull
 
 class IncomeIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var mapper: ObjectMapper
+    lateinit var mapper: JsonMapper
 
     @Autowired
     lateinit var incomeTypesProvider: IncomeTypesProvider
@@ -49,7 +49,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun deserializeResult(json: String) = objectMapper.readValue<Wrapper<List<Income>>>(json)
+    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<List<Income>>>(json)
 
     @BeforeEach
     fun beforeEach() {
@@ -126,7 +126,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val testIncome = testIncome()
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(testIncome))
+            .jsonBody(jsonMapper.writeValueAsString(testIncome))
             .responseString()
         assertEquals(200, postResponse.statusCode)
 
@@ -146,7 +146,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val income = testIncome.copy(validTo = testIncome.validFrom.minusDays(1))
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(income))
+            .jsonBody(jsonMapper.writeValueAsString(income))
             .responseString()
         assertEquals(400, postResponse.statusCode)
     }
@@ -159,7 +159,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusMonths(1))
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(secondIncome))
+            .jsonBody(jsonMapper.writeValueAsString(secondIncome))
             .responseString()
         assertEquals(200, postResponse.statusCode)
 
@@ -186,7 +186,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
 
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(overlappingIncome))
+            .jsonBody(jsonMapper.writeValueAsString(overlappingIncome))
             .responseString()
         assertEquals(409, postResponse.statusCode)
     }
@@ -198,7 +198,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
 
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(testIncome))
+            .jsonBody(jsonMapper.writeValueAsString(testIncome))
             .responseString()
         assertEquals(409, postResponse.statusCode)
     }
@@ -212,7 +212,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             testIncome.let { it.copy(validFrom = it.validTo!!.minusMonths(1), validTo = it.validTo!!.plusYears(1)) }
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(overlappingIncome))
+            .jsonBody(jsonMapper.writeValueAsString(overlappingIncome))
             .responseString()
         assertEquals(409, postResponse.statusCode)
     }
@@ -223,7 +223,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
 
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(income))
+            .jsonBody(jsonMapper.writeValueAsString(income))
             .responseString()
         assertEquals(200, postResponse.statusCode)
 
@@ -254,7 +254,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         )
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .responseString()
         assertEquals(200, putResponse.statusCode)
 
@@ -277,7 +277,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val updated = testIncome.copy(validTo = testIncome.validFrom.minusDays(1))
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .responseString()
         assertEquals(400, putResponse.statusCode)
     }
@@ -299,7 +299,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val updated = testIncome.copy(validTo = anotherIncome.validTo)
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .responseString()
         assertEquals(409, putResponse.statusCode)
     }
@@ -312,7 +312,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .responseString()
         assertEquals(200, putResponse.statusCode)
 
@@ -346,7 +346,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
             .asUser(financeUser)
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .responseString()
         assertEquals(200, putResponse.statusCode)
 

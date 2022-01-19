@@ -152,7 +152,7 @@ class RealtimeOccupancyTest : FullApplicationTest() {
     private fun getRealtimeOccupancy(): RealtimeOccupancyResponse {
         val (_, res, result) = http.get("/occupancy/by-unit/${testDaycare.id}/realtime?date=${date.format(DateTimeFormatter.ISO_DATE)}")
             .asUser(AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id.raw, setOf(UserRole.UNIT_SUPERVISOR)))
-            .responseObject<RealtimeOccupancyResponse>(objectMapper)
+            .responseObject<RealtimeOccupancyResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

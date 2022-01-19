@@ -82,7 +82,7 @@ class InvoicingReportTest : FullApplicationTest() {
             listOf("date" to date.format(DateTimeFormatter.ISO_DATE))
         )
             .asUser(testUser)
-            .responseObject<InvoiceReport>(objectMapper)
+            .responseObject<InvoiceReport>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())

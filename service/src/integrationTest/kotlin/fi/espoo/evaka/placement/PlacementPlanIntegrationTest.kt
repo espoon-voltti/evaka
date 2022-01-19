@@ -266,7 +266,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
-                .jsonBody(objectMapper.writeValueAsString(proposal))
+                .jsonBody(jsonMapper.writeValueAsString(proposal))
                 .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles))
                 .response()
             assertEquals(403, res.statusCode)
@@ -285,7 +285,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
     ) {
         val (_, _, body) = http.get("/v2/applications/$applicationId/placement-draft")
             .asUser(serviceWorker)
-            .responseObject<PlacementPlanDraft>(objectMapper)
+            .responseObject<PlacementPlanDraft>(jsonMapper)
         assertEquals(
             PlacementPlanDraft(
                 type = type,
@@ -316,7 +316,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         proposal: DaycarePlacementPlan
     ) {
         val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
-            .jsonBody(objectMapper.writeValueAsString(proposal))
+            .jsonBody(jsonMapper.writeValueAsString(proposal))
             .asUser(serviceWorker)
             .response()
         assertTrue(res.isSuccessful)

@@ -127,7 +127,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
             listOf("areaId" to areaId, "year" to year, "month" to month)
         )
             .asUser(adminUser)
-            .responseObject<ServiceVoucherValueReportController.ServiceVoucherReport>(objectMapper)
+            .responseObject<ServiceVoucherValueReportController.ServiceVoucherReport>(jsonMapper)
         assertEquals(200, response.statusCode)
 
         return data.get().rows

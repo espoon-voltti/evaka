@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.vtjclient.service.cache
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import mu.KotlinLogging
@@ -13,7 +13,7 @@ import redis.clients.jedis.JedisPool
 
 @Service
 class VtjCache(
-    private val objectMapper: ObjectMapper,
+    private val jsonMapper: JsonMapper,
     private val redisPool: JedisPool
 ) {
     private val logger = KotlinLogging.logger { }
@@ -23,14 +23,14 @@ class VtjCache(
         logger.debug { "Getting data from VTJ cache" }
         redisPool.resource.use { redis ->
             val person = redis.get(ssn) ?: return null
-            return objectMapper.readValue<VtjPerson>(person)
+            return jsonMapper.readValue<VtjPerson>(person)
         }
     }
 
     fun save(ssn: String, person: VtjPerson?) {
         logger.debug { "Setting data to VTJ cache" }
         redisPool.resource.use { redis ->
-            redis.set(ssn, objectMapper.writeValueAsString(person))
+            redis.set(ssn, jsonMapper.writeValueAsString(person))
             redis.expire(ssn, timeToLive)
         }
     }

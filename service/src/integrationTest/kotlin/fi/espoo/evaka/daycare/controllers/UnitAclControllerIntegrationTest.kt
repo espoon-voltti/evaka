@@ -106,7 +106,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
     private fun getAclRows(): List<DaycareAclRow> {
         val (_, res, body) = http.get("/daycares/${testDaycare.id}/acl")
             .asUser(admin)
-            .responseObject<DaycareAclResponse>(objectMapper)
+            .responseObject<DaycareAclResponse>(jsonMapper)
         assertTrue(res.isSuccessful)
         return body.get().rows
     }

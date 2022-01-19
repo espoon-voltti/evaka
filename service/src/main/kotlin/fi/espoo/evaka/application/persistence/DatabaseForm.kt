@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.application.persistence
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import fi.espoo.evaka.application.ApplicationType
 import java.time.LocalDate
 
@@ -25,8 +25,7 @@ sealed class DatabaseForm {
     abstract fun hideChildAddress(): DatabaseForm
 }
 
-fun objectMapper(): ObjectMapper {
-    val mapper = jacksonObjectMapper().registerModule(JavaTimeModule())
-    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    return mapper
-}
+fun jsonMapper(): JsonMapper = jacksonMapperBuilder()
+    .addModule(JavaTimeModule())
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .build()

@@ -7,7 +7,7 @@ package fi.espoo.evaka.shared.dev
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.application.persistence.objectMapper
+import fi.espoo.evaka.application.persistence.jsonMapper
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.assistanceneed.insertAssistanceBasisOptionRefs
 import fi.espoo.evaka.daycare.service.AbsenceCareType
@@ -355,7 +355,7 @@ VALUES (:applicationId, :revision, :document, TRUE)
             "document",
             PGobject().apply {
                 type = "jsonb"
-                value = objectMapper().writeValueAsString(document)
+                value = jsonMapper().writeValueAsString(document)
             }
         )
         .execute()
@@ -383,7 +383,7 @@ VALUES (:applicationId, :revision, :document, TRUE)
             "document",
             PGobject().apply {
                 type = "jsonb"
-                value = objectMapper().writeValueAsString(document)
+                value = jsonMapper().writeValueAsString(document)
             }
         )
         .execute()
@@ -922,7 +922,7 @@ WHERE application_id = :applicationId AND revision < :revision
         .bind("created", applicationForm.createdDate)
         .bind("revision", applicationForm.revision)
         .bind("updated", applicationForm.updated)
-        .bind("document", objectMapper().writeValueAsString(applicationForm.document))
+        .bind("document", jsonMapper().writeValueAsString(applicationForm.document))
         .execute()
 
     return id

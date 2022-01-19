@@ -64,8 +64,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun deserializeListResult(json: String) = objectMapper.readValue<Paged<InvoiceSummary>>(json)
-    private fun deserializeResult(json: String) = objectMapper.readValue<Wrapper<InvoiceSummary>>(json)
+    private fun deserializeListResult(json: String) = jsonMapper.readValue<Paged<InvoiceSummary>>(json)
+    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<InvoiceSummary>>(json)
 
     private val testInvoices = listOf(
         createInvoiceFixture(
@@ -504,7 +504,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -516,7 +516,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(sent.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(sent.id)))
             .asUser(testUser)
             .responseString()
         assertEquals(400, response.statusCode)
@@ -528,7 +528,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -544,7 +544,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             listOf(deserializeResult(result.get()).data)
         )
 
-        objectMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
+        jsonMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
             assertEquals(InvoiceStatus.SENT, it.data.status)
             assertEquals(testDecisionMaker_1.id.raw, it.data.sentBy?.raw)
             assertNotNull(it.data.sentAt)
@@ -565,7 +565,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(drafts) }
 
         val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(drafts.map { it.id }))
+            .jsonBody(jsonMapper.writeValueAsString(drafts.map { it.id }))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -594,7 +594,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(drafts + sentInvoice) }
 
         val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(drafts.map { it.id }))
+            .jsonBody(jsonMapper.writeValueAsString(drafts.map { it.id }))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -609,7 +609,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
 
         val (_, response, _) = http.post("/invoices/mark-sent")
-            .jsonBody(objectMapper.writeValueAsString(listOf(invoice.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id)))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -625,7 +625,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             listOf(deserializeResult(result.get()).data)
         )
 
-        objectMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
+        jsonMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
             assertEquals(InvoiceStatus.SENT, it.data.status)
             assertEquals(testDecisionMaker_1.id.raw, it.data.sentBy?.raw)
             assertNotNull(it.data.sentAt)
@@ -638,7 +638,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
 
         val (_, response, _) = http.post("/invoices/mark-sent")
-            .jsonBody(objectMapper.writeValueAsString(listOf(invoice.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id)))
             .asUser(testUser)
             .responseString()
         assertEquals(400, response.statusCode)
@@ -650,7 +650,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
 
         val (_, response, _) = http.post("/invoices/mark-sent")
-            .jsonBody(objectMapper.writeValueAsString(listOf(invoice.id, UUID.randomUUID())))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id, UUID.randomUUID())))
             .asUser(testUser)
             .responseString()
         assertEquals(400, response.statusCode)
@@ -662,7 +662,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         val (_, response, _) = http.put("/invoices/${draft.id}")
-            .jsonBody(objectMapper.writeValueAsString(draft))
+            .jsonBody(jsonMapper.writeValueAsString(draft))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -674,7 +674,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         val (_, response, _) = http.put("/invoices/${sent.id}")
-            .jsonBody(objectMapper.writeValueAsString(sent))
+            .jsonBody(jsonMapper.writeValueAsString(sent))
             .asUser(testUser)
             .responseString()
         assertEquals(400, response.statusCode)
@@ -699,7 +699,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         )
 
         val (_, response, _) = http.put("/invoices/${updated.id}")
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -727,7 +727,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         )
 
         val (_, response, _) = http.put("/invoices/${updated.id}")
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -737,7 +737,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
 
         JSONAssert.assertNotEquals(
-            objectMapper.writeValueAsString(Wrapper(updated.let(::toDetailed))),
+            jsonMapper.writeValueAsString(Wrapper(updated.let(::toDetailed))),
             result.get(),
             false
         )
@@ -844,7 +844,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         assertThat(draftIds).isNotEmpty
 
         val (_, response2, _) = http.post("/invoices/send")
-            .jsonBody(objectMapper.writeValueAsString(draftIds))
+            .jsonBody(jsonMapper.writeValueAsString(draftIds))
             .asUser(testUser)
             .responseString()
         assertEquals(200, response2.statusCode)

@@ -36,7 +36,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun deserializeResult(json: String) = objectMapper.readValue<Wrapper<List<FeeAlteration>>>(json)
+    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<List<FeeAlteration>>>(json)
 
     @BeforeEach
     fun setup() {
@@ -115,7 +115,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     fun `createFeeAlterations works with valid fee alteration`() {
         http.post("/fee-alterations?personId=$personId")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(testFeeAlteration))
+            .jsonBody(jsonMapper.writeValueAsString(testFeeAlteration))
             .response()
 
         val (_, response, result) = http.get("/fee-alterations?personId=$personId")
@@ -134,7 +134,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         val feeAlteration = testFeeAlteration.copy(validTo = testFeeAlteration.validFrom.minusDays(1))
         val (_, response, _) = http.post("/fee-alterations?personId=$personId")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(feeAlteration))
+            .jsonBody(jsonMapper.writeValueAsString(feeAlteration))
             .response()
         assertEquals(400, response.statusCode)
     }
@@ -146,7 +146,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         val updated = testFeeAlteration.copy(amount = 100)
         http.put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .response()
 
         val (_, response, result) = http.get("/fee-alterations?personId=$personId")
@@ -167,7 +167,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         val updated = testFeeAlteration.copy(validTo = testFeeAlteration.validFrom.minusDays(1))
         val (_, response, _) = http.put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(updated))
+            .jsonBody(jsonMapper.writeValueAsString(updated))
             .response()
         assertEquals(400, response.statusCode)
     }

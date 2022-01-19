@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
@@ -36,10 +36,10 @@ class EspooConfig {
     fun espooEnv(env: Environment) = EspooEnv.fromEnvironment(env)
 
     @Bean
-    fun invoiceIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>, objectMapper: ObjectMapper): InvoiceIntegrationClient =
+    fun invoiceIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>, jsonMapper: JsonMapper): InvoiceIntegrationClient =
         when (env.invoiceIntegrationEnabled) {
-            true -> EspooInvoiceIntegrationClient(invoiceEnv.getObject(), objectMapper)
-            false -> InvoiceIntegrationClient.MockClient(objectMapper)
+            true -> EspooInvoiceIntegrationClient(invoiceEnv.getObject(), jsonMapper)
+            false -> InvoiceIntegrationClient.MockClient(jsonMapper)
         }
 
     @Bean

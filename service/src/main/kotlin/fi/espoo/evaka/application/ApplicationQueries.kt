@@ -12,7 +12,7 @@ import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCA
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_ONLY
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.application.persistence.objectMapper
+import fi.espoo.evaka.application.persistence.jsonMapper
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -801,7 +801,7 @@ VALUES (:applicationId, :document, (SELECT coalesce(max(revision) + 1, 1) FROM o
             "document",
             PGobject().apply {
                 type = "jsonb"
-                value = objectMapper().writeValueAsString(transformedForm)
+                value = jsonMapper().writeValueAsString(transformedForm)
             }
         )
         .execute()

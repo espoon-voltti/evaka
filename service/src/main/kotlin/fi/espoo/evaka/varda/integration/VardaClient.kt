@@ -6,7 +6,7 @@ package fi.espoo.evaka.varda.integration
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
@@ -39,7 +39,7 @@ private val logger = KotlinLogging.logger {}
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
-    private val objectMapper: ObjectMapper,
+    private val jsonMapper: JsonMapper,
     env: VardaEnv,
 ) {
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
@@ -135,12 +135,12 @@ class VardaClient(
         logger.info("VardaUpdate: client finding person by $body")
 
         val (request, _, result) = fuel.post(personSearchUrl)
-            .jsonBody(objectMapper.writeValueAsString(body)).authenticatedResponseStringWithRetries()
+            .jsonBody(jsonMapper.writeValueAsString(body)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully found person matching $body")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 // TODO: once everything works, remove this debug logging
@@ -156,12 +156,12 @@ class VardaClient(
         logger.info("VardaUpdate: client sending person (body: $person)")
 
         val (request, _, result) = fuel.post(personUrl)
-            .jsonBody(objectMapper.writeValueAsString(person)).authenticatedResponseStringWithRetries()
+            .jsonBody(jsonMapper.writeValueAsString(person)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully sent child (body: $person)")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
@@ -175,12 +175,12 @@ class VardaClient(
         logger.info("VardaUpdate: client sending child (body: $child)")
 
         val (request, _, result) = fuel.post(childUrl)
-            .jsonBody(objectMapper.writeValueAsString(child)).authenticatedResponseStringWithRetries()
+            .jsonBody(jsonMapper.writeValueAsString(child)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully sent child (body: $child)")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
@@ -193,12 +193,12 @@ class VardaClient(
     fun createDecision(newDecision: VardaDecision): VardaDecisionResponse {
         logger.info("VardaUpdate: client sending new decision (body: $newDecision)")
         val (request, _, result) = fuel.post(decisionUrl)
-            .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
+            .jsonBody(jsonMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully sent new decision (body: $newDecision)")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
@@ -211,13 +211,13 @@ class VardaClient(
     fun createPlacement(newPlacement: VardaPlacement): VardaPlacementResponse {
         logger.info("VardaUpdate: client sending new placement (body: $newPlacement)")
         val (request, _, result) = fuel.post(placementUrl)
-            .jsonBody(objectMapper.writeValueAsString(newPlacement))
+            .jsonBody(jsonMapper.writeValueAsString(newPlacement))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully sent new placement (body: $newPlacement)")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
@@ -230,12 +230,12 @@ class VardaClient(
     fun createFeeData(feeData: VardaFeeData): VardaFeeDataResponse {
         logger.info("VardaUpdate: client sending fee data for child ${feeData.lapsi}")
         val (request, _, result) = fuel.post(feeDataUrl)
-            .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
+            .jsonBody(jsonMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully sent fee data for child ${feeData.lapsi}")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
@@ -323,13 +323,13 @@ class VardaClient(
     fun createUnit(unit: VardaUnitRequest): VardaUnitResponse {
         logger.info("VardaUpdate: client sending new unit ${unit.nimi}")
         val (request, _, result) = fuel.post(unitUrl)
-            .jsonBody(objectMapper.writeValueAsString(unit))
+            .jsonBody(jsonMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully sent new unit ${unit.nimi}")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
@@ -343,13 +343,13 @@ class VardaClient(
         logger.info("VardaUpdate: client updating unit ${unit.nimi}")
         val url = "$unitUrl${unit.id}/"
         val (request, _, result) = fuel.put(url)
-            .jsonBody(objectMapper.writeValueAsString(unit))
+            .jsonBody(jsonMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info("VardaUpdate: client successfully updated unit ${unit.nimi}")
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 vardaError(request, result.error) { err ->
@@ -374,7 +374,7 @@ class VardaClient(
     fun getVardaChildrenErrorReport(organizerId: Long): List<ChildErrorReport> {
         logger.info("VardaUpdate: client reading children error report")
         return getAllPages(getChildErrorUrl(organizerId)) {
-            objectMapper.readValue(it)
+            jsonMapper.readValue(it)
         }
     }
 
@@ -385,21 +385,21 @@ class VardaClient(
     fun getFeeDataByChild(vardaChildId: Long): List<Long> {
         logger.info("Getting fee data from Varda (child id: $vardaChildId)")
         return getAllPages("$feeDataUrl?lapsi=$vardaChildId") {
-            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+            jsonMapper.readValue<PaginatedResponse<VardaResultId>>(it)
         }.map { it.id }
     }
 
     fun getPlacementsByDecision(vardaDecisionId: Long): List<Long> {
         logger.info("Getting placements from Varda (decision id: $vardaDecisionId)")
         return getAllPages("$placementUrl?varhaiskasvatuspaatos=$vardaDecisionId") {
-            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+            jsonMapper.readValue<PaginatedResponse<VardaResultId>>(it)
         }.map { it.id }
     }
 
     fun getDecisionsByChild(vardaChildId: Long): List<Long> {
         logger.info("Getting decisions from Varda (child id: $vardaChildId)")
         return getAllPages("$decisionUrl?lapsi=$vardaChildId") {
-            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+            jsonMapper.readValue<PaginatedResponse<VardaResultId>>(it)
         }.map { it.id }
     }
 
@@ -451,7 +451,7 @@ class VardaClient(
                 .responseStringWithRetries(maxTries, 300L) { r, remainingTries ->
                     when (r.second.statusCode) {
                         403 -> when {
-                            objectMapper.readTree(r.third.error.errorData).get("errors")
+                            jsonMapper.readTree(r.third.error.errorData).get("errors")
                                 ?.any { it.get("error_code").asText() == "PE007" }
                                 ?: false -> {
                                 logger.info("Varda API token invalid. Refreshing token and retrying original request.")

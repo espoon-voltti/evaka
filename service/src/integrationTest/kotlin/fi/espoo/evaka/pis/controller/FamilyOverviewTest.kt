@@ -155,7 +155,7 @@ class FamilyOverviewTest : FullApplicationTest() {
             .responseString()
 
         assertEquals(200, response.statusCode)
-        return objectMapper.readValue<FamilyOverview>(result.get())
+        return jsonMapper.readValue<FamilyOverview>(result.get())
     }
 
     private fun createTestFixture1plus1() {

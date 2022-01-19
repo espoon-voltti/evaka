@@ -58,11 +58,11 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
 
     val groupId = GroupId(UUID.randomUUID())
 
-    private fun deserializeGetResult(json: String) = objectMapper.readValue<List<PedagogicalDocument>>(json)
-    private fun deserializeGetResultCitizen(json: String) = objectMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
-    private fun deserializePutResult(json: String) = objectMapper.readValue<PedagogicalDocument>(json)
-    private fun deserializePostResult(json: String) = objectMapper.readValue<PedagogicalDocument>(json)
-    private fun deserializeUnreadCount(json: String) = objectMapper.readValue<Number>(json)
+    private fun deserializeGetResult(json: String) = jsonMapper.readValue<List<PedagogicalDocument>>(json)
+    private fun deserializeGetResultCitizen(json: String) = jsonMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
+    private fun deserializePutResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
+    private fun deserializePostResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
+    private fun deserializeUnreadCount(json: String) = jsonMapper.readValue<Number>(json)
 
     @BeforeEach
     private fun beforeEach() {
@@ -385,7 +385,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
         val (_, _, result) = http.upload("/attachments/pedagogical-documents/$id")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(employee)
-            .responseObject<AttachmentId>(objectMapper)
+            .responseObject<AttachmentId>(jsonMapper)
 
         return result.get()
     }

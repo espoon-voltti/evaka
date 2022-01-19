@@ -4,14 +4,14 @@
 
 package fi.espoo.evaka.varda.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.requests.DefaultBody
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.VardaEnv
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -32,7 +32,7 @@ class MockVardaTokenProvider : VardaTokenProvider {
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VardaClientTest {
-    private val objectMapper: ObjectMapper = jacksonObjectMapper()
+    private val jsonMapper: JsonMapper = defaultJsonMapper()
     private lateinit var mockTokenProvider: VardaTokenProvider
 
     @BeforeAll
@@ -59,7 +59,7 @@ class VardaClientTest {
             .thenReturn(Response(statusCode = 204, url = URL("https://example.com")))
 
         val client = VardaClient(
-            mockTokenProvider, fuel, objectMapper,
+            mockTokenProvider, fuel, jsonMapper,
             VardaEnv(
                 url = "https://example.com/mock-integration/varda/api",
                 basicAuth = Sensitive(""),

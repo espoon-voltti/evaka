@@ -349,13 +349,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
         http.get("/income-statements/person/$citizenId/$id")
             .asUser(employee)
-            .responseObject<IncomeStatement>(objectMapper)
+            .responseObject<IncomeStatement>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun getIncomeStatements(personId: PersonId): Paged<IncomeStatement> =
         http.get("/income-statements/person/$personId?page=1&pageSize=10")
             .asUser(employee)
-            .responseObject<Paged<IncomeStatement>>(objectMapper)
+            .responseObject<Paged<IncomeStatement>>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun setIncomeStatementHandled(
@@ -364,7 +364,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     ) {
         http.post("/income-statements/$id/handled")
             .asUser(employee)
-            .objectBody(body, mapper = objectMapper)
+            .objectBody(body, mapper = jsonMapper)
             .response()
             .also { (_, res, _) ->
                 assertEquals(200, res.statusCode)
@@ -378,14 +378,14 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     ): Paged<IncomeStatementAwaitingHandler> =
         http.get("/income-statements/awaiting-handler?areas=${areas.joinToString(",")}&page=$page&pageSize=$pageSize")
             .asUser(employee)
-            .responseObject<Paged<IncomeStatementAwaitingHandler>>(objectMapper)
+            .responseObject<Paged<IncomeStatementAwaitingHandler>>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun uploadAttachment(id: IncomeStatementId): AttachmentId {
         val (_, _, result) = http.upload("/attachments/income-statements/$id")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(employee)
-            .responseObject<AttachmentId>(objectMapper)
+            .responseObject<AttachmentId>(jsonMapper)
 
         return result.get()
     }

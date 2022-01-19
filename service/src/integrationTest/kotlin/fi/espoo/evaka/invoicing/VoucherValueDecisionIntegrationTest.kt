@@ -309,7 +309,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/placements")
             .asUser(serviceWorker)
-            .objectBody(body, mapper = objectMapper)
+            .objectBody(body, mapper = jsonMapper)
             .response()
             .also { (_, res, _) ->
                 assertEquals(200, res.statusCode)
@@ -317,7 +317,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
         val (_, _, data) = http.get("/placements", listOf("childId" to testChild_1.id))
             .asUser(serviceWorker)
-            .responseObject<List<DaycarePlacementWithDetails>>(objectMapper)
+            .responseObject<List<DaycarePlacementWithDetails>>(jsonMapper)
 
         asyncJobRunner.runPendingJobsSync()
 
@@ -332,8 +332,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
         http.put("/placements/$id")
             .asUser(serviceWorker)
-            .objectBody(body, mapper = objectMapper)
-            .responseObject<Placement>(objectMapper)
+            .objectBody(body, mapper = jsonMapper)
+            .responseObject<Placement>(jsonMapper)
             .also { (_, res, _) ->
                 assertEquals(200, res.statusCode)
             }
@@ -364,7 +364,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/parentships")
             .asUser(serviceWorker)
-            .objectBody(body, mapper = objectMapper)
+            .objectBody(body, mapper = jsonMapper)
             .response()
 
         asyncJobRunner.runPendingJobsSync()
@@ -374,7 +374,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         val (_, _, data) = http.post("/value-decisions/search")
             .jsonBody("""{"page": 0, "pageSize": 100, "status": "$status", "searchTerms": "$searchTerms"}""")
             .asUser(financeWorker)
-            .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
+            .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)
         return data.get()
     }
 
@@ -382,14 +382,14 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         val (_, _, data) = http.post("/value-decisions/search")
             .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
             .asUser(financeWorker)
-            .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
+            .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)
             .also { (_, res, _) ->
                 assertEquals(200, res.statusCode)
             }
 
         val decisionIds = data.get().data.map { it.id }
         http.post("/value-decisions/send")
-            .objectBody(decisionIds, mapper = objectMapper)
+            .objectBody(decisionIds, mapper = jsonMapper)
             .asUser(financeWorker)
             .response()
             .also { (_, res, _) ->

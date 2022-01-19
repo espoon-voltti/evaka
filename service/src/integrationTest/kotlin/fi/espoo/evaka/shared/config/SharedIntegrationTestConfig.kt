@@ -5,7 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import com.auth0.jwt.algorithms.Algorithm
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
@@ -127,7 +127,7 @@ class SharedIntegrationTestConfig {
     }
 
     @Bean
-    fun invoiceIntegrationClient(objectMapper: ObjectMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(objectMapper)
+    fun invoiceIntegrationClient(jsonMapper: JsonMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(jsonMapper)
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()

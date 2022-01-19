@@ -330,9 +330,9 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     private fun whenPostAssistanceNeedThenExpectSuccess(request: AssistanceNeedRequest): AssistanceNeed {
         val (_, res, result) = http.post("/children/${testChild_1.id}/assistance-needs")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
-            .responseObject<AssistanceNeed>(objectMapper)
+            .responseObject<AssistanceNeed>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -340,7 +340,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     private fun whenPostAssistanceNeedThenExpectError(request: AssistanceNeedRequest, status: Int) {
         val (_, res, _) = http.post("/children/${testChild_1.id}/assistance-needs")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
             .response()
 
@@ -350,7 +350,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
     private fun whenGetAssistanceNeedsThenExpectSuccess(childId: ChildId, asUser: AuthenticatedUser = assistanceWorker): List<AssistanceNeed> {
         val (_, res, result) = http.get("/children/$childId/assistance-needs")
             .asUser(asUser)
-            .responseObject<List<AssistanceNeed>>(objectMapper)
+            .responseObject<List<AssistanceNeed>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -358,9 +358,9 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     private fun whenPutAssistanceNeedThenExpectSuccess(id: AssistanceNeedId, request: AssistanceNeedRequest): AssistanceNeed {
         val (_, res, result) = http.put("/assistance-needs/$id")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
-            .responseObject<AssistanceNeed>(objectMapper)
+            .responseObject<AssistanceNeed>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -368,7 +368,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     private fun whenPutAssistanceNeedThenExpectError(id: AssistanceNeedId, request: AssistanceNeedRequest, status: Int) {
         val (_, res, _) = http.put("/assistance-needs/$id")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
             .response()
 

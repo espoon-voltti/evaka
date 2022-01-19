@@ -124,7 +124,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
 
     private fun postVasuTemplate(request: VasuTemplateController.CreateTemplateRequest) {
         val (_, res, _) = http.post("/vasu/templates")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(adminUser)
             .response()
 
@@ -134,7 +134,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
     private fun getVasuTemplates(): List<VasuTemplateSummary> {
         val (_, res, result) = http.get("/vasu/templates")
             .asUser(adminUser)
-            .responseObject<List<VasuTemplateSummary>>(objectMapper)
+            .responseObject<List<VasuTemplateSummary>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -143,7 +143,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
     private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
         val (_, res, result) = http.get("/vasu/templates/$id")
             .asUser(adminUser)
-            .responseObject<VasuTemplate>(objectMapper)
+            .responseObject<VasuTemplate>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -151,7 +151,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
 
     private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
         val (_, res, _) = http.put("/vasu/templates/$id/content")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(adminUser)
             .response()
 

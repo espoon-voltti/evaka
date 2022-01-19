@@ -120,7 +120,7 @@ class StartingPlacementsReportTest : FullApplicationTest() {
             listOf("year" to date.year, "month" to date.monthValue)
         )
             .asUser(testUser)
-            .responseObject<List<StartingPlacementsRow>>(objectMapper)
+            .responseObject<List<StartingPlacementsRow>>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())

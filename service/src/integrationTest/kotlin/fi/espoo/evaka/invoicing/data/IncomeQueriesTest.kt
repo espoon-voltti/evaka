@@ -13,7 +13,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.defaultObjectMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
@@ -31,7 +31,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class IncomeQueriesTest : PureJdbiTest() {
-    private val mapper = defaultObjectMapper()
+    private val mapper = defaultJsonMapper()
     private val incomeTypesProvider = EspooIncomeTypesProvider()
 
     @BeforeEach

@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.varda
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.OphEnv
@@ -40,7 +40,7 @@ class VardaUpdateService(
     private val asyncJobRunner: AsyncJobRunner<VardaAsyncJob>,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
-    private val mapper: ObjectMapper,
+    private val mapper: JsonMapper,
     private val vardaEnv: VardaEnv,
     private val evakaEnv: EvakaEnv,
     private val ophEnv: OphEnv

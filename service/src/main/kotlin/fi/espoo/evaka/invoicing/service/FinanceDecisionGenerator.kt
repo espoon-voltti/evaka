@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -38,7 +38,7 @@ data class Quadruple<out A, out B, out C, out D>(
 
 @Component
 class FinanceDecisionGenerator(
-    private val objectMapper: ObjectMapper,
+    private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
     env: EvakaEnv,
     featureConfig: FeatureConfig
@@ -49,7 +49,7 @@ class FinanceDecisionGenerator(
     fun createRetroactiveFeeDecisions(tx: Database.Transaction, headOfFamily: PersonId, from: LocalDate) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         tx.handleFeeDecisionChanges(
-            objectMapper,
+            jsonMapper,
             incomeTypesProvider,
             from, // intentionally does not care about feeDecisionMinDate
             headOfFamily,
@@ -68,7 +68,7 @@ class FinanceDecisionGenerator(
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
                     valueDecisionCapacityFactorEnabled,
-                    objectMapper,
+                    jsonMapper,
                     incomeTypesProvider,
                     from,
                     child,
@@ -98,7 +98,7 @@ class FinanceDecisionGenerator(
             .groupBy { it.headOfFamily }
             .forEach { (headOfFamily, families) ->
                 tx.handleFeeDecisionChanges(
-                    objectMapper,
+                    jsonMapper,
                     incomeTypesProvider,
                     from,
                     headOfFamily,
@@ -115,7 +115,7 @@ class FinanceDecisionGenerator(
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
                     valueDecisionCapacityFactorEnabled,
-                    objectMapper,
+                    jsonMapper,
                     incomeTypesProvider,
                     from,
                     child,

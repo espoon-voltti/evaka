@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.varda
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class VardaUnitModelTest {
-    private val mapper = jacksonObjectMapper()
+    private val mapper = defaultJsonMapper()
 
     @Test
     fun `data output is in correct form`() {

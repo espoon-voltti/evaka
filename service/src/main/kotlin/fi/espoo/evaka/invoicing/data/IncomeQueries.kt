@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -26,7 +26,7 @@ import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, updatedBy: EvakaUserId) {
+fun Database.Transaction.upsertIncome(mapper: JsonMapper, income: Income, updatedBy: EvakaUserId) {
     val sql =
         """
         INSERT INTO income (
@@ -91,7 +91,7 @@ fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, upda
     handlingExceptions { update.execute() }
 }
 
-fun Database.Read.getIncome(mapper: ObjectMapper, incomeTypesProvider: IncomeTypesProvider, id: IncomeId): Income? {
+fun Database.Read.getIncome(mapper: JsonMapper, incomeTypesProvider: IncomeTypesProvider, id: IncomeId): Income? {
     return createQuery(
         """
         SELECT income.*, evaka_user.name AS updated_by_name
@@ -106,7 +106,7 @@ fun Database.Read.getIncome(mapper: ObjectMapper, incomeTypesProvider: IncomeTyp
 }
 
 fun Database.Read.getIncomesForPerson(
-    mapper: ObjectMapper,
+    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     personId: PersonId,
     validAt: LocalDate? = null
@@ -129,7 +129,7 @@ fun Database.Read.getIncomesForPerson(
 }
 
 fun Database.Read.getIncomesFrom(
-    mapper: ObjectMapper,
+    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     personIds: List<PersonId>,
     from: LocalDate
@@ -177,12 +177,12 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
     handlingExceptions { update.execute() }
 }
 
-fun toIncome(objectMapper: ObjectMapper, incomeTypes: Map<String, IncomeType>) = { rs: ResultSet, _: StatementContext ->
+fun toIncome(jsonMapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rs: ResultSet, _: StatementContext ->
     Income(
         id = IncomeId(rs.getUUID("id")),
         personId = PersonId(UUID.fromString(rs.getString("person_id"))),
         effect = IncomeEffect.valueOf(rs.getString("effect")),
-        data = parseIncomeDataJson(rs.getString("data"), objectMapper, incomeTypes),
+        data = parseIncomeDataJson(rs.getString("data"), jsonMapper, incomeTypes),
         isEntrepreneur = rs.getBoolean("is_entrepreneur"),
         worksAtECHA = rs.getBoolean("works_at_echa"),
         validFrom = rs.getDate("valid_from").toLocalDate(),
@@ -196,10 +196,10 @@ fun toIncome(objectMapper: ObjectMapper, incomeTypes: Map<String, IncomeType>) =
 
 fun parseIncomeDataJson(
     json: String,
-    objectMapper: ObjectMapper,
+    jsonMapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>
 ): Map<String, IncomeValue> {
-    return objectMapper.readValue<Map<String, IncomeValue>>(json)
+    return jsonMapper.readValue<Map<String, IncomeValue>>(json)
         .mapValues { (type, value) ->
             value.copy(multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"))
         }

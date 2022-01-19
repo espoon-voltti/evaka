@@ -106,7 +106,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         val (_, res, result) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -155,7 +155,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         val (_, res, result) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -195,7 +195,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         val (_, res, result) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -248,12 +248,12 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
         assertEquals(2, serviceWorkerResult.get().attachments.size)
 
         val (_, _, unitSupervisorResult) = http.get("/v2/applications/$applicationId")
             .asUser(testDaycareSupervisor)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
         assertEquals(0, unitSupervisorResult.get().attachments.size)
     }
 
@@ -263,12 +263,12 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
         assertEquals(2, serviceWorkerResult.get().attachments.size)
 
         val (_, _, unitSupervisorResult) = http.get("/v2/applications/$applicationId")
             .asUser(testRoundTheClockDaycareSupervisor)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
         assertEquals(1, unitSupervisorResult.get().attachments.size)
         assertEquals(AttachmentType.EXTENDED_CARE, unitSupervisorResult.get().attachments.first().type)
 
@@ -287,12 +287,12 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(objectMapper)
+            .responseObject<ApplicationResponse>(jsonMapper)
         assertEquals(3, serviceWorkerResult.get().attachments.size)
 
         val (_, _, endUserResult) = http.get("/citizen/applications/$applicationId")
             .asUser(endUser)
-            .responseObject<ApplicationDetails>(objectMapper)
+            .responseObject<ApplicationDetails>(jsonMapper)
         assertEquals(2, endUserResult.get().attachments.size)
     }
 

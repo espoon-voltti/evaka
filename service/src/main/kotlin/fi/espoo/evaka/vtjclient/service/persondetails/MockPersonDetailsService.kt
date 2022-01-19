@@ -4,9 +4,8 @@
 
 package fi.espoo.evaka.vtjclient.service.persondetails
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import org.springframework.core.io.ClassPathResource
 import java.util.concurrent.ConcurrentHashMap
@@ -33,8 +32,7 @@ class MockPersonDetailsService : IPersonDetailsService {
 
         private fun readPersonsFromFile(): List<VtjPerson> {
             val content = ClassPathResource("mock-vtj-data.json").inputStream.use { it.bufferedReader().readText() }
-            val mapper = jacksonObjectMapper().registerModule(JavaTimeModule())
-            return mapper.readValue(content)
+            return defaultJsonMapper().readValue(content)
         }
 
         fun upsertPerson(person: VtjPerson) {
