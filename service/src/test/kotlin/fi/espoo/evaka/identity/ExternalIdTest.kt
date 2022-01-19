@@ -10,14 +10,14 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ExternalIdTest {
-    private val objectMapper = defaultJsonMapper()
+    private val jsonMapper = defaultJsonMapper()
 
     @Test
     fun `external ids can serialized to and from json`() {
         val id = ExternalId.of("espoo-ad", "123456")
-        val json = objectMapper.writeValueAsString(id)
+        val json = jsonMapper.writeValueAsString(id)
         assertEquals("\"espoo-ad:123456\"", json)
-        assertEquals(id, objectMapper.readValue<ExternalId>(json))
+        assertEquals(id, jsonMapper.readValue<ExternalId>(json))
     }
 
     @Test

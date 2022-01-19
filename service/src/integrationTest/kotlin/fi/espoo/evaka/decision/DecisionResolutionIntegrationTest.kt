@@ -327,7 +327,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/accept-decision"
 
         val (_, res, _) = http.post(path)
-            .jsonBody(objectMapper.writeValueAsString(AcceptDecisionRequest(decisionId, requestedStartDate)))
+            .jsonBody(jsonMapper.writeValueAsString(AcceptDecisionRequest(decisionId, requestedStartDate)))
             .asUser(user)
             .response()
         assertTrue(res.isSuccessful)
@@ -346,7 +346,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/reject-decision"
 
         val (_, res, _) = http.post(path)
-            .jsonBody(objectMapper.writeValueAsString(RejectDecisionRequest(decisionId)))
+            .jsonBody(jsonMapper.writeValueAsString(RejectDecisionRequest(decisionId)))
             .asUser(user)
             .response()
         assertTrue(res.isSuccessful)

@@ -134,7 +134,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     ) {
         val (_, response) = http.post("/messages/$sender")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     MessageController.PostMessageBody(
                         title = "Juhannus",
                         content = "Juhannus tulee pian",

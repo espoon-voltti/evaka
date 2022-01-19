@@ -33,7 +33,7 @@ interface VardaTokenProvider {
 @Service
 class VardaTempTokenProvider(
     private val fuel: FuelManager,
-    private val objectMapper: JsonMapper,
+    private val jsonMapper: JsonMapper,
     env: VardaEnv
 ) : VardaTokenProvider {
     private val basicAuth = "Basic ${env.basicAuth.value}"
@@ -64,7 +64,7 @@ class VardaTempTokenProvider(
         .responseStringWithRetries(3, 300L)
         .third
         .fold(
-            { d -> VardaApiToken.from(objectMapper.readTree(d).get("token").asText()) },
+            { d -> VardaApiToken.from(jsonMapper.readTree(d).get("token").asText()) },
             { err -> throw IllegalStateException("Requesting Varda API token failed: ${String(err.errorData)}. Aborting update") }
         )
 }

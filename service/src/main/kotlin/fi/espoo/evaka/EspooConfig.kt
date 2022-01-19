@@ -36,10 +36,10 @@ class EspooConfig {
     fun espooEnv(env: Environment) = EspooEnv.fromEnvironment(env)
 
     @Bean
-    fun invoiceIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>, objectMapper: JsonMapper): InvoiceIntegrationClient =
+    fun invoiceIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>, jsonMapper: JsonMapper): InvoiceIntegrationClient =
         when (env.invoiceIntegrationEnabled) {
-            true -> EspooInvoiceIntegrationClient(invoiceEnv.getObject(), objectMapper)
-            false -> InvoiceIntegrationClient.MockClient(objectMapper)
+            true -> EspooInvoiceIntegrationClient(invoiceEnv.getObject(), jsonMapper)
+            false -> InvoiceIntegrationClient.MockClient(jsonMapper)
         }
 
     @Bean

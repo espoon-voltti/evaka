@@ -177,12 +177,12 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
     handlingExceptions { update.execute() }
 }
 
-fun toIncome(objectMapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rs: ResultSet, _: StatementContext ->
+fun toIncome(jsonMapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rs: ResultSet, _: StatementContext ->
     Income(
         id = IncomeId(rs.getUUID("id")),
         personId = PersonId(UUID.fromString(rs.getString("person_id"))),
         effect = IncomeEffect.valueOf(rs.getString("effect")),
-        data = parseIncomeDataJson(rs.getString("data"), objectMapper, incomeTypes),
+        data = parseIncomeDataJson(rs.getString("data"), jsonMapper, incomeTypes),
         isEntrepreneur = rs.getBoolean("is_entrepreneur"),
         worksAtECHA = rs.getBoolean("works_at_echa"),
         validFrom = rs.getDate("valid_from").toLocalDate(),
@@ -196,10 +196,10 @@ fun toIncome(objectMapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = {
 
 fun parseIncomeDataJson(
     json: String,
-    objectMapper: JsonMapper,
+    jsonMapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>
 ): Map<String, IncomeValue> {
-    return objectMapper.readValue<Map<String, IncomeValue>>(json)
+    return jsonMapper.readValue<Map<String, IncomeValue>>(json)
         .mapValues { (type, value) ->
             value.copy(multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"))
         }

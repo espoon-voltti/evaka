@@ -65,7 +65,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
         val (_, res, result) = http.post("/v2/applications/search")
             .jsonBody(payload)
             .asUser(serviceWorker)
-            .responseObject<Paged<ApplicationSummary>>(objectMapper)
+            .responseObject<Paged<ApplicationSummary>>(jsonMapper)
         assertEquals(200, res.statusCode)
         return result.get()
     }

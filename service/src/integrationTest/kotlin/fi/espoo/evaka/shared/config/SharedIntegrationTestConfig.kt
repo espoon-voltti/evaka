@@ -127,7 +127,7 @@ class SharedIntegrationTestConfig {
     }
 
     @Bean
-    fun invoiceIntegrationClient(objectMapper: JsonMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(objectMapper)
+    fun invoiceIntegrationClient(jsonMapper: JsonMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(jsonMapper)
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()

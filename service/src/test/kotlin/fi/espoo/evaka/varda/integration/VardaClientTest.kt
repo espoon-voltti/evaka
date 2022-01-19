@@ -32,7 +32,7 @@ class MockVardaTokenProvider : VardaTokenProvider {
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VardaClientTest {
-    private val objectMapper: JsonMapper = defaultJsonMapper()
+    private val jsonMapper: JsonMapper = defaultJsonMapper()
     private lateinit var mockTokenProvider: VardaTokenProvider
 
     @BeforeAll
@@ -59,7 +59,7 @@ class VardaClientTest {
             .thenReturn(Response(statusCode = 204, url = URL("https://example.com")))
 
         val client = VardaClient(
-            mockTokenProvider, fuel, objectMapper,
+            mockTokenProvider, fuel, jsonMapper,
             VardaEnv(
                 url = "https://example.com/mock-integration/varda/api",
                 basicAuth = Sensitive(""),

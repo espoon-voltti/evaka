@@ -346,9 +346,9 @@ class VasuIntegrationTest : FullApplicationTest() {
 
     private fun postVasuDocument(childId: ChildId, request: VasuController.CreateDocumentRequest): VasuDocumentId {
         val (_, res, result) = http.post("/children/$childId/vasu")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(adminUser)
-            .responseObject<VasuDocumentId>(objectMapper)
+            .responseObject<VasuDocumentId>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -357,7 +357,7 @@ class VasuIntegrationTest : FullApplicationTest() {
     private fun getVasuSummaries(childId: ChildId): List<VasuDocumentSummary> {
         val (_, res, result) = http.get("/children/$childId/vasu-summaries")
             .asUser(adminUser)
-            .responseObject<List<VasuDocumentSummary>>(objectMapper)
+            .responseObject<List<VasuDocumentSummary>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -366,7 +366,7 @@ class VasuIntegrationTest : FullApplicationTest() {
     private fun getVasuDocument(id: VasuDocumentId): VasuDocument {
         val (_, res, result) = http.get("/vasu/$id")
             .asUser(adminUser)
-            .responseObject<VasuController.GetVasuDocumentResponse>(objectMapper)
+            .responseObject<VasuController.GetVasuDocumentResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get().vasu
@@ -374,7 +374,7 @@ class VasuIntegrationTest : FullApplicationTest() {
 
     private fun putVasuDocument(id: VasuDocumentId, request: VasuController.UpdateDocumentRequest) {
         val (_, res, _) = http.put("/vasu/$id")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(adminUser)
             .response()
 
@@ -383,7 +383,7 @@ class VasuIntegrationTest : FullApplicationTest() {
 
     private fun postVasuDocumentState(id: VasuDocumentId, request: VasuController.ChangeDocumentStateRequest) {
         val (_, res, _) = http.post("/vasu/$id/update-state")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(adminUser)
             .response()
 
@@ -392,9 +392,9 @@ class VasuIntegrationTest : FullApplicationTest() {
 
     private fun postVasuTemplate(request: VasuTemplateController.CreateTemplateRequest): VasuTemplateId {
         val (_, res, result) = http.post("/vasu/templates")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(adminUser)
-            .responseObject<VasuTemplateId>(objectMapper)
+            .responseObject<VasuTemplateId>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -402,7 +402,7 @@ class VasuIntegrationTest : FullApplicationTest() {
 
     private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
         val (_, res, _) = http.put("/vasu/templates/$id/content")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(adminUser)
             .response()
 
@@ -412,7 +412,7 @@ class VasuIntegrationTest : FullApplicationTest() {
     private fun getVasuTemplates(): List<VasuTemplateSummary> {
         val (_, res, result) = http.get("/vasu/templates")
             .asUser(adminUser)
-            .responseObject<List<VasuTemplateSummary>>(objectMapper)
+            .responseObject<List<VasuTemplateSummary>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -421,7 +421,7 @@ class VasuIntegrationTest : FullApplicationTest() {
     private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
         val (_, res, result) = http.get("/vasu/templates/$id")
             .asUser(adminUser)
-            .responseObject<VasuTemplate>(objectMapper)
+            .responseObject<VasuTemplate>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

@@ -534,7 +534,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun getAttendances(): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}")
             .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .responseObject<AttendanceResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -555,7 +555,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun markArrivedAssertFail(arrived: LocalTime, status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
+            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
             .asUser(mobileUser)
             .response()
 
@@ -584,7 +584,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun getDepartureInfoAssertOk(): List<AbsenceThreshold> {
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
             .asUser(mobileUser)
-            .responseObject<List<AbsenceThreshold>>(objectMapper)
+            .responseObject<List<AbsenceThreshold>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -593,14 +593,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun getDepartureInfoAssertFail(status: Int) {
         val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
             .asUser(mobileUser)
-            .responseObject<AbsenceThreshold>(objectMapper)
+            .responseObject<AbsenceThreshold>(jsonMapper)
 
         assertEquals(status, res.statusCode)
     }
 
     private fun markDepartedAssertOkOneChild(departed: LocalTime, absenceType: AbsenceType?): Child {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
+            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
             .asUser(mobileUser)
             .response()
 
@@ -612,7 +612,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun markDepartedAssertFail(departed: LocalTime, absenceType: AbsenceType?, status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
+            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
             .asUser(mobileUser)
             .response()
 
@@ -640,7 +640,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun markFullDayAbsenceAssertOkOneChild(absenceType: AbsenceType): Child {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
+            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
             .asUser(mobileUser)
             .response()
 
@@ -652,7 +652,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun markFullDayAbsenceAssertFail(absenceType: AbsenceType, status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
+            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
             .asUser(mobileUser)
             .response()
 

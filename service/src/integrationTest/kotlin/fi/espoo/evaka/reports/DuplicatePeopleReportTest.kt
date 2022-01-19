@@ -48,7 +48,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
 
         val (_, _, result) = http.get("/reports/duplicate-people")
             .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(objectMapper)
+            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(2, result.get().size)
         assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
@@ -75,7 +75,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
 
         val (_, _, result) = http.get("/reports/duplicate-people")
             .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(objectMapper)
+            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(2, result.get().size)
         assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
@@ -102,7 +102,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
 
         val (_, _, result) = http.get("/reports/duplicate-people")
             .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(objectMapper)
+            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(0, result.get().size)
     }
@@ -128,7 +128,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
 
         val (_, _, result) = http.get("/reports/duplicate-people")
             .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(objectMapper)
+            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(0, result.get().size)
     }

@@ -682,7 +682,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         http.upload("/attachments/messages/$draftId")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
-            .responseObject<AttachmentId>(objectMapper)
+            .responseObject<AttachmentId>(jsonMapper)
             .also { assertEquals(200, it.second.statusCode) }
             .third.get()
 
@@ -709,7 +709,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         draftId: MessageDraftId? = null,
     ) = http.post("/messages/$sender")
         .jsonBody(
-            objectMapper.writeValueAsString(
+            jsonMapper.writeValueAsString(
                 MessageController.PostMessageBody(
                     title = title,
                     content = message,
@@ -735,7 +735,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             "/citizen/messages/$messageId/reply",
         )
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     ReplyToMessageBody(
                         content = content,
                         recipientAccountIds = recipientAccountIds
@@ -756,7 +756,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             "/messages/$sender/$messageId/reply",
         )
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     ReplyToMessageBody(
                         content = content,
                         recipientAccountIds = recipientAccountIds
@@ -782,21 +782,21 @@ class MessageIntegrationTest : FullApplicationTest() {
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
-        .responseObject<Paged<MessageThread>>(objectMapper).third.get().data
+        .responseObject<Paged<MessageThread>>(jsonMapper).third.get().data
 
     private fun getSentMessages(accountId: MessageAccountId, user: AuthenticatedUser): List<SentMessage> = http.get(
         if (user.isEndUser) "/citizen/messages/sent" else "/messages/$accountId/sent",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
-        .responseObject<Paged<SentMessage>>(objectMapper).third.get().data
+        .responseObject<Paged<SentMessage>>(jsonMapper).third.get().data
 
     private fun getReceivers(unitId: DaycareId, user: AuthenticatedUser): List<MessageReceiversResponse> = http.get(
         "/messages/receivers",
         listOf("unitId" to unitId)
     )
         .asUser(user)
-        .responseObject<List<MessageReceiversResponse>>(objectMapper).third.get()
+        .responseObject<List<MessageReceiversResponse>>(jsonMapper).third.get()
 }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> = this.messages.map { Pair(it.sender.id, it.content) }

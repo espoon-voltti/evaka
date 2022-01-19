@@ -297,7 +297,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
             listOf("year" to year, "month" to month)
         )
             .asUser(adminUser)
-            .responseObject<ServiceVoucherValueReportController.ServiceVoucherUnitReport>(objectMapper)
+            .responseObject<ServiceVoucherValueReportController.ServiceVoucherUnitReport>(jsonMapper)
         assertEquals(200, response.statusCode)
 
         return data.get().rows

@@ -45,7 +45,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 internal fun Database.Transaction.handleFeeDecisionChanges(
-    objectMapper: JsonMapper,
+    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
     headOfFamily: PersonId,
@@ -56,7 +56,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
 
     val prices = getFeeThresholds(from)
     val partnerIds = families.mapNotNull { it.partner }
-    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, partnerIds + headOfFamily, from)
+    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, partnerIds + headOfFamily, from)
     val feeAlterations = getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()

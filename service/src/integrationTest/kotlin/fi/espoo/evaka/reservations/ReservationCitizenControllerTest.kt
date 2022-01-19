@@ -102,7 +102,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
 
     private fun postReservations(request: List<DailyReservationRequest>, expectedStatus: Int? = 200) {
         val (_, res, _) = http.post("/citizen/reservations")
-            .jsonBody(objectMapper.writeValueAsString(request))
+            .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
             .response()
 
@@ -112,7 +112,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
     private fun getReservations(range: FiniteDateRange): ReservationsResponse {
         val (_, res, result) = http.get("/citizen/reservations?from=${range.start.format(DateTimeFormatter.ISO_DATE)}&to=${range.end.format(DateTimeFormatter.ISO_DATE)}")
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
-            .responseObject<ReservationsResponse>(objectMapper)
+            .responseObject<ReservationsResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

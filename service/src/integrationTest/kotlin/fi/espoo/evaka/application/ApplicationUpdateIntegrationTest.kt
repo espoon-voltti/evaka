@@ -50,7 +50,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val updatedApplication =
             application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
             .asUser(serviceWorker)
             .responseString()
 
@@ -71,7 +71,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val updatedApplication =
             application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = true)))
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
             .asUser(serviceWorker)
             .responseString()
 
@@ -103,7 +103,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // when
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form))))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form))))
             .asUser(serviceWorker)
             .responseString()
 
@@ -123,7 +123,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // when
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form), dueDate = manuallySetDueDate)))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form), dueDate = manuallySetDueDate)))
             .asUser(serviceWorker)
             .responseString()
 
@@ -158,7 +158,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val updatedApplication =
             application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
         val (_, res, _) = http.put("/citizen/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
             .asUser(citizen)
             .responseString()
 
@@ -188,7 +188,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val updatedApplication =
             application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
             .asUser(serviceWorker)
             .responseString()
 
@@ -222,7 +222,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
                 )
             )
         val (_, res, _) = http.put("/citizen/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
             .asUser(citizen)
             .responseString()
 
@@ -256,7 +256,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
                 )
             )
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
+            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
             .asUser(serviceWorker)
             .responseString()
 

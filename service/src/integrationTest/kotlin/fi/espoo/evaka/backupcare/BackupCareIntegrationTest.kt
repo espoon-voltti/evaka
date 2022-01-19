@@ -58,7 +58,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
         val changedPeriod = period.copy(end = LocalDate.of(2020, 7, 7))
         val (_, res, _) = http.post("/backup-cares/$id")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     BackupCareUpdateRequest(
                         groupId = groupId,
                         period = changedPeriod
@@ -84,7 +84,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
         createBackupCareAndAssert()
         val (_, res, _) = http.post("/children/${testChild_1.id}/backup-cares")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     NewBackupCare(
                         unitId = testDaycare.id,
                         groupId = null,
@@ -104,7 +104,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
         val id = createBackupCareAndAssert(groupId = groupId)
         val (_, res, result) = http.get("/children/${testChild_1.id}/backup-cares")
             .asUser(serviceWorker)
-            .responseObject<ChildBackupCaresResponse>(objectMapper)
+            .responseObject<ChildBackupCaresResponse>(jsonMapper)
         assertTrue(res.isSuccessful)
         val backupCares = result.get().backupCares
 
@@ -161,7 +161,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
             )
         )
             .asUser(serviceWorker)
-            .responseObject<UnitBackupCaresResponse>(objectMapper)
+            .responseObject<UnitBackupCaresResponse>(jsonMapper)
         assertTrue(res.isSuccessful)
         val backupCares = result.get().backupCares
 
@@ -196,7 +196,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     ): BackupCareId {
         val (_, res, result) = http.post("/children/$childId/backup-cares")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     NewBackupCare(
                         unitId = unitId,
                         groupId = groupId,
@@ -205,7 +205,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                 )
             )
             .asUser(serviceWorker)
-            .responseObject<BackupCareCreateResponse>(objectMapper)
+            .responseObject<BackupCareCreateResponse>(jsonMapper)
         assertTrue(res.isSuccessful)
 
         val id = result.get().id

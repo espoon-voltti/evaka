@@ -671,7 +671,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)
-            .responseObject<Paged<IncomeStatement>>(objectMapper)
+            .responseObject<Paged<IncomeStatement>>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
@@ -679,13 +679,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)
-            .responseObject<IncomeStatement>(objectMapper)
+            .responseObject<IncomeStatement>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun createIncomeStatement(body: IncomeStatementBody, expectedStatus: Int = 200) {
         http.post("/citizen/income-statements")
             .asUser(citizen)
-            .objectBody(body, mapper = objectMapper)
+            .objectBody(body, mapper = jsonMapper)
             .response()
             .also { (_, res, _) ->
                 assertEquals(expectedStatus, res.statusCode)
@@ -695,7 +695,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
     private fun updateIncomeStatement(id: IncomeStatementId, body: IncomeStatementBody, expectedStatus: Int = 200) {
         http.put("/citizen/income-statements/$id")
             .asUser(citizen)
-            .objectBody(body, mapper = objectMapper)
+            .objectBody(body, mapper = jsonMapper)
             .response()
             .also { (_, res, _) ->
                 assertEquals(expectedStatus, res.statusCode)
@@ -715,7 +715,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         val (_, _, result) = http.upload("/attachments/citizen/income-statements")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
-            .responseObject<AttachmentId>(objectMapper)
+            .responseObject<AttachmentId>(jsonMapper)
 
         return result.get()
     }
@@ -729,7 +729,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         val (_, _, result) = http.upload("/attachments/income-statements/$incomeStatementId")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
-            .responseObject<AttachmentId>(objectMapper)
+            .responseObject<AttachmentId>(jsonMapper)
 
         return result.get()
     }

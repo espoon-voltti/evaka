@@ -358,7 +358,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     private fun fetchUnitInfo(): UnitInfo {
         val (_, res, result) = http.get("/mobile/units/${testDaycare.id}")
             .asUser(mobileUser)
-            .responseObject<UnitInfo>(objectMapper)
+            .responseObject<UnitInfo>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -367,7 +367,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     private fun fetchAttendances(unitId: DaycareId = testDaycare.id, user: AuthenticatedUser = mobileUser): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/$unitId")
             .asUser(user)
-            .responseObject<AttendanceResponse>(objectMapper)
+            .responseObject<AttendanceResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

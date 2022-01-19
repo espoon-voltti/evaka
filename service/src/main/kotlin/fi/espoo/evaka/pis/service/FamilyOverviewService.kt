@@ -23,7 +23,7 @@ import java.time.LocalDate
 
 @Service
 class FamilyOverviewService(
-    private val objectMapper: JsonMapper,
+    private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider
 ) {
     fun getFamilyByAdult(tx: Database.Read, adultId: PersonId): FamilyOverview? {
@@ -84,7 +84,7 @@ ORDER BY date_of_birth ASC
         val familyMembersNow =
             tx.createQuery(sql)
                 .bind("id", adultId)
-                .map { rs, _ -> toFamilyOverviewPerson(rs, objectMapper, incomeTypesProvider) }
+                .map { rs, _ -> toFamilyOverviewPerson(rs, jsonMapper, incomeTypesProvider) }
 
         val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
 
@@ -145,7 +145,7 @@ data class FamilyOverviewIncome(
 
 fun toFamilyOverviewPerson(
     rs: ResultSet,
-    objectMapper: JsonMapper,
+    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider
 ): FamilyOverviewPerson {
     return FamilyOverviewPerson(
@@ -161,7 +161,7 @@ fun toFamilyOverviewPerson(
         income = FamilyOverviewIncome(
             effect = rs.getString("income_effect")?.let { IncomeEffect.valueOf(it) },
             total = rs.getString("income_data")?.let {
-                incomeTotal(parseIncomeDataJson(it, objectMapper, incomeTypesProvider.get()))
+                incomeTotal(parseIncomeDataJson(it, jsonMapper, incomeTypesProvider.get()))
             }
         )
     )

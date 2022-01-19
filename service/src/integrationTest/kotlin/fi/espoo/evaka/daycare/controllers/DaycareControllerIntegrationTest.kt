@@ -193,7 +193,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
     private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
         val (_, res, body) = http.get("/daycares/$daycareId")
             .asUser(staffMember)
-            .responseObject<DaycareController.DaycareResponse>(objectMapper)
+            .responseObject<DaycareController.DaycareResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()
@@ -202,7 +202,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
     private fun getDaycareStats(daycareId: DaycareId, from: LocalDate, to: LocalDate): DaycareCapacityStats {
         val (_, res, body) = http.get("/daycares/$daycareId/stats?from=$from&to=$to")
             .asUser(staffMember)
-            .responseObject<DaycareCapacityStats>(objectMapper)
+            .responseObject<DaycareCapacityStats>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()
@@ -216,7 +216,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
     ): DaycareGroup {
         val (_, res, body) = http.post("/daycares/$daycareId/groups")
             .jsonBody(
-                objectMapper.writeValueAsString(
+                jsonMapper.writeValueAsString(
                     DaycareController.CreateGroupRequest(
                         name = name,
                         startDate = startDate,
@@ -225,7 +225,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
                 )
             )
             .asUser(supervisor)
-            .responseObject<DaycareGroup>(objectMapper)
+            .responseObject<DaycareGroup>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()

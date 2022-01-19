@@ -95,7 +95,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
     @Test
     fun testCreate() {
         val (_, res, body) = http.post("/daycares")
-            .jsonBody(objectMapper.writeValueAsString(fields))
+            .jsonBody(jsonMapper.writeValueAsString(fields))
             .asUser(admin)
             .responseObject<DaycareController.CreateDaycareResponse>()
         assertTrue(res.isSuccessful)
@@ -106,7 +106,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
     @Test
     fun testUpdate() {
         val (_, res, _) = http.put("/daycares/${testDaycare.id}")
-            .jsonBody(objectMapper.writeValueAsString(fields))
+            .jsonBody(jsonMapper.writeValueAsString(fields))
             .asUser(admin)
             .response()
         assertTrue(res.isSuccessful)
@@ -117,7 +117,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
     private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
         val (_, _, body) = http.get("/daycares/$daycareId")
             .asUser(admin)
-            .responseObject<DaycareController.DaycareResponse>(objectMapper)
+            .responseObject<DaycareController.DaycareResponse>(jsonMapper)
         val daycare = body.get().daycare
 
         assertEquals(fields.name, daycare.name)

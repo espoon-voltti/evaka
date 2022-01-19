@@ -209,8 +209,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun deserializeListResult(json: String) = objectMapper.readValue<Paged<FeeDecisionSummary>>(json)
-    private fun deserializeResult(json: String) = objectMapper.readValue<Wrapper<FeeDecisionDetailed>>(json)
+    private fun deserializeListResult(json: String) = jsonMapper.readValue<Paged<FeeDecisionSummary>>(json)
+    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<FeeDecisionDetailed>>(json)
 
     private fun postJsonData(path: String, payload: String): Result<String, FuelError> {
         val (_, _, result) = http.post(path)
@@ -630,7 +630,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             .asUser(user)
             .responseString()
 
-        val feeDecisions = objectMapper.readValue<Wrapper<List<FeeDecision>>>(result.get()).data
+        val feeDecisions = jsonMapper.readValue<Wrapper<List<FeeDecision>>>(result.get()).data
         assertEquals(2, feeDecisions.size)
         feeDecisions.find { it.status == FeeDecisionStatus.DRAFT }.let { draft ->
             assertNotNull(draft)
@@ -651,7 +651,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
         assertEquals(200, response.statusCode)
     }
@@ -663,7 +663,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -693,7 +693,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -723,7 +723,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -753,7 +753,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -791,7 +791,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -828,7 +828,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -868,7 +868,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(oldDecision.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(oldDecision.id)))
             .responseString()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -900,7 +900,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         asyncJobRunner.runPendingJobsSync(2)
@@ -929,7 +929,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(testDecisions.map { it.id }))
+            .jsonBody(jsonMapper.writeValueAsString(testDecisions.map { it.id }))
             .response()
         assertEquals(400, response.statusCode)
     }
@@ -942,12 +942,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
             .response()
         assertEquals(400, response.statusCode)
         assertEquals(
             "feeDecisions.confirmation.tooFarInFuture",
-            objectMapper.readTree(response.body().asString("text/json")).get("errorCode").textValue()
+            jsonMapper.readTree(response.body().asString("text/json")).get("errorCode").textValue()
         )
     }
 
@@ -960,7 +960,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
             .withMockedTime(now)
             .response()
         assertEquals(200, response.statusCode)
@@ -995,7 +995,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
@@ -1020,7 +1020,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
@@ -1051,7 +1051,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         val (_, _, result_1) = http.get("/decisions/${conflict1.id}")
@@ -1087,7 +1087,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
@@ -1122,7 +1122,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(splitDrafts.map { it.id }))
+            .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
             .response()
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
@@ -1157,7 +1157,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(splitDrafts.map { it.id }))
+            .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
             .response()
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
@@ -1326,7 +1326,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         http.post("/decisions/set-type/${draft.id}")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(requestBody))
+            .jsonBody(jsonMapper.writeValueAsString(requestBody))
             .response()
 
         val modified = draft.copy(
@@ -1433,7 +1433,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(listOf(decision.id)))
+            .jsonBody(jsonMapper.writeValueAsString(listOf(decision.id)))
             .responseString()
 
         assertEquals(200, response.statusCode)

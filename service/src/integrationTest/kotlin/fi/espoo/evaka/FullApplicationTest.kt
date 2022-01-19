@@ -47,7 +47,7 @@ abstract class FullApplicationTest {
 
     // HTTP client for testing the application
 
-    protected val objectMapper: JsonMapper = defaultJsonMapper()
+    protected val jsonMapper: JsonMapper = defaultJsonMapper()
 
     protected lateinit var jdbi: Jdbi
 
@@ -91,8 +91,8 @@ abstract class FullApplicationTest {
         ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
-        vardaTokenProvider = VardaTempTokenProvider(http, objectMapper, vardaEnv)
-        vardaClient = VardaClient(vardaTokenProvider, http, objectMapper, vardaEnv)
+        vardaTokenProvider = VardaTempTokenProvider(http, jsonMapper, vardaEnv)
+        vardaClient = VardaClient(vardaTokenProvider, http, jsonMapper, vardaEnv)
     }
 
     @AfterAll

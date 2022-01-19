@@ -69,7 +69,7 @@ private inline fun <reified T> Jdbi.register(
 }
 
 fun configureJdbi(jdbi: Jdbi): Jdbi {
-    val objectMapper = JsonMapper()
+    val jsonMapper = JsonMapper()
         .registerModule(JavaTimeModule())
         .registerModule(Jdk8Module())
         .registerModule(ParameterNamesModule())
@@ -77,7 +77,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.installPlugin(KotlinPlugin())
         .installPlugin(PostgresPlugin())
         .installPlugin(Jackson2Plugin())
-    jdbi.getConfig(Jackson2Config::class.java).mapper = objectMapper
+    jdbi.getConfig(Jackson2Config::class.java).mapper = jsonMapper
     jdbi.registerArgument(finiteDateRangeArgumentFactory)
     jdbi.registerArgument(dateRangeArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)

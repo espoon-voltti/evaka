@@ -38,7 +38,7 @@ class KoskiClient(
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the global defaults change.
     // This is important, because our payload diffing mechanism relies on the serialization format
-    private val objectMapper = jacksonMapperBuilder()
+    private val jsonMapper = jacksonMapperBuilder()
         .addModules(JavaTimeModule(), JaxbAnnotationModule(), Jdk8Module(), ParameterNamesModule())
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
@@ -55,7 +55,7 @@ class KoskiClient(
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
             return@transaction
         }
-        val payload = objectMapper.writeValueAsString(data.oppija)
+        val payload = jsonMapper.writeValueAsString(data.oppija)
         if (!tx.isPayloadChanged(msg.key, payload)) {
             logger.info { "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping" }
         } else {
@@ -71,7 +71,7 @@ class KoskiClient(
                 .responseString()
 
             val response: HenkilönOpiskeluoikeusVersiot = try {
-                objectMapper.readValue(result.get())
+                jsonMapper.readValue(result.get())
             } catch (error: FuelError) {
                 val meta = mapOf(
                     "method" to request.method,
@@ -94,7 +94,7 @@ class KoskiClient(
                     // We need to apply the returned OID back to the payload, or `isPayloadChanged` would always
                     // consider a freshly created study right as "outdated" because the original payload did not have the
                     // OID field
-                    payload = objectMapper.writeValueAsString(
+                    payload = jsonMapper.writeValueAsString(
                         data.oppija.copy(
                             opiskeluoikeudet = data.oppija.opiskeluoikeudet.zip(response.opiskeluoikeudet).map {
                                 it.first.copy(

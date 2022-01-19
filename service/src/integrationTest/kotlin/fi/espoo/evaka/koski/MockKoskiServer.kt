@@ -24,7 +24,7 @@ private typealias Ssn = String
 
 data class MockStudyRight(val version: Int, val opiskeluoikeus: Opiskeluoikeus)
 
-class MockKoskiServer(private val objectMapper: JsonMapper, port: Int) : AutoCloseable {
+class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoCloseable {
     private val app = Javalin.create().start(port)
     private val logger = KotlinLogging.logger {}
 
@@ -56,7 +56,7 @@ class MockKoskiServer(private val objectMapper: JsonMapper, port: Int) : AutoClo
 
     private fun oppija(ctx: Context) {
         logger.info { "Mock Koski received ${ctx.method()} body: ${ctx.body()}" }
-        val oppija = objectMapper.readValue(ctx.body(), Oppija::class.java)
+        val oppija = jsonMapper.readValue(ctx.body(), Oppija::class.java)
 
         when (ctx.method()) {
             "POST" -> if (oppija.opiskeluoikeudet.any { it.oid != null }) {
@@ -80,7 +80,7 @@ class MockKoskiServer(private val objectMapper: JsonMapper, port: Int) : AutoClo
             }
             // Raw Jackson databind API is used to generate the response, because we want to add some fields
             // that are missing in our data class -based representation to simulate a real response more accurately
-            objectMapper.createObjectNode().apply {
+            jsonMapper.createObjectNode().apply {
                 with("henkilö").apply {
                     put("oid", personOid)
                 }
@@ -99,7 +99,7 @@ class MockKoskiServer(private val objectMapper: JsonMapper, port: Int) : AutoClo
                                 personStudyRights.get(personOid).add(studyRightOid)
                             }
 
-                            objectMapper.createObjectNode().apply {
+                            jsonMapper.createObjectNode().apply {
                                 put("oid", studyRightOid)
                                 put("versionumero", version)
                                 with("lähdejärjestelmänId").apply {
@@ -122,7 +122,7 @@ class MockKoskiServer(private val objectMapper: JsonMapper, port: Int) : AutoClo
                 }
             }
         }
-        ctx.contentType("application/json").result(objectMapper.writeValueAsString(response))
+        ctx.contentType("application/json").result(jsonMapper.writeValueAsString(response))
     }
 
     override fun close() {

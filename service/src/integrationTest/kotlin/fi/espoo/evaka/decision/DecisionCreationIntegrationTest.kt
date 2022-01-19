@@ -317,7 +317,7 @@ WHERE id = :unitId
     ) {
         val (_, _, body) = http.get("/v2/applications/$applicationId/decision-drafts")
             .asUser(serviceWorker)
-            .responseObject<DecisionDraftJSON>(objectMapper)
+            .responseObject<DecisionDraftJSON>(jsonMapper)
         assertEquals(
             DecisionDraftJSON(
                 decisions = decisions.sortedBy { it.type },

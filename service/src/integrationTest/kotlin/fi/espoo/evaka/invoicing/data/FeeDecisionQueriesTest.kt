@@ -37,7 +37,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class FeeDecisionQueriesTest : PureJdbiTest() {
-    val objectMapper = defaultJsonMapper()
+    val jsonMapper = defaultJsonMapper()
 
     private val testPeriod = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
     private val testDecisions = listOf(

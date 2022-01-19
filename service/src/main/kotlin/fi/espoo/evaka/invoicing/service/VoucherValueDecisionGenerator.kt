@@ -46,7 +46,7 @@ import java.util.UUID
 
 internal fun Database.Transaction.handleValueDecisionChanges(
     capacityFactorEnabled: Boolean,
-    objectMapper: JsonMapper,
+    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
     child: ChildWithDateOfBirth,
@@ -58,7 +58,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
-    val incomes = getIncomesFrom(objectMapper, incomeTypesProvider, adults, from)
+    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults, from)
     val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 

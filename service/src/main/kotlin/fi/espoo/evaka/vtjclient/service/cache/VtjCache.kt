@@ -13,7 +13,7 @@ import redis.clients.jedis.JedisPool
 
 @Service
 class VtjCache(
-    private val objectMapper: JsonMapper,
+    private val jsonMapper: JsonMapper,
     private val redisPool: JedisPool
 ) {
     private val logger = KotlinLogging.logger { }
@@ -23,14 +23,14 @@ class VtjCache(
         logger.debug { "Getting data from VTJ cache" }
         redisPool.resource.use { redis ->
             val person = redis.get(ssn) ?: return null
-            return objectMapper.readValue<VtjPerson>(person)
+            return jsonMapper.readValue<VtjPerson>(person)
         }
     }
 
     fun save(ssn: String, person: VtjPerson?) {
         logger.debug { "Setting data to VTJ cache" }
         redisPool.resource.use { redis ->
-            redis.set(ssn, objectMapper.writeValueAsString(person))
+            redis.set(ssn, jsonMapper.writeValueAsString(person))
             redis.expire(ssn, timeToLive)
         }
     }

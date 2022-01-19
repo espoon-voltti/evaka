@@ -327,7 +327,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         termination: PlacementControllerCitizen.PlacementTerminationRequestBody
     ) {
         http.post("/citizen/children/$childId/placements/terminate")
-            .jsonBody(objectMapper.writeValueAsString(termination))
+            .jsonBody(jsonMapper.writeValueAsString(termination))
             .asUser(authenticatedParent)
             .response()
             .also { assertEquals(200, it.second.statusCode) }
@@ -336,7 +336,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     private fun getChildPlacements(childId: ChildId): List<PlacementControllerCitizen.TerminatablePlacementGroup> {
         return http.get("/citizen/children/$childId/placements")
             .asUser(authenticatedParent)
-            .responseObject<PlacementControllerCitizen.ChildPlacementResponse>(objectMapper)
+            .responseObject<PlacementControllerCitizen.ChildPlacementResponse>(jsonMapper)
             .also { assertEquals(200, it.second.statusCode) }
             .third.get().placements
     }

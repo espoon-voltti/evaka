@@ -28,5 +28,5 @@ fun defaultJsonMapper(): JsonMapper = jacksonMapperBuilder()
 class JacksonConfig {
     // This replaces default JsonMapper provided by Spring Boot autoconfiguration
     @Bean
-    fun objectMapper() = defaultJsonMapper()
+    fun jsonMapper() = defaultJsonMapper()
 }

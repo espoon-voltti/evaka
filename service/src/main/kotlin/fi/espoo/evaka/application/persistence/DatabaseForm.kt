@@ -25,7 +25,7 @@ sealed class DatabaseForm {
     abstract fun hideChildAddress(): DatabaseForm
 }
 
-fun objectMapper(): JsonMapper = jacksonMapperBuilder()
+fun jsonMapper(): JsonMapper = jacksonMapperBuilder()
     .addModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .build()
