@@ -5,6 +5,7 @@
 import React from 'react'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import { voucherValueDecisionTypes } from 'lib-customizations/employee'
 import { useTranslation } from '../../state/i18n'
 
 interface TypeSelectProps {
@@ -13,12 +14,7 @@ interface TypeSelectProps {
   type: 'FEE_DECISION' | 'VALUE_DECISION'
 }
 
-const items: VoucherValueDecisionType[] = [
-  'NORMAL',
-  'RELIEF_ACCEPTED',
-  'RELIEF_PARTLY_ACCEPTED',
-  'RELIEF_REJECTED'
-]
+const items = voucherValueDecisionTypes
 
 export const TypeSelect = ({
   selected,

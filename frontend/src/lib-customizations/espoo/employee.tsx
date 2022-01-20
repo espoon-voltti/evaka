@@ -46,6 +46,12 @@ const customizations: EmployeeCustomizations = {
     'MUNICIPAL_SCHOOL',
     'PRIVATE_SERVICE_VOUCHER',
     'EXTERNAL_PURCHASED'
+  ],
+  voucherValueDecisionTypes: [
+    'NORMAL',
+    'RELIEF_ACCEPTED',
+    'RELIEF_PARTLY_ACCEPTED',
+    'RELIEF_REJECTED'
   ]
 }
 
