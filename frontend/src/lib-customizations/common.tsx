@@ -7,6 +7,12 @@
 import customizations from '@evaka/customizations/common'
 import { isArray } from 'lodash'
 import React from 'react'
+import {
+  faBabyCarriage,
+  faEuroSign,
+  faThermometer,
+  faTreePalm
+} from 'lib-icons'
 import type { CommonCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -30,6 +36,18 @@ export const absenceColors = {
   TEMPORARY_RELOCATION: status.warning,
   TEMPORARY_VISITOR: status.warning,
   NO_ABSENCE: accents.a8lightBlue
+}
+
+export const absenceIcons = {
+  UNKNOWN_ABSENCE: '?',
+  OTHER_ABSENCE: faTreePalm,
+  SICKLEAVE: faThermometer,
+  PLANNED_ABSENCE: 'P',
+  PARENTLEAVE: faBabyCarriage,
+  FORCE_MAJEURE: faEuroSign,
+  TEMPORARY_RELOCATION: '-',
+  TEMPORARY_VISITOR: '-',
+  NO_ABSENCE: '-'
 }
 
 export const attendanceColors = {

@@ -5,9 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { AbsenceType } from 'lib-common/generated/enums'
-import { Label } from 'lib-components/typography'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { absenceColors } from 'lib-customizations/common'
+import { absenceColors, absenceIcons } from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 type CalendarAbsenceType = AbsenceType | 'NO_ABSENCE'
@@ -35,14 +36,30 @@ const AbsenceLegendSquare = styled.div<{ color: string }>`
   border-radius: 2px;
 `
 
-export const AbsenceLegend = React.memo(function AbsenceLegend() {
+interface Props {
+  absenceTypes?: CalendarAbsenceType[]
+  icons?: boolean
+}
+
+export const AbsenceLegend = React.memo(function AbsenceLegend({
+  absenceTypes = absenceTypesInLegend,
+  icons = false
+}: Props) {
   const { i18n } = useTranslation()
   return (
     <>
-      {absenceTypesInLegend.map((t) => (
+      {absenceTypes.map((t) => (
         <AbsenceLegendRow key={t}>
-          <AbsenceLegendSquare color={absenceColors[t]} />
-          <Label>{i18n.absences.absenceTypes[t]}</Label>
+          {icons ? (
+            <RoundIcon
+              size="m"
+              color={absenceColors[t]}
+              content={absenceIcons[t]}
+            />
+          ) : (
+            <AbsenceLegendSquare color={absenceColors[t]} />
+          )}
+          <LabelLike>{i18n.absences.absenceTypes[t]}</LabelLike>
         </AbsenceLegendRow>
       ))}
     </>
