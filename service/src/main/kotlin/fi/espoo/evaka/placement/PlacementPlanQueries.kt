@@ -159,7 +159,13 @@ SELECT
 FROM placement_plan pp
 LEFT JOIN application a ON pp.application_id = a.id
 LEFT JOIN person p ON a.child_id = p.id
-LEFT JOIN decision d ON d.application_id = a.id
+LEFT JOIN LATERAL (
+SELECT id, status, updated, created 
+FROM decision 
+WHERE decision.application_id = a.id
+ORDER BY created DESC
+LIMIT 1
+) d ON TRUE
 WHERE
     pp.unit_id = :unitId AND
     a.status = ANY(:statuses::application_status_type[]) AND

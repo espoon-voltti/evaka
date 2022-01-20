@@ -107,8 +107,6 @@ describe('Unit groups - placement plans / proposals', () => {
   test('Placement plan is shown', async () => {
     const today = LocalDate.today()
 
-    //const groupsSection = await loadUnitGroupsPage()
-    //await groupsSection.missingPlacementsSection.assertRowCount(2)
     const application1: Application = {
       ...applicationFixture(enduserChildFixtureJari, enduserGuardianFixture),
       id: uuidv4(),
