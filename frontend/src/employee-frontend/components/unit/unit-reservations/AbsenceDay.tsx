@@ -36,7 +36,7 @@ export default React.memo(function AbsenceDay({ type }: Props) {
         color={absenceColors[type]}
         size="m"
       />
-      <span>{i18n.absences.absenceTypes[type]}</span>
+      <span>{i18n.absences.absenceTypesShort[type]}</span>
     </FixedSpaceRow>
   )
 })
