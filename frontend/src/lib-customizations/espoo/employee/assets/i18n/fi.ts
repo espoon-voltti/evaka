@@ -1611,7 +1611,9 @@ export const fi = {
           WEEKLY: 'Viikoittain',
           IRREGULAR: 'Epäsäännöllinen'
         }
-      }
+      },
+      dayOff: 'Vapaapäivä',
+      missingServiceTime: 'Sop.aika puuttuu'
     },
     error: {
       placement: {

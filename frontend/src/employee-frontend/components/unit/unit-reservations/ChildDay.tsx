@@ -17,6 +17,7 @@ import {
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
+import { useTranslation } from '../../../state/i18n'
 import AbsenceDay from './AbsenceDay'
 
 interface Props {
@@ -25,6 +26,8 @@ interface Props {
 }
 
 export default React.memo(function ChildDay({ day, childReservations }: Props) {
+  const { i18n } = useTranslation()
+
   const dailyData = childReservations.dailyData[day.date.formatIso()]
 
   if (!dailyData) return null
@@ -71,10 +74,14 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
           /* else if daily service times are known but there is none for this day of week, show day off */
-          <ReservationTime>Vapaapäivä</ReservationTime>
+          <ReservationTime>
+            {i18n.unit.attendanceReservations.dayOff}
+          </ReservationTime>
         ) : (
           /* else show no reservation */
-          <ReservationTime warning>Sop.aika puuttuu</ReservationTime>
+          <ReservationTime warning>
+            {i18n.unit.attendanceReservations.missingServiceTime}
+          </ReservationTime>
         )}
       </TimesRow>
       {dailyData.reservations.length > 1 && (
