@@ -115,6 +115,7 @@ class SoapStackIntegrationTest {
         serviceIdentifier = "service",
         certificateCommonName = "common-name",
         printing = SfiPrintingEnv(
+            enabled = true,
             forcePrintForElectronicUser = false,
             printingProvider = "provider",
             billingId = "billing-id",
@@ -192,11 +193,12 @@ class SoapStackIntegrationTest {
             assertEquals(env.contactPerson.email, viranomainen.yhteyshenkilo.sahkoposti)
             assertEquals(env.contactPerson.phone, viranomainen.yhteyshenkilo.matkapuhelin)
 
-            assertTrue(request.isLahetaTulostukseen)
-            assertEquals(env.printing?.printingProvider, request.tulostustoimittaja)
+            assertEquals(env.printing.enabled, request.isLahetaTulostukseen)
+            assertEquals(env.printing.forcePrintForElectronicUser, request.isPaperi)
+            assertEquals(env.printing.printingProvider, request.tulostustoimittaja)
 
-            assertEquals(env.printing?.billingId, request.laskutus.tunniste)
-            assertEquals(env.printing?.billingPassword?.value, request.laskutus.salasana)
+            assertEquals(env.printing.billingId, request.laskutus.tunniste)
+            assertEquals(env.printing.billingPassword?.value, request.laskutus.salasana)
 
             assertEquals(1, request.kohteet.kohde.size)
             val kohde = request.kohteet.kohde[0]
