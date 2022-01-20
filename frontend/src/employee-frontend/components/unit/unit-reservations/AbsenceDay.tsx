@@ -6,22 +6,26 @@ import React from 'react'
 import { AbsenceType } from 'lib-common/generated/enums'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { defaultMargins } from 'lib-components/white-space'
 import { absenceColors } from 'lib-customizations/common'
-import { faThermometer } from 'lib-icons'
+import {
+  faBabyCarriage,
+  faEuroSign,
+  faThermometer,
+  faTreePalm
+} from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 
-const absenceIcons = {
+export const absenceIcons = {
   UNKNOWN_ABSENCE: '?',
-  OTHER_ABSENCE: '-',
+  OTHER_ABSENCE: faTreePalm,
   SICKLEAVE: faThermometer,
   PLANNED_ABSENCE: 'P',
-  PARENTLEAVE: '-',
-  FORCE_MAJEURE: '-',
+  PARENTLEAVE: faBabyCarriage,
+  FORCE_MAJEURE: faEuroSign,
   TEMPORARY_RELOCATION: '-',
   TEMPORARY_VISITOR: '-',
   NO_ABSENCE: '-'
-} as const
+}
 
 interface Props {
   type: AbsenceType
@@ -30,7 +34,7 @@ interface Props {
 export default React.memo(function AbsenceDay({ type }: Props) {
   const { i18n } = useTranslation()
   return (
-    <FixedSpaceRow spacing={defaultMargins.xs} alignItems="center">
+    <FixedSpaceRow spacing="xs" alignItems="center">
       <RoundIcon
         content={absenceIcons[type]}
         color={absenceColors[type]}
