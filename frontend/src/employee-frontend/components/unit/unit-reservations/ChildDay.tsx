@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import {
   getTimesOnWeekday,
   isIrregular,
@@ -15,7 +15,8 @@ import {
   OperationalDay
 } from 'lib-common/api-types/reservations'
 import { fontWeights } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
+import { colors } from 'lib-customizations/common'
 import AbsenceDay from './AbsenceDay'
 
 interface Props {
@@ -36,7 +37,7 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
     return null
 
   if (dailyData.absence && !dailyData.attendance)
-    return <AbsenceDay type={dailyData.absence.type} />
+    return <AbsenceDay type={dailyData.absence.type} /> // TODO render on top row
 
   const serviceTimes = childReservations.child.dailyServiceTimes
   const serviceTimesAvailable =
@@ -52,20 +53,15 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
 
   return (
     <DateCell>
-      <AttendanceTimesRow>
-        <TimeCell>{dailyData.attendance?.startTime ?? '–'}</TimeCell>
-        <TimeCell>{dailyData.attendance?.endTime ?? '–'}</TimeCell>
-      </AttendanceTimesRow>
-      <Gap size="xxs" />
-      <ReservationTimesRow>
+      <TimesRow>
         {dailyData.reservations.length > 0 ? (
           /* show actual reservation if it exists */
           <>
             <ReservationTime>
-              {dailyData.reservations[0].startTime ?? '–'}
+              {dailyData.reservations[0].startTime}
             </ReservationTime>
             <ReservationTime>
-              {dailyData.reservations[0].endTime ?? '–'}
+              {dailyData.reservations[0].endTime}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay ? (
@@ -79,19 +75,25 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
           <ReservationTime>Vapaapäivä</ReservationTime>
         ) : (
           /* else show no reservation */
-          <ReservationTime>Ei varausta</ReservationTime>
+          <ReservationTime warning>Sop.aika puuttuu</ReservationTime>
         )}
-      </ReservationTimesRow>
+      </TimesRow>
       {dailyData.reservations.length > 1 ? (
-        <ReservationTimesRow>
+        <TimesRow>
           <ReservationTime>
             {dailyData.reservations[1].startTime ?? '–'}
           </ReservationTime>
           <ReservationTime>
             {dailyData.reservations[1].endTime ?? '–'}
           </ReservationTime>
-        </ReservationTimesRow>
+        </TimesRow>
       ) : null}
+      <TimesRow>
+        <AttendanceTime>
+          {dailyData.attendance?.startTime ?? '–'}
+        </AttendanceTime>
+        <AttendanceTime>{dailyData.attendance?.endTime ?? '–'}</AttendanceTime>
+      </TimesRow>
     </DateCell>
   )
 })
@@ -103,28 +105,32 @@ const DateCell = styled.div`
   justify-content: center;
 `
 
-export const TimesRow = styled.div`
+const TimesRow = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-evenly;
-`
+  padding: ${defaultMargins.xs};
+  gap: ${defaultMargins.xs};
 
-const AttendanceTimesRow = styled(TimesRow)`
-  font-weight: ${fontWeights.semibold};
-`
-
-const ReservationTimesRow = styled(TimesRow)``
-
-export const TimeCell = styled.div`
-  min-width: 54px;
-  text-align: center;
-
-  &:not(:first-child) {
-    margin-left: ${defaultMargins.xs};
+  :nth-child(even) {
+    background: ${colors.grayscale.g4};
   }
 `
 
-const ReservationTime = styled(TimeCell)`
-  font-style: italic;
+const TimeCell = styled.div`
+  flex: 1 0 54px;
+  text-align: center;
+`
+
+const AttendanceTime = styled(TimeCell)`
+  font-weight: ${fontWeights.semibold};
+`
+
+const ReservationTime = styled(TimeCell)<{ warning?: boolean }>`
+  ${(p) =>
+    p.warning &&
+    css`
+      color: ${colors.accents.a2orangeDark};
+    `};
 `
