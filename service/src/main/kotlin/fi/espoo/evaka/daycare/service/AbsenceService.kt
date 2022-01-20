@@ -174,8 +174,8 @@ enum class AbsenceCareType {
 data class AbsenceGroup(
     val groupId: GroupId,
     val daycareName: String,
-    var groupName: String,
-    var children: List<AbsenceChild>,
+    val groupName: String,
+    val children: List<AbsenceChild>,
     val operationDays: List<LocalDate>
 )
 
@@ -203,7 +203,7 @@ data class Absence(
     val id: AbsenceId? = null,
     val childId: ChildId,
     val date: LocalDate,
-    var careType: AbsenceCareType,
+    val careType: AbsenceCareType,
     val absenceType: AbsenceType
 )
 
@@ -211,7 +211,7 @@ data class AbsenceWithModifierInfo(
     val id: AbsenceId? = null,
     val childId: ChildId,
     val date: LocalDate,
-    var careType: AbsenceCareType,
+    val careType: AbsenceCareType,
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,
     val modifiedAt: HelsinkiDateTime
@@ -283,7 +283,7 @@ private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifie
 data class AbsenceDelete(
     val childId: ChildId,
     val date: LocalDate,
-    var careType: AbsenceCareType
+    val careType: AbsenceCareType
 )
 fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
     //language=SQL
