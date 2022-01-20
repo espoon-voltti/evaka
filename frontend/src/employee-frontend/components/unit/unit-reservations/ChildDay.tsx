@@ -36,9 +36,6 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
   )
     return null
 
-  if (dailyData.absence && !dailyData.attendance)
-    return <AbsenceDay type={dailyData.absence.type} /> // TODO render on top row
-
   const serviceTimes = childReservations.child.dailyServiceTimes
   const serviceTimesAvailable =
     serviceTimes !== null && !isVariableTime(serviceTimes)
@@ -54,7 +51,9 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
   return (
     <DateCell>
       <TimesRow>
-        {dailyData.reservations.length > 0 ? (
+        {dailyData.absence ? (
+          <AbsenceDay type={dailyData.absence.type} />
+        ) : dailyData.reservations.length > 0 ? (
           /* show actual reservation if it exists */
           <>
             <ReservationTime>
@@ -78,7 +77,7 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
           <ReservationTime warning>Sop.aika puuttuu</ReservationTime>
         )}
       </TimesRow>
-      {dailyData.reservations.length > 1 ? (
+      {dailyData.reservations.length > 1 && (
         <TimesRow>
           <ReservationTime>
             {dailyData.reservations[1].startTime ?? '–'}
@@ -87,7 +86,7 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
             {dailyData.reservations[1].endTime ?? '–'}
           </ReservationTime>
         </TimesRow>
-      ) : null}
+      )}
       <TimesRow>
         <AttendanceTime>
           {dailyData.attendance?.startTime ?? '–'}
