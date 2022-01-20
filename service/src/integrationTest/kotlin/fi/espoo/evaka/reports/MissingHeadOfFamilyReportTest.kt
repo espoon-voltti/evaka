@@ -87,7 +87,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest() {
             listOf("from" to from, "to" to to)
         )
             .asUser(testUser)
-            .responseObject<List<MissingHeadOfFamilyReportRow>>(objectMapper)
+            .responseObject<List<MissingHeadOfFamilyReportRow>>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())
