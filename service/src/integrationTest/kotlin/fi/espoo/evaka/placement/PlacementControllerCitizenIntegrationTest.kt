@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
 import fi.espoo.evaka.test.getApplicationStatus
@@ -27,27 +29,29 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
-    final val child = testChild_1
-    final val child2 = testChild_2
-    final val parent = testAdult_1
-    final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw)
+    private final val child = testChild_1
+    private final val child2 = testChild_2
+    private final val parent = testAdult_1
+    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw)
 
-    final val daycareId = testDaycare.id
-    final val testDaycareGroup = DevDaycareGroup(daycareId = daycareId)
-    final val groupId = testDaycareGroup.id
+    private final val daycareId = testDaycare.id
+    private final val daycare2Id = testDaycare2.id
 
-    final val today = LocalDate.now()
+    private final val today = LocalDate.now()
 
-    final val placementStart = today.minusDays(100)
-    final val placementEnd = placementStart.plusDays(200)
+    private final val placementStart = today.minusMonths(3)
+    private final val placementEnd = placementStart.plusMonths(6)
 
     @BeforeEach
     fun setUp() {
@@ -60,7 +64,15 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            tx.insertTestDaycareGroup(testDaycareGroup)
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare2Id,
+                startDate = placementEnd.plusDays(1),
+                endDate = placementEnd.plusMonths(2)
+            )
+            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
+            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id))
+
             tx.insertGuardian(parent.id, child.id)
             tx.insertGuardian(parent.id, child2.id)
         }
@@ -69,7 +81,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     @Test
     fun `child placements are returned`() {
         val childPlacements = getChildPlacements(child.id)
-        assertEquals(1, childPlacements.size)
+        assertEquals(2, childPlacements.size)
         assertEquals(placementStart, childPlacements[0].startDate)
         assertEquals(placementEnd, childPlacements[0].endDate)
         assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
@@ -77,6 +89,10 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(PlacementType.DAYCARE, childPlacements[0].placements[0].type)
         assertEquals(null, childPlacements[0].placements[0].terminationRequestedDate)
         assertEquals(null, childPlacements[0].placements[0].terminatedBy)
+        assertTrue(childPlacements[0].terminatable)
+
+        assertFalse(childPlacements[1].terminatable)
+        assertEquals(listOf(false), childPlacements[1].placements.map { it.terminatable })
     }
 
     @Test
@@ -94,13 +110,16 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         )
 
         val childPlacements = getChildPlacements(child.id)
-        assertEquals(1, childPlacements.size)
+        assertEquals(2, childPlacements.size)
         assertEquals(placementStart, childPlacements[0].startDate)
         assertEquals(placementTerminationDate, childPlacements[0].endDate)
         assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
         assertEquals(1, childPlacements[0].placements.size)
         assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
         assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
+
+        assertEquals(false, childPlacements[1].terminatable)
+        assertEquals(listOf(null), childPlacements[1].placements.map { it.terminationRequestedDate })
     }
 
     @Test
@@ -275,7 +294,20 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `Transfer application with preferred date after requested termination date is cancelled`() {
+    fun `placement cannot be terminated if placement termination is not in unit's enabled features`() {
+        val body = PlacementControllerCitizen.PlacementTerminationRequestBody(
+            type = PlacementControllerCitizen.TerminatablePlacementType.DAYCARE,
+            terminationDate = today.plusDays(1),
+            unitId = daycare2Id,
+            terminateDaycareOnly = false,
+        )
+        terminatePlacements(child.id, body, 403)
+        db.transaction { it.setUnitFeatures(daycare2Id, setOf(PilotFeature.PLACEMENT_TERMINATION)) }
+        terminatePlacements(child.id, body, 200)
+    }
+
+    @Test
+    fun `transfer application with preferred date after requested termination date is cancelled`() {
         val placementTerminationDate = today.plusDays(1)
 
         val applicationBeforeTermination = db.transaction { tx ->
@@ -313,24 +345,27 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(ApplicationStatus.CANCELLED, db.read { it.getApplicationStatus(applicationAfterTermination.id) })
 
         val childPlacements = getChildPlacements(child.id)
-        assertEquals(1, childPlacements.size)
+        assertEquals(2, childPlacements.size)
         assertEquals(placementStart, childPlacements[0].startDate)
         assertEquals(placementTerminationDate, childPlacements[0].endDate)
         assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
         assertEquals(1, childPlacements[0].placements.size)
         assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
         assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
+
+        assertEquals(listOf(null), (childPlacements[1].placements + childPlacements[1].additionalPlacements).map { it.terminationRequestedDate })
     }
 
     private fun terminatePlacements(
         childId: ChildId,
-        termination: PlacementControllerCitizen.PlacementTerminationRequestBody
+        termination: PlacementControllerCitizen.PlacementTerminationRequestBody,
+        expectedStatus: Int = 200
     ) {
         http.post("/citizen/children/$childId/placements/terminate")
             .jsonBody(jsonMapper.writeValueAsString(termination))
             .asUser(authenticatedParent)
             .response()
-            .also { assertEquals(200, it.second.statusCode) }
+            .also { assertEquals(expectedStatus, it.second.statusCode) }
     }
 
     private fun getChildPlacements(childId: ChildId): List<PlacementControllerCitizen.TerminatablePlacementGroup> {

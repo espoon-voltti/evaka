@@ -399,6 +399,7 @@ data class ChildPlacement(
     val endDate: LocalDate,
     val unitId: DaycareId,
     val unitName: String,
+    val terminatable: Boolean,
     val terminationRequestedDate: LocalDate?,
     @Nested("terminated_by")
     val terminatedBy: EvakaUser?,
@@ -415,6 +416,7 @@ SELECT
     p.termination_requested_date,
     d.id AS unit_id,
     d.name AS unit_name,
+    'PLACEMENT_TERMINATION' = ANY(enabled_pilot_features) as terminatable,
     evaka_user.id as terminated_by_id,
     evaka_user.name as terminated_by_name,
     evaka_user.type as terminated_by_type
@@ -424,7 +426,7 @@ JOIN person child ON p.child_id = child.id
 LEFT JOIN evaka_user ON p.terminated_by = evaka_user.id
 WHERE
     p.child_id = :childId
-    AND p.end_date >= now()::date
+    AND p.end_date >= :today::date
     """.trimIndent()
 )
     .bind("childId", childId)

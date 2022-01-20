@@ -89,7 +89,7 @@ val testDaycare = DevDaycare(
     name = "Test Daycare",
     areaId = testArea.id,
     ophOrganizerOid = defaultMunicipalOrganizerOid,
-    enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS)
+    enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS, PilotFeature.PLACEMENT_TERMINATION)
 )
 
 val testDaycare2 = DevDaycare(

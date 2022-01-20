@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -130,7 +130,8 @@ export const daycareFixture: Daycare = {
     'MOBILE',
     'RESERVATIONS',
     'VASU_AND_PEDADOC',
-    'MOBILE_MESSAGING'
+    'MOBILE_MESSAGING',
+    'PLACEMENT_TERMINATION'
   ]
 }
 
@@ -175,7 +176,12 @@ export const preschoolFixture: Daycare = {
     lat: 60.2040261560435,
     lon: 24.65517745652623
   },
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'VASU_AND_PEDADOC']
+  enabledPilotFeatures: [
+    'MESSAGING',
+    'MOBILE',
+    'VASU_AND_PEDADOC',
+    'PLACEMENT_TERMINATION'
+  ]
 }
 
 export const enduserGuardianFixture: PersonDetail = {

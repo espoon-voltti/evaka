@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -1713,6 +1713,8 @@ export default {
         'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
       terminatedPlacements: 'Olet irtisanonut paikan',
       invoicedDaycare: 'Maksullinen varhaiskasvatus',
+      nonTerminatablePlacement:
+        'Paikkaa ei voi irtisanoa verkkopalvelussa. Ota yhteyttä yksikön johtajaan.',
       until: (date: string) => `voimassa ${date}`,
       choosePlacement: 'Valitse paikka, jonka haluat irtisanoa',
       lastDayInfo:

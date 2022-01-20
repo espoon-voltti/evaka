@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -1788,6 +1788,8 @@ const en: Translations = {
       choosePlacement:
         'Select the early childhood education agreement that you want to terminate',
       invoicedDaycare: 'Paid early childhood education',
+      nonTerminatablePlacement:
+        "The agreement cannot be terminated online. Please contact your unit's supervisor.",
       lastDayInfo:
         "The last day when your child needs early childhood education. Your child's early childhood education agreement will be terminated to end on this day.",
       lastDayOfPresence: 'Last day of attendance',

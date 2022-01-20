@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -1745,6 +1745,8 @@ const sv: Translations = {
       until: (date: string) => `giltig till ${date}`,
       choosePlacement: 'Välj platsen du vill säga upp',
       invoicedDaycare: 'Betald småbarnspedagogik',
+      nonTerminatablePlacement:
+        'Platsen kan inte sägas upp online. Kontakta din enhets ledare.',
       lastDayInfo:
         'Sista dag då ditt barn behöver plats. Platsen sägs upp för att upphöra denna dag.',
       lastDayOfPresence: 'Sista närvarodag',
