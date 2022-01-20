@@ -54,7 +54,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
@@ -1587,7 +1586,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 22, ) }  // 15 operational days
+            .takeWhile { it <= LocalDate.of(2019, 1, 22,) } // 15 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
             .toMap()
 
@@ -1620,7 +1619,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 21, ) }  // 14 operational days
+            .takeWhile { it <= LocalDate.of(2019, 1, 21,) } // 14 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
             .toMap()
 
@@ -1638,6 +1637,38 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 1 force majeure absence`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        val absenceDays = listOf(
+            LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE
+        ).toMap()
+
+        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(26973, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(-1927, invoiceRow.price)
             }
         }
     }

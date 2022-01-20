@@ -393,7 +393,8 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
             child,
             placement,
             absences,
-            operationalDays
+            operationalDays,
+            contractDaysPerMonth,
         ) { refundProduct, refundAmount, refundUnitPrice ->
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
@@ -433,17 +434,18 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         placement: PlacementStub,
         absences: List<AbsenceStub>,
         operationalDays: OperationalDays,
+        contractDaysPerMonth: Int?,
         toInvoiceRow: (ProductKey, Int, Int) -> InvoiceRow
     ): List<InvoiceRow> {
         val total = invoiceRowTotal(rows)
         if (total == 0) return listOf()
 
-        val refundedDates = getRefundedDays(period, child, placement, absences, operationalDays)
-        if (refundedDates.isEmpty()) return listOf()
+        val refundedDayCount = getRefundedDays(period, child, placement, absences, operationalDays)
+        if (refundedDayCount == 0) return listOf()
 
         val (amount, unitPrice) =
-            if (refundedDates.size == operationalDays.generalCase.size) 1 to -total
-            else refundedDates.size to -getDailyDiscount(period, total, operationalDays.generalCase)
+            if (refundedDayCount == operationalDays.generalCase.size) 1 to -total
+            else refundedDayCount to -getDailyDiscount(period, total, operationalDays.generalCase, contractDaysPerMonth)
 
         return listOf(toInvoiceRow(productProvider.dailyRefund, amount, unitPrice))
     }
@@ -454,7 +456,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         placement: PlacementStub,
         absences: List<AbsenceStub>,
         operationalDays: OperationalDays
-    ): List<LocalDate> {
+    ): Int {
         val relevantOperationalDays = operationalDays.forUnit(placement.unit).filter { period.includes(it) }
 
         val forceMajeureAbsences = absences.filter { it.absenceType == AbsenceType.FORCE_MAJEURE }
@@ -466,12 +468,12 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
             .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it) < 2 }
             .filter { day -> parentLeaveAbsences.find { day == it.date } != null }
 
-        return (forceMajeureDays + parentLeaveDays).distinct().take(operationalDays.generalCase.size)
+        return minOf((forceMajeureDays + parentLeaveDays).distinct().size, operationalDays.generalCase.size)
     }
 
-    private fun getDailyDiscount(period: DateRange, totalSoFar: Int, operationalDays: List<LocalDate>): Int {
-        val dayAmount = operationalDays.filter { period.includes(it) }.size
-        return BigDecimal(totalSoFar).divide(BigDecimal(dayAmount), 0, RoundingMode.HALF_UP).toInt()
+    private fun getDailyDiscount(period: DateRange, total: Int, operationalDays: List<LocalDate>, contractDaysPerMonth: Int?): Int {
+        val dayAmount = contractDaysPerMonth ?: operationalDays.filter { period.includes(it) }.size
+        return BigDecimal(total).divide(BigDecimal(dayAmount), 0, RoundingMode.HALF_UP).toInt()
     }
 
     private fun monthlyAbsenceDicount(
@@ -495,7 +497,9 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         val (product, totalDiscount) = when {
             sickAbsences.size >= operationalDays.generalCase.size -> productProvider.fullMonthSickLeave to -total
             sickAbsences.size >= 11 -> productProvider.partMonthSickLeave to -halfPrice(total)
-            contractDaysPerMonth != null && allAbsences.size >= contractDaysPerMonth -> productProvider.fullMonthAbsence to -halfPrice(total)
+            contractDaysPerMonth != null && allAbsences.size >= contractDaysPerMonth -> productProvider.fullMonthAbsence to -halfPrice(
+                total
+            )
             allAbsences.size >= operationalDays.generalCase.size -> productProvider.fullMonthAbsence to -halfPrice(total)
             else -> return listOf()
         }
@@ -764,12 +768,14 @@ FROM
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 1)}) p01,
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 2)}) p02,
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 3)}) p03,
-${if (year != 2020) {
+${
+        if (year != 2020) {
             """
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 4)}) p04,
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 5)}) p05,
 """
-        } else ""}
+        } else ""
+        }
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 6)}) p06
 WHERE
   p09.child_id = p10.child_id AND
@@ -778,11 +784,13 @@ WHERE
   p09.child_id = p01.child_id AND
   p09.child_id = p02.child_id AND
   p09.child_id = p03.child_id AND
-  ${if (year != 2020)
+  ${
+        if (year != 2020)
             """
         p09.child_id = p04.child_id AND
         p09.child_id = p05.child_id AND
-    """ else ""}
+    """ else ""
+        }
   p09.child_id = p06.child_id;
     """
 
