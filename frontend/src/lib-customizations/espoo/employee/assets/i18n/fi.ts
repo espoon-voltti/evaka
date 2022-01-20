@@ -1611,7 +1611,9 @@ export const fi = {
           WEEKLY: 'Viikoittain',
           IRREGULAR: 'Epäsäännöllinen'
         }
-      }
+      },
+      dayOff: 'Vapaapäivä',
+      missingServiceTime: 'Sop.aika puuttuu'
     },
     error: {
       placement: {
@@ -2077,6 +2079,17 @@ export const fi = {
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
       NO_ABSENCE: 'Ei poissaoloa'
+    },
+    absenceTypesShort: {
+      OTHER_ABSENCE: 'Muu',
+      SICKLEAVE: 'Sairaus',
+      UNKNOWN_ABSENCE: 'Ilmoittamaton',
+      PLANNED_ABSENCE: 'Suunniteltu',
+      TEMPORARY_RELOCATION: 'Varasijoitus',
+      TEMPORARY_VISITOR: 'Varalapsi',
+      PARENTLEAVE: 'Isyysvapaa',
+      FORCE_MAJEURE: 'Maksuton',
+      NO_ABSENCE: 'Ei poissa'
     },
     careTypes: {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',

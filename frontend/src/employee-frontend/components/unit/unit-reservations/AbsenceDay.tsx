@@ -3,13 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 import { AbsenceType } from 'lib-common/generated/enums'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import colors from 'lib-customizations/common'
+import { defaultMargins } from 'lib-components/white-space'
+import { absenceColors } from 'lib-customizations/common'
 import { faThermometer } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
+
+const absenceIcons = {
+  UNKNOWN_ABSENCE: '?',
+  OTHER_ABSENCE: '-',
+  SICKLEAVE: faThermometer,
+  PLANNED_ABSENCE: 'P',
+  PARENTLEAVE: '-',
+  FORCE_MAJEURE: '-',
+  TEMPORARY_RELOCATION: '-',
+  TEMPORARY_VISITOR: '-',
+  NO_ABSENCE: '-'
+} as const
 
 interface Props {
   type: AbsenceType
@@ -17,36 +29,14 @@ interface Props {
 
 export default React.memo(function AbsenceDay({ type }: Props) {
   const { i18n } = useTranslation()
-  if (type === 'SICKLEAVE')
-    return (
-      <AbsenceCell>
-        <FixedSpaceRow spacing="xs" alignItems="center">
-          <RoundIcon
-            content={faThermometer}
-            color={colors.accents.a4violet}
-            size="m"
-          />
-          <div>{i18n.absences.absenceTypes.SICKLEAVE}</div>
-        </FixedSpaceRow>
-      </AbsenceCell>
-    )
-
   return (
-    <AbsenceCell>
-      <FixedSpaceRow spacing="xs" alignItems="center">
-        <RoundIcon content="–" color={colors.main.m2} size="m" />
-        <div>
-          {i18n.absences.absenceTypes[type] ??
-            i18n.absences.absenceTypes.OTHER_ABSENCE}
-        </div>
-      </FixedSpaceRow>
-    </AbsenceCell>
+    <FixedSpaceRow spacing={defaultMargins.xs} alignItems="center">
+      <RoundIcon
+        content={absenceIcons[type]}
+        color={absenceColors[type]}
+        size="m"
+      />
+      <span>{i18n.absences.absenceTypesShort[type]}</span>
+    </FixedSpaceRow>
   )
 })
-
-const AbsenceCell = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-style: italic;
-`

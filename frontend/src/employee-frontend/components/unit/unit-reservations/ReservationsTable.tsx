@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import {
   Child,
   ChildReservations,
@@ -13,13 +13,13 @@ import {
 import LocalDate from 'lib-common/local-date'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { H4 } from 'lib-components/typography'
+import { fontWeights, H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import AgeIndicatorIcon from '../../common/AgeIndicatorIcon'
-import ChildDay, { TimeCell, TimesRow } from './ChildDay'
+import ChildDay from './ChildDay'
 
 interface Props {
   operationalDays: OperationalDay[]
@@ -43,17 +43,15 @@ export default React.memo(function ReservationsTable({
           <CustomTh>{i18n.unit.attendanceReservations.childName}</CustomTh>
           {operationalDays.map(({ date, isHoliday }) => (
             <DateTh key={date.formatIso()} faded={isHoliday}>
-              <Date>
+              <Date centered highlight={date.isToday()}>
                 {`${
                   i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek() - 1]
                 } ${date.format('dd.MM.')}`}
               </Date>
-              <TimesRow>
-                <TimeCell>
-                  {i18n.unit.attendanceReservations.startTime}
-                </TimeCell>
-                <TimeCell>{i18n.unit.attendanceReservations.endTime}</TimeCell>
-              </TimesRow>
+              <DayHeader>
+                <span>{i18n.unit.attendanceReservations.startTime}</span>
+                <span>{i18n.unit.attendanceReservations.endTime}</span>
+              </DayHeader>
             </DateTh>
           ))}
           <CustomTh />
@@ -80,9 +78,9 @@ export default React.memo(function ReservationsTable({
                 </ChildName>
               </NameTd>
               {operationalDays.map((day) => (
-                <StyledTd key={day.date.formatIso()}>
+                <DayTd key={day.date.formatIso()}>
                   <ChildDay day={day} childReservations={childReservations} />
-                </StyledTd>
+                </DayTd>
               ))}
               <StyledTd>
                 <IconButton
@@ -101,18 +99,27 @@ export default React.memo(function ReservationsTable({
 })
 
 const CustomTh = styled(Th)`
-  border: none;
   vertical-align: bottom;
 `
 
 const DateTh = styled(CustomTh)<{ faded: boolean }>`
   width: 0; // causes the column to take as little space as possible
-  ${({ faded }) => (faded ? `color: ${colors.grayscale.g35};` : '')}
+  ${(p) => (p.faded ? `color: ${colors.grayscale.g35};` : '')}
+`
+
+const DayHeader = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+  gap: ${defaultMargins.xs};
 `
 
 const StyledTd = styled(Td)`
   border-right: 1px solid ${colors.grayscale.g35};
   vertical-align: middle;
+`
+
+const DayTd = styled(StyledTd)`
+  padding: 0;
 `
 
 const NameTd = styled(StyledTd)`
@@ -131,7 +138,12 @@ const ChildName = styled.div`
   }
 `
 
-const Date = styled(H4)`
-  text-align: center;
+const Date = styled(H4)<{ highlight: boolean }>`
   margin: 0 0 ${defaultMargins.s};
+  ${(p) =>
+    p.highlight &&
+    css`
+      color: ${colors.main.m2};
+      font-weight: ${fontWeights.semibold};
+    `}
 `
