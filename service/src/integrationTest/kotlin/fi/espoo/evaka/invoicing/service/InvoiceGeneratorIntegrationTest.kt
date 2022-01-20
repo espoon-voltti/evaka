@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -28,8 +28,10 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -53,7 +55,6 @@ import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
@@ -61,11 +62,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
-class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
-    @Autowired
-    private lateinit var generator: InvoiceGenerator
-
-    private val productProvider = TestInvoiceProductProvider()
+class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
+    private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
+    private val featureConfig: FeatureConfig = testFeatureConfig
+    private val generator: InvoiceGenerator = InvoiceGenerator(productProvider, featureConfig)
 
     @BeforeEach
     fun beforeEach() {
@@ -2540,6 +2540,42 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily)
             assertNull(invoice.codebtor)
+        }
+    }
+
+    @Test
+    fun `invoice generation with a fixed daily fee divisor`() {
+        // Contains 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // Override to use 20 days instead when calculating a daily refund
+        val generator = InvoiceGenerator(productProvider, featureConfig.copy(fixedDailyFeeDivisor = 20))
+
+        val absenceDays = listOf(
+            LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE
+        ).toMap()
+
+        initDataForAbsences(listOf(period), absenceDays)
+
+        db.transaction { generator.createAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(27455, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-1445, invoiceRow.unitPrice) // 28900 / 20
+                assertEquals(-1445, invoiceRow.price)
+            }
         }
     }
 

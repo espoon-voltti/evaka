@@ -144,12 +144,15 @@ class SharedIntegrationTestConfig {
     fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
     @Bean
-    fun featureConfig(): FeatureConfig = FeatureConfig(
-        valueDecisionCapacityFactorEnabled = true,
-        daycareApplicationServiceNeedOptionsEnabled = false,
-        citizenReservationThresholdHours = 150,
-    )
+    fun featureConfig(): FeatureConfig = testFeatureConfig
 
     @Bean
     fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 }
+
+val testFeatureConfig = FeatureConfig(
+    valueDecisionCapacityFactorEnabled = true,
+    daycareApplicationServiceNeedOptionsEnabled = false,
+    citizenReservationThresholdHours = 150,
+    fixedDailyFeeDivisor = null,
+)
