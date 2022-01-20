@@ -29,6 +29,7 @@ data class ServiceNeedValue(
     val id: ServiceNeedId,
     val feeCoefficient: BigDecimal,
     val voucherValueCoefficient: BigDecimal,
+    val contractDaysPerMonth: Int?,
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,

@@ -115,7 +115,7 @@ val testDecisionChild1 =
     FeeDecisionChild(
         child = testChild1,
         placement = FeeDecisionPlacement(DaycareId(UUID.randomUUID()), PlacementType.DAYCARE),
-        serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
+        serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), null, "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,
@@ -128,7 +128,7 @@ val testDecisionChild2 =
     FeeDecisionChild(
         child = testChild2,
         placement = FeeDecisionPlacement(DaycareId(UUID.randomUUID()), PlacementType.DAYCARE),
-        serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
+        serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), null, "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,

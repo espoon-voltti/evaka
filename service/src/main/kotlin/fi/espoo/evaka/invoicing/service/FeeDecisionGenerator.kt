@@ -175,6 +175,7 @@ private fun generateFeeDecisions(
                             FeeDecisionPlacement(placement.unitId, placement.type),
                             FeeDecisionServiceNeed(
                                 placement.serviceNeed.feeCoefficient,
+                                placement.serviceNeed.contractDaysPerMonth,
                                 placement.serviceNeed.feeDescriptionFi,
                                 placement.serviceNeed.feeDescriptionSv,
                                 placement.missingServiceNeed
@@ -225,7 +226,16 @@ internal fun Database.Read.getPaidPlacements(
 
         val serviceNeeds = createQuery(
             """
-SELECT daterange(sn.start_date, sn.end_date, '[]') AS range, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient, sno.fee_description_fi, sno.fee_description_sv, sno.voucher_value_description_fi, sno.voucher_value_description_sv
+SELECT 
+    daterange(sn.start_date, sn.end_date, '[]') AS range, 
+    sno.id, 
+    sno.fee_coefficient, 
+    sno.voucher_value_coefficient, 
+    sno.contract_days_per_month,
+    sno.fee_description_fi, 
+    sno.fee_description_sv, 
+    sno.voucher_value_description_fi, 
+    sno.voucher_value_description_sv
 FROM service_need sn
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
