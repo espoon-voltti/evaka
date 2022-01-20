@@ -5,7 +5,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { Absence } from 'lib-common/api-types/child/Absences'
 import { formatDate } from 'lib-common/date'
-import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
+import { AbsenceCareType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from '../../components/common/Tooltip'
@@ -19,7 +19,7 @@ import {
 
 interface AbsenceCellPartProps {
   position: string
-  absenceType?: AbsenceType
+  absenceType: CellPart['absenceType']
   isWeekend: boolean
 }
 

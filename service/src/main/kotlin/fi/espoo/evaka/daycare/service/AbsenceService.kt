@@ -235,12 +235,6 @@ enum class AbsenceType {
     SICKLEAVE,
     UNKNOWN_ABSENCE,
     PLANNED_ABSENCE,
-
-    @Deprecated("replaced by backup cares")
-    TEMPORARY_RELOCATION,
-
-    @Deprecated("replaced by backup cares")
-    TEMPORARY_VISITOR,
     PARENTLEAVE,
     FORCE_MAJEURE;
 }

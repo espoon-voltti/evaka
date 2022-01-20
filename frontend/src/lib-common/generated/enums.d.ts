@@ -19,8 +19,6 @@ export type AbsenceType =
   | 'PARENTLEAVE'
   | 'PLANNED_ABSENCE'
   | 'SICKLEAVE'
-  | 'TEMPORARY_RELOCATION'
-  | 'TEMPORARY_VISITOR'
   | 'UNKNOWN_ABSENCE'
 
 export type ApplicationOrigin =

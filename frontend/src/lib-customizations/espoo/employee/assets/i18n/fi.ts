@@ -2086,7 +2086,6 @@ export const fi = {
       UNKNOWN_ABSENCE: 'Ilmoittamaton',
       PLANNED_ABSENCE: 'Suunniteltu',
       TEMPORARY_RELOCATION: 'Varasijoitus',
-      TEMPORARY_VISITOR: 'Varalapsi',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton',
       NO_ABSENCE: 'Ei poissa'

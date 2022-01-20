@@ -72,11 +72,13 @@ export interface Cell {
   parts: CellPart[]
 }
 
+type AbsenceTypeWithBackupCare = AbsenceType | 'TEMPORARY_RELOCATION'
+
 export interface CellPart {
   id: UUID
   childId: UUID
   date: LocalDate
-  absenceType?: AbsenceType
+  absenceType?: AbsenceTypeWithBackupCare
   careType: AbsenceCareType
   position: string
 }
