@@ -18,6 +18,7 @@ export interface IconSet {
   faAngleUp: IconDefinition
   faArrowUp: IconDefinition
   faBars: IconDefinition
+  faBabyCarriage: IconDefinition
   faCalendarAlt: IconDefinition
   faCalendarPlus: IconDefinition
   faCheck: IconDefinition
@@ -87,6 +88,7 @@ export interface IconSet {
   faThermometer: IconDefinition
   faTimes: IconDefinition
   faTrash: IconDefinition
+  faTreePalm: IconDefinition
   faUndo: IconDefinition
   faUser: IconDefinition
   fasUser: IconDefinition
@@ -136,6 +138,7 @@ export const faArrowRight = iconSet.faArrowRight
 export const faAngleUp = iconSet.faAngleUp
 export const faArrowUp = iconSet.faArrowUp
 export const faBars = iconSet.faBars
+export const faBabyCarriage = iconSet.faBabyCarriage
 export const faCalendarAlt = iconSet.faCalendarAlt
 export const faCalendarPlus = iconSet.faCalendarPlus
 export const faCheck = iconSet.faCheck
@@ -206,6 +209,7 @@ export const faSync = iconSet.faSync
 export const faThermometer = iconSet.faThermometer
 export const faTimes = iconSet.faTimes
 export const faTrash = iconSet.faTrash
+export const faTreePalm = iconSet.faTreePalm
 export const faUndo = iconSet.faUndo
 export const faUser = iconSet.faUser
 export const fasUser = iconSet.fasUser
