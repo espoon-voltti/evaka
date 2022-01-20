@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -187,12 +187,13 @@ export default React.memo(function Absences({
             disabled={selectedCells.length === 0}
             text={i18n.absences.addAbsencesButton(selectedCells.length)}
           />
-          <HorizontalLine dashed slim />
-          <H3 noMargin>{i18n.absences.legendTitle}</H3>
-          <Gap size="m" />
-          <FixedSpaceColumn spacing="xxs">
-            <AbsenceLegend />
-          </FixedSpaceColumn>
+          <div>
+            <HorizontalLine dashed slim />
+            <H3>{i18n.absences.legendTitle}</H3>
+            <FixedSpaceColumn spacing="xxs">
+              <AbsenceLegend />
+            </FixedSpaceColumn>
+          </div>
         </FixedSpaceColumn>
       ))}
     </AbsencesPage>

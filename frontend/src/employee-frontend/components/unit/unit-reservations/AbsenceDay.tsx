@@ -6,26 +6,8 @@ import React from 'react'
 import { AbsenceType } from 'lib-common/generated/enums'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { absenceColors } from 'lib-customizations/common'
-import {
-  faBabyCarriage,
-  faEuroSign,
-  faThermometer,
-  faTreePalm
-} from 'lib-icons'
+import { absenceColors, absenceIcons } from 'lib-customizations/common'
 import { useTranslation } from '../../../state/i18n'
-
-export const absenceIcons = {
-  UNKNOWN_ABSENCE: '?',
-  OTHER_ABSENCE: faTreePalm,
-  SICKLEAVE: faThermometer,
-  PLANNED_ABSENCE: 'P',
-  PARENTLEAVE: faBabyCarriage,
-  FORCE_MAJEURE: faEuroSign,
-  TEMPORARY_RELOCATION: '-',
-  TEMPORARY_VISITOR: '-',
-  NO_ABSENCE: '-'
-}
 
 interface Props {
   type: AbsenceType

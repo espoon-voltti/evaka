@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,9 +7,11 @@ import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
@@ -17,8 +19,19 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 import { getUnitAttendanceReservations } from '../../../api/unit'
+import { useTranslation } from '../../../state/i18n'
+import { AbsenceLegend } from '../../absences/AbsenceLegend'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import ReservationsTable from './ReservationsTable'
+
+const legendAbsenceTypes: AbsenceType[] = [
+  'OTHER_ABSENCE',
+  'SICKLEAVE',
+  'UNKNOWN_ABSENCE',
+  'PLANNED_ABSENCE',
+  'PARENTLEAVE',
+  'FORCE_MAJEURE'
+]
 
 interface Props {
   unitId: UUID
@@ -37,6 +50,7 @@ export default React.memo(function UnitAttendanceReservationsView({
   isShiftCareUnit,
   operationalDays
 }: Props) {
+  const { i18n } = useTranslation()
   const dateRange = useMemo(
     () => getWeekDateRange(selectedDate),
     [selectedDate]
@@ -103,6 +117,14 @@ export default React.memo(function UnitAttendanceReservationsView({
                 />
               )}
             </FixedSpaceColumn>
+
+            <div>
+              <HorizontalLine dashed slim />
+              <H3>{i18n.absences.legendTitle}</H3>
+              <FixedSpaceColumn spacing="xs">
+                <AbsenceLegend icons absenceTypes={legendAbsenceTypes} />
+              </FixedSpaceColumn>
+            </div>
           </>
         )
       })}
