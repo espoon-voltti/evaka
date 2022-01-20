@@ -137,7 +137,7 @@ export default React.memo(function PlacementProposals({
       )}
 
       <div>
-        <Table>
+        <Table data-qa="placement-proposal-table">
           <Thead>
             <Tr>
               <Th>{i18n.unit.placementProposals.name}</Th>

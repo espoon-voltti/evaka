@@ -61,6 +61,7 @@ import {
   insertIncome,
   insertPedagogicalDocuments,
   insertPersonFixture,
+  insertPlacementPlan,
   insertServiceNeedOptions,
   insertServiceNeeds,
   insertVtjPersonFixture,
@@ -688,10 +689,12 @@ export const applicationFixture = (
 })
 
 export const placementPlanFixture = (
+  applicationId: string,
   unitId: string,
   periodStart: string,
   periodEnd: string
 ): PlacementPlan => ({
+  applicationId,
   unitId,
   periodStart,
   periodEnd
@@ -1288,6 +1291,15 @@ export class Fixture {
       errors: []
     })
   }
+
+  static placementPlan(): PlacementPlanBuilder {
+    return new PlacementPlanBuilder({
+      applicationId: uuidv4(),
+      unitId: uuidv4(),
+      periodStart: '',
+      periodEnd: ''
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1623,5 +1635,16 @@ export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
 
   copy() {
     return new FeeThresholdBuilder({ ...this.data })
+  }
+}
+
+export class PlacementPlanBuilder extends FixtureBuilder<PlacementPlan> {
+  async save() {
+    await insertPlacementPlan(this.data)
+    return this
+  }
+
+  copy() {
+    return new PlacementPlanBuilder({ ...this.data })
   }
 }

@@ -148,11 +148,10 @@ export async function execSimpleApplicationActions(
 }
 
 export async function insertPlacementPlan(
-  applicationId: string,
   fixture: PlacementPlan
 ): Promise<void> {
   try {
-    await devClient.post(`/placement-plan/${applicationId}`, fixture)
+    await devClient.post(`/placement-plan/${fixture.applicationId}`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
