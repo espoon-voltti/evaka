@@ -25,6 +25,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -38,6 +39,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -52,6 +54,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
@@ -1580,6 +1583,66 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `invoice generation with 15 contract days and 15 days of absences - half price`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
+            .takeWhile { it <= LocalDate.of(2019, 1, 22, ) }  // 15 operational days
+            .map { it to AbsenceType.OTHER_ABSENCE }
+            .toMap()
+
+        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(14450, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.fullMonthAbsence, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-14450, invoiceRow.unitPrice)
+                assertEquals(-14450, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 14 days of absences - full price`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
+            .takeWhile { it <= LocalDate.of(2019, 1, 21, ) }  // 14 operational days
+            .map { it to AbsenceType.OTHER_ABSENCE }
+            .toMap()
+
+        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice)
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with full month of force majeure absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
@@ -2528,7 +2591,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     private fun initDataForAbsences(
         periods: List<DateRange>,
         absenceDays: Map<LocalDate, AbsenceType>,
-        child: DevPerson = testChild_1
+        child: DevPerson = testChild_1,
+        serviceNeed: ServiceNeedOption = snDaycareFullDay35,
     ) = periods.forEachIndexed { index, period ->
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
@@ -2541,7 +2605,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                     dateOfBirth = child.dateOfBirth,
                     placementUnitId = testDaycare.id,
                     placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
                     feeAlterations = if (index > 0) {
                         listOf(

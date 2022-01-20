@@ -125,7 +125,8 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         val child: ChildWithDateOfBirth,
         val placement: PlacementStub,
         val priceBeforeFeeAlterations: Int,
-        val feeAlterations: List<Pair<FeeAlteration.Type, Int>>
+        val feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
+        val contractDaysPerMonth: Int?,
     )
 
     private fun generateDraftInvoice(
@@ -160,7 +161,8 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                                     ChildWithDateOfBirth(child.id, child.dateOfBirth),
                                     placement,
                                     feeThresholds.calculatePriceForTemporary(partDay, index + 1),
-                                    listOf()
+                                    listOf(),
+                                    null,
                                 )
                             )
                         }
@@ -182,7 +184,8 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                                         part.fee,
                                         part.feeAlterations.map { feeAlteration ->
                                             Pair(feeAlteration.type, feeAlteration.effect)
-                                        }
+                                        },
+                                        part.serviceNeed.contractDaysPerMonth,
                                     )
                                 }
                     }
@@ -239,7 +242,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         operationalDays: OperationalDays,
         absences: List<AbsenceStub>
     ): List<InvoiceRow> {
-        val (child, placement, price, feeAlterations) = invoiceRowStub
+        val (child, placement, price, feeAlterations, contractDaysPerMonth) = invoiceRowStub
 
         return when (placement.type) {
             PlacementType.TEMPORARY_DAYCARE,
@@ -260,6 +263,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                 price,
                 codes,
                 operationalDays,
+                contractDaysPerMonth,
                 feeAlterations,
                 absences
             )
@@ -320,6 +324,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         price: Int,
         codes: DaycareCodes,
         operationalDays: OperationalDays,
+        contractDaysPerMonth: Int?,
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         absences: List<AbsenceStub>
     ): List<InvoiceRow> {
@@ -405,7 +410,8 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
             withDailyModifiers,
             placement,
             absences,
-            operationalDays
+            operationalDays,
+            contractDaysPerMonth
         ) { absenceProduct, absenceDiscount ->
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
@@ -473,6 +479,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         placement: PlacementStub,
         absences: List<AbsenceStub>,
         operationalDays: OperationalDays,
+        contractDaysPerMonth: Int?,
         toInvoiceRow: (ProductKey, Int) -> InvoiceRow
     ): List<InvoiceRow> {
         val total = invoiceRowTotal(rows)
@@ -488,6 +495,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
         val (product, totalDiscount) = when {
             sickAbsences.size >= operationalDays.generalCase.size -> productProvider.fullMonthSickLeave to -total
             sickAbsences.size >= 11 -> productProvider.partMonthSickLeave to -halfPrice(total)
+            contractDaysPerMonth != null && allAbsences.size >= contractDaysPerMonth -> productProvider.fullMonthAbsence to -halfPrice(total)
             allAbsences.size >= operationalDays.generalCase.size -> productProvider.fullMonthAbsence to -halfPrice(total)
             else -> return listOf()
         }
