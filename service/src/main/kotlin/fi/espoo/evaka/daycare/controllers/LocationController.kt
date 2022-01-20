@@ -29,21 +29,11 @@ class LocationController {
     @GetMapping(value = ["/units", "/public/units"])
     fun getApplicationUnits(
         db: Database,
-        user: AuthenticatedUser,
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
     ): List<PublicUnit> {
-        return db.connect { dbc ->
-            dbc.read {
-                it.getApplicationUnits(
-                    type,
-                    date,
-                    shiftCare,
-                    onlyApplicable = user is AuthenticatedUser.Citizen
-                )
-            }
-        }
+        return db.connect { dbc -> dbc.read { it.getApplicationUnits(type, date, shiftCare) } }
     }
 
     @GetMapping("/public/units/{applicationType}")
