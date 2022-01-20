@@ -78,6 +78,7 @@ data class ServiceNeedOption(
     val voucherValueCoefficient: BigDecimal,
     val occupancyCoefficient: BigDecimal,
     val daycareHoursPerWeek: Int,
+    val contractDaysPerMonth: Int?,
     val partDay: Boolean,
     val partWeek: Boolean,
     val feeDescriptionFi: String,

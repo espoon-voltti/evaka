@@ -759,6 +759,7 @@ export const feeDecisionsFixture = (
       },
       serviceNeed: {
         feeCoefficient: 1.0,
+        contractDaysPerMonth: null,
         descriptionFi: 'palveluntarve',
         descriptionSv: 'vårdbehövet',
         missing: false
@@ -1181,6 +1182,7 @@ export class Fixture {
     return new ServiceNeedOptionBuilder({
       id: uuidv4(),
       daycareHoursPerWeek: 0,
+      contractDaysPerMonth: null,
       defaultOption: false,
       feeCoefficient: 0.0,
       feeDescriptionFi: `Test service need option ${id}`,

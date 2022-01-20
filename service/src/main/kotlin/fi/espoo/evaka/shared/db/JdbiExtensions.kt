@@ -190,6 +190,7 @@ val feeDecisionRowMapper = RowViewMapper { rv ->
                     ),
                     serviceNeed = FeeDecisionServiceNeed(
                         feeCoefficient = rv.mapColumn("service_need_fee_coefficient"),
+                        contractDaysPerMonth = rv.mapColumn("service_need_contract_days_per_month"),
                         descriptionFi = rv.mapColumn("service_need_description_fi"),
                         descriptionSv = rv.mapColumn("service_need_description_sv"),
                         missing = rv.mapColumn("service_need_missing"),

@@ -42,6 +42,7 @@ SELECT
     part.placement_unit_id,
     part.placement_type,
     part.service_need_fee_coefficient,
+    part.service_need_contract_days_per_month,
     part.service_need_description_fi,
     part.service_need_description_sv,
     part.service_need_missing,
@@ -187,6 +188,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecision
             placement_unit_id,
             placement_type,
             service_need_fee_coefficient,
+            service_need_contract_days_per_month,
             service_need_description_fi,
             service_need_description_sv,
             service_need_missing,
@@ -203,6 +205,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecision
             :placementUnitId,
             :placementType,
             :serviceNeedFeeCoefficient,
+            :serviceNeedContractDaysPerMonth,
             :serviceNeedDescriptionFi,
             :serviceNeedDescriptionSv,
             :serviceNeedMissing,
@@ -226,6 +229,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecision
                 .bind("placementUnitId", child.placement.unitId)
                 .bind("placementType", child.placement.type)
                 .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
+                .bind("serviceNeedContractDaysPerMonth", child.serviceNeed.contractDaysPerMonth)
                 .bind("serviceNeedDescriptionFi", child.serviceNeed.descriptionFi)
                 .bind("serviceNeedDescriptionSv", child.serviceNeed.descriptionSv)
                 .bind("serviceNeedMissing", child.serviceNeed.missing)

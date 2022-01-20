@@ -171,6 +171,7 @@ export interface FeeDecisionPlacement {
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 */
 export interface FeeDecisionServiceNeed {
+  contractDaysPerMonth: number | null
   descriptionFi: string
   descriptionSv: string
   feeCoefficient: number
