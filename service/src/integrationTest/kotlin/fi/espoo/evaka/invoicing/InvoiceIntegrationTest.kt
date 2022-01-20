@@ -23,7 +23,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
-import fi.espoo.evaka.invoicing.domain.Product
+import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -692,7 +692,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
                     subCostCenter = "UPDATED"
                 )
             } + createInvoiceRowFixture(testChild_1.id).copy(
-                product = Product.PRESCHOOL_WITH_DAYCARE,
+                product = ProductKey("PRESCHOOL_WITH_DAYCARE"),
                 amount = 100,
                 unitPrice = 100000
             )

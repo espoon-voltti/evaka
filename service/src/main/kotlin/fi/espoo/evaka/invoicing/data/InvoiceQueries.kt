@@ -503,10 +503,10 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
             )
         """
 
-    val batch = prepareBatch(sql)
+    prepareBatch(sql)
         .also { batch ->
             invoiceRows.forEach { (invoiceId, rows) ->
-                rows.map { row ->
+                rows.forEach { row ->
                     batch
                         .bind("invoice_id", invoiceId)
                         .bind("id", row.id)
@@ -516,7 +516,7 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                         .bind("unit_price", row.unitPrice)
                         .bind("period_start", row.periodStart)
                         .bind("period_end", row.periodEnd)
-                        .bind("product", row.product.toString())
+                        .bind("product", row.product)
                         .bind("cost_center", row.costCenter)
                         .bind("sub_cost_center", row.subCostCenter)
                         .bind("description", row.description)
@@ -524,8 +524,7 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 }
             }
         }
-
-    batch.execute()
+        .execute()
 }
 
 val toInvoice = { rv: RowView ->

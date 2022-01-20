@@ -10,7 +10,9 @@ import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
@@ -64,6 +66,9 @@ class EspooConfig {
 
     @Bean
     fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
+
+    @Bean
+    fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
     @Bean
     fun featureConfig(): FeatureConfig = FeatureConfig(

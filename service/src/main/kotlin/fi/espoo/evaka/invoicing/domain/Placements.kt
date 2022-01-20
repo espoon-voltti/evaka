@@ -10,15 +10,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.ServiceNeedId
 import java.math.BigDecimal
 
-sealed class Placement(open val unit: DaycareId)
-
-data class PermanentPlacement(
-    override val unit: DaycareId,
-    val type: PlacementType
-) : Placement(unit)
-
-data class TemporaryPlacement(override val unit: DaycareId, val partDay: Boolean) : Placement(unit)
-
 data class UnitData(
     val id: DaycareId,
     val name: String,

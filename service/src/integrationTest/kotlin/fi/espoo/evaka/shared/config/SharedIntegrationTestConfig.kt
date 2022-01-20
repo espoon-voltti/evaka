@@ -9,11 +9,13 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -147,4 +149,7 @@ class SharedIntegrationTestConfig {
         daycareApplicationServiceNeedOptionsEnabled = false,
         citizenReservationThresholdHours = 150,
     )
+
+    @Bean
+    fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 }

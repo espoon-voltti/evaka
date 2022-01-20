@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 
-import { InvoiceCodes, Product } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceCodes } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents, parseCents } from 'lib-common/money'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -20,7 +20,7 @@ import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'
 
 interface InvoiceRowStub {
-  product: Product
+  product: string
   description: string
   costCenter: string
   subCostCenter: string | null
@@ -58,11 +58,16 @@ function InvoiceRowSectionRow({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const productOpts = invoiceCodes.map((codes) => codes.products).getOrElse([])
+  const products = useMemo(
+    () => invoiceCodes.map((codes) => codes.products).getOrElse([]),
+    [invoiceCodes]
+  )
+  const productOpts = useMemo(() => products.map(({ key }) => key), [products])
 
-  const subCostCenterOpts = invoiceCodes
-    .map((codes) => codes.subCostCenters)
-    .getOrElse([])
+  const subCostCenterOpts = useMemo(
+    () => invoiceCodes.map((codes) => codes.subCostCenters).getOrElse([]),
+    [invoiceCodes]
+  )
 
   const costCenterValueIsValid =
     costCenter === undefined ||
@@ -78,11 +83,13 @@ function InvoiceRowSectionRow({
             selectedItem={product}
             items={productOpts}
             onChange={(product) => (product ? update({ product }) : undefined)}
-            getItemLabel={(product) => i18n.product[product] ?? product}
+            getItemLabel={(product) =>
+              products.find(({ key }) => key === product)?.nameFi ?? ''
+            }
             data-qa="select-product"
           />
         ) : (
-          <div>{i18n.product[product] ?? product}</div>
+          <div>{products.find(({ key }) => key === product)?.nameFi ?? ''}</div>
         )}
       </Td>
       <Td>

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCareType
 import fi.espoo.evaka.daycare.service.AbsenceService
@@ -22,7 +23,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
-import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -61,7 +61,11 @@ import kotlin.test.assertNull
 
 class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
+    private lateinit var generator: InvoiceGenerator
+    @Autowired
     private lateinit var absenceService: AbsenceService
+
+    private val productProvider = TestInvoiceProductProvider()
 
     private val costCenter = "31500"
     private val subCostCenter = "00"
@@ -96,7 +100,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -110,7 +114,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(costCenter, invoiceRow.costCenter)
                 assertEquals(subCostCenter, invoiceRow.subCostCenter)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
@@ -125,7 +129,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -136,7 +140,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
@@ -151,7 +155,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
         db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -162,7 +166,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(8700, invoiceRow.price)
@@ -190,7 +194,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -201,14 +205,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(5800, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
@@ -226,7 +230,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         db.transaction(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -237,14 +241,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
@@ -262,7 +266,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         db.transaction(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -273,14 +277,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(800, invoiceRow.unitPrice)
                 assertEquals(800, invoiceRow.price)
@@ -309,7 +313,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -320,7 +324,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
@@ -332,7 +336,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
@@ -346,7 +350,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -362,7 +366,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val nonTemporaryPeriod = DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
         db.transaction(insertPlacement(testChild_1.id, nonTemporaryPeriod))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -373,7 +377,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(5800, invoiceRow.price)
@@ -411,7 +415,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -422,7 +426,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
@@ -466,7 +470,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -477,14 +481,20 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
                 assertEquals(-5780, invoiceRow.price)
@@ -535,7 +545,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -546,14 +556,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
                 assertEquals(11203, invoiceRow.price)
@@ -604,7 +614,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(decisions)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -615,21 +625,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(4, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(5256, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(18, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(23652, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-8, invoiceRow.unitPrice)
                 assertEquals(-8, invoiceRow.price)
@@ -680,7 +690,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(decisions)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -691,21 +701,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
                 assertEquals(6880, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(16, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
                 assertEquals(22016, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(4, invoiceRow.unitPrice)
                 assertEquals(4, invoiceRow.price)
@@ -756,7 +766,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(decisions)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -767,14 +777,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
                 assertEquals(7225, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(15, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
                 assertEquals(21675, invoiceRow.price)
@@ -825,7 +835,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -836,21 +846,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
                 assertEquals(3295, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(455, invoiceRow.unitPrice)
                 assertEquals(7735, invoiceRow.price)
@@ -889,7 +899,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -900,14 +910,20 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
                 assertEquals(-5780, invoiceRow.price)
@@ -952,7 +968,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -963,14 +979,20 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(3, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
                 assertEquals(-5780, invoiceRow.price)
@@ -978,7 +1000,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE_INCREASE, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.INCREASE
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(9300, invoiceRow.unitPrice)
                 assertEquals(9300, invoiceRow.price)
@@ -1017,7 +1045,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1028,14 +1056,20 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-27455, invoiceRow.unitPrice)
                 assertEquals(-27455, invoiceRow.price)
@@ -1077,7 +1111,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1088,7 +1122,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
@@ -1131,7 +1165,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1144,7 +1178,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(placementPeriod.start, invoiceRow.periodStart)
                 assertEquals(placementPeriod.end, invoiceRow.periodEnd)
-                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(6570, invoiceRow.price)
@@ -1163,7 +1197,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1177,7 +1211,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(Product.SICK_LEAVE_100, invoiceRow.product)
+                assertEquals(productProvider.fullMonthSickLeave, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-28900, invoiceRow.unitPrice)
                 assertEquals(-28900, invoiceRow.price)
@@ -1197,7 +1231,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1211,7 +1245,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
+                assertEquals(productProvider.partMonthSickLeave, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-14450, invoiceRow.unitPrice)
                 assertEquals(-14450, invoiceRow.price)
@@ -1231,7 +1265,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1258,7 +1292,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1272,7 +1306,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(Product.ABSENCE, invoiceRow.product)
+                assertEquals(productProvider.fullMonthAbsence, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-14450, invoiceRow.unitPrice)
                 assertEquals(-14450, invoiceRow.price)
@@ -1291,7 +1325,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1306,7 +1340,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(-1314, invoiceRow.unitPrice)
                 assertEquals(-3942, invoiceRow.price)
@@ -1330,7 +1364,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1345,13 +1379,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(-1314, invoiceRow.unitPrice)
                 assertEquals(-3942, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
+                assertEquals(productProvider.partMonthSickLeave, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-12479, invoiceRow.unitPrice)
                 assertEquals(-12479, invoiceRow.price)
@@ -1370,7 +1404,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1397,7 +1431,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays, child = testChild_2)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1430,7 +1464,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         initDataForAbsences(periods, absenceDays)
 
         db.transaction {
-            it.createAllDraftInvoices(
+            generator.createAllDraftInvoices(
+                it,
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
             )
         }
@@ -1449,7 +1484,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(10512, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
+                assertEquals(productProvider.partMonthSickLeave, invoiceRow.product)
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(-657, invoiceRow.unitPrice)
                 assertEquals(-5256, invoiceRow.price)
@@ -1461,13 +1496,19 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(18396, invoiceRow.price)
             }
             invoice.rows[3].let { invoiceRow ->
-                assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-455, invoiceRow.unitPrice)
                 assertEquals(-6370, invoiceRow.price)
             }
             invoice.rows[4].let { invoiceRow ->
-                assertEquals(Product.SICK_LEAVE_50, invoiceRow.product)
+                assertEquals(productProvider.partMonthSickLeave, invoiceRow.product)
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-430, invoiceRow.unitPrice)
                 assertEquals(-6020, invoiceRow.price)
@@ -1492,7 +1533,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         initDataForAbsences(periods, absenceDays)
 
         db.transaction {
-            it.createAllDraftInvoices(
+            generator.createAllDraftInvoices(
+                it,
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
             )
         }
@@ -1511,7 +1553,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(10512, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-1314, invoiceRow.unitPrice)
                 assertEquals(-1314, invoiceRow.price)
@@ -1523,13 +1565,19 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(18396, invoiceRow.price)
             }
             invoice.rows[3].let { invoiceRow ->
-                assertEquals(Product.DAYCARE_DISCOUNT, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-455, invoiceRow.unitPrice)
                 assertEquals(-6370, invoiceRow.price)
             }
             invoice.rows[4].let { invoiceRow ->
-                assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(-859, invoiceRow.unitPrice)
                 assertEquals(-2577, invoiceRow.price)
@@ -1548,7 +1596,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -1563,7 +1611,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(Product.FREE_OF_CHARGE, invoiceRow.product)
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-28900, invoiceRow.unitPrice)
                 assertEquals(-28900, invoiceRow.price)
@@ -1596,7 +1644,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -1627,7 +1675,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1667,7 +1715,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1707,7 +1755,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1747,7 +1795,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1787,7 +1835,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1846,7 +1894,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(decisions)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1917,7 +1965,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(decisions)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1980,7 +2028,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2038,7 +2086,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2099,7 +2147,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2129,7 +2177,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             .toMap()
         initDataForAbsences(listOf(weekEnd), absenceDays)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -2323,7 +2371,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         initByPeriodAndPlacementType(period, PlacementType.PRESCHOOL)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -2337,7 +2385,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         initByPeriodAndPlacementType(period, PlacementType.PREPARATORY)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -2351,7 +2399,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         initByPeriodAndPlacementType(period, PlacementType.CLUB)
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
 
@@ -2367,7 +2415,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             it.insertGuardian(testAdult_2.id, testChild_1.id)
         }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -2382,7 +2430,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
         db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -2401,7 +2449,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             it.insertGuardian(testAdult_1.id, testChild_2.id)
         }
 
-        db.transaction { it.createAllDraftInvoices(period) }
+        db.transaction { generator.createAllDraftInvoices(it, period) }
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -2483,69 +2531,68 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         }
 
         placementPeriods.forEach { (type, period) -> db.transaction(insertPlacement(testChild_1.id, period, type)) }
-        db.transaction { it.createAllDraftInvoices(invoicingPeriod) }
+        db.transaction { generator.createAllDraftInvoices(it, invoicingPeriod) }
     }
 
     private fun initDataForAbsences(
         periods: List<DateRange>,
         absenceDays: Map<LocalDate, AbsenceType>,
         child: DevPerson = testChild_1
-    ) =
-        periods.forEachIndexed { index, period ->
-            val decision = createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = child.id,
-                        dateOfBirth = child.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        feeAlterations = if (index > 0) {
-                            listOf(
-                                createFeeDecisionAlterationFixture(
-                                    amount = -100,
-                                    isAbsolute = true,
-                                    effect = -10000
-                                )
+    ) = periods.forEachIndexed { index, period ->
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    feeAlterations = if (index > 0) {
+                        listOf(
+                            createFeeDecisionAlterationFixture(
+                                amount = -100,
+                                isAbsolute = true,
+                                effect = -10000
                             )
-                        } else listOf()
-                    )
+                        )
+                    } else listOf()
                 )
             )
+        )
 
-            db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
-            db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
+        db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-            val placementId = db.transaction(insertPlacement(child.id, period))
-            val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
-            db.transaction { tx ->
-                tx.insertTestDaycareGroupPlacement(
-                    daycarePlacementId = placementId,
-                    groupId = groupId,
-                    startDate = period.start,
-                    endDate = period.end!!
-                )
-            }
-            db.transaction { tx ->
-                absenceService.upsertAbsences(
-                    tx,
-                    absenceDays.map { (date, type) ->
-                        Absence(
-                            absenceType = type,
-                            childId = child.id,
-                            date = date,
-                            careType = AbsenceCareType.DAYCARE
-                        )
-                    },
-                    EvakaUserId(testDecisionMaker_1.id.raw)
-                )
-            }
+        val placementId = db.transaction(insertPlacement(child.id, period))
+        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+        db.transaction { tx ->
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = period.start,
+                endDate = period.end!!
+            )
         }
+        db.transaction { tx ->
+            absenceService.upsertAbsences(
+                tx,
+                absenceDays.map { (date, type) ->
+                    Absence(
+                        absenceType = type,
+                        childId = child.id,
+                        date = date,
+                        careType = AbsenceCareType.DAYCARE
+                    )
+                },
+                EvakaUserId(testDecisionMaker_1.id.raw)
+            )
+        }
+    }
 
     private fun insertDecisionsAndPlacements(feeDecisions: List<FeeDecision>) = db.transaction { tx ->
         tx.upsertFeeDecisions(feeDecisions)
