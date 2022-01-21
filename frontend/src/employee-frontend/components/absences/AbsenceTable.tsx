@@ -5,6 +5,7 @@
 import classNames from 'classnames'
 import React from 'react'
 import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { AbsenceChild } from 'lib-common/api-types/child/absence'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -26,6 +27,7 @@ interface AbsenceRowProps {
   operationDays: LocalDate[]
   i18n: Translations
   selectedDate: LocalDate
+  reservationEnabled: boolean
 }
 
 const shortChildName = (
@@ -40,7 +42,7 @@ const shortChildName = (
 }
 
 function getEmptyCols(dateColsLength: number): number[] {
-  return getRange(31 - dateColsLength)
+  return getRange(32 - dateColsLength)
 }
 
 const AbsenceTableRow = React.memo(function AbsenceTableRow({
@@ -51,9 +53,17 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
   emptyCols,
   operationDays,
   i18n,
-  selectedDate
+  selectedDate,
+  reservationEnabled
 }: AbsenceRowProps) {
-  const { child, placements, absences, backupCares } = absenceChild
+  const {
+    child,
+    placements,
+    absences,
+    backupCares,
+    attendanceTotalHours,
+    reservationTotalHours
+  } = absenceChild
 
   return (
     <tr data-qa="absence-child-row">
@@ -109,32 +119,49 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           <DisabledCell />
         </td>
       ))}
+      {reservationEnabled && (
+        <>
+          <NumbersColumnTd>
+            {reservationTotalHours !== null
+              ? `${reservationTotalHours} h`
+              : '-'}
+          </NumbersColumnTd>
+          <NumbersColumnTd>
+            {attendanceTotalHours !== null ? `${attendanceTotalHours} h` : '-'}
+          </NumbersColumnTd>
+        </>
+      )}
     </tr>
   )
 })
+
+const NumbersColumnTd = styled.td`
+  text-align: right;
+`
 
 interface AbsenceHeadProps {
   dateCols: LocalDate[]
   emptyCols: number[]
   operationDays: LocalDate[]
+  reservationEnabled: boolean
 }
 
 const AbsenceTableHead = React.memo(function AbsenceTableHead({
   dateCols,
   emptyCols,
-  operationDays
+  operationDays,
+  reservationEnabled
 }: AbsenceHeadProps) {
   const { i18n } = useTranslation()
   return (
     <thead>
       <tr>
-        <th>{i18n.absences.table.nameCol}</th>
+        <th />
         {dateCols.map((item) =>
           operationDays.some((operationDay) => operationDay.isEqual(item)) ? (
             <th
               key={item.getDate()}
               className={classNames({
-                'absence-header': true,
                 'absence-header-today': item.isToday(),
                 'absence-header-weekend': item.isWeekend()
               })}
@@ -149,6 +176,12 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
         {emptyCols.map((item) => (
           <th key={item} />
         ))}
+        {reservationEnabled && (
+          <>
+            <th>{i18n.absences.table.reservationsTotal}</th>
+            <th>{i18n.absences.table.attendancesTotal}</th>
+          </>
+        )}
       </tr>
     </thead>
   )
@@ -161,6 +194,7 @@ interface AbsenceTableProps {
   selectedDate: LocalDate
   childList: AbsenceChild[]
   operationDays: LocalDate[]
+  reservationEnabled: boolean
 }
 
 export default React.memo(function AbsenceTable({
@@ -169,7 +203,8 @@ export default React.memo(function AbsenceTable({
   toggleCellSelection,
   selectedDate,
   childList,
-  operationDays
+  operationDays,
+  reservationEnabled
 }: AbsenceTableProps) {
   const { i18n } = useTranslation()
 
@@ -188,6 +223,7 @@ export default React.memo(function AbsenceTable({
         dateCols={dateCols}
         emptyCols={emptyCols}
         operationDays={operationDays}
+        reservationEnabled={reservationEnabled}
       />
       <tbody>
         {childList.map((item) => (
@@ -201,6 +237,7 @@ export default React.memo(function AbsenceTable({
             operationDays={operationDays}
             i18n={i18n}
             selectedDate={selectedDate}
+            reservationEnabled={reservationEnabled}
           />
         ))}
         {renderEmptyRow()}

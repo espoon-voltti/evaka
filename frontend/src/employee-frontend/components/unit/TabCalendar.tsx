@@ -92,6 +92,7 @@ export default React.memo(function TabCalendar() {
           groupId={groupId}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+          reservationEnabled={reservationEnabled}
         />
       )}
 

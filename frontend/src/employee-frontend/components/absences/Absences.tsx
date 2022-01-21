@@ -41,12 +41,14 @@ interface Props {
   groupId: UUID
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
+  reservationEnabled: boolean
 }
 
 export default React.memo(function Absences({
   groupId,
   selectedDate,
-  setSelectedDate
+  setSelectedDate,
+  reservationEnabled
 }: Props) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
@@ -179,6 +181,7 @@ export default React.memo(function Absences({
             selectedDate={selectedDate}
             childList={absences.children}
             operationDays={absences.operationDays}
+            reservationEnabled={reservationEnabled}
           />
           <Gap />
           <AddAbsencesButton
@@ -216,61 +219,33 @@ const AbsencesPage = styled.div`
     }
   }
 
-  .table {
+  table {
     border-collapse: collapse;
     width: 100%;
   }
 
-  .table th {
-    text-align: left;
+  td,
+  th {
+    padding: 5px 3px;
+    border-bottom: none;
+  }
+
+  th {
+    text-align: center;
     text-transform: uppercase;
     color: ${colors.grayscale.g70};
-    vertical-align: bottom;
-
-    &.absence-header {
-      text-align: center;
-    }
+    vertical-align: center;
+    font-weight: ${fontWeights.semibold};
+    font-size: 0.8rem;
   }
 
-  .table td {
-    text-align: left;
-    color: ${colors.grayscale.g100};
-
-    &.absence-cell-wrapper {
-      text-align: center;
-    }
-
-    &.absence-cell-wrapper > div {
-      margin: 0 auto;
-    }
-  }
-
-  .table td,
-  .table th {
-    padding: 5px 3px !important;
-    border-bottom: none !important;
-  }
-
-  .table thead th {
-    font-weight: ${fontWeights.semibold} !important;
-    font-size: 0.8rem !important;
-  }
-
-  .table td {
+  td {
     cursor: pointer;
 
     &.empty-row {
       cursor: inherit;
       height: 20px;
     }
-  }
-
-  .table .has-text-center {
-    text-align: center;
-  }
-
-  .absence-modal .input-group-item {
-    margin-bottom: 0;
   }
 
   .absence-child-name {
@@ -327,13 +302,13 @@ const AbsencesPage = styled.div`
 
     @media print {
       background: none;
-      color: inherit !important;
+      color: inherit;
       font-weight: bolder;
     }
   }
 
   .absence-header-weekend {
-    color: ${colors.grayscale.g100} !important;
+    color: ${colors.grayscale.g100};
   }
 
   .absence-cell {

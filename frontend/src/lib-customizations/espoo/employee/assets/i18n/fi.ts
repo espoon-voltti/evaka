@@ -2130,10 +2130,10 @@ export const fi = {
       absenceSummaryTitle: 'Lapsen poissaolokooste'
     },
     table: {
-      nameCol: 'Nimi',
-      dobCol: 'Synt.aika',
       staffRow: 'Henkilökuntaa paikalla',
-      disabledStaffCellTooltip: 'Ryhmä ei ole olemassa valittuna päivänä'
+      disabledStaffCellTooltip: 'Ryhmä ei ole olemassa valittuna päivänä',
+      reservationsTotal: 'Varaus/kk',
+      attendancesTotal: 'Toteuma/kk'
     },
     legendTitle: 'Merkintöjen selitykset',
     addAbsencesButton(numOfSelected: number) {

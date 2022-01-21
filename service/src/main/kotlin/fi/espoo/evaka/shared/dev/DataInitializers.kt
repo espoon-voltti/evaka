@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttendanceId
+import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildId
@@ -1055,3 +1056,20 @@ VALUES (:id, :childId, :description)
 RETURNING id
     """
 ).let(::PedagogicalDocumentId)
+
+data class DevReservation(
+    val id: AttendanceReservationId = AttendanceReservationId(UUID.randomUUID()),
+    val childId: ChildId,
+    val startTime: HelsinkiDateTime,
+    val endTime: HelsinkiDateTime,
+    val createdBy: EvakaUserId
+)
+
+fun Database.Transaction.insertTestReservation(reservation: DevReservation) = insertTestDataRow(
+    reservation,
+    """
+INSERT INTO attendance_reservation (id, child_id, start_time, end_time, created_by)
+VALUES (:id, :childId, :startTime, :endTime, :createdBy)
+RETURNING id
+"""
+).let(::AttendanceReservationId)

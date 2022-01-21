@@ -96,8 +96,3 @@ export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
     ])
   )
 })
-
-export interface AbsenceBackupCare {
-  childId: UUID
-  date: LocalDate
-}
