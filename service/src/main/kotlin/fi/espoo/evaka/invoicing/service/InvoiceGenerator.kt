@@ -452,12 +452,14 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider, priv
         val total = invoiceRowTotal(rows)
         if (total == 0) return listOf()
 
+        val totalDayCount = contractDaysPerMonth ?: operationalDays.generalCase.size
+
         val refundedDayCount = getRefundedDays(period, child, placement, absences, operationalDays)
         if (refundedDayCount == 0) return listOf()
 
         val (amount, unitPrice) =
-            if (refundedDayCount == operationalDays.generalCase.size) 1 to -total
-            else refundedDayCount to -getDailyDiscount(period, total, operationalDays.generalCase, dailyFeeDivisor, contractDaysPerMonth)
+            if (refundedDayCount >= totalDayCount) 1 to -total
+            else refundedDayCount to -getDailyDiscount(total, dailyFeeDivisor)
 
         return listOf(toInvoiceRow(productProvider.dailyRefund, amount, unitPrice))
     }
@@ -483,9 +485,8 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider, priv
         return minOf((forceMajeureDays + parentLeaveDays).distinct().size, operationalDays.generalCase.size)
     }
 
-    private fun getDailyDiscount(period: DateRange, total: Int, operationalDays: List<LocalDate>, dailyFeeDivisor: Int, contractDaysPerMonth: Int?): Int {
-        val divisor = minOf(contractDaysPerMonth ?: operationalDays.filter { period.includes(it) }.size, dailyFeeDivisor)
-        return BigDecimal(total).divide(BigDecimal(divisor), 0, RoundingMode.HALF_UP).toInt()
+    private fun getDailyDiscount(total: Int, dailyFeeDivisor: Int): Int {
+        return BigDecimal(total).divide(BigDecimal(dailyFeeDivisor), 0, RoundingMode.HALF_UP).toInt()
     }
 
     private fun monthlyAbsenceDicount(

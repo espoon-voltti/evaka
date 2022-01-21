@@ -1586,7 +1586,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 22,) } // 15 operational days
+            .takeWhile { it <= LocalDate.of(2019, 1, 22) } // 15 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
             .toMap()
 
@@ -1619,7 +1619,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 21,) } // 14 operational days
+            .takeWhile { it <= LocalDate.of(2019, 1, 21) } // 14 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
             .toMap()
 
@@ -1688,6 +1688,39 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val result = db.read(getAllInvoices)
 
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(0, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-28900, invoiceRow.unitPrice)
+                assertEquals(-28900, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 15 days of force majeure absences`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
+            .takeWhile { it <= LocalDate.of(2019, 1, 22) } // 15 operational days
+            .map { it to AbsenceType.FORCE_MAJEURE }
+            .toMap()
+
+        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2552,7 +2585,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val generator = InvoiceGenerator(productProvider, featureConfig.copy(fixedDailyFeeDivisor = 20))
 
         val absenceDays = listOf(
-            LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE
+            LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE,
+            LocalDate.of(2019, 1, 3) to AbsenceType.FORCE_MAJEURE
         ).toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
@@ -2563,7 +2597,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(27455, invoice.totalPrice)
+            assertEquals(26010, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
@@ -2572,9 +2606,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(productProvider.dailyRefund, invoiceRow.product)
-                assertEquals(1, invoiceRow.amount)
+                assertEquals(2, invoiceRow.amount)
                 assertEquals(-1445, invoiceRow.unitPrice) // 28900 / 20
-                assertEquals(-1445, invoiceRow.price)
+                assertEquals(-2890, invoiceRow.price)
             }
         }
     }
