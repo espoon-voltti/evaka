@@ -26,7 +26,7 @@ parameters:
     default: /home/circleci/repo
   builder_aws_version:
     type: string
-    default: v0.1.0
+    default: v0.3.0-alpha-1
   builder_aws_type:
     type: string
     default: bullseye-slim
@@ -36,6 +36,15 @@ parameters:
   ecr:
     type: string
     default: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
+  ecr_public:
+    type: string
+    default: public.ecr.aws/p6g0g5e1
+  build-e2e:
+    type: boolean
+    default: false
+  is_pull:
+    type: boolean
+    default: <% if is_pull %>true<% else %>false<% end %>
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
@@ -418,35 +427,12 @@ commands:
       - setup_remote_docker:
           version: *remote_docker_version
           docker_layer_caching: false
-      - run:
-          name: "Setup E2E_IMAGE and store date"
-          command: |
-            echo 'export E2E_IMAGE="<< pipeline.parameters.ecr >>/evaka/e2e-<< parameters.test_runner >>:latest"' >> $BASH_ENV
-            date +%F > date
-      - restore_cache:
-          name: Restore Docker image from cache
-          key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
-      - run:
-          name: Build E2E image
-          working_directory: *workspace_compose
-          command: |
-            docker load -i "<< pipeline.parameters.workspace_root >>/e2e-<< parameters.test_runner >>.tar" || true
-            docker build -t "$E2E_IMAGE" --cache-from "$E2E_IMAGE" -f "./e2e/<< parameters.test_runner >>.Dockerfile" ./e2e/
-      - run:
-          name: Package E2E << parameters.test_runner >> image
-          working_directory: << pipeline.parameters.workspace_root >>
-          command: |
-            docker save "$E2E_IMAGE" > "e2e-<< parameters.test_runner >>.tar"
-      - save_cache:
-          name: Store Docker image in cache
-          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-          paths:
-            - "e2e-<< parameters.test_runner >>.tar"
-      - save_cache:
-          name: Store Docker image in daily cache
-          key: << parameters.test_runner >>-daily-v1-{{ checksum "date"}}
-          paths:
-            - "e2e-<< parameters.test_runner >>.tar"
+      - build_docker_image:
+          image: evaka/e2e-<< parameters.test_runner >>
+          dir: compose/e2e
+          dockerfile: << parameters.test_runner >>.Dockerfile
+          save: false
+          registry: << pipeline.parameters.ecr_public >>
       - notify_slack
 
   e2e_test:
@@ -479,17 +465,13 @@ commands:
             CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
       - restore_frontend_deps
       - restore_frontend_comm_deps
-      - restore_cache:
-          name: Restore Docker image from cache
-          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-      - run:
-          name: Load E2E image
-          command: |
-            docker load -i "<< pipeline.parameters.workspace_root >>/e2e-<< parameters.test_runner >>.tar"
       - run:
           name: Run E2E tests against compose inside a docker-compose
           working_directory: << pipeline.parameters.workspace_root >>
           command: |
+            export COMPOSE_TAG=master
+            docker pull "307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-playwright:${CIRCLE_SHA1}" \
+              && export COMPOSE_TAG=${CIRCLE_SHA1} || true
             CI=true ./bin/circleci-e2e.sh << parameters.test_runner >>
       - run:
           name: Collect docker-compose logs
@@ -647,13 +629,25 @@ commands:
     parameters:
       image:
         type: string
+      registry:
+        type: string
+        default: << pipeline.parameters.ecr >>
     steps:
       - run:
           name: Push docker image
           command: |
             if test -z "$CIRCLE_PR_NUMBER"; then
-              ecr-login
-              ecr-push << parameters.image >>
+              if [[ "<< parameters.registry >>" = public* ]]; then
+                  export REGISTRY_TYPE=public
+              fi
+              ./bin/ci-login-registry
+
+              ecr-push "<< parameters.image >>" "<< parameters.registry >>"
+              if test -n "${CIRCLE_TAG}" && [[ $CIRCLE_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$ ]]; then
+                docker tag "<< parameters.image >>:latest" "<< parameters.registry >>/<< parameters.image >>:${CIRCLE_TAG}"
+                docker push "<< parameters.registry >>/<< parameters.image >>:${CIRCLE_TAG}"
+              fi
+
             else
               echo "Forked - not pushing image"
             fi
@@ -667,6 +661,16 @@ commands:
       push:
         type: boolean
         default: true
+      save:
+        type: boolean
+        default: true
+      registry:
+        type: string
+        default: << pipeline.parameters.ecr >>
+      dockerfile:
+        type: string
+        default: Dockerfile
+
     steps:
       - run:
           name: Build docker image
@@ -676,16 +680,21 @@ commands:
               -t << parameters.image >> \
               --build-arg "build=${CIRCLE_BUILD_NUM}" \
               --build-arg "commit=${CIRCLE_SHA1}" \
+              -f "<< parameters.dockerfile >>" \
               .
       - when:
           condition: << parameters.push >>
           steps:
             - push_docker_image:
                 image: << parameters.image >>
-      - run:
-          name: Save docker image
-          working_directory: << parameters.dir >>
-          command: docker save << parameters.image >> > image.tar
+                registry: << parameters.registry >>
+      - when:
+          condition: << parameters.save >>
+          steps:
+            - run:
+                name: Save docker image
+                working_directory: << parameters.dir >>
+                command: docker save << parameters.image >> > image.tar
 
   deploy_services:
     parameters:
@@ -968,8 +977,14 @@ jobs:
   e2e-build:
     executor: aws_docker_executor
     steps:
-      - e2e_build:
-          test_runner: playwright
+      - when:
+          condition:
+            and:
+              - equal: [<< pipeline.parameters.build-e2e >>, true]
+              - equal: [<< pipeline.parameters.is_pull >>, false]
+          steps:
+            - e2e_build:
+                test_runner: playwright
       - notify_slack
 
   e2e-test:
@@ -1180,6 +1195,9 @@ workflows:
     jobs:
       - checkout_repo:
           <<: *aws_docker_contexts
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/
 
       - check_licenses:
           <<: *default_contexts
@@ -1225,6 +1243,10 @@ workflows:
           <<: *aws_docker_contexts
           requires:
             - checkout_repo
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/
+
       - e2e-test:
           <<: *default_contexts
           requires:
@@ -1258,7 +1280,6 @@ workflows:
           requires:
             - service_build
 
-<%- if not is_pull -%>
       - clone_infra_repo:
           <<: *aws_contexts
           requires:
@@ -1305,4 +1326,3 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test]
-<% end %>

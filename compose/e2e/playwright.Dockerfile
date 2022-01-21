@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2021 City of Espoo
+# SPDX-FileCopyrightText: 2017-2022 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,9 +6,8 @@ ARG PLAYWRIGHT_VERSION=v1.17.1
 
 FROM mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION}-focal
 
-RUN rm /etc/apt/sources.list.d/nodesource.list
-
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash \
+RUN rm /etc/apt/sources.list.d/nodesource.list \
+ && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash \
  && . "$HOME/.nvm/nvm.sh" \
  && nvm install 16.13
 
@@ -20,5 +19,4 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 
 COPY ./playwright/bin/run-tests.sh ./entrypoint.sh /bin/
 
-#ENTRYPOINT ["/bin/entrypoint.sh"]
 CMD ["/bin/run-tests.sh"]
