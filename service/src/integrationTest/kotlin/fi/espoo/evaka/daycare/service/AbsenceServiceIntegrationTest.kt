@@ -193,7 +193,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
             val placements = result.children[0].placements
             val absences = result.children[0].absences
 
-            assertEquals(daysInMonth, absences.size)
+            assertEquals(0, absences.size)
             assertEquals(daysInMonth, placements.size)
 
             placementDate = placementDate.plusMonths(1)
@@ -209,7 +209,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsenceList = listOf(initialAbsence)
 
         val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
@@ -228,10 +228,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, absenceDate.year, absenceDate.monthValue) }
         val absences = result.children[0].absences
 
-        assertEquals(absences.size, placementEnd.month.length(false))
-        absences.values.forEach {
-            assertEquals(0, it.size)
-        }
+        assertEquals(absences.size, 0)
     }
 
     @Test
@@ -243,7 +240,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsenceList = listOf(initialAbsence)
 
         val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
@@ -264,45 +261,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absences = result.children[0].absences.getValue(absenceDate)
 
         assertEquals(initialAbsenceList.size, absences.size)
-    }
-
-    @Test
-    fun `children are sorted by last name`() {
-        val children = listOf(
-            ChildSeed("Mika", "Buro"),
-            ChildSeed("Sari", "Aarnio"),
-            ChildSeed("Ilmari", "DeWitt"),
-            ChildSeed("Antero", "Cecill")
-        )
-        val absenceDate = placementEnd
-        insertGroupPlacements(children, PlacementType.PRESCHOOL_DAYCARE)
-
-        val initialAbsenceList = children.map {
-            createAbsence(it.id, AbsenceCareType.DAYCARE, AbsenceType.SICKLEAVE, absenceDate)
-        }
-
-        assertEquals(4, initialAbsenceList.size)
-
-        val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
-        }
-
-        assertEquals(
-            listOf(
-                "Sari Aarnio",
-                "Mika Buro",
-                "Antero Cecill",
-                "Ilmari DeWitt"
-            ),
-            result.children.map { "${it.firstName} ${it.lastName}" }
-        )
     }
 
     @Test
@@ -315,7 +279,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absences = result.children[0].absences.getValue(absenceDate)
@@ -332,16 +296,21 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsenceList = listOf(initialAbsence)
 
         var result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
 
         val newAbsenceType = AbsenceType.UNKNOWN_ABSENCE
-        val updatedAbsence = absence.copy(absenceType = newAbsenceType).asAbsence()
+        val updatedAbsence = AbsenceUpsert(
+            childId = absence.childId,
+            date = absence.date,
+            careType = absence.careType,
+            absenceType = newAbsenceType
+        )
 
         result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, listOf(updatedAbsence), EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(listOf(updatedAbsence), EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absences = result.children[0].absences.getValue(absenceDate)
@@ -360,13 +329,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsence2 = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+        val absences = db.transaction { tx ->
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByChild(tx, childId, absenceDate.year, absenceDate.monthValue)
         }
-
-        val absences = result.absences.getValue(absenceDate)
-
         assertEquals(initialAbsenceList.size, absences.size)
     }
 
@@ -384,12 +350,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsence2 = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+        val absences = db.transaction { tx ->
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByChild(tx, childId2, absenceDate.year, absenceDate.monthValue)
         }
-        val absences = result.absences.getValue(absenceDate)
-
         assertEquals(0, absences.size)
     }
 
@@ -402,12 +366,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val initialAbsence2 = createAbsence(childId, AbsenceCareType.PRESCHOOL, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val result = db.transaction { tx ->
-            absenceService.upsertAbsences(tx, initialAbsenceList, EvakaUserId(testUserId.raw))
+        val absences = db.transaction { tx ->
+            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByChild(tx, childId, 2019, 9)
         }
-        val absences = result.absences.getValue(LocalDate.of(2019, 9, 1))
-
         assertEquals(1, absences.size)
     }
 
@@ -545,9 +507,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun createAbsence(childId: ChildId, careType: AbsenceCareType, absenceType: AbsenceType, date: LocalDate): Absence {
-        return Absence(
-            id = null,
+    private fun createAbsence(childId: ChildId, careType: AbsenceCareType, absenceType: AbsenceType, date: LocalDate): AbsenceUpsert {
+        return AbsenceUpsert(
             childId = childId,
             date = date,
             careType = careType,

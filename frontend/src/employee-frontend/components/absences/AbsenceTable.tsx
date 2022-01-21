@@ -5,19 +5,20 @@
 import classNames from 'classnames'
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { AbsenceChild } from 'lib-common/api-types/child/absence'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import Tooltip from '../../components/common/Tooltip'
 import { Translations, useTranslation } from '../../state/i18n'
-import { Cell, CellPart, Child } from '../../types/absence'
+import { Cell, CellPart } from '../../types/absence'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
-import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
+import AbsenceCell, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
 import { getMonthDays, getRange, getWeekDay } from './utils'
 
 interface AbsenceRowProps {
-  child: Child
+  absenceChild: AbsenceChild
   selectedCells: Cell[]
   toggleCellSelection: (id: UUID, parts: CellPart[]) => void
   dateCols: LocalDate[]
@@ -45,21 +46,21 @@ function getEmptyCols(dateColsLength: number): number[] {
 const AbsenceTableRow = React.memo(function AbsenceTableRow({
   selectedCells,
   toggleCellSelection,
-  child,
+  absenceChild,
   dateCols,
   emptyCols,
   operationDays,
   i18n,
   selectedDate
 }: AbsenceRowProps) {
-  const { id, placements, absences, backupCares } = child
+  const { child, placements, absences, backupCares } = absenceChild
 
   return (
     <tr data-qa="absence-child-row">
       <td className="absence-child-name hover-highlight">
         <FixedSpaceRow spacing="xs">
           <AgeIndicatorIcon
-            isUnder3={selectedDate.differenceInYears(child.dob) < 3}
+            isUnder3={selectedDate.differenceInYears(child.dateOfBirth) < 3}
           />
           <Tooltip
             tooltipId={`tooltip_absence-child-name-${child.id}`}
@@ -81,24 +82,24 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           operationDay.isEqual(date)
         ) ? (
           <td
-            key={`${id}${date.formatIso()}`}
+            key={`${child.id}${date.formatIso()}`}
             className={`${
               date.isToday() ? 'absence-cell-today' : ''
             } hover-highlight absence-cell-wrapper`}
             data-qa="absence-cell"
           >
-            <AbsenceCellWrapper
+            <AbsenceCell
               selectedCells={selectedCells}
               toggleCellSelection={toggleCellSelection}
               careTypes={placements[date.formatIso()]}
               absences={absences[date.formatIso()]}
-              backupCare={backupCares[date.formatIso()]}
+              backupCare={backupCares[date.formatIso()] ?? false}
               date={date}
-              childId={id}
+              childId={child.id}
             />
           </td>
         ) : (
-          <td key={`${id}${date.formatIso()}`}>
+          <td key={`${child.id}${date.formatIso()}`}>
             <DisabledCell />
           </td>
         )
@@ -158,7 +159,7 @@ interface AbsenceTableProps {
   selectedCells: Cell[]
   toggleCellSelection: (id: UUID, parts: CellPart[]) => void
   selectedDate: LocalDate
-  childList: Child[]
+  childList: AbsenceChild[]
   operationDays: LocalDate[]
 }
 
@@ -172,17 +173,8 @@ export default React.memo(function AbsenceTable({
 }: AbsenceTableProps) {
   const { i18n } = useTranslation()
 
-  const dateColsBody =
-    childList.length > 0
-      ? Object.keys(childList[0].placements)
-          .sort()
-          .map((date) => LocalDate.parseIso(date))
-      : []
-
-  const dateColsHead =
-    dateColsBody.length > 0 ? dateColsBody : getMonthDays(selectedDate)
-
-  const emptyCols = getEmptyCols(dateColsHead.length)
+  const dateCols = getMonthDays(selectedDate)
+  const emptyCols = getEmptyCols(dateCols.length)
 
   const renderEmptyRow = () => (
     <tr>
@@ -193,18 +185,18 @@ export default React.memo(function AbsenceTable({
   return (
     <table className="table">
       <AbsenceTableHead
-        dateCols={dateColsHead}
+        dateCols={dateCols}
         emptyCols={emptyCols}
         operationDays={operationDays}
       />
       <tbody>
         {childList.map((item) => (
           <AbsenceTableRow
-            key={item.id}
+            key={item.child.id}
             selectedCells={selectedCells}
             toggleCellSelection={toggleCellSelection}
-            child={item}
-            dateCols={dateColsBody}
+            absenceChild={item}
+            dateCols={dateCols}
             emptyCols={emptyCols}
             operationDays={operationDays}
             i18n={i18n}
