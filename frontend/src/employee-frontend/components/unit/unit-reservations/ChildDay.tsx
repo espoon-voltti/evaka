@@ -8,17 +8,58 @@ import {
   getTimesOnWeekday,
   isIrregular,
   isRegular,
-  isVariableTime
+  isVariableTime,
+  TimeRange
 } from 'lib-common/api-types/child/common'
 import {
   ChildReservations,
   OperationalDay
 } from 'lib-common/api-types/reservations'
+import { Reservation } from 'lib-common/generated/api-types/reservations'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { useTranslation } from '../../../state/i18n'
 import AbsenceDay from './AbsenceDay'
+
+function timeToMinutes(expected: string): number {
+  const [hours, minutes] = expected.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+/**
+ * "Best effort" time difference calculation based on two "HH:mm" local time
+ * strings without date part. This is only used for highlighting in the calendar
+ * so edge cases are expected and might not matter much.
+ *
+ * The functionality can be improved once the reservation data model supports
+ * reservations that span multiple days.
+ */
+function attendanceTimeDiffers(
+  expected: string | null | undefined,
+  actual: string | null | undefined,
+  thresholdMinutes = 15
+): boolean {
+  if (!(expected && actual)) {
+    return false
+  }
+  return (
+    Math.abs(timeToMinutes(expected) - timeToMinutes(actual)) > thresholdMinutes
+  )
+}
+
+const getReservationOrServiceTimeOfDay = (
+  reservations: Reservation[],
+  serviceTimeOfDay: TimeRange | null
+): TimeRange | undefined =>
+  reservations.length > 0
+    ? {
+        start: reservations[0].startTime,
+        end: reservations[0].endTime
+      }
+    : serviceTimeOfDay
+    ? serviceTimeOfDay
+    : undefined
 
 interface Props {
   day: OperationalDay
@@ -51,26 +92,21 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
       ? getTimesOnWeekday(serviceTimes, day.date.getIsoDayOfWeek())
       : null
 
+  const expectedTimeForThisDay = getReservationOrServiceTimeOfDay(
+    dailyData.reservations,
+    serviceTimeOfDay
+  )
+
   return (
     <DateCell>
       <TimesRow>
         {dailyData.absence ? (
           <AbsenceDay type={dailyData.absence.type} />
-        ) : dailyData.reservations.length > 0 ? (
-          /* show actual reservation if it exists */
+        ) : expectedTimeForThisDay ? (
+          /* show actual reservation or service time if exists */
           <>
-            <ReservationTime>
-              {dailyData.reservations[0].startTime}
-            </ReservationTime>
-            <ReservationTime>
-              {dailyData.reservations[0].endTime}
-            </ReservationTime>
-          </>
-        ) : serviceTimesAvailable && serviceTimeOfDay ? (
-          /* else show service time if it is known for that day of week */
-          <>
-            <ReservationTime>{serviceTimeOfDay.start}*</ReservationTime>
-            <ReservationTime>{serviceTimeOfDay.end}*</ReservationTime>
+            <ReservationTime>{expectedTimeForThisDay.start}</ReservationTime>
+            <ReservationTime>{expectedTimeForThisDay.end}</ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
           /* else if daily service times are known but there is none for this day of week, show day off */
@@ -78,7 +114,7 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
             {i18n.unit.attendanceReservations.dayOff}
           </ReservationTime>
         ) : (
-          /* else show no reservation */
+          /* else show missing service time */
           <ReservationTime warning>
             {i18n.unit.attendanceReservations.missingServiceTime}
           </ReservationTime>
@@ -95,10 +131,22 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
         </TimesRow>
       )}
       <TimesRow>
-        <AttendanceTime>
+        <AttendanceTime
+          warning={attendanceTimeDiffers(
+            expectedTimeForThisDay?.start,
+            dailyData.attendance?.startTime
+          )}
+        >
           {dailyData.attendance?.startTime ?? '–'}
         </AttendanceTime>
-        <AttendanceTime>{dailyData.attendance?.endTime ?? '–'}</AttendanceTime>
+        <AttendanceTime
+          warning={attendanceTimeDiffers(
+            expectedTimeForThisDay?.end,
+            dailyData.attendance?.endTime
+          )}
+        >
+          {dailyData.attendance?.endTime ?? '–'}
+        </AttendanceTime>
       </TimesRow>
     </DateCell>
   )
@@ -124,19 +172,18 @@ const TimesRow = styled.div`
   }
 `
 
-const TimeCell = styled.div`
+const TimeCell = styled.div<{ warning?: boolean }>`
   flex: 1 0 54px;
   text-align: center;
-`
-
-const AttendanceTime = styled(TimeCell)`
-  font-weight: ${fontWeights.semibold};
-`
-
-const ReservationTime = styled(TimeCell)<{ warning?: boolean }>`
   ${(p) =>
     p.warning &&
     css`
       color: ${colors.accents.a2orangeDark};
     `};
 `
+
+const AttendanceTime = styled(TimeCell)`
+  font-weight: ${fontWeights.semibold};
+`
+
+const ReservationTime = styled(TimeCell)``

@@ -66,7 +66,7 @@ export default React.memo(function ReservationsTable({
           const childName = `${childReservations.child.firstName} ${childReservations.child.lastName}`
 
           return (
-            <Tr key={childName}>
+            <Tr key={childReservations.child.id}>
               <NameTd>
                 <ChildName>
                   <AgeIndicatorIcon
