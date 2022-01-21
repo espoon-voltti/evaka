@@ -7,6 +7,7 @@ setup: true
 
 orbs:
   continuation: circleci/continuation@0.1.0
+  path-filtering: circleci/path-filtering@0.1.1
 
 executors:
   ruby:
@@ -23,11 +24,27 @@ jobs:
           command: |
             erb -T- .circleci/template.yml > .circleci/generated.yml
             cat .circleci/generated.yml
-      - continuation/continue:
-          parameters: '{}'
-          configuration_path: .circleci/generated.yml
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - .
 
 workflows:
   setup-workflow:
     jobs:
-      - generate-config
+      - generate-config:
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/
+
+      - path-filtering/filter:
+          workspace_path: .
+          requires:
+            - generate-config
+          base-revision: master
+          config-path: .circleci/generated.yml
+          mapping: |
+            compose/e2e/.* build-e2e true
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/
