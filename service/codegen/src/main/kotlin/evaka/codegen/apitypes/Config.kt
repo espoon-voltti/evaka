@@ -1,10 +1,13 @@
 package evaka.codegen.apitypes
 
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.springframework.http.ResponseEntity
+import java.time.LocalDate
+import java.util.UUID
 
 const val basePackage = "fi.espoo.evaka"
 
@@ -55,12 +58,15 @@ data class TSMapping(
 )
 
 val kotlinCollectionClasses = listOf(
-    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class, Map::class
+    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class
 )
 
 val classesToUnwrap = kotlinCollectionClasses + listOf(
     ResponseEntity::class,
     Paged::class,
     VardaClient.PaginatedResponse::class,
-    Wrapper::class
+    Wrapper::class,
+    Map::class
 )
+
+val validMapKeyTypes = listOf(String::class, UUID::class, Id::class, LocalDate::class)

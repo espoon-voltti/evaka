@@ -17,6 +17,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
@@ -49,7 +50,7 @@ ${classes.sortedBy { it.name.substringAfterLast('.') }.joinToString("\n\n") { it
 private fun getImports(classes: List<AnalyzedClass>): List<String> {
     val classesToImport = classes
         .flatMap { if (it is AnalyzedClass.DataClass) it.properties else emptyList() }
-        .map { it.type.qualifiedName!! }
+        .flatMap { prop -> prop.type.declarableTypes.map { it.qualifiedName!! } }
         .filter { classes.none { c -> c.name == it } }
         .toSet()
 
@@ -74,9 +75,9 @@ private fun analyzeClasses(): Map<String, List<AnalyzedClass>> {
         analyzedClasses.add(analyzed)
         knownClasses.add(analyzed.name)
         if (analyzed is AnalyzedClass.DataClass) {
-            analyzed.properties.forEach { prop ->
-                if (!knownClasses.contains(prop.type.qualifiedName) && waiting.none { it == prop.type }) {
-                    waiting.addLast(prop.type)
+            analyzed.properties.flatMap { it.type.declarableTypes }.forEach { type ->
+                if (!knownClasses.contains(type.qualifiedName) && waiting.none { it == type }) {
+                    waiting.addLast(type)
                 }
             }
         }
@@ -124,27 +125,8 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
     }
 }
 
-private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedProperty {
-    return AnalyzedProperty(
-        name = prop.name,
-        type = if (isCollection(prop.returnType)) unwrapCollection(prop.returnType) else prop.returnType.jvmErasure,
-        nullable = prop.returnType.isMarkedNullable,
-        collection = isCollection(prop.returnType)
-    )
-}
-
-private fun isCollection(type: KType): Boolean {
-    return kotlinCollectionClasses.any { type.jvmErasure.isSubclassOf(it) }
-}
-
-private fun unwrapCollection(type: KType): KClass<*> {
-    return when (type) {
-        IntArray::class -> Int::class
-        DoubleArray::class -> Double::class
-        BooleanArray::class -> Boolean::class
-        else -> type.arguments.first().type!!.jvmErasure
-    }
-}
+private fun analyzeMemberProperty(prop: KProperty1<out Any, *>) =
+    AnalyzedProperty(prop.name, analyzeType(prop.returnType))
 
 private sealed class AnalyzedClass(
     val name: String
@@ -188,17 +170,76 @@ ${values.joinToString("\n") { "  | '$it'" }}"""
     }
 }
 
-private data class AnalyzedProperty(
+data class AnalyzedProperty(
     val name: String,
-    val type: KClass<*>,
-    val nullable: Boolean,
-    val collection: Boolean
+    val type: AnalyzedType
 ) {
-    fun toTs(): String {
-        return "$name: ${tsMapping[type.qualifiedName]?.type ?: type.simpleName}"
-            .let { if (collection) "$it[]" else it }
-            .let { if (nullable) "$it | null" else it }
+    fun toTs() = "$name: ${type.toTs()}"
+}
+
+fun analyzeType(type: KType): AnalyzedType = when {
+    isMap(type) -> TsMap(type)
+    isCollection(type) -> TsArray(type)
+    else -> TsPlain(type)
+}
+
+sealed interface AnalyzedType {
+    val declarableTypes: List<KClass<*>>
+    fun toTs(): String
+}
+
+data class TsPlain(val type: KType) : AnalyzedType {
+    override val declarableTypes = listOf(type.jvmErasure)
+    override fun toTs() = toTs(type)
+}
+
+data class TsArray(val type: KType) : AnalyzedType {
+    private val typeParameter = unwrapCollection(type)
+    override val declarableTypes = listOf(typeParameter.jvmErasure)
+    override fun toTs() = toTs(typeParameter)
+        .let { if (typeParameter.isMarkedNullable) "($it)" else it }
+        .let { "$it[]" }
+        .let { if (type.isMarkedNullable) "$it | null" else it }
+
+    private fun unwrapCollection(type: KType): KType {
+        return when (type) {
+            IntArray::class -> Int::class.createType()
+            DoubleArray::class -> Double::class.createType()
+            BooleanArray::class -> Boolean::class.createType()
+            else -> type.arguments.first().type!!
+        }
     }
+}
+
+data class TsMap(val type: KType) : AnalyzedType {
+    private val keyType: KType = run {
+        val keyType = type.arguments[0].type!!
+        val isEnumType = keyType.jvmErasure.java.enumConstants?.isNotEmpty() ?: false
+        if (validMapKeyTypes.none { it == keyType.jvmErasure } && !isEnumType) {
+            // Key is not an enum or an allowed type
+            error("Unsupported Map key type $keyType")
+        }
+
+        if (isEnumType) keyType else String::class.createType()
+    }
+    private val valueType = analyzeType(type.arguments[1].type!!)
+
+    override val declarableTypes = valueType.declarableTypes + keyType.jvmErasure
+    override fun toTs(): String = "Record<${toTs(keyType)}, ${valueType.toTs()}>"
+        .let { if (type.isMarkedNullable) "$it | null" else it }
+}
+
+private fun toTs(type: KType): String {
+    val className = tsMapping[type.jvmErasure.qualifiedName]?.type ?: type.jvmErasure.simpleName!!
+    return if (type.isMarkedNullable) "$className | null" else className
+}
+
+private fun isMap(type: KType): Boolean {
+    return type.jvmErasure.isSubclassOf(Map::class)
+}
+
+private fun isCollection(type: KType): Boolean {
+    return kotlinCollectionClasses.any { type.jvmErasure.isSubclassOf(it) }
 }
 
 private fun getBasePackage(fullyQualifiedName: String): String {

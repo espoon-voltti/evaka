@@ -73,36 +73,35 @@ private fun <T : Any> scanController(packageName: String, clazz: KClass<T>): Set
 private fun scanEndpoint(func: KFunction<*>): Set<KClass<*>> {
     return when {
         func.annotations.any { it.annotationClass == GetMapping::class } ->
-            setOfNotNull(getResponseBodyClass(func))
+            getResponseBodyClass(func).toSet()
         func.annotations.any { it.annotationClass in listOf(PutMapping::class, PostMapping::class) } ->
-            setOfNotNull(getRequestBodyClass(func), getResponseBodyClass(func))
+            getRequestBodyClass(func).toSet() + getResponseBodyClass(func).toSet()
         else -> emptySet()
     }
 }
 
-private fun getRequestBodyClass(func: KFunction<*>): KClass<*>? {
+private fun getRequestBodyClass(func: KFunction<*>): Set<KClass<*>> {
     return func.parameters
         .find { param -> param.annotations.any { it.annotationClass == RequestBody::class } }
         ?.type
         ?.let { getRealType(it) }
+        ?: setOf()
 }
 
-private fun getResponseBodyClass(func: KFunction<*>): KClass<*>? {
+private fun getResponseBodyClass(func: KFunction<*>): Set<KClass<*>> {
     return getRealType(func.returnType)
 }
 
-private fun getRealType(type: KType): KClass<*>? {
-    var t = type
-    while (unwrap(t) != t) {
-        t = unwrap(t)
+private fun getRealType(type: KType): Set<KClass<*>> {
+    var t: Set<KType> = setOf(type)
+    while (t != t.flatMap(::unwrap).toSet()) {
+        t = t.flatMap(::unwrap).toSet()
     }
-    return t.jvmErasure
+    return t.map { it.jvmErasure }.toSet()
 }
 
-private fun unwrap(type: KType): KType {
-    return (
-        if (classesToUnwrap.any { type.jvmErasure.isSubclassOf(it) }) {
-            type.arguments.first().type!!
-        } else type
-        )
+private fun unwrap(type: KType): Set<KType> {
+    return if (classesToUnwrap.any { type.jvmErasure.isSubclassOf(it) }) {
+        type.arguments.map { it.type!! }.toSet()
+    } else setOf(type)
 }

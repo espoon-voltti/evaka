@@ -43,12 +43,12 @@ export interface AssistanceNeedsAndActionsReport {
 * Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow
 */
 export interface AssistanceNeedsAndActionsReportRow {
-  actionCounts: string[]
-  basisCounts: string[]
+  actionCounts: Record<string, number>
+  basisCounts: Record<string, number>
   careAreaName: string
   groupId: UUID
   groupName: string
-  measureCounts: AssistanceMeasure[]
+  measureCounts: Record<AssistanceMeasure, number>
   noActionCount: number
   noBasisCount: number
   otherActionCount: number
