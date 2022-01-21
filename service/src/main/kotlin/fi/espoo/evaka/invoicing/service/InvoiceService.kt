@@ -8,6 +8,7 @@ import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.getInvoiceIdsByDates
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
+import fi.espoo.evaka.invoicing.data.saveCostCenterFields
 import fi.espoo.evaka.invoicing.data.setDraftsSent
 import fi.espoo.evaka.invoicing.data.updateInvoiceDates
 import fi.espoo.evaka.invoicing.data.updateToWaitingForSending
@@ -70,6 +71,7 @@ class InvoiceService(
             tx.updateInvoiceDates(succeeded.map { it.id }, invoiceDate, dueDate)
         }
         tx.setDraftsSent(succeeded.map { it.id to it.number!! }, user.evakaUserId)
+        tx.saveCostCenterFields(succeeded.map { it.id } + withoutSSNs.map { it.id })
         tx.updateToWaitingForSending(withoutSSNs.map { it.id })
     }
 

@@ -386,6 +386,18 @@ fun Database.Transaction.setDraftsSent(idNumberPairs: List<Pair<InvoiceId, Long>
     batch.execute()
 }
 
+fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) = createUpdate(
+    """
+UPDATE invoice_row
+SET saved_cost_center = daycare.cost_center, saved_sub_cost_center = care_area.sub_cost_center
+FROM daycare, care_area WHERE invoice_row.unit_id = daycare.id
+AND daycare.care_area_id = care_area.id
+AND invoice_id = ANY(:invoiceIds)
+    """.trimIndent()
+)
+    .bind("invoiceIds", invoiceIds.toTypedArray())
+    .execute()
+
 fun Database.Transaction.updateToWaitingForSending(invoiceIds: List<InvoiceId>) {
     if (invoiceIds.isEmpty()) return
 

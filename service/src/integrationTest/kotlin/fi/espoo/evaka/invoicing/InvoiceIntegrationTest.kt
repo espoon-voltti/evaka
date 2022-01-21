@@ -33,6 +33,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.controllers.Wrapper
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -602,6 +604,30 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         val maxInvoiceNumber = db.transaction { tx -> tx.getMaxInvoiceNumber() }
         assertEquals(sentInvoice.number!! + drafts.size, maxInvoiceNumber)
+    }
+
+    @Test
+    fun `send saves cost center information to invoice rows`() {
+        fun Database.Read.readCostCenterFields(invoiceId: InvoiceId): Pair<String, String> = createQuery(
+            """
+                SELECT saved_cost_center, saved_sub_cost_center FROM invoice_row WHERE invoice_id = :invoiceId
+            """.trimIndent()
+        ).bind("invoiceId", invoiceId).map { row ->
+            Pair(
+                row.mapColumn<String>("saved_cost_center"), row.mapColumn<String>("saved_sub_cost_center")
+            )
+        }.single()
+
+        val draft = testInvoices[0]
+        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
+
+        val (_, response, _) = http.post("/invoices/send").jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
+            .asUser(testUser).responseString()
+        assertEquals(200, response.statusCode)
+
+        val (costCenter, subCostCenter) = db.read { it.readCostCenterFields(draft.id) }
+        assertEquals(testArea.subCostCenter, subCostCenter)
+        assertEquals(testDaycare.costCenter, costCenter)
     }
 
     @Test
