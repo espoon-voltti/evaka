@@ -673,7 +673,7 @@ fun getDefaultLeopsContent() = VasuContent(
                 ),
                 VasuQuestion.Paragraph(
                     title = "Lapsen esiopetuksen oppimissuunnitelman tiedonsiirtokeskustelu koulun kanssa",
-                    paragraph = "Lähtökohtaisesti pyydämme vanhemmilta luvan lapsen esiopetuksen oppimissuunnitelman luovuttamiselle toiselle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle. Suunnitelma voidaan kuitenkin luovuttaa edellä mainituille tahoille myös ilman vanhempien lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (varhaiskasvatuslaki 41 §, perusopetuslaki 40 § ja 41 §)."
+                    paragraph = "Lähtökohtaisesti pyydämme huoltajilta luvan lapsen esiopetuksen oppimissuunnitelman luovuttamiselle toiselle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle. Suunnitelma voidaan kuitenkin luovuttaa edellä mainituille tahoille myös ilman huoltajien lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (varhaiskasvatuslaki 41 §, perusopetuslaki 40 § ja 41 §)."
                 ),
                 VasuQuestion.DateQuestion(
                     name = "Tiedonsiirtokeskustelun päivämäärä",
