@@ -42,7 +42,11 @@ export default React.memo(function ReservationsTable({
         <Tr>
           <CustomTh>{i18n.unit.attendanceReservations.childName}</CustomTh>
           {operationalDays.map(({ date, isHoliday }) => (
-            <DateTh key={date.formatIso()} faded={isHoliday}>
+            <DateTh
+              key={date.formatIso()}
+              faded={isHoliday}
+              highlight={date.isToday()}
+            >
               <Date centered highlight={date.isToday()}>
                 {`${
                   i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek() - 1]
@@ -78,7 +82,10 @@ export default React.memo(function ReservationsTable({
                 </ChildName>
               </NameTd>
               {operationalDays.map((day) => (
-                <DayTd key={day.date.formatIso()}>
+                <DayTd
+                  key={day.date.formatIso()}
+                  highlight={day.date.isToday()}
+                >
                   <ChildDay day={day} childReservations={childReservations} />
                 </DayTd>
               ))}
@@ -102,9 +109,10 @@ const CustomTh = styled(Th)`
   vertical-align: bottom;
 `
 
-const DateTh = styled(CustomTh)<{ faded: boolean }>`
+const DateTh = styled(CustomTh)<{ faded: boolean; highlight: boolean }>`
   width: 0; // causes the column to take as little space as possible
-  ${(p) => (p.faded ? `color: ${colors.grayscale.g35};` : '')}
+  ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
+  ${(p) => p.highlight && `border-bottom: 2px solid ${colors.main.m3};`}
 `
 
 const DayHeader = styled.div`
@@ -117,8 +125,13 @@ const StyledTd = styled(Td)`
   border-right: 1px solid ${colors.grayscale.g35};
   vertical-align: middle;
 `
-
-const DayTd = styled(StyledTd)`
+const DayTd = styled(StyledTd)<{ highlight: boolean }>`
+  ${(p) =>
+    p.highlight &&
+    css`
+      border-left: 2px solid ${colors.main.m3};
+      border-right: 2px solid ${colors.main.m3};
+    `}
   padding: 0;
 `
 
