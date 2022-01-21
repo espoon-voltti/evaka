@@ -232,7 +232,7 @@ commands:
     steps:
       - save_cache:
           name: Store Docker image in cache
-          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - << pipeline.parameters.workspace_root >>/<< parameters.dir >>/image.tar
 
@@ -243,7 +243,7 @@ commands:
     steps:
       - restore_cache:
           name: Restore Docker image from cache
-          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
       - run: docker load -i << parameters.dir >>/image.tar
 
   # Artifacts or sub-workspaces would be ideal here but instead we need to
@@ -254,14 +254,14 @@ commands:
     steps:
       - save_cache:
           name: Store build artifacts
-          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - << pipeline.parameters.workspace_root >>/service/build/libs/
   restore_service_artifacts:
     steps:
       - restore_cache:
           name: Restore build artifacts
-          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
   store_apigw_deps:
     steps:
@@ -439,7 +439,7 @@ commands:
             docker save "$E2E_IMAGE" > "e2e-<< parameters.test_runner >>.tar"
       - save_cache:
           name: Store Docker image in cache
-          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - "e2e-<< parameters.test_runner >>.tar"
       - save_cache:
@@ -481,7 +481,7 @@ commands:
       - restore_frontend_comm_deps
       - restore_cache:
           name: Restore Docker image from cache
-          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
+          key: << parameters.test_runner >>-image-v2-{{ .Environment.CIRCLE_WORKFLOW_ID }}
       - run:
           name: Load E2E image
           command: |
