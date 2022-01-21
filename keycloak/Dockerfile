@@ -34,8 +34,7 @@ CMD ["--server-config=standalone.xml", "-b", "0.0.0.0"]
 
 USER root
 
-RUN microdnf update -y \
- && microdnf upgrade -y \
+RUN microdnf upgrade -y \
  && microdnf install -y jq \
  && microdnf clean all \
  && mkdir -p /opt/jboss/startup-scripts \
