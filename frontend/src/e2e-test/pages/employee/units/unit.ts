@@ -98,7 +98,7 @@ export class UnitPage {
     return unitDetails
   }
 
-  async openApplicationProcessTab() {
+  async openApplicationProcessTab(): Promise<ApplicationProcessPage> {
     await this.#applicationProcessTab.click()
     return new ApplicationProcessPage(this.page)
   }
@@ -512,7 +512,7 @@ class StaffAclRowEditor extends Element {
   }
 }
 
-class ApplicationProcessPage {
+export class ApplicationProcessPage {
   constructor(private readonly page: Page) {}
 
   async assertIsLoading() {
@@ -531,6 +531,10 @@ class ApplicationProcessPage {
     this.page.find('[data-qa="waiting-confirmation-section"]')
   )
   placementProposals = new PlacementProposalsSection(this.page)
+
+  async waitUntilVisible() {
+    await this.waitingConfirmation.waitUntilVisible()
+  }
 }
 
 class WaitingConfirmationSection extends Element {
@@ -569,6 +573,10 @@ class PlacementProposalsSection {
     return this.page.find(`[data-qa="placement-proposal-row-${applicationId}"]`)
   }
 
+  #placementProposalTable = this.page.find(
+    '[data-qa="placement-proposal-table"]'
+  )
+
   #acceptButton = this.page.find(
     '[data-qa="placement-proposals-accept-button"]'
   )
@@ -604,5 +612,18 @@ class PlacementProposalsSection {
 
   async submitProposalRejectionReason() {
     await this.page.find('[data-qa="modal-okBtn"]').click()
+  }
+
+  async waitUntilVisible() {
+    await this.#placementProposalTable.waitUntilVisible()
+  }
+
+  async assertPlacementProposalRowCount(expected: number) {
+    await this.waitUntilVisible()
+    await waitUntilEqual(
+      () =>
+        this.#placementProposalTable.findAll('[data-qa="child-name"]').count(),
+      expected
+    )
   }
 }

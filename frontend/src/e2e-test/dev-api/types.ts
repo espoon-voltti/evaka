@@ -257,6 +257,7 @@ export interface ApplicationAdult {
 }
 
 export interface PlacementPlan {
+  applicationId: UUID
   unitId: UUID
   periodStart: ISODate
   periodEnd: ISODate

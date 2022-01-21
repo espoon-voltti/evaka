@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,7 +10,6 @@ import {
   insertApplications,
   insertDecisionFixtures,
   insertDefaultServiceNeedOptions,
-  insertPlacementPlan,
   rejectDecisionByCitizen,
   resetDatabase
 } from '../../dev-api'
@@ -23,7 +22,6 @@ import {
   daycareFixture,
   decisionFixture,
   Fixture,
-  placementPlanFixture,
   uuidv4
 } from '../../dev-api/fixtures'
 import { Application, EmployeeDetail } from '../../dev-api/types'
@@ -435,22 +433,23 @@ describe('Application transitions', () => {
 
     await insertApplications([application1, application2])
 
-    await insertPlacementPlan(
-      application1.id,
-      placementPlanFixture(
-        fixtures.daycareFixture.id,
-        placementStartDate,
-        placementStartDate
-      )
-    )
-    await insertPlacementPlan(
-      application2.id,
-      placementPlanFixture(
-        fixtures.daycareFixture.id,
-        placementStartDate,
-        placementStartDate
-      )
-    )
+    await Fixture.placementPlan()
+      .with({
+        applicationId: application1.id,
+        unitId: fixtures.daycareFixture.id,
+        periodStart: placementStartDate,
+        periodEnd: placementStartDate
+      })
+      .save()
+
+    await Fixture.placementPlan()
+      .with({
+        applicationId: application2.id,
+        unitId: fixtures.daycareFixture.id,
+        periodStart: placementStartDate,
+        periodEnd: placementStartDate
+      })
+      .save()
 
     const decisionId = (
       await Fixture.decision()
@@ -463,6 +462,7 @@ describe('Application transitions', () => {
         })
         .save()
     ).data.id
+
     await rejectDecisionByCitizen(decisionId)
 
     const unitSupervisor = (
