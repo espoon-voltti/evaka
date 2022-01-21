@@ -152,35 +152,31 @@ fun Database.Read.getPlacementPlans(
     return createQuery(
         // language=SQL
         """
-SELECT 
+SELECT
     pp.id, pp.unit_id, pp.application_id, pp.type, pp.start_date, pp.end_date, pp.preschool_daycare_start_date, pp.preschool_daycare_end_date,
     pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
-    p.id as child_id, p.first_name, p.last_name, p.date_of_birth, (d.status = 'REJECTED'::decision_status AND d.updated > :today - interval '2 week') AS rejected_by_citizen
+    p.id as child_id, p.first_name, p.last_name, p.date_of_birth, d.resolved IS NOT NULL AS rejected_by_citizen
 FROM placement_plan pp
 LEFT JOIN application a ON pp.application_id = a.id
 LEFT JOIN person p ON a.child_id = p.id
 LEFT JOIN LATERAL (
-SELECT id, status, updated, created 
-FROM decision 
-WHERE decision.application_id = a.id
-ORDER BY created DESC
-LIMIT 1
+ SELECT min(d.resolved) AS resolved
+ FROM decision d
+ WHERE d.application_id = a.id
+ AND a.status = 'REJECTED'::application_status_type
+ AND d.status = 'REJECTED'::decision_status
 ) d ON TRUE
 WHERE
     pp.unit_id = :unitId AND
     a.status = ANY(:statuses::application_status_type[]) AND
     (
         (a.status != 'REJECTED'::application_status_type AND pp.deleted = false) OR
-        (
-            d.status = 'REJECTED'::decision_status AND 
-            a.status = 'REJECTED'::application_status_type AND
-            d.updated > :today - interval '2 week'
-        )
+        d.resolved > :today - interval '2 week'
     ) AND
     pp.unit_confirmation_status != 'REJECTED'::confirmation_status
     ${if (to != null) " AND (start_date <= :to OR preschool_daycare_start_date <= :to)" else ""}
-    ${if (from != null) " AND (end_date >= :from OR preschool_daycare_end_date >= :from)" else ""} 
-    """
+    ${if (from != null) " AND (end_date >= :from OR preschool_daycare_end_date >= :from)" else ""}
+"""
     ).bind("unitId", unitId)
         .bind("today", today)
         .bind("from", from)
