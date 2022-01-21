@@ -36,16 +36,14 @@ function timeToMinutes(expected: string): number {
  * reservations that span multiple days.
  */
 function attendanceTimeDiffers(
-  expected: string | null | undefined,
-  actual: string | null | undefined,
+  first: string | null | undefined,
+  second: string | null | undefined,
   thresholdMinutes = 15
 ): boolean {
-  if (!(expected && actual)) {
+  if (!(first && second)) {
     return false
   }
-  return (
-    Math.abs(timeToMinutes(expected) - timeToMinutes(actual)) > thresholdMinutes
-  )
+  return timeToMinutes(first) - timeToMinutes(second) > thresholdMinutes
 }
 
 const getReservationOrServiceTimeOfDay = (
@@ -141,8 +139,8 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
         </AttendanceTime>
         <AttendanceTime
           warning={attendanceTimeDiffers(
-            expectedTimeForThisDay?.end,
-            dailyData.attendance?.endTime
+            dailyData.attendance?.endTime,
+            expectedTimeForThisDay?.end
           )}
         >
           {dailyData.attendance?.endTime ?? '–'}
