@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import classNames from 'classnames'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 import {
   Child,
-  ChildReservations,
+  ChildRecordOfDay,
+  ChildDailyRecords,
   OperationalDay
 } from 'lib-common/api-types/reservations'
+import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -24,14 +25,14 @@ import ChildDay from './ChildDay'
 
 interface Props {
   operationalDays: OperationalDay[]
-  reservations: ChildReservations[]
+  allDayRows: ChildDailyRecords[]
   onMakeReservationForChild: (child: Child) => void
   selectedDate: LocalDate
 }
 
 export default React.memo(function ReservationsTable({
   operationalDays,
-  reservations,
+  allDayRows,
   onMakeReservationForChild,
   selectedDate
 }: Props) {
@@ -57,42 +58,59 @@ export default React.memo(function ReservationsTable({
         </Tr>
       </Thead>
       <Tbody>
-        {reservations.map((childReservations) => {
-          const childName = `${childReservations.child.firstName} ${childReservations.child.lastName}`
-
-          return (
-            <DayTr key={childReservations.child.id}>
-              <NameTd>
-                <ChildName>
-                  <AgeIndicatorIcon
-                    isUnder3={
-                      selectedDate.differenceInYears(
-                        childReservations.child.dateOfBirth
-                      ) < 3
+        {allDayRows.flatMap((childDailyRecords) => {
+          const childName = `${childDailyRecords.child.firstName} ${childDailyRecords.child.lastName}`
+          const multipleRows = childDailyRecords.dailyData.length > 1
+          return childDailyRecords.dailyData.map(
+            (
+              childDailyRecordRow: Record<JsonOf<LocalDate>, ChildRecordOfDay>,
+              index
+            ) => (
+              <DayTr key={`${childDailyRecords.child.id}-${index}`}>
+                <NameTd partialRow={multipleRows} rowIndex={index}>
+                  {index == 0 && (
+                    <ChildName>
+                      <AgeIndicatorIcon
+                        isUnder3={
+                          selectedDate.differenceInYears(
+                            childDailyRecords.child.dateOfBirth
+                          ) < 3
+                        }
+                      />
+                      <Link
+                        to={`/child-information/${childDailyRecords.child.id}`}
+                      >
+                        {childName}
+                      </Link>
+                    </ChildName>
+                  )}
+                </NameTd>
+                {operationalDays.map((day) => (
+                  <DayTd
+                    key={day.date.formatIso()}
+                    highlight={day.date.isToday()}
+                    partialRow={multipleRows}
+                    rowIndex={index}
+                  >
+                    <ChildDay
+                      day={day}
+                      dailyServiceTimes={
+                        childDailyRecords.child.dailyServiceTimes
+                      }
+                      dataForAllDays={childDailyRecordRow}
+                    />
+                  </DayTd>
+                ))}
+                <StyledTd partialRow={multipleRows} rowIndex={index}>
+                  <IconButton
+                    icon={faCalendarPlus}
+                    onClick={() =>
+                      onMakeReservationForChild(childDailyRecords.child)
                     }
                   />
-                  <Link to={`/child-information/${childReservations.child.id}`}>
-                    {childName}
-                  </Link>
-                </ChildName>
-              </NameTd>
-              {operationalDays.map((day) => (
-                <DayTd
-                  key={day.date.formatIso()}
-                  className={classNames({ 'is-today': day.date.isToday() })}
-                >
-                  <ChildDay day={day} childReservations={childReservations} />
-                </DayTd>
-              ))}
-              <StyledTd>
-                <IconButton
-                  icon={faCalendarPlus}
-                  onClick={() =>
-                    onMakeReservationForChild(childReservations.child)
-                  }
-                />
-              </StyledTd>
-            </DayTr>
+                </StyledTd>
+              </DayTr>
+            )
           )
         })}
       </Tbody>
@@ -119,11 +137,20 @@ const DayHeader = styled.div`
   gap: ${defaultMargins.xs};
 `
 
-const StyledTd = styled(Td)`
-  border-right: 1px solid ${colors.grayscale.g35};
+const StyledTd = styled(Td)<{ partialRow: boolean; rowIndex: number }>`
+  border-right: 1px solid ${colors.grayscale.g15};
   vertical-align: middle;
+  ${(p) => p.partialRow && p.rowIndex === 0 && `border-bottom-style: dashed;`}
+  ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: dashed;`}
 `
-const DayTd = styled(StyledTd)`
+
+const DayTd = styled(StyledTd)<{ highlight: boolean; partialRow: boolean }>`
+  ${(p) =>
+    p.highlight &&
+    css`
+      border-left: 2px solid ${colors.main.m3};
+      border-right: 2px solid ${colors.main.m3};
+    `}
   padding: 0;
 `
 
@@ -147,6 +174,8 @@ const DayTr = styled(Tr)`
 
 const NameTd = styled(StyledTd)`
   width: 350px;
+  ${(p) => p.partialRow && p.rowIndex === 0 && `border-bottom-style: none;`}
+  ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: none;`}
 `
 
 const ChildName = styled.div`

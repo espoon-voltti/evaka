@@ -71,10 +71,10 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                 if (group == null) null
                                 else UnitAttendanceReservations.GroupAttendanceReservations(
                                     group = group,
-                                    children = mapChildReservations(rows, serviceTimes)
+                                    children = toChildDayRows(rows, serviceTimes)
                                 )
                             },
-                            ungrouped = ungroupedRows?.let { mapChildReservations(it, serviceTimes) }
+                            ungrouped = ungroupedRows?.let { toChildDayRows(it, serviceTimes) }
                                 ?: emptyList()
                         )
                     }
@@ -103,7 +103,7 @@ data class UnitAttendanceReservations(
     val unit: String,
     val operationalDays: List<OperationalDay>,
     val groups: List<GroupAttendanceReservations>,
-    val ungrouped: List<ChildReservations>
+    val ungrouped: List<ChildDailyRecords>
 ) {
     data class OperationalDay(
         val date: LocalDate,
@@ -112,7 +112,7 @@ data class UnitAttendanceReservations(
 
     data class GroupAttendanceReservations(
         val group: ReservationGroup,
-        val children: List<ChildReservations>
+        val children: List<ChildDailyRecords>
     )
 
     data class ReservationGroup(
@@ -121,13 +121,13 @@ data class UnitAttendanceReservations(
         val name: String
     )
 
-    data class ChildReservations(
+    data class ChildDailyRecords(
         val child: Child,
-        val dailyData: Map<LocalDate, DailyChildData>
+        val dailyData: List<Map<LocalDate, ChildRecordOfDay>>
     )
 
-    data class DailyChildData(
-        val reservations: List<ReservationTimes>,
+    data class ChildRecordOfDay(
+        val reservation: ReservationTimes?,
         val attendance: AttendanceTimes?,
         val absence: Absence?
     )
@@ -262,21 +262,33 @@ WHERE child_id = ANY(:childIds)
     .filterNotNull()
     .toMap()
 
-private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, DailyServiceTimes>): List<UnitAttendanceReservations.ChildReservations> {
+private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, DailyServiceTimes>): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.child }
         .map { (child, rowsByChild) ->
-            UnitAttendanceReservations.ChildReservations(
+            UnitAttendanceReservations.ChildDailyRecords(
                 child = child.copy(dailyServiceTimes = serviceTimes.get(child.id)),
-                dailyData = rowsByChild.associateBy(
-                    keySelector = { it.date },
-                    valueTransform = {
-                        UnitAttendanceReservations.DailyChildData(
-                            reservations = it.reservations,
-                            attendance = it.attendance,
-                            absence = it.absence
-                        )
-                    }
+                dailyData = listOf(
+                    rowsByChild.associateBy(
+                        keySelector = { it.date },
+                        valueTransform = {
+                            UnitAttendanceReservations.ChildRecordOfDay(
+                                reservation = it.reservations.getOrNull(0),
+                                attendance = it.attendance,
+                                absence = it.absence
+                            )
+                        }
+                    ),
+                    rowsByChild.associateBy(
+                        keySelector = { it.date },
+                        valueTransform = {
+                            UnitAttendanceReservations.ChildRecordOfDay(
+                                reservation = it.reservations.getOrNull(1),
+                                attendance = it.attendance,
+                                absence = it.absence
+                            )
+                        }
+                    )
                 )
             )
         }

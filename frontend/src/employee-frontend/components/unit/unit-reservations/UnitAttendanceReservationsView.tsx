@@ -135,7 +135,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               {selectedGroup && (
                 <ReservationsTable
                   operationalDays={data.operationalDays}
-                  reservations={selectedGroup.children}
+                  allDayRows={selectedGroup.children}
                   onMakeReservationForChild={setCreatingReservationChild}
                   selectedDate={selectedDate}
                 />
@@ -143,7 +143,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               {groupId === 'no-group' && (
                 <ReservationsTable
                   operationalDays={data.operationalDays}
-                  reservations={data.ungrouped}
+                  allDayRows={data.ungrouped}
                   onMakeReservationForChild={setCreatingReservationChild}
                   selectedDate={selectedDate}
                 />

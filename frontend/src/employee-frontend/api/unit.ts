@@ -6,7 +6,7 @@ import { mapValues } from 'lodash'
 import { Failure, Result, Success } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import {
-  ChildReservations,
+  ChildDailyRecords,
   UnitAttendanceReservations
 } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
@@ -861,17 +861,17 @@ export async function getUnitAttendanceReservations(
         })),
         groups: data.groups.map(({ group, children }) => ({
           group,
-          children: children.map(mapChildReservationJson)
+          children: children.map(toChildDayRows)
         })),
-        ungrouped: data.ungrouped.map(mapChildReservationJson)
+        ungrouped: data.ungrouped.map(toChildDayRows)
       })
     )
     .catch((e) => Failure.fromError(e))
 }
 
-const mapChildReservationJson = (
-  json: JsonOf<ChildReservations>
-): ChildReservations => ({
+const toChildDayRows = (
+  json: JsonOf<ChildDailyRecords>
+): ChildDailyRecords => ({
   ...json,
   child: {
     ...json.child,

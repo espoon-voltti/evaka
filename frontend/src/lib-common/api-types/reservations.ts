@@ -12,7 +12,7 @@ export interface UnitAttendanceReservations {
   unit: string
   operationalDays: OperationalDay[]
   groups: GroupAttendanceReservations[]
-  ungrouped: ChildReservations[]
+  ungrouped: ChildDailyRecords[]
 }
 
 export interface OperationalDay {
@@ -22,7 +22,18 @@ export interface OperationalDay {
 
 interface GroupAttendanceReservations {
   group: Group
-  children: ChildReservations[]
+  children: ChildDailyRecords[]
+}
+
+export interface ChildDailyRecords {
+  child: Child
+  dailyData: Record<JsonOf<LocalDate>, ChildRecordOfDay>[]
+}
+
+export interface ChildRecordOfDay {
+  reservation: Reservation | null
+  attendance: AttendanceTimes | null
+  absence: { type: AbsenceType } | null
 }
 
 interface Group {
@@ -43,7 +54,7 @@ export interface Child {
   dailyServiceTimes: DailyServiceTimes | null
 }
 
-interface DailyChildData {
+export interface DailyChildData {
   reservations: Reservation[]
   attendance: AttendanceTimes | null
   absence: { type: AbsenceType } | null
