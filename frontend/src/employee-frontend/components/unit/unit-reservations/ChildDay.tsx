@@ -46,17 +46,21 @@ function attendanceTimeDiffers(
   return timeToMinutes(first) - timeToMinutes(second) > thresholdMinutes
 }
 
+type ReservationOrServiceTime =
+  | (TimeRange & { type: 'reservation' | 'service-time' })
+  | undefined
 const getReservationOrServiceTimeOfDay = (
   reservations: Reservation[],
   serviceTimeOfDay: TimeRange | null
-): TimeRange | undefined =>
+): ReservationOrServiceTime =>
   reservations.length > 0
     ? {
         start: reservations[0].startTime,
-        end: reservations[0].endTime
+        end: reservations[0].endTime,
+        type: 'reservation'
       }
     : serviceTimeOfDay
-    ? serviceTimeOfDay
+    ? { ...serviceTimeOfDay, type: 'service-time' }
     : undefined
 
 interface Props {
@@ -94,6 +98,7 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
     dailyData.reservations,
     serviceTimeOfDay
   )
+  const maybeAsterisk = expectedTimeForThisDay?.type === 'service-time' && '*'
 
   return (
     <DateCell>
@@ -103,8 +108,14 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
         ) : expectedTimeForThisDay ? (
           /* show actual reservation or service time if exists */
           <>
-            <ReservationTime>{expectedTimeForThisDay.start}</ReservationTime>
-            <ReservationTime>{expectedTimeForThisDay.end}</ReservationTime>
+            <ReservationTime>
+              {expectedTimeForThisDay.start}
+              {maybeAsterisk}
+            </ReservationTime>
+            <ReservationTime>
+              {expectedTimeForThisDay.end}
+              {maybeAsterisk}
+            </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
           /* else if daily service times are known but there is none for this day of week, show day off */
