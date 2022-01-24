@@ -171,7 +171,7 @@ function BackupPickup({ id }: BackupPickupProps) {
 
   const DeleteBackupPickupModal = () => (
     <InfoModal
-      iconColor="orange"
+      type="warning"
       title={i18n.childInformation.backupPickups.removeConfirmation}
       icon={faQuestion}
       reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}

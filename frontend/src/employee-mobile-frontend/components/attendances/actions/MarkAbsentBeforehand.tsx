@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -307,7 +307,7 @@ const DeleteAbsencesModal = React.memo(function DeleteAbsencesModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColor="orange"
+      type="warning"
       title={i18n.absences.confirmDelete}
       icon={faExclamation}
       reject={{
@@ -334,7 +334,7 @@ const ConfirmExitModal = React.memo(function ConfirmExitModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColor="orange"
+      type="warning"
       title={i18n.common.saveBeforeClosing}
       icon={faExclamation}
       reject={{

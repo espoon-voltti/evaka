@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -48,7 +48,7 @@ export const LoginErrorModal = React.memo(function LoginErrorModal(
     <InfoModal
       title={props.translations.header}
       close={onClose}
-      iconColor="red"
+      type="danger"
       icon={faTimes}
     >
       <P centered>{props.translations.message}</P>

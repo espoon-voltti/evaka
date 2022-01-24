@@ -80,7 +80,7 @@ export default React.memo(function PedagogicalDocuments({
 
   const DeletePedagogicalDocumentModal = () => (
     <InfoModal
-      iconColor="orange"
+      type="warning"
       title={i18n.childInformation.pedagogicalDocument.removeConfirmation}
       text={i18n.childInformation.pedagogicalDocument.removeConfirmationText}
       icon={faQuestion}

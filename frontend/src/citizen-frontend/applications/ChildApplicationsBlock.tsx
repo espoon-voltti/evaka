@@ -28,10 +28,10 @@ import {
   faTimes,
   faTrash
 } from 'lib-icons'
-import { removeUnprocessedApplication } from '../applications/api'
-import { Status, applicationStatusIcon } from '../decisions/shared'
+import { applicationStatusIcon, Status } from '../decisions/shared'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+import { removeUnprocessedApplication } from './api'
 
 const StyledLink = styled(Link)`
   color: ${colors.main.m2};
@@ -107,7 +107,7 @@ export default React.memo(function ChildApplicationsBlock({
         applicationStatus === 'CREATED'
           ? t.applications.deleteDraftText
           : t.applications.deleteSentText,
-      iconColor: applicationStatus === 'CREATED' ? 'orange' : 'red',
+      type: applicationStatus === 'CREATED' ? 'warning' : 'danger',
       icon: applicationStatus === 'CREATED' ? faExclamation : faTimes,
       resolve: {
         action: () => {

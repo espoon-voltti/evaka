@@ -353,7 +353,7 @@ export default React.memo(function PlacementRow({
       {confirmingDelete && (
         <InfoModal
           title={i18n.childInformation.placements.deletePlacement.confirmTitle}
-          iconColor="orange"
+          type="warning"
           icon={faQuestion}
           resolve={{
             action: submitDelete,

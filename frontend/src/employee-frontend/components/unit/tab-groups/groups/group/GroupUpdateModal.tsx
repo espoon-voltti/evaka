@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -49,7 +49,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
       data-qa="group-update-modal"
       title={i18n.unit.groups.updateModal.title}
       icon={faPen}
-      iconColor="blue"
+      type="info"
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={

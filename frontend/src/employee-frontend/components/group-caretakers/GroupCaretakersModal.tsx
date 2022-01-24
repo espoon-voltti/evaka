@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -117,7 +117,7 @@ function GroupCaretakersModal({
     <FormModal
       title={existing ? i18n.groupCaretakers.edit : i18n.groupCaretakers.create}
       icon={existing ? faPen : faPlus}
-      iconColor="blue"
+      type="info"
       resolveAction={submit}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={hasErrors || submitting}

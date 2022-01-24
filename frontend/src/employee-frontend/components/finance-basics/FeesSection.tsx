@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -152,7 +152,7 @@ export default React.memo(function FeesSection() {
       {modal ? (
         <InfoModal
           icon={faQuestion}
-          iconColor="red"
+          type="danger"
           title={i18n.financeBasics.fees.modals[modal.type].title}
           text={i18n.financeBasics.fees.modals[modal.type].text}
           reject={{

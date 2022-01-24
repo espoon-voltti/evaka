@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -69,7 +69,7 @@ export default React.memo(function CreatePersonModal({
 
   return (
     <FormModal
-      iconColor="blue"
+      type="info"
       icon={faPlus}
       title={i18n.personSearch.createNewPerson.title}
       resolveAction={onConfirm}

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -151,7 +151,7 @@ const Modal = React.memo(function Modal({
   return (
     <AsyncFormModal
       icon={faPlus}
-      iconColor="blue"
+      type="info"
       title={i18n.personProfile.voucherValueDecisions.createRetroactive}
       resolveAction={resolve}
       resolveLabel={i18n.common.create}
