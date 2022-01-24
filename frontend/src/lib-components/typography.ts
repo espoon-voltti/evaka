@@ -261,12 +261,17 @@ export const Light = styled.span`
   color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
-export const Title = styled.span<{ primary?: boolean }>`
+export const Title = styled.span<{ primary?: boolean; centered?: boolean }>`
   font-family: Montserrat, sans-serif;
-  color: ${(p) =>
-    p.primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
   font-size: 20px;
   font-weight: ${fontWeights.semibold};
+  color: ${(p) =>
+    p.primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
+  ${(p) =>
+    p.centered &&
+    css`
+      text-align: center;
+    `}
 `
 
 export const BigNumber = styled.span<{ centered?: boolean }>`
@@ -276,11 +281,10 @@ export const BigNumber = styled.span<{ centered?: boolean }>`
   line-height: 73px;
   color: ${(p) => p.theme.colors.main.m1};
   ${(p) =>
-    p.centered
-      ? css`
-          text-align: center;
-        `
-      : ''}
+    p.centered &&
+    css`
+      text-align: center;
+    `}
 `
 
 export const InformationText = styled.span<{ centered?: boolean }>`

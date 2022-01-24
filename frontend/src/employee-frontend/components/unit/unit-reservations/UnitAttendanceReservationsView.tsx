@@ -14,7 +14,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { H3 } from 'lib-components/typography'
+import { H3, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
@@ -32,6 +32,9 @@ const legendAbsenceTypes: AbsenceType[] = [
   'PARENTLEAVE',
   'FORCE_MAJEURE'
 ]
+
+const formatWeekTitle = (dateRange: FiniteDateRange) =>
+  `${dateRange.start.format('dd.MM.')} - ${dateRange.end.format()}`
 
 interface Props {
   unitId: UUID
@@ -87,11 +90,9 @@ export default React.memo(function UnitAttendanceReservationsView({
                 onClick={() => setSelectedDate(selectedDate.addDays(-7))}
                 size="s"
               />
-              <H3 noMargin>
-                {`${dateRange.start.format(
-                  'dd.MM.'
-                )} - ${dateRange.end.format()}`}
-              </H3>
+              <WeekTitle primary centered>
+                {formatWeekTitle(dateRange)}
+              </WeekTitle>
               <WeekPickerButton
                 icon={faChevronRight}
                 onClick={() => setSelectedDate(selectedDate.addDays(7))}
@@ -147,4 +148,8 @@ const WeekPicker = styled.div`
 const WeekPickerButton = styled(IconButton)`
   margin: 0 ${defaultMargins.s};
   color: ${colors.grayscale.g70};
+`
+
+const WeekTitle = styled(Title)`
+  min-width: 14ch;
 `
