@@ -8,5 +8,5 @@ data class FeatureConfig(
     val valueDecisionCapacityFactorEnabled: Boolean,
     val daycareApplicationServiceNeedOptionsEnabled: Boolean,
     val citizenReservationThresholdHours: Long,
-    val fixedDailyFeeDivisor: Int?,
+    val dailyFeeDivisorOperationalDaysOverride: Int?,
 )

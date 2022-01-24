@@ -154,5 +154,5 @@ val testFeatureConfig = FeatureConfig(
     valueDecisionCapacityFactorEnabled = true,
     daycareApplicationServiceNeedOptionsEnabled = false,
     citizenReservationThresholdHours = 150,
-    fixedDailyFeeDivisor = null,
+    dailyFeeDivisorOperationalDaysOverride = null,
 )
