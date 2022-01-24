@@ -3,16 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import {
-  Absence,
-  deserializeAbsence
-} from 'lib-common/api-types/child/Absences'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
   AttendanceResponse,
   Child
 } from 'lib-common/generated/api-types/attendance'
+import { Absence } from 'lib-common/generated/api-types/daycare'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -133,7 +130,12 @@ export async function getFutureAbsencesByChild(
 ): Promise<Result<Absence[]>> {
   return client
     .get<JsonOf<Absence[]>>(`/absences/by-child/${childId}/future`)
-    .then((res) => res.data.map((absence) => deserializeAbsence(absence)))
+    .then((res) =>
+      res.data.map((absence) => ({
+        ...absence,
+        date: LocalDate.parseIso(absence.date)
+      }))
+    )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

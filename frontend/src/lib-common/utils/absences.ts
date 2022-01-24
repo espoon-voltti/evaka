@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Absence } from 'lib-common/api-types/child/Absences'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { Absence } from 'lib-common/generated/api-types/daycare'
 import { groupDatesToRanges } from 'lib-common/utils/local-date'
 
 export function groupAbsencesByDateRange(

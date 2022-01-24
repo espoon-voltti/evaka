@@ -8,9 +8,11 @@
 import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { AbsenceChild } from '../../api-types/child/absence'
 import { Action } from '../action'
 import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
+import { EvakaUserType } from './user'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
 import { UUID } from '../../types'
@@ -23,7 +25,7 @@ export interface Absence {
   careType: AbsenceCareType
   childId: UUID
   date: LocalDate
-  id: UUID | null
+  id: UUID
 }
 
 /**
@@ -47,6 +49,17 @@ export interface AbsenceDelete {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.service.AbsenceGroup
+*/
+export interface AbsenceGroup {
+  children: AbsenceChild[]
+  daycareName: string
+  groupId: UUID
+  groupName: string
+  operationDays: LocalDate[]
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceType
 */
 export type AbsenceType = 
@@ -54,10 +67,31 @@ export type AbsenceType =
   | 'SICKLEAVE'
   | 'UNKNOWN_ABSENCE'
   | 'PLANNED_ABSENCE'
-  | 'TEMPORARY_RELOCATION'
-  | 'TEMPORARY_VISITOR'
   | 'PARENTLEAVE'
   | 'FORCE_MAJEURE'
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.AbsenceUpsert
+*/
+export interface AbsenceUpsert {
+  absenceType: AbsenceType
+  careType: AbsenceCareType
+  childId: UUID
+  date: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.AbsenceWithModifierInfo
+*/
+export interface AbsenceWithModifierInfo {
+  absenceType: AbsenceType
+  careType: AbsenceCareType
+  childId: UUID
+  date: LocalDate
+  id: UUID
+  modifiedAt: Date
+  modifiedByType: EvakaUserType
+}
 
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.AdditionalInformation
@@ -117,6 +151,16 @@ export interface CaretakersResponse {
   caretakers: CaretakerAmount[]
   groupName: string
   unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.Child
+*/
+export interface Child {
+  dateOfBirth: LocalDate
+  firstName: string
+  id: UUID
+  lastName: string
 }
 
 /**

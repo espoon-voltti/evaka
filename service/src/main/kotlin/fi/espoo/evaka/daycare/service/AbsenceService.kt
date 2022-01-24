@@ -5,9 +5,9 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
@@ -20,13 +20,11 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUserType
-import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
-
-private val logger = KotlinLogging.logger { }
 
 @Service
 class AbsenceService {
@@ -36,32 +34,21 @@ class AbsenceService {
         val daycare = tx.getDaycare(tx.getDaycareIdByGroup(groupId)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
         val groupName = tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
         val placementList = tx.getPlacementsByRange(groupId, range)
-        val absenceList = tx.getAbsencesByRange(groupId, range)
-        val backupCareList = tx.getBackupCaresAffectingGroup(groupId, range)
+        val absenceList = tx.getAbsencesByRange(groupId, range).groupBy { it.childId }.toMap()
+        val backupCareList = tx.getBackupCaresAffectingGroup(groupId, range).groupBy { it.childId }.toMap()
 
-        val children = placementList
-            .map { placement ->
-                AbsenceChild(
-                    id = placement.childId,
-                    firstName = placement.firstName,
-                    lastName = placement.lastName,
-                    dob = placement.dob,
-                    placements = composePlacementMap(
-                        range,
-                        placementList.filter { it.childId == placement.childId }
-                    ),
-                    absences = absenceList.filter { it.childId == placement.childId }.groupBy { it.date }.let { absences ->
-                        range.dates()
-                            .map { it to absences.getOrDefault(it, listOf()) }
-                            .toMap()
-                    },
-                    backupCares = composeBackupCareMap(
-                        range,
-                        backupCareList.filter { it.childId == placement.childId }
-                    )
-                )
-            }
-            .distinct()
+        val children = placementList.map { (child, placements) ->
+            AbsenceChild(
+                child = child,
+                placements = range.dates().mapNotNull { date ->
+                    placements.find { it.dateRange.includes(date) }?.let { date to it.types }
+                }.toMap(),
+                absences = absenceList[child.id]?.groupBy { it.date } ?: mapOf(),
+                backupCares = backupCareList[child.id]?.flatMap {
+                    it.period.dates().map { date -> date to true }
+                }?.toMap() ?: mapOf()
+            )
+        }
 
         val operationalDays = run {
             // Units that are operational every day of the week are operational during holidays as well
@@ -78,72 +65,15 @@ class AbsenceService {
         return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays)
     }
 
-    fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, userId: EvakaUserId) {
-        try {
-            tx.upsertAbsences(absences, userId)
-        } catch (e: Exception) {
-            logger.error(e) { "Error: Updating absences by user $userId failed" }
-            throw BadRequest("Error: Updating absences failed: ${e.message}")
-        }
-    }
-
-    fun getAbsencesByChild(tx: Database.Read, childId: ChildId, year: Int, month: Int): AbsenceChildMinimal {
+    fun getAbsencesByChild(tx: Database.Read, childId: ChildId, year: Int, month: Int): List<Absence> {
         val range = FiniteDateRange.ofMonth(year, Month.of(month))
-
-        val absenceList = tx.getAbsencesByChildByRange(childId, range)
-        val backupCareList = tx.getBackupCaresAffectingChild(childId, range)
-        val child =
-            tx.getPersonById(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
-        return AbsenceChildMinimal(
-            id = child.id,
-            firstName = child.firstName,
-            lastName = child.lastName,
-            absences = composeAbsenceMap(
-                range,
-                absenceList
-            ),
-            backupCares = composeBackupCareMap(
-                range,
-                backupCareList
-            )
-        )
+        return tx.getAbsencesByChildByRange(childId, range)
     }
 
     fun getFutureAbsencesByChild(tx: Database.Read, childId: ChildId): List<Absence> {
         val period = DateRange(LocalDate.now().plusDays(1), null)
         return tx.getAbsencesByChildByRange(childId, period)
     }
-
-    private fun composeAbsenceMap(
-        period: FiniteDateRange,
-        absenceListByChild: List<Absence>
-    ): Map<LocalDate, List<Absence>> =
-        absenceListByChild.groupBy { it.date }.let { absences ->
-            period.dates()
-                .map { it to absences.getOrDefault(it, listOf()) }
-                .toMap()
-        }
-
-    private fun composePlacementMap(
-        period: FiniteDateRange,
-        placementListByChild: List<AbsencePlacement>
-    ): Map<LocalDate, List<AbsenceCareType>> = period.dates()
-        .map {
-            it to placementListByChild
-                .filter { placement -> DateRange(placement.startDate, placement.endDate).includes(it) }
-                .flatMap { placement -> getAbsenceCareTypes(placement.type) }
-        }
-        .toMap()
-
-    private fun composeBackupCareMap(
-        period: FiniteDateRange,
-        backupCares: List<GroupBackupCare>
-    ): Map<LocalDate, AbsenceBackupCare?> = period.dates()
-        .map {
-            it to backupCares.find { backupCare -> backupCare.period.includes(it) }
-                ?.let { backupCare -> AbsenceBackupCare(childId = backupCare.childId, date = it) }
-        }
-        .toMap()
 }
 
 fun getAbsenceCareTypes(placementType: PlacementType): List<AbsenceCareType> = when (placementType) {
@@ -161,6 +91,7 @@ fun getAbsenceCareTypes(placementType: PlacementType): List<AbsenceCareType> = w
         listOf(AbsenceCareType.DAYCARE)
 }
 
+@IncludeCodeGen
 enum class AbsenceCareType {
     SCHOOL_SHIFT_CARE,
     PRESCHOOL,
@@ -170,48 +101,49 @@ enum class AbsenceCareType {
     CLUB
 }
 
-@ExcludeCodeGen
 data class AbsenceGroup(
     val groupId: GroupId,
     val daycareName: String,
-    var groupName: String,
-    var children: List<AbsenceChild>,
+    val groupName: String,
+    val children: List<AbsenceChild>,
     val operationDays: List<LocalDate>
 )
 
 @ExcludeCodeGen
 data class AbsenceChild(
-    val id: ChildId,
-    val firstName: String,
-    val lastName: String,
-    val dob: LocalDate,
+    val child: Child,
     val placements: Map<LocalDate, List<AbsenceCareType>>,
     val absences: Map<LocalDate, List<AbsenceWithModifierInfo>>,
-    val backupCares: Map<LocalDate, AbsenceBackupCare?>
+    val backupCares: Map<LocalDate, Boolean>
 )
 
-@ExcludeCodeGen
-data class AbsenceChildMinimal(
+@IncludeCodeGen
+data class Child(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val absences: Map<LocalDate, List<Absence>>,
-    val backupCares: Map<LocalDate, AbsenceBackupCare?>
+    val dateOfBirth: LocalDate
+)
+
+data class AbsencePlacement(
+    val dateRange: FiniteDateRange,
+    val types: List<AbsenceCareType>
 )
 
 data class Absence(
-    val id: AbsenceId? = null,
+    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
-    var careType: AbsenceCareType,
+    val careType: AbsenceCareType,
     val absenceType: AbsenceType
 )
 
+@IncludeCodeGen
 data class AbsenceWithModifierInfo(
-    val id: AbsenceId? = null,
+    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
-    var careType: AbsenceCareType,
+    val careType: AbsenceCareType,
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,
     val modifiedAt: HelsinkiDateTime
@@ -225,38 +157,24 @@ data class AbsenceWithModifierInfo(
     )
 }
 
-data class AbsenceBackupCare(
-    val childId: ChildId,
-    val date: LocalDate
-)
-
 enum class AbsenceType {
     OTHER_ABSENCE,
     SICKLEAVE,
     UNKNOWN_ABSENCE,
     PLANNED_ABSENCE,
-
-    @Deprecated("replaced by backup cares")
-    TEMPORARY_RELOCATION,
-
-    @Deprecated("replaced by backup cares")
-    TEMPORARY_VISITOR,
     PARENTLEAVE,
     FORCE_MAJEURE;
 }
 
-data class AbsencePlacement(
+data class AbsenceUpsert(
     val childId: ChildId,
-    val firstName: String,
-    val lastName: String,
-    val type: PlacementType,
-    val dob: LocalDate,
-    val startDate: LocalDate,
-    val endDate: LocalDate
+    val date: LocalDate,
+    val careType: AbsenceCareType,
+    val absenceType: AbsenceType
 )
 
 // database functions
-private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifiedBy: EvakaUserId) {
+fun Database.Transaction.upsertAbsences(absences: List<AbsenceUpsert>, modifiedBy: EvakaUserId) {
     //language=SQL
     val sql =
         """
@@ -283,8 +201,9 @@ private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifie
 data class AbsenceDelete(
     val childId: ChildId,
     val date: LocalDate,
-    var careType: AbsenceCareType
+    val careType: AbsenceCareType
 )
+
 fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
     //language=SQL
     val sql =
@@ -335,41 +254,52 @@ fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
         .first()
 }
 
-fun Database.Read.getPlacementsByRange(groupId: GroupId, range: FiniteDateRange): List<AbsencePlacement> {
+fun Database.Read.getPlacementsByRange(
+    groupId: GroupId,
+    range: FiniteDateRange
+): List<Pair<Child, List<AbsencePlacement>>> {
+    data class QueryResult(
+        @Nested("child")
+        val child: Child,
+        val dateRange: FiniteDateRange,
+        val type: PlacementType
+    )
     //language=SQL
     val sql =
         """
-        WITH all_placements AS (
-          SELECT child_id, gp.start_date, gp.end_date, type
-          FROM daycare_group_placement AS gp
-          JOIN placement ON daycare_placement_id = placement.id
-          WHERE daterange(gp.start_date, gp.end_date, '[]') && :range
-          AND daycare_group_id = :groupId
+WITH all_placements AS (
+  SELECT child_id, daterange(gp.start_date, gp.end_date, '[]') AS date_range, type
+  FROM daycare_group_placement AS gp
+  JOIN placement ON daycare_placement_id = placement.id
+  WHERE daterange(gp.start_date, gp.end_date, '[]') && :range
+  AND daycare_group_id = :groupId
 
-          UNION ALL
+  UNION ALL
 
-          SELECT bc.child_id, GREATEST(p.start_date, bc.start_date), LEAST(p.end_date, bc.end_date), p.type
-          FROM backup_care bc
-          JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-          WHERE daterange(bc.start_date, bc.end_date, '[]') && :range
-          AND group_id = :groupId
-        )
-        SELECT
-          all_placements.*,
-          person.first_name,
-          person.last_name,
-          person.date_of_birth AS dob
-        FROM all_placements
-        JOIN person
-        ON child_id = person.id
-        ORDER BY person.last_name, person.first_name;
-    """
+  SELECT bc.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') AS date_range, p.type
+  FROM backup_care bc
+  JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+  WHERE daterange(bc.start_date, bc.end_date, '[]') && :range
+  AND group_id = :groupId
+)
+SELECT
+  all_placements.*,
+  person.first_name AS child_first_name,
+  person.last_name AS child_last_name,
+  person.date_of_birth AS child_date_of_birth
+FROM all_placements
+JOIN person ON child_id = person.id
+"""
 
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("range", range)
-        .mapTo<AbsencePlacement>()
-        .list()
+        .mapTo<QueryResult>()
+        .toList()
+        .groupBy { it.child }
+        .map { (child, queryResults) ->
+            child to queryResults.map { AbsencePlacement(it.dateRange, getAbsenceCareTypes(it.type)) }
+        }
 }
 
 fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): List<AbsenceWithModifierInfo> {
@@ -453,26 +383,6 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
 """
     )
         .bind("groupId", groupId)
-        .bind("period", period)
-        .mapTo<GroupBackupCare>()
-        .list()
-
-private fun Database.Read.getBackupCaresAffectingChild(childId: ChildId, period: FiniteDateRange): List<GroupBackupCare> =
-    createQuery(
-        // language=SQL
-        """
-SELECT bc.id, bc.child_id, daterange(bc.start_date, bc.end_date, '[]') AS period
-FROM daycare_group_placement AS gp
-JOIN placement
-ON daycare_placement_id = placement.id
-JOIN backup_care AS bc
-ON bc.child_id = placement.child_id
-AND bc.unit_id != placement.unit_id
-WHERE bc.child_id = :childId
-AND daterange(gp.start_date, gp.end_date, '[]') && :period
-"""
-    )
-        .bind("childId", childId)
         .bind("period", period)
         .mapTo<GroupBackupCare>()
         .list()

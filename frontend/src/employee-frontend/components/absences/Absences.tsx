@@ -5,6 +5,7 @@
 import { flatMap, partition } from 'lodash'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { AbsenceDelete } from 'lib-common/generated/api-types/daycare'
 import { AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -24,7 +25,6 @@ import PeriodPicker from '../../components/absences/PeriodPicker'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import {
-  AbsencePayload,
   billableCareTypes,
   CareTypeCategory,
   Cell,
@@ -120,7 +120,7 @@ export default React.memo(function Absences({
       billableCareTypes.includes(part.careType)
     )
 
-    const payload: AbsencePayload[] = flatMap(
+    const payload: AbsenceDelete[] = flatMap(
       selectedCareTypeCategories,
       (careTypeCategory) =>
         careTypeCategory === 'BILLABLE' ? billableParts : otherParts

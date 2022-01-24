@@ -4,7 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
-import { Absence } from 'lib-common/api-types/child/Absences'
+import { Absence } from 'lib-common/generated/api-types/daycare'
 import { AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -68,13 +68,7 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
       getAbsencesByChild(child.id, {
         year: selectedDate.getYear(),
         month: selectedDate.getMonth()
-      }).then((res) =>
-        res.map((obj) =>
-          Object.values(obj)
-            .filter((elem) => elem.length > 0)
-            .flat()
-        )
-      ),
+      }),
     [child.id, selectedDate]
   )
 

@@ -5,18 +5,16 @@
 import { Failure, Result, Success, Response } from 'lib-common/api'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import {
+  AbsenceDelete,
+  AbsenceGroup,
+  AbsenceUpsert,
   GroupStaffAttendance,
   StaffAttendanceUpdate
 } from 'lib-common/generated/api-types/daycare'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import {
-  Group,
-  AbsencePayload,
-  deserializeChild,
-  AbsenceUpdatePayload
-} from '../types/absence'
+import { deserializeChild } from '../types/absence'
 import { client } from './client'
 
 interface SearchParams {
@@ -27,24 +25,26 @@ interface SearchParams {
 export async function getGroupAbsences(
   groupId: UUID,
   params: SearchParams
-): Promise<Result<Group>> {
+): Promise<Result<AbsenceGroup>> {
   return client
-    .get<JsonOf<Response<Group>>>(`/absences/${groupId}`, { params })
-    .then((res) => res.data.data)
+    .get<JsonOf<AbsenceGroup>>(`/absences/${groupId}`, { params })
+    .then((res) => res.data)
     .then((data) => ({
       ...data,
-      children: data.children.map(deserializeChild).sort((childA, childB) => {
-        const lastNameCmp = childA.lastName.localeCompare(
-          childB.lastName,
-          'fi',
-          { ignorePunctuation: true }
-        )
-        return lastNameCmp !== 0
-          ? lastNameCmp
-          : childA.firstName.localeCompare(childB.firstName, 'fi', {
-              ignorePunctuation: true
-            })
-      }),
+      children: data.children
+        .map(deserializeChild)
+        .sort(({ child: childA }, { child: childB }) => {
+          const lastNameCmp = childA.lastName.localeCompare(
+            childB.lastName,
+            'fi',
+            { ignorePunctuation: true }
+          )
+          return lastNameCmp !== 0
+            ? lastNameCmp
+            : childA.firstName.localeCompare(childB.firstName, 'fi', {
+                ignorePunctuation: true
+              })
+        }),
       operationDays: data.operationDays.map((date) => LocalDate.parseIso(date))
     }))
     .then((v) => Success.of(v))
@@ -53,17 +53,17 @@ export async function getGroupAbsences(
 
 export async function postGroupAbsences(
   groupId: UUID,
-  absences: AbsenceUpdatePayload[]
+  absences: AbsenceUpsert[]
 ): Promise<Result<void>> {
   return client
-    .post<void>(`/absences/${groupId}`, { data: absences })
+    .post<void>(`/absences/${groupId}`, absences)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteGroupAbsences(
   groupId: UUID,
-  deletions: AbsencePayload[]
+  deletions: AbsenceDelete[]
 ): Promise<Result<void>> {
   return client
     .post<void>(`/absences/${groupId}/delete`, deletions)

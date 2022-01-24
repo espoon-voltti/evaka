@@ -3,23 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo } from 'react'
-import { Absence } from 'lib-common/api-types/child/Absences'
 import { formatDate } from 'lib-common/date'
-import { AbsenceCareType, AbsenceType } from 'lib-common/generated/enums'
+import { AbsenceWithModifierInfo } from 'lib-common/generated/api-types/daycare'
+import { AbsenceCareType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
-import {
-  AbsenceBackupCare,
-  billableCareTypes,
-  Cell,
-  CellPart
-} from '../../types/absence'
+import { billableCareTypes, Cell, CellPart } from '../../types/absence'
 
 interface AbsenceCellPartProps {
   position: string
-  absenceType?: AbsenceType
+  absenceType: CellPart['absenceType']
   isWeekend: boolean
 }
 
@@ -42,9 +37,9 @@ interface AbsenceCellProps {
   selectedCells: Cell[]
   toggleCellSelection: (id: UUID, parts: CellPart[]) => void
   date: LocalDate
-  careTypes: AbsenceCareType[]
-  absences: Absence[]
-  backupCare: AbsenceBackupCare | null
+  careTypes: AbsenceCareType[] | undefined
+  absences: AbsenceWithModifierInfo[] | undefined
+  backupCare: boolean
 }
 
 const getCellId = (childId: UUID, date: LocalDate) =>
@@ -54,11 +49,13 @@ function getCellParts(
   childId: UUID,
   date: LocalDate,
   careTypes: AbsenceCareType[],
-  absences: Absence[],
-  backupCare: AbsenceBackupCare | null
+  absences: AbsenceWithModifierInfo[] | undefined,
+  backupCare: boolean
 ): CellPart[] {
-  function placementAbsence(placement: AbsenceCareType): Absence | undefined {
-    return absences.find(({ careType }) => careType === placement)
+  function placementAbsence(
+    placement: AbsenceCareType
+  ): AbsenceWithModifierInfo | undefined {
+    return absences?.find(({ careType }) => careType === placement)
   }
 
   return careTypes.map((careType) => {
@@ -114,7 +111,10 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
   toggle: (parts: CellPart[]) => void
 }) {
   const parts = useMemo(
-    () => getCellParts(childId, date, careTypes, absences, backupCare),
+    () =>
+      careTypes
+        ? getCellParts(childId, date, careTypes, absences, backupCare)
+        : [],
     [absences, backupCare, careTypes, childId, date]
   )
   if (parts.length === 0) {
@@ -161,7 +161,7 @@ export default React.memo(function AbsenceCell({
       backupCare
         ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
         : absences
-            .map(
+            ?.map(
               ({ careType, absenceType, modifiedAt, modifiedByType }) =>
                 `${i18n.absences.careTypes[careType]}: ${
                   i18n.absences.absenceTypes[absenceType]
@@ -170,7 +170,7 @@ export default React.memo(function AbsenceCell({
                   i18n.absences.modifiedByType[modifiedByType]
                 }`
             )
-            .join('<br/>'),
+            .join('<br/>') ?? '',
     [absences, backupCare, i18n]
   )
 

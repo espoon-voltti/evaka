@@ -11,7 +11,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import { absenceColors, absenceIcons } from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
-type CalendarAbsenceType = AbsenceType | 'NO_ABSENCE'
+type CalendarAbsenceType = AbsenceType | 'TEMPORARY_RELOCATION' | 'NO_ABSENCE'
+
 const absenceTypesInLegend: CalendarAbsenceType[] = [
   'NO_ABSENCE',
   'OTHER_ABSENCE',

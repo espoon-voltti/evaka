@@ -6,10 +6,10 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.TestInvoiceProductProvider
-import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCareType
-import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.AbsenceUpsert
+import fi.espoo.evaka.daycare.service.upsertAbsences
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
@@ -62,8 +62,6 @@ import kotlin.test.assertNull
 class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
     private lateinit var generator: InvoiceGenerator
-    @Autowired
-    private lateinit var absenceService: AbsenceService
 
     private val productProvider = TestInvoiceProductProvider()
 
@@ -2014,10 +2012,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
         db.transaction { tx ->
-            absenceService.upsertAbsences(
-                tx,
+            tx.upsertAbsences(
                 listOf(
-                    Absence(
+                    AbsenceUpsert(
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 5),
@@ -2072,10 +2069,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
         db.transaction { tx ->
-            absenceService.upsertAbsences(
-                tx,
+            tx.upsertAbsences(
                 listOf(
-                    Absence(
+                    AbsenceUpsert(
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 3),
@@ -2130,12 +2126,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         insertDecisionsAndPlacements(listOf(decision))
         db.transaction { tx ->
-            absenceService.upsertAbsences(
-                tx,
+            tx.upsertAbsences(
                 generateSequence(period.start) { it.plusDays(1) }
                     .takeWhile { it <= period.end }
                     .map {
-                        Absence(
+                        AbsenceUpsert(
                             absenceType = AbsenceType.FORCE_MAJEURE,
                             childId = testChild_1.id,
                             date = it,
@@ -2579,10 +2574,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
         db.transaction { tx ->
-            absenceService.upsertAbsences(
-                tx,
+            tx.upsertAbsences(
                 absenceDays.map { (date, type) ->
-                    Absence(
+                    AbsenceUpsert(
                         absenceType = type,
                         childId = child.id,
                         date = date,

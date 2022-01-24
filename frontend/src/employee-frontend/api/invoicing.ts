@@ -4,12 +4,9 @@
 
 import { SearchOrder } from 'employee-frontend/types'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
-import {
-  Absence,
-  deserializeAbsence
-} from 'lib-common/api-types/child/Absences'
 import { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
+import { Absence } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecision,
   FeeDecisionDetailed,
@@ -529,22 +526,17 @@ export async function setVoucherDecisionType(
 export async function getAbsencesByChild(
   childId: UUID,
   params: AbsenceParams
-): Promise<Result<Record<string, Absence[]>>> {
+): Promise<Result<Absence[]>> {
   return client
-    .get<JsonOf<Response<{ absences: Record<string, Absence[]> }>>>(
-      `/absences/by-child/${childId}`,
-      {
-        params
-      }
-    )
+    .get<JsonOf<Absence[]>>(`/absences/by-child/${childId}`, {
+      params
+    })
     .then((res) =>
       Success.of(
-        Object.fromEntries(
-          Object.entries(res.data.data.absences).map(([key, absences]) => [
-            key,
-            absences.map(deserializeAbsence)
-          ])
-        )
+        res.data.map((absence) => ({
+          ...absence,
+          date: LocalDate.parseIso(absence.date)
+        }))
       )
     )
     .catch((e) => Failure.fromError(e))

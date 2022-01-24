@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Absence,
-  deserializeAbsence
-} from 'lib-common/api-types/child/Absences'
-
+import { AbsenceChild } from 'lib-common/api-types/child/absence'
 import {
   AbsenceCareType,
   AbsenceType,
@@ -72,68 +68,34 @@ export interface Cell {
   parts: CellPart[]
 }
 
+type AbsenceTypeWithBackupCare = AbsenceType | 'TEMPORARY_RELOCATION'
+
 export interface CellPart {
   id: UUID
   childId: UUID
   date: LocalDate
-  absenceType?: AbsenceType
+  absenceType?: AbsenceTypeWithBackupCare
   careType: AbsenceCareType
   position: string
 }
 
-export interface AbsencePayload {
-  childId: UUID
-  date: LocalDate
-  careType: AbsenceCareType
-}
-
-export interface AbsenceUpdatePayload extends AbsencePayload {
-  absenceType: AbsenceType
-}
-
-// Response
-
-export interface Child {
-  id: UUID
-  firstName: string
-  lastName: string
-  dob: LocalDate
-  placements: { [key: string]: AbsenceCareType[] }
-  absences: { [key: string]: Absence[] }
-  backupCares: { [key: string]: AbsenceBackupCare | null }
-}
-
-export const deserializeChild = (child: JsonOf<Child>): Child => ({
-  ...child,
-  dob: LocalDate.parseIso(child.dob),
-  absences: Object.entries(child.absences).reduce(
-    (absenceMap, [key, absences]) => ({
-      ...absenceMap,
-      [key]: absences.map(deserializeAbsence)
-    }),
-    {}
-  ),
-  backupCares: Object.entries(child.backupCares).reduce(
-    (backupCareMap, [key, backup]) => ({
-      ...backupCareMap,
-      [key]: backup
-        ? {
-            ...backup,
-            date: LocalDate.parseIso(backup.date)
-          }
-        : null
-    }),
-    {}
+export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
+  ...json,
+  child: {
+    ...json.child,
+    dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
+  },
+  absences: Object.fromEntries(
+    Object.entries(json.absences).map(([date, absences]) => [
+      date,
+      absences.map((absence) => ({
+        ...absence,
+        date: LocalDate.parseIso(absence.date),
+        modifiedAt: new Date(absence.modifiedAt)
+      }))
+    ])
   )
 })
-
-export interface Group {
-  groupId: UUID
-  daycareName: string
-  groupName: string
-  children: Child[]
-  operationDays: LocalDate[]
-}
 
 export interface AbsenceBackupCare {
   childId: UUID
