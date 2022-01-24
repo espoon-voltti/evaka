@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { H3 } from 'lib-components/typography'
+import { Title } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
@@ -35,7 +35,7 @@ export default React.memo(function PeriodPicker({ onChange, date }: Props) {
         gray
       />
       <Gap horizontal size="L" />
-      <PeriodTitle data-qa="period-picker-month" noMargin>
+      <PeriodTitle primary centered data-qa="period-picker-month">
         {i18n.datePicker.months[date.getMonth() - 1]} {date.getYear()}
       </PeriodTitle>
       <Gap horizontal size="L" />
@@ -62,8 +62,7 @@ const Container = styled.div`
   }
 `
 
-const PeriodTitle = styled(H3)`
+const PeriodTitle = styled(Title)`
   text-transform: capitalize;
-  min-width: 12ch;
-  text-align: center;
+  min-width: 14ch;
 `
