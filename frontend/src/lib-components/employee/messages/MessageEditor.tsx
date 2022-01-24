@@ -113,6 +113,7 @@ export interface MessageEditorI18n {
   saved: string
   search: string
   noResults: string
+  addAttachmentInfo: string
 }
 
 interface Props {
@@ -357,6 +358,17 @@ export default React.memo(function MessageEditor({
   const sendEnabled =
     !sending && draftState === 'clean' && areRequiredFieldsFilled(message)
 
+  const i18nWithReplacedTitle = {
+    ...i18n,
+    upload: {
+      ...i18n.upload,
+      input: {
+        ...i18n.upload.input,
+        title: i18n.addAttachmentInfo
+      }
+    }
+  }
+
   return mobileVersion ? (
     <ContainerMobile data-qa="message-editor" data-status={draftState}>
       <TopBarMobile>
@@ -530,7 +542,7 @@ export default React.memo(function MessageEditor({
               disabled={!draftId}
               data-qa="upload-message-attachment"
               files={message.attachments}
-              i18n={i18n}
+              i18n={i18nWithReplacedTitle}
               onDownloadFile={getAttachmentBlob}
               onUpload={handleAttachmentUpload}
               onDelete={handleAttachmentDelete}
