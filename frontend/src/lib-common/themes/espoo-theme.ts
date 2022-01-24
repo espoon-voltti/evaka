@@ -31,7 +31,7 @@ const theme: Theme = {
       danger: '#ff4f57',
       warning: '#ff8e31',
       success: '#70c673',
-      info: blueColors.m3
+      info: blueColors.m2
     },
     accents: {
       a1greenDark: '#014b30',
