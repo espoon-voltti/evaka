@@ -43,6 +43,7 @@ export default React.memo(function ReservationsTable({
           <CustomTh>{i18n.unit.attendanceReservations.childName}</CustomTh>
           {operationalDays.map(({ date, isHoliday }) => (
             <DateTh
+              shrink
               key={date.formatIso()}
               faded={isHoliday}
               highlight={date.isToday()}
@@ -58,7 +59,7 @@ export default React.memo(function ReservationsTable({
               </DayHeader>
             </DateTh>
           ))}
-          <CustomTh />
+          <CustomTh shrink />
         </Tr>
       </Thead>
       <Tbody>
@@ -66,7 +67,7 @@ export default React.memo(function ReservationsTable({
           const childName = `${childReservations.child.firstName} ${childReservations.child.lastName}`
 
           return (
-            <Tr key={childName}>
+            <Tr key={childReservations.child.id}>
               <NameTd>
                 <ChildName>
                   <AgeIndicatorIcon
@@ -105,12 +106,16 @@ export default React.memo(function ReservationsTable({
   )
 })
 
-const CustomTh = styled(Th)`
+const CustomTh = styled(Th)<{ shrink?: boolean }>`
   vertical-align: bottom;
+  ${(p) =>
+    p.shrink &&
+    css`
+      width: 0; // causes the column to take as little space as possible
+    `}
 `
 
 const DateTh = styled(CustomTh)<{ faded: boolean; highlight: boolean }>`
-  width: 0; // causes the column to take as little space as possible
   ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
   ${(p) => p.highlight && `border-bottom: 2px solid ${colors.main.m3};`}
 `

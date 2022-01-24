@@ -23,11 +23,7 @@ import {
   ServiceNeed,
   ServiceNeedOptionSummary
 } from 'lib-common/generated/api-types/serviceneed'
-import {
-  AbsenceType,
-  ApplicationStatus,
-  PlacementType
-} from 'lib-common/generated/enums'
+import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -871,12 +867,6 @@ export async function getUnitAttendanceReservations(
       })
     )
     .catch((e) => Failure.fromError(e))
-}
-
-export interface DailyChildData {
-  reservation: { startTime: string; endTime: string } | null
-  attendance: { startTime: string; endTime: string | null } | null
-  absence: { type: AbsenceType } | null
 }
 
 const mapChildReservationJson = (
