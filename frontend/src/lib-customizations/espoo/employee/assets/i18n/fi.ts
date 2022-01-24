@@ -2786,7 +2786,8 @@ export const fi = {
       discard: 'Hylkää',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
-      sending: 'Lähetetään'
+      sending: 'Lähetetään',
+      addAttachmentInfo: 'Lisää liite PDF-muodossa'
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',

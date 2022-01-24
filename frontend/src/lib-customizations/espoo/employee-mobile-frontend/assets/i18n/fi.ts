@@ -311,7 +311,8 @@ export const fi = {
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
-      sending: 'Lähetetään'
+      sending: 'Lähetetään',
+      addAttachmentInfo: 'Lisää liite PDF-muodossa'
     },
     emptyInbox: 'Viestilaatikkosi on tyhjä',
     unreadMessages: 'Uudet viestit',
