@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -482,7 +482,7 @@ const DeleteConfirmationModal = React.memo(function DeleteConfirmationModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
-      iconColor="orange"
+      type="warning"
       title={i18n.unit.accessControl.removeConfirmation}
       icon={faQuestion}
       reject={{ action: onClose, label: i18n.common.cancel }}
@@ -502,7 +502,7 @@ const DeleteMobileDeviceConfirmationModal = React.memo(
     const { i18n } = useTranslation()
     return (
       <InfoModal
-        iconColor="orange"
+        type="warning"
         title={i18n.unit.accessControl.mobileDevices.removeConfirmation}
         icon={faQuestion}
         reject={{ action: onClose, label: i18n.common.cancel }}
@@ -524,7 +524,7 @@ const EditMobileDeviceModal = React.memo(function EditMobileDeviceModal({
 
   return (
     <InfoModal
-      iconColor="blue"
+      type="info"
       title={i18n.unit.accessControl.mobileDevices.editName}
       icon={faQuestion}
       reject={{ action: onClose, label: i18n.common.cancel }}

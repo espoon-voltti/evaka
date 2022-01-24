@@ -12,7 +12,7 @@ function GlobalInfoDialog() {
     <InfoModal
       title={infoMessage.title}
       icon={infoMessage.icon}
-      iconColor={infoMessage.iconColor}
+      type={infoMessage.type}
       text={infoMessage.text}
       resolve={infoMessage.resolve}
       reject={infoMessage.reject}

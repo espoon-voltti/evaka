@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -160,7 +160,7 @@ function CreateApplicationModal({
     <FormModal
       title={i18nView.modalTitle}
       icon={faFileAlt}
-      iconColor="blue"
+      type="info"
       resolveAction={submit}
       resolveLabel={i18nView.createButton}
       resolveDisabled={!canSubmit()}

@@ -177,7 +177,7 @@ function ServiceNeedEditorRow({
         <InfoModal
           title={t.overlapWarning.title}
           text={t.overlapWarning.message}
-          iconColor="orange"
+          type="warning"
           icon={faExclamation}
           resolve={{
             action: onConfirmSave,

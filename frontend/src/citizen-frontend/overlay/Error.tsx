@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,7 +13,7 @@ function GlobalErrorDialog() {
     <InfoModal
       title={errorMessage.title}
       icon={faExclamation}
-      iconColor={errorMessage.type === 'error' ? 'red' : 'orange'}
+      type={errorMessage.type === 'error' ? 'danger' : 'warning'}
       text={errorMessage.text}
       resolve={{
         label: errorMessage.resolveLabel ?? 'Ok',

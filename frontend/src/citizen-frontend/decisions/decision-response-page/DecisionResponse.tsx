@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -19,12 +19,12 @@ import { H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 import { isValidDecisionStartDate } from '../../applications/editor/validations'
-import { PdfLink } from '../../decisions/PdfLink'
-import { acceptDecision, rejectDecision } from '../../decisions/api'
-import { Status, decisionStatusIcon } from '../../decisions/shared'
-import { Decision } from '../../decisions/types'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
+import { PdfLink } from '../PdfLink'
+import { acceptDecision, rejectDecision } from '../api'
+import { decisionStatusIcon, Status } from '../shared'
+import { Decision } from '../types'
 
 interface SingleDecisionProps {
   decision: Decision
@@ -276,7 +276,7 @@ export default React.memo(function DecisionResponse({
             t.decisions.applicationDecisions.warnings.doubleRejectWarning.title
           }
           icon={faExclamation}
-          iconColor="orange"
+          type="warning"
           text={
             t.decisions.applicationDecisions.warnings.doubleRejectWarning.text
           }

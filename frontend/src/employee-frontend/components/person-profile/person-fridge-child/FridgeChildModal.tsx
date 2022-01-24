@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -126,7 +126,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
               : i18n.personProfile.fridgeChild.newChild
           }
           icon={faChild}
-          iconColor="blue"
+          type="info"
           resolveAction={childFormActions}
           resolveLabel={i18n.common.confirm}
           resolveDisabled={!form.child || validationErrors.length > 0}

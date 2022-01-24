@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -70,7 +70,7 @@ export function VasuStateTransitionButtons({
     <FullWidthDiv>
       {selectedEventType && !updateResult?.isSuccess && (
         <InfoModal
-          iconColor="blue"
+          type="info"
           title={i18n.vasu.transitions[selectedEventType].confirmTitle}
           icon={faQuestion}
           text={
@@ -99,7 +99,7 @@ export function VasuStateTransitionButtons({
       )}
       {selectedEventType && updateResult?.isSuccess && (
         <InfoModal
-          iconColor="green"
+          type="success"
           title={i18n.vasu.transitions[selectedEventType].successTitle}
           icon={faCheck}
           text={i18n.vasu.transitions[selectedEventType].successText}

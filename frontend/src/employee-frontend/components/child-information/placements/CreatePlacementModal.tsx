@@ -117,7 +117,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
       title={i18n.childInformation.placements.createPlacement.title}
       text={i18n.childInformation.placements.createPlacement.text}
       icon={faMapMarkerAlt}
-      iconColor="blue"
+      type="info"
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={errors.length > 0 || submitting}

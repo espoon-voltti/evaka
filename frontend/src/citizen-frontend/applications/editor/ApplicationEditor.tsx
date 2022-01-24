@@ -149,7 +149,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         setInfoMessage({
           title: t.applications.editor.draftPolicyInfo.title,
           text: t.applications.editor.draftPolicyInfo.text,
-          iconColor: 'green',
+          type: 'success',
           icon: faExclamation,
           resolve: {
             action: () => {
@@ -187,7 +187,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setInfoMessage({
               title: t.applications.editor.sentInfo.title,
               text: t.applications.editor.sentInfo.text,
-              iconColor: 'green',
+              type: 'success',
               icon: faCheck,
               resolve: {
                 action: () => {
@@ -221,7 +221,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         setInfoMessage({
           title: t.applications.editor.updateInfo.title,
           text: t.applications.editor.updateInfo.text,
-          iconColor: 'green',
+          type: 'success',
           icon: faCheck,
           resolve: {
             action: () => {

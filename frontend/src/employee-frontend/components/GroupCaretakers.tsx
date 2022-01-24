@@ -171,7 +171,7 @@ function GroupCaretakers({
 
             {rowToDelete && (
               <InfoModal
-                iconColor="orange"
+                type="warning"
                 title={i18n.groupCaretakers.confirmDelete}
                 icon={faQuestion}
                 reject={{

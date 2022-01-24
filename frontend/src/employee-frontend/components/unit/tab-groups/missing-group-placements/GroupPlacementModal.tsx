@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -163,7 +163,7 @@ export default React.memo(function GroupPlacementModal({
       data-qa="group-placement-modal"
       title={i18n.unit.placements.modal.createTitle}
       icon={faChild}
-      iconColor="blue"
+      type="info"
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={form.errors.length > 0}

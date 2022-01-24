@@ -19,14 +19,14 @@ export interface ModalBaseProps {
   text?: string
   className?: string
   icon?: IconProp
-  iconColor?: IconColor
+  type?: ModalType
   mobileFullScreen?: boolean
   zIndex?: number
   children?: React.ReactNode | React.ReactNodeArray
   'data-qa'?: string
 }
 
-export type IconColor = 'blue' | 'orange' | 'green' | 'red'
+export type ModalType = 'info' | 'success' | 'warning' | 'danger'
 
 interface Props extends ModalBaseProps {
   close: () => void
@@ -48,7 +48,7 @@ export default React.memo(function BaseModal(props: Props) {
           <ModalTitle>
             {props.icon && (
               <>
-                <ModalIcon color={props.iconColor}>
+                <ModalIcon type={props.type}>
                   <FontAwesomeIcon icon={props.icon} />
                 </ModalIcon>
                 <Gap size="m" />
@@ -142,21 +142,8 @@ const ModalWrapper = styled.div<{ zIndex?: number }>`
   top: 0;
 `
 
-const ModalIcon = styled.div<{ color?: IconColor }>`
-  background: ${(p) => {
-    switch (p.color) {
-      case 'blue':
-        return p.theme.colors.status.info
-      case 'orange':
-        return p.theme.colors.status.warning
-      case 'green':
-        return p.theme.colors.status.success
-      case 'red':
-        return p.theme.colors.status.danger
-      default:
-        return p.theme.colors.status.info
-    }
-  }};
+const ModalIcon = styled.div<{ type?: ModalType }>`
+  background: ${({ type = 'info', ...p }) => p.theme.colors.status[type]};
   font-size: 36px;
   border-radius: 50%;
   line-height: 60px;
