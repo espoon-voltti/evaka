@@ -98,7 +98,8 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
     dailyData.reservations,
     serviceTimeOfDay
   )
-  const maybeAsterisk = expectedTimeForThisDay?.type === 'service-time' && '*'
+  const maybeServiceTimeIndicator =
+    expectedTimeForThisDay?.type === 'service-time' && ' (s)'
 
   return (
     <DateCell>
@@ -110,11 +111,11 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
           <>
             <ReservationTime>
               {expectedTimeForThisDay.start}
-              {maybeAsterisk}
+              {maybeServiceTimeIndicator}
             </ReservationTime>
             <ReservationTime>
               {expectedTimeForThisDay.end}
-              {maybeAsterisk}
+              {maybeServiceTimeIndicator}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
@@ -184,6 +185,7 @@ const TimesRow = styled.div`
 const TimeCell = styled.div<{ warning?: boolean }>`
   flex: 1 0 54px;
   text-align: center;
+  white-space: nowrap;
   ${(p) =>
     p.warning &&
     css`
