@@ -81,43 +81,49 @@ export default React.memo(function PlacementProposalRow({
   return (
     <>
       {modalOpen && (
-        <FormModal
-          title={i18n.unit.placementProposals.rejectTitle}
-          resolveAction={() => {
-            if (reason != null) {
-              onChange('REJECTED_NOT_CONFIRMED', reason, otherReason)
-              setModalOpen(false)
-              void loadUnitData()
-            }
-          }}
-          resolveLabel={i18n.common.save}
-          resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
-          rejectAction={() => setModalOpen(false)}
-          rejectLabel={i18n.common.cancel}
-        >
-          <FixedSpaceColumn>
-            {placementPlanRejectReasons.map((option) => {
-              return (
-                <Radio
-                  key={option}
-                  data-qa="proposal-reject-reason"
-                  checked={reason === option}
-                  onChange={() => setReason(option)}
-                  label={i18n.unit.placementProposals.rejectReasons[option]}
-                />
-              )
-            })}
-            {reason === 'OTHER' && (
-              <InputField
-                data-qa="proposal-reject-reason-input"
-                value={otherReason}
-                onChange={setOtherReason}
-                placeholder={i18n.unit.placementProposals.describeOtherReason}
-              />
-            )}
-          </FixedSpaceColumn>
-          <Gap />
-        </FormModal>
+        <tr>
+          <td>
+            <FormModal
+              title={i18n.unit.placementProposals.rejectTitle}
+              resolveAction={() => {
+                if (reason != null) {
+                  onChange('REJECTED_NOT_CONFIRMED', reason, otherReason)
+                  setModalOpen(false)
+                  void loadUnitData()
+                }
+              }}
+              resolveLabel={i18n.common.save}
+              resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
+              rejectAction={() => setModalOpen(false)}
+              rejectLabel={i18n.common.cancel}
+            >
+              <FixedSpaceColumn>
+                {placementPlanRejectReasons.map((option) => {
+                  return (
+                    <Radio
+                      key={option}
+                      data-qa="proposal-reject-reason"
+                      checked={reason === option}
+                      onChange={() => setReason(option)}
+                      label={i18n.unit.placementProposals.rejectReasons[option]}
+                    />
+                  )
+                })}
+                {reason === 'OTHER' && (
+                  <InputField
+                    data-qa="proposal-reject-reason-input"
+                    value={otherReason}
+                    onChange={setOtherReason}
+                    placeholder={
+                      i18n.unit.placementProposals.describeOtherReason
+                    }
+                  />
+                )}
+              </FixedSpaceColumn>
+              <Gap />
+            </FormModal>
+          </td>
+        </tr>
       )}
 
       <CenteredRow
