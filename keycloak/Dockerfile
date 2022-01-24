@@ -59,3 +59,8 @@ COPY --from=builder-theme /work/evaka /opt/jboss/keycloak/themes/evaka
 
 COPY --from=builder-authenticator /project/evaka-review-profile/target/evaka-review-profile.jar \
           /opt/jboss/keycloak/standalone/deployments/
+
+ARG build=none
+ARG commit=none
+ENV APP_BUILD="$build" \
+    APP_COMMIT="$commit"
