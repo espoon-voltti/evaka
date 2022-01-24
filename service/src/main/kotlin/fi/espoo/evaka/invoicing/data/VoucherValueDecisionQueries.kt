@@ -127,9 +127,9 @@ INSERT INTO voucher_value_decision (
     voucher_value = :voucherValue
 """
 
-    val batch = prepareBatch(sql)
     decisions.forEach { decision ->
-        batch
+        // TODO: use batch once JDBI makes it less buggy
+        createUpdate(sql)
             .bindKotlin(decision)
             .bind("headOfFamilyId", decision.headOfFamilyId)
             .bind("partnerId", decision.partnerId)
@@ -144,9 +144,8 @@ INSERT INTO voucher_value_decision (
             .bind("serviceNeedVoucherValueDescriptionFi", decision.serviceNeed.voucherValueDescriptionFi)
             .bind("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed.voucherValueDescriptionFi)
             .bind("sentAt", decision.sentAt)
-            .add()
+            .execute()
     }
-    batch.execute()
 }
 
 fun Database.Read.getValueDecisionsByIds(ids: List<VoucherValueDecisionId>): List<VoucherValueDecision> {
