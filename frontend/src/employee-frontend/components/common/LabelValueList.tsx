@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, ReactNode } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { LabelLike } from 'lib-components/typography'
 
 type Spacing = 'small' | 'large'
@@ -18,18 +18,21 @@ type Content = {
 }
 type Props = {
   spacing: Spacing
+  horizontalSpacing?: Spacing
   labelWidth?: LabelWidth
   contents: (Content | false)[]
 }
 
 const LabelValueList = React.memo(function LabelValueList({
   spacing,
+  horizontalSpacing,
   contents,
   labelWidth = '25%'
 }: Props) {
   return (
     <GridContainer
       spacing={spacing}
+      horizontalSpacing={horizontalSpacing}
       labelWidth={labelWidth}
       size={contents.length}
     >
@@ -55,13 +58,17 @@ const LabelValueList = React.memo(function LabelValueList({
 
 const GridContainer = styled.div<{
   spacing: Spacing
+  horizontalSpacing?: Spacing
   size: number
   labelWidth: LabelWidth
 }>`
   display: grid;
   grid-template-columns: ${(p) => p.labelWidth} auto;
   grid-template-rows: repeat(${({ size }) => size}, auto);
-  grid-gap: ${({ spacing }) => (spacing === 'small' ? '0.5em' : '1em')} 4em;
+  ${({ spacing, horizontalSpacing }) => css`
+    grid-gap: ${spacing === 'small' ? '0.5em' : '1em'}
+      ${horizontalSpacing === 'small' ? '1em' : '4em'};
+  `};
   justify-items: start;
   align-items: baseline;
 `

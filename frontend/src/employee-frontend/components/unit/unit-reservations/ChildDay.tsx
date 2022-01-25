@@ -99,7 +99,8 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
     serviceTimeOfDay
   )
   const maybeServiceTimeIndicator =
-    expectedTimeForThisDay?.type === 'service-time' && ' (s)'
+    expectedTimeForThisDay?.type === 'service-time' &&
+    ` ${i18n.unit.attendanceReservations.serviceTimeIndicator}`
 
   return (
     <DateCell>
