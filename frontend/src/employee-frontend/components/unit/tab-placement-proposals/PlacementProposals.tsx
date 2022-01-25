@@ -7,9 +7,14 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
 import { Table, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { placementPlanRejectReasons } from 'lib-customizations/employee'
 import { PlacementPlanRejectReason } from 'lib-customizations/types'
 
 import {
@@ -48,6 +53,13 @@ export default React.memo(function PlacementProposals({
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [reason, setReason] = useState<PlacementPlanRejectReason | null>(null)
+  const [otherReason, setOtherReason] = useState<string>('')
+  const [currentApplicationId, setCurrentApplicationId] = useState<
+    string | null
+  >(null)
 
   const isMounted = useRef(true)
   useEffect(
@@ -126,6 +138,52 @@ export default React.memo(function PlacementProposals({
 
   return (
     <>
+      {modalOpen && (
+        <FormModal
+          title={i18n.unit.placementProposals.rejectTitle}
+          resolveAction={() => {
+            if (reason != null && currentApplicationId != null) {
+              void sendConfirmation(
+                currentApplicationId,
+                'REJECTED_NOT_CONFIRMED',
+                reason,
+                otherReason
+              )
+
+              setModalOpen(false)
+              loadUnitData()
+            }
+          }}
+          resolveLabel={i18n.common.save}
+          resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
+          rejectAction={() => setModalOpen(false)}
+          rejectLabel={i18n.common.cancel}
+        >
+          <FixedSpaceColumn>
+            {placementPlanRejectReasons.map((option) => {
+              return (
+                <Radio
+                  key={option}
+                  data-qa="proposal-reject-reason"
+                  checked={reason === option}
+                  onChange={() => setReason(option)}
+                  label={i18n.unit.placementProposals.rejectReasons[option]}
+                />
+              )
+            })}
+            {reason === 'OTHER' && (
+              <InputField
+                data-qa="proposal-reject-reason-input"
+                value={otherReason}
+                onChange={setOtherReason}
+                placeholder={i18n.unit.placementProposals.describeOtherReason}
+              />
+            )}
+          </FixedSpaceColumn>
+          <Gap />
+        </FormModal>
+      )}
+
       {placementPlans.length > 0 && (
         <>
           <Label>{i18n.unit.placementProposals.infoTitle}</Label>
@@ -160,6 +218,10 @@ export default React.memo(function PlacementProposals({
                 submitting={
                   confirmationStates[p.applicationId]?.submitting ?? false
                 }
+                openModal={() => {
+                  setCurrentApplicationId(p.applicationId)
+                  setModalOpen(true)
+                }}
                 onChange={(state, reason, otherReason) =>
                   void sendConfirmation(
                     p.applicationId,
@@ -168,7 +230,6 @@ export default React.memo(function PlacementProposals({
                     otherReason
                   )
                 }
-                loadUnitData={loadUnitData}
               />
             ))}
           </Tbody>
