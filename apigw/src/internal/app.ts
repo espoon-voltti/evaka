@@ -24,7 +24,10 @@ import { createRedisClient } from '../shared/redis-client'
 import { trustReverseProxy } from '../shared/reverse-proxy'
 import createSamlRouter from '../shared/routes/auth/saml'
 import csp from '../shared/routes/csp'
-import session, { refreshLogoutToken } from '../shared/session'
+import session, {
+  refreshLogoutToken,
+  touchSessionMaxAge
+} from '../shared/session'
 import mobileDeviceSession, {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -57,6 +60,7 @@ app.get('/health', (_, res) => {
 app.use(tracing)
 app.use(express.json({ limit: '8mb' }))
 app.use(session('employee', redisClient))
+app.use(touchSessionMaxAge)
 app.use(cookieParser(cookieSecret))
 app.use(passport.initialize())
 app.use(passport.session())
