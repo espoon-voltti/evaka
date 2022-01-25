@@ -214,7 +214,7 @@ fun sendVoucherValueDecisions(
         throw BadRequest("Some voucher value decisions were not drafts")
     }
 
-    if (decisions.any { it.validFrom > LocalDate.now() }) {
+    if (decisions.any { it.validFrom > now.toLocalDate() }) {
         throw BadRequest("Some of the voucher value decisions are not valid yet")
     }
 

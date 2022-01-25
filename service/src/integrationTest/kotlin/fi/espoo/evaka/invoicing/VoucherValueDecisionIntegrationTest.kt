@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -39,11 +40,13 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
+import fi.espoo.evaka.withMockedTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -72,8 +75,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private val startDate = LocalDate.now().minusMonths(1)
-    private val endDate = LocalDate.now().plusMonths(6)
+    private val now = HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(9, 0))
+    private val startDate = now.toLocalDate().minusMonths(1)
+    private val endDate = now.toLocalDate().plusMonths(6)
 
     @Test
     fun `value decision is created after a placement is created`() {
@@ -149,7 +153,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             assertEquals(endDate, decisions.first().validTo)
         }
 
-        val newEndDate = LocalDate.now().minusDays(1)
+        val newEndDate = now.toLocalDate().minusDays(1)
         updatePlacement(placementId, startDate, newEndDate)
 
         getAllValueDecisions().let { decisions ->
@@ -202,7 +206,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             assertEquals(endDate, decisions.first().validTo)
         }
 
-        val newStartDate = LocalDate.now().minusDays(1)
+        val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, testVoucherDaycare2.id)
         endDecisions(now = newStartDate.plusDays(1))
 
@@ -241,7 +245,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             assertEquals(endDate, decisions.first().validTo)
         }
 
-        val newStartDate = LocalDate.now().minusDays(1)
+        val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, testDaycare.id)
         endDecisions(now = newStartDate.plusDays(1))
 
@@ -373,6 +377,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     private fun searchValueDecisions(status: String, searchTerms: String = ""): Paged<VoucherValueDecisionSummary> {
         val (_, _, data) = http.post("/value-decisions/search")
             .jsonBody("""{"page": 0, "pageSize": 100, "status": "$status", "searchTerms": "$searchTerms"}""")
+            .withMockedTime(now)
             .asUser(financeWorker)
             .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)
         return data.get()
@@ -381,6 +386,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     private fun sendAllValueDecisions() {
         val (_, _, data) = http.post("/value-decisions/search")
             .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
+            .withMockedTime(now)
             .asUser(financeWorker)
             .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)
             .also { (_, res, _) ->
@@ -390,6 +396,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         val decisionIds = data.get().data.map { it.id }
         http.post("/value-decisions/send")
             .objectBody(decisionIds, mapper = jsonMapper)
+            .withMockedTime(now)
             .asUser(financeWorker)
             .response()
             .also { (_, res, _) ->
@@ -408,8 +415,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     }
 
     private fun endDecisions(now: LocalDate) {
-        db.transaction {
-            voucherValueDecisionService.endDecisionsWithEndedPlacements(it, now)
-        }
+        db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, now) }
     }
 }
