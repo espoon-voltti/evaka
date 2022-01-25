@@ -1280,6 +1280,7 @@ workflows:
           requires:
             - service_build
 
+ <%- if not is_pull -%>
       - clone_infra_repo:
           <<: *aws_contexts
           requires:
@@ -1326,3 +1327,4 @@ workflows:
           matrix:
             parameters:
               target_env: [dev, test]
+ <% end %>
