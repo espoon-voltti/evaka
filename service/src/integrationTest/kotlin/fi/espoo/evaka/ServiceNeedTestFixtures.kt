@@ -452,6 +452,26 @@ val snDaycareFiveYearOldsFullDayPartWeek25 = ServiceNeedOption(
     active = true
 )
 
+val snDefaultSchoolShiftcare = ServiceNeedOption(
+    id = ServiceNeedOptionId(UUID.randomUUID()),
+    nameFi = "Koululaisten vuorohoito",
+    nameSv = "Koululaisten vuorohoito",
+    nameEn = "Koululaisten vuorohoito",
+    validPlacementType = PlacementType.SCHOOL_SHIFT_CARE,
+    defaultOption = true,
+    feeCoefficient = BigDecimal("0.00"),
+    voucherValueCoefficient = BigDecimal("0.00"),
+    occupancyCoefficient = BigDecimal("1.00"),
+    daycareHoursPerWeek = 0,
+    partDay = true,
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = "",
+    active = true
+)
+
 val serviceNeedTestFixtures = listOf(
     snDefaultDaycare,
     snDefaultPartDayDaycare,
@@ -474,7 +494,8 @@ val serviceNeedTestFixtures = listOf(
     snPreparatoryDaycare50,
     snPreparatoryDaycarePartDay40to50,
     snPreparatoryDaycarePartDay40,
-    snDaycareFiveYearOldsFullDayPartWeek25
+    snDaycareFiveYearOldsFullDayPartWeek25,
+    snDefaultSchoolShiftcare
 )
 
 fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
