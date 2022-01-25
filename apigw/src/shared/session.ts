@@ -159,6 +159,10 @@ export async function saveSession(req: express.Request) {
   }
 }
 
+export const touchSessionMaxAge = toMiddleware(async (req) => {
+  req.session?.touch()
+})
+
 export default (sessionType: SessionType, redisClient?: RedisClient) => {
   asyncRedisClient = redisClient && new AsyncRedisClient(redisClient)
   return session({

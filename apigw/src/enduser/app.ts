@@ -21,7 +21,10 @@ import tracing from '../shared/middleware/tracing'
 import { createRedisClient } from '../shared/redis-client'
 import { trustReverseProxy } from '../shared/reverse-proxy'
 import createSamlRouter from '../shared/routes/auth/saml'
-import session, { refreshLogoutToken } from '../shared/session'
+import session, {
+  refreshLogoutToken,
+  touchSessionMaxAge
+} from '../shared/session'
 import publicRoutes from './publicRoutes'
 import routes from './routes'
 import authStatus from './routes/auth-status'
@@ -50,6 +53,7 @@ app.use(tracing)
 app.use(express.json())
 app.use(cookieParser())
 app.use(session('enduser', redisClient))
+app.use(touchSessionMaxAge)
 app.use(passport.initialize())
 app.use(passport.session())
 passport.serializeUser<Express.User>((user, done) => done(null, user))
