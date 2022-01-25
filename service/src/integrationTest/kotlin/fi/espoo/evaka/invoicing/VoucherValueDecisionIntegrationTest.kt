@@ -101,6 +101,32 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `send voucher value decisions returns bad request when some decisions being in the future`() {
+        val startDate = now.toLocalDate().plusDays(evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance + 1)
+        val endDate = startDate.plusMonths(6)
+        createPlacement(startDate, endDate)
+        sendAllValueDecisions(400, "voucherValueDecisions.confirmation.tooFarInFuture")
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decisions.first().status)
+        }
+    }
+
+    @Test
+    fun `send voucher value decisions when decision at last possible confirmation date exists`() {
+        val startDate = now.toLocalDate().plusDays(evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
+        val endDate = startDate.plusMonths(6)
+        createPlacement(startDate, endDate)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+        }
+    }
+
+    @Test
     fun `sent value decision validity period ends automatically when corresponding placement has its future end date lowered`() {
         val placementId = createPlacement(startDate, endDate)
         sendAllValueDecisions()
@@ -383,7 +409,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         return data.get()
     }
 
-    private fun sendAllValueDecisions() {
+    private fun sendAllValueDecisions(expectedStatusCode: Int = 200, expectedErrorCode: String? = null) {
         val (_, _, data) = http.post("/value-decisions/search")
             .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
             .withMockedTime(now)
@@ -400,7 +426,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             .asUser(financeWorker)
             .response()
             .also { (_, res, _) ->
-                assertEquals(200, res.statusCode)
+                assertEquals(expectedStatusCode, res.statusCode)
+                if (expectedStatusCode == 400) {
+                    val responseJson = res.body().asString("application/json")
+                    val errorCode = jsonMapper.readTree(responseJson).get("errorCode").textValue()
+                    assertEquals(expectedErrorCode, errorCode)
+                }
             }
 
         asyncJobRunner.runPendingJobsSync()
