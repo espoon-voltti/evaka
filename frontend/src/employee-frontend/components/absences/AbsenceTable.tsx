@@ -2,14 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 import { AbsenceChild } from 'lib-common/api-types/child/absence'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { fasExclamationTriangle } from 'lib-icons'
 import Tooltip from '../../components/common/Tooltip'
 import { Translations, useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
@@ -56,6 +60,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
   selectedDate,
   reservationEnabled
 }: AbsenceRowProps) {
+  const theme = useTheme()
   const {
     child,
     placements,
@@ -64,6 +69,11 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
     attendanceTotalHours,
     reservationTotalHours
   } = absenceChild
+
+  const showAttendanceWarning =
+    !!attendanceTotalHours &&
+    !!reservationTotalHours &&
+    attendanceTotalHours > reservationTotalHours
 
   return (
     <tr data-qa="absence-child-row">
@@ -121,22 +131,55 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
       ))}
       {reservationEnabled && (
         <>
-          <NumbersColumnTd>
-            {reservationTotalHours !== null
-              ? `${reservationTotalHours} h`
-              : '-'}
-          </NumbersColumnTd>
-          <NumbersColumnTd>
-            {attendanceTotalHours !== null ? `${attendanceTotalHours} h` : '-'}
-          </NumbersColumnTd>
+          <td>
+            <NumbersColumn>
+              {reservationTotalHours !== null
+                ? `${reservationTotalHours} h`
+                : '-'}
+              <Gap size="xs" horizontal />
+              <WarningPlaceholder />
+            </NumbersColumn>
+          </td>
+          <td>
+            <NumbersColumn warning={showAttendanceWarning}>
+              {attendanceTotalHours !== null
+                ? `${attendanceTotalHours} h`
+                : '-'}
+              <Gap size="xs" horizontal />
+              {showAttendanceWarning ? (
+                <FontAwesomeIcon
+                  icon={fasExclamationTriangle}
+                  size="1x"
+                  color={theme.colors.status.warning}
+                />
+              ) : (
+                <WarningPlaceholder />
+              )}
+            </NumbersColumn>
+          </td>
         </>
       )}
     </tr>
   )
 })
 
-const NumbersColumnTd = styled.td`
-  text-align: right;
+const NumbersColumn = styled.div<{ warning?: boolean }>`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  ${({ theme, warning }) =>
+    warning &&
+    css`
+      color: ${theme.colors.accents.a2orangeDark};
+      font-weight: ${fontWeights.semibold};
+    `};
+`
+
+const WarningPlaceholder = styled.div`
+  min-width: 1em;
+  width: 1em;
 `
 
 interface AbsenceHeadProps {
