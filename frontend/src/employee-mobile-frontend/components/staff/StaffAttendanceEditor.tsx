@@ -6,7 +6,7 @@ import { endOfYesterday } from 'date-fns'
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
-import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
+import { formatDate, formatTime } from 'lib-common/date'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -165,9 +165,6 @@ function updatedTime(i18n: Translations, date: Date | null): string {
   if (date <= endOfYesterday()) {
     return `${i18n.staff.updated} ${formatDate(date)}`
   } else {
-    return `${i18n.staff.updatedToday} ${formatDate(
-      date,
-      DATE_FORMAT_TIME_ONLY
-    )}`
+    return `${i18n.staff.updatedToday} ${formatTime(date)}`
   }
 }

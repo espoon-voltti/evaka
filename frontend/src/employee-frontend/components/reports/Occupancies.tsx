@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result, Success } from 'lib-common/api'
-import { DATE_FORMAT_ISO, formatDate } from 'lib-common/date'
+import { formatDate, formatIsoDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Loader from 'lib-components/atoms/Loader'
@@ -71,7 +71,7 @@ function getFilename(
   careAreaName: string
 ) {
   const prefix = i18n.reports.occupancies.filters.types[type]
-  const time = formatDate(new Date(year, month - 1, 1), 'yyyy-MM')
+  const time = formatIsoDate(new Date(year, month - 1, 1), 'yyyy-MM')
   return `${prefix}-${time}-${careAreaName}.csv`.replace(/ /g, '_')
 }
 
@@ -82,14 +82,11 @@ function getOccupancyAverage(
   dates: Date[]
 ): number | null {
   const capacitySum = dates.reduce((sum, date) => {
-    return sum + (row.occupancies[formatDate(date, DATE_FORMAT_ISO)]?.sum ?? 0)
+    return sum + (row.occupancies[formatIsoDate(date)]?.sum ?? 0)
   }, 0)
 
   const caretakersSum = dates.reduce((sum, date) => {
-    return (
-      sum +
-      (row.occupancies[formatDate(date, DATE_FORMAT_ISO)]?.caretakers ?? 0)
-    )
+    return sum + (row.occupancies[formatIsoDate(date)]?.caretakers ?? 0)
   }, 0)
 
   if (caretakersSum > 0) {
@@ -104,9 +101,7 @@ function getHeadCountAverage(
   dates: Date[]
 ): number | null {
   const headCountSum = dates.reduce((sum, date) => {
-    return (
-      sum + (row.occupancies[formatDate(date, DATE_FORMAT_ISO)]?.headcount ?? 0)
-    )
+    return sum + (row.occupancies[formatIsoDate(date)]?.headcount ?? 0)
   }, 0)
 
   if (dates.length > 0) {
@@ -127,7 +122,7 @@ function getDisplayCells(
         (cell) => cell !== undefined
       ) as string[]
       for (const date of dates) {
-        const occupancy = row.occupancies[formatDate(date, DATE_FORMAT_ISO)]
+        const occupancy = row.occupancies[formatIsoDate(date)]
         cells.push(
           typeof occupancy?.sum === 'number'
             ? occupancy.sum.toFixed(2).replace('.', ',')
@@ -160,7 +155,7 @@ function getDisplayCells(
 
         // daily values
         ...dates.map((date) => {
-          const occupancy = row.occupancies[formatDate(date, DATE_FORMAT_ISO)]
+          const occupancy = row.occupancies[formatIsoDate(date)]
 
           if (usedValues === 'percentage') {
             if (!occupancy) {

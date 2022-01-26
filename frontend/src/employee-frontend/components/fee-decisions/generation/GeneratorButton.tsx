@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format, startOfMonth, subMonths } from 'date-fns'
+import { startOfMonth, subMonths } from 'date-fns'
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { formatIsoDate } from 'lib-common/date'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { generateFeeDecisions } from '../../../api/invoicing'
@@ -18,7 +19,7 @@ function GeneratorButton(props: { reload: () => void }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [date, setDate] = useState(
-    format(startOfMonth(subMonths(new Date(), 1)), 'yyyy-MM-dd')
+    formatIsoDate(startOfMonth(subMonths(new Date(), 1)))
   )
   const [targetHeads, setTargetHeads] = useState<string[]>([])
 

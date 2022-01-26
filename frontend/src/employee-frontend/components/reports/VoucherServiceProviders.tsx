@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,7 +8,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result, Success } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
+import { formatIsoDate } from 'lib-common/date'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import { formatCents } from 'lib-common/money'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
@@ -58,7 +58,7 @@ const maxYear = new Date().getFullYear() + (new Date().getMonth() == 11 ? 1 : 0)
 const yearOptions = range(maxYear, minYear - 1, -1)
 
 function getFilename(year: number, month: number, areaName: string) {
-  const time = formatDate(new Date(year, month - 1, 1), 'yyyy-MM')
+  const time = formatIsoDate(new Date(year, month - 1, 1), 'yyyy-MM')
   return `${time}-${areaName}.csv`.replace(/ /g, '_')
 }
 

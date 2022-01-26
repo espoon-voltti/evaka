@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format } from 'date-fns'
+import { formatIsoDate } from 'lib-common/date'
 import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -55,8 +55,8 @@ const setupPlacement = async (
       placementId,
       childId,
       unitId,
-      format(new Date(), 'yyyy-MM-dd'),
-      format(new Date(), 'yyyy-MM-dd'),
+      formatIsoDate(new Date()),
+      formatIsoDate(new Date()),
       childPlacementType
     )
   ])

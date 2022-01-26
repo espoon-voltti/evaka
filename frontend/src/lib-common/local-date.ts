@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,6 +28,7 @@ import {
   startOfWeek,
   getISOWeek
 } from 'date-fns'
+import { DateFormat, formatDate } from './date'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
@@ -141,10 +142,13 @@ export default class LocalDate {
   differenceInDays(other: LocalDate): number {
     return differenceInDays(this.toSystemTzDate(), other.toSystemTzDate())
   }
+  format(pattern?: DateFormat): string {
+    return formatDate(this.toSystemTzDate(), pattern)
+  }
   /**
    * <a href="https://date-fns.org/docs/format">date-fns format()</a>
    */
-  format(pattern = 'dd.MM.yyyy'): string {
+  formatExotic(pattern: string): string {
     return format(this.toSystemTzDate(), pattern)
   }
   toString(): string {
