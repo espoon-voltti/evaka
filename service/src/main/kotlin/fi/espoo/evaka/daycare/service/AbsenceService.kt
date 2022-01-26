@@ -182,15 +182,7 @@ data class AbsenceWithModifierInfo(
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,
     val modifiedAt: HelsinkiDateTime
-) {
-    fun asAbsence(): Absence = Absence(
-        id = id,
-        childId = childId,
-        date = date,
-        careType = careType,
-        absenceType = absenceType
-    )
-}
+)
 
 enum class AbsenceType {
     OTHER_ABSENCE,
@@ -269,7 +261,7 @@ fun Database.Read.getGroupName(groupId: GroupId): String? {
 
     return createQuery(sql)
         .bind("groupId", groupId)
-        .mapTo(String::class.java)
+        .mapTo<String>()
         .firstOrNull()
 }
 
