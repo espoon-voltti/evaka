@@ -9,9 +9,12 @@ import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.invoicing.service.DefaultDraftInvoiceGenerator
+import fi.espoo.evaka.invoicing.service.DraftInvoiceGenerator
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.DevDataInitializer
@@ -71,10 +74,17 @@ class EspooConfig {
     fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
     @Bean
+    fun defaultDraftInvoiceGenerator(): DraftInvoiceGenerator = DefaultDraftInvoiceGenerator(invoiceProductsProvider())
+
+    @Bean
+    fun invoiceGenerator(): InvoiceGenerator = InvoiceGenerator(defaultDraftInvoiceGenerator())
+
+    @Bean
     fun featureConfig(): FeatureConfig = FeatureConfig(
         valueDecisionCapacityFactorEnabled = false,
         daycareApplicationServiceNeedOptionsEnabled = false,
         citizenReservationThresholdHours = 150,
+        dailyFeeDivisorOperationalDaysOverride = null,
     )
 
     @Bean
