@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.varda
 
-import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
@@ -25,7 +24,7 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class VardaUnitIntegrationTest : FullApplicationTest() {
+class VardaUnitIntegrationTest : VardaIntegrationTest() {
     @Autowired
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
@@ -94,7 +93,8 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
     }
 
     private fun updateUnits() {
-        updateUnits(db, vardaClient, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
+        val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
+        updateUnits(db, vardaClient, ophEnv.municipalityCode, ophMunicipalOrganizerIdUrl)
     }
 }
 
