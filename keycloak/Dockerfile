@@ -28,7 +28,7 @@ COPY ./theme/ /work/
 
 RUN npm run build
 
-FROM quay.io/keycloak/keycloak:16.1.0 AS keycloak
+FROM quay.io/keycloak/keycloak:16.1.1 AS keycloak
 
 CMD ["--server-config=standalone.xml", "-b", "0.0.0.0"]
 
