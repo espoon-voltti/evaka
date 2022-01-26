@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { groupBy, get } from 'lodash/fp'
-import React, { Fragment, useContext, useState } from 'react'
+import React, { Fragment, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
@@ -55,8 +55,10 @@ const emptyInvoiceRow = (
   periodEnd: invoiceRow.periodEnd,
   product: 'DAYCARE' as const,
   description: '',
+  unitId: '',
   costCenter: '',
   subCostCenter: '',
+  savedCostCenter: null,
   amount: 0,
   unitPrice: 0,
   price: 0
@@ -81,16 +83,16 @@ const InvoiceRowsTable = styled(Table)`
   }
 `
 
-const CostCenterTh = styled(Th)`
-  width: 110px;
+const UnitTh = styled(Th)`
+  width: 240px;
 `
 
 const AmountTh = styled(Th)`
-  width: 110px;
+  width: 60px;
 `
 
 const UnitPriceTh = styled(Th)`
-  width: 110px;
+  width: 96px;
 `
 
 const TotalPriceTh = styled(Th)`
@@ -120,6 +122,25 @@ export default React.memo(function InvoiceRowsSection({
     updateRows([...rows, emptyInvoiceRow(invoiceRow)])
 
   const groupedRows = groupBy(get('child.id'), rows)
+
+  const products = useMemo(
+    () => invoiceCodes.map(({ products }) => products).getOrElse([]),
+    [invoiceCodes]
+  )
+  const unitIds = useMemo(
+    () =>
+      invoiceCodes.map(({ units }) => units.map(({ id }) => id)).getOrElse([]),
+    [invoiceCodes]
+  )
+  const unitDetails = useMemo(
+    () =>
+      invoiceCodes
+        .map(({ units }) =>
+          Object.fromEntries(units.map((unit) => [unit.id, unit]))
+        )
+        .getOrElse({}),
+    [invoiceCodes]
+  )
 
   return (
     <Fragment>
@@ -162,12 +183,9 @@ export default React.memo(function InvoiceRowsSection({
                       <Th data-qa="invoice-row-description">
                         {i18n.invoice.form.rows.description}
                       </Th>
-                      <CostCenterTh data-qa="invoice-row-costcenter">
-                        {i18n.invoice.form.rows.costCenter}
-                      </CostCenterTh>
-                      <Th data-qa="invoice-row-subcostcenter">
-                        {i18n.invoice.form.rows.subCostCenter}
-                      </Th>
+                      <UnitTh data-qa="invoice-row-unit">
+                        {i18n.invoice.form.rows.unitId}
+                      </UnitTh>
                       <Th data-qa="invoice-row-daterange">
                         {i18n.invoice.form.rows.daterange}
                       </Th>
@@ -197,7 +215,9 @@ export default React.memo(function InvoiceRowsSection({
                       remove={() =>
                         updateRows(rows.filter(({ id }) => id !== firstRow.id))
                       }
-                      invoiceCodes={invoiceCodes}
+                      products={products}
+                      unitIds={unitIds}
+                      unitDetails={unitDetails}
                       editable={editable}
                     />
                     {otherRows.map((row, index) => (
@@ -208,7 +228,9 @@ export default React.memo(function InvoiceRowsSection({
                         remove={() =>
                           updateRows(rows.filter(({ id }) => id !== row.id))
                         }
-                        invoiceCodes={invoiceCodes}
+                        products={products}
+                        unitIds={unitIds}
+                        unitDetails={unitDetails}
                         editable={editable}
                       />
                     ))}

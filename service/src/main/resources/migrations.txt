@@ -196,3 +196,5 @@ V195__evaka_user_decision_resolved_by.sql
 V196__invoice_area_id.sql
 V197__dev_temporary_fees.sql
 V198__placement_termination_pilot_feature.sql
+V199__invoice_row_cost_centers.sql
+V200__invoice_area_index.sql

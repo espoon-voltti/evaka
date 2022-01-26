@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
@@ -58,8 +59,7 @@ data class InvoiceRow(
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val product: ProductKey,
-    val costCenter: String,
-    val subCostCenter: String?,
+    val unitId: DaycareId,
     val description: String = ""
 ) : RowWithPrice {
     override val price
@@ -97,8 +97,10 @@ data class InvoiceRowDetailed(
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val product: ProductKey,
+    val unitId: DaycareId,
     val costCenter: String,
     val subCostCenter: String?,
+    val savedCostCenter: String?,
     val description: String = ""
 ) : RowWithPrice {
     override val price

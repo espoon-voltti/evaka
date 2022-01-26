@@ -47,8 +47,7 @@ val invoiceQueryBase =
         row.period_start as invoice_row_period_start,
         row.period_end as invoice_row_period_end,
         row.product,
-        row.cost_center,
-        row.sub_cost_center,
+        row.unit_id,
         row.description
     FROM invoice LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
     """.trimIndent()
@@ -93,8 +92,10 @@ val invoiceDetailedQueryBase =
         row.period_start as invoice_row_period_start,
         row.period_end as invoice_row_period_end,
         row.product,
-        row.cost_center,
-        row.sub_cost_center,
+        row.unit_id,
+        daycare.cost_center,
+        row_care_area.sub_cost_center,
+        row.saved_cost_center,
         row.description,
         child.date_of_birth as child_date_of_birth,
         child.first_name as child_first_name,
@@ -109,6 +110,8 @@ val invoiceDetailedQueryBase =
         LEFT JOIN person as head ON invoice.head_of_family = head.id
         LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
         LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
+        LEFT JOIN daycare ON row.unit_id = daycare.id
+        LEFT JOIN care_area AS row_care_area ON daycare.care_area_id = row_care_area.id
         LEFT JOIN person as child ON row.child = child.id
     """.trimIndent()
 
@@ -222,7 +225,7 @@ fun Database.Read.paginatedSearch(
     val conditions = listOfNotNull(
         if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
         if (areas.isNotEmpty()) "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))" else null,
-        if (unit != null) "row.cost_center = (SELECT cost_center FROM daycare WHERE id = :unit)" else null,
+        if (unit != null) "row.unit_id = :unit" else null,
         if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
         if (searchTerms.isNotBlank()) freeTextQuery else null,
         if (periodStart != null) "invoice_date  >= :periodStart" else null,
@@ -314,7 +317,7 @@ fun Database.Read.searchInvoices(
     val conditions = listOfNotNull(
         if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
         if (areas.isNotEmpty()) "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))" else null,
-        if (unit != null) "row.cost_center = (SELECT cost_center FROM daycare WHERE id = :unit)" else null,
+        if (unit != null) "row.unit_id = :unit" else null,
         if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
         if (sentAt != null) "daterange(:sentAtStart, :sentAtEnd) @> invoice.sent_at::date" else null
     )
@@ -383,6 +386,18 @@ fun Database.Transaction.setDraftsSent(idNumberPairs: List<Pair<InvoiceId, Long>
     }
     batch.execute()
 }
+
+fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) = createUpdate(
+    """
+UPDATE invoice_row
+SET saved_cost_center = daycare.cost_center, saved_sub_cost_center = care_area.sub_cost_center
+FROM daycare, care_area WHERE invoice_row.unit_id = daycare.id
+AND daycare.care_area_id = care_area.id
+AND invoice_id = ANY(:invoiceIds)
+    """.trimIndent()
+)
+    .bind("invoiceIds", invoiceIds.toTypedArray())
+    .execute()
 
 fun Database.Transaction.updateToWaitingForSending(invoiceIds: List<InvoiceId>) {
     if (invoiceIds.isEmpty()) return
@@ -484,21 +499,19 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 period_start,
                 period_end,
                 product,
-                cost_center,
-                sub_cost_center,
+                unit_id,
                 description
             ) VALUES (
                 :invoice_id,
                 :id,
-                :child,
-                :date_of_birth,
+                :child.id,
+                :child.dateOfBirth,
                 :amount,
-                :unit_price,
-                :period_start,
-                :period_end,
+                :unitPrice,
+                :periodStart,
+                :periodEnd,
                 :product,
-                :cost_center,
-                :sub_cost_center,
+                :unitId,
                 :description
             )
         """
@@ -509,17 +522,7 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 rows.forEach { row ->
                     batch
                         .bind("invoice_id", invoiceId)
-                        .bind("id", row.id)
-                        .bind("child", row.child.id)
-                        .bind("date_of_birth", row.child.dateOfBirth)
-                        .bind("amount", row.amount)
-                        .bind("unit_price", row.unitPrice)
-                        .bind("period_start", row.periodStart)
-                        .bind("period_end", row.periodEnd)
-                        .bind("product", row.product)
-                        .bind("cost_center", row.costCenter)
-                        .bind("sub_cost_center", row.subCostCenter)
-                        .bind("description", row.description)
+                        .bindKotlin(row)
                         .add()
                 }
             }
@@ -550,8 +553,7 @@ val toInvoice = { rv: RowView ->
                     periodStart = rv.mapColumn("invoice_row_period_start"),
                     periodEnd = rv.mapColumn("invoice_row_period_end"),
                     product = rv.mapColumn("product"),
-                    costCenter = rv.mapColumn("cost_center"),
-                    subCostCenter = rv.mapColumn("sub_cost_center"),
+                    unitId = rv.mapColumn("unit_id"),
                     description = rv.mapColumn("description")
                 )
             )
@@ -594,8 +596,10 @@ val toDetailedInvoice = { rv: RowView ->
                     periodStart = rv.mapColumn("invoice_row_period_start"),
                     periodEnd = rv.mapColumn("invoice_row_period_end"),
                     product = rv.mapColumn("product"),
+                    unitId = rv.mapColumn("unit_id"),
                     costCenter = rv.mapColumn("cost_center"),
                     subCostCenter = rv.mapColumn("sub_cost_center"),
+                    savedCostCenter = rv.mapColumn("saved_cost_center"),
                     description = rv.mapColumn("description")
                 )
             )

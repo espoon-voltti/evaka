@@ -8,6 +8,7 @@ import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.getInvoiceIdsByDates
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
+import fi.espoo.evaka.invoicing.data.saveCostCenterFields
 import fi.espoo.evaka.invoicing.data.setDraftsSent
 import fi.espoo.evaka.invoicing.data.updateInvoiceDates
 import fi.espoo.evaka.invoicing.data.updateToWaitingForSending
@@ -16,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -28,12 +30,13 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-data class DaycareCodes(val areaId: AreaId, val costCenter: String?, val subCostCenter: String?)
+data class DaycareCodes(val unitId: DaycareId, val areaId: AreaId)
+
+data class InvoiceDaycare(val id: DaycareId, val name: String, val costCenter: String?)
 
 data class InvoiceCodes(
     val products: List<ProductWithName>,
-    val subCostCenters: List<String>,
-    val costCenters: List<String>
+    val units: List<InvoiceDaycare>
 )
 
 @Component
@@ -68,6 +71,7 @@ class InvoiceService(
             tx.updateInvoiceDates(succeeded.map { it.id }, invoiceDate, dueDate)
         }
         tx.setDraftsSent(succeeded.map { it.id to it.number!! }, user.evakaUserId)
+        tx.saveCostCenterFields(succeeded.map { it.id } + withoutSSNs.map { it.id })
         tx.updateToWaitingForSending(withoutSSNs.map { it.id })
     }
 
@@ -90,14 +94,16 @@ class InvoiceService(
     }
 
     fun getInvoiceCodes(tx: Database.Read): InvoiceCodes {
-        val daycareCodes = tx.getDaycareCodes()
-
-        val specialSubCostCenter = "06"
-
+        val units = tx.createQuery(
+            """
+        SELECT daycare.id, daycare.name, cost_center
+        FROM daycare
+        ORDER BY name
+            """.trimIndent()
+        ).mapTo<InvoiceDaycare>().list()
         return InvoiceCodes(
             productProvider.products,
-            daycareCodes.values.mapNotNull { it.subCostCenter }.plus(specialSubCostCenter).distinct().sorted().toList(),
-            daycareCodes.values.mapNotNull { it.costCenter }.distinct().sorted()
+            units
         )
     }
 }

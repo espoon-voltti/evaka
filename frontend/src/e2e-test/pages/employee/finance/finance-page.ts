@@ -8,6 +8,7 @@ import { waitUntilEqual } from '../../../utils'
 import {
   AsyncButton,
   Checkbox,
+  Combobox,
   DatePickerDeprecated,
   Page,
   Select,
@@ -243,7 +244,7 @@ export class InvoicesPage {
     )
     return {
       productSelect: new Select(row.find('[data-qa="select-product"]')),
-      costCenterInput: new TextInput(row.find('[data-qa="input-cost-center"]')),
+      unitSelector: new Combobox(row.find('[data-qa="input-unit"]')),
       amountInput: new TextInput(row.find('[data-qa="input-amount"]')),
       unitPriceInput: new TextInput(row.find('[data-qa="input-price"]')),
       deleteRowButton: new TextInput(
@@ -326,15 +327,14 @@ export class InvoicesPage {
 
   async addNewInvoiceRow(
     product: string,
-    costCenter: string,
+    unitName: string,
     amount: number,
     unitPrice: number
   ) {
     await this.#addInvoiceRowButton.click()
     const invoiceRow = this.#invoiceRow(1)
     await invoiceRow.productSelect.selectOption(product)
-    await invoiceRow.costCenterInput.fill('')
-    await invoiceRow.costCenterInput.type(costCenter)
+    await invoiceRow.unitSelector.fillAndSelectFirst(unitName)
     await invoiceRow.amountInput.fill('')
     await invoiceRow.amountInput.type(this.formatFinnishDecimal(amount))
     await invoiceRow.unitPriceInput.fill('')

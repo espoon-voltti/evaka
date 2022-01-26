@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
@@ -148,8 +149,10 @@ class EspooInvoiceIntegrationClientTest {
         periodStart = LocalDate.of(2020, 1, 1),
         periodEnd = LocalDate.of(2020, 1, 31),
         product = EspooInvoiceProducts.Product.DAYCARE.key,
+        unitId = DaycareId(UUID.randomUUID()),
         costCenter = "12345",
         subCostCenter = "01",
+        savedCostCenter = "12345",
         description = ""
     )
 

@@ -17,6 +17,7 @@ import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,21 +31,21 @@ class InvoiceQueriesTest : PureJdbiTest() {
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
             areaId = testArea.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
             headOfFamilyId = testAdult_1.id,
             areaId = testArea.id,
             number = 5000000001L,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
             areaId = testArea.id,
             period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
         )
     )
 
@@ -137,7 +138,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                         headOfFamilyId = testAdult_1.id,
                         areaId = testArea.id,
                         number = 5000000123L,
-                        rows = listOf(createInvoiceRowFixture(testChild_1.id))
+                        rows = listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
                     )
                 )
             )
@@ -158,7 +159,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                         headOfFamilyId = testAdult_1.id,
                         areaId = testArea.id,
                         number = it,
-                        rows = listOf(createInvoiceRowFixture(testChild_1.id))
+                        rows = listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
                     )
                 }
                 .let { invoices -> tx.upsertInvoices(invoices) }
@@ -223,7 +224,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                         status = InvoiceStatus.DRAFT,
                         headOfFamilyId = testAdult_2.id,
                         areaId = testArea.id,
-                        rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+                        rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
                     )
                 )
             )

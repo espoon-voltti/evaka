@@ -1,0 +1,1 @@
+CREATE INDEX idx$invoice_area_id ON invoice (area_id);

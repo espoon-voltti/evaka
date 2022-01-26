@@ -65,9 +65,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
     private val productProvider = TestInvoiceProductProvider()
 
-    private val costCenter = "31500"
-    private val subCostCenter = "00"
-
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -110,8 +107,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(costCenter, invoiceRow.costCenter)
-                assertEquals(subCostCenter, invoiceRow.subCostCenter)
+                assertEquals(testDaycare.id, invoiceRow.unitId)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)

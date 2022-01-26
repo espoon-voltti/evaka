@@ -306,8 +306,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                 child = child,
                 amount = amount,
                 unitPrice = price,
-                costCenter = codes.costCenter!!,
-                subCostCenter = codes.subCostCenter,
+                unitId = codes.unitId,
                 product = productProvider.mapToProduct(placement.type)
             )
         )
@@ -367,8 +366,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                 periodEnd = period.end!!,
                 amount = amount,
                 unitPrice = unitPrice(price),
-                costCenter = codes.costCenter!!,
-                subCostCenter = codes.subCostCenter,
+                unitId = codes.unitId,
                 product = product
             )
         ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
@@ -378,8 +376,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                 periodEnd = period.end,
                 child = child,
                 product = productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
-                costCenter = codes.costCenter,
-                subCostCenter = codes.subCostCenter,
+                unitId = codes.unitId,
                 amount = amount,
                 unitPrice = unitPrice(feeAlterationEffect)
             )
@@ -400,8 +397,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                 periodEnd = period.end,
                 amount = refundAmount,
                 unitPrice = refundUnitPrice,
-                costCenter = codes.costCenter,
-                subCostCenter = codes.subCostCenter,
+                unitId = codes.unitId,
                 product = refundProduct
             )
         }
@@ -417,8 +413,7 @@ class InvoiceGenerator(private val productProvider: InvoiceProductProvider) {
                 periodStart = period.start,
                 periodEnd = period.end,
                 product = absenceProduct,
-                costCenter = codes.costCenter,
-                subCostCenter = codes.subCostCenter,
+                unitId = codes.unitId,
                 amount = amount,
                 unitPrice = BigDecimal(absenceDiscount).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt()
             )
@@ -736,11 +731,11 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
 fun Database.Read.getDaycareCodes(): Map<DaycareId, DaycareCodes> {
     val sql =
         """
-        SELECT daycare.id, daycare.cost_center, area.id AS area_id, area.sub_cost_center
+        SELECT daycare.id AS unit_id, area.id AS area_id
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
     return createQuery(sql)
-        .map { row -> row.mapColumn<DaycareId>("id") to row.mapRow<DaycareCodes>() }
+        .map { row -> row.mapColumn<DaycareId>("unit_id") to row.mapRow<DaycareCodes>() }
         .toMap()
 }
 

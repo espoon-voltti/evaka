@@ -107,6 +107,7 @@ describe('Employee - Guardian Information', () => {
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureJari.id,
         fixtures.careAreaFixture.id,
+        fixtures.daycareFixture.id,
         'DRAFT',
         LocalDate.of(2020, 1, 1),
         LocalDate.of(2020, 1, 31)

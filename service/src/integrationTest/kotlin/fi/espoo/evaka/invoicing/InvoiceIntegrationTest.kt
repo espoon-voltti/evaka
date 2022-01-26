@@ -33,6 +33,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.controllers.Wrapper
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -45,6 +47,7 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.assertj.core.api.Assertions.assertThat
@@ -72,7 +75,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
             areaId = testArea.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.SENT,
@@ -80,14 +83,14 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             areaId = testArea.id,
             number = 5000000001L,
             period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_2.id,
             areaId = testArea.id,
             period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
+            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
         )
     )
 
@@ -558,7 +561,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
-                rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
+                rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
             )
         }
 
@@ -601,6 +604,30 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         val maxInvoiceNumber = db.transaction { tx -> tx.getMaxInvoiceNumber() }
         assertEquals(sentInvoice.number!! + drafts.size, maxInvoiceNumber)
+    }
+
+    @Test
+    fun `send saves cost center information to invoice rows`() {
+        fun Database.Read.readCostCenterFields(invoiceId: InvoiceId): Pair<String, String> = createQuery(
+            """
+                SELECT saved_cost_center, saved_sub_cost_center FROM invoice_row WHERE invoice_id = :invoiceId
+            """.trimIndent()
+        ).bind("invoiceId", invoiceId).map { row ->
+            Pair(
+                row.mapColumn<String>("saved_cost_center"), row.mapColumn<String>("saved_sub_cost_center")
+            )
+        }.single()
+
+        val draft = testInvoices[0]
+        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
+
+        val (_, response, _) = http.post("/invoices/send").jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
+            .asUser(testUser).responseString()
+        assertEquals(200, response.statusCode)
+
+        val (costCenter, subCostCenter) = db.read { it.readCostCenterFields(draft.id) }
+        assertEquals(testArea.subCostCenter, subCostCenter)
+        assertEquals(testDaycare.costCenter, costCenter)
     }
 
     @Test
@@ -681,17 +708,16 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updateInvoice updates invoice row areaCode, costCenter, subCostCenter and adds a new row`() {
+    fun `updateInvoice updates invoice row unitId and adds a new row`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
         val updated = original.copy(
             rows = original.rows.map {
                 it.copy(
                     description = "UPDATED",
-                    costCenter = "UPDATED",
-                    subCostCenter = "UPDATED"
+                    unitId = testDaycare2.id,
                 )
-            } + createInvoiceRowFixture(testChild_1.id).copy(
+            } + createInvoiceRowFixture(testChild_1.id, testDaycare.id).copy(
                 product = ProductKey("PRESCHOOL_WITH_DAYCARE"),
                 amount = 100,
                 unitPrice = 100000

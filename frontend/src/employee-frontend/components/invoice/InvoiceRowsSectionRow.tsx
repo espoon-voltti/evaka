@@ -2,15 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import classNames from 'classnames'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Result } from 'lib-common/api'
-import { UpdateStateFn } from 'lib-common/form-state'
 
-import { InvoiceCodes } from 'lib-common/generated/api-types/invoicing'
+import { UpdateStateFn } from 'lib-common/form-state'
+import {
+  InvoiceDaycare,
+  ProductWithName
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents, parseCents } from 'lib-common/money'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import Combobox, {
+  MenuItemProps
+} from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -22,8 +29,8 @@ import EuroInput from '../common/EuroInput'
 interface InvoiceRowStub {
   product: string
   description: string
-  costCenter: string
-  subCostCenter: string | null
+  unitId: UUID | null
+  savedCostCenter: string | null
   periodStart: LocalDate
   periodEnd: LocalDate
   amount: number
@@ -35,7 +42,9 @@ interface Props {
   row: InvoiceRowStub
   update: UpdateStateFn<InvoiceRowStub>
   remove: () => void
-  invoiceCodes: Result<InvoiceCodes>
+  products: ProductWithName[]
+  unitIds: UUID[]
+  unitDetails: Record<UUID, InvoiceDaycare>
   editable: boolean
 }
 
@@ -43,8 +52,8 @@ function InvoiceRowSectionRow({
   row: {
     product,
     description,
-    costCenter,
-    subCostCenter,
+    unitId,
+    savedCostCenter,
     periodStart,
     periodEnd,
     amount,
@@ -53,26 +62,16 @@ function InvoiceRowSectionRow({
   },
   update,
   remove,
-  invoiceCodes,
-  editable
+  editable,
+  products,
+  unitIds,
+  unitDetails
 }: Props) {
   const { i18n } = useTranslation()
 
-  const products = useMemo(
-    () => invoiceCodes.map((codes) => codes.products).getOrElse([]),
-    [invoiceCodes]
-  )
   const productOpts = useMemo(() => products.map(({ key }) => key), [products])
 
-  const subCostCenterOpts = useMemo(
-    () => invoiceCodes.map((codes) => codes.subCostCenters).getOrElse([]),
-    [invoiceCodes]
-  )
-
-  const costCenterValueIsValid =
-    costCenter === undefined ||
-    !invoiceCodes.isSuccess ||
-    invoiceCodes.value.costCenters.includes(costCenter)
+  const unit = unitId ? unitDetails[unitId] : null
 
   return (
     <Tr data-qa="invoice-details-invoice-row">
@@ -109,34 +108,19 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {editable ? (
-          <InputField
-            value={costCenter}
-            type="text"
-            placeholder={i18n.invoice.form.rows.costCenter}
-            onChange={(value) => update({ costCenter: value })}
-            data-qa="input-cost-center"
-            info={
-              !costCenterValueIsValid
-                ? { text: 'Tarkista', status: 'warning' }
-                : undefined
-            }
-          />
+          <UnitCombobox
+            items={unitIds}
+            selectedItem={unitId}
+            unitDetails={unitDetails}
+            update={update}
+          ></UnitCombobox>
         ) : (
-          <div>{costCenter}</div>
-        )}
-      </Td>
-      <Td>
-        {editable ? (
-          <Select
-            name="subCostCenter"
-            placeholder=""
-            selectedItem={subCostCenter}
-            items={subCostCenterOpts}
-            onChange={(subCostCenter) => update({ subCostCenter })}
-            data-qa="select-sub-cost-center"
-          />
-        ) : (
-          <div>{subCostCenter}</div>
+          <div>
+            <span>{unit?.name}</span>
+            {savedCostCenter && (
+              <UnitCostCenter>{savedCostCenter}</UnitCostCenter>
+            )}
+          </div>
         )}
       </Td>
       <Td>
@@ -230,9 +214,7 @@ const AmountInput = React.memo(function AmountInput({
 
   return (
     <NarrowInput
-      type="number"
-      min={1}
-      max={1000}
+      inputMode="numeric"
       value={stringValue}
       onChange={setStringValue}
       onBlur={() => {
@@ -272,5 +254,90 @@ const UnitPriceInput = React.memo(function UnitPriceInput({
     />
   )
 })
+
+type UnitComboboxProps = Pick<Props, 'unitDetails' | 'update'> & {
+  items: UUID[]
+  selectedItem: UUID | null
+}
+
+const UnitCombobox = React.memo(function UnitCombobox({
+  items,
+  selectedItem,
+  unitDetails,
+  update
+}: UnitComboboxProps) {
+  const { i18n } = useTranslation()
+
+  const unitMenuItem = useCallback(
+    ({ item: unitId, highlighted }: MenuItemProps<UUID>) => {
+      const unit = unitDetails[unitId]
+      return (
+        <UnitMenuItem className={classNames({ highlighted, clickable: true })}>
+          <span>{unit?.name ?? unitId}</span>
+          {unit?.costCenter && (
+            <UnitCostCenter>{unit.costCenter}</UnitCostCenter>
+          )}
+        </UnitMenuItem>
+      )
+    },
+    [unitDetails]
+  )
+  const onChange = useCallback(
+    (value: UUID | null) => update({ unitId: value }),
+    [update]
+  )
+  const getItemLabel = useCallback(
+    (unitId: UUID) => unitDetails[unitId]?.name ?? unitId,
+    [unitDetails]
+  )
+  const filterItems = useCallback(
+    (inputValue: string, items: UUID[]) => {
+      const filter = inputValue.toLowerCase()
+      return items.filter((unitId) => {
+        const unit = unitDetails[unitId]
+        if (!unit) return false
+        return (
+          unit.name.toLowerCase().startsWith(filter) ||
+          unit.costCenter?.startsWith(filter)
+        )
+      })
+    },
+    [unitDetails]
+  )
+
+  return (
+    <Combobox
+      data-qa="input-unit"
+      items={items}
+      selectedItem={selectedItem}
+      onChange={onChange}
+      placeholder={i18n.invoice.form.rows.unitId}
+      getItemLabel={getItemLabel}
+      filterItems={filterItems}
+    >
+      {{ menuItem: unitMenuItem }}
+    </Combobox>
+  )
+})
+
+const UnitMenuItem = styled.div`
+  padding: 8px 10px;
+
+  &.highlighted {
+    background-color: ${(p) => p.theme.colors.main.m4};
+  }
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  white-space: pre-line;
+`
+
+const UnitCostCenter = styled.span`
+  font-style: italic;
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  padding-left: 8px;
+`
 
 export default InvoiceRowSectionRow
