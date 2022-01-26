@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -139,7 +139,7 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
                 'absence-header-weekend': item.isWeekend()
               })}
             >
-              <div>{getWeekDay(item)}</div>
+              <div>{getWeekDay(i18n, item)}</div>
               <div>{item.getDate()}</div>
             </th>
           ) : (
