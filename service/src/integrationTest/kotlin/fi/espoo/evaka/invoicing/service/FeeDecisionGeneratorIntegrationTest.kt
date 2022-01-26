@@ -30,6 +30,7 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -143,6 +144,22 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     fun `child in a club does not affect fee decisions for siblings in any way`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, CLUB, testClub.id)
+        insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, placementPeriod.start) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions[0].children.size)
+        decisions[0].children[0].let { child ->
+            assertEquals(0, child.siblingDiscount)
+        }
+    }
+
+    @Test
+    fun `child in a school shift care does not affect fee decisions for siblings in any way`() {
+        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertPlacement(testChild_1.id, placementPeriod, SCHOOL_SHIFT_CARE, testClub.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
 
