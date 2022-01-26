@@ -51,7 +51,6 @@ import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
@@ -60,10 +59,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
-    @Autowired
-    private lateinit var generator: InvoiceGenerator
-
     private val productProvider = TestInvoiceProductProvider()
+
+    private val draftInvoiceGenerator = DefaultDraftInvoiceGenerator(productProvider)
+    private val generator = InvoiceGenerator(draftInvoiceGenerator)
 
     @BeforeEach
     fun beforeEach() {
