@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -184,13 +185,15 @@ data class AbsenceWithModifierInfo(
     val modifiedAt: HelsinkiDateTime
 )
 
-enum class AbsenceType {
+enum class AbsenceType : DatabaseEnum {
     OTHER_ABSENCE,
     SICKLEAVE,
     UNKNOWN_ABSENCE,
     PLANNED_ABSENCE,
     PARENTLEAVE,
     FORCE_MAJEURE;
+
+    override val sqlType: String = "absence_type"
 }
 
 data class AbsenceUpsert(
