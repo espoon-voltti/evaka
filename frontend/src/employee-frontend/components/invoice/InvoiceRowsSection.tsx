@@ -58,6 +58,7 @@ const emptyInvoiceRow = (
   unitId: '',
   costCenter: '',
   subCostCenter: '',
+  savedCostCenter: null,
   amount: 0,
   unitPrice: 0,
   price: 0

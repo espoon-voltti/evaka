@@ -95,6 +95,7 @@ val invoiceDetailedQueryBase =
         row.unit_id,
         daycare.cost_center,
         row_care_area.sub_cost_center,
+        row.saved_cost_center,
         row.description,
         child.date_of_birth as child_date_of_birth,
         child.first_name as child_first_name,
@@ -598,6 +599,7 @@ val toDetailedInvoice = { rv: RowView ->
                     unitId = rv.mapColumn("unit_id"),
                     costCenter = rv.mapColumn("cost_center"),
                     subCostCenter = rv.mapColumn("sub_cost_center"),
+                    savedCostCenter = rv.mapColumn("saved_cost_center"),
                     description = rv.mapColumn("description")
                 )
             )

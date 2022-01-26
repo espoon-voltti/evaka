@@ -100,6 +100,7 @@ data class InvoiceRowDetailed(
     val unitId: DaycareId,
     val costCenter: String,
     val subCostCenter: String?,
+    val savedCostCenter: String?,
     val description: String = ""
 ) : RowWithPrice {
     override val price

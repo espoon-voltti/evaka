@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
+import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.toEmployeeWithName
 import fi.espoo.evaka.toPersonBasic
@@ -85,6 +86,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
     headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
     codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
     rows = invoice.rows.map { row ->
+        val costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!
         InvoiceRowDetailed(
             id = row.id!!,
             child = allChildren.find { it.id == row.child.id }!!.toPersonDetailed(),
@@ -94,8 +96,9 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
             periodEnd = row.periodEnd,
             product = row.product,
             unitId = row.unitId,
-            costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!,
+            costCenter = costCenter,
             subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
+            savedCostCenter = if (invoice.status == InvoiceStatus.SENT || invoice.status == InvoiceStatus.WAITING_FOR_SENDING) costCenter else null,
             description = row.description
         )
     },

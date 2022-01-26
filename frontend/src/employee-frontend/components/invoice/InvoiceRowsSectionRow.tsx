@@ -30,6 +30,7 @@ interface InvoiceRowStub {
   product: string
   description: string
   unitId: UUID | null
+  savedCostCenter: string | null
   periodStart: LocalDate
   periodEnd: LocalDate
   amount: number
@@ -52,6 +53,7 @@ function InvoiceRowSectionRow({
     product,
     description,
     unitId,
+    savedCostCenter,
     periodStart,
     periodEnd,
     amount,
@@ -115,8 +117,8 @@ function InvoiceRowSectionRow({
         ) : (
           <div>
             <span>{unit?.name}</span>
-            {unit?.costCenter && (
-              <UnitCostCenter>{unit.costCenter}</UnitCostCenter>
+            {savedCostCenter && (
+              <UnitCostCenter>{savedCostCenter}</UnitCostCenter>
             )}
           </div>
         )}

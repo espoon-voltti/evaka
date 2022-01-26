@@ -152,6 +152,7 @@ class EspooInvoiceIntegrationClientTest {
         unitId = DaycareId(UUID.randomUUID()),
         costCenter = "12345",
         subCostCenter = "01",
+        savedCostCenter = "12345",
         description = ""
     )
 

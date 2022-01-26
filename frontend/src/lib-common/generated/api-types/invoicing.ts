@@ -403,6 +403,7 @@ export interface InvoiceRowDetailed {
   periodStart: LocalDate
   price: number
   product: string
+  savedCostCenter: string | null
   subCostCenter: string | null
   unitId: UUID
   unitPrice: number
