@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,7 +7,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { desktopMin } from 'lib-components/breakpoints'
+import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -131,12 +131,17 @@ const StyledNavLink = styled(NavLink)`
   font-family: Montserrat, sans-serif;
   font-size: 0.9375rem;
   text-transform: uppercase;
-  min-width: 140px;
+  letter-spacing: 0.08em;
+  text-align: center;
   padding: 0 ${defaultMargins.s};
-  border-bottom: 3px solid transparent;
+  border-bottom: 4px solid transparent;
+
+  @media screen and (min-width: ${desktopSmall}) {
+    padding: 0 ${defaultMargins.m};
+  }
 
   &.active {
-    border-color: ${colors.grayscale.g0};
+    border-bottom-color: ${colors.grayscale.g0};
     font-weight: ${fontWeights.bold};
   }
 `
