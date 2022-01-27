@@ -100,14 +100,16 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     /**
      * Returns the amount of time elapsed since the given timestamp
      */
-    fun durationSince(other: HelsinkiDateTime): Duration = Duration.between(other.toZonedDateTime(), this.toZonedDateTime())
+    fun durationSince(other: HelsinkiDateTime): Duration =
+        Duration.between(other.toZonedDateTime(), this.toZonedDateTime())
 
     /**
      * Returns the amount of time elapsed since this timestamp
      */
     fun elapsed(clock: Clock? = Clock.systemUTC()): Duration = now(clock).durationSince(this)
 
-    private inline fun update(crossinline f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime = from(f(toZonedDateTime()).toInstant())
+    private inline fun update(crossinline f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime =
+        from(f(toZonedDateTime()).toInstant())
 
     override fun compareTo(other: HelsinkiDateTime): Int = this.instant.compareTo(other.instant)
     override fun toString(): String = toZonedDateTime().toString()
@@ -150,3 +152,18 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
 
 // Truncate nanoseconds to avoid surprises when serializing to/from PostgreSQL, which only supports microsecond precision
 private fun Instant.truncateNanos() = with(ChronoField.MICRO_OF_SECOND, nano / 1000L)
+
+data class HelsinkiDateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiDateTime) {
+    init {
+        check(start <= end) { "Attempting to initialize invalid time range with start: $start, end: $end" }
+    }
+
+    fun overlaps(other: HelsinkiDateTimeRange) = this.start < other.end && other.start < this.end
+
+    fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
+        if (this.overlaps(other)) {
+            val start = maxOf(this.start, other.start)
+            val end = minOf(this.end, other.end)
+            HelsinkiDateTimeRange(start, end)
+        } else null
+}

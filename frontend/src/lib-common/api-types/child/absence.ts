@@ -15,4 +15,6 @@ export interface AbsenceChild {
   placements: Record<JsonOf<LocalDate>, AbsenceCareType[]>
   absences: Record<JsonOf<LocalDate>, AbsenceWithModifierInfo[]>
   backupCares: Record<JsonOf<LocalDate>, boolean>
+  attendanceTotalHours: number | null
+  reservationTotalHours: number | null
 }
