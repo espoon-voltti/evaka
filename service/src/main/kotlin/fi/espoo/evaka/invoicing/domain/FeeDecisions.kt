@@ -97,6 +97,7 @@ data class FeeDecisionPlacement(
 
 data class FeeDecisionServiceNeed(
     val feeCoefficient: BigDecimal,
+    val contractDaysPerMonth: Int?,
     val descriptionFi: String,
     val descriptionSv: String,
     val missing: Boolean

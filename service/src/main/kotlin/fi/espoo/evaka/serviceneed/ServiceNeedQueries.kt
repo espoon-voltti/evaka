@@ -205,6 +205,7 @@ SELECT
     voucher_value_coefficient,
     occupancy_coefficient,
     daycare_hours_per_week,
+    contract_days_per_month,
     part_day,
     part_week,
     fee_description_fi,
