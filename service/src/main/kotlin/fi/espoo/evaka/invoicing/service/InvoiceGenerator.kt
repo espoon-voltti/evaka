@@ -38,7 +38,14 @@ import java.time.temporal.TemporalAdjusters
 
 @Component
 class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
-    fun createAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
+
+    fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
+        val invoices = createAllDraftInvoices(tx, range)
+        tx.deleteDraftInvoicesByDateRange(range)
+        tx.upsertInvoices(invoices)
+    }
+
+    fun createAllDraftInvoices(tx: Database.Transaction, range: DateRange): List<Invoice> {
         tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
 
         val feeThresholds = tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
@@ -63,21 +70,17 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
 
         val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(tx, decisions) }
 
-        val invoices =
-            draftInvoiceGenerator.generateDraftInvoices(
-                unhandledDecisions,
-                unhandledPlacements,
-                range,
-                daycareCodes,
-                operationalDays,
-                feeThresholds,
-                absences,
-                freeChildren,
-                codebtors
-            )
-
-        tx.deleteDraftInvoicesByDateRange(range)
-        tx.upsertInvoices(invoices)
+        return draftInvoiceGenerator.generateDraftInvoices(
+            unhandledDecisions,
+            unhandledPlacements,
+            range,
+            daycareCodes,
+            operationalDays,
+            feeThresholds,
+            absences,
+            freeChildren,
+            codebtors
+        )
     }
 
     private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonId? {
@@ -98,6 +101,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val from = lastMonth.with(TemporalAdjusters.firstDayOfMonth())
         val to = lastMonth.with(TemporalAdjusters.lastDayOfMonth())
         return DateRange(from, to)
+    }
+
+    fun generateDraftInvoiceDiffBetweenOldAndNewInvoiceGenerator() {
     }
 }
 
