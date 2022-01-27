@@ -5,7 +5,7 @@ UPDATE invoice_row SET unit_id = (
     FROM daycare
     JOIN care_area ca ON daycare.care_area_id = ca.id
     WHERE daycare.cost_center = invoice_row.cost_center
-    AND ca.sub_cost_center = invoice_row.sub_cost_center
+    AND ca.sub_cost_center IS NOT DISTINCT FROM invoice_row.sub_cost_center
     ORDER BY id
     LIMIT 1
 );
