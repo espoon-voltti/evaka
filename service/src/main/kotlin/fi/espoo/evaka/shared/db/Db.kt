@@ -34,6 +34,7 @@ import java.lang.reflect.Type
 import java.sql.ResultSet
 import java.util.Optional
 import java.util.UUID
+import java.util.function.Function
 
 /**
  * Registers the given JDBI column mapper, which will be used to map data from database to values of type T.
@@ -100,6 +101,22 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.register(productKeyColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
+    jdbi.registerArrayType { elementType, _ ->
+        Optional.ofNullable(
+            (elementType as? Class<*>)?.let { elementClass ->
+                if (DatabaseEnum::class.java.isAssignableFrom(elementClass)) {
+                    // The sql type information should really be tied to the *class*, not the individual enum constants.
+                    // However, this is not really possible with interfaces, so fetch the information from the first constant
+                    // as a workaround
+                    (elementClass.enumConstants?.first() as? DatabaseEnum)?.let {
+                        SqlArrayType.of<Any>(it.sqlType, Function.identity())
+                    }
+                } else {
+                    null
+                }
+            }
+        )
+    }
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(
             SqlArrayType.of<Id<*>>("uuid") { it.raw }
