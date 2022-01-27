@@ -110,6 +110,11 @@ const NavbarLink = styled(NavLink)`
       font-weight: ${fontWeights.bold};
     }
   }
+  :hover {
+    ${NavLinkText} {
+      color: ${(p) => p.theme.colors.main.m2Hover};
+    }
+  }
 `
 
 const LogoutLink = styled.a`
