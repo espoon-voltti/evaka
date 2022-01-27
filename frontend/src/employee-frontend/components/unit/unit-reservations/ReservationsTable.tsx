@@ -66,7 +66,9 @@ export default React.memo(function ReservationsTable({
               childDailyRecordRow: Record<JsonOf<LocalDate>, ChildRecordOfDay>,
               index
             ) => (
-              <DayTr key={`${childDailyRecords.child.id}-${index}`}>
+              <DayTr key={`${childDailyRecords.child.id}-${index}`}
+                data-qa={`reservation-row-child-${childDailyRecords.child.id}`}
+              >
                 <NameTd partialRow={multipleRows} rowIndex={index}>
                   {index == 0 && (
                     <ChildName>
@@ -101,14 +103,21 @@ export default React.memo(function ReservationsTable({
                     />
                   </DayTd>
                 ))}
-                <StyledTd partialRow={multipleRows} rowIndex={index}>
-                  <IconButton
-                    icon={faCalendarPlus}
-                    onClick={() =>
-                      onMakeReservationForChild(childDailyRecords.child)
-                    }
-                  />
-                </StyledTd>
+                {index == 0 && (
+                  <StyledTd
+                    partialRow={multipleRows}
+                    rowIndex={index}
+                    rowSpan={multipleRows ? 2 : 1}
+                  >
+                    <IconButton
+                      data-qa={`add-reservation-for-${childDailyRecords.child.id}`}
+                      icon={faCalendarPlus}
+                      onClick={() =>
+                        onMakeReservationForChild(childDailyRecords.child)
+                      }
+                    />
+                  </StyledTd>
+                )}
               </DayTr>
             )
           )

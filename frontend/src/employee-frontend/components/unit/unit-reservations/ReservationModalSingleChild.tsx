@@ -179,6 +179,7 @@ export default React.memo(function ReservationModalSingleChild({
       <FixedSpaceRow>
         <DatePicker
           date={formData.startDate}
+          data-qa="reservation-start-date"
           onChange={(date) => updateForm({ startDate: date })}
           locale={lang}
           isValidDate={(date) => !date.isBefore(LocalDate.today())}
@@ -191,6 +192,7 @@ export default React.memo(function ReservationModalSingleChild({
         <DatePickerSpacer />
         <DatePicker
           date={formData.endDate}
+          data-qa="reservation-end-date"
           onChange={(date) => updateForm({ endDate: date })}
           locale={lang}
           isValidDate={(date) => !date.isBefore(LocalDate.today())}
@@ -354,6 +356,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
       {props.label}
       <FixedSpaceRow alignItems="center">
         <TimeInput
+          data-qa="reservation-start-time"
           value={timeRange.startTime ?? ''}
           onChange={(value) => {
             const updatedRange = {
@@ -373,6 +376,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
         />
         <span>–</span>
         <TimeInput
+          data-qa="reservation-end-time"
           value={timeRange.endTime ?? ''}
           onChange={(value) => {
             const updatedRange = {
