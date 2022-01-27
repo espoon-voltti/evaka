@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { addDays, subDays } from 'date-fns'
-import { formatIsoDate } from 'lib-common/date'
 import { PlacementType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import config from '../../config'
 import {
@@ -51,8 +51,8 @@ const setupPlacement = async (childPlacementType: PlacementType) => {
       uuidv4(),
       childId,
       unitId,
-      formatIsoDate(new Date()),
-      formatIsoDate(new Date()),
+      LocalDate.today().formatIso(),
+      LocalDate.today().formatIso(),
       childPlacementType
     )
   ])

@@ -27,17 +27,6 @@ export function formatDate(
   return date ? format(date, dateFormat) : ''
 }
 
-type IsoDate = 'yyyy-MM-dd'
-type IsoDateWithoutDay = 'yyyy-MM'
-type IsoFormat = IsoDate | IsoDateWithoutDay
-
-export function formatIsoDate(
-  date: Date | null | undefined,
-  isoFormat: IsoFormat = 'yyyy-MM-dd'
-): string {
-  return date ? format(date, isoFormat) : ''
-}
-
 export function formatTime(date: Date | null | undefined): string {
   return date ? format(date, 'HH:mm') : ''
 }

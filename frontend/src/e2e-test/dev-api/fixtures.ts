@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
-import { formatIsoDate } from 'lib-common/date'
 import DateRange from 'lib-common/date-range'
 import { ApplicationForm } from 'lib-common/generated/api-types/application'
 import {
@@ -531,7 +530,7 @@ export const personFixtureChildZeroYearOld: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: formatIsoDate(new Date()), // Always a zero-year-old
+  dateOfBirth: LocalDate.today().formatIso(), // Always a zero-year-old
   streetAddress: 'Kamreerintie 2',
   postalCode: '00370',
   postOffice: 'Espoo',
