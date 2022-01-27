@@ -430,6 +430,14 @@ export interface StaffAttendanceUpdate {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.service.Stats
+*/
+export interface Stats {
+  maximum: number
+  minimum: number
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.UnitFeatures
 */
 export interface UnitFeatures {

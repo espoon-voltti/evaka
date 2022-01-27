@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import { Stats } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -30,7 +31,6 @@ import {
   DaycareGroupPlacementDetailed,
   DaycarePlacement,
   flatMapGroupPlacements,
-  Stats,
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../types/unit'

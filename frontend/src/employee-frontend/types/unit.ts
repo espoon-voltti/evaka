@@ -216,11 +216,6 @@ export interface DaycareGroupWithPlacements extends DaycareGroup {
   placements: DaycareGroupPlacementDetailed[]
 }
 
-export interface Stats {
-  minimum: number
-  maximum: number
-}
-
 export type OccupancyType = 'CONFIRMED' | 'PLANNED' | 'REALIZED'
 
 export interface Occupancy {
