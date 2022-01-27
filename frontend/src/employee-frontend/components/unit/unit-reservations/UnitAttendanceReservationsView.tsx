@@ -5,6 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
+import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/enums'
@@ -13,8 +14,11 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { H3, Title } from 'lib-components/typography'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { fontWeights, H3, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
@@ -23,6 +27,19 @@ import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import ReservationsTable from './ReservationsTable'
+
+const Time = styled.span`
+  font-weight: ${fontWeights.normal};
+  display: inline-block;
+  // match absence legend row height
+  min-height: 22px;
+  padding: 1px 4px;
+`
+
+const AttendanceTime = styled(Time)`
+  font-weight: ${fontWeights.semibold};
+  background: ${colors.grayscale.g4};
+`
 
 const legendAbsenceTypes: AbsenceType[] = [
   'OTHER_ABSENCE',
@@ -66,6 +83,20 @@ export default React.memo(function UnitAttendanceReservationsView({
 
   const [creatingReservationChild, setCreatingReservationChild] =
     useState<Child | null>(null)
+
+  const legendTimeLabels = useMemo(() => {
+    const t = i18n.unit.attendanceReservations.legend
+    const indicator = i18n.unit.attendanceReservations.serviceTimeIndicator
+    return Object.entries({
+      [t.reservation]: <Time>{t.hhmm}</Time>,
+      [t.serviceTime]: (
+        <Time>
+          {t.hhmm} {indicator}
+        </Time>
+      ),
+      [t.attendanceTime]: <AttendanceTime>{t.hhmm}</AttendanceTime>
+    }).map(([value, label]) => ({ label, value }))
+  }, [i18n])
 
   return (
     <>
@@ -122,9 +153,17 @@ export default React.memo(function UnitAttendanceReservationsView({
             <div>
               <HorizontalLine dashed slim />
               <H3>{i18n.absences.legendTitle}</H3>
-              <FixedSpaceColumn spacing="xs">
-                <AbsenceLegend icons absenceTypes={legendAbsenceTypes} />
-              </FixedSpaceColumn>
+              <FixedSpaceRow alignItems="flex-start" spacing="XL">
+                <LabelValueList
+                  spacing="small"
+                  horizontalSpacing="small"
+                  labelWidth="fit-content(40%)"
+                  contents={legendTimeLabels}
+                />
+                <FixedSpaceColumn spacing="xs">
+                  <AbsenceLegend icons absenceTypes={legendAbsenceTypes} />
+                </FixedSpaceColumn>
+              </FixedSpaceRow>
             </div>
           </>
         )

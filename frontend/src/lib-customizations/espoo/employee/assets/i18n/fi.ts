@@ -1613,7 +1613,14 @@ export const fi = {
         }
       },
       dayOff: 'Vapaapäivä',
-      missingServiceTime: 'Sop.aika puuttuu'
+      missingServiceTime: 'Sop.aika puuttuu',
+      serviceTimeIndicator: '(s)',
+      legend: {
+        reservation: 'Varaus',
+        serviceTime: 'Sopimusaika',
+        attendanceTime: 'Saapumis-/lähtöaika',
+        hhmm: 'tt:mm'
+      }
     },
     error: {
       placement: {
