@@ -181,6 +181,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
                 tx = it,
                 asyncJobRunner = asyncJobRunner,
                 user = financeUser,
+                evakaEnv = evakaEnv,
                 now = approvedAt,
                 ids = listOf(decision.id)
             )

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
@@ -63,6 +64,7 @@ class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
     private val generator: FinanceDecisionGenerator,
     private val accessControl: AccessControl,
+    private val evakaEnv: EvakaEnv,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/search")
@@ -136,6 +138,7 @@ class VoucherValueDecisionController(
                     tx = it,
                     asyncJobRunner = asyncJobRunner,
                     user = user,
+                    evakaEnv = evakaEnv,
                     now = evakaClock.now(),
                     ids = decisionIds
                 )
@@ -203,6 +206,7 @@ fun sendVoucherValueDecisions(
     tx: Database.Transaction,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     user: AuthenticatedUser,
+    evakaEnv: EvakaEnv,
     now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>
 ) {
@@ -214,8 +218,13 @@ fun sendVoucherValueDecisions(
         throw BadRequest("Some voucher value decisions were not drafts")
     }
 
-    if (decisions.any { it.validFrom > now.toLocalDate() }) {
-        throw BadRequest("Some of the voucher value decisions are not valid yet")
+    val today = now.toLocalDate()
+    val lastPossibleDecisionValidFromDate = today.plusDays(evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
+    if (decisions.any { it.validFrom > lastPossibleDecisionValidFromDate }) {
+        throw BadRequest(
+            "Some of the voucher value decisions are not valid yet",
+            "voucherValueDecisions.confirmation.tooFarInFuture"
+        )
     }
 
     val conflicts = decisions
