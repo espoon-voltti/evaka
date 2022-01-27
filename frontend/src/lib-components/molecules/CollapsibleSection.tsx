@@ -22,6 +22,16 @@ const Wrapper = styled.div`
   }
 `
 
+const IconWrapper = styled.div`
+  color: ${(p) => p.theme.colors.grayscale.g35};
+  font-size: 28px;
+  width: 35px;
+  margin-right: ${defaultMargins.s};
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+`
+
 const Row = styled.div`
   display: flex;
   align-items: center;
@@ -39,20 +49,11 @@ const Row = styled.div`
   &:hover {
     cursor: pointer;
 
-    h3 {
+    h3,
+    ${IconWrapper} {
       color: ${(p) => p.theme.colors.main.m2Hover};
     }
   }
-`
-
-const IconWrapper = styled.div`
-  color: ${(p) => p.theme.colors.grayscale.g35};
-  font-size: 28px;
-  width: 35px;
-  margin-right: ${defaultMargins.s};
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
 `
 
 const ToggleWrapper = styled.div`
