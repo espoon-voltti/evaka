@@ -24,6 +24,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.operationalDates
 import fi.espoo.evaka.user.EvakaUserType
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
@@ -48,17 +50,7 @@ class AbsenceService {
         val attendances = tx.getGroupAttendances(groupId, range).groupBy { it.childId }.toMap()
         val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
 
-        val operationalDays = run {
-            // Units that are operational every day of the week are operational during holidays as well
-            if (daycare.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)) range.dates().toList()
-            else {
-                val holidays = tx.getHolidays(range)
-                range.dates()
-                    .filter { daycare.operationDays.contains(it.dayOfWeek.value) }
-                    .filterNot { holidays.contains(it) }
-                    .toList()
-            }
-        }
+        val operationalDays = operationalDates(range.dates(), daycare.operationDays, tx.getHolidays(range))
         val setOfOperationalDays = operationalDays.toSet()
 
         val children = placementList.map { (child, placements) ->
@@ -87,7 +79,7 @@ class AbsenceService {
             )
         }
 
-        return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays)
+        return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays.toList())
     }
 
     fun getAbsencesByChild(tx: Database.Read, childId: ChildId, year: Int, month: Int): List<Absence> {
@@ -471,13 +463,6 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
         .bind("period", period)
         .mapTo<GroupBackupCare>()
         .list()
-
-private fun Database.Read.getHolidays(range: FiniteDateRange): List<LocalDate> = createQuery(
-    "SELECT date FROM holiday WHERE between_start_and_end(:range, date)"
-)
-    .bind("range", range)
-    .mapTo<LocalDate>()
-    .list()
 
 data class ChildReservation(
     val childId: ChildId,
