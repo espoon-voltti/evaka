@@ -10,7 +10,6 @@ import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.DefaultDraftInvoiceGenerator
-import fi.espoo.evaka.invoicing.service.DraftInvoiceGenerator
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
@@ -31,6 +30,7 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
+import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 
@@ -73,11 +73,9 @@ class EspooConfig {
     @Bean
     fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
+    @Primary
     @Bean
-    fun defaultDraftInvoiceGenerator(): DraftInvoiceGenerator = DefaultDraftInvoiceGenerator(invoiceProductsProvider())
-
-    @Bean
-    fun invoiceGenerator(): InvoiceGenerator = InvoiceGenerator(defaultDraftInvoiceGenerator())
+    fun defaultInvoiceGenerator(): InvoiceGenerator = InvoiceGenerator(DefaultDraftInvoiceGenerator(invoiceProductsProvider()))
 
     @Bean
     fun featureConfig(): FeatureConfig = FeatureConfig(
