@@ -28,12 +28,13 @@ import {
   startOfWeek,
   getISOWeek
 } from 'date-fns'
-import { DateFormat, formatDate } from './date'
+import { DateFormat, DateFormatWithWeekday, formatDate } from './date'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
 const fiPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/
 
+type Lang = 'fi' | 'sv' | 'en'
 export default class LocalDate {
   private constructor(
     readonly year: number,
@@ -142,8 +143,12 @@ export default class LocalDate {
   differenceInDays(other: LocalDate): number {
     return differenceInDays(this.toSystemTzDate(), other.toSystemTzDate())
   }
-  format(pattern?: DateFormat): string {
-    return formatDate(this.toSystemTzDate(), pattern)
+  format<T extends DateFormat | DateFormatWithWeekday>(
+    ...params: T extends DateFormatWithWeekday
+      ? [DateFormatWithWeekday, Lang]
+      : [DateFormat?]
+  ): string {
+    return formatDate(this.toSystemTzDate(), ...params)
   }
   /**
    * <a href="https://date-fns.org/docs/format">date-fns format()</a>

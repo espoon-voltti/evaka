@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { Translations } from 'lib-customizations/employee'
-import { DayOfWeek } from '../../types'
 
 export function getRange(num: number) {
   const nums = []
@@ -14,14 +12,6 @@ export function getRange(num: number) {
     i++
   }
   return nums
-}
-
-export function dateIsDayOfWeek(date: LocalDate, dayOfWeek: DayOfWeek) {
-  return date.getIsoDayOfWeek() == dayOfWeek
-}
-
-export function getWeekDay(i18n: Translations, date: LocalDate) {
-  return i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek() - 1]
 }
 
 export function getMonthDays(date: LocalDate): LocalDate[] {

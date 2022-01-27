@@ -2,33 +2,49 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format, isToday } from 'date-fns'
+import { format, isToday, Locale } from 'date-fns'
+import { fi, sv, enGB } from 'date-fns/locale'
+
+const locales: { fi: Locale; sv: Locale; en: Locale } = { fi, sv, en: enGB }
 
 export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
+const DATE_FORMAT_TIME_ONLY = 'HH:mm'
 
 type DateWithoutLeadingZeros = 'd.M.yyyy'
 type DateWithLeadingZeros = 'dd.MM.yyyy'
-
-type Time = 'HH:mm'
 type FullDate = DateWithLeadingZeros | DateWithoutLeadingZeros
 
 type DateWithoutYear = 'dd.MM.'
 type DateWithoutYearShort = 'd.M.'
 
 export type DateFormat = FullDate | DateWithoutYear | DateWithoutYearShort
+
+type Weekday = 'EEEEEE' // ma, ti.. må, ti.. Mo, Tu
+export type DateFormatWithWeekday = Weekday | `${Weekday} ${DateFormat}`
+
+type Time = typeof DATE_FORMAT_TIME_ONLY
 type DateTimeFormat = `${FullDate} ${Time}`
 
-type AllowedDateFormat = DateFormat | DateTimeFormat
+type FormatWithoutWeekday = DateFormat | DateTimeFormat
+type AllowedDateFormat = FormatWithoutWeekday | DateFormatWithWeekday
 
-export function formatDate(
+export function formatDate<T extends AllowedDateFormat>(
   date: Date | null | undefined,
-  dateFormat: AllowedDateFormat = 'dd.MM.yyyy'
+  ...[dateFormat, locale]: T extends DateFormatWithWeekday
+    ? [DateFormatWithWeekday, keyof typeof locales]
+    : [FormatWithoutWeekday?]
 ): string {
-  return date ? format(date, dateFormat) : ''
+  return date
+    ? format(
+        date,
+        dateFormat ?? 'dd.MM.yyyy',
+        locale ? { locale: locales[locale] } : undefined
+      )
+    : ''
 }
 
 export function formatTime(date: Date | null | undefined): string {
-  return date ? format(date, 'HH:mm') : ''
+  return date ? format(date, DATE_FORMAT_TIME_ONLY) : ''
 }
 
 // matches 24h format with mandatory leading zeros "23:59" and "00:09"
@@ -39,5 +55,5 @@ export function isValidTime(time: string): boolean {
 }
 
 export function formatDateOrTime(date: Date): string {
-  return format(date, isToday(date) ? 'HH:mm' : 'dd.MM.')
+  return isToday(date) ? formatTime(date) : formatDate(date, 'dd.MM.')
 }

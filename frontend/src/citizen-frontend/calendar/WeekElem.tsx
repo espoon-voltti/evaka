@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,7 +15,7 @@ import {
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { useTranslation } from '../localization'
+import { useLang, useTranslation } from '../localization'
 import { WeeklyData } from './CalendarListView'
 import { Reservations } from './calendar-elements'
 
@@ -73,7 +73,7 @@ const DayElem = React.memo(function DayElem({
   selectDate,
   dayIsReservable
 }: DayProps) {
-  const i18n = useTranslation()
+  const [lang] = useLang()
   const ref = useRef<HTMLDivElement>()
 
   useEffect(() => {
@@ -100,13 +100,7 @@ const DayElem = React.memo(function DayElem({
       data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
       <DayColumn spacing="xxs" inactive={!dayIsReservable(dailyReservations)}>
-        <div>
-          {
-            i18n.common.datetime.weekdaysShort[
-              dailyReservations.date.getIsoDayOfWeek() - 1
-            ]
-          }
-        </div>
+        <div>{dailyReservations.date.format('EEEEEE', lang)}</div>
         <div>{dailyReservations.date.format('d.M.')}</div>
       </DayColumn>
       <div data-qa="reservations">

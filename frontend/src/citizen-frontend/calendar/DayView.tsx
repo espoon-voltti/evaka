@@ -33,7 +33,7 @@ import {
   faTrash,
   faUserMinus
 } from 'lib-icons'
-import { useTranslation } from '../localization'
+import { useLang, useTranslation } from '../localization'
 import CalendarModal from './CalendarModal'
 import TimeRangeInput, { TimeRange, validateTimeRange } from './TimeRangeInput'
 import { postReservations } from './api'
@@ -109,6 +109,7 @@ export default React.memo(function DayView({
   openAbsenceModal
 }: Props) {
   const i18n = useTranslation()
+  const [lang] = useLang()
 
   const childrenWithReservations = useMemo(
     () => getChildrenWithReservations(date, reservationsResponse),
@@ -161,9 +162,7 @@ export default React.memo(function DayView({
             onClick={navigateToPrevDate}
             disabled={!previousDate}
           />
-          <DayOfWeek>{`${
-            i18n.common.datetime.weekdaysShort[date.getIsoDayOfWeek() - 1]
-          } ${date.format('d.M.yyyy')}`}</DayOfWeek>
+          <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
           <IconButton
             icon={faChevronRight}
             onClick={navigateToNextDate}
