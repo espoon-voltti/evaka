@@ -6,7 +6,7 @@ import React from 'react'
 import { useHistory } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
-import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
+import { formatTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -75,10 +75,7 @@ export default React.memo(function VasuEditPage({
       case 'dirty':
       case 'clean':
         return status.savedAt
-          ? `${i18n.common.saved} ${formatDate(
-              status.savedAt,
-              DATE_FORMAT_TIME_ONLY
-            )}`
+          ? `${i18n.common.saved} ${formatTime(status.savedAt)}`
           : null
     }
   }

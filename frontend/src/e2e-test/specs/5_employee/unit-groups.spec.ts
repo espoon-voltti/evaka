@@ -62,8 +62,8 @@ beforeEach(async () => {
       id: child1DaycarePlacementId,
       childId: child1Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.format('yyyy-MM-dd'),
-      endDate: placementEndDate.format('yyyy-MM-dd')
+      startDate: placementStartDate.formatIso(),
+      endDate: placementEndDate.formatIso()
     })
     .save()
 
@@ -74,8 +74,8 @@ beforeEach(async () => {
       id: child2DaycarePlacementId,
       childId: child2Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.format('yyyy-MM-dd'),
-      endDate: placementEndDate.format('yyyy-MM-dd')
+      startDate: placementStartDate.formatIso(),
+      endDate: placementEndDate.formatIso()
     })
     .save()
 })
@@ -102,8 +102,8 @@ describe('Unit groups - unit supervisor', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.format('yyyy-MM-dd'),
-        endDate: placementEndDate.format('yyyy-MM-dd')
+        startDate: placementStartDate.formatIso(),
+        endDate: placementEndDate.formatIso()
       })
       .save()
 
@@ -173,8 +173,8 @@ describe('Unit groups - unit supervisor', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.format('yyyy-MM-dd'),
-        endDate: placementEndDate.format('yyyy-MM-dd')
+        startDate: placementStartDate.formatIso(),
+        endDate: placementEndDate.formatIso()
       })
       .save()
 
@@ -203,8 +203,8 @@ describe('Unit groups - unit supervisor', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.format('yyyy-MM-dd'),
-        endDate: placementEndDate.format('yyyy-MM-dd')
+        startDate: placementStartDate.formatIso(),
+        endDate: placementEndDate.formatIso()
       })
       .save()
 
@@ -244,8 +244,8 @@ describe('Unit groups - staff', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.format('yyyy-MM-dd'),
-        endDate: placementEndDate.format('yyyy-MM-dd')
+        startDate: placementStartDate.formatIso(),
+        endDate: placementEndDate.formatIso()
       })
       .save()
 

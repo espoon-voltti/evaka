@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -63,7 +63,7 @@ function Presences() {
             <ReportDownload
               data={rows.value.map((row) => ({
                 ...row,
-                date: row.date.format('dd/MM/yyyy'),
+                date: row.date.formatIso(),
                 present:
                   row.present === true
                     ? 'kyllä'

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -40,7 +40,7 @@ const yearOptions = range(
 )
 
 function getFilename(i18n: Translations, year: number, month: number) {
-  const time = LocalDate.of(year, month, 1).format('yyyy-MM')
+  const time = LocalDate.of(year, month, 1).formatExotic('yyyy-MM')
   return `Päättyvät_sijoitukset-${time}.csv`
 }
 

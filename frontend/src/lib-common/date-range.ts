@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DateFormat } from './date'
 import FiniteDateRange from './finite-date-range'
 import { JsonOf } from './json'
 import LocalDate from './local-date'
@@ -23,7 +24,7 @@ export default class DateRange {
     return new DateRange(this.start, end)
   }
 
-  format(datePattern?: string): string {
+  format(datePattern?: DateFormat): string {
     return `${this.start.format(datePattern)} - ${
       this.end?.format(datePattern) ?? ''
     }`

@@ -71,8 +71,8 @@ beforeEach(async () => {
       id: child1DaycarePlacementId,
       childId: child1Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.format('yyyy-MM-dd'),
-      endDate: placementEndDate.format('yyyy-MM-dd')
+      startDate: placementStartDate.formatIso(),
+      endDate: placementEndDate.formatIso()
     })
     .save()
 
@@ -83,8 +83,8 @@ beforeEach(async () => {
       id: child2DaycarePlacementId,
       childId: child2Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.format('yyyy-MM-dd'),
-      endDate: placementEndDate.format('yyyy-MM-dd')
+      startDate: placementStartDate.formatIso(),
+      endDate: placementEndDate.formatIso()
     })
     .save()
 })
@@ -124,8 +124,8 @@ describe('Unit groups - placement plans / proposals', () => {
       .with({
         applicationId: application1.id,
         unitId: daycareFixture.id,
-        periodStart: today.format('yyyy-MM-dd'),
-        periodEnd: today.format('yyyy-MM-dd')
+        periodStart: today.formatIso(),
+        periodEnd: today.formatIso()
       })
       .save()
 
@@ -133,8 +133,8 @@ describe('Unit groups - placement plans / proposals', () => {
       .with({
         applicationId: application2.id,
         unitId: daycareFixture.id,
-        periodStart: today.format('yyyy-MM-dd'),
-        periodEnd: today.format('yyyy-MM-dd')
+        periodStart: today.formatIso(),
+        periodEnd: today.formatIso()
       })
       .save()
 
@@ -143,8 +143,8 @@ describe('Unit groups - placement plans / proposals', () => {
         applicationId: application2.id,
         employeeId: unitSupervisor.id,
         unitId: daycareFixture.id,
-        startDate: today.format('yyyy-MM-dd'),
-        endDate: today.format('yyyy-MM-dd')
+        startDate: today.formatIso(),
+        endDate: today.formatIso()
       })
       .save()
 
@@ -154,8 +154,8 @@ describe('Unit groups - placement plans / proposals', () => {
         applicationId: application2.id,
         employeeId: unitSupervisor.id,
         unitId: daycareFixture.id,
-        startDate: today.addDays(1).format('yyyy-MM-dd'),
-        endDate: today.addDays(2).format('yyyy-MM-dd')
+        startDate: today.addDays(1).formatIso(),
+        endDate: today.addDays(2).formatIso()
       })
       .save()
 
