@@ -265,11 +265,11 @@ WHERE child_id = ANY(:childIds)
 private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, DailyServiceTimes>): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.child }
-        .map { (child, rowsByChild) ->
+        .map { (child, dailyData) ->
             UnitAttendanceReservations.ChildDailyRecords(
                 child = child.copy(dailyServiceTimes = serviceTimes.get(child.id)),
-                dailyData = listOf(
-                    rowsByChild.associateBy(
+                dailyData = listOfNotNull(
+                    dailyData.associateBy(
                         keySelector = { it.date },
                         valueTransform = {
                             UnitAttendanceReservations.ChildRecordOfDay(
@@ -279,7 +279,7 @@ private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serv
                             )
                         }
                     ),
-                    rowsByChild.associateBy(
+                    if (dailyData.any { it.reservations.size > 1 }) dailyData.associateBy(
                         keySelector = { it.date },
                         valueTransform = {
                             UnitAttendanceReservations.ChildRecordOfDay(
@@ -288,7 +288,7 @@ private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serv
                                 absence = it.absence
                             )
                         }
-                    )
+                    ) else null
                 )
             )
         }
