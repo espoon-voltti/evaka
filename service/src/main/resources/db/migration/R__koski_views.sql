@@ -67,7 +67,7 @@ TABLE (
         SELECT jsonb_agg(jsonb_build_object('date', a.date, 'type', a.absence_type) ORDER BY a.date) AS preparatory_absences
         FROM absence a
         WHERE a.child_id = p.child_id
-        AND a.care_type = 'PRESCHOOL'
+        AND a.category = 'NONBILLABLE'
         AND between_start_and_end(full_range, a.date)
         AND a.date > '2020-08-01'
     ) pa ON p.type = 'PREPARATORY'

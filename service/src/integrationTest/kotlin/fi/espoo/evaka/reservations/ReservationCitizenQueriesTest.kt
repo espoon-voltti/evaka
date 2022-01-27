@@ -5,7 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.getAbsencesByChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -214,8 +214,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
         db.transaction {
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = monday.plusDays(1))
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.insertTestAbsence(childId = testChild_1.id, date = monday, careType = AbsenceCareType.DAYCARE)
-            it.insertTestAbsence(childId = testChild_1.id, date = monday.plusDays(1), careType = AbsenceCareType.DAYCARE)
+            it.insertTestAbsence(childId = testChild_1.id, date = monday, category = AbsenceCategory.BILLABLE)
+            it.insertTestAbsence(childId = testChild_1.id, date = monday.plusDays(1), category = AbsenceCategory.BILLABLE)
         }
 
         // when

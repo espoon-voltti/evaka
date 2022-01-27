@@ -7,7 +7,7 @@ package fi.espoo.evaka.attendance
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
@@ -34,6 +34,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -96,7 +97,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `post return to coming - happy case when absent`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildAbsent(listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
+        givenChildAbsent(AbsenceType.UNKNOWN_ABSENCE, AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
 
         val child = returnToComingAssertOkOneChild()
 
@@ -121,8 +122,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val info = getDepartureInfoAssertOk()
         assertEquals(
             listOf(
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(13, 15))
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
             ),
             info
         )
@@ -136,7 +137,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         val info = getDepartureInfoAssertOk()
         assertEquals(
-            listOf(AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0))),
+            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0))),
             info
         )
     }
@@ -150,8 +151,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val info = getDepartureInfoAssertOk()
         assertEquals(
             listOf(
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(23, 59)),
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(13, 15))
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
             ),
             info
         )
@@ -166,8 +167,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val info = getDepartureInfoAssertOk()
         assertEquals(
             listOf(
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(13, 15))
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
             ),
             info
         )
@@ -181,7 +182,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         val info = getDepartureInfoAssertOk()
         assertEquals(
-            listOf(AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0))),
+            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0))),
             info
         )
     }
@@ -195,8 +196,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val info = getDepartureInfoAssertOk()
         assertEquals(
             listOf(
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(14, 15))
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(14, 15))
             ),
             info
         )
@@ -211,8 +212,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val info = getDepartureInfoAssertOk()
         assertEquals(
             listOf(
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(23, 59)),
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(14, 15))
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(14, 15))
             ),
             info
         )
@@ -227,8 +228,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val info = getDepartureInfoAssertOk()
         assertEquals(
             listOf(
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, LocalTime.of(14, 15))
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(14, 15))
             ),
             info
         )
@@ -274,8 +275,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
         assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
-        assertEquals(1, child.absences.size)
-        assertEquals(AbsenceCareType.PRESCHOOL_DAYCARE, child.absences.first().careType)
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -290,8 +290,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
         assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
-        assertEquals(1, child.absences.size)
-        assertEquals(AbsenceCareType.PRESCHOOL, child.absences.first().careType)
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -306,9 +305,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
         assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
-        assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -350,7 +347,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `post return to present - error when absent`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildAbsent(listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
+        givenChildAbsent(AbsenceType.UNKNOWN_ABSENCE, AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
         returnToPresentAssertFail(409)
     }
 
@@ -371,8 +368,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -383,9 +379,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -396,8 +390,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -408,9 +401,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -421,8 +412,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.DAYCARE })
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -433,8 +423,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.DAYCARE })
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -445,8 +434,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(1, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.CLUB })
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test
@@ -523,10 +511,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.DEPARTED, child.status)
     }
 
-    private fun givenChildAbsent(absentFrom: List<AbsenceCareType>, absenceType: AbsenceType) {
-        absentFrom.forEach { careType ->
+    private fun givenChildAbsent(absenceType: AbsenceType, vararg categories: AbsenceCategory) {
+        categories.forEach { category ->
             db.transaction {
-                it.insertTestAbsence(childId = testChild_1.id, absenceType = absenceType, careType = careType, date = LocalDate.now())
+                it.insertTestAbsence(childId = testChild_1.id, absenceType = absenceType, category = category, date = LocalDate.now())
             }
         }
     }

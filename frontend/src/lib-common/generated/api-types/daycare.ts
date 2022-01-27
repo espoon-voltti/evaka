@@ -21,22 +21,18 @@ import { UUID } from '../../types'
 */
 export interface Absence {
   absenceType: AbsenceType
-  careType: AbsenceCareType
+  category: AbsenceCategory
   childId: UUID
   date: LocalDate
   id: UUID
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.AbsenceCareType
+* Generated from fi.espoo.evaka.daycare.service.AbsenceCategory
 */
-export type AbsenceCareType = 
-  | 'SCHOOL_SHIFT_CARE'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'DAYCARE_5YO_FREE'
-  | 'DAYCARE'
-  | 'CLUB'
+export type AbsenceCategory = 
+  | 'BILLABLE'
+  | 'NONBILLABLE'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceChild
@@ -46,7 +42,7 @@ export interface AbsenceChild {
   attendanceTotalHours: number | null
   backupCares: Record<string, boolean>
   child: Child
-  placements: Record<string, AbsenceCareType[]>
+  placements: Record<string, AbsenceCategory[]>
   reservationTotalHours: number | null
 }
 
@@ -54,7 +50,7 @@ export interface AbsenceChild {
 * Generated from fi.espoo.evaka.daycare.service.AbsenceDelete
 */
 export interface AbsenceDelete {
-  careType: AbsenceCareType
+  category: AbsenceCategory
   childId: UUID
   date: LocalDate
 }
@@ -86,7 +82,7 @@ export type AbsenceType =
 */
 export interface AbsenceUpsert {
   absenceType: AbsenceType
-  careType: AbsenceCareType
+  category: AbsenceCategory
   childId: UUID
   date: LocalDate
 }
@@ -96,7 +92,7 @@ export interface AbsenceUpsert {
 */
 export interface AbsenceWithModifierInfo {
   absenceType: AbsenceType
-  careType: AbsenceCareType
+  category: AbsenceCategory
   childId: UUID
   date: LocalDate
   id: UUID

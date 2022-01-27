@@ -5,7 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.note.group.GroupNote
@@ -70,7 +70,7 @@ data class AttendanceTimes(
 )
 
 data class ChildAbsence(
-    val careType: AbsenceCareType
+    val category: AbsenceCategory
 )
 
 data class AttendanceReservation(val startTime: String, val endTime: String)

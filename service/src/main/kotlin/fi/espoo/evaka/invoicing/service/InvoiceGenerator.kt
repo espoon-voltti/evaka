@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
@@ -68,8 +68,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val daycareCodes = tx.getDaycareCodes()
         val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
-        val absences: List<AbsenceStub> =
-            tx.getAbsenceStubs(range, listOf(AbsenceCareType.DAYCARE, AbsenceCareType.PRESCHOOL_DAYCARE))
+        val absences: List<AbsenceStub> = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
 
         val freeChildren =
             if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
@@ -173,27 +172,27 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
 data class AbsenceStub(
     val childId: ChildId,
     val date: LocalDate,
-    var careType: AbsenceCareType,
+    var category: AbsenceCategory,
     val absenceType: AbsenceType
 )
 
 // PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
 private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PLANNED_ABSENCE)
 
-fun Database.Read.getAbsenceStubs(spanningRange: DateRange, careTypes: List<AbsenceCareType>): List<AbsenceStub> {
+fun Database.Read.getAbsenceStubs(spanningRange: DateRange, categories: Collection<AbsenceCategory>): List<AbsenceStub> {
     val sql =
         """
-        SELECT child_id, date, care_type, absence_type
+        SELECT child_id, date, category, absence_type
         FROM absence
         WHERE between_start_and_end(:range, date)
         AND NOT absence_type = ANY(:absenceTypes)
-        AND care_type = ANY(:careTypes)
+        AND category = ANY(:categories)
         """
 
     return createQuery(sql)
         .bind("range", spanningRange)
         .bind("absenceTypes", absenceTypesWithNoEffectOnInvoices)
-        .bind("careTypes", careTypes.toTypedArray())
+        .bind("categories", categories.toTypedArray())
         .mapTo<AbsenceStub>()
         .toList()
 }

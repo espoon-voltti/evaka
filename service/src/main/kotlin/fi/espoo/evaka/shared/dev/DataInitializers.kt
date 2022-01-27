@@ -10,7 +10,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.jsonMapper
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.assistanceneed.insertAssistanceBasisOptionRefs
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
@@ -779,15 +779,15 @@ fun Database.Transaction.insertTestAbsence(
     id: AbsenceId = AbsenceId(UUID.randomUUID()),
     childId: ChildId,
     date: LocalDate,
-    careType: AbsenceCareType,
+    category: AbsenceCategory,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
     modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
 ) {
     //language=sql
     val sql =
         """
-        INSERT INTO absence (id, child_id, date, care_type, absence_type, modified_by)
-        VALUES (:id, :childId, :date, :careType, :absenceType, :modifiedBy)
+        INSERT INTO absence (id, child_id, date, category, absence_type, modified_by)
+        VALUES (:id, :childId, :date, :category, :absenceType, :modifiedBy)
         """.trimIndent()
     createUpdate(sql)
         .bindMap(
@@ -795,7 +795,7 @@ fun Database.Transaction.insertTestAbsence(
                 "id" to id,
                 "childId" to childId,
                 "date" to date,
-                "careType" to careType,
+                "category" to category,
                 "absenceType" to absenceType,
                 "modifiedBy" to modifiedBy
             )

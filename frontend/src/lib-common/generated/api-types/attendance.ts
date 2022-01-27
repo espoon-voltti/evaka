@@ -6,7 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import LocalDate from '../../local-date'
-import { AbsenceCareType } from './daycare'
+import { AbsenceCategory } from './daycare'
 import { AbsenceType } from './daycare'
 import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
@@ -29,8 +29,8 @@ export interface AbsenceRangeRequest {
 * Generated from fi.espoo.evaka.attendance.AbsenceThreshold
 */
 export interface AbsenceThreshold {
+  category: AbsenceCategory
   time: string
-  type: AbsenceCareType
 }
 
 /**
@@ -99,7 +99,7 @@ export interface Child {
 * Generated from fi.espoo.evaka.attendance.ChildAbsence
 */
 export interface ChildAbsence {
-  careType: AbsenceCareType
+  category: AbsenceCategory
 }
 
 /**

@@ -326,28 +326,28 @@ private fun Database.Transaction.insertValidReservations(userId: PersonId, reque
 private fun Database.Transaction.insertAbsences(userId: PersonId, request: AbsenceRequest) {
     val batch = prepareBatch(
         """
-        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
+        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
         SELECT
             :childId,
             :date,
-            care_type,
+            category,
             :absenceType,
             :userId
         FROM (
             SELECT unnest((CASE type
-                WHEN 'CLUB'::placement_type THEN '{CLUB}'
-                WHEN 'SCHOOL_SHIFT_CARE'::placement_type THEN '{SCHOOL_SHIFT_CARE}'
-                WHEN 'PRESCHOOL'::placement_type THEN '{PRESCHOOL}'
-                WHEN 'PREPARATORY'::placement_type THEN '{PRESCHOOL}'
-                WHEN 'PRESCHOOL_DAYCARE'::placement_type THEN '{PRESCHOOL, PRESCHOOL_DAYCARE}'
-                WHEN 'PREPARATORY_DAYCARE'::placement_type THEN '{PRESCHOOL, PRESCHOOL_DAYCARE}'
-                WHEN 'DAYCARE'::placement_type THEN '{DAYCARE}'
-                WHEN 'DAYCARE_PART_TIME'::placement_type THEN '{DAYCARE}'
-                WHEN 'DAYCARE_FIVE_YEAR_OLDS'::placement_type THEN '{DAYCARE, DAYCARE_5YO_FREE}'
-                WHEN 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'::placement_type THEN '{DAYCARE, DAYCARE_5YO_FREE}'
+                WHEN 'CLUB'::placement_type THEN '{NONBILLABLE}'
+                WHEN 'SCHOOL_SHIFT_CARE'::placement_type THEN '{NONBILLABLE}'
+                WHEN 'PRESCHOOL'::placement_type THEN '{NONBILLABLE}'
+                WHEN 'PREPARATORY'::placement_type THEN '{NONBILLABLE}'
+                WHEN 'PRESCHOOL_DAYCARE'::placement_type THEN '{NONBILLABLE, BILLABLE}'
+                WHEN 'PREPARATORY_DAYCARE'::placement_type THEN '{NONBILLABLE, BILLABLE}'
+                WHEN 'DAYCARE'::placement_type THEN '{BILLABLE}'
+                WHEN 'DAYCARE_PART_TIME'::placement_type THEN '{BILLABLE}'
+                WHEN 'DAYCARE_FIVE_YEAR_OLDS'::placement_type THEN '{BILLABLE, NONBILLABLE}'
+                WHEN 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'::placement_type THEN '{BILLABLE, NONBILLABLE}'
                 WHEN 'TEMPORARY_DAYCARE'::placement_type THEN '{}'
                 WHEN 'TEMPORARY_DAYCARE_PART_DAY'::placement_type THEN '{}'
-            END)::text[]) AS care_type
+            END)::absence_category[]) AS category
             FROM placement
             WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
         ) care_type
