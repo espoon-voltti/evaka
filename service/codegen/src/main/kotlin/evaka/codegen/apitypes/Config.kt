@@ -43,7 +43,6 @@ private val customClassesMapping: Map<String, TSMapping> = mapOf(
     "fi.espoo.evaka.vasu.VasuQuestion" to TSMapping("VasuQuestion", "import { VasuQuestion } from '../../api-types/vasu'"),
     "fi.espoo.evaka.invoicing.domain.DecisionIncome" to TSMapping("DecisionIncome", "import { DecisionIncome } from '../../api-types/income'"),
     "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string"),
-    "fi.espoo.evaka.daycare.service.AbsenceChild" to TSMapping("AbsenceChild", "import { AbsenceChild } from '../../api-types/child/absence'"),
 )
 
 private val actionsMapping: Map<String, TSMapping> = Action::class.nestedClasses.associate { action ->

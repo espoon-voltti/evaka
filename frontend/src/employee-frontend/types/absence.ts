@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceChild } from 'lib-common/api-types/child/absence'
+import { AbsenceChild } from 'lib-common/generated/api-types/daycare'
 import {
   AbsenceCareType,
   AbsenceType,

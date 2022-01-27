@@ -8,7 +8,6 @@
 import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { AbsenceChild } from '../../api-types/child/absence'
 import { Action } from '../action'
 import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
@@ -38,6 +37,18 @@ export type AbsenceCareType =
   | 'DAYCARE_5YO_FREE'
   | 'DAYCARE'
   | 'CLUB'
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.AbsenceChild
+*/
+export interface AbsenceChild {
+  absences: Record<string, AbsenceWithModifierInfo[]>
+  attendanceTotalHours: number | null
+  backupCares: Record<string, boolean>
+  child: Child
+  placements: Record<string, AbsenceCareType[]>
+  reservationTotalHours: number | null
+}
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceDelete
