@@ -221,13 +221,6 @@ export interface Stats {
   maximum: number
 }
 
-export interface DaycareCapacityStats {
-  unitTotalCaretakers: Stats
-  groupCaretakers: {
-    [groupId: string]: Stats
-  }
-}
-
 export type OccupancyType = 'CONFIRMED' | 'PLANNED' | 'REALIZED'
 
 export interface Occupancy {

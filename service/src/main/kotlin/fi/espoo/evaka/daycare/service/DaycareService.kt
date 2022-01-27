@@ -4,12 +4,9 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.createDaycareGroup
 import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareGroups
-import fi.espoo.evaka.daycare.getGroupStats
-import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
@@ -28,19 +25,6 @@ import java.time.LocalDate
 
 @Service
 class DaycareService {
-    fun getDaycareCapacityStats(
-        tx: Database.Read,
-        daycareId: DaycareId,
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): DaycareCapacityStats {
-        val unitStats = tx.getUnitStats(daycareId, startDate, endDate)
-        return DaycareCapacityStats(
-            unitTotalCaretakers = unitStats,
-            groupCaretakers = tx.getGroupStats(daycareId, startDate, endDate)
-        )
-    }
-
     fun createGroup(
         tx: Database.Transaction,
         daycareId: DaycareId,
@@ -83,12 +67,6 @@ data class DaycareGroup(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val deletable: Boolean
-)
-
-@ExcludeCodeGen
-data class DaycareCapacityStats(
-    val unitTotalCaretakers: Stats,
-    val groupCaretakers: Map<GroupId, Stats>
 )
 
 data class Stats(
