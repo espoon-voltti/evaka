@@ -286,15 +286,7 @@ export default React.memo(function ReservationModalSingleChild({
                 ) : null}
                 {includedDays.includes(date.getIsoDayOfWeek()) && (
                   <TimeInputs
-                    label={
-                      <Label>
-                        {`${
-                          i18n.common.datetime.weekdaysShort[
-                            date.getIsoDayOfWeek() - 1
-                          ]
-                        } ${date.format('d.M.')}`}
-                      </Label>
-                    }
+                    label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
                     times={
                       formData.irregularTimes[date.formatIso()] ?? [
                         {

@@ -20,7 +20,7 @@ import { Cell, CellPart } from '../../types/absence'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
 import AbsenceCell, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
-import { getMonthDays, getRange, getWeekDay } from './utils'
+import { getMonthDays, getRange } from './utils'
 
 interface AbsenceRowProps {
   absenceChild: AbsenceChild
@@ -195,7 +195,7 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
   operationDays,
   reservationEnabled
 }: AbsenceHeadProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   return (
     <thead>
       <tr>
@@ -209,7 +209,7 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
                 'absence-header-weekend': item.isWeekend()
               })}
             >
-              <div>{getWeekDay(i18n, item)}</div>
+              <div>{item.format('EEEEEE', lang)}</div>
               <div>{item.getDate()}</div>
             </th>
           ) : (

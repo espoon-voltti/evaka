@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,7 +17,7 @@ import { getAbsencesByChild } from '../../api/invoicing'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'
 import Tooltip from '../../components/common/Tooltip'
-import { Translations, useTranslation } from '../../state/i18n'
+import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { AbsenceTypes, billableCareTypes } from '../../types/absence'
 import { formatName } from '../../utils'
@@ -60,7 +60,7 @@ interface Props {
 }
 
 export default React.memo(function AbsencesModal({ child, date }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const [selectedDate, setSelectedDate] = useState<LocalDate>(date)
   const [absences] = useApiState(
@@ -112,7 +112,7 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
                         absences,
                         absenceType,
                         'free',
-                        i18n
+                        lang
                       )}
                       place="left"
                       className="absence-tooltip"
@@ -128,7 +128,7 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
                         absences,
                         absenceType,
                         'paid',
-                        i18n
+                        lang
                       )}
                       place="right"
                       className="absence-tooltip"
@@ -173,7 +173,7 @@ function createTooltipText(
   absences: Absence[],
   absenceType: AbsenceType,
   type: 'free' | 'paid',
-  i18n: Translations
+  lang: Lang
 ) {
   const absencesList = absences
     .filter((abs: Absence) => abs.absenceType === absenceType)
@@ -182,11 +182,6 @@ function createTooltipText(
         ? billableCareTypes.includes(abs.careType)
         : !billableCareTypes.includes(abs.careType)
     })
-    .map(
-      (abs: Absence) =>
-        `${
-          i18n.datePicker.weekdaysShort[abs.date.getIsoDayOfWeek() - 1]
-        } ${abs.date.format()}`
-    )
+    .map(({ date }) => date.format('EEEEEE dd.MM.yyyy', lang))
   return absencesList.join('<br />')
 }

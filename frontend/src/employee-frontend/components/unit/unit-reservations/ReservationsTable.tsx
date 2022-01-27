@@ -34,7 +34,7 @@ export default React.memo(function ReservationsTable({
   onMakeReservationForChild,
   selectedDate
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   return (
     <Table>
@@ -49,9 +49,7 @@ export default React.memo(function ReservationsTable({
               highlight={date.isToday()}
             >
               <Date centered highlight={date.isToday()}>
-                {`${
-                  i18n.datePicker.weekdaysShort[date.getIsoDayOfWeek() - 1]
-                } ${date.format('dd.MM.')}`}
+                {date.format('EEEEEE dd.MM.', lang)}
               </Date>
               <DayHeader>
                 <span>{i18n.unit.attendanceReservations.startTime}</span>
