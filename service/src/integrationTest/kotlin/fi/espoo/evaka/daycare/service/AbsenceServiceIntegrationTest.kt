@@ -5,6 +5,9 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.TimeRange
+import fi.espoo.evaka.dailyservicetimes.upsertChildDailyServiceTimes
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -40,6 +43,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -567,6 +571,107 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `reservation sums - daily service times are used to generate missing reservations when none are found`() {
+        insertGroupPlacement(childId)
+        val dailyServiceTimes = DailyServiceTimes.RegularTimes(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
+        insertDailyServiceTimes(childId, dailyServiceTimes)
+
+        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
+        // 22 operational days * 8h
+        assertEquals(listOf(176), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
+    fun `reservation sums - irregular daily service times are applied according to operational days`() {
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 11))
+        )
+        val dailyServiceTimes = DailyServiceTimes.IrregularTimes(
+            monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+            tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
+            wednesday = null,
+            thursday = null,
+            friday = null,
+            saturday = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+            sunday = null
+        )
+        insertDailyServiceTimes(childId, dailyServiceTimes)
+
+        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
+        // 8-16 + 8-14 (saturday is not included because the unit is not operational on saturdays)
+        assertEquals(listOf(14), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
+    fun `reservation sums - daily service times with inverted start and end`() {
+        insertGroupPlacement(childId)
+        val dailyServiceTimes = DailyServiceTimes.RegularTimes(TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0)))
+        insertDailyServiceTimes(childId, dailyServiceTimes)
+
+        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
+        // 22 operational days * 12h
+        assertEquals(listOf(264), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
+    fun `reservation sums - daily service times are used only when there is no reservation`() {
+        insertGroupPlacement(childId)
+        val reservations = generateSequence(placementStart) { it.plusDays(1) }
+            .takeWhile { it < LocalDate.of(2019, 8, 30) } // last operational day
+            .filter { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
+            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
+            .toList()
+        insertReservations(childId, reservations)
+        val dailyServiceTimes = DailyServiceTimes.RegularTimes(TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)))
+        insertDailyServiceTimes(childId, dailyServiceTimes)
+
+        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
+        // 21 operational days * 8h + 12h
+        assertEquals(listOf(180), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
+    fun `reservation sums - daily service times are cut when they partially overlap with a reservation`() {
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 6))
+        insertGroupPlacement(childId, placementPeriod = placementPeriod)
+        val reservations = listOf(
+            HelsinkiDateTime.of(placementPeriod.start, LocalTime.of(21, 0))
+                to HelsinkiDateTime.of(placementPeriod.end, LocalTime.of(9, 0))
+        )
+        insertReservations(childId, reservations)
+        val dailyServiceTimes = DailyServiceTimes.RegularTimes(TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0)))
+        insertDailyServiceTimes(childId, dailyServiceTimes)
+
+        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
+        // 21-9 + 9-15 (overlapping 2 hours are left out)
+        assertEquals(listOf(18), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
+    fun `reservation sums - absences leave out reserved times according to their start time`() {
+        insertGroupPlacement(childId)
+        val reservations = generateSequence(placementStart) { it.plusDays(1) }
+            .map { HelsinkiDateTime.of(it, LocalTime.of(20, 0)) to HelsinkiDateTime.of(it.plusDays(1), LocalTime.of(8, 0)) }
+            .take(5).toList()
+        insertReservations(childId, reservations)
+        db.transaction {
+            // the start and end of absence date overlaps with two reservations
+            val absence = createAbsence(
+                childId,
+                AbsenceCareType.DAYCARE,
+                AbsenceType.OTHER_ABSENCE,
+                placementStart.plusDays(1)
+            )
+            it.upsertAbsences(listOf(absence), EvakaUserId(testUserId.raw))
+        }
+
+        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
+        // the start and end of absence date overlaps with two reservations but only one reservation is left out
+        assertEquals(listOf(4 * 12), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
     fun `attendance sums - basic case`() {
         insertGroupPlacement(childId)
         val attendances = generateSequence(placementStart) { it.plusDays(1) }
@@ -775,5 +880,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
                 )
             }
         }
+    }
+
+    private fun insertDailyServiceTimes(childId: ChildId, dailyServiceTimes: DailyServiceTimes) {
+        db.transaction { tx -> tx.upsertChildDailyServiceTimes(childId, dailyServiceTimes) }
     }
 }

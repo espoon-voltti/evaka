@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import org.jdbi.v3.core.result.RowView
+import java.time.DayOfWeek
 import java.time.LocalTime
 
 data class TimeRange(
@@ -50,7 +51,17 @@ sealed class DailyServiceTimes(
         val friday: TimeRange?,
         val saturday: TimeRange?,
         val sunday: TimeRange?,
-    ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR)
+    ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR) {
+        fun timesForDayOfWeek(dayOfWeek: DayOfWeek) = when (dayOfWeek) {
+            DayOfWeek.MONDAY -> monday
+            DayOfWeek.TUESDAY -> tuesday
+            DayOfWeek.WEDNESDAY -> wednesday
+            DayOfWeek.THURSDAY -> thursday
+            DayOfWeek.FRIDAY -> friday
+            DayOfWeek.SATURDAY -> saturday
+            DayOfWeek.SUNDAY -> sunday
+        }
+    }
 
     @JsonTypeName("VARIABLE_TIME")
     object VariableTimes : DailyServiceTimes(DailyServiceTimesType.VARIABLE_TIME)
