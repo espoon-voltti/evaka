@@ -13,8 +13,29 @@ import java.time.LocalDate
 @Component
 class InvoiceGeneratorDiffer(private val draftInvoiceGenerator: DefaultDraftInvoiceGenerator, private val newDraftInvoiceGenerator: NewDraftInvoiceGenerator) {
     fun createInvoiceGeneratorDiff(tx: Database.Transaction, range: DateRange = DateRange(LocalDate.now(), LocalDate.now())): InvoiceGeneratorDiff {
-        val currentInvoices = InvoiceGenerator(draftInvoiceGenerator).createAllDraftInvoices(tx, range)
-        val newInvoices = InvoiceGenerator(newDraftInvoiceGenerator).createAllDraftInvoices(tx, range)
+        val invoiceData = InvoiceGenerator(draftInvoiceGenerator).calculateInvoiceData(tx, range)
+        val currentInvoices = draftInvoiceGenerator.generateDraftInvoices(
+            invoiceData.decisions,
+            invoiceData.placements,
+            invoiceData.period,
+            invoiceData.daycareCodes,
+            invoiceData.operationalDays,
+            invoiceData.feeThresholds,
+            invoiceData.absences,
+            invoiceData.freeChildren,
+            invoiceData.codebtors
+        )
+        val newInvoices = newDraftInvoiceGenerator.generateDraftInvoices(
+            invoiceData.decisions,
+            invoiceData.placements,
+            invoiceData.period,
+            invoiceData.daycareCodes,
+            invoiceData.operationalDays,
+            invoiceData.feeThresholds,
+            invoiceData.absences,
+            invoiceData.freeChildren,
+            invoiceData.codebtors
+        )
 
         val inBoth = currentInvoices.filter { currentInvoice -> newInvoices.any { invoiceId(it) == invoiceId(currentInvoice) } }
         val onlyInCurrentInvoices = currentInvoices.filter { currentInvoice -> newInvoices.none { invoiceId(it) == invoiceId(currentInvoice) } }

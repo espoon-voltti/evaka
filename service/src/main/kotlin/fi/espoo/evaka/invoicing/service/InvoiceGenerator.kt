@@ -41,12 +41,23 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
 
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
         tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
-        val invoices = createAllDraftInvoices(tx, range)
+        val invoiceCalculationData = calculateInvoiceData(tx, range)
+        val invoices = draftInvoiceGenerator.generateDraftInvoices(
+            invoiceCalculationData.decisions,
+            invoiceCalculationData.placements,
+            invoiceCalculationData.period,
+            invoiceCalculationData.daycareCodes,
+            invoiceCalculationData.operationalDays,
+            invoiceCalculationData.feeThresholds,
+            invoiceCalculationData.absences,
+            invoiceCalculationData.freeChildren,
+            invoiceCalculationData.codebtors
+        )
         tx.deleteDraftInvoicesByDateRange(range)
         tx.upsertInvoices(invoices)
     }
 
-    fun createAllDraftInvoices(tx: Database.Transaction, range: DateRange): List<Invoice> {
+    fun calculateInvoiceData(tx: Database.Transaction, range: DateRange): InvoiceCalculationData {
         val feeThresholds = tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
             ?: error("Missing prices for period ${range.start} - ${range.end}, cannot generate invoices")
 
@@ -69,18 +80,46 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
 
         val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(tx, decisions) }
 
-        return draftInvoiceGenerator.generateDraftInvoices(
-            unhandledDecisions,
-            unhandledPlacements,
-            range,
-            daycareCodes,
-            operationalDays,
-            feeThresholds,
-            absences,
-            freeChildren,
-            codebtors
+        return InvoiceCalculationData(
+            decisions = unhandledDecisions,
+            placements = unhandledPlacements,
+            period = range,
+            daycareCodes = daycareCodes,
+            operationalDays = operationalDays,
+            feeThresholds = feeThresholds,
+            absences = absences,
+            freeChildren = freeChildren,
+            codebtors = codebtors
         )
     }
+
+    fun createAllDraftInvoices(tx: Database.Transaction, range: DateRange): List<Invoice> {
+        val invoiceData = calculateInvoiceData(tx, range)
+
+        return draftInvoiceGenerator.generateDraftInvoices(
+            invoiceData.decisions,
+            invoiceData.placements,
+            invoiceData.period,
+            invoiceData.daycareCodes,
+            invoiceData.operationalDays,
+            invoiceData.feeThresholds,
+            invoiceData.absences,
+            invoiceData.freeChildren,
+            invoiceData.codebtors
+        )
+    }
+
+    data class InvoiceCalculationData(
+        val decisions: Map<PersonId, List<FeeDecision>>,
+        val placements: Map<PersonId, List<Placements>>,
+        val period: DateRange,
+        val daycareCodes: Map<DaycareId, DaycareCodes>,
+        val operationalDays: OperationalDays,
+        val feeThresholds: FeeThresholds,
+        val absences: List<AbsenceStub> = listOf(),
+        val freeChildren: List<ChildId> = listOf(),
+        val codebtors: Map<PersonId, PersonId?> = mapOf()
+    )
 
     private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonId? {
         val partners = decisions.map { it.partnerId }.distinct()
