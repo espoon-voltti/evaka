@@ -5,10 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Child } from 'lib-common/generated/api-types/attendance'
+import { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
-import { CareType, formatCareType } from '../../types'
+import { formatCategory } from '../../types'
 import { CustomHorizontalLine } from './components'
 
 const AbsentFromWrapper = styled.div`
@@ -31,7 +32,7 @@ const InfoText = styled.div``
 
 interface AbsentFromProps {
   child: Child
-  absentFrom: CareType[]
+  absentFrom: AbsenceCategory[]
 }
 
 export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
@@ -46,9 +47,9 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
           ? i18n.attendances.missingFromPlural
           : i18n.attendances.missingFrom}
         :{' '}
-        {absentFrom.map((careType) => (
-          <div key={careType}>
-            {formatCareType(careType, child.placementType, i18n)}
+        {absentFrom.map((category) => (
+          <div key={category}>
+            {formatCategory(category, child.placementType, i18n)}
           </div>
         ))}
       </InfoText>

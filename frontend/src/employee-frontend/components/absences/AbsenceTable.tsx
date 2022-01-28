@@ -111,7 +111,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
             <AbsenceCell
               selectedCells={selectedCells}
               toggleCellSelection={toggleCellSelection}
-              careTypes={placements[date.formatIso()]}
+              categories={placements[date.formatIso()]}
               absences={absences[date.formatIso()]}
               backupCare={backupCares[date.formatIso()] ?? false}
               date={date}

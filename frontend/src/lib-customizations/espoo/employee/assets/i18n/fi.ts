@@ -2104,7 +2104,7 @@ export const fi = {
       DAYCARE: 'Varhaiskasvatus',
       CLUB: 'Kerho'
     },
-    careTypeCategories: {
+    absenceCategories: {
       NONBILLABLE:
         'Esiopetus, valmistava, 5-vuotiaiden varhaiskasvatus tai kerhotoiminta',
       BILLABLE: 'Varhaiskasvatus (maksullinen)'

@@ -9,11 +9,14 @@ import {
   AttendanceResponse,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import { Absence } from 'lib-common/generated/api-types/daycare'
+import {
+  Absence,
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { AbsenceType, CareType } from '../types'
 import { client } from './client'
 
 export async function getDaycareAttendances(
@@ -102,7 +105,7 @@ export interface AbsencePayload {
   absenceType: AbsenceType
   childId: UUID
   date: LocalDate
-  careType: CareType
+  category: AbsenceCategory
 }
 
 export async function postAbsenceRange(

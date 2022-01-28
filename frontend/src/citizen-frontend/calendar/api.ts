@@ -4,11 +4,11 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
   DailyReservationRequest,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import { AbsenceType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { client } from '../api-client'

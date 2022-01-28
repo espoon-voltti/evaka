@@ -5,8 +5,11 @@
 import { flatMap, partition } from 'lodash'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { AbsenceDelete } from 'lib-common/generated/api-types/daycare'
-import { AbsenceType } from 'lib-common/generated/enums'
+import {
+  AbsenceCategory,
+  AbsenceDelete,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -25,12 +28,10 @@ import PeriodPicker from '../../components/absences/PeriodPicker'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import {
-  billableCareTypes,
-  CareTypeCategory,
   Cell,
   CellPart,
   defaultAbsenceType,
-  defaultCareTypeCategory
+  defaultAbsenceCategories
 } from '../../types/absence'
 import { renderResult } from '../async-rendering'
 import { AbsenceLegend } from './AbsenceLegend'
@@ -56,8 +57,8 @@ export default React.memo(function Absences({
   const [selectedCells, setSelectedCells] = useState<Cell[]>([])
   const [selectedAbsenceType, setSelectedAbsenceType] =
     useState<AbsenceType | null>(defaultAbsenceType)
-  const [selectedCareTypeCategories, setSelectedCareTypeCategories] = useState(
-    defaultCareTypeCategory
+  const [selectedCategories, setSelectedCategories] = useState(
+    defaultAbsenceCategories
   )
 
   const selectedYear = selectedDate.getYear()
@@ -92,11 +93,10 @@ export default React.memo(function Absences({
 
   const resetModalState = useCallback(() => {
     setSelectedCells([])
-    setSelectedCareTypeCategories([])
     setSelectedAbsenceType(defaultAbsenceType)
-    setSelectedCareTypeCategories(defaultCareTypeCategory)
+    setSelectedCategories(defaultAbsenceCategories)
     setModalVisible(false)
-  }, [setSelectedAbsenceType, setSelectedCareTypeCategories, setSelectedCells])
+  }, [setSelectedAbsenceType, setSelectedCategories, setSelectedCells])
 
   useEffect(() => {
     if (absences.isSuccess) {
@@ -104,13 +104,13 @@ export default React.memo(function Absences({
     }
   }, [absences, setTitle])
 
-  const updateCareTypes = useCallback(
-    (type: CareTypeCategory) => {
-      const included = selectedCareTypeCategories.includes(type)
-      const without = selectedCareTypeCategories.filter((item) => item !== type)
-      setSelectedCareTypeCategories(included ? without : [type, ...without])
+  const updateCategories = useCallback(
+    (category: AbsenceCategory) => {
+      const included = selectedCategories.includes(category)
+      const without = selectedCategories.filter((item) => item !== category)
+      setSelectedCategories(included ? without : [category, ...without])
     },
-    [selectedCareTypeCategories, setSelectedCareTypeCategories]
+    [selectedCategories, setSelectedCategories]
   )
 
   const updateAbsences = useCallback(() => {
@@ -118,19 +118,18 @@ export default React.memo(function Absences({
       selectedCells,
       ({ parts }) => parts
     )
-    const [billableParts, otherParts] = partition(selectedParts, (part) =>
-      billableCareTypes.includes(part.careType)
+    const [billableParts, otherParts] = partition(
+      selectedParts,
+      (part) => part.category === 'BILLABLE'
     )
 
-    const payload: AbsenceDelete[] = flatMap(
-      selectedCareTypeCategories,
-      (careTypeCategory) =>
-        careTypeCategory === 'BILLABLE' ? billableParts : otherParts
-    ).map(({ childId, date, careType }) => {
+    const payload: AbsenceDelete[] = flatMap(selectedCategories, (category) =>
+      category === 'BILLABLE' ? billableParts : otherParts
+    ).map(({ childId, date, category }) => {
       return {
         childId,
         date,
-        careType
+        category
       }
     })
 
@@ -154,7 +153,7 @@ export default React.memo(function Absences({
     loadAbsences,
     resetModalState,
     selectedAbsenceType,
-    selectedCareTypeCategories,
+    selectedCategories,
     selectedCells
   ])
 
@@ -163,12 +162,12 @@ export default React.memo(function Absences({
       {modalVisible && selectedCells.length > 0 && (
         <AbsenceModal
           onSave={updateAbsences}
-          saveDisabled={selectedCareTypeCategories.length === 0}
+          saveDisabled={selectedCategories.length === 0}
           onCancel={resetModalState}
           selectedAbsenceType={selectedAbsenceType}
           setSelectedAbsenceType={setSelectedAbsenceType}
-          selectedCareTypeCategories={selectedCareTypeCategories}
-          updateCareTypes={updateCareTypes}
+          selectedCategories={selectedCategories}
+          updateCategories={updateCategories}
         />
       )}
       {renderResult(absences, (absences) => (

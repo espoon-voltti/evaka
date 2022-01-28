@@ -8,7 +8,7 @@ import { Child } from 'lib-common/generated/api-types/attendance'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
-import { formatCareType } from '../../types'
+import { formatCategory } from '../../types'
 
 const AbsenceLabels = styled.div`
   text-align: center;
@@ -24,7 +24,7 @@ export default React.memo(function Absences({ child }: Props) {
   if (child.absences.length === 0) return null
 
   const absenceCareTypes = child.absences
-    .map(({ careType }) => formatCareType(careType, child.placementType, i18n))
+    .map(({ category }) => formatCategory(category, child.placementType, i18n))
     .join(', ')
   return (
     <>

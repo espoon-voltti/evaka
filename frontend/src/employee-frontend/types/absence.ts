@@ -2,16 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceChild } from 'lib-common/generated/api-types/daycare'
 import {
-  AbsenceCareType,
-  AbsenceType,
-  PlacementType
-} from 'lib-common/generated/enums'
+  AbsenceCategory,
+  AbsenceChild,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { Translations } from '../state/i18n'
 
 export const AbsenceTypes: AbsenceType[] = [
   'OTHER_ABSENCE',
@@ -23,45 +21,9 @@ export const AbsenceTypes: AbsenceType[] = [
 ]
 
 export const defaultAbsenceType = 'SICKLEAVE'
-export const defaultCareTypeCategory: CareTypeCategory[] = []
+export const defaultAbsenceCategories: AbsenceCategory[] = []
 
-export type CareTypeCategory = 'BILLABLE' | 'NONBILLABLE'
-
-export const CareTypeCategories: CareTypeCategory[] = [
-  'NONBILLABLE',
-  'BILLABLE'
-]
-
-export const billableCareTypes: AbsenceCareType[] = [
-  'PRESCHOOL_DAYCARE',
-  'DAYCARE'
-]
-
-export function formatCareType(
-  careType: AbsenceCareType,
-  placementType: PlacementType,
-  i18n: Translations
-) {
-  const isPreparatory =
-    placementType === 'PREPARATORY' || placementType === 'PREPARATORY_DAYCARE'
-
-  if (
-    careType === 'DAYCARE' &&
-    fiveYearOldPlacementTypes.includes(placementType)
-  ) {
-    return i18n.common.types.DAYCARE_5YO_PAID
-  }
-
-  if (isPreparatory && careType === 'PRESCHOOL')
-    return i18n.common.types.PREPARATORY_EDUCATION
-
-  return i18n.absences.careTypes[careType]
-}
-
-const fiveYearOldPlacementTypes = [
-  'DAYCARE_FIVE_YEAR_OLDS',
-  'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
-]
+export const absenceCategories: AbsenceCategory[] = ['NONBILLABLE', 'BILLABLE']
 
 export interface Cell {
   id: UUID
@@ -75,7 +37,7 @@ export interface CellPart {
   childId: UUID
   date: LocalDate
   absenceType?: AbsenceTypeWithBackupCare
-  careType: AbsenceCareType
+  category: AbsenceCategory
   position: string
 }
 

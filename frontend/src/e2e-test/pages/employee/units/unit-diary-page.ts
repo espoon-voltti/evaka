@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceType } from 'lib-common/generated/enums'
+import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import { waitUntilEqual } from '../../../utils'
 import {
@@ -108,7 +108,7 @@ export class AbsenceModal extends Modal {
   #absenceTypeRadio = (type: AbsenceType | 'NO_ABSENCE') =>
     new Radio(this.find(`[data-qa="absence-type-${type}"]`))
   #checkboxBillable = new Checkbox(
-    this.find('[data-qa="absences-select-caretype-BILLABLE"]')
+    this.find('[data-qa="absences-select-BILLABLE"]')
   )
 
   async selectAbsenceType(type: AbsenceType | 'NO_ABSENCE') {

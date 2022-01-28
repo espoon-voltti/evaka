@@ -4,8 +4,11 @@
 
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
-import { Absence } from 'lib-common/generated/api-types/daycare'
-import { AbsenceType } from 'lib-common/generated/enums'
+import {
+  Absence,
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -19,7 +22,7 @@ import ColorInfoItem from '../../components/common/ColorInfoItem'
 import Tooltip from '../../components/common/Tooltip'
 import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { AbsenceTypes, billableCareTypes } from '../../types/absence'
+import { AbsenceTypes } from '../../types/absence'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
@@ -111,14 +114,19 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
                       tooltipText={createTooltipText(
                         absences,
                         absenceType,
-                        'free',
+                        'NONBILLABLE',
                         lang
                       )}
                       place="left"
                       className="absence-tooltip"
                       delayShow={1}
                     >
-                      {calculateAbsences(absences, absenceType, 'free', i18n)}
+                      {calculateAbsences(
+                        absences,
+                        absenceType,
+                        'NONBILLABLE',
+                        i18n
+                      )}
                     </Tooltip>
                   </TableData>
                   <TableData>
@@ -127,14 +135,19 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
                       tooltipText={createTooltipText(
                         absences,
                         absenceType,
-                        'paid',
+                        'BILLABLE',
                         lang
                       )}
                       place="right"
                       className="absence-tooltip"
                       delayShow={1}
                     >
-                      {calculateAbsences(absences, absenceType, 'paid', i18n)}
+                      {calculateAbsences(
+                        absences,
+                        absenceType,
+                        'BILLABLE',
+                        i18n
+                      )}
                     </Tooltip>
                   </TableData>
                 </tr>
@@ -150,16 +163,13 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
 function calculateAbsences(
   absences: Absence[],
   absenceType: AbsenceType,
-  type: 'free' | 'paid',
+  category: AbsenceCategory,
   i18n: Translations
 ) {
-  const absencesListSize = absences
-    .filter((abs: Absence) => abs.absenceType === absenceType)
-    .filter((abs: Absence) => {
-      return type === 'paid'
-        ? billableCareTypes.includes(abs.careType)
-        : !billableCareTypes.includes(abs.careType)
-    }).length
+  const absencesListSize = absences.filter(
+    (abs: Absence) =>
+      abs.absenceType === absenceType && abs.category === category
+  ).length
   if (absencesListSize > 0) {
     return absencesListSize === 1
       ? `${absencesListSize} ${i18n.common.day}`
@@ -172,16 +182,14 @@ function calculateAbsences(
 function createTooltipText(
   absences: Absence[],
   absenceType: AbsenceType,
-  type: 'free' | 'paid',
+  category: AbsenceCategory,
   lang: Lang
 ) {
   const absencesList = absences
-    .filter((abs: Absence) => abs.absenceType === absenceType)
-    .filter((abs: Absence) => {
-      return type === 'paid'
-        ? billableCareTypes.includes(abs.careType)
-        : !billableCareTypes.includes(abs.careType)
-    })
+    .filter(
+      (abs: Absence) =>
+        abs.absenceType === absenceType && abs.category === category
+    )
     .map(({ date }) => date.format('EEEEEE dd.MM.yyyy', lang))
   return absencesList.join('<br />')
 }
