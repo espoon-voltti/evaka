@@ -52,6 +52,7 @@ export interface EmployeeFeatures {
   employees: boolean
   finance: boolean
   financeBasics: boolean
+  holidayPeriods: boolean
   messages: boolean
   personSearch: boolean
   personalMobileDevice: boolean
@@ -95,6 +96,15 @@ export type ScheduledJob =
   | 'VardaReset'
   | 'InactivePeopleCleanup'
   | 'InactiveEmployeesRoleReset'
+
+/**
+* Generated from fi.espoo.evaka.shared.domain.Translatable
+*/
+export interface Translatable {
+  en: string
+  fi: string
+  sv: string
+}
 
 /**
 * Generated from fi.espoo.evaka.shared.controllers.ScheduledJobTriggerController.TriggerBody

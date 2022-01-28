@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -132,6 +132,11 @@ enum class Audit(
     GroupNoteCreate("evaka.group-note.create"),
     GroupNoteUpdate("evaka.group-note.update"),
     GroupNoteDelete("evaka.group-note.delete"),
+    HolidayPeriodCreate("evaka.holiday-period.create"),
+    HolidayPeriodRead("evaka.holiday-period.read"),
+    HolidayPeriodDelete("evaka.holiday-period.delete"),
+    HolidayPeriodsList("evaka.holiday-period.list"),
+    HolidayPeriodUpdate("evaka.holiday-period.update"),
     IncomeStatementCreate("evaka.income-statement.create"),
     IncomeStatementDelete("evaka.income-statement.delete"),
     IncomeStatementOfPerson("evaka.income-statement.person.read"),

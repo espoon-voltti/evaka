@@ -50,6 +50,8 @@ import EmployeesPage from './components/employees/EmployeesPage'
 import ensureAuthenticated from './components/ensureAuthenticated'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
+import HolidayPeriodEditor from './components/holiday-periods/HolidayPeriodEditor'
+import HolidayPeriodsPage from './components/holiday-periods/HolidayPeriodsPage'
 import InvoicePage from './components/invoice/InvoicePage'
 import MessagesPage from './components/messages/MessagesPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
@@ -417,32 +419,40 @@ export default function App() {
                     title={i18n.titles.welcomePage}
                   />
                   <RouteWithTitle
-                    key="/vasu/:id"
                     exact
                     path="/vasu/:id"
                     component={ensureAuthenticated(VasuPage)}
                     title={i18n.titles.vasuPage}
                   />
                   <RouteWithTitle
-                    key="/vasu/:id/edit"
                     exact
                     path="/vasu/:id/edit"
                     component={ensureAuthenticated(VasuEditPage)}
                     title={i18n.titles.vasuPage}
                   />
                   <RouteWithTitle
-                    key="/vasu-templates"
                     exact
                     path="/vasu-templates"
                     component={ensureAuthenticated(VasuTemplatesPage)}
                     title={i18n.titles.vasuTemplates}
                   />
                   <RouteWithTitle
-                    key="/vasu-templates/:id"
                     exact
                     path="/vasu-templates/:id"
                     component={ensureAuthenticated(VasuTemplateEditor)}
                     title={i18n.titles.vasuTemplates}
+                  />
+                  <RouteWithTitle
+                    exact
+                    path="/holiday-periods"
+                    component={ensureAuthenticated(HolidayPeriodsPage)}
+                    title={i18n.titles.holidayPeriods}
+                  />
+                  <RouteWithTitle
+                    exact
+                    path="/holiday-periods/:id"
+                    component={ensureAuthenticated(HolidayPeriodEditor)}
+                    title={i18n.titles.holidayPeriods}
                   />
                   {redirectRoutes([
                     {

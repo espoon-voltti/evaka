@@ -1682,7 +1682,8 @@ const sv: Translations = {
     timeFormat: 'Kolla',
     timeRequired: 'Nödvändig',
     unitNotSelected: 'Välj minst en enhet',
-    emailsDoNotMatch: 'E-postadresserna är olika'
+    emailsDoNotMatch: 'E-postadresserna är olika',
+    httpUrl: 'Ange i formen https://example.com'
   },
   login: {
     failedModal: {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,6 +28,7 @@ export type ErrorKey =
   | 'unitNotSelected'
   | 'preferredStartDate'
   | 'emailsDoNotMatch'
+  | 'httpUrl'
 
 export const required = (
   val: string,
@@ -94,6 +95,19 @@ export const emailVerificationCheck =
   (verification: string): StandardValidator =>
   (val, err: ErrorKey = 'emailsDoNotMatch') =>
     val === verification ? undefined : err
+
+export const httpUrl = (
+  val: string,
+  err: ErrorKey = 'httpUrl'
+): ErrorKey | undefined => {
+  try {
+    const url = new URL(val)
+    const isValidHttpUrl = url.protocol === 'http:' || url.protocol === 'https:'
+    return isValidHttpUrl ? undefined : err
+  } catch (e) {
+    return err
+  }
+}
 
 type StandardValidator = (val: string, err?: ErrorKey) => ErrorKey | undefined
 

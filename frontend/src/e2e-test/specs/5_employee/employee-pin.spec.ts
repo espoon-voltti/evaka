@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -30,7 +30,7 @@ beforeEach(async () => {
 
 describe('Employees PIN', () => {
   beforeEach(async () => {
-    await nav.openAndClickDropdownMenuItem('pinCode')
+    await nav.openAndClickDropdownMenuItem('pin-code')
   })
 
   test('shows a warning if PIN is too easy, and warning disappears once PIN is valid', async () => {

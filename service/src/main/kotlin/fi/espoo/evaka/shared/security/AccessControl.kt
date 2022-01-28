@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -330,6 +330,7 @@ WHERE employee_id = :userId
             employees = user.hasOneOfRoles(UserRole.ADMIN),
             financeBasics = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
             finance = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
+            holidayPeriods = user.hasOneOfRoles(UserRole.ADMIN),
             messages = isMessagingEnabled(user),
             personSearch = user.hasOneOfRoles(
                 UserRole.ADMIN,

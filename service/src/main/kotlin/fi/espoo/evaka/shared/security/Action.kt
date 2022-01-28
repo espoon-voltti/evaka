@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -134,6 +134,12 @@ sealed interface Action {
 
         READ_UNIT_FEATURES(),
         READ_OWN_CHILDREN(END_USER),
+
+        CREATE_HOLIDAY_PERIOD,
+        READ_HOLIDAY_PERIOD,
+        READ_HOLIDAY_PERIODS,
+        DELETE_HOLIDAY_PERIOD,
+        UPDATE_HOLIDAY_PERIOD,
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

@@ -1725,7 +1725,8 @@ const en: Translations = {
     timeFormat: 'Check',
     timeRequired: 'Required',
     unitNotSelected: 'Pick at least one choice',
-    emailsDoNotMatch: 'The emails do not match'
+    emailsDoNotMatch: 'The emails do not match',
+    httpUrl: 'Valid url format is https://example.com'
   },
   login: {
     failedModal: {

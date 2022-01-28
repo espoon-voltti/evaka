@@ -15,6 +15,8 @@ export const fi = {
     feeDecisions: 'Maksupäätökset',
     feeDecision: 'Maksupäätös',
     feeDecisionDraft: 'Maksupäätösluonnos',
+    holidayPeriod: 'Loma-aikakysely',
+    holidayPeriods: 'Loma-aikakyselyt',
     incomeStatements: 'Tuloselvitykset',
     valueDecisions: 'Arvopäätökset',
     valueDecision: 'Arvopäätös',
@@ -2996,10 +2998,21 @@ export const fi = {
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
-    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
+    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
+    httpUrl: 'Anna muodossa https://example.com'
   },
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
+  },
+  holidayPeriods: {
+    confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',
+    createTitle: 'Luo uusi loma-aika',
+    editTitle: 'Muokkaa loma-aikaa',
+    description: 'Loma-ajan selite kuntalaiselle',
+    descriptionLink: 'Lisätietolinkki',
+    period: 'Aikaväli',
+    showReservationBannerFrom: 'Näytetään alkaen',
+    reservationDeadline: 'Varaukset viimeistään'
   }
 }

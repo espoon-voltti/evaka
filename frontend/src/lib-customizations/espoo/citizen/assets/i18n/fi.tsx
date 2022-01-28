@@ -1655,7 +1655,8 @@ export default {
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
-    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
+    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
+    httpUrl: 'Anna muodossa https://example.com'
   },
   login: {
     failedModal: {
