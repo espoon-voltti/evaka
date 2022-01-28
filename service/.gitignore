@@ -11,6 +11,8 @@
 /lib/
 /codegen/build/
 /codegen/target/
+/holidays/build/
+/holidays/target/
 /buildSrc/build/
 /buildSrc/target/
 /sficlient/build/

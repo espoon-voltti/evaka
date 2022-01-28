@@ -8,6 +8,7 @@ include("vtjclient")
 include("sficlient")
 include("evaka-bom")
 include("codegen")
+include("holidays")
 
 project(":service-lib").projectDir = file("../service-lib")
 project(":evaka-bom").projectDir = file("../evaka-bom")
