@@ -140,8 +140,8 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const considerations = vasuEditPage.considerationsSection
 
-      await considerations.childsViewInput.fill("This is the child's view")
-      await considerations.guardiansViewInput.fill(
+      await considerations.childsViewInput.type("This is the child's view")
+      await considerations.guardiansViewInput.type(
         "This is the guardian's view"
       )
 
@@ -161,10 +161,10 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const previousGoals = vasuEditPage.previousVasuGoalsSection
 
-      await previousGoals.goalsRealizedInput.fill(
+      await previousGoals.goalsRealizedInput.type(
         'The goals were realized by ...'
       )
-      await previousGoals.otherObservationsInput.fill(
+      await previousGoals.otherObservationsInput.type(
         'Other observations include ...'
       )
 
@@ -184,9 +184,9 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const goals = vasuEditPage.goalsSection
 
-      await goals.childsStrengthsInput.fill('Super helpful with chores')
-      await goals.goalsForTeachersInput.fill('Child needs help drawing squares')
-      await goals.otherInput.fill(
+      await goals.childsStrengthsInput.type('Super helpful with chores')
+      await goals.goalsForTeachersInput.type('Child needs help drawing squares')
+      await goals.otherInput.type(
         'Child snores heavily, waking all the other kids up'
       )
 
@@ -210,7 +210,7 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const wellnessSupport = vasuEditPage.wellnessSupportSection
 
-      await wellnessSupport.wellnessInput.fill(
+      await wellnessSupport.wellnessInput.type(
         'Only sleeps for 0.2 seconds at a time'
       )
 
@@ -226,7 +226,7 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const otherDocsAndPlans = vasuEditPage.otherDocsAndPlansSection
 
-      await otherDocsAndPlans.otherDocsInput.fill(
+      await otherDocsAndPlans.otherDocsInput.type(
         'Drawings made by child and parents'
       )
 
@@ -244,7 +244,7 @@ describe('Vasu document page', () => {
 
       await sharedTo.recipientsOptions('Neuvolaan').click()
       await sharedTo.recipientsOptions('Lasten terapiapalveluihin').click()
-      await sharedTo.otherInput.fill('Police')
+      await sharedTo.otherInput.type('Police')
 
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
@@ -262,7 +262,7 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const additionalInfo = vasuEditPage.additionalInfoSection
 
-      await additionalInfo.infoInput.fill('I love icecream')
+      await additionalInfo.infoInput.type('I love icecream')
 
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
@@ -276,9 +276,9 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const discussion = vasuEditPage.discussionSection
 
-      await discussion.dateInput.fill('1.12.2021')
-      await discussion.presentInput.fill('Mom, dad, and teacher')
-      await discussion.collaborationAndOpinionInput.fill(
+      await discussion.dateInput.type('1.12.2021')
+      await discussion.presentInput.type('Mom, dad, and teacher')
+      await discussion.collaborationAndOpinionInput.type(
         'Everything is awesome'
       )
 
@@ -300,12 +300,12 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const evaluation = vasuEditPage.evaluationSection
 
-      await evaluation.dateInput.fill('1.12.2021')
-      await evaluation.participantsInput.fill('Mom, dad, and teacher')
-      await evaluation.collaborationWithGuardiansInput.fill(
+      await evaluation.dateInput.type('1.12.2021')
+      await evaluation.participantsInput.type('Mom, dad, and teacher')
+      await evaluation.collaborationWithGuardiansInput.type(
         'Collaboration is very good'
       )
-      await evaluation.evaluationOfGoalsInput.fill(
+      await evaluation.evaluationOfGoalsInput.type(
         'All goals reached well ahead of time'
       )
 
