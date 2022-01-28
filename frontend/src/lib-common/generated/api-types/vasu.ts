@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
 
@@ -68,7 +69,7 @@ export interface EditFollowupEntryRequest {
 * Generated from fi.espoo.evaka.vasu.VasuController.GetVasuDocumentResponse
 */
 export interface GetVasuDocumentResponse {
-  permittedFollowupActions: UUID[]
+  permittedFollowupActions: Record<string, Action.VasuDocumentFollowup[]>
   vasu: VasuDocument
 }
 

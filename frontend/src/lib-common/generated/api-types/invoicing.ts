@@ -287,7 +287,7 @@ export interface FeeThresholdsWithId {
 */
 export interface GenerateDecisionsBody {
   starting: string
-  targetHeads: UUID[]
+  targetHeads: (UUID | null)[]
 }
 
 /**
@@ -298,6 +298,16 @@ export type IncomeEffect =
   | 'INCOMPLETE'
   | 'INCOME'
   | 'NOT_AVAILABLE'
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.IncomeType
+*/
+export interface IncomeType {
+  isSubType: boolean
+  multiplier: number
+  nameFi: string
+  withCoefficient: boolean
+}
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.Invoice

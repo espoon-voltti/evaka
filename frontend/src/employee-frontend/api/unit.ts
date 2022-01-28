@@ -13,6 +13,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import { Stats } from 'lib-common/generated/api-types/daycare'
 import {
   OccupancyResponseSpeculated,
   RealtimeOccupancy
@@ -37,7 +38,6 @@ import {
   DecisionCustomization,
   MailingAddress,
   Occupancy,
-  Stats,
   TerminatedPlacement,
   Unit,
   UnitChildrenCapacityFactors,

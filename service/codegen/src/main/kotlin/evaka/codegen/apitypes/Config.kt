@@ -1,10 +1,13 @@
 package evaka.codegen.apitypes
 
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.springframework.http.ResponseEntity
+import java.time.LocalDate
+import java.util.UUID
 
 const val basePackage = "fi.espoo.evaka"
 
@@ -40,7 +43,6 @@ private val customClassesMapping: Map<String, TSMapping> = mapOf(
     "fi.espoo.evaka.vasu.VasuQuestion" to TSMapping("VasuQuestion", "import { VasuQuestion } from '../../api-types/vasu'"),
     "fi.espoo.evaka.invoicing.domain.DecisionIncome" to TSMapping("DecisionIncome", "import { DecisionIncome } from '../../api-types/income'"),
     "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string"),
-    "fi.espoo.evaka.daycare.service.AbsenceChild" to TSMapping("AbsenceChild", "import { AbsenceChild } from '../../api-types/child/absence'"),
 )
 
 private val actionsMapping: Map<String, TSMapping> = Action::class.nestedClasses.associate { action ->
@@ -55,12 +57,15 @@ data class TSMapping(
 )
 
 val kotlinCollectionClasses = listOf(
-    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class, Map::class
+    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class
 )
 
 val classesToUnwrap = kotlinCollectionClasses + listOf(
     ResponseEntity::class,
     Paged::class,
     VardaClient.PaginatedResponse::class,
-    Wrapper::class
+    Wrapper::class,
+    Map::class
 )
+
+val validMapKeyTypes = listOf(String::class, UUID::class, Id::class, LocalDate::class)

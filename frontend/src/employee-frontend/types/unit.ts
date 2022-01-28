@@ -216,18 +216,6 @@ export interface DaycareGroupWithPlacements extends DaycareGroup {
   placements: DaycareGroupPlacementDetailed[]
 }
 
-export interface Stats {
-  minimum: number
-  maximum: number
-}
-
-export interface DaycareCapacityStats {
-  unitTotalCaretakers: Stats
-  groupCaretakers: {
-    [groupId: string]: Stats
-  }
-}
-
 export type OccupancyType = 'CONFIRMED' | 'PLANNED' | 'REALIZED'
 
 export interface Occupancy {

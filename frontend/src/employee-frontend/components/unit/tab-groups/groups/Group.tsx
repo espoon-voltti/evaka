@@ -11,6 +11,7 @@ import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import { Stats } from 'lib-common/generated/api-types/daycare'
 import {
   ChildDailyNote,
   NotesByGroupResponse
@@ -56,7 +57,6 @@ import { UserContext } from '../../../../state/user'
 import {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
-  Stats,
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'

@@ -20,7 +20,6 @@ import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.insertCaretakers
-import fi.espoo.evaka.daycare.service.DaycareCapacityStats
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.setUnitFeatures
@@ -260,19 +259,6 @@ class DaycareController(
                 )
             }
         }
-    }
-
-    @GetMapping("/{daycareId}/stats")
-    fun getStats(
-        db: Database,
-        user: AuthenticatedUser,
-        @PathVariable daycareId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
-    ): DaycareCapacityStats {
-        Audit.UnitStatisticsCreate.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_CAPACITY_STATS, daycareId)
-        return db.connect { dbc -> dbc.read { daycareService.getDaycareCapacityStats(it, daycareId, from, to) } }
     }
 
     @PutMapping("/{daycareId}")

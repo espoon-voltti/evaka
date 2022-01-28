@@ -9,10 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
-import fi.espoo.evaka.daycare.initCaretakers
-import fi.espoo.evaka.daycare.service.DaycareCapacityStats
 import fi.espoo.evaka.daycare.service.DaycareGroup
-import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.insertMessageContent
@@ -163,46 +160,10 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         db.read { assertNotNull(it.getDaycareGroup(group.id)) }
     }
 
-    @Test
-    fun `get daycare stats`() {
-        val group1 = DevDaycareGroup(daycareId = daycareId)
-        val group2 = DevDaycareGroup(daycareId = daycareId)
-        db.transaction {
-            it.insertTestDaycareGroup(group1)
-            it.insertTestDaycareGroup(group2)
-            it.initCaretakers(group1.id, LocalDate.of(2019, 1, 1), 5.0)
-            it.initCaretakers(group2.id, LocalDate.of(2019, 1, 1), 3.5)
-        }
-
-        val stats = getDaycareStats(
-            daycareId,
-            from = LocalDate.of(2019, 1, 1),
-            to = LocalDate.of(2019, 1, 1)
-        )
-
-        assertEquals(
-            mapOf(
-                group1.id to Stats(minimum = 5.0, maximum = 5.0),
-                group2.id to Stats(minimum = 3.5, maximum = 3.5)
-            ),
-            stats.groupCaretakers
-        )
-        assertEquals(Stats(minimum = 8.5, maximum = 8.5), stats.unitTotalCaretakers)
-    }
-
     private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
         val (_, res, body) = http.get("/daycares/$daycareId")
             .asUser(staffMember)
             .responseObject<DaycareController.DaycareResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return body.get()
-    }
-
-    private fun getDaycareStats(daycareId: DaycareId, from: LocalDate, to: LocalDate): DaycareCapacityStats {
-        val (_, res, body) = http.get("/daycares/$daycareId/stats?from=$from&to=$to")
-            .asUser(staffMember)
-            .responseObject<DaycareCapacityStats>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()

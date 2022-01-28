@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
@@ -179,7 +177,6 @@ fun getAbsenceCareTypes(placementType: PlacementType): List<AbsenceCareType> = w
         listOf(AbsenceCareType.DAYCARE)
 }
 
-@IncludeCodeGen
 enum class AbsenceCareType {
     SCHOOL_SHIFT_CARE,
     PRESCHOOL,
@@ -197,7 +194,6 @@ data class AbsenceGroup(
     val operationDays: List<LocalDate>
 )
 
-@ExcludeCodeGen
 data class AbsenceChild(
     val child: Child,
     val placements: Map<LocalDate, List<AbsenceCareType>>,
@@ -207,7 +203,6 @@ data class AbsenceChild(
     val attendanceTotalHours: Int?
 )
 
-@IncludeCodeGen
 data class Child(
     val id: ChildId,
     val firstName: String,
@@ -228,7 +223,6 @@ data class Absence(
     val absenceType: AbsenceType
 )
 
-@IncludeCodeGen
 data class AbsenceWithModifierInfo(
     val id: AbsenceId,
     val childId: ChildId,
