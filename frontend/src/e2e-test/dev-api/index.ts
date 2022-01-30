@@ -194,6 +194,7 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
         preschoolApplyPeriod: it.preschoolApplyPeriod,
         clubApplyPeriod: it.clubApplyPeriod,
         providerType: it.providerType,
+        operationDays: it.operationDays,
         roundTheClock: it.roundTheClock,
         location: it.location,
         language: it.language,

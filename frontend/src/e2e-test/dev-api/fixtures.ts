@@ -102,6 +102,7 @@ export const clubFixture: Daycare = {
   preschoolApplyPeriod: null,
   clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5],
   roundTheClock: true,
   enabledPilotFeatures: ['MESSAGING', 'MOBILE']
 }
@@ -120,6 +121,7 @@ export const daycareFixture: Daycare = {
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5],
   roundTheClock: true,
   location: {
     lat: 60.20377343765089,
@@ -173,6 +175,7 @@ export const preschoolFixture: Daycare = {
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5],
   roundTheClock: true,
   location: {
     lat: 60.2040261560435,
@@ -965,6 +968,7 @@ export class Fixture {
       decisionHandler: `decisionHandler_${id}`,
       decisionHandlerAddress: `decisionHandlerAddress_${id}`,
       providerType: 'MUNICIPAL',
+      operationDays: [1, 2, 3, 4, 5],
       roundTheClock: true,
       enabledPilotFeatures: ['MESSAGING', 'MOBILE']
     })
