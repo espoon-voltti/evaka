@@ -18,6 +18,18 @@ ADD ./evaka-review-profile/ /project/evaka-review-profile
 RUN cd /project/evaka-review-profile \
  && mvn --batch-mode clean install
 
+FROM maven:3.8.4-openjdk-17-slim AS builder-logger
+
+WORKDIR /project/
+
+ADD ./evaka-logging/pom.xml /project/pom.xml
+
+RUN mvn --batch-mode dependency:go-offline dependency:resolve clean package
+
+ADD ./evaka-logging/ /project/
+
+RUN mvn --batch-mode clean install
+
 FROM node:16 AS builder-theme
 
 WORKDIR /work
@@ -58,6 +70,9 @@ FROM keycloak
 COPY --from=builder-theme /work/evaka /opt/jboss/keycloak/themes/evaka
 
 COPY --from=builder-authenticator /project/evaka-review-profile/target/evaka-review-profile.jar \
+          /opt/jboss/keycloak/standalone/deployments/
+
+COPY --from=builder-logger /project/target/evaka-logging.jar \
           /opt/jboss/keycloak/standalone/deployments/
 
 ARG build=none
