@@ -398,6 +398,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
       {!extraTimeRange && props.allowExtraTimeRange ? (
         <IconButton
           icon={faPlus}
+          data-qa="add-new-reservation-timerange"
           onClick={() =>
             props.updateTimes([
               timeRange,
@@ -416,6 +417,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
           <div />
           <FixedSpaceRow alignItems="center">
             <TimeInput
+              data-qa="reservation-start-time"
               value={extraTimeRange.startTime ?? ''}
               onChange={(value) =>
                 props.updateTimes([
@@ -434,6 +436,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
             />
             <span>–</span>
             <TimeInput
+              data-qa="reservation-end-time"
               value={extraTimeRange.endTime ?? ''}
               onChange={(value) =>
                 props.updateTimes([
