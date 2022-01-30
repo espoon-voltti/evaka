@@ -70,6 +70,12 @@ export class ReservationModal extends Modal {
     ).fill(time)
   }
 
+  async addNewTimeRow(index: number) {
+    await this.findAll(`[data-qa="add-new-reservation-timerange"]`)
+      .nth(index)
+      .click()
+  }
+
   async save() {
     await this.submit()
   }

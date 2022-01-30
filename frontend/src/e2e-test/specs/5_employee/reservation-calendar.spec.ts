@@ -6,7 +6,12 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  careArea2Fixture,
+  daycare2Fixture,
+  Fixture,
+  uuidv4
+} from '../../dev-api/fixtures'
 import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
@@ -34,7 +39,10 @@ beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
-  daycare = fixtures.daycareFixture
+  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
+  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+
+  daycare = daycare2Fixture
 
   unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
     .data
@@ -95,16 +103,34 @@ describe('Unit group calendar', () => {
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
     await reservationModal.addReservation()
   })
+})
+
+describe('Unit group calendar for shift care unit', () => {
+  beforeEach(async () => {
+    page = await Page.open()
+    await employeeLogin(page, unitSupervisor)
+  })
 
   test('Employee can add two reservations for day and sees two rows', async () => {
     calendarPage = await loadUnitCalendarPage()
+
     await calendarPage.selectMode('week')
 
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
-    await reservationModal.addReservation()
+    await reservationModal.selectRepetitionType('IRREGULAR')
 
-    reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
-    await reservationModal.addOvernightReservation()
+    const startDate = LocalDate.today().startOfWeek()
+    await reservationModal.setStartDate(startDate.format())
+    await reservationModal.setEndDate(startDate.format())
+    await reservationModal.setStartTime('10:00', 0)
+    await reservationModal.setEndTime('16:00', 0)
+
+    await reservationModal.addNewTimeRow(0)
+
+    await reservationModal.setStartTime('20:00', 1)
+    await reservationModal.setEndTime('08:00', 1)
+
+    await reservationModal.save()
 
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
   })
