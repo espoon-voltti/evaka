@@ -149,12 +149,14 @@ export const daycare2Fixture: Daycare = {
   decisionHandler: 'Käsittelijä 2',
   decisionHandlerAddress: 'Käsittelijän 2 osoite',
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5, 6, 7],
   roundTheClock: true,
   location: {
     lat: 60.20350901607783,
     lon: 24.669
   },
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
 }
 
 export const preschoolFixture: Daycare = {
