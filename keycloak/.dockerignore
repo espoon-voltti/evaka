@@ -13,3 +13,5 @@ evaka-review-profile/target
 !theme/evaka
 !theme/sass
 !theme/scripts
+!evaka-logging
+evaka-logging/target

@@ -17,9 +17,10 @@ evaka/account/resources/css/
 .vscode
 
 role-condition/target
-evaka-review-profile/target
 compose-resources/deployments/
 *.java.orig
-evaka-review-profile/.classpath
-evaka-review-profile/.project
-evaka-review-profile/.settings
+
+*/target
+*/.classpath
+*/.project
+*/.settings

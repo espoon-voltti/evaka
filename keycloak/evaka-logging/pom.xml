@@ -7,11 +7,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <name>Evaka Review Profile</name>
+    <name>Evaka Logging</name>
     <description/>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>evaka-review-profile</artifactId>
+    <artifactId>evaka-logging</artifactId>
     <packaging>jar</packaging>
 
     <groupId>com.espoo.keycloak</groupId>
@@ -58,7 +58,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </dependencies>
 
     <build>
-        <finalName>evaka-review-profile</finalName>
+        <finalName>evaka-logging</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
