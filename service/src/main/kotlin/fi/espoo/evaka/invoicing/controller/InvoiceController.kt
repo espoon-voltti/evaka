@@ -98,7 +98,7 @@ class InvoiceController(
     fun createDraftInvoices(db: Database, user: AuthenticatedUser) {
         Audit.InvoicesCreate.log()
         accessControl.requirePermissionFor(user, Action.Global.CREATE_DRAFT_INVOICES)
-        db.connect { dbc -> dbc.transaction { generator.createAllDraftInvoices(it) } }
+        db.connect { dbc -> dbc.transaction { generator.createAndStoreAllDraftInvoices(it) } }
     }
 
     @PostMapping("/delete-drafts")

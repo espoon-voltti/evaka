@@ -347,6 +347,14 @@ export interface InvoiceDaycare {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceDiffController.InvoiceDebugDiffRequest
+*/
+export interface InvoiceDebugDiffRequest {
+  month: number
+  year: number
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 */
 export interface InvoiceDetailed {
@@ -369,10 +377,29 @@ export interface InvoiceDetailed {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceDiff
+*/
+export interface InvoiceDiff {
+  currentInvoice: Invoice
+  invoiceId: string
+  newInvoice: Invoice
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 */
 export type InvoiceDistinctiveParams = 
   | 'MISSING_ADDRESS'
+
+/**
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceGeneratorDiff
+*/
+export interface InvoiceGeneratorDiff {
+  differentInvoices: InvoiceDiff[]
+  onlyInCurrentInvoices: Invoice[]
+  onlyInNewInvoices: Invoice[]
+  usedRange: DateRange
+}
 
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoicePayload
