@@ -168,4 +168,9 @@ data class HelsinkiDateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiD
             val end = minOf(this.end, other.end)
             HelsinkiDateTimeRange(start, end)
         } else null
+
+    companion object {
+        fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
+            HelsinkiDateTimeRange(HelsinkiDateTime.of(date, startTime), HelsinkiDateTime.of(date, endTime))
+    }
 }

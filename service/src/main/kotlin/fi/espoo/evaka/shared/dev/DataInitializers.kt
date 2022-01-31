@@ -70,6 +70,7 @@ import org.postgresql.util.PGobject
 import org.springframework.core.io.ClassPathResource
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
@@ -1060,16 +1061,17 @@ RETURNING id
 data class DevReservation(
     val id: AttendanceReservationId = AttendanceReservationId(UUID.randomUUID()),
     val childId: ChildId,
-    val startTime: HelsinkiDateTime,
-    val endTime: HelsinkiDateTime,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
     val createdBy: EvakaUserId
 )
 
 fun Database.Transaction.insertTestReservation(reservation: DevReservation) = insertTestDataRow(
     reservation,
     """
-INSERT INTO attendance_reservation (id, child_id, start_time, end_time, created_by)
-VALUES (:id, :childId, :startTime, :endTime, :createdBy)
+INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created_by)
+VALUES (:id, :childId, :date, :startTime, :endTime, :createdBy)
 RETURNING id
 """
 ).let(::AttendanceReservationId)

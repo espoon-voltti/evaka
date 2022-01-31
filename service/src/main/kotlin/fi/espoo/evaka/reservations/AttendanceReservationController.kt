@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -218,11 +217,11 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         SELECT
             jsonb_agg(
                 jsonb_build_object(
-                    'startTime', to_char((GREATEST(ar.start_time, t) AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
-                    'endTime', to_char((LEAST(ar.end_time, t + INTERVAL '1 day') AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+                    'startTime', to_char(ar.start_time, 'HH24:MI'),
+                    'endTime', to_char(ar.end_time, 'HH24:MI')
                 ) ORDER BY ar.start_time ASC
             ) AS reservations
-        FROM attendance_reservation ar WHERE ar.child_id = p.id AND (ar.start_date = t::date OR DATE_TRUNC('day', ar.end_time, 'Europe/Helsinki') = t)
+        FROM attendance_reservation ar WHERE ar.child_id = p.id AND ar.date = t::date
     ) res ON true
     LEFT JOIN LATERAL (
         SELECT absence_type
@@ -312,8 +311,8 @@ fun createReservationsAsEmployee(tx: Database.Transaction, userId: UUID, reserva
 private fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
-        INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by)
-        SELECT :childId, :start, :end, :userId
+        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
+        SELECT :childId, :date, :start, :end, :userId
         FROM placement pl
         LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
         JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id)
@@ -329,19 +328,12 @@ private fun Database.Transaction.insertValidReservations(userId: UUID, requests:
 
     requests.forEach { request ->
         request.reservations?.forEach { res ->
-            val start = HelsinkiDateTime.of(
-                date = request.date,
-                time = res.startTime
-            )
-            val end = HelsinkiDateTime.of(
-                date = if (res.endTime.isAfter(res.startTime)) request.date else request.date.plusDays(1),
-                time = res.endTime
-            )
             batch
                 .bind("userId", userId)
                 .bind("childId", request.childId)
-                .bind("start", start)
-                .bind("end", end)
+                .bind("date", request.date)
+                .bind("start", res.startTime)
+                .bind("end", res.endTime)
                 .bind("date", request.date)
                 .add()
         }

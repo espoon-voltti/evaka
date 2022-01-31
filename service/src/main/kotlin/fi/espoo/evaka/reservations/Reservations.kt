@@ -33,12 +33,7 @@ fun Database.Transaction.clearOldAbsences(childDatePairs: List<Pair<ChildId, Loc
 }
 
 fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, LocalDate>>) {
-    val batch = prepareBatch(
-        """
-        DELETE FROM attendance_reservation 
-        WHERE child_id = :childId AND start_date = :date
-        """.trimIndent()
-    )
+    val batch = prepareBatch("DELETE FROM attendance_reservation WHERE child_id = :childId AND date = :date")
 
     reservations.forEach { (childId, date) ->
         batch

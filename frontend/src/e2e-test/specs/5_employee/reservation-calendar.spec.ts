@@ -35,6 +35,8 @@ const placementStartDate = LocalDate.today().subWeeks(4)
 const placementEndDate = LocalDate.today().addWeeks(4)
 const groupId: UUID = uuidv4()
 
+const mockedTime = LocalDate.of(2022, 1, 31).toSystemTzDate()
+
 beforeEach(async () => {
   await resetDatabase()
 
@@ -77,6 +79,9 @@ beforeEach(async () => {
       endDate: placementEndDate.formatIso()
     })
     .save()
+
+  page = await Page.open({ mockedTime })
+  await employeeLogin(page, unitSupervisor)
 })
 
 const loadUnitCalendarPage = async (): Promise<UnitCalendarPage> => {
@@ -86,11 +91,6 @@ const loadUnitCalendarPage = async (): Promise<UnitCalendarPage> => {
 }
 
 describe('Unit group calendar', () => {
-  beforeEach(async () => {
-    page = await Page.open()
-    await employeeLogin(page, unitSupervisor)
-  })
-
   test('Employee sees row for child', async () => {
     calendarPage = await loadUnitCalendarPage()
     await calendarPage.selectMode('week')
@@ -106,11 +106,6 @@ describe('Unit group calendar', () => {
 })
 
 describe('Unit group calendar for shift care unit', () => {
-  beforeEach(async () => {
-    page = await Page.open()
-    await employeeLogin(page, unitSupervisor)
-  })
-
   test('Employee can add two reservations for day and sees two rows', async () => {
     calendarPage = await loadUnitCalendarPage()
 
@@ -122,13 +117,13 @@ describe('Unit group calendar for shift care unit', () => {
     const startDate = LocalDate.today().startOfWeek()
     await reservationModal.setStartDate(startDate.format())
     await reservationModal.setEndDate(startDate.format())
-    await reservationModal.setStartTime('10:00', 0)
-    await reservationModal.setEndTime('16:00', 0)
+    await reservationModal.setStartTime('00:00', 0)
+    await reservationModal.setEndTime('12:00', 0)
 
     await reservationModal.addNewTimeRow(0)
 
     await reservationModal.setStartTime('20:00', 1)
-    await reservationModal.setEndTime('08:00', 1)
+    await reservationModal.setEndTime('00:00', 1)
 
     await reservationModal.save()
 
@@ -164,22 +159,23 @@ describe('Unit group calendar for shift care unit', () => {
 
     await reservationModal.setStartDate(startDate.format())
     await reservationModal.setEndDate(startDate.format())
-    await reservationModal.setStartTime('10:00', 0)
-    await reservationModal.setEndTime('16:00', 0)
+    await reservationModal.setStartTime('00:00', 0)
+    await reservationModal.setEndTime('12:00', 0)
 
     await reservationModal.addNewTimeRow(0)
 
     await reservationModal.setStartTime('20:00', 1)
-    await reservationModal.setEndTime('08:00', 1)
+    await reservationModal.setEndTime('00:00', 1)
 
     await reservationModal.save()
 
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
 
     const expectedReservations = [
-      ['10:00', '16:00', startDate],
-      ['20:00', '00:00', startDate],
-      ['00:00', '08:00', startDate.addDays(1)]
+      ['00:00', '12:00', startDate],
+      ['20:00', '23:59', startDate],
+      ['00:00', '12:00', startDate.addDays(1)],
+      ['20:00', '23:59', startDate.addDays(1)]
     ]
 
     await Promise.all(

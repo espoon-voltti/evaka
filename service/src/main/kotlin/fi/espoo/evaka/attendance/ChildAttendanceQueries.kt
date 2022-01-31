@@ -341,12 +341,12 @@ fun Database.Read.fetchAttendanceReservations(
     """
     SELECT
         child.id AS child_id,
-        to_char((res.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS start_time,
-        to_char((res.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS end_time
+        to_char(res.start_time, 'HH24:MI') AS start_time,
+        to_char(res.end_time, 'HH24:MI') AS end_time
     FROM attendance_reservation res
     JOIN person child ON res.child_id = child.id
-    JOIN placement ON child.id = placement.child_id AND res.start_date BETWEEN placement.start_date AND placement.end_date
-    WHERE res.start_date = :date AND placement.unit_id = :unitId
+    JOIN placement ON child.id = placement.child_id AND res.date BETWEEN placement.start_date AND placement.end_date
+    WHERE res.date = :date AND placement.unit_id = :unitId
     """.trimIndent()
 )
     .bind("unitId", unitId)
