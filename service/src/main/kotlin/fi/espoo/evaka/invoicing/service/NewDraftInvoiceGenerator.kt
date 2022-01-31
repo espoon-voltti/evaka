@@ -109,7 +109,6 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                                     decision.children.find { part -> part.child == child }
                                         ?.let { DateRange(decision.validFrom, decision.validTo) to it }
                                 }
-                                .filterNot { (_, part) -> part.finalFee == 0 }
                                 .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                                 .map { (decisionPeriod, part) ->
                                     DateRange(

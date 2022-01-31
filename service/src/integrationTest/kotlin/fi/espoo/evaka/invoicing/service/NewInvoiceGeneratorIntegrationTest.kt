@@ -65,7 +65,8 @@ import kotlin.test.assertNull
 class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
     private val featureConfig: FeatureConfig = testFeatureConfig
-    private val newDraftInvoiceGenerator: DraftInvoiceGenerator = NewDraftInvoiceGenerator(productProvider, featureConfig)
+    private val newDraftInvoiceGenerator: DraftInvoiceGenerator =
+        NewDraftInvoiceGenerator(productProvider, featureConfig)
     private val generator: InvoiceGenerator = InvoiceGenerator(newDraftInvoiceGenerator)
 
     @BeforeEach
@@ -73,13 +74,15 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.execute(
-                "INSERT INTO holiday (date) VALUES (?), (?), (?), (?), (?), (?)",
+                "INSERT INTO holiday (date) VALUES (?), (?), (?), (?), (?), (?), (?), (?)",
                 LocalDate.of(2019, 1, 1),
                 LocalDate.of(2019, 1, 6),
                 LocalDate.of(2020, 1, 1),
                 LocalDate.of(2020, 1, 6),
                 LocalDate.of(2021, 1, 1),
                 LocalDate.of(2021, 1, 6),
+                LocalDate.of(2021, 12, 6),
+                LocalDate.of(2021, 12, 24),
             )
         }
     }
@@ -408,7 +411,10 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(
+                    id = FeeDecisionId(UUID.randomUUID()),
+                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
+                )
             )
         )
 
@@ -463,7 +469,10 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(
+                    id = FeeDecisionId(UUID.randomUUID()),
+                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
+                )
             )
         )
 
@@ -1679,6 +1688,89 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-1927, invoiceRow.unitPrice) // 28900 / 15
                 assertEquals(-1927, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with free and paid fee decisions with absences for all paid days`() {
+        // 21 operational days
+        val period = DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 31))
+
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val placementId = db.transaction(insertPlacement(testChild_1.id, period))
+        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+        db.transaction { tx ->
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = period.start,
+                endDate = period.end!!
+            )
+        }
+
+        listOf(
+            DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to
+                0,
+            DateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to
+                28900,
+        ).forEach { (valid, fee) ->
+            val decision = createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                valid,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = fee,
+                        fee = fee,
+                        feeAlterations = listOf()
+                    )
+                )
+            )
+            db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
+        }
+
+        val absenceDays = listOf(
+            LocalDate.of(2021, 12, 23) to AbsenceType.OTHER_ABSENCE,
+            LocalDate.of(2021, 12, 27) to AbsenceType.OTHER_ABSENCE,
+            LocalDate.of(2021, 12, 28) to AbsenceType.OTHER_ABSENCE,
+            LocalDate.of(2021, 12, 29) to AbsenceType.OTHER_ABSENCE,
+            LocalDate.of(2021, 12, 30) to AbsenceType.OTHER_ABSENCE,
+            LocalDate.of(2021, 12, 31) to AbsenceType.OTHER_ABSENCE,
+        )
+        db.transaction { tx ->
+            tx.upsertAbsences(
+                absenceDays.map { (date, type) ->
+                    AbsenceUpsert(
+                        absenceType = type,
+                        childId = testChild_1.id,
+                        date = date,
+                        careType = AbsenceCareType.DAYCARE
+                    )
+                },
+                EvakaUserId(testDecisionMaker_1.id.raw)
+            )
+        }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(8256, invoice.totalPrice)
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(6, invoiceRow.amount)
+                assertEquals(1376, invoiceRow.unitPrice) // 28900 / 21
+                assertEquals(8256, invoiceRow.price)
             }
         }
     }
