@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import classNames from 'classnames'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
@@ -42,12 +43,7 @@ export default React.memo(function ReservationsTable({
         <Tr>
           <CustomTh>{i18n.unit.attendanceReservations.childName}</CustomTh>
           {operationalDays.map(({ date, isHoliday }) => (
-            <DateTh
-              shrink
-              key={date.formatIso()}
-              faded={isHoliday}
-              highlight={date.isToday()}
-            >
+            <DateTh shrink key={date.formatIso()} faded={isHoliday}>
               <Date centered highlight={date.isToday()}>
                 {date.format('EEEEEE dd.MM.', lang)}
               </Date>
@@ -65,7 +61,7 @@ export default React.memo(function ReservationsTable({
           const childName = `${childReservations.child.firstName} ${childReservations.child.lastName}`
 
           return (
-            <Tr key={childReservations.child.id}>
+            <DayTr key={childReservations.child.id}>
               <NameTd>
                 <ChildName>
                   <AgeIndicatorIcon
@@ -83,7 +79,7 @@ export default React.memo(function ReservationsTable({
               {operationalDays.map((day) => (
                 <DayTd
                   key={day.date.formatIso()}
-                  highlight={day.date.isToday()}
+                  className={classNames({ 'is-today': day.date.isToday() })}
                 >
                   <ChildDay day={day} childReservations={childReservations} />
                 </DayTd>
@@ -96,7 +92,7 @@ export default React.memo(function ReservationsTable({
                   }
                 />
               </StyledTd>
-            </Tr>
+            </DayTr>
           )
         })}
       </Tbody>
@@ -113,9 +109,8 @@ const CustomTh = styled(Th)<{ shrink?: boolean }>`
     `}
 `
 
-const DateTh = styled(CustomTh)<{ faded: boolean; highlight: boolean }>`
+const DateTh = styled(CustomTh)<{ faded: boolean }>`
   ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
-  ${(p) => p.highlight && `border-bottom: 2px solid ${colors.main.m3};`}
 `
 
 const DayHeader = styled.div`
@@ -128,14 +123,26 @@ const StyledTd = styled(Td)`
   border-right: 1px solid ${colors.grayscale.g35};
   vertical-align: middle;
 `
-const DayTd = styled(StyledTd)<{ highlight: boolean }>`
-  ${(p) =>
-    p.highlight &&
-    css`
-      border-left: 2px solid ${colors.main.m3};
-      border-right: 2px solid ${colors.main.m3};
-    `}
+const DayTd = styled(StyledTd)`
   padding: 0;
+`
+
+const DayTr = styled(Tr)`
+  > ${DayTd}.is-today {
+    border-left: 2px solid ${colors.status.success};
+    border-right: 2px solid ${colors.status.success};
+  }
+
+  &:first-child {
+    > ${DayTd}.is-today {
+      border-top: 2px solid ${colors.status.success};
+    }
+  }
+  &:last-child {
+    > ${DayTd}.is-today {
+      border-bottom: 2px solid ${colors.status.success};
+    }
+  }
 `
 
 const NameTd = styled(StyledTd)`
