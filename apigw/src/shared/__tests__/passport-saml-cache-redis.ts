@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { CacheProvider, CacheItem } from 'passport-saml'
+import type { CacheProvider } from 'passport-saml'
 import type { RedisClient } from 'redis'
 import redis from 'redis-mock'
 import redisCacheProvider from '../auth/passport-saml-cache-redis'
@@ -59,19 +59,11 @@ describe('passport-saml-cache-redis', () => {
         keyPrefix: 'second-prefix:'
       })
 
-      await fromCallback<CacheItem | null>((cb) =>
-        firstCache.save('key', 'first-val', cb)
-      )
-      await fromCallback<CacheItem | null>((cb) =>
-        secondCache.save('key', 'second-val', cb)
-      )
+      await firstCache.saveAsync('key', 'first-val')
+      await secondCache.saveAsync('key', 'second-val')
 
-      const firstRes = await fromCallback<string | null>((cb) =>
-        firstCache.get('key', cb)
-      )
-      const secondRes = await fromCallback<string | null>((cb) =>
-        secondCache.get('key', cb)
-      )
+      const firstRes = await firstCache.getAsync('key')
+      const secondRes = await secondCache.getAsync('key')
       expect(firstRes).toBe('first-val')
       expect(secondRes).toBe('second-val')
     })
@@ -79,67 +71,49 @@ describe('passport-saml-cache-redis', () => {
 
   describe('get()', () => {
     test('returns null if key does not exist', async () => {
-      const res = await fromCallback<string | null>((cb) =>
-        cache.get('key', cb)
-      )
+      const res = await cache.getAsync('key')
       expect(res).toBeNull()
     })
 
     test('returns the value if key exists', async () => {
-      await fromCallback<CacheItem | null>((cb) => cache.save('key', 'val', cb))
-      const res = await fromCallback<string | null>((cb) =>
-        cache.get('key', cb)
-      )
+      await cache.saveAsync('key', 'val')
+      const res = await cache.getAsync('key')
       expect(res).toBe('val')
     })
   })
 
   describe('save()', () => {
     test('returns the new value & timestamp if key does not exist', async () => {
-      const result = await fromCallback<CacheItem | null>((cb) =>
-        cache.save('key', 'val', cb)
-      )
+      const result = await cache.saveAsync('key', 'val')
       expect(result?.createdAt).toBeGreaterThan(0)
       expect(result?.value).toBe('val')
     })
 
     test('returns null if the key already exists', async () => {
-      await fromCallback<CacheItem | null>((cb) =>
-        cache.save('key', 'val1', cb)
-      )
-      const result = await fromCallback<CacheItem | null>((cb) =>
-        cache.save('key', 'val2', cb)
-      )
+      await cache.saveAsync('key', 'val1')
+      const result = await cache.saveAsync('key', 'val2')
       expect(result).toBeNull()
     })
   })
 
   describe('remove()', () => {
     it('returns null if key does not exist', async () => {
-      const result = await fromCallback<string | null>((cb) =>
-        cache.remove('key', cb)
-      )
+      const result = await cache.removeAsync('key')
       expect(result).toBeNull()
     })
 
     it('returns the key if it existed', async () => {
-      await fromCallback<CacheItem | null>((cb) => cache.save('key', 'val', cb))
-      expect(
-        await fromCallback<string | null>((cb) => cache.remove('key', cb))
-      ).toBe('key')
-      expect(
-        await fromCallback<string | null>((cb) => cache.remove('key', cb))
-      ).toBeNull()
+      await cache.saveAsync('key', 'val')
+      expect(await cache.removeAsync('key')).toBe('key')
+      expect(await cache.removeAsync('key')).toBeNull()
     })
   })
 
   describe('cache expiration', () => {
     test('keys are expired and deleted from cache automatically', async () => {
-      await fromCallback<CacheItem | null>((cb) => cache.save('key', 'val', cb))
+      await cache.saveAsync('key', 'val')
 
-      expect(
-        await fromCallback<string | null>((cb) => cache.get('key', cb))
-      ).toBe('val')
+      expect(await cache.getAsync('key')).toBe('val')
 
       // Unfortunately there's not currently an reasonably easy way to mock
       // the timer used by redis-mock so actually waiting for the duration of
@@ -148,9 +122,7 @@ describe('passport-saml-cache-redis', () => {
         setTimeout(resolve, ttlSeconds * 1.1 * 1000)
       )
 
-      expect(
-        await fromCallback<string | null>((cb) => cache.get('key', cb))
-      ).toBeNull()
+      expect(await cache.getAsync('key')).toBeNull()
     })
   })
 })

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -65,7 +65,7 @@ async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
 }
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
-  if (adMock) return {}
+  if (adMock) return { cert: 'mock-certificate' }
   if (!adConfig) throw Error('Missing AD SAML configuration')
   return {
     acceptedClockSkewMs: 0,
@@ -84,7 +84,7 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
     issuer: adConfig.issuer,
     logoutUrl: adConfig.logoutUrl,
-    privateCert: readFileSync(adConfig.privateCert, { encoding: 'utf8' }),
+    privateKey: readFileSync(adConfig.privateCert, { encoding: 'utf8' }),
     signatureAlgorithm: 'sha256',
     validateInResponseTo: true
   }
@@ -133,7 +133,7 @@ export default function createAdStrategy(
   } else {
     return new SamlStrategy(
       config,
-      (profile: Profile, done: VerifiedCallback) => {
+      (profile: Profile | null | undefined, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         verifyProfile(profile as any as AdProfile)
           .then((user) => done(null, user))

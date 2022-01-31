@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -38,7 +38,7 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
     issuer: evakaSamlConfig.issuer,
     logoutUrl: evakaSamlConfig.entryPoint,
-    privateCert: privateCert,
+    privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     validateInResponseTo: true
   }
@@ -49,7 +49,7 @@ export default function createKeycloakSamlStrategy(
 ): SamlStrategy {
   return new SamlStrategy(
     config,
-    (profile: Profile, done: VerifiedCallback) => {
+    (profile: Profile | null | undefined, done: VerifiedCallback) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       verifyKeycloakProfile(profile as KeycloakProfile)
         .then((user) => done(null, user))

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type express from 'express'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { SamlUser } from './routes/auth/saml/types'
 import { BaseError } from 'make-error-cause'
 

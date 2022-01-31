@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { SamlConfig, Strategy } from 'passport-saml'
+import type { Profile, SamlConfig, Strategy } from 'passport-saml'
 import type { Strategy as DummyStrategy } from 'passport-dummy'
 import type { SessionType } from '../../../session'
 import type { UserType } from '../../../service-client'
@@ -41,19 +41,13 @@ export interface StatusObject {
   }
 }
 
-export interface SamlUser {
+export interface SamlUser extends Profile {
   // eVaka id
-  id: string
-  userType: UserType | undefined
+  id?: string | undefined
+  userType?: UserType | undefined
   // all are optional because of legacy sessions
-  roles?: string[]
-  globalRoles?: string[]
-  allScopedRoles?: string[]
-  // fields used by passport-saml during logout flow
-  nameID?: string
-  nameIDFormat?: string
-  nameQualifier?: string
-  spNameQualifier?: string
-  sessionIndex?: string
-  mobileEmployeeId?: string
+  roles?: string[] | undefined
+  globalRoles?: string[] | undefined
+  allScopedRoles?: string[] | undefined
+  mobileEmployeeId?: string | undefined
 }
