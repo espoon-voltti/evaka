@@ -65,6 +65,10 @@ export function getTimesOnWeekday(
       return times.thursday
     case 5:
       return times.friday
+    case 6:
+      return times.saturday
+    case 7:
+      return times.sunday
     default:
       return null
   }
