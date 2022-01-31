@@ -158,6 +158,8 @@ data class HelsinkiDateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiD
         check(start <= end) { "Attempting to initialize invalid time range with start: $start, end: $end" }
     }
 
+    fun contains(other: HelsinkiDateTimeRange) = this.start <= other.start && other.end <= this.end
+
     fun overlaps(other: HelsinkiDateTimeRange) = this.start < other.end && other.start < this.end
 
     fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
