@@ -340,8 +340,8 @@ export interface InvoiceDaycare {
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceDiffController.InvoiceDebugDiffRequest
 */
 export interface InvoiceDebugDiffRequest {
-  endDate: LocalDate
-  startDate: LocalDate
+  month: number
+  year: number
 }
 
 /**
