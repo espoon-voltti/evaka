@@ -25,7 +25,9 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
@@ -86,6 +88,8 @@ class InvoiceGeneratorDifferIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 10))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_2.id, testChild_2.id, period))
+
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -104,14 +108,38 @@ class InvoiceGeneratorDifferIntegrationTest : PureJdbiTest() {
                 )
             )
         )
-        insertDecisionsAndPlacements(listOf(decision))
+
+        val decision2 = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            placementPeriod,
+            testAdult_2.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_2.id,
+                    dateOfBirth = testChild_2.dateOfBirth,
+                    placementUnitId = testRoundTheClockDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    baseFee = 14450,
+                    fee = 14450,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision, decision2))
 
         val diff = db.transaction { invoiceGeneratorDiffer.createInvoiceGeneratorDiff(it, period) }
 
-        assertEquals(1, diff.differentInvoices.size)
-        assertEquals(diff.differentInvoices.get(0).invoiceId, "${testAdult_1.id}-2021-02-12")
-        assertEquals(diff.differentInvoices.get(0).currentInvoice.totalPrice, 6084)
-        assertEquals(diff.differentInvoices.get(0).newInvoice.totalPrice, 7605)
+        assertEquals(2, diff.differentInvoices.size)
+
+        assertEquals("${testAdult_1.id}-2021-02-12", diff.differentInvoices.get(0).invoiceId)
+        assertEquals(6084, diff.differentInvoices.get(0).currentInvoice.totalPrice)
+        assertEquals(7605, diff.differentInvoices.get(0).newInvoice.totalPrice)
+
+        assertEquals("${testAdult_2.id}-2021-02-12", diff.differentInvoices.get(1).invoiceId)
+        assertEquals(3044, diff.differentInvoices.get(1).currentInvoice.totalPrice)
+        assertEquals(3805, diff.differentInvoices.get(1).newInvoice.totalPrice)
 
         assertEquals(0, diff.onlyInCurrentInvoices.size)
         assertEquals(0, diff.onlyInNewInvoices.size)
