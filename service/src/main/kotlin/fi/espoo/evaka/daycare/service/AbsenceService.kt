@@ -135,10 +135,13 @@ private fun supplementReservationsWithDailyServiceTimes(
     return (reservationRanges + dailyServiceTimeRanges)
         .sortedBy { it.start }
         .fold(listOf()) { timeRanges, timeRange ->
-            val nonOverlappingTimeRange =
-                if (timeRanges.lastOrNull()?.overlaps(timeRange) == true) timeRange.copy(start = timeRanges.last().end)
-                else timeRange
-            timeRanges + nonOverlappingTimeRange
+            val lastTimeRange = timeRanges.lastOrNull()
+            when {
+                lastTimeRange == null -> listOf(timeRange)
+                lastTimeRange.contains(timeRange) -> timeRanges
+                lastTimeRange.overlaps(timeRange) -> timeRanges + timeRange.copy(start = lastTimeRange.end)
+                else -> timeRanges + timeRange
+            }
         }
 }
 

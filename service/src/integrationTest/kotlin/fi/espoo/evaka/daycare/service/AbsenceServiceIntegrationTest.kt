@@ -672,6 +672,21 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `reservation sums - daily service time is within another reservation`() {
+        insertGroupPlacement(childId)
+        val reservations = listOf(
+            HelsinkiDateTime.of(placementStart, LocalTime.of(20, 0))
+                to HelsinkiDateTime.of(placementStart.plusDays(1), LocalTime.of(17, 0))
+        )
+        insertReservations(childId, reservations)
+        val dailyServiceTimes = DailyServiceTimes.RegularTimes(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
+        insertDailyServiceTimes(childId, dailyServiceTimes)
+
+        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
+        assertEquals(listOf(21 + 20 * 8), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
     fun `attendance sums - basic case`() {
         insertGroupPlacement(childId)
         val attendances = generateSequence(placementStart) { it.plusDays(1) }
