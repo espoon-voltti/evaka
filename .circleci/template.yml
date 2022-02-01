@@ -241,7 +241,7 @@ commands:
     steps:
       - save_cache:
           name: Store Docker image in cache
-          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
           paths:
             - << pipeline.parameters.workspace_root >>/<< parameters.dir >>/image.tar
 
@@ -252,7 +252,7 @@ commands:
     steps:
       - restore_cache:
           name: Restore Docker image from cache
-          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
       - run: docker load -i << parameters.dir >>/image.tar
 
   # Artifacts or sub-workspaces would be ideal here but instead we need to
@@ -263,14 +263,14 @@ commands:
     steps:
       - save_cache:
           name: Store build artifacts
-          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
           paths:
             - << pipeline.parameters.workspace_root >>/service/build/libs/
   restore_service_artifacts:
     steps:
       - restore_cache:
           name: Restore build artifacts
-          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_WORKSPACE_ID }}
 
   store_apigw_deps:
     steps:
