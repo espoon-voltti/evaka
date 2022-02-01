@@ -2567,6 +2567,12 @@ export const fi = {
       childMarkedForRest: 'Lapsen tiedot nollataan seuraavalla ajolla',
       resetChild: 'Resetoi',
       updating: 'Päivittää'
+    },
+    invoiceGeneratorDiff: {
+      title: 'Laskugeneraattorien eroavaisuudet',
+      description:
+        'Työkalu uuden laskugeneraattorin analysointiin vs vanha laskugeneraattori',
+      report: 'Raportti laskugeneraattorien eroavaisuuksista'
     }
   },
   unitEditor: {

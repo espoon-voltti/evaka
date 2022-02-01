@@ -489,3 +489,17 @@ export async function runResetVardaChildren(): Promise<Result<void>> {
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
+
+interface InvoiceGeneratorDiffFilters {
+  year: number
+  month: number
+}
+
+export async function getInvoiceGeneratorDiffReport(
+  filters: InvoiceGeneratorDiffFilters
+): Promise<Result<string>> {
+  return client
+    .post<JsonOf<string>>('/invoice-diff/debug-diff', filters)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

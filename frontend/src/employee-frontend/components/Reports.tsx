@@ -452,6 +452,26 @@ function Reports() {
               <Description>{i18n.reports.vardaErrors.description}</Description>
             </ReportItem>
           </RequireRole>
+          <RequireRole oneOf={['ADMIN']}>
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon
+                  size="L"
+                  color={colors.status.warning}
+                  content={faDiagnoses}
+                />
+                <LinkTitle
+                  to="/reports/invoice-generator-diff"
+                  data-qa="invoice-generator-diff"
+                >
+                  {i18n.reports.invoiceGeneratorDiff.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>
+                {i18n.reports.invoiceGeneratorDiff.description}
+              </Description>
+            </ReportItem>
+          </RequireRole>
         </ReportItems>
       </ContentArea>
     </Container>
