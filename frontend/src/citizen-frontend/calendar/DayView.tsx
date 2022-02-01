@@ -13,6 +13,7 @@ import {
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { validateTimeRange } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -35,7 +36,7 @@ import {
 } from 'lib-icons'
 import { useLang, useTranslation } from '../localization'
 import CalendarModal from './CalendarModal'
-import TimeRangeInput, { TimeRange, validateTimeRange } from './TimeRangeInput'
+import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'
 
 interface Props {
@@ -261,10 +262,10 @@ export default React.memo(function DayView({
 
 type EditorState = {
   child: ReservationChild
-  reservations: TimeRange[]
+  reservations: TimeRangeWithErrors[]
 }
 
-const emptyReservation: TimeRange = {
+const emptyReservation: TimeRangeWithErrors = {
   startTime: '',
   endTime: '',
   errors: { startTime: undefined, endTime: undefined }
@@ -273,7 +274,7 @@ const emptyReservation: TimeRange = {
 function reservationToTimeRange({
   startTime,
   endTime
-}: Reservation): TimeRange {
+}: Reservation): TimeRangeWithErrors {
   return { ...emptyReservation, startTime, endTime }
 }
 
@@ -319,7 +320,7 @@ function useEditState(
                   ...childState,
                   reservations: childState.reservations.map((timeRange, i) =>
                     index === i
-                      ? validateTimeRange({
+                      ? addTimeRangeValidationErrors({
                           ...timeRange,
                           [field]: value
                         })
@@ -541,6 +542,16 @@ const Reservations = React.memo(function Reservations({
     </NoReservation>
   )
 })
+
+export function addTimeRangeValidationErrors(
+  timeRange: TimeRangeWithErrors
+): TimeRangeWithErrors {
+  return {
+    startTime: timeRange.startTime,
+    endTime: timeRange.endTime,
+    errors: validateTimeRange(timeRange)
+  }
+}
 
 const Content = styled.div<{ highlight: boolean }>`
   background: ${(p) => p.theme.colors.grayscale.g0};

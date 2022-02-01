@@ -93,7 +93,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
             ac.requirePermissionFor(user, Action.Child.CREATE_ATTENDANCE_RESERVATION, childId)
         }
 
-        db.connect { dbc -> dbc.transaction { createReservationsAsEmployee(it, user.id, body) } }
+        db.connect { dbc -> dbc.transaction { createReservationsAsEmployee(it, user.id, body.validate()) } }
     }
 }
 

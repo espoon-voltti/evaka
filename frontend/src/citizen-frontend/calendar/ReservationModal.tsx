@@ -5,14 +5,15 @@
 import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ErrorKey, regexp, TIME_REGEXP } from 'lib-common/form-validation'
-import {
-  DailyReservationRequest,
-  ReservationChild,
-  TimeRange
-} from 'lib-common/generated/api-types/reservations'
+import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import {
+  Repetition,
+  ReservationFormData,
+  TimeRangeErrors,
+  TimeRanges,
+  validateForm
+} from 'lib-common/reservations'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -39,40 +40,6 @@ interface Props {
   availableChildren: ReservationChild[]
   reservableDays: FiniteDateRange | null
 }
-
-type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
-
-interface ReservationFormData {
-  selectedChildren: UUID[]
-  startDate: string
-  endDate: string
-  repetition: Repetition
-  dailyTimes: TimeRanges
-  weeklyTimes: Array<TimeRanges | undefined>
-  irregularTimes: Record<string, TimeRanges | undefined>
-}
-
-type TimeRanges = [TimeRange] | [TimeRange, TimeRange]
-type TimeRangeErrors = {
-  startTime: ErrorKey | undefined
-  endTime: ErrorKey | undefined
-}
-
-type ReservationErrors = Partial<
-  Record<
-    keyof Omit<
-      ReservationFormData,
-      'dailyTimes' | 'weeklyTimes' | 'irregularTimes'
-    >,
-    ErrorKey
-  > & {
-    dailyTimes: TimeRangeErrors[]
-  } & {
-    weeklyTimes: Array<TimeRangeErrors[] | undefined>
-  } & {
-    irregularTimes: Record<string, TimeRangeErrors[] | undefined>
-  }
->
 
 export default React.memo(function ReservationModal({
   onClose,
@@ -260,11 +227,7 @@ export default React.memo(function ReservationModal({
               }`}</Label>
             }
             times={formData.dailyTimes}
-            updateTimes={(dailyTimes) =>
-              updateForm({
-                dailyTimes
-              })
-            }
+            updateTimes={(dailyTimes) => updateForm({ dailyTimes })}
             validationErrors={validationResult.errors?.dailyTimes}
             showAllErrors={showAllErrors}
             allowExtraTimeRange={childrenInShiftCare}
@@ -522,171 +485,6 @@ const TimeInputs = React.memo(function TimeInputs(props: {
     </>
   )
 })
-
-type ValidationResult =
-  | { errors: ReservationErrors }
-  | { errors: undefined; requestPayload: DailyReservationRequest[] }
-
-function validateForm(
-  reservableDays: FiniteDateRange | null,
-  formData: ReservationFormData
-): ValidationResult {
-  const errors: ReservationErrors = {}
-
-  if (formData.selectedChildren.length < 1) {
-    errors['selectedChildren'] = 'required'
-  }
-
-  const startDate = LocalDate.parseFiOrNull(formData.startDate)
-  if (startDate === null || reservableDays === null) {
-    errors['startDate'] = 'validDate'
-  } else if (startDate.isBefore(reservableDays.start)) {
-    errors['startDate'] = 'dateTooEarly'
-  }
-
-  const endDate = LocalDate.parseFiOrNull(formData.endDate)
-  if (endDate === null || reservableDays === null) {
-    errors['endDate'] = 'validDate'
-  } else if (startDate && endDate.isBefore(startDate)) {
-    errors['endDate'] = 'dateTooEarly'
-  } else if (endDate.isAfter(reservableDays.end)) {
-    errors['endDate'] = 'dateTooLate'
-  }
-
-  if (formData.repetition === 'DAILY') {
-    errors['dailyTimes'] = formData.dailyTimes.map((time) => ({
-      startTime:
-        time.startTime === ''
-          ? time.endTime !== ''
-            ? 'timeRequired'
-            : undefined
-          : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
-      endTime:
-        time.endTime === ''
-          ? time.startTime !== ''
-            ? 'timeRequired'
-            : undefined
-          : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
-    }))
-  }
-
-  if (formData.repetition === 'WEEKLY') {
-    errors['weeklyTimes'] = formData.weeklyTimes.map((times) =>
-      times
-        ? times.map((time) => ({
-            startTime:
-              time.startTime === ''
-                ? time.endTime !== ''
-                  ? 'timeRequired'
-                  : undefined
-                : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
-            endTime:
-              time.endTime === ''
-                ? time.startTime !== ''
-                  ? 'timeRequired'
-                  : undefined
-                : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
-          }))
-        : undefined
-    )
-  }
-
-  if (formData.repetition === 'IRREGULAR') {
-    errors['irregularTimes'] = Object.fromEntries(
-      Object.entries(formData.irregularTimes).map(([date, times]) => [
-        date,
-        times
-          ? times.map((time) => ({
-              startTime:
-                time.startTime === ''
-                  ? time.endTime !== ''
-                    ? 'timeRequired'
-                    : undefined
-                  : regexp(time.startTime, TIME_REGEXP, 'timeFormat'),
-              endTime:
-                time.endTime === ''
-                  ? time.startTime !== ''
-                    ? 'timeRequired'
-                    : undefined
-                  : regexp(time.endTime, TIME_REGEXP, 'timeFormat')
-            }))
-          : undefined
-      ])
-    )
-  }
-
-  if (errorsExist(errors)) {
-    return { errors }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const dateRange = new FiniteDateRange(startDate!, endDate!)
-  const dates = [...dateRange.dates()]
-
-  return {
-    errors: undefined,
-    requestPayload: formData.selectedChildren.flatMap((childId) => {
-      switch (formData.repetition) {
-        case 'DAILY':
-          return dates.map((date) => ({
-            childId,
-            date,
-            reservations: filterEmptyReservationTimes(formData.dailyTimes)
-          }))
-        case 'WEEKLY':
-          return dates.map((date) => ({
-            childId,
-            date,
-            reservations: filterEmptyReservationTimes(
-              formData.weeklyTimes[date.getIsoDayOfWeek() - 1]
-            )
-          }))
-        case 'IRREGULAR':
-          return Object.entries(formData.irregularTimes)
-            .filter(([isoDate]) => {
-              const date = LocalDate.tryParseIso(isoDate)
-              return date && dateRange.includes(date)
-            })
-            .map(([isoDate, times]) => ({
-              childId,
-              date: LocalDate.parseIso(isoDate),
-              reservations: filterEmptyReservationTimes(times)
-            }))
-      }
-    })
-  }
-}
-
-function filterEmptyReservationTimes(times: TimeRanges | undefined) {
-  return times?.filter(({ startTime, endTime }) => startTime && endTime) ?? null
-}
-
-function errorsExist(errors: ReservationErrors): boolean {
-  const {
-    dailyTimes: dailyErrors,
-    weeklyTimes: weeklyErrors,
-    irregularTimes: shiftCareErrors,
-    ...otherErrors
-  } = errors
-
-  for (const error of Object.values(otherErrors)) {
-    if (error) return true
-  }
-
-  if (dailyErrors?.some((error) => error.startTime || error.endTime)) {
-    return true
-  }
-
-  for (const errors of weeklyErrors ?? []) {
-    if (errors?.some((error) => error.startTime || error.endTime)) return true
-  }
-
-  for (const errors of Object.values(shiftCareErrors ?? {})) {
-    if (errors?.some((error) => error.startTime || error.endTime)) return true
-  }
-
-  return false
-}
 
 const TimeInputGrid = styled.div`
   display: grid;

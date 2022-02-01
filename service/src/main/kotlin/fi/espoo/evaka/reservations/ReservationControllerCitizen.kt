@@ -88,10 +88,7 @@ class ReservationControllerCitizen(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours)
-                if (body.any { !reservableDays.includes(it.date) }) {
-                    throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
-                }
-                createReservationsAsCitizen(tx, PersonId(user.id), body)
+                createReservationsAsCitizen(tx, PersonId(user.id), body.validate(reservableDays))
             }
         }
     }
