@@ -34,6 +34,26 @@ export class UnitCalendarPage {
       .count()
   }
 
+  async attendanceCell(
+    date: LocalDate,
+    row: number,
+    col: number
+  ): Promise<string> {
+    return this.page.find(
+      `[data-qa="attendance-${date.formatIso()}-${row}-${col}"]`
+    ).innerText
+  }
+
+  async reservationCell(
+    date: LocalDate,
+    row: number,
+    col: number
+  ): Promise<string> {
+    return this.page.find(
+      `[data-qa="reservation-${date.formatIso()}-${row}-${col}"]`
+    ).innerText
+  }
+
   async openReservationModal(childId: UUID): Promise<ReservationModal> {
     await this.page.find(`[data-qa="add-reservation-for-${childId}"]`).click()
 

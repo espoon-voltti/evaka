@@ -70,12 +70,14 @@ interface Props {
   day: OperationalDay
   dailyServiceTimes: DailyServiceTimes | null
   dataForAllDays: Record<JsonOf<LocalDate>, ChildRecordOfDay>
+  rowIndex: number
 }
 
 export default React.memo(function ChildDay({
   day,
   dailyServiceTimes,
-  dataForAllDays
+  dataForAllDays,
+  rowIndex
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -113,29 +115,37 @@ export default React.memo(function ChildDay({
         ) : expectedTimeForThisDay ? (
           /* show actual reservation or service time if exists */
           <>
-            <ReservationTime>
+            <ReservationTime
+              data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${0}`}
+            >
               {expectedTimeForThisDay.start}
               {maybeServiceTimeIndicator}
             </ReservationTime>
-            <ReservationTime>
+            <ReservationTime
+              data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${1}`}
+            >
               {expectedTimeForThisDay.end}
               {maybeServiceTimeIndicator}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
           /* else if daily service times are known but there is none for this day of week, show day off */
-          <ReservationTime>
+          <ReservationTime data-qa={`reservation-${rowIndex}-${0}`}>
             {i18n.unit.attendanceReservations.dayOff}
           </ReservationTime>
         ) : (
           /* else show missing service time */
-          <ReservationTime warning>
+          <ReservationTime
+            warning
+            data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${0}`}
+          >
             {i18n.unit.attendanceReservations.missingServiceTime}
           </ReservationTime>
         )}
       </TimesRow>
       <TimesRow>
         <AttendanceTime
+          data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${0}`}
           warning={attendanceTimeDiffers(
             expectedTimeForThisDay?.start,
             dailyData.attendance?.startTime
@@ -144,6 +154,7 @@ export default React.memo(function ChildDay({
           {dailyData.attendance?.startTime ?? '–'}
         </AttendanceTime>
         <AttendanceTime
+          data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${1}`}
           warning={attendanceTimeDiffers(
             dailyData.attendance?.endTime,
             expectedTimeForThisDay?.end

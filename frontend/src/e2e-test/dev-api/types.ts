@@ -79,6 +79,13 @@ export interface Daycare {
   enabledPilotFeatures: PilotFeature[]
 }
 
+export interface ChildAttendance {
+  childId: UUID
+  unitId: UUID
+  arrived: Date
+  departed: Date
+}
+
 export interface DaycareGroup {
   id: UUID
   daycareId: UUID

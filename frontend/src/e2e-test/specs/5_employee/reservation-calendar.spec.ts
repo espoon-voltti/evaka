@@ -134,4 +134,92 @@ describe('Unit group calendar for shift care unit', () => {
 
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
   })
+
+  test('Employee sees attendances along reservations', async () => {
+    calendarPage = await loadUnitCalendarPage()
+    await calendarPage.selectMode('week')
+
+    reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
+    await reservationModal.selectRepetitionType('IRREGULAR')
+
+    const startDate = LocalDate.today().startOfWeek()
+
+    await Fixture.childAttendances()
+      .with({
+        childId: child1Fixture.id,
+        unitId: daycare2Fixture.id,
+        arrived: new Date(`${startDate.formatIso()}T08:30Z`),
+        departed: new Date(`${startDate.formatIso()}T13:30Z`)
+      })
+      .save()
+
+    await Fixture.childAttendances()
+      .with({
+        childId: child1Fixture.id,
+        unitId: daycare2Fixture.id,
+        arrived: new Date(`${startDate.formatIso()}T18:15Z`),
+        departed: new Date(`${startDate.addDays(1).formatIso()}T05:30Z`)
+      })
+      .save()
+
+    await reservationModal.setStartDate(startDate.format())
+    await reservationModal.setEndDate(startDate.format())
+    await reservationModal.setStartTime('10:00', 0)
+    await reservationModal.setEndTime('16:00', 0)
+
+    await reservationModal.addNewTimeRow(0)
+
+    await reservationModal.setStartTime('20:00', 1)
+    await reservationModal.setEndTime('08:00', 1)
+
+    await reservationModal.save()
+
+    await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
+
+    const expectedReservations = [
+      ['10:00', '16:00', startDate],
+      ['20:00', '00:00', startDate],
+      ['00:00', '08:00', startDate.addDays(1)]
+    ]
+
+    await Promise.all(
+      expectedReservations.map((res, rowIndex) => {
+        return [0, 1].map(
+          (colIndex) => () =>
+            waitUntilEqual(
+              () =>
+                calendarPage.reservationCell(
+                  res[2] as LocalDate,
+                  rowIndex % 2,
+                  colIndex
+                ),
+              res[colIndex]
+            )
+        )
+      })
+    )
+
+    const expectedAttendances = [
+      ['10:30', '15:30', startDate],
+      ['20:15', '00:00', startDate],
+      ['00:00', '07:30', startDate.addDays(1)]
+    ]
+
+    await Promise.all(
+      expectedAttendances.map((att, rowIndex) => {
+        return [0, 1].map(
+          (colIndex) => () =>
+            waitUntilEqual(
+              () =>
+                calendarPage.attendanceCell(
+                  att[2] as LocalDate,
+                  rowIndex % 2,
+                  colIndex
+                ),
+              att[colIndex]
+            )
+        )
+      })
+    )
+  })
 })

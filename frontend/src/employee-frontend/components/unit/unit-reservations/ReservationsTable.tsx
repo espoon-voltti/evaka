@@ -66,7 +66,8 @@ export default React.memo(function ReservationsTable({
               childDailyRecordRow: Record<JsonOf<LocalDate>, ChildRecordOfDay>,
               index
             ) => (
-              <DayTr key={`${childDailyRecords.child.id}-${index}`}
+              <DayTr
+                key={`${childDailyRecords.child.id}-${index}`}
                 data-qa={`reservation-row-child-${childDailyRecords.child.id}`}
               >
                 <NameTd partialRow={multipleRows} rowIndex={index}>
@@ -100,6 +101,7 @@ export default React.memo(function ReservationsTable({
                         childDailyRecords.child.dailyServiceTimes
                       }
                       dataForAllDays={childDailyRecordRow}
+                      rowIndex={index}
                     />
                   </DayTd>
                 ))}

@@ -23,6 +23,7 @@ import {
   BackupCare,
   CareArea,
   Child,
+  ChildAttendance,
   Daycare,
   DaycareCaretakers,
   DaycareGroup,
@@ -47,6 +48,7 @@ import {
   insertAssistanceNeedFixtures,
   insertBackupCareFixtures,
   insertCareAreaFixtures,
+  insertChildAttendanceFixtures,
   insertChildFixtures,
   insertDaycareCaretakerFixtures,
   insertDaycareFixtures,
@@ -1233,6 +1235,15 @@ export class Fixture {
     })
   }
 
+  static childAttendances(): ChildAttendanceBuilder {
+    return new ChildAttendanceBuilder({
+      childId: '',
+      unitId: '',
+      arrived: new Date(),
+      departed: new Date()
+    })
+  }
+
   static feeThresholds(): FeeThresholdBuilder {
     return new FeeThresholdBuilder({
       validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
@@ -1598,6 +1609,17 @@ export class DaycareCaretakersBuilder extends FixtureBuilder<DaycareCaretakers> 
 
   copy(): FixtureBuilder<DaycareCaretakers> {
     return new DaycareCaretakersBuilder({ ...this.data })
+  }
+}
+
+export class ChildAttendanceBuilder extends FixtureBuilder<ChildAttendance> {
+  async save(): Promise<FixtureBuilder<ChildAttendance>> {
+    await insertChildAttendanceFixtures([this.data])
+    return this
+  }
+
+  copy(): FixtureBuilder<ChildAttendance> {
+    return new ChildAttendanceBuilder({ ...this.data })
   }
 }
 
