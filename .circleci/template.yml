@@ -412,7 +412,7 @@ commands:
               export ICONS=pro
             fi
             export APP_COMMIT="$CIRCLE_SHA1"
-
+            export NODE_OPTIONS="--max-old-space-size=4096"
             yarn build
             ls -lRa ./dist/bundle
 
