@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.data.invoiceQueryBase
 import fi.espoo.evaka.invoicing.data.toInvoice
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -1773,6 +1774,56 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(8256, invoiceRow.price)
             }
         }
+    }
+
+    @Test
+    fun `no invoice is generated for 100 percent relief fee decision`() {
+        val period = DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 31))
+
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val placementId = db.transaction(insertPlacement(testChild_1.id, period))
+        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+        db.transaction { tx ->
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = period.start,
+                endDate = period.end!!
+            )
+        }
+
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf(
+                        FeeAlterationWithEffect(
+                            type = FeeAlteration.Type.RELIEF,
+                            amount = 100,
+                            isAbsolute = false,
+                            effect = -28900,
+                        )
+                    )
+                )
+            )
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
     }
 
     @Test

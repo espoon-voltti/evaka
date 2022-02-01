@@ -61,6 +61,7 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
     private data class InvoiceRowStub(
         val child: ChildWithDateOfBirth,
         val placement: PlacementStub,
+        val finalPrice: Int,
         val priceBeforeFeeAlterations: Int,
         val feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         val contractDaysPerMonth: Int?,
@@ -93,11 +94,13 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                         PlacementType.TEMPORARY_DAYCARE,
                         PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
                             val partDay = placement.type == PlacementType.TEMPORARY_DAYCARE_PART_DAY
+                            val fee = feeThresholds.calculatePriceForTemporary(partDay, index + 1)
                             listOf(
                                 relevantPeriod to InvoiceRowStub(
                                     ChildWithDateOfBirth(child.id, child.dateOfBirth),
                                     placement,
-                                    feeThresholds.calculatePriceForTemporary(partDay, index + 1),
+                                    fee,
+                                    fee,
                                     listOf(),
                                     null,
                                 )
@@ -117,6 +120,7 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                                     ) to InvoiceRowStub(
                                         ChildWithDateOfBirth(part.child.id, part.child.dateOfBirth),
                                         PlacementStub(part.placement.unitId, part.placement.type),
+                                        part.finalFee,
                                         part.fee,
                                         part.feeAlterations.map { feeAlteration ->
                                             Pair(feeAlteration.type, feeAlteration.effect)
@@ -160,19 +164,21 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                     }
                     .take(dailyFeeDivisor)
 
-                separatePeriods.fold(listOf<InvoiceRow>()) { existingRows, (period, rowStub) ->
-                    val placementUnit = rowStub.placement.unit
-                    val codes = daycareCodes[placementUnit]
-                        ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
-                    existingRows + toInvoiceRows(
-                        period,
-                        rowStub,
-                        codes,
-                        dailyFeeDivisor,
-                        attendanceDates,
-                        absences.filter { it.childId == rowStub.child.id }
-                    )
-                }
+                separatePeriods
+                    .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
+                    .flatMap { (period, rowStub) ->
+                        val placementUnit = rowStub.placement.unit
+                        val codes = daycareCodes[placementUnit]
+                            ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
+                        toInvoiceRows(
+                            period,
+                            rowStub,
+                            codes,
+                            dailyFeeDivisor,
+                            attendanceDates,
+                            absences.filter { it.childId == rowStub.child.id }
+                        )
+                    }
             }
             .let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
             .filter { row -> row.price != 0 }
@@ -206,28 +212,26 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>
     ): List<InvoiceRow> {
-        val (child, placement, price, feeAlterations) = invoiceRowStub
-
-        return when (placement.type) {
+        return when (invoiceRowStub.placement.type) {
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY -> toTemporaryPlacementInvoiceRows(
                 period,
-                child,
-                placement,
-                price,
+                invoiceRowStub.child,
+                invoiceRowStub.placement,
+                invoiceRowStub.priceBeforeFeeAlterations,
                 codes,
                 attendanceDates,
                 absences
             )
             else -> toPermanentPlacementInvoiceRows(
                 period,
-                child,
-                placement,
-                price,
+                invoiceRowStub.child,
+                invoiceRowStub.placement,
+                invoiceRowStub.priceBeforeFeeAlterations,
                 codes,
                 dailyFeeDivisor,
                 attendanceDates,
-                feeAlterations,
+                invoiceRowStub.feeAlterations,
                 absences
             )
         }
