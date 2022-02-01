@@ -1006,6 +1006,23 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }
     }
 
+    @PostMapping("/attendances")
+    fun postAttendances(
+        db: Database,
+        @RequestBody attendances: List<DevChildAttendance>
+    ) = db.connect { dbc ->
+        dbc.transaction { tx ->
+            attendances.forEach {
+                tx.insertTestChildAttendance(
+                    childId = it.childId,
+                    unitId = it.unitId,
+                    arrived = it.arrived,
+                    departed = it.departed
+                )
+            }
+        }
+    }
+
     data class DevVardaReset(
         val evakaChildId: ChildId,
         val resetTimestamp: Instant?
@@ -1255,6 +1272,13 @@ data class DevAssistanceNeed(
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val capacityFactor: Double = 1.0,
     val bases: Set<String> = emptySet(),
+)
+
+data class DevChildAttendance(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?
 )
 
 data class DevAssistanceAction(

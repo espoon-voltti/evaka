@@ -164,6 +164,8 @@ data class UnitAttendanceReservations(
         val child: Child,
         @Json
         val reservations: List<ReservationTimes>,
+        @Json
+        val attendances: List<AttendanceTimes>,
         @Nested("attendance")
         val attendance: AttendanceTimes?,
         @Nested("absence")
@@ -196,6 +198,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         p.last_name,
         p.date_of_birth,
         coalesce(res.reservations, '[]') AS reservations,
+        coalesce(attendances.attendances, '[]') AS attendances,
         to_char((att.arrived AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_start_time,
         to_char((att.departed AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_end_time,
         ab.absence_type
@@ -206,6 +209,16 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
     LEFT JOIN daycare_group dg ON dg.id = coalesce(bc.group_id, dgp.daycare_group_id)
     LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
+    LEFT JOIN LATERAL (
+        SELECT
+            jsonb_agg(
+                jsonb_build_object(
+                    'startTime', to_char((GREATEST(att.arrived, t) AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
+                    'endTime', to_char((LEAST(att.departed, t + INTERVAL '1 day') AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+                ) ORDER BY att.arrived ASC
+            ) AS attendances
+        FROM child_attendance att WHERE att.child_id = p.id AND ((att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date OR DATE_TRUNC('day', att.departed, 'Europe/Helsinki') = t)
+    ) attendances ON true
     LEFT JOIN LATERAL (
         SELECT
             jsonb_agg(
@@ -274,17 +287,17 @@ private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serv
                         valueTransform = {
                             UnitAttendanceReservations.ChildRecordOfDay(
                                 reservation = it.reservations.getOrNull(0),
-                                attendance = it.attendance,
+                                attendance = it.attendances.getOrNull(0),
                                 absence = it.absence
                             )
                         }
                     ),
-                    if (dailyData.any { it.reservations.size > 1 }) dailyData.associateBy(
+                    if (dailyData.any { it.reservations.size > 1 || it.attendances.size > 1 }) dailyData.associateBy(
                         keySelector = { it.date },
                         valueTransform = {
                             UnitAttendanceReservations.ChildRecordOfDay(
                                 reservation = it.reservations.getOrNull(1),
-                                attendance = it.attendance,
+                                attendance = it.attendances.getOrNull(1),
                                 absence = it.absence
                             )
                         }
