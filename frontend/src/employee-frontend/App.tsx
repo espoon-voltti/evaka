@@ -62,6 +62,7 @@ import ReportDuplicatePeople from './components/reports/DuplicatePeople'
 import ReportEndedPlacements from './components/reports/EndedPlacements'
 import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
+import ReportInvoiceGeneratorDiff from './components/reports/InvoiceGeneratorDiff'
 import ReportInvoices from './components/reports/Invoices'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
@@ -359,6 +360,12 @@ export default function App() {
                     exact
                     path="/reports/varda-errors"
                     component={ensureAuthenticated(VardaErrors)}
+                    title={i18n.titles.reports}
+                  />
+                  <RouteWithTitle
+                    exact
+                    path="/reports/invoice-generator-diff"
+                    component={ensureAuthenticated(ReportInvoiceGeneratorDiff)}
                     title={i18n.titles.reports}
                   />
                   <RouteWithTitle
