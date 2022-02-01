@@ -166,8 +166,6 @@ data class UnitAttendanceReservations(
         val reservations: List<ReservationTimes>,
         @Json
         val attendances: List<AttendanceTimes>,
-        @Nested("attendance")
-        val attendance: AttendanceTimes?,
         @Nested("absence")
         val absence: Absence?
     )
@@ -199,8 +197,6 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         p.date_of_birth,
         coalesce(res.reservations, '[]') AS reservations,
         coalesce(attendances.attendances, '[]') AS attendances,
-        to_char((att.arrived AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_start_time,
-        to_char((att.departed AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_end_time,
         ab.absence_type
     FROM generate_series(:start, :end, '1 day') t
     JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
@@ -208,7 +204,6 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     LEFT JOIN backup_care bc ON t::date BETWEEN bc.start_date AND bc.end_date AND p.id = bc.child_id
     LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
     LEFT JOIN daycare_group dg ON dg.id = coalesce(bc.group_id, dgp.daycare_group_id)
-    LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
     LEFT JOIN LATERAL (
         SELECT
             jsonb_agg(
