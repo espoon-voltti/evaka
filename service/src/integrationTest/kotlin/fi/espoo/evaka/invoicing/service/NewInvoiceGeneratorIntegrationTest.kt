@@ -1699,25 +1699,15 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertPlacement(testChild_1.id, period))
 
-        val placementId = db.transaction(insertPlacement(testChild_1.id, period))
-        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
-        db.transaction { tx ->
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                startDate = period.start,
-                endDate = period.end!!
-            )
-        }
-
-        listOf(
+        val decisions = listOf(
             DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to
                 0,
             DateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to
                 28900,
-        ).forEach { (valid, fee) ->
-            val decision = createFeeDecisionFixture(
+        ).map { (valid, fee) ->
+            createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
                 valid,
@@ -1735,8 +1725,8 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                     )
                 )
             )
-            db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
         }
+        db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
 
         val absenceDays = listOf(
             LocalDate.of(2021, 12, 23) to AbsenceType.OTHER_ABSENCE,
@@ -1781,17 +1771,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-
-        val placementId = db.transaction(insertPlacement(testChild_1.id, period))
-        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
-        db.transaction { tx ->
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                startDate = period.start,
-                endDate = period.end!!
-            )
-        }
+        db.transaction(insertPlacement(testChild_1.id, period))
 
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
@@ -2810,7 +2790,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `invoice generation with 15 contract days for for half a month`() {
+    fun `invoice generation with 15 contract days for half a month`() {
         // 23 operational days
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
