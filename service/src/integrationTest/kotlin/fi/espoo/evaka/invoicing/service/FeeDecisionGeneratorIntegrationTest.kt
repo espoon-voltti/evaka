@@ -1786,7 +1786,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
             assertEquals(FeeDecisionStatus.DRAFT, decision.status)
-            assertEquals(feeDecisionMinDate, decision.validFrom)
+            assertEquals(evakaEnv.feeDecisionMinDate, decision.validFrom)
             assertEquals(period.end, decision.validTo)
         }
     }

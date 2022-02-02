@@ -5,7 +5,6 @@
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.FixtureBuilder
-import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
@@ -62,7 +61,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
+class VardaUpdateServiceIntegrationTest : VardaIntegrationTest() {
     @Autowired
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
@@ -139,7 +138,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
 
         val childId = db.read { it.getChildIdByServiceNeedId(snId) }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 1, 0, 0)
         assertEquals(snId, diffs.get(childId)?.additions?.get(0))
@@ -151,7 +150,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val option = snDefaultPreschool.copy(updated = since)
         createServiceNeed(db, since, option)
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
         assertEquals(0, diffs.keys.size)
     }
 
@@ -171,7 +170,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 0)
         assertEquals(snId, diffs.get(childId)?.updates?.get(0))
@@ -209,7 +208,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 1)
         assertEquals(changedServiceNeedId, diffs.get(childId)?.updates?.get(0))
@@ -239,7 +238,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs[childId], 0, 0, 1)
         assertEquals(deletedSnId, diffs[childId]?.deletes?.get(0))
@@ -309,7 +308,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         createServiceNeedAndFeeData(testChild_1, testAdult_1, since, serviceNeedPeriod, feeDecisionPeriod, voucherDecisionPeriod)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 2)
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
@@ -351,7 +350,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
     }
 
@@ -362,7 +361,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.PRESCHOOL, testGhostUnitDaycare.id)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
     }
 
@@ -373,7 +372,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!, PlacementType.DAYCARE, testDaycareNotInvoiced.id)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 0)
     }
 
@@ -426,12 +425,12 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         val id = createServiceNeedAndFeeData(testChild_1, testAdult_1, since, serviceNeedPeriod, feeDecisionPeriod, voucherDecisionPeriod)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 2)
 
         db.transaction { it.deleteServiceNeed(id) }
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(0, 0, 0)
     }
@@ -443,18 +442,18 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
 
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
         val fdId = createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant(), FeeDecisionStatus.WAITING_FOR_SENDING)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
 
         db.transaction { it.createUpdate("UPDATE fee_decision SET status = 'SENT' WHERE id = :id").bind("id", fdId).execute() }
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 1)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
@@ -482,13 +481,13 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
 
         val voucherDecisionPeriod = DateRange(serviceNeedPeriod.start, null)
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, testAdult_1.id, testChild_1, since.toInstant(), VoucherValueDecisionStatus.SENT)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 1)
 
@@ -533,7 +532,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 1)
 
@@ -557,7 +556,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                 .execute()
         }
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 1)
 
@@ -589,7 +588,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 1)
 
@@ -611,7 +610,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         createFeeDecision(db, testChild_1, testAdult_2.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, testAdult_2.id, testChild_1, since.toInstant(), VoucherValueDecisionStatus.SENT)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 0)
 
@@ -634,7 +633,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         createFeeDecision(db, testChild_1, testAdult_2.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         assertVardaElementCounts(1, 1, 0)
 
@@ -669,15 +668,15 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val adult = testAdult_1
         createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
         createFeeDecision(db, child, adult.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaCallCounts(1)
         assertVardaElementCounts(1, 1, 1)
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, adult.id, child, since.toInstant(), VoucherValueDecisionStatus.SENT)
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 2)
         assertVardaCallCounts(3)
         // test that fee data is not sent if not modified
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 2)
         assertVardaCallCounts(3)
     }
@@ -693,15 +692,15 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val adult = testAdult_1
         createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, adult.id, child, since.toInstant(), VoucherValueDecisionStatus.SENT)
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaCallCounts(1)
         assertVardaElementCounts(1, 1, 1)
         createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant())
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 2)
         assertVardaCallCounts(3)
         // test that fee data is not sent if not modified
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 2)
         assertVardaCallCounts(3)
     }
@@ -722,7 +721,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant())
         createFeeDecision(db, child, adult.id, feeDecisionPeriod2, since.toInstant())
         createFeeDecision(db, child, adult.id, feeDecisionPeriod3, since.toInstant())
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 3)
     }
 
@@ -738,7 +737,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!, unitId = testGhostUnitDaycare.id)
         createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant(), daycareId = testGhostUnitDaycare.id)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
     }
 
@@ -751,13 +750,13 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         val snId = createServiceNeedAndFeeData(testChild_1, testAdult_1, since, serviceNeedPeriod, feeDecisionPeriod, voucherDecisionPeriod)
         mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA, mockEndpoint.getMockErrorResponseForFeeData())
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertFailedVardaUpdates(1)
         assertEquals(1, getVardaServiceNeedError(snId).size)
         assertVardaElementCounts(1, 1, 0)
         assertVardaServiceNeedIds(snId, 1, 1)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertFailedVardaUpdates(0)
         assertEquals(0, getVardaServiceNeedError(snId).size)
         assertVardaElementCounts(1, 1, 2)
@@ -799,7 +798,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     fun `updateChildData deletes if service need changes to bad placement type`() {
         val snId = insertServiceNeedWithFeeDecision()
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 1)
         assertVardaServiceNeedIds(snId, 1, 1)
 
@@ -808,7 +807,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                 .execute()
         }
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(snId) }
         assertNull(vardaServiceNeed)
@@ -818,7 +817,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     fun `updateChildData deletes if service need hours is set to 0`() {
         val snId = insertServiceNeedWithFeeDecision()
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 1)
         assertVardaServiceNeedIds(snId, 1, 1)
 
@@ -828,7 +827,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                 .execute()
         }
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(snId) }
         assertNull(vardaServiceNeed)
@@ -845,7 +844,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
                 .execute()
         }
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(snId) }
         assertNull(vardaServiceNeed)
@@ -855,11 +854,11 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     fun `updateChildData does not delete if service need is not changed`() {
         val snId = insertServiceNeedWithFeeDecision()
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 1)
         assertVardaServiceNeedIds(snId, 1, 1)
 
-        updateChildData(db, vardaClient, feeDecisionMinDate)
+        updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaServiceNeedIds(snId, 1, 1)
     }
 
@@ -900,7 +899,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest() {
     // TODO: find a way to run update process through async job mechanism in tests (ie. use correct varda client)
     private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
         getChildrenToUpdate(db, feeDecisionMinDate).entries.forEach {
-            updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate, municipalOrganizerOid)
+            updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate, ophEnv.organizerOid)
         }
     }
 

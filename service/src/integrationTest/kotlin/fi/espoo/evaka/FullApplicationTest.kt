@@ -20,9 +20,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.varda.integration.VardaClient
-import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
-import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
@@ -34,7 +31,6 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.core.env.Environment
 import java.io.File
 import java.net.URL
-import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
@@ -45,32 +41,20 @@ abstract class FullApplicationTest {
     @LocalServerPort
     protected var httpPort: Int = 0
 
-    // HTTP client for testing the application
-
     protected val jsonMapper: JsonMapper = defaultJsonMapper()
 
     protected lateinit var jdbi: Jdbi
 
+    /**
+     * HTTP client for testing the application
+     */
     @Autowired
     protected lateinit var http: FuelManager
-
-    protected lateinit var vardaTokenProvider: VardaTokenProvider
-    protected lateinit var vardaClient: VardaClient
 
     @Autowired
     protected lateinit var env: Environment
     @Autowired
     protected lateinit var evakaEnv: EvakaEnv
-    @Autowired
-    protected lateinit var vardaEnv: VardaEnv
-    @Autowired
-    protected lateinit var ophEnv: OphEnv
-
-    protected lateinit var feeDecisionMinDate: LocalDate
-    protected lateinit var vardaOrganizerName: String
-    protected lateinit var municipalOrganizerOid: String
-    protected lateinit var ophMunicipalityCode: String
-    protected lateinit var ophMunicipalOrganizerIdUrl: String
 
     protected lateinit var db: Database.Connection
 
@@ -85,14 +69,6 @@ abstract class FullApplicationTest {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi).connectWithManualLifecycle()
         db.transaction { it.resetDatabase() }
-        feeDecisionMinDate = evakaEnv.feeDecisionMinDate
-        municipalOrganizerOid = ophEnv.organizerOid
-        ophMunicipalityCode = ophEnv.municipalityCode
-        ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
-        val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
-        val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
-        vardaTokenProvider = VardaTempTokenProvider(http, jsonMapper, vardaEnv)
-        vardaClient = VardaClient(vardaTokenProvider, http, jsonMapper, vardaEnv)
     }
 
     @AfterAll
