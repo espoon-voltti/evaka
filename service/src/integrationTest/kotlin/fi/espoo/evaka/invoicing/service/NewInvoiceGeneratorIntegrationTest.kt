@@ -1197,8 +1197,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with sick leave absences covering period`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= period.end }
+        val absenceDays = datesBetween(period.start, period.end)
             .map { it to AbsenceType.SICKLEAVE }
             .toMap()
 
@@ -1230,8 +1229,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `50 percent discount is generated with more than 11 sickleave absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= period.end }
+        val absenceDays = datesBetween(period.start, period.end)
             .filter {
                 listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
                     .contains(it.dayOfWeek)
@@ -1267,8 +1265,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with some unknown absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= period.end }
+        val absenceDays = datesBetween(period.start, period.end)
             .filter {
                 listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
                     .contains(it.dayOfWeek)
@@ -1298,8 +1295,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with unknown absences covering period`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= period.end }
+        val absenceDays = datesBetween(period.start, period.end)
             .map { it to AbsenceType.UNKNOWN_ABSENCE }
             .toMap()
 
@@ -1331,8 +1327,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with some parentleave absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 3) }
+        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 3))
             .map { it to AbsenceType.PARENTLEAVE }
             .toMap()
 
@@ -1365,12 +1360,13 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with some parentleave and sickleave absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 3) }
+        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 3))
             .map { it to AbsenceType.PARENTLEAVE }
             .plus(
-                generateSequence(LocalDate.of(2019, 1, 20)) { it.plusDays(1) }
-                    .takeWhile { it <= LocalDate.of(2019, 1, 31) }
+                datesBetween(
+                    LocalDate.of(2019, 1, 20),
+                    LocalDate.of(2019, 1, 31)
+                )
                     .map { it to AbsenceType.SICKLEAVE }
             )
             .toMap()
@@ -1410,8 +1406,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `planned absences do not generate a discount on invoices`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= period.end }
+        val absenceDays = datesBetween(period.start, period.end)
             .map { it to AbsenceType.PLANNED_ABSENCE }
             .toMap()
 
@@ -1437,8 +1432,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with some parentleave absences for a too old child`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 4) }
+        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 4))
             .map { it to AbsenceType.PARENTLEAVE }
             .toMap()
 
@@ -1468,8 +1462,10 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             DateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
         )
 
-        val absenceDays = generateSequence(LocalDate.of(2019, 1, 1)) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 31) }
+        val absenceDays = datesBetween(
+            LocalDate.of(2019, 1, 1),
+            LocalDate.of(2019, 1, 31)
+        )
             .filter {
                 listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
                     .contains(it.dayOfWeek)
@@ -1810,8 +1806,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with full month of force majeure absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 31) }
+        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 31))
             .map { it to AbsenceType.FORCE_MAJEURE }
             .toMap()
 
@@ -2426,8 +2421,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         insertDecisionsAndPlacements(listOf(decision))
         db.transaction { tx ->
             tx.upsertAbsences(
-                generateSequence(period.start) { it.plusDays(1) }
-                    .takeWhile { it <= period.end }
+                datesBetween(period.start, period.end)
                     .map {
                         AbsenceUpsert(
                             absenceType = AbsenceType.FORCE_MAJEURE,
@@ -2736,7 +2730,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     @Test
     fun `invoice codebtor is not set when partner on decision is not every child's guardian`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        initByPeriodAndPlacementType(period, PlacementType.DAYCARE, children = listOf(testChild_1, testChild_2), partner = testAdult_2.id)
+        initByPeriodAndPlacementType(
+            period,
+            PlacementType.DAYCARE,
+            children = listOf(testChild_1, testChild_2),
+            partner = testAdult_2.id
+        )
         db.transaction {
             it.insertGuardian(testAdult_1.id, testChild_1.id)
             it.insertGuardian(testAdult_2.id, testChild_1.id)
@@ -2758,7 +2757,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         // Override to use 20 days instead when calculating a daily refund
-        val generator: InvoiceGenerator = InvoiceGenerator(NewDraftInvoiceGenerator(productProvider, featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)))
+        val generator: InvoiceGenerator = InvoiceGenerator(
+            NewDraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+            )
+        )
 
         val absenceDays = listOf(
             LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE,
@@ -2840,7 +2844,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         // Override to use 20 days instead when calculating a daily fee
-        val generator: InvoiceGenerator = InvoiceGenerator(NewDraftInvoiceGenerator(productProvider, featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)))
+        val generator: InvoiceGenerator = InvoiceGenerator(
+            NewDraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+            )
+        )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
@@ -2887,7 +2896,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         // Override to use 20 days instead when calculating a daily fee
-        val generator: InvoiceGenerator = InvoiceGenerator(NewDraftInvoiceGenerator(productProvider, featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)))
+        val generator: InvoiceGenerator = InvoiceGenerator(
+            NewDraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+            )
+        )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
@@ -2957,7 +2971,10 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(id = FeeDecisionId(UUID.randomUUID()), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+                decision.copy(
+                    id = FeeDecisionId(UUID.randomUUID()),
+                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
+                )
             )
         )
     }
@@ -3080,24 +3097,26 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         }
     }
 
-    private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType = PlacementType.DAYCARE) = { tx: Database.Transaction ->
-        tx.insertTestPlacement(
-            childId = childId,
-            unitId = testDaycare.id,
-            startDate = period.start,
-            endDate = period.end!!,
-            type = type
-        )
-    }
+    private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType = PlacementType.DAYCARE) =
+        { tx: Database.Transaction ->
+            tx.insertTestPlacement(
+                childId = childId,
+                unitId = testDaycare.id,
+                startDate = period.start,
+                endDate = period.end!!,
+                type = type
+            )
+        }
 
-    private fun insertChildParentRelation(headOfFamilyId: PersonId, childId: ChildId, period: DateRange) = { tx: Database.Transaction ->
-        tx.insertTestParentship(
-            headOfFamilyId,
-            childId,
-            startDate = period.start,
-            endDate = period.end!!
-        )
-    }
+    private fun insertChildParentRelation(headOfFamilyId: PersonId, childId: ChildId, period: DateRange) =
+        { tx: Database.Transaction ->
+            tx.insertTestParentship(
+                headOfFamilyId,
+                childId,
+                startDate = period.start,
+                endDate = period.end!!
+            )
+        }
 
     private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
         r.createQuery(invoiceQueryBase)
@@ -3105,5 +3124,9 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             .list()
             .let(::flatten)
             .map { it.copy(rows = it.rows.sortedByDescending { row -> row.child.dateOfBirth }) }
+    }
+
+    private fun datesBetween(start: LocalDate, endInclusive: LocalDate?): List<LocalDate> {
+        return generateSequence(start) { it.plusDays(1) }.takeWhile { it <= endInclusive }.toList()
     }
 }
