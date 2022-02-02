@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -57,7 +57,7 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
 }
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
-  if (sfiMock) return {}
+  if (sfiMock) return { cert: 'mock-certificate' }
   if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
   const publicCert = Array.isArray(sfiConfig.publicCert)
     ? sfiConfig.publicCert.map(
@@ -84,7 +84,7 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
     issuer: sfiConfig.issuer,
     logoutUrl: sfiConfig.logoutUrl,
-    privateCert: privateCert,
+    privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     // InResponseTo validation unnecessarily complicates testing
     validateInResponseTo: nodeEnv === 'test' ? false : true
@@ -101,11 +101,14 @@ export default function createSuomiFiStrategy(
         .catch(done)
     })
   } else {
-    return new Strategy(config, (profile: Profile, done: VerifiedCallback) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      verifyProfile(profile as any as SuomiFiProfile)
-        .then((user) => done(null, user))
-        .catch(done)
-    })
+    return new Strategy(
+      config,
+      (profile: Profile | null | undefined, done: VerifiedCallback) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        verifyProfile(profile as any as SuomiFiProfile)
+          .then((user) => done(null, user))
+          .catch(done)
+      }
+    )
   }
 }

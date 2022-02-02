@@ -14,7 +14,7 @@ import { appCommit } from '../../shared/config'
 
 export default toRequestHandler(async (req, res) => {
   const user = req.user
-  if (user) {
+  if (user && user.id) {
     if (user.userType === 'MOBILE') {
       const device = await getMobileDevice(req, user.id)
       if (!device) {

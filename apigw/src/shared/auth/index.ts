@@ -9,7 +9,6 @@ import { gatewayRole } from '../config'
 import { createJwt } from './jwt'
 import { SamlUser } from '../routes/auth/saml/types'
 import { Profile, SAML } from 'passport-saml'
-import { fromCallback } from '../promise-utils'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -36,6 +35,10 @@ export function requireAuthentication(
 function createJwtToken(user: SamlUser): string {
   const type =
     user.userType ?? (gatewayRole === 'enduser' ? 'ENDUSER' : 'EMPLOYEE')
+
+  if (!user.id) {
+    throw new Error('User is missing an id')
+  }
 
   const common = {
     kind: gatewayRole === 'enduser' ? 'SuomiFI' : 'AD',
@@ -103,14 +106,11 @@ export async function tryParseProfile(
       /^\?/,
       ''
     )
-    profile = await fromCallback<Profile | null | undefined>((cb) =>
-      saml.validateRedirect(req.query, originalQuery, cb)
-    )
+    profile = (await saml.validateRedirectAsync(req.query, originalQuery))
+      .profile
   } else if (req.body?.SAMLRequest) {
     // POST logout callbacks have the signature in the message body directly
-    profile = await fromCallback<Profile | null | undefined>((cb) =>
-      saml.validatePostRequest(req.body, cb)
-    )
+    profile = (await saml.validatePostRequestAsync(req.body)).profile
   }
 
   return profile || undefined

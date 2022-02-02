@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { CacheProvider } from 'passport-saml'
+import type { CacheItem, CacheProvider } from 'passport-saml'
 import type { RedisClient } from 'redis'
+import { fromCallback } from '../promise-utils'
 
 export interface ProviderOptions {
   /**
@@ -39,30 +40,38 @@ export default function redisCacheProvider(
   }
 
   return {
-    get(key, callback) {
-      return client.get(`${keyPrefix}${key}`, callback)
-    },
-    save(key, value, callback) {
-      client.get(`${keyPrefix}${key}`, (err, reply) => {
-        if (err) return callback(err, null)
-        if (reply !== null) return callback(null, null)
+    // cacheKeys and options required in the type but never used
+    cacheKeys: {},
+    options: { keyExpirationPeriodMs: ttlSeconds * 1000 },
 
-        const cacheItem = { createdAt: new Date().getTime(), value }
-        return client.set(
-          `${keyPrefix}${key}`,
-          value,
-          'EX',
-          ttlSeconds,
-          (err) => callback(err, cacheItem)
-        )
-      })
-    },
-    remove(key, callback) {
-      return client.del(`${keyPrefix}${key}`, (err, count) => {
-        if (err) return callback(err, null)
-        if (count === 0) return callback(null, null)
-        return callback(null, key)
-      })
-    }
+    getAsync: (key) =>
+      fromCallback((callback) => client.get(`${keyPrefix}${key}`, callback)),
+    saveAsync: (key, value) =>
+      fromCallback((callback) =>
+        client.get(`${keyPrefix}${key}`, (err, reply) => {
+          if (err) return callback(err, null)
+          if (reply !== null) return callback(null, null)
+
+          const cacheItem: CacheItem = {
+            createdAt: new Date().getTime(),
+            value
+          }
+          return client.set(
+            `${keyPrefix}${key}`,
+            value,
+            'EX',
+            ttlSeconds,
+            (err) => callback(err, cacheItem)
+          )
+        })
+      ),
+    removeAsync: (key) =>
+      fromCallback((callback) =>
+        client.del(`${keyPrefix}${key}`, (err, count) => {
+          if (err) return callback(err, null)
+          if (count === 0) return callback(null, null)
+          return callback(null, key)
+        })
+      )
   }
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,6 +16,7 @@ import { fromCallback } from '../../../promise-utils'
 import { logoutExpress, saveLogoutToken, saveSession } from '../../../session'
 import { parseDescriptionFromSamlError } from './error-utils'
 import { SamlEndpointConfig, SamlUser } from './types'
+import type { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -140,12 +141,14 @@ function createLogoutHandler({
     )
     if ('logout' in strategy && req.user) {
       try {
-        const redirectUrl = await fromCallback<string>((cb) =>
-          strategy.logout(req, cb)
+        const redirectUrl = await fromCallback<string | null>((cb) =>
+          strategy.logout(req as RequestWithUser, cb)
         )
         logDebug('Logging user out from passport.', req)
         await logoutExpress(req, res, sessionType)
-        return res.redirect(redirectUrl)
+        if (redirectUrl) {
+          res.redirect(redirectUrl)
+        }
       } catch (err) {
         logAuditEvent(
           `evaka.saml.${strategyName}.sign_out_failed`,
