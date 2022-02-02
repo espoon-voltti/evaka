@@ -57,7 +57,8 @@ import {
   AssistanceNeed,
   DevIncome,
   DevVardaReset,
-  DevVardaServiceNeed
+  DevVardaServiceNeed,
+  ChildAttendance
 } from './types'
 
 export class DevApiError extends BaseError {
@@ -194,6 +195,7 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
         preschoolApplyPeriod: it.preschoolApplyPeriod,
         clubApplyPeriod: it.clubApplyPeriod,
         providerType: it.providerType,
+        operationDays: it.operationDays,
         roundTheClock: it.roundTheClock,
         location: it.location,
         language: it.language,
@@ -238,6 +240,16 @@ export function insertDaycareCaretakerFixtures(
 ): Promise<void> {
   try {
     return devClient.post(`/daycare-caretakers`, fixtures)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export function insertChildAttendanceFixtures(
+  fixtures: ChildAttendance[]
+): Promise<void> {
+  try {
+    return devClient.post(`/attendances`, fixtures)
   } catch (e) {
     throw new DevApiError(e)
   }

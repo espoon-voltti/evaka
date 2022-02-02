@@ -23,6 +23,7 @@ import {
   BackupCare,
   CareArea,
   Child,
+  ChildAttendance,
   Daycare,
   DaycareCaretakers,
   DaycareGroup,
@@ -47,6 +48,7 @@ import {
   insertAssistanceNeedFixtures,
   insertBackupCareFixtures,
   insertCareAreaFixtures,
+  insertChildAttendanceFixtures,
   insertChildFixtures,
   insertDaycareCaretakerFixtures,
   insertDaycareFixtures,
@@ -102,6 +104,7 @@ export const clubFixture: Daycare = {
   preschoolApplyPeriod: null,
   clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5],
   roundTheClock: true,
   enabledPilotFeatures: ['MESSAGING', 'MOBILE']
 }
@@ -120,6 +123,7 @@ export const daycareFixture: Daycare = {
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5],
   roundTheClock: true,
   location: {
     lat: 60.20377343765089,
@@ -149,12 +153,14 @@ export const daycare2Fixture: Daycare = {
   decisionHandler: 'Käsittelijä 2',
   decisionHandlerAddress: 'Käsittelijän 2 osoite',
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5, 6, 7],
   roundTheClock: true,
   location: {
     lat: 60.20350901607783,
     lon: 24.669
   },
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
 }
 
 export const preschoolFixture: Daycare = {
@@ -171,6 +177,7 @@ export const preschoolFixture: Daycare = {
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
+  operationDays: [1, 2, 3, 4, 5],
   roundTheClock: true,
   location: {
     lat: 60.2040261560435,
@@ -963,6 +970,7 @@ export class Fixture {
       decisionHandler: `decisionHandler_${id}`,
       decisionHandlerAddress: `decisionHandlerAddress_${id}`,
       providerType: 'MUNICIPAL',
+      operationDays: [1, 2, 3, 4, 5],
       roundTheClock: true,
       enabledPilotFeatures: ['MESSAGING', 'MOBILE']
     })
@@ -1224,6 +1232,15 @@ export class Fixture {
       amount: 1,
       startDate: LocalDate.today(),
       endDate: null
+    })
+  }
+
+  static childAttendances(): ChildAttendanceBuilder {
+    return new ChildAttendanceBuilder({
+      childId: '',
+      unitId: '',
+      arrived: new Date(),
+      departed: new Date()
     })
   }
 
@@ -1592,6 +1609,17 @@ export class DaycareCaretakersBuilder extends FixtureBuilder<DaycareCaretakers> 
 
   copy(): FixtureBuilder<DaycareCaretakers> {
     return new DaycareCaretakersBuilder({ ...this.data })
+  }
+}
+
+export class ChildAttendanceBuilder extends FixtureBuilder<ChildAttendance> {
+  async save(): Promise<FixtureBuilder<ChildAttendance>> {
+    await insertChildAttendanceFixtures([this.data])
+    return this
+  }
+
+  copy(): FixtureBuilder<ChildAttendance> {
+    return new ChildAttendanceBuilder({ ...this.data })
   }
 }
 

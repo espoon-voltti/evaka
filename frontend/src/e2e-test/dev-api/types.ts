@@ -72,10 +72,18 @@ export interface Daycare {
     | 'PRIVATE'
     | 'PRIVATE_SERVICE_VOUCHER'
     | 'EXTERNAL_PURCHASED'
+  operationDays: number[]
   roundTheClock: boolean
   language?: Language
   location?: Coordinate | null
   enabledPilotFeatures: PilotFeature[]
+}
+
+export interface ChildAttendance {
+  childId: UUID
+  unitId: UUID
+  arrived: Date
+  departed: Date
 }
 
 export interface DaycareGroup {

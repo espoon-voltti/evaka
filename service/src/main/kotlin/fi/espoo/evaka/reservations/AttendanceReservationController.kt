@@ -71,10 +71,10 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                 if (group == null) null
                                 else UnitAttendanceReservations.GroupAttendanceReservations(
                                     group = group,
-                                    children = mapChildReservations(rows, serviceTimes)
+                                    children = toChildDayRows(rows, serviceTimes)
                                 )
                             },
-                            ungrouped = ungroupedRows?.let { mapChildReservations(it, serviceTimes) }
+                            ungrouped = ungroupedRows?.let { toChildDayRows(it, serviceTimes) }
                                 ?: emptyList()
                         )
                     }
@@ -103,7 +103,7 @@ data class UnitAttendanceReservations(
     val unit: String,
     val operationalDays: List<OperationalDay>,
     val groups: List<GroupAttendanceReservations>,
-    val ungrouped: List<ChildReservations>
+    val ungrouped: List<ChildDailyRecords>
 ) {
     data class OperationalDay(
         val date: LocalDate,
@@ -112,7 +112,7 @@ data class UnitAttendanceReservations(
 
     data class GroupAttendanceReservations(
         val group: ReservationGroup,
-        val children: List<ChildReservations>
+        val children: List<ChildDailyRecords>
     )
 
     data class ReservationGroup(
@@ -121,13 +121,13 @@ data class UnitAttendanceReservations(
         val name: String
     )
 
-    data class ChildReservations(
+    data class ChildDailyRecords(
         val child: Child,
-        val dailyData: Map<LocalDate, DailyChildData>
+        val dailyData: List<Map<LocalDate, ChildRecordOfDay>>
     )
 
-    data class DailyChildData(
-        val reservations: List<ReservationTimes>,
+    data class ChildRecordOfDay(
+        val reservation: ReservationTimes?,
         val attendance: AttendanceTimes?,
         val absence: Absence?
     )
@@ -164,8 +164,8 @@ data class UnitAttendanceReservations(
         val child: Child,
         @Json
         val reservations: List<ReservationTimes>,
-        @Nested("attendance")
-        val attendance: AttendanceTimes?,
+        @Json
+        val attendances: List<AttendanceTimes>,
         @Nested("absence")
         val absence: Absence?
     )
@@ -196,8 +196,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         p.last_name,
         p.date_of_birth,
         coalesce(res.reservations, '[]') AS reservations,
-        to_char((att.arrived AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_start_time,
-        to_char((att.departed AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI') AS attendance_end_time,
+        coalesce(attendances.attendances, '[]') AS attendances,
         ab.absence_type
     FROM generate_series(:start, :end, '1 day') t
     JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
@@ -205,7 +204,16 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
     LEFT JOIN backup_care bc ON t::date BETWEEN bc.start_date AND bc.end_date AND p.id = bc.child_id
     LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
     LEFT JOIN daycare_group dg ON dg.id = coalesce(bc.group_id, dgp.daycare_group_id)
-    LEFT JOIN child_attendance att ON att.child_id = p.id AND (att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date
+    LEFT JOIN LATERAL (
+        SELECT
+            jsonb_agg(
+                jsonb_build_object(
+                    'startTime', to_char((GREATEST(att.arrived, t) AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
+                    'endTime', to_char((LEAST(att.departed, t + INTERVAL '1 day') AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+                ) ORDER BY att.arrived ASC
+            ) AS attendances
+        FROM child_attendance att WHERE att.child_id = p.id AND ((att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date OR DATE_TRUNC('day', att.departed, 'Europe/Helsinki') = t)
+    ) attendances ON true
     LEFT JOIN LATERAL (
         SELECT
             jsonb_agg(
@@ -262,21 +270,33 @@ WHERE child_id = ANY(:childIds)
     .filterNotNull()
     .toMap()
 
-private fun mapChildReservations(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, DailyServiceTimes>): List<UnitAttendanceReservations.ChildReservations> {
+private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, DailyServiceTimes>): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.child }
-        .map { (child, rowsByChild) ->
-            UnitAttendanceReservations.ChildReservations(
+        .map { (child, dailyData) ->
+            UnitAttendanceReservations.ChildDailyRecords(
                 child = child.copy(dailyServiceTimes = serviceTimes.get(child.id)),
-                dailyData = rowsByChild.associateBy(
-                    keySelector = { it.date },
-                    valueTransform = {
-                        UnitAttendanceReservations.DailyChildData(
-                            reservations = it.reservations,
-                            attendance = it.attendance,
-                            absence = it.absence
-                        )
-                    }
+                dailyData = listOfNotNull(
+                    dailyData.associateBy(
+                        keySelector = { it.date },
+                        valueTransform = {
+                            UnitAttendanceReservations.ChildRecordOfDay(
+                                reservation = it.reservations.getOrNull(0),
+                                attendance = it.attendances.getOrNull(0),
+                                absence = it.absence
+                            )
+                        }
+                    ),
+                    if (dailyData.any { it.reservations.size > 1 || it.attendances.size > 1 }) dailyData.associateBy(
+                        keySelector = { it.date },
+                        valueTransform = {
+                            UnitAttendanceReservations.ChildRecordOfDay(
+                                reservation = it.reservations.getOrNull(1),
+                                attendance = it.attendances.getOrNull(1),
+                                absence = it.absence
+                            )
+                        }
+                    ) else null
                 )
             )
         }

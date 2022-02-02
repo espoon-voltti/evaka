@@ -5,6 +5,7 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 import {
+  DailyServiceTimes,
   getTimesOnWeekday,
   isIrregular,
   isRegular,
@@ -12,10 +13,12 @@ import {
   TimeRange
 } from 'lib-common/api-types/child/common'
 import {
-  ChildReservations,
+  ChildRecordOfDay,
   OperationalDay
 } from 'lib-common/api-types/reservations'
 import { Reservation } from 'lib-common/generated/api-types/reservations'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -50,13 +53,13 @@ type ReservationOrServiceTime =
   | (TimeRange & { type: 'reservation' | 'service-time' })
   | undefined
 const getReservationOrServiceTimeOfDay = (
-  reservations: Reservation[],
+  reservation: Reservation | null,
   serviceTimeOfDay: TimeRange | null
 ): ReservationOrServiceTime =>
-  reservations.length > 0
+  reservation
     ? {
-        start: reservations[0].startTime,
-        end: reservations[0].endTime,
+        start: reservation.startTime,
+        end: reservation.endTime,
         type: 'reservation'
       }
     : serviceTimeOfDay
@@ -65,37 +68,39 @@ const getReservationOrServiceTimeOfDay = (
 
 interface Props {
   day: OperationalDay
-  childReservations: ChildReservations
+  dailyServiceTimes: DailyServiceTimes | null
+  dataForAllDays: Record<JsonOf<LocalDate>, ChildRecordOfDay>
+  rowIndex: number
 }
 
-export default React.memo(function ChildDay({ day, childReservations }: Props) {
+export default React.memo(function ChildDay({
+  day,
+  dailyServiceTimes,
+  dataForAllDays,
+  rowIndex
+}: Props) {
   const { i18n } = useTranslation()
 
-  const dailyData = childReservations.dailyData[day.date.formatIso()]
+  const dailyData = dataForAllDays[day.date.formatIso()]
 
   if (!dailyData) return null
 
-  if (
-    day.isHoliday &&
-    dailyData.reservations.length === 0 &&
-    !dailyData.attendance
-  )
+  if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
     return null
 
-  const serviceTimes = childReservations.child.dailyServiceTimes
   const serviceTimesAvailable =
-    serviceTimes !== null && !isVariableTime(serviceTimes)
+    dailyServiceTimes !== null && !isVariableTime(dailyServiceTimes)
   const serviceTimeOfDay =
-    serviceTimes === null || isVariableTime(serviceTimes)
+    dailyServiceTimes === null || isVariableTime(dailyServiceTimes)
       ? null
-      : isRegular(serviceTimes)
-      ? serviceTimes.regularTimes
-      : isIrregular(serviceTimes)
-      ? getTimesOnWeekday(serviceTimes, day.date.getIsoDayOfWeek())
+      : isRegular(dailyServiceTimes)
+      ? dailyServiceTimes.regularTimes
+      : isIrregular(dailyServiceTimes)
+      ? getTimesOnWeekday(dailyServiceTimes, day.date.getIsoDayOfWeek())
       : null
 
   const expectedTimeForThisDay = getReservationOrServiceTimeOfDay(
-    dailyData.reservations,
+    dailyData.reservation,
     serviceTimeOfDay
   )
   const maybeServiceTimeIndicator =
@@ -110,39 +115,37 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
         ) : expectedTimeForThisDay ? (
           /* show actual reservation or service time if exists */
           <>
-            <ReservationTime>
+            <ReservationTime
+              data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${0}`}
+            >
               {expectedTimeForThisDay.start}
               {maybeServiceTimeIndicator}
             </ReservationTime>
-            <ReservationTime>
+            <ReservationTime
+              data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${1}`}
+            >
               {expectedTimeForThisDay.end}
               {maybeServiceTimeIndicator}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
           /* else if daily service times are known but there is none for this day of week, show day off */
-          <ReservationTime>
+          <ReservationTime data-qa={`reservation-${rowIndex}-${0}`}>
             {i18n.unit.attendanceReservations.dayOff}
           </ReservationTime>
         ) : (
           /* else show missing service time */
-          <ReservationTime warning>
+          <ReservationTime
+            warning
+            data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${0}`}
+          >
             {i18n.unit.attendanceReservations.missingServiceTime}
           </ReservationTime>
         )}
       </TimesRow>
-      {dailyData.reservations.length > 1 && (
-        <TimesRow>
-          <ReservationTime>
-            {dailyData.reservations[1].startTime ?? '–'}
-          </ReservationTime>
-          <ReservationTime>
-            {dailyData.reservations[1].endTime ?? '–'}
-          </ReservationTime>
-        </TimesRow>
-      )}
       <TimesRow>
         <AttendanceTime
+          data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${0}`}
           warning={attendanceTimeDiffers(
             expectedTimeForThisDay?.start,
             dailyData.attendance?.startTime
@@ -151,6 +154,7 @@ export default React.memo(function ChildDay({ day, childReservations }: Props) {
           {dailyData.attendance?.startTime ?? '–'}
         </AttendanceTime>
         <AttendanceTime
+          data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${1}`}
           warning={attendanceTimeDiffers(
             dailyData.attendance?.endTime,
             expectedTimeForThisDay?.end

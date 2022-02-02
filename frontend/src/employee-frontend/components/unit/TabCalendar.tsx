@@ -65,6 +65,7 @@ export default React.memo(function TabCalendar() {
             {(['week', 'month'] as const).map((m) => (
               <ChoiceChip
                 key={m}
+                data-qa={`choose-calendar-mode-${m}`}
                 text={i18n.unit.calendar.modes[m]}
                 selected={mode === m}
                 onChange={() => setMode(m)}

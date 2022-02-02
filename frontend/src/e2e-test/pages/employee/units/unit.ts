@@ -16,6 +16,7 @@ import {
   Page,
   TextInput
 } from '../../../utils/page'
+import { UnitCalendarPage } from './unit-calendar-page'
 import { UnitGroupsPage } from './unit-groups-page'
 
 type UnitProviderType =
@@ -34,6 +35,7 @@ export class UnitPage {
 
   #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
   #groupsTab = this.page.find('[data-qa="groups-tab"]')
+  #calendarTab = this.page.find('[data-qa="calendar-tab"]')
   #applicationProcessTab = this.page.find('[data-qa="application-process-tab"]')
 
   #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
@@ -107,6 +109,12 @@ export class UnitPage {
     await this.#groupsTab.click()
     const section = new UnitGroupsPage(this.page)
     await section.waitUntilLoaded()
+    return section
+  }
+
+  async openCalendarPage(): Promise<UnitCalendarPage> {
+    await this.#calendarTab.click()
+    const section = new UnitCalendarPage(this.page)
     return section
   }
 }
