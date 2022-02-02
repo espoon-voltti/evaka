@@ -1345,13 +1345,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/xmldom@npm:^0.1.31":
-  version: 0.1.31
-  resolution: "@types/xmldom@npm:0.1.31"
-  checksum: 127a6e3c5b92663af29ff9ee66152286f0c381e35b0265161cc2583a7829b4d15c7e46f724337b8d2b89b06685baf0176c3d724cdb08881166a587f83ebd63e8
-  languageName: node
-  linkType: hard
-
 "@types/yargs-parser@npm:*":
   version: 20.2.1
   resolution: "@types/yargs-parser@npm:20.2.1"
@@ -3068,10 +3061,8 @@ __metadata:
     "@types/uuid": ^8.3.1
     "@types/xml-crypto": ^1.4.2
     "@types/xml2js": ^0.4.9
-    "@types/xmldom": ^0.1.31
     "@typescript-eslint/eslint-plugin": ^5.2.0
     "@typescript-eslint/parser": ^5.2.0
-    "@xmldom/xmldom": ^0.7.5
     axios: ^0.24.0
     concurrently: ^6.3.0
     connect-redis: ^6.0.0

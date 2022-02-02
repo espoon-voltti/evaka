@@ -75,10 +75,8 @@
     "@types/uuid": "^8.3.1",
     "@types/xml-crypto": "^1.4.2",
     "@types/xml2js": "^0.4.9",
-    "@types/xmldom": "^0.1.31",
     "@typescript-eslint/eslint-plugin": "^5.2.0",
     "@typescript-eslint/parser": "^5.2.0",
-    "@xmldom/xmldom": "^0.7.5",
     "concurrently": "^6.3.0",
     "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
@@ -98,8 +96,7 @@
     "xml2js": "^0.4.23"
   },
   "resolutions": {
-    "@types/node": "^14.14.6",
-    "xmldom": "file:./xmldom-0.7.0.tgz"
+    "@types/node": "^14.14.6"
   },
   "jest": {
     "preset": "ts-jest",
