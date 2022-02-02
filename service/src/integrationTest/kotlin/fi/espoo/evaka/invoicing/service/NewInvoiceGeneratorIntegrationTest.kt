@@ -1327,7 +1327,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with some parentleave absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 3))
+        val absenceDays = datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
             .map { it to AbsenceType.PARENTLEAVE }
             .toMap()
 
@@ -1358,13 +1358,14 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `invoice generation with some parentleave and sickleave absences`() {
+        // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 3))
+        val absenceDays = datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
             .map { it to AbsenceType.PARENTLEAVE }
             .plus(
                 datesBetween(
-                    LocalDate.of(2019, 1, 20),
+                    LocalDate.of(2019, 1, 17),
                     LocalDate.of(2019, 1, 31)
                 )
                     .map { it to AbsenceType.SICKLEAVE }
@@ -1388,15 +1389,17 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
+                // 3 free days because of parental leave
                 assertEquals(productProvider.dailyRefund, invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
-                assertEquals(-1314, invoiceRow.unitPrice)
+                assertEquals(-1314, invoiceRow.unitPrice) // 28900 / 22
                 assertEquals(-3942, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
+                // half price because of 11 sick leaves
                 assertEquals(productProvider.partMonthSickLeave, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
-                assertEquals(-12479, invoiceRow.unitPrice)
+                assertEquals(-12479, invoiceRow.unitPrice) // (28900 - 3942) / 2
                 assertEquals(-12479, invoiceRow.price)
             }
         }
@@ -1601,8 +1604,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with 15 contract days and 15 days of absences - half price`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 22) } // 15 operational days
+        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
             .toMap()
 
@@ -1634,8 +1636,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with 15 contract days and 14 days of absences - full price`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 14) }
+        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 21)) // 14 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
             .toMap()
 
@@ -1839,8 +1840,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with 15 contract days and 15 days of force majeure absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
-            .takeWhile { it <= LocalDate.of(2019, 1, 22) } // 15 operational days
+        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
             .map { it to AbsenceType.FORCE_MAJEURE }
             .toMap()
 

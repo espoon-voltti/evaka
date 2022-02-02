@@ -143,6 +143,13 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                     ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
                     ?: operationalDays.generalCase.size
 
+                val relevantAbsences = absences.filter { absence ->
+                    separatePeriods.any { (period, feeData) ->
+                        period.includes(absence.date) &&
+                            operationalDays.forUnit(feeData.placement.unit).contains(absence.date)
+                    }
+                }
+
                 val attendanceDates = operationalDays.fullMonth
                     .fold<LocalDate, List<List<LocalDate>>>(listOf()) { weeks, date ->
                         if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) weeks.plusElement(listOf(date))
@@ -176,7 +183,7 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                             codes,
                             dailyFeeDivisor,
                             attendanceDates,
-                            absences.filter { it.childId == rowStub.child.id }
+                            relevantAbsences.filter { it.childId == rowStub.child.id }
                         )
                     }
             }
