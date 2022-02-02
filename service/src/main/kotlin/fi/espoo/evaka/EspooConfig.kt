@@ -30,7 +30,6 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
-import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 
@@ -73,9 +72,9 @@ class EspooConfig {
     @Bean
     fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
-    @Primary
     @Bean
-    fun defaultInvoiceGenerator(): InvoiceGenerator = InvoiceGenerator(DefaultDraftInvoiceGenerator(invoiceProductsProvider()))
+    fun invoiceGenerator(productProvider: InvoiceProductProvider): InvoiceGenerator =
+        InvoiceGenerator(DefaultDraftInvoiceGenerator(productProvider))
 
     @Bean
     fun featureConfig(): FeatureConfig = FeatureConfig(

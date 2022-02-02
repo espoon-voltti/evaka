@@ -31,12 +31,10 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.TemporalAdjusters
 
-@Component
 class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
 
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
