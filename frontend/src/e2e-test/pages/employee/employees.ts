@@ -8,10 +8,10 @@ export class EmployeesPage {
   constructor(private readonly page: Page) {}
 
   readonly nameInput = new TextInput(
-    this.page.find('[data-qa="employee-name-filter"]')
+    this.page.findByDataQa('employee-name-filter')
   )
 
   get visibleUsers(): Promise<string[]> {
-    return this.page.findAll('[data-qa="employee-name"]').allInnerTexts()
+    return this.page.findAllByDataQa('employee-name').allInnerTexts()
   }
 }

@@ -321,6 +321,15 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   {i18n.vasuTemplates.title}
                 </Link>
               )}
+              {user?.accessibleFeatures.holidayPeriods && (
+                <Link
+                  to="/holiday-periods"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-holiday-periods"
+                >
+                  {i18n.titles.holidayPeriods}
+                </Link>
+              )}
               {featureFlags.adminSettingsEnabled &&
                 user?.accessibleFeatures.settings && (
                   <Link

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,42 +8,25 @@ import { Page } from '../../utils/page'
 export default class EmployeeNav {
   constructor(private readonly page: Page) {}
 
-  readonly #userNameBtn = this.page.find('[data-qa="username"]')
+  readonly #userNameBtn = this.page.findByDataQa('username')
 
-  readonly applicationsTab = this.page.find('[data-qa="applications-nav"]')
-  readonly unitsTab = this.page.find('[data-qa="units-nav"]')
-  readonly searchTab = this.page.find('[data-qa="search-nav"]')
-  readonly financeTab = this.page.find('[data-qa="finance-nav"]')
-  readonly reportsTab = this.page.find('[data-qa="reports-nav"]')
-  readonly messagesTab = this.page.find('[data-qa="messages-nav"]')
-
-  readonly #employeesLink = this.page.find('[data-qa="user-popup-employees"]')
-  readonly #pinCodeLink = this.page.find('[data-qa="user-popup-pin-code"]')
-  readonly #financeBasicsLink = this.page.find(
-    '[data-qa="user-popup-finance-basics"]'
-  )
-  readonly #vasuTemplatesLink = this.page.find(
-    '[data-qa="user-popup-vasu-templates"]'
-  )
-
-  async openDropdownMenu() {
-    await this.#userNameBtn.click()
-  }
+  readonly applicationsTab = this.page.findByDataQa('applications-nav')
+  readonly unitsTab = this.page.findByDataQa('units-nav')
+  readonly searchTab = this.page.findByDataQa('search-nav')
+  readonly financeTab = this.page.findByDataQa('finance-nav')
+  readonly reportsTab = this.page.findByDataQa('reports-nav')
+  readonly messagesTab = this.page.findByDataQa('messages-nav')
 
   async openAndClickDropdownMenuItem(
-    item: 'employees' | 'pinCode' | 'financeBasics' | 'vasu-templates'
+    item:
+      | 'employees'
+      | 'pin-code'
+      | 'finance-basics'
+      | 'vasu-templates'
+      | 'holiday-periods'
   ) {
-    await this.openDropdownMenu()
-    switch (item) {
-      case 'employees':
-        return await this.#employeesLink.click()
-      case 'pinCode':
-        return await this.#pinCodeLink.click()
-      case 'financeBasics':
-        return await this.#financeBasicsLink.click()
-      case 'vasu-templates':
-        return await this.#vasuTemplatesLink.click()
-    }
+    await this.#userNameBtn.click()
+    return this.page.findByDataQa(`user-popup-${item}`).click()
   }
 
   async openTab(tab: 'reports' | 'units' | 'finance') {

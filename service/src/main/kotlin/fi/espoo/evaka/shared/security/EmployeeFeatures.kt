@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,6 +13,7 @@ data class EmployeeFeatures(
     val personSearch: Boolean,
     val reports: Boolean,
     val settings: Boolean,
+    val holidayPeriods: Boolean,
     val unitFeatures: Boolean,
     val units: Boolean,
     val createUnits: Boolean,

@@ -201,3 +201,4 @@ V200__invoice_area_index.sql
 V201__contract_days_per_month.sql
 V202__absence_type_enum.sql
 V203__absence_category.sql
+V204__holiday_periods.sql

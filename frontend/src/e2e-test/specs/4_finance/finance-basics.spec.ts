@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -31,13 +31,13 @@ beforeEach(async () => {
 
 describe('Finance basics', () => {
   test('Navigate to finance basics page', async () => {
-    await nav.openAndClickDropdownMenuItem('financeBasics')
+    await nav.openAndClickDropdownMenuItem('finance-basics')
     await financeBasicsPage.feesSection.root.waitUntilVisible()
   })
 
   test('Create a new set of retroactive fee thresholds', async () => {
     const { data } = Fixture.feeThresholds()
-    await nav.openAndClickDropdownMenuItem('financeBasics')
+    await nav.openAndClickDropdownMenuItem('finance-basics')
 
     await financeBasicsPage.feesSection.createFeeThresholdsButton.click()
     await financeBasicsPage.feesSection.editor.fillInThresholds(data)
@@ -51,7 +51,7 @@ describe('Finance basics', () => {
   test('Creating a new set of retroactive fee thresholds ends the previous', async () => {
     const originalData = Fixture.feeThresholds().data
     await insertFeeThresholds(originalData)
-    await nav.openAndClickDropdownMenuItem('financeBasics')
+    await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const newData = {
       ...originalData,
@@ -83,7 +83,7 @@ describe('Finance basics', () => {
     const { data } = Fixture.feeThresholds().with({
       maxIncomeThreshold2: 300000
     })
-    await nav.openAndClickDropdownMenuItem('financeBasics')
+    await nav.openAndClickDropdownMenuItem('finance-basics')
 
     await financeBasicsPage.feesSection.createFeeThresholdsButton.click()
     await financeBasicsPage.feesSection.editor.fillInThresholds(data)
@@ -98,7 +98,7 @@ describe('Finance basics', () => {
     const feeThresholdFixture = Fixture.feeThresholds()
     const originalData = feeThresholdFixture.data
     await insertFeeThresholds(originalData)
-    await nav.openAndClickDropdownMenuItem('financeBasics')
+    await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const originalThresholdsItem = financeBasicsPage.feesSection.item(0)
     await originalThresholdsItem.element.waitUntilVisible()
@@ -137,7 +137,7 @@ describe('Finance basics', () => {
     const feeThresholdFixture = Fixture.feeThresholds()
     const originalData = feeThresholdFixture.data
     await insertFeeThresholds(originalData)
-    await nav.openAndClickDropdownMenuItem('financeBasics')
+    await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const thresholdsItem = financeBasicsPage.feesSection.item(0)
     await thresholdsItem.element.waitUntilVisible()
@@ -162,7 +162,7 @@ describe('Finance basics', () => {
       )
     }).data
     await insertFeeThresholds(originalData)
-    await nav.openAndClickDropdownMenuItem('financeBasics')
+    await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const newData = {
       ...originalData,
