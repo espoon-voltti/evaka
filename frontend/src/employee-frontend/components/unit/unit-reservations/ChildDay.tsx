@@ -16,38 +16,15 @@ import {
   ChildRecordOfDay,
   OperationalDay
 } from 'lib-common/api-types/reservations'
-import { Reservation } from 'lib-common/generated/api-types/reservations'
+import { TimeRange as Reservation } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { attendanceTimeDiffers } from 'lib-common/reservations'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { useTranslation } from '../../../state/i18n'
 import AbsenceDay from './AbsenceDay'
-
-function timeToMinutes(expected: string): number {
-  const [hours, minutes] = expected.split(':').map(Number)
-  return hours * 60 + minutes
-}
-
-/**
- * "Best effort" time difference calculation based on two "HH:mm" local time
- * strings without date part. This is only used for highlighting in the calendar
- * so edge cases are expected and might not matter much.
- *
- * The functionality can be improved once the reservation data model supports
- * reservations that span multiple days.
- */
-function attendanceTimeDiffers(
-  first: string | null | undefined,
-  second: string | null | undefined,
-  thresholdMinutes = 15
-): boolean {
-  if (!(first && second)) {
-    return false
-  }
-  return timeToMinutes(first) - timeToMinutes(second) > thresholdMinutes
-}
 
 type ReservationOrServiceTime =
   | (TimeRange & { type: 'reservation' | 'service-time' })

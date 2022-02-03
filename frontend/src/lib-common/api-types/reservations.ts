@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Reservation } from 'lib-common/generated/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
 import { AbsenceType } from '../generated/api-types/daycare'
+import { TimeRange } from '../generated/api-types/reservations'
+import { JsonOf } from '../json'
 import LocalDate from '../local-date'
 import { DailyServiceTimes } from './child/common'
 
@@ -31,7 +31,7 @@ export interface ChildDailyRecords {
 }
 
 export interface ChildRecordOfDay {
-  reservation: Reservation | null
+  reservation: TimeRange | null
   attendance: AttendanceTimes | null
   absence: { type: AbsenceType } | null
 }
@@ -55,7 +55,7 @@ export interface Child {
 }
 
 export interface DailyChildData {
-  reservations: Reservation[]
+  reservations: TimeRange[]
   attendance: AttendanceTimes | null
   absence: { type: AbsenceType } | null
 }

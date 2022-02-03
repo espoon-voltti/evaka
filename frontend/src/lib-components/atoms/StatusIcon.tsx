@@ -9,7 +9,7 @@ import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 
-export const StatusIcon = styled.div`
+export const StatusIcon = styled(FontAwesomeIcon)`
   font-size: 15px;
   margin-left: ${defaultMargins.xs};
 `
@@ -24,17 +24,9 @@ export default React.memo(function UnderRowStatusIcon({
   status
 }: UnderRowStatusIconProps) {
   const { colors } = useTheme()
-  return (
-    <StatusIcon>
-      {status === 'warning' && (
-        <FontAwesomeIcon
-          icon={fasExclamationTriangle}
-          color={colors.status.warning}
-        />
-      )}
-      {status === 'success' && (
-        <FontAwesomeIcon icon={fasCheckCircle} color={colors.status.success} />
-      )}
-    </StatusIcon>
-  )
+  return status === 'warning' ? (
+    <StatusIcon icon={fasExclamationTriangle} color={colors.status.warning} />
+  ) : status === 'success' ? (
+    <StatusIcon icon={fasCheckCircle} color={colors.status.success} />
+  ) : null
 })

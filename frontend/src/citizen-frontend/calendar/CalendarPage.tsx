@@ -93,16 +93,6 @@ export default React.memo(function CalendarPage() {
 
   return (
     <>
-      {selectedDate && data.isSuccess ? (
-        <DayView
-          date={selectedDate}
-          reservationsResponse={data.value}
-          selectDate={selectDate}
-          reloadData={loadDefaultRange}
-          close={closeDayView}
-          openAbsenceModal={openAbsenceModal}
-        />
-      ) : null}
       <UnwrapResult result={data}>
         {(response) => (
           <>
@@ -132,6 +122,16 @@ export default React.memo(function CalendarPage() {
                 dayIsReservable={dayIsReservable}
               />
             </DesktopOnly>
+            {selectedDate && (
+              <DayView
+                date={selectedDate}
+                reservationsResponse={response}
+                selectDate={selectDate}
+                reloadData={loadDefaultRange}
+                close={closeDayView}
+                openAbsenceModal={openAbsenceModal}
+              />
+            )}
             {openModal?.type === 'pickAction' && (
               <ActionPickerModal
                 close={closeModal}

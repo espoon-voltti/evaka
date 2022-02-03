@@ -195,3 +195,50 @@ export function validateTimeRange(timeRange: TimeRange): TimeRangeErrors {
 
   return { startTime, endTime }
 }
+
+function timeToMinutes(expected: string): number {
+  const [hours, minutes] = expected.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+/**
+ * "Best effort" time difference calculation based on two "HH:mm" local time
+ * strings without date part. This is only used for highlighting in the calendar
+ * so edge cases are expected and might not matter much.
+ *
+ * The functionality can be improved once the reservation data model supports
+ * reservations that span multiple days.
+ */
+export function attendanceTimeDiffers(
+  first: string | null | undefined,
+  second: string | null | undefined,
+  thresholdMinutes = 15
+): boolean {
+  if (!(first && second)) {
+    return false
+  }
+  return timeToMinutes(first) - timeToMinutes(second) > thresholdMinutes
+}
+
+export function reservationsAndAttendancesDiffer(
+  reservations: TimeRange[],
+  attendances: TimeRange[]
+): boolean {
+  return reservations.some((reservation) => {
+    const matchingAttendance = attendances.find(
+      (attendance) =>
+        attendance.startTime <= reservation.endTime &&
+        reservation.startTime <= attendance.endTime
+    )
+
+    if (!matchingAttendance) return false
+
+    return (
+      attendanceTimeDiffers(
+        reservation.startTime,
+        matchingAttendance.startTime
+      ) ||
+      attendanceTimeDiffers(matchingAttendance.endTime, reservation.endTime)
+    )
+  })
+}

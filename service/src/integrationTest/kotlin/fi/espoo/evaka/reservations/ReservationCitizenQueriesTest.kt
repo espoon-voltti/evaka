@@ -291,8 +291,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
             .flatMap { dailyData -> dailyData.children.map { child -> dailyData.date to child.reservations } }
         assertEquals(2, reservations.size)
         assertEquals(monday, reservations[0].first)
-        assertEquals("12:00", reservations[0].second[0].startTime)
+        assertEquals(LocalTime.of(12, 0), reservations[0].second[0].startTime)
         assertEquals(monday.plusDays(1), reservations[1].first)
-        assertEquals("09:00", reservations[1].second[0].startTime)
+        assertEquals(LocalTime.of(9, 0), reservations[1].second[0].startTime)
     }
 }

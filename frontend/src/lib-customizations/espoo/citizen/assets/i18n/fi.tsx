@@ -196,6 +196,7 @@ export default {
     reservation: 'Varaus',
     realized: 'Toteuma',
     reservationsAndRealized: 'Varaukset ja toteuma',
+    attendanceWarning: 'Läsnäoloaika ylittää varauksen',
     reservationModal: {
       title: 'Tee varaus',
       selectChildren: 'Lapset, joille varaus tehdään',

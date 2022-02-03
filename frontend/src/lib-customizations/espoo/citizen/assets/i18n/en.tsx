@@ -197,6 +197,7 @@ const en: Translations = {
     reservation: 'Reservation',
     realized: 'Realized',
     reservationsAndRealized: 'Reservations and realized',
+    attendanceWarning: 'Attendance exceeds reservation',
     reservationModal: {
       title: 'Make a reservation',
       selectChildren: 'Children the reservation is made for',

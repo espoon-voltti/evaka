@@ -144,13 +144,8 @@ data class DailyReservationData(
 data class ChildDailyData(
     val childId: ChildId,
     val absence: AbsenceType?,
-    val reservations: List<Reservation>
-)
-
-@Json
-data class Reservation(
-    val startTime: String,
-    val endTime: String
+    val reservations: List<TimeRange>,
+    val attendances: List<TimeRange>
 )
 
 data class ReservationChild(
@@ -186,7 +181,8 @@ SELECT
             jsonb_build_object(
                 'childId', g.child_id,
                 'absence', a.absence_type,
-                'reservations', coalesce(ar.reservations, '[]')
+                'reservations', coalesce(ar.reservations, '[]'),
+                'attendances', coalesce(ca.attendances, '[]')
             )
         ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL),
         '[]'
@@ -205,6 +201,17 @@ LEFT JOIN LATERAL (
         ) AS reservations
     FROM attendance_reservation ar WHERE ar.child_id = g.child_id AND ar.date = t::date
 ) ar ON true
+LEFT JOIN LATERAL (
+    SELECT
+        jsonb_agg(
+            jsonb_build_object(
+                'startTime', to_char(greatest(ca.arrived AT TIME ZONE 'Europe/Helsinki', t), 'HH24:MI'),
+                'endTime', to_char(least(ca.departed AT TIME ZONE 'Europe/Helsinki', t + interval '1 day' - interval '1 minute'), 'HH24:MI')
+            ) ORDER BY ca.arrived ASC
+        ) AS attendances
+    FROM child_attendance ca WHERE ca.child_id = g.child_id
+    AND daterange((ca.arrived AT TIME ZONE 'Europe/Helsinki')::date, (ca.departed AT TIME ZONE 'Europe/Helsinki')::date, '[]') @> t::date
+) ca ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
 ) a ON true

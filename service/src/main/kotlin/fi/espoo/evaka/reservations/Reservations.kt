@@ -4,6 +4,10 @@
 
 package fi.espoo.evaka.reservations
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -27,10 +31,23 @@ fun List<DailyReservationRequest>.validate(reservableDates: FiniteDateRange? = n
     }
 }
 
+@JsonSerialize(using = TimeRangeSerializer::class)
 data class TimeRange(
     val startTime: LocalTime,
     val endTime: LocalTime,
 )
+
+class TimeRangeSerializer : JsonSerializer<TimeRange>() {
+    override fun serialize(value: TimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
+        gen.writeStartObject()
+        gen.writeObjectField("startTime", value.startTime.format())
+        gen.writeObjectField("endTime", value.endTime.format())
+        gen.writeEndObject()
+    }
+
+    private fun LocalTime.format() = "${padWithZeros(hour)}:${padWithZeros(minute)}"
+    private fun padWithZeros(hoursOrMinutes: Int) = hoursOrMinutes.toString().padStart(2, '0')
+}
 
 fun validateReservationTimeRange(timeRange: TimeRange) {
     if (timeRange.endTime <= timeRange.startTime) {

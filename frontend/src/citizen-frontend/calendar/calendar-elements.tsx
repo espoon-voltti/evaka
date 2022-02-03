@@ -8,6 +8,8 @@ import {
   ChildDailyData,
   DailyReservationData
 } from 'lib-common/generated/api-types/reservations'
+import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
+import StatusIcon from 'lib-components/atoms/StatusIcon'
 import { Light } from 'lib-components/typography'
 import { Translations, useTranslation } from '../localization'
 
@@ -18,6 +20,10 @@ export const Reservations = React.memo(function Reservations({
 }) {
   const i18n = useTranslation()
   const reservations = uniqueReservations(i18n, data.children)
+  const showAttendanceWarning = data.children.some(
+    ({ reservations, attendances }) =>
+      reservationsAndAttendancesDiffer(reservations, attendances)
+  )
 
   return reservations.length === 0 ? (
     data.isHoliday ? (
@@ -26,7 +32,10 @@ export const Reservations = React.memo(function Reservations({
       <NoReservation />
     )
   ) : (
-    <span>{reservations.join(', ')}</span>
+    <span>
+      {reservations.join(', ')}
+      {showAttendanceWarning && <StatusIcon status="warning" />}
+    </span>
   )
 })
 
