@@ -20,6 +20,7 @@ import { farStickyNote, farUser, farUsers } from 'lib-icons'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
+import { Reservations } from './Reservations'
 
 const ChildBox = styled.div`
   align-items: center;
@@ -191,13 +192,7 @@ const childReservationInfo = (
   { reservations, dailyServiceTimes }: Child
 ): React.ReactNode => {
   if (reservations.length > 0) {
-    return `${
-      reservations.length > 1
-        ? i18n.attendances.serviceTime.reservationsShort
-        : i18n.attendances.serviceTime.reservationShort
-    } ${reservations
-      .map(({ startTime, endTime }) => `${startTime}-${endTime}`)
-      .join(', ')}`
+    return <Reservations i18n={i18n} reservations={reservations} />
   }
 
   const todaysServiceTime = getTodaysServiceTimes(dailyServiceTimes)

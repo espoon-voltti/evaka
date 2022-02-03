@@ -150,10 +150,8 @@ export const fi = {
     arrived: 'Saapui',
     departed: 'Lähti',
     serviceTime: {
-      reservation: 'Varaus tänään',
-      reservations: 'Varaukset tänään',
-      reservationShort: 'Varaus',
-      reservationsShort: 'Varaukset',
+      reservation: 'Varaus',
+      reservations: 'Varaukset',
       serviceToday: (start: string, end: string) =>
         `Varhaiskasvatusaika tänään ${start}-${end}`,
       serviceTodayShort: (start: string, end: string) =>
@@ -163,7 +161,9 @@ export const fi = {
       notSet: 'Varhaiskasvatusaikaa ei asetettuna',
       notSetShort: 'Sop.aika puuttuu',
       variableTimes: 'Vaihteleva varhaiskasvatusaika',
-      variableTimesShort: 'Sop.aika vaihtelee'
+      variableTimesShort: 'Sop.aika vaihtelee',
+      yesterday: 'eilen',
+      tomorrow: 'huomenna'
     },
     notes: {
       day: 'Päivä',

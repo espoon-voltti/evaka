@@ -427,7 +427,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
     val childrenBasics = fetchChildrenBasics(unitId, instant)
     val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId)
     val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId)
-    val attendanceReservations = fetchAttendanceReservations(unitId, instant.toLocalDate())
+    val attendanceReservations = fetchAttendanceReservations(unitId, instant)
 
     val children = childrenBasics.map { child ->
         val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
@@ -450,7 +450,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
             dailyNote = dailyNote,
             stickyNotes = stickyNotes,
             imageUrl = child.imageUrl,
-            reservations = attendanceReservations[child.id] ?: listOf()
+            reservations = attendanceReservations[child.id] ?.sortedBy { it.startTime } ?: listOf()
         )
     }
 
