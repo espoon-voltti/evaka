@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
@@ -72,8 +73,8 @@ function renderMissingGroupPlacementRow(
               featureFlags.groupsTableServiceNeedsEnabled
                 ? serviceNeeds
                     .filter((sn) =>
-                      gap.overlaps(
-                        new FiniteDateRange(sn.startDate, sn.endDate)
+                      new FiniteDateRange(sn.startDate, sn.endDate).includes(
+                        LocalDate.today()
                       )
                     )
                     .map((sn) => sn.option.nameFi)

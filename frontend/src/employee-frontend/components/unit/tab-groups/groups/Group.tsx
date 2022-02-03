@@ -16,6 +16,7 @@ import {
   ChildDailyNote,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -624,14 +625,9 @@ export default React.memo(function Group({
                                   ? placement.serviceNeeds
                                       .filter((sn) =>
                                         new FiniteDateRange(
-                                          placement.startDate,
-                                          placement.endDate
-                                        ).overlaps(
-                                          new FiniteDateRange(
-                                            sn.startDate,
-                                            sn.endDate
-                                          )
-                                        )
+                                          sn.startDate,
+                                          sn.endDate
+                                        ).includes(LocalDate.today())
                                       )
                                       .map((sn) => sn.option.nameFi)
                                       .join(' / ')
