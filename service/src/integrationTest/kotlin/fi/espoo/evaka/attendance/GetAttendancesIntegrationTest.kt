@@ -9,7 +9,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.TimeRange
 import fi.espoo.evaka.dailyservicetimes.upsertChildDailyServiceTimes
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
@@ -37,6 +37,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -184,13 +185,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.insertTestAbsence(
                 childId = testChild_1.id,
-                careType = AbsenceCareType.PRESCHOOL,
+                category = AbsenceCategory.NONBILLABLE,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
             it.insertTestAbsence(
                 childId = testChild_1.id,
-                careType = AbsenceCareType.PRESCHOOL_DAYCARE,
+                category = AbsenceCategory.BILLABLE,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
@@ -198,9 +199,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         val child = expectOneChild()
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertNull(child.attendance)
-        assertEquals(2, child.absences.size)
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL })
-        assertTrue(child.absences.any { it.careType == AbsenceCareType.PRESCHOOL_DAYCARE })
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
     @Test

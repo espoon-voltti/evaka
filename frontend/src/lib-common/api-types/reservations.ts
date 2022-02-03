@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Reservation } from 'lib-common/generated/api-types/reservations'
-import { AbsenceType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
+import { AbsenceType } from '../generated/api-types/daycare'
 import LocalDate from '../local-date'
 import { DailyServiceTimes } from './child/common'
 

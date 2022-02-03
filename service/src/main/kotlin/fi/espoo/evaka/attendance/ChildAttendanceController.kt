@@ -5,7 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForUnit
@@ -304,8 +304,8 @@ class ChildAttendanceController(
 
                 try {
                     tx.deleteAbsencesByDate(childId, dateNow())
-                    getCareTypes(placementBasics.placementType).forEach { careType ->
-                        tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
+                    placementBasics.placementType.absenceCategories().forEach { category ->
+                        tx.insertAbsence(user, childId, LocalDate.now(), category, body.absenceType)
                     }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
@@ -339,8 +339,8 @@ class ChildAttendanceController(
                 try {
                     for ((date, placementType) in typeOnDates) {
                         tx.deleteAbsencesByDate(childId, date)
-                        getCareTypes(placementType).forEach { careType ->
-                            tx.insertAbsence(user, childId, date, careType, body.absenceType)
+                        placementType.absenceCategories().forEach { category ->
+                            tx.insertAbsence(user, childId, date, category, body.absenceType)
                         }
                     }
                 } catch (e: Exception) {
@@ -475,29 +475,12 @@ private fun getChildAttendanceStatus(
 }
 
 private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<ChildAbsence>): Boolean {
-    return getCareTypes(placementBasics.placementType).all { type -> absences.map { it.careType }.contains(type) }
+    val absenceCategories = absences.asSequence().map { it.category }.toSet()
+    return placementBasics.placementType.absenceCategories() == absenceCategories
 }
 
-private fun getCareTypes(placementType: PlacementType): List<AbsenceCareType> =
-    when (placementType) {
-        PlacementType.SCHOOL_SHIFT_CARE ->
-            listOf(AbsenceCareType.SCHOOL_SHIFT_CARE)
-        PRESCHOOL, PREPARATORY ->
-            listOf(AbsenceCareType.PRESCHOOL)
-        PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE ->
-            listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE)
-        DAYCARE_FIVE_YEAR_OLDS,
-        DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
-            listOf(AbsenceCareType.DAYCARE_5YO_FREE, AbsenceCareType.DAYCARE)
-        PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME,
-        PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
-            listOf(AbsenceCareType.DAYCARE)
-        PlacementType.CLUB ->
-            listOf(AbsenceCareType.CLUB)
-    }
-
 data class AbsenceThreshold(
-    val type: AbsenceCareType,
+    val category: AbsenceCategory,
     val time: LocalTime
 )
 
@@ -521,7 +504,7 @@ private fun preschoolAbsenceThreshold(placementType: PlacementType, arrived: Loc
             if (arrived > preschoolEnd || Duration.between(arrived, preschoolEnd) < preschoolMinimumDuration)
                 LocalTime.of(23, 59)
             else minOf(maxOf(arrived, preschoolStart).plus(preschoolMinimumDuration), preschoolEnd)
-        return AbsenceThreshold(AbsenceCareType.PRESCHOOL, threshold)
+        return AbsenceThreshold(AbsenceCategory.NONBILLABLE, threshold)
     }
 
     if (placementType in listOf(PREPARATORY, PREPARATORY_DAYCARE)) {
@@ -529,7 +512,7 @@ private fun preschoolAbsenceThreshold(placementType: PlacementType, arrived: Loc
             if (arrived > preparatoryEnd || Duration.between(arrived, preparatoryEnd) < preparatoryMinimumDuration)
                 LocalTime.of(23, 59)
             else minOf(maxOf(arrived, preschoolStart).plus(preparatoryMinimumDuration), preparatoryEnd)
-        return AbsenceThreshold(AbsenceCareType.PRESCHOOL, threshold)
+        return AbsenceThreshold(AbsenceCategory.NONBILLABLE, threshold)
     }
 
     return null
@@ -540,14 +523,14 @@ private fun preschoolDaycareAbsenceThreshold(placementType: PlacementType, arriv
         if (Duration.between(arrived, preschoolStart) > connectedDaycareBuffer) return null
 
         val threshold = preschoolEnd.plus(connectedDaycareBuffer)
-        return AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, threshold)
+        return AbsenceThreshold(AbsenceCategory.BILLABLE, threshold)
     }
 
     if (placementType == PREPARATORY_DAYCARE) {
         if (Duration.between(arrived, preparatoryStart) > connectedDaycareBuffer) return null
 
         val threshold = preparatoryEnd.plus(connectedDaycareBuffer)
-        return AbsenceThreshold(AbsenceCareType.PRESCHOOL_DAYCARE, threshold)
+        return AbsenceThreshold(AbsenceCategory.BILLABLE, threshold)
     }
 
     return null
@@ -556,7 +539,7 @@ private fun preschoolDaycareAbsenceThreshold(placementType: PlacementType, arriv
 private fun daycareAbsenceThreshold(placementType: PlacementType, arrived: LocalTime, childHasPaidServiceNeedToday: Boolean): AbsenceThreshold? {
     if (placementType in listOf(DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS) && childHasPaidServiceNeedToday) {
         val threshold = arrived.plus(fiveYearOldFreeLimit)
-        return AbsenceThreshold(AbsenceCareType.DAYCARE, threshold)
+        return AbsenceThreshold(AbsenceCategory.BILLABLE, threshold)
     }
 
     return null

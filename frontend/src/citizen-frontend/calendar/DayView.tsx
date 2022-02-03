@@ -6,12 +6,12 @@ import { zip } from 'lodash'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
   Reservation,
   ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import { AbsenceType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

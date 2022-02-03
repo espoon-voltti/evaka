@@ -5,22 +5,6 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-export type AbsenceCareType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_5YO_FREE'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'SCHOOL_SHIFT_CARE'
-
-export type AbsenceType =
-  | 'FORCE_MAJEURE'
-  | 'OTHER_ABSENCE'
-  | 'PARENTLEAVE'
-  | 'PLANNED_ABSENCE'
-  | 'SICKLEAVE'
-  | 'UNKNOWN_ABSENCE'
-
 export type ApplicationOrigin =
   | 'ELECTRONIC'
   | 'PAPER'

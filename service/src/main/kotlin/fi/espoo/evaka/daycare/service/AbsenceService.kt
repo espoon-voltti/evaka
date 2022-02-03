@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.operationalDates
 import fi.espoo.evaka.user.EvakaUserType
+import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Service
@@ -64,7 +65,7 @@ class AbsenceService {
             AbsenceChild(
                 child = child,
                 placements = range.dates().mapNotNull { date ->
-                    placements.find { it.dateRange.includes(date) }?.let { date to it.types }
+                    placements.find { it.dateRange.includes(date) }?.let { date to it.categories }
                 }.toMap(),
                 absences = absenceList[child.id]?.groupBy { it.date } ?: mapOf(),
                 backupCares = backupCareList[child.id]?.flatMap {
@@ -165,28 +166,11 @@ private fun sumOfHours(
         .let { minutes -> BigDecimal(minutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt() }
 }
 
-fun getAbsenceCareTypes(placementType: PlacementType): List<AbsenceCareType> = when (placementType) {
-    PlacementType.CLUB -> listOf(AbsenceCareType.CLUB)
-    PlacementType.SCHOOL_SHIFT_CARE -> listOf(AbsenceCareType.SCHOOL_SHIFT_CARE)
-    PlacementType.PRESCHOOL,
-    PlacementType.PREPARATORY -> listOf(AbsenceCareType.PRESCHOOL)
-    PlacementType.PRESCHOOL_DAYCARE,
-    PlacementType.PREPARATORY_DAYCARE -> listOf(AbsenceCareType.PRESCHOOL, AbsenceCareType.PRESCHOOL_DAYCARE)
-    PlacementType.DAYCARE -> listOf(AbsenceCareType.DAYCARE)
-    PlacementType.DAYCARE_PART_TIME -> listOf(AbsenceCareType.DAYCARE)
-    PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(AbsenceCareType.DAYCARE_5YO_FREE, AbsenceCareType.DAYCARE)
-    PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
-        listOf(AbsenceCareType.DAYCARE)
-}
+enum class AbsenceCategory : DatabaseEnum {
+    BILLABLE,
+    NONBILLABLE;
 
-enum class AbsenceCareType {
-    SCHOOL_SHIFT_CARE,
-    PRESCHOOL,
-    PRESCHOOL_DAYCARE,
-    DAYCARE_5YO_FREE,
-    DAYCARE,
-    CLUB
+    override val sqlType: String = "absence_category"
 }
 
 data class AbsenceGroup(
@@ -199,7 +183,7 @@ data class AbsenceGroup(
 
 data class AbsenceChild(
     val child: Child,
-    val placements: Map<LocalDate, List<AbsenceCareType>>,
+    val placements: Map<LocalDate, Set<AbsenceCategory>>,
     val absences: Map<LocalDate, List<AbsenceWithModifierInfo>>,
     val backupCares: Map<LocalDate, Boolean>,
     val reservationTotalHours: Int?,
@@ -215,14 +199,14 @@ data class Child(
 
 data class AbsencePlacement(
     val dateRange: FiniteDateRange,
-    val types: List<AbsenceCareType>
+    val categories: Set<AbsenceCategory>
 )
 
 data class Absence(
     val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
-    val careType: AbsenceCareType,
+    val category: AbsenceCategory,
     val absenceType: AbsenceType
 )
 
@@ -230,7 +214,7 @@ data class AbsenceWithModifierInfo(
     val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
-    val careType: AbsenceCareType,
+    val category: AbsenceCategory,
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,
     val modifiedAt: HelsinkiDateTime
@@ -250,7 +234,7 @@ enum class AbsenceType : DatabaseEnum {
 data class AbsenceUpsert(
     val childId: ChildId,
     val date: LocalDate,
-    val careType: AbsenceCareType,
+    val category: AbsenceCategory,
     val absenceType: AbsenceType
 )
 
@@ -259,19 +243,16 @@ fun Database.Transaction.upsertAbsences(absences: List<AbsenceUpsert>, modifiedB
     //language=SQL
     val sql =
         """
-        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
-        VALUES (:childId, :date, :careType, :absenceType, :modifiedBy)
-        ON CONFLICT (child_id, date, care_type)
+        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
+        VALUES (:childId, :date, :category, :absenceType, :modifiedBy)
+        ON CONFLICT (child_id, date, category)
             DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = now()
         """.trimIndent()
 
     val batch = prepareBatch(sql)
     for (absence in absences) {
         batch
-            .bind("childId", absence.childId)
-            .bind("date", absence.date)
-            .bind("careType", absence.careType)
-            .bind("absenceType", absence.absenceType)
+            .bindKotlin(absence)
             .bind("modifiedBy", modifiedBy)
             .add()
     }
@@ -282,7 +263,7 @@ fun Database.Transaction.upsertAbsences(absences: List<AbsenceUpsert>, modifiedB
 data class AbsenceDelete(
     val childId: ChildId,
     val date: LocalDate,
-    val careType: AbsenceCareType
+    val category: AbsenceCategory
 )
 
 fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
@@ -290,16 +271,12 @@ fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
     val sql =
         """
         DELETE FROM absence
-        WHERE care_type = :careType AND date = :date AND child_id = :childId
+        WHERE category = :category AND date = :date AND child_id = :childId
         """.trimIndent()
 
     val batch = prepareBatch(sql)
     deletions.forEach {
-        batch
-            .bind("childId", it.childId)
-            .bind("date", it.date)
-            .bind("careType", it.careType)
-            .add()
+        batch.bindKotlin(it).add()
     }
     batch.execute()
 }
@@ -384,7 +361,7 @@ JOIN person ON child_id = person.id
         .toList()
         .groupBy { it.child }
         .map { (child, queryResults) ->
-            child to queryResults.map { AbsencePlacement(it.dateRange, getAbsenceCareTypes(it.type)) }
+            child to queryResults.map { AbsencePlacement(it.dateRange, it.type.absenceCategories()) }
         }
         .toMap()
 }
@@ -393,7 +370,7 @@ fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): 
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
+        SELECT a.id, a.child_id, a.date, a.category, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
         FROM absence a
         LEFT JOIN evaka_user eu ON eu.id = a.modified_by 
         WHERE child_id IN (SELECT child_id FROM ($placementsQuery) p)
@@ -411,7 +388,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: FiniteDateR
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type
+        SELECT a.id, a.child_id, a.date, a.category, a.absence_type
         FROM absence a
         WHERE between_start_and_end(:range, date)
         AND a.child_id = :childId
@@ -428,7 +405,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: DateRange):
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type
+        SELECT a.id, a.child_id, a.date, a.category, a.absence_type
         FROM absence a
         WHERE between_start_and_end(:range, date)
         AND a.child_id = :childId

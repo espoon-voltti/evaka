@@ -3,18 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { AbsenceType } from 'lib-common/generated/enums'
+import {
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
-import {
-  AbsenceTypes,
-  CareTypeCategories,
-  CareTypeCategory
-} from '../../types/absence'
+import { AbsenceTypes, absenceCategories } from '../../types/absence'
 
 export default React.memo(function AbsenceModal({
   onSave,
@@ -22,16 +21,16 @@ export default React.memo(function AbsenceModal({
   onCancel,
   selectedAbsenceType,
   setSelectedAbsenceType,
-  selectedCareTypeCategories,
-  updateCareTypes
+  selectedCategories,
+  updateCategories
 }: {
   onSave: () => void
   saveDisabled: boolean
   onCancel: () => void
   selectedAbsenceType: AbsenceType | null
   setSelectedAbsenceType: (value: AbsenceType | null) => void
-  selectedCareTypeCategories: CareTypeCategory[]
-  updateCareTypes: (value: CareTypeCategory) => void
+  selectedCategories: AbsenceCategory[]
+  updateCategories: (value: AbsenceCategory) => void
 }) {
   const { i18n } = useTranslation()
   return (
@@ -68,13 +67,13 @@ export default React.memo(function AbsenceModal({
 
         <Label>{i18n.absences.modal.placementSectionLabel}</Label>
         <FixedSpaceColumn spacing="xs">
-          {CareTypeCategories.map((careTypeCategory, index) => (
+          {absenceCategories.map((category, index) => (
             <Checkbox
               key={index}
-              label={i18n.absences.careTypeCategories[careTypeCategory]}
-              checked={selectedCareTypeCategories.includes(careTypeCategory)}
-              onChange={() => updateCareTypes(careTypeCategory)}
-              data-qa={`absences-select-caretype-${careTypeCategory}`}
+              label={i18n.absences.absenceCategories[category]}
+              checked={selectedCategories.includes(category)}
+              onChange={() => updateCategories(category)}
+              data-qa={`absences-select-${category}`}
             />
           ))}
         </FixedSpaceColumn>

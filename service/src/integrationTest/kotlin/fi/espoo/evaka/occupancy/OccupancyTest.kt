@@ -7,6 +7,7 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
@@ -38,7 +39,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import fi.espoo.evaka.daycare.service.AbsenceCareType as AbsenceCareType
 
 class OccupancyTest : PureJdbiTest() {
     val today = LocalDate.of(2020, 1, 16) // Thursday
@@ -440,8 +440,8 @@ class OccupancyTest : PureJdbiTest() {
                     addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-2).toDay(0).saveAnd {
                         addGroupPlacement().toGroup(daycareGroup1).save()
                     }
-                    addAbsence().ofType(AbsenceType.SICKLEAVE).onDay(-1).forCareTypes(AbsenceCareType.DAYCARE).save()
-                    addAbsence().ofType(AbsenceType.PLANNED_ABSENCE).onDay(0).forCareTypes(AbsenceCareType.DAYCARE).save()
+                    addAbsence().ofType(AbsenceType.SICKLEAVE).onDay(-1).forCategories(AbsenceCategory.BILLABLE).save()
+                    addAbsence().ofType(AbsenceType.PLANNED_ABSENCE).onDay(0).forCategories(AbsenceCategory.BILLABLE).save()
                 }
 
             FiniteDateRange(today.minusDays(2), today).dates().forEach { date ->

@@ -12,8 +12,6 @@ import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.service.AbsenceCareType
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.OtherIncome
 import fi.espoo.evaka.messaging.MessageType
@@ -51,8 +49,6 @@ val generatedFiles = listOf(
     ),
     defineFile(
         "enums.d.ts",
-        generateEnum<AbsenceCareType>(),
-        generateEnum<AbsenceType>(),
         generateEnum<ApplicationOrigin>(),
         generateEnum<ApplicationStatus>(),
         generateEnum<ApplicationType>(),

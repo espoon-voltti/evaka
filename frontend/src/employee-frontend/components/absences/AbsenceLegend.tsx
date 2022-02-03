@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { AbsenceType } from 'lib-common/generated/enums'
+import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'

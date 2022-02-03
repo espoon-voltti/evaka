@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.daycare.service.AbsenceCategory
+
 enum class PlacementType {
     CLUB,
     DAYCARE,
@@ -17,6 +19,7 @@ enum class PlacementType {
     TEMPORARY_DAYCARE,
     TEMPORARY_DAYCARE_PART_DAY,
     SCHOOL_SHIFT_CARE;
+
     fun isInvoiced(): Boolean = when (this) {
         CLUB -> false
         DAYCARE -> true
@@ -30,6 +33,16 @@ enum class PlacementType {
         TEMPORARY_DAYCARE -> true
         TEMPORARY_DAYCARE_PART_DAY -> true
         SCHOOL_SHIFT_CARE -> false
+    }
+
+    fun absenceCategories(): Set<AbsenceCategory> = when (this) {
+        PRESCHOOL, PREPARATORY, CLUB, SCHOOL_SHIFT_CARE -> setOf(AbsenceCategory.NONBILLABLE)
+        DAYCARE, DAYCARE_PART_TIME, TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY -> setOf(AbsenceCategory.BILLABLE)
+        PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE,
+        DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> setOf(
+            AbsenceCategory.BILLABLE,
+            AbsenceCategory.NONBILLABLE
+        )
     }
 
     companion object {

@@ -7,7 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.service.Absence
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttendanceId
@@ -50,21 +50,21 @@ fun Database.Transaction.insertAbsence(
     user: AuthenticatedUser,
     childId: ChildId,
     date: LocalDate,
-    careType: AbsenceCareType,
+    category: AbsenceCategory,
     absenceType: AbsenceType
 ): Absence {
     // language=sql
     val sql =
         """
-        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
-        VALUES (:childId, :date, :careType, :absenceType, :userId)
+        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
+        VALUES (:childId, :date, :category, :absenceType, :userId)
         RETURNING *
         """.trimIndent()
 
     return createQuery(sql)
         .bind("childId", childId)
         .bind("date", date)
-        .bind("careType", careType)
+        .bind("category", category)
         .bind("absenceType", absenceType)
         .bind("userId", user.id)
         .mapTo<Absence>()
@@ -229,7 +229,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
             ORDER BY ca.arrived DESC LIMIT 1
         ) ca ON true
         LEFT JOIN LATERAL (
-            SELECT jsonb_agg(jsonb_build_object('careType', a.care_type)) AS absences
+            SELECT jsonb_agg(jsonb_build_object('category', a.category)) AS absences
             FROM absence a WHERE a.child_id = pe.id AND a.date = :date
             GROUP BY a.child_id
         ) a ON true

@@ -8,6 +8,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
+import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -28,7 +29,6 @@ import {
 } from '../../../api/attendances'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { Translations, useTranslation } from '../../../state/i18n'
-import { AbsenceType } from '../../../types'
 import { renderResult } from '../../async-rendering'
 import { TallContentArea } from '../../mobile/components'
 import AbsenceSelector from '../AbsenceSelector'
@@ -111,7 +111,7 @@ export default React.memo(function MarkDeparted() {
       childDepartureInfo.map((thresholds) =>
         thresholds
           .filter((threshold) => time <= threshold.time)
-          .map(({ type }) => type)
+          .map(({ category }) => category)
       ),
     [childDepartureInfo, time]
   )

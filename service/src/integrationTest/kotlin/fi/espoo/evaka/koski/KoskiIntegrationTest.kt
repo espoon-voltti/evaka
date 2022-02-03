@@ -9,7 +9,7 @@ import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
@@ -807,7 +807,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
                 for (date in period.dates()) {
                     tx.insertTestAbsence(
                         childId = childId,
-                        careType = AbsenceCareType.PRESCHOOL,
+                        category = AbsenceCategory.NONBILLABLE,
                         date = date,
                         absenceType = absenceType
                     )

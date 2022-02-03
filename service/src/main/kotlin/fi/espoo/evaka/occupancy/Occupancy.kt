@@ -4,8 +4,7 @@
 
 package fi.espoo.evaka.occupancy
 
-import fi.espoo.evaka.daycare.service.AbsenceCareType
-import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -402,7 +401,7 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val absences =
         if (type == OccupancyType.REALIZED)
-            this.createQuery("SELECT child_id, date, care_type FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)")
+            this.createQuery("SELECT child_id, date, category FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)")
                 .bind("childIds", childIds)
                 .bind("range", range)
                 .mapTo<Absence>()
@@ -545,8 +544,8 @@ private fun childWasAbsentWholeDay(
     childPlacementType: PlacementType,
     childAbsences: List<Absence>
 ): Boolean {
-    val absencesOnDate = childAbsences.filter { it.date == date }.map { it.careType }.toSet()
-    return absencesOnDate.isNotEmpty() && absencesOnDate == getAbsenceCareTypes(childPlacementType).toSet()
+    val absencesOnDate = childAbsences.filter { it.date == date }.map { it.category }.toSet()
+    return absencesOnDate.isNotEmpty() && absencesOnDate == childPlacementType.absenceCategories()
 }
 
 private data class Caretakers<K : OccupancyGroupingKey>(
@@ -592,5 +591,5 @@ data class AssistanceNeed(
 data class Absence(
     val childId: ChildId,
     val date: LocalDate,
-    val careType: AbsenceCareType
+    val category: AbsenceCategory
 )

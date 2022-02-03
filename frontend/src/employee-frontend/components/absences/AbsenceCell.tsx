@@ -4,13 +4,15 @@
 
 import React, { useCallback, useMemo } from 'react'
 import { formatDate } from 'lib-common/date'
-import { AbsenceWithModifierInfo } from 'lib-common/generated/api-types/daycare'
-import { AbsenceCareType } from 'lib-common/generated/enums'
+import {
+  AbsenceCategory,
+  AbsenceWithModifierInfo
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
-import { billableCareTypes, Cell, CellPart } from '../../types/absence'
+import { Cell, CellPart } from '../../types/absence'
 
 interface AbsenceCellPartProps {
   position: string
@@ -37,7 +39,7 @@ interface AbsenceCellProps {
   selectedCells: Cell[]
   toggleCellSelection: (id: UUID, parts: CellPart[]) => void
   date: LocalDate
-  careTypes: AbsenceCareType[] | undefined
+  categories: AbsenceCategory[] | undefined
   absences: AbsenceWithModifierInfo[] | undefined
   backupCare: boolean
 }
@@ -48,45 +50,41 @@ const getCellId = (childId: UUID, date: LocalDate) =>
 function getCellParts(
   childId: UUID,
   date: LocalDate,
-  careTypes: AbsenceCareType[],
+  categories: AbsenceCategory[],
   absences: AbsenceWithModifierInfo[] | undefined,
   backupCare: boolean
 ): CellPart[] {
-  function placementAbsence(
-    placement: AbsenceCareType
-  ): AbsenceWithModifierInfo | undefined {
-    return absences?.find(({ careType }) => careType === placement)
-  }
-
-  return careTypes.map((careType) => {
-    const position = billableCareTypes.includes(careType) ? 'right' : 'left'
+  return categories.map((category) => {
+    const position = category === 'BILLABLE' ? 'right' : 'left'
     if (backupCare) {
       return {
-        id: `${childId}-${date.formatIso()}-${careType}-backup-care`,
+        id: `${childId}-${date.formatIso()}-${category}-backup-care`,
         childId,
         date,
-        careType,
+        category,
         absenceType: 'TEMPORARY_RELOCATION',
         position
       }
     }
-    const maybeAbsence = placementAbsence(careType)
+    const maybeAbsence = absences?.find(
+      (absence) => absence.category === category
+    )
     if (maybeAbsence) {
       const { id: absenceId, absenceType } = maybeAbsence
       return {
         id: absenceId,
         childId,
         date,
-        careType,
+        category,
         absenceType,
         position
       }
     } else {
       return {
-        id: `${childId}-${date.formatIso()}-${careType}`,
+        id: `${childId}-${date.formatIso()}-${category}`,
         childId,
         date,
-        careType,
+        category,
         position
       }
     }
@@ -100,7 +98,7 @@ export function DisabledCell() {
 const AbsenceCellParts = React.memo(function AbsenceCellParts({
   childId,
   date,
-  careTypes,
+  categories,
   absences,
   backupCare,
   isSelected,
@@ -112,10 +110,10 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
 }) {
   const parts = useMemo(
     () =>
-      careTypes
-        ? getCellParts(childId, date, careTypes, absences, backupCare)
+      categories
+        ? getCellParts(childId, date, categories, absences, backupCare)
         : [],
-    [absences, backupCare, careTypes, childId, date]
+    [absences, backupCare, categories, childId, date]
   )
   if (parts.length === 0) {
     return <DisabledCell />
@@ -144,7 +142,7 @@ export default React.memo(function AbsenceCell({
   selectedCells,
   toggleCellSelection,
   date,
-  careTypes,
+  categories,
   absences,
   backupCare
 }: AbsenceCellProps) {
@@ -162,8 +160,8 @@ export default React.memo(function AbsenceCell({
         ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
         : absences
             ?.map(
-              ({ careType, absenceType, modifiedAt, modifiedByType }) =>
-                `${i18n.absences.careTypes[careType]}: ${
+              ({ category, absenceType, modifiedAt, modifiedByType }) =>
+                `${i18n.absences.absenceCategories[category]}: ${
                   i18n.absences.absenceTypes[absenceType]
                 }<br/>
             ${formatDate(modifiedAt)} ${
@@ -193,7 +191,7 @@ export default React.memo(function AbsenceCell({
         selectedCells={selectedCells}
         toggleCellSelection={toggleCellSelection}
         date={date}
-        careTypes={careTypes}
+        categories={categories}
         absences={absences}
         backupCare={backupCare}
         isSelected={isSelected}

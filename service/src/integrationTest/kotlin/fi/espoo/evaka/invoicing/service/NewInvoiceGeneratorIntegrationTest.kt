@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.TestInvoiceProductProvider
-import fi.espoo.evaka.daycare.service.AbsenceCareType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.upsertAbsences
@@ -1753,7 +1753,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                         absenceType = type,
                         childId = testChild_1.id,
                         date = date,
-                        careType = AbsenceCareType.DAYCARE
+                        category = AbsenceCategory.BILLABLE
                     )
                 },
                 EvakaUserId(testDecisionMaker_1.id.raw)
@@ -2337,7 +2337,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 5),
-                        careType = AbsenceCareType.DAYCARE
+                        category = AbsenceCategory.BILLABLE
                     )
                 ),
                 EvakaUserId(testDecisionMaker_1.id.raw)
@@ -2394,7 +2394,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
                         date = LocalDate.of(2021, 1, 3),
-                        careType = AbsenceCareType.DAYCARE
+                        category = AbsenceCategory.BILLABLE
                     )
                 ),
                 EvakaUserId(testDecisionMaker_1.id.raw)
@@ -2453,7 +2453,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                             absenceType = AbsenceType.FORCE_MAJEURE,
                             childId = testChild_1.id,
                             date = it,
-                            careType = AbsenceCareType.DAYCARE
+                            category = AbsenceCategory.BILLABLE
                         )
                     }
                     .toList(),
@@ -3077,7 +3077,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                         absenceType = type,
                         childId = child.id,
                         date = date,
-                        careType = AbsenceCareType.DAYCARE
+                        category = AbsenceCategory.BILLABLE
                     )
                 },
                 EvakaUserId(testDecisionMaker_1.id.raw)
