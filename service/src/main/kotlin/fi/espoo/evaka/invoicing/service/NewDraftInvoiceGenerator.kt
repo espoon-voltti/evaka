@@ -34,11 +34,10 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
-import kotlin.math.ceil
 
 @Component
 class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvider, private val featureConfig: FeatureConfig) : DraftInvoiceGenerator {
-    override fun generateDraftInvoices(decisions: Map<PersonId, List<FeeDecision>>, placements: Map<PersonId, List<Placements>>, period: DateRange, daycareCodes: Map<DaycareId, DaycareCodes>, operationalDays: OperationalDays, feeThresholds: FeeThresholds, absences: List<AbsenceStub>, freeChildren: List<ChildId>, codebtors: Map<PersonId, PersonId?>): List<Invoice> {
+    override fun generateDraftInvoices(decisions: Map<PersonId, List<FeeDecision>>, placements: Map<PersonId, List<Placements>>, period: DateRange, daycareCodes: Map<DaycareId, DaycareCodes>, operationalDays: OperationalDays, feeThresholds: FeeThresholds, absences: List<AbsenceStub>, plannedAbsences: Map<ChildId, Set<LocalDate>>, freeChildren: List<ChildId>, codebtors: Map<PersonId, PersonId?>): List<Invoice> {
         return placements.keys.mapNotNull { headOfFamilyId ->
             try {
                 generateDraftInvoice(
@@ -49,6 +48,7 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                     operationalDays,
                     feeThresholds,
                     absences,
+                    plannedAbsences,
                     freeChildren,
                     codebtors
                 )
@@ -61,9 +61,9 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
     private data class InvoiceRowStub(
         val child: ChildWithDateOfBirth,
         val placement: PlacementStub,
-        val finalPrice: Int,
         val priceBeforeFeeAlterations: Int,
         val feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
+        val finalPrice: Int,
         val contractDaysPerMonth: Int?,
     )
 
@@ -75,10 +75,15 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
         operationalDays: OperationalDays,
         feeThresholds: FeeThresholds,
         absences: List<AbsenceStub>,
+        plannedAbsences: Map<ChildId, Set<LocalDate>>,
         freeChildren: List<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
         val headOfFamily = placements.first().headOfFamily
+
+        fun hasPlannedAbsence(childId: ChildId, date: LocalDate): Boolean {
+            return plannedAbsences[childId]?.contains(date) ?: false
+        }
 
         val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
             val relevantPeriod = DateRange(
@@ -100,8 +105,8 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                                     ChildWithDateOfBirth(child.id, child.dateOfBirth),
                                     placement,
                                     fee,
-                                    fee,
                                     listOf(),
+                                    fee,
                                     null,
                                 )
                             )
@@ -120,11 +125,11 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                                     ) to InvoiceRowStub(
                                         ChildWithDateOfBirth(part.child.id, part.child.dateOfBirth),
                                         PlacementStub(part.placement.unitId, part.placement.type),
-                                        part.finalFee,
                                         part.fee,
                                         part.feeAlterations.map { feeAlteration ->
                                             Pair(feeAlteration.type, feeAlteration.effect)
                                         },
+                                        part.finalFee,
                                         part.serviceNeed.contractDaysPerMonth,
                                     )
                                 }
@@ -135,7 +140,7 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
 
         val rows = rowStubs
             .groupBy { (_, stub) -> stub.child }
-            .flatMap { (_, childStubs) ->
+            .flatMap { (child, childStubs) ->
                 val separatePeriods = mergePeriods(childStubs)
                 val contractDaysPerMonth = separatePeriods.first().second.contractDaysPerMonth
 
@@ -156,18 +161,20 @@ class NewDraftInvoiceGenerator(private val productProvider: InvoiceProductProvid
                         else weeks.dropLast(1).plusElement(weeks.last() + date)
                     }
                     .flatMap { week ->
-                        val weeklyMaximumOfOperationalDates = if (contractDaysPerMonth != null) {
-                            5 * ceil(operationalDays.generalCase.size / contractDaysPerMonth.toDouble()).toInt()
-                        } else 5
-
-                        week
+                        val weekOperationalDates = week
                             .filter { date ->
                                 separatePeriods.any { (period, feeData) ->
                                     period.includes(date) &&
                                         operationalDays.forUnit(feeData.placement.unit).contains(date)
                                 }
                             }
-                            .take(weeklyMaximumOfOperationalDates)
+
+                        if (contractDaysPerMonth != null) {
+                            weekOperationalDates.filterNot { date -> hasPlannedAbsence(child.id, date) }
+                        } else {
+                            // TODO: Use the above planned absence filtering for round-the-clock units, too
+                            weekOperationalDates.take(5)
+                        }
                     }
                     .take(dailyFeeDivisor)
 

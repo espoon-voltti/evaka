@@ -48,6 +48,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             invoiceCalculationData.operationalDays,
             invoiceCalculationData.feeThresholds,
             invoiceCalculationData.absences,
+            invoiceCalculationData.plannedAbsences,
             invoiceCalculationData.freeChildren,
             invoiceCalculationData.codebtors
         )
@@ -68,7 +69,12 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val daycareCodes = tx.getDaycareCodes()
         val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
-        val absences: List<AbsenceStub> = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
+        val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
+
+        val absences = allAbsences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsences =
+            allAbsences.filter { it.absenceType == AbsenceType.PLANNED_ABSENCE }.groupBy { it.childId }
+                .map { (childId, absences) -> childId to absences.map { it.date }.toSet() }.toMap()
 
         val freeChildren =
             if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
@@ -85,24 +91,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             operationalDays = operationalDays,
             feeThresholds = feeThresholds,
             absences = absences,
+            plannedAbsences = plannedAbsences,
             freeChildren = freeChildren,
             codebtors = codebtors
-        )
-    }
-
-    fun createAllDraftInvoices(tx: Database.Transaction, range: DateRange): List<Invoice> {
-        val invoiceData = calculateInvoiceData(tx, range)
-
-        return draftInvoiceGenerator.generateDraftInvoices(
-            invoiceData.decisions,
-            invoiceData.placements,
-            invoiceData.period,
-            invoiceData.daycareCodes,
-            invoiceData.operationalDays,
-            invoiceData.feeThresholds,
-            invoiceData.absences,
-            invoiceData.freeChildren,
-            invoiceData.codebtors
         )
     }
 
@@ -114,6 +105,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val operationalDays: OperationalDays,
         val feeThresholds: FeeThresholds,
         val absences: List<AbsenceStub> = listOf(),
+        val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
         val freeChildren: List<ChildId> = listOf(),
         val codebtors: Map<PersonId, PersonId?> = mapOf()
     )
@@ -176,22 +168,17 @@ data class AbsenceStub(
     val absenceType: AbsenceType
 )
 
-// PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
-private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PLANNED_ABSENCE)
-
 fun Database.Read.getAbsenceStubs(spanningRange: DateRange, categories: Collection<AbsenceCategory>): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, category, absence_type
         FROM absence
         WHERE between_start_and_end(:range, date)
-        AND NOT absence_type = ANY(:absenceTypes)
         AND category = ANY(:categories)
         """
 
     return createQuery(sql)
         .bind("range", spanningRange)
-        .bind("absenceTypes", absenceTypesWithNoEffectOnInvoices)
         .bind("categories", categories.toTypedArray())
         .mapTo<AbsenceStub>()
         .toList()
@@ -395,6 +382,7 @@ interface DraftInvoiceGenerator {
         operationalDays: OperationalDays,
         feeThresholds: FeeThresholds,
         absences: List<AbsenceStub> = listOf(),
+        plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
         freeChildren: List<ChildId> = listOf(),
         codebtors: Map<PersonId, PersonId?> = mapOf()
     ): List<Invoice>

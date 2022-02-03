@@ -33,7 +33,7 @@ import java.util.UUID
 
 @Component
 class DefaultDraftInvoiceGenerator(private val productProvider: InvoiceProductProvider) : DraftInvoiceGenerator {
-    override fun generateDraftInvoices(decisions: Map<PersonId, List<FeeDecision>>, placements: Map<PersonId, List<Placements>>, period: DateRange, daycareCodes: Map<DaycareId, DaycareCodes>, operationalDays: OperationalDays, feeThresholds: FeeThresholds, absences: List<AbsenceStub>, freeChildren: List<ChildId>, codebtors: Map<PersonId, PersonId?>): List<Invoice> {
+    override fun generateDraftInvoices(decisions: Map<PersonId, List<FeeDecision>>, placements: Map<PersonId, List<Placements>>, period: DateRange, daycareCodes: Map<DaycareId, DaycareCodes>, operationalDays: OperationalDays, feeThresholds: FeeThresholds, absences: List<AbsenceStub>, plannedAbsences: Map<ChildId, Set<LocalDate>>, freeChildren: List<ChildId>, codebtors: Map<PersonId, PersonId?>): List<Invoice> {
         return placements.keys.mapNotNull { headOfFamilyId ->
             try {
                 generateDraftInvoice(
