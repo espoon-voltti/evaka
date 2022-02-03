@@ -649,7 +649,7 @@ export const fi = {
             'Merkitään lapselle, jolla varhaiskasvatus on lastensuojelun avohuollon tukitoimena perhe- ja sosiaalipalvelujen päätöksellä.',
           CHILD_ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
           CHILD_ACCULTURATION_SUPPORT_INFO:
-            'Lapsen tuen tarpeen perusteella Espoolle myönnetty korvaus (ELY)',
+            'Lapsen tuen tarpeen perusteella järjestäjälle myönnetty korvaus (ELY)',
           TRANSPORT_BENEFIT: 'Kuljetusetu',
           TRANSPORT_BENEFIT_INFO: 'Kuljetusetu'
         },
@@ -2809,7 +2809,7 @@ export const fi = {
     title: 'eVaka-mobiilin PIN-koodi',
     title2: 'Aseta PIN-koodi',
     text1:
-      'Tällä sivulla voit asettaa oman henkilökohtaisen PIN-koodisi Espoon varhaiskasvatuksen mobiilisovellusta varten. PIN-koodia käytetään eVaka-mobiilissa lukon',
+      'Tällä sivulla voit asettaa oman henkilökohtaisen PIN-koodisi eVaka-mobiilia varten. PIN-koodia käytetään eVaka-mobiilissa lukon',
     text2: 'takana olevien tietojen tarkasteluun.',
     text3: 'Huom!',
     text4:
