@@ -36,17 +36,13 @@ enum class PlacementType {
     }
 
     fun absenceCategories(): Set<AbsenceCategory> = when (this) {
-        CLUB -> setOf(AbsenceCategory.NONBILLABLE)
-        SCHOOL_SHIFT_CARE -> setOf(AbsenceCategory.NONBILLABLE)
-        PRESCHOOL, PREPARATORY -> setOf(AbsenceCategory.NONBILLABLE)
-        PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE -> setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
-        DAYCARE -> setOf(AbsenceCategory.BILLABLE)
-        DAYCARE_PART_TIME -> setOf(AbsenceCategory.BILLABLE)
+        PRESCHOOL, PREPARATORY, CLUB, SCHOOL_SHIFT_CARE -> setOf(AbsenceCategory.NONBILLABLE)
+        DAYCARE, DAYCARE_PART_TIME, TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY -> setOf(AbsenceCategory.BILLABLE)
+        PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE,
         DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> setOf(
             AbsenceCategory.BILLABLE,
             AbsenceCategory.NONBILLABLE
         )
-        TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY -> setOf(AbsenceCategory.BILLABLE)
     }
 
     companion object {
