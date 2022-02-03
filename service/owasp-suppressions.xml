@@ -35,4 +35,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <cpe>cpe:/a:pivotal_software:spring_security</cpe>
         <cpe>cpe:/a:vmware:spring_security</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Not relevant for us, since it's only exploitable by local users and only when sessions are persisted with Tomcat FileStore.
+       ]]></notes>
+        <cve>CVE-2022-23181</cve>
+    </suppress>
 </suppressions>
