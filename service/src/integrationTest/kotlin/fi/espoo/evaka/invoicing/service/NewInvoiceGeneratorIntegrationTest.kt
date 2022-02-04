@@ -1601,12 +1601,181 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     }
 
     @Test
+    fun `invoice generation with 15 contract days and 2 surplus days`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 15 operational days first
+        // then planned absences
+        val plannedAbsenceDays = datesBetween(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 29)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+            .toMap()
+        // then 2 more operational days
+
+        initDataForAbsences(listOf(period), plannedAbsenceDays, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(32754, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(3854, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days, 1 absence and 2 surplus days`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 14 operational days first
+        // then 1 other absence
+        val otherAbsenceDays = listOf(LocalDate.of(2019, 1, 22) to AbsenceType.OTHER_ABSENCE)
+        // then planned absences
+        val plannedAbsenceDays = datesBetween(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 29)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+        // then 2 more operational days
+
+        val absenceDays = (otherAbsenceDays + plannedAbsenceDays).toMap()
+        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(30827, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(1927, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days, 2 fee decisions and 2 surplus days`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val decisions = listOf(
+            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 15000,
+            DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000,
+        ).map { (range, fee) ->
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                range,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = fee,
+                        fee = fee,
+                        feeAlterations = listOf()
+                    )
+                )
+            )
+        }
+        insertDecisionsAndPlacements(decisions)
+
+        // 17 operational days in total, the rest are planned absences
+        val plannedAbsenceDays = (
+            datesBetween(
+                LocalDate.of(2019, 1, 1),
+                LocalDate.of(2019, 1, 4)
+            ) + datesBetween(
+                LocalDate.of(2019, 1, 30),
+                LocalDate.of(2019, 1, 31)
+            )
+            )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+
+        db.transaction { tx ->
+            tx.upsertAbsences(
+                plannedAbsenceDays.map { (date, type) ->
+                    AbsenceUpsert(
+                        absenceType = type,
+                        childId = testChild_1.id,
+                        date = date,
+                        category = AbsenceCategory.BILLABLE,
+                    )
+                },
+                EvakaUserId(testDecisionMaker_1.id.raw)
+            )
+        }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(13000, invoice.totalPrice)
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(7, invoiceRow.amount)
+                assertEquals(1000, invoiceRow.unitPrice) // 15000 / 15
+                assertEquals(7000, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(8, invoiceRow.amount)
+                assertEquals(600, invoiceRow.unitPrice) // 9000 / 15
+                assertEquals(4800, invoiceRow.price)
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(600, invoiceRow.unitPrice) // 9000 / 15
+                assertEquals(1200, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with 15 contract days and 15 days of absences - half price`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
+        val otherAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
-            .toMap()
+        val plannedAbsenceDays = datesBetween(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 31)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays = (otherAbsenceDays + plannedAbsenceDays).toMap()
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -1636,9 +1805,15 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with 15 contract days and 14 days of absences - full price`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 21)) // 14 operational days
+        val otherAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 21)) // 14 operational days
             .map { it to AbsenceType.OTHER_ABSENCE }
-            .toMap()
+        // No absence for 2019-01-22
+        val plannedAbsenceDays = datesBetween(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 31)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays = (otherAbsenceDays + plannedAbsenceDays).toMap()
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -1662,9 +1837,13 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with 15 contract days and 1 force majeure absence`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = listOf(
-            LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE
-        ).toMap()
+        // 1 force majeure absence
+        val forceMajeureAbsenceDays = listOf(LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE)
+        // No absence for 14 days
+        // Planned absences for the rest of the month
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays = (forceMajeureAbsenceDays + plannedAbsenceDays).toMap()
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -1840,9 +2019,15 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `invoice generation with 15 contract days and 15 days of force majeure absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
+        val forceMajeureAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
             .map { it to AbsenceType.FORCE_MAJEURE }
-            .toMap()
+        val plannedAbsenceDays =
+            datesBetween(
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 31)
+            )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays = (forceMajeureAbsenceDays + plannedAbsenceDays).toMap()
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -2150,7 +2335,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.copy(end = period.start.plusDays(13)),
+                DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 14)),
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2168,7 +2353,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.copy(start = period.start.plusDays(14)),
+                DateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31)),
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2757,7 +2942,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         // Override to use 20 days instead when calculating a daily refund
-        val generator: InvoiceGenerator = InvoiceGenerator(
+        val generator = InvoiceGenerator(
             NewDraftInvoiceGenerator(
                 productProvider,
                 featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
@@ -2844,7 +3029,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         // Override to use 20 days instead when calculating a daily fee
-        val generator: InvoiceGenerator = InvoiceGenerator(
+        val generator = InvoiceGenerator(
             NewDraftInvoiceGenerator(
                 productProvider,
                 featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
@@ -2896,7 +3081,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         // Override to use 20 days instead when calculating a daily fee
-        val generator: InvoiceGenerator = InvoiceGenerator(
+        val generator = InvoiceGenerator(
             NewDraftInvoiceGenerator(
                 productProvider,
                 featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
