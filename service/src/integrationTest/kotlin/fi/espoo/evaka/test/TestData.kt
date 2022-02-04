@@ -50,10 +50,8 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
     guardianRestricted = false,
     guardianDateOfDeath = null,
     checkedByAdmin = true,
-    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0))
-        .toZonedDateTime().toOffsetDateTime(),
-    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0))
-        .toZonedDateTime().toOffsetDateTime(),
+    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
     sentDate = LocalDate.of(2021, 1, 15),
     dueDate = null,
     dueDateSetManuallyAt = null,
@@ -135,10 +133,8 @@ val validPreschoolApplication = ApplicationDetails(
     guardianRestricted = false,
     guardianDateOfDeath = null,
     checkedByAdmin = true,
-    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0))
-        .toZonedDateTime().toOffsetDateTime(),
-    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0))
-        .toZonedDateTime().toOffsetDateTime(),
+    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
     sentDate = LocalDate.of(2021, 1, 15),
     dueDate = null,
     dueDateSetManuallyAt = null,
@@ -225,10 +221,8 @@ val validClubApplication = ApplicationDetails(
     guardianRestricted = false,
     guardianDateOfDeath = null,
     checkedByAdmin = true,
-    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0))
-        .toZonedDateTime().toOffsetDateTime(),
-    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0))
-        .toZonedDateTime().toOffsetDateTime(),
+    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
     sentDate = LocalDate.of(2021, 1, 15),
     dueDate = null,
     dueDateSetManuallyAt = null,
