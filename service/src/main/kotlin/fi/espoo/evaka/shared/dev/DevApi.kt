@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -33,6 +33,8 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.insertDecision
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
+import fi.espoo.evaka.holidayperiod.createHolidayPeriod
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
@@ -68,6 +70,8 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.reservations.DailyReservationRequest
+import fi.espoo.evaka.reservations.createReservationsAsCitizen
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -90,6 +94,7 @@ import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
@@ -791,6 +796,37 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
                 )
                     .bindKotlin(body)
                     .execute()
+            }
+        }
+    }
+
+    @PostMapping("/holiday-period/{id}")
+    fun createHolidayPeriod(
+        db: Database,
+        @PathVariable id: HolidayPeriodId,
+        @RequestBody body: HolidayPeriodBody
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.createHolidayPeriod(body).let {
+                    tx.createUpdate("UPDATE holiday_period SET id = :id WHERE id = :prevId")
+                        .bind("id", id)
+                        .bind("prevId", it.id)
+                        .execute()
+                }
+            }
+        }
+    }
+
+    @PostMapping("/reservations")
+    fun postReservations(
+        db: Database,
+        @RequestBody body: List<DailyReservationRequest>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.ensureFakeAdminExists()
+                createReservationsAsCitizen(tx, PersonId(fakeAdmin.id), body)
             }
         }
     }

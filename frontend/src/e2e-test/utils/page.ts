@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -146,6 +146,10 @@ export class Element {
 
   find(selector: string): Element {
     return new Element(this.locator.locator(selector))
+  }
+
+  findByDataQa(dataQa: string): Element {
+    return new Element(this.locator.locator(`[data-qa="${dataQa}"]`))
   }
 
   findText(text: string | RegExp): Element {

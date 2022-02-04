@@ -15,7 +15,7 @@ import {
 import {
   HolidayPeriod,
   HolidayPeriodBody
-} from 'lib-common/generated/api-types/holidaypediod'
+} from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'

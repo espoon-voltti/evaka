@@ -4,7 +4,9 @@
 
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { ApplicationForm } from 'lib-common/generated/api-types/application'
+import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import {
   FeeDecision,
   FeeDecisionStatus,
@@ -59,6 +61,8 @@ import {
   insertEmployeeFixture,
   insertEmployeePins,
   insertFeeThresholds,
+  insertGuardianFixtures,
+  insertHolidayPeriod,
   insertIncome,
   insertPedagogicalDocuments,
   insertPersonFixture,
@@ -1318,6 +1322,25 @@ export class Fixture {
       periodEnd: ''
     })
   }
+
+  static holidayPeriod(): HolidayPeriodBuilder {
+    return new HolidayPeriodBuilder({
+      id: uuidv4(),
+      description: { fi: '', sv: '', en: '' },
+      descriptionLink: { fi: '', sv: '', en: '' },
+      period: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
+      reservationDeadline: LocalDate.today(),
+      showReservationBannerFrom: LocalDate.today(),
+      freePeriod: null
+    })
+  }
+
+  static guardian(child: PersonBuilder, guardian: PersonBuilder) {
+    return new GuardianBuilder({
+      childId: child.data.id,
+      guardianId: guardian.data.id
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1504,6 +1527,22 @@ export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
   copy() {
     return new PlacementBuilder({ ...this.data })
   }
+
+  child(child: PersonBuilder) {
+    this.data = {
+      ...this.data,
+      childId: child.data.id
+    }
+    return this
+  }
+
+  daycare(daycare: DaycareBuilder) {
+    this.data = {
+      ...this.data,
+      unitId: daycare.data.id
+    }
+    return this
+  }
 }
 
 export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement> {
@@ -1675,5 +1714,30 @@ export class PlacementPlanBuilder extends FixtureBuilder<PlacementPlan> {
 
   copy() {
     return new PlacementPlanBuilder({ ...this.data })
+  }
+}
+
+export class HolidayPeriodBuilder extends FixtureBuilder<HolidayPeriod> {
+  async save() {
+    await insertHolidayPeriod(this.data)
+    return this
+  }
+
+  copy() {
+    return new HolidayPeriodBuilder({ ...this.data })
+  }
+}
+
+export class GuardianBuilder extends FixtureBuilder<{
+  guardianId: string
+  childId: string
+}> {
+  async save() {
+    await insertGuardianFixtures([this.data])
+    return this
+  }
+
+  copy() {
+    return new GuardianBuilder({ ...this.data })
   }
 }

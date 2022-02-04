@@ -118,6 +118,10 @@ const en: Translations = {
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
+  ctaBanner: {
+    holidayPeriodCta: (period: string, deadline: string) =>
+      `Report holidays and make reservations for ${period} by ${deadline}.`
+  },
   errorPage: {
     reload: 'Reload page',
     text: 'We encountered an unexpected error. The developers have been notified with the error details.',

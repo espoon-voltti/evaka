@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,6 +11,7 @@ import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal
 import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 import CitizenReloadNotification from './CitizenReloadNotification'
+import CtaBanner from './CtaBanner'
 import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
@@ -51,6 +52,7 @@ export default function App() {
                 <MessageContextProvider>
                   <PedagogicalDocumentsContextProvider>
                     <Header />
+                    <CtaBanner />
                     <Main>
                       <Switch>
                         <Route path="/applying" component={ApplyingRouter} />

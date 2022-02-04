@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.holidaypediod
+package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.db.Database
@@ -95,3 +95,15 @@ fun Database.Transaction.deleteHolidayPeriod(id: HolidayPeriodId) =
     this.createUpdate("DELETE FROM holiday_period WHERE id = :id")
         .bind("id", id)
         .execute()
+
+fun Database.Read.getActionRequiringHolidayPeriods(): List<HolidayPeriod> =
+    this.createQuery(
+        """
+$holidayPeriodSelect
+WHERE show_reservation_banner_from < now()
+    AND reservation_deadline >= now()
+ORDER BY period
+        """.trimIndent()
+    )
+        .mapTo<HolidayPeriod>()
+        .list()

@@ -117,6 +117,10 @@ export default {
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
+  ctaBanner: {
+    holidayPeriodCta: (period: string, deadline: string) =>
+      `Ilmoita lomat ja tee varaukset ${period} välille viimeistään ${deadline}.`
+  },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
     text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',

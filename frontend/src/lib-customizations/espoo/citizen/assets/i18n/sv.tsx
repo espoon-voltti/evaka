@@ -118,6 +118,10 @@ const sv: Translations = {
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
+  ctaBanner: {
+    holidayPeriodCta: (period: string, deadline: string) =>
+      `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`
+  },
   errorPage: {
     reload: 'Ladda om sidan',
     text: 'Vi stötte på ett oväntat fel. Utvecklarna har meddelats.',

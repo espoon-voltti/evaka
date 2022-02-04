@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -21,6 +21,7 @@ import {
   ChildDailyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -29,9 +30,12 @@ import config from '../config'
 import {
   Application,
   ApplicationEmail,
+  AssistanceNeed,
   BackupCare,
+  BackupPickup,
   CareArea,
   Child,
+  ChildAttendance,
   Daycare,
   DaycareCaretakers,
   DaycareGroup,
@@ -40,25 +44,23 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
-  EmployeeDetail,
-  PersonDetail,
-  PlacementPlan,
-  SuomiFiMessage,
-  VtjPerson,
-  FamilyContact,
-  BackupPickup,
-  FridgeChild,
-  FridgePartner,
-  EmployeePin,
-  PersonDetailWithDependantsAndGuardians,
-  HighestFeeFixture,
-  PedagogicalDocument,
-  ServiceNeedFixture,
-  AssistanceNeed,
+  DevHolidayPeriod,
   DevIncome,
   DevVardaReset,
   DevVardaServiceNeed,
-  ChildAttendance
+  EmployeeDetail,
+  EmployeePin,
+  FamilyContact,
+  FridgeChild,
+  FridgePartner,
+  HighestFeeFixture,
+  PedagogicalDocument,
+  PersonDetail,
+  PersonDetailWithDependantsAndGuardians,
+  PlacementPlan,
+  ServiceNeedFixture,
+  SuomiFiMessage,
+  VtjPerson
 } from './types'
 
 export class DevApiError extends BaseError {
@@ -158,6 +160,17 @@ export async function insertPlacementPlan(
   }
 }
 
+export async function insertHolidayPeriod({
+  id,
+  ...rest
+}: DevHolidayPeriod): Promise<void> {
+  try {
+    await devClient.post(`/holiday-period/${id}`, rest)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function insertCareAreaFixtures(
   fixture: CareArea[]
 ): Promise<void> {
@@ -250,6 +263,16 @@ export function insertChildAttendanceFixtures(
 ): Promise<void> {
   try {
     return devClient.post(`/attendances`, fixtures)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export function insertReservationFixtures(
+  fixtures: DailyReservationRequest[]
+): Promise<void> {
+  try {
+    return devClient.post(`/reservations`, fixtures)
   } catch (e) {
     throw new DevApiError(e)
   }

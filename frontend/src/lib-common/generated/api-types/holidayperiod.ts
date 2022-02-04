@@ -11,7 +11,7 @@ import { Translatable } from './shared'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.holidaypediod.FreeAbsencePeriod
+* Generated from fi.espoo.evaka.holidayperiod.FreeAbsencePeriod
 */
 export interface FreeAbsencePeriod {
   deadline: LocalDate
@@ -21,10 +21,9 @@ export interface FreeAbsencePeriod {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidaypediod.HolidayPeriod
+* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriod
 */
 export interface HolidayPeriod {
-  created: Date
   description: Translatable
   descriptionLink: Translatable
   freePeriod: FreeAbsencePeriod | null
@@ -32,11 +31,10 @@ export interface HolidayPeriod {
   period: FiniteDateRange
   reservationDeadline: LocalDate
   showReservationBannerFrom: LocalDate
-  updated: Date
 }
 
 /**
-* Generated from fi.espoo.evaka.holidaypediod.HolidayPeriodBody
+* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodBody
 */
 export interface HolidayPeriodBody {
   description: Translatable
