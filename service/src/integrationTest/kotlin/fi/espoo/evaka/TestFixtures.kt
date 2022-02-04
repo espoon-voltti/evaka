@@ -56,12 +56,12 @@ import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import org.jdbi.v3.core.kotlin.bindKotlin
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 
 /*
@@ -741,8 +741,8 @@ fun Database.Transaction.insertApplication(
         guardianId = guardian.id,
         guardianRestricted = false,
         guardianDateOfDeath = null,
-        createdDate = OffsetDateTime.now(),
-        modifiedDate = OffsetDateTime.now(),
+        createdDate = HelsinkiDateTime.now(),
+        modifiedDate = HelsinkiDateTime.now(),
         sentDate = null,
         dueDate = null,
         dueDateSetManuallyAt = null,

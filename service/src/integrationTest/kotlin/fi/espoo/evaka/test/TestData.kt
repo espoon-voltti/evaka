@@ -18,12 +18,13 @@ import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
-import java.time.OffsetDateTime
+import java.time.LocalTime
 import java.util.UUID
 
 val defaultPreferredUnit = PreferredUnit(
@@ -49,10 +50,10 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
     guardianRestricted = false,
     guardianDateOfDeath = null,
     checkedByAdmin = true,
-    createdDate = OffsetDateTime.now(),
-    modifiedDate = OffsetDateTime.now(),
-    sentDate = LocalDate.now(),
-    dueDate = LocalDate.now(),
+    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    sentDate = LocalDate.of(2021, 1, 15),
+    dueDate = null,
     dueDateSetManuallyAt = null,
     transferApplication = false,
     additionalDaycareApplication = false,
@@ -100,7 +101,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
         otherChildren = emptyList(),
         preferences = Preferences(
             preferredUnits = preferredUnits.asList(),
-            preferredStartDate = LocalDate.now().plusMonths(4),
+            preferredStartDate = LocalDate.of(2021, 8, 15),
             serviceNeed = ServiceNeed(
                 startTime = "08:00",
                 endTime = "17:00",
@@ -132,10 +133,10 @@ val validPreschoolApplication = ApplicationDetails(
     guardianRestricted = false,
     guardianDateOfDeath = null,
     checkedByAdmin = true,
-    createdDate = OffsetDateTime.now(),
-    modifiedDate = OffsetDateTime.now(),
-    sentDate = LocalDate.now(),
-    dueDate = LocalDate.now(),
+    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    sentDate = LocalDate.of(2021, 1, 15),
+    dueDate = null,
     dueDateSetManuallyAt = null,
     transferApplication = false,
     additionalDaycareApplication = false,
@@ -188,7 +189,7 @@ val validPreschoolApplication = ApplicationDetails(
                     name = testDaycare.name
                 )
             ),
-            preferredStartDate = LocalDate.now().plusMonths(4),
+            preferredStartDate = LocalDate.of(2021, 8, 15),
             serviceNeed = ServiceNeed(
                 startTime = "08:00",
                 endTime = "17:00",
@@ -220,10 +221,10 @@ val validClubApplication = ApplicationDetails(
     guardianRestricted = false,
     guardianDateOfDeath = null,
     checkedByAdmin = true,
-    createdDate = OffsetDateTime.now(),
-    modifiedDate = OffsetDateTime.now(),
-    sentDate = LocalDate.now(),
-    dueDate = LocalDate.now(),
+    createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+    sentDate = LocalDate.of(2021, 1, 15),
+    dueDate = null,
     dueDateSetManuallyAt = null,
     transferApplication = false,
     additionalDaycareApplication = false,
@@ -276,7 +277,7 @@ val validClubApplication = ApplicationDetails(
                     name = testClub.name
                 )
             ),
-            preferredStartDate = LocalDate.now().plusMonths(4),
+            preferredStartDate = LocalDate.of(2021, 8, 15),
             serviceNeed = null,
             siblingBasis = null,
             preparatory = false,

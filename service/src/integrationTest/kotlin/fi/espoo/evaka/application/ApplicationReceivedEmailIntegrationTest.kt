@@ -25,16 +25,19 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestClubApplicationForm
 import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.test.validClubApplication
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
+import fi.espoo.evaka.withMockedTime
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -66,6 +69,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         )
     )
 
+    private val mockedTime = HelsinkiDateTime.of(LocalDate.of(2021, 1, 15), LocalTime.of(12, 0))
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -96,6 +101,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         }
 
         val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(endUser)
             .response()
 
@@ -135,6 +141,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         }
 
         val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(endUser)
             .response()
 
@@ -174,6 +181,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             }
         }
         val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(serviceWorker)
             .response()
 
@@ -208,6 +216,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         }
 
         val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(endUser)
             .response()
 
@@ -239,6 +248,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         }
 
         val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(endUser)
             .response()
 
@@ -278,6 +288,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             }
         }
         val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(serviceWorker)
             .response()
 
@@ -310,6 +321,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         }
 
         val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(endUser)
             .response()
 
@@ -341,6 +353,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         }
 
         val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .withMockedTime(mockedTime)
             .asUser(endUser)
             .response()
 
