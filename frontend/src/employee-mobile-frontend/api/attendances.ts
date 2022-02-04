@@ -191,8 +191,8 @@ export async function deleteAbsenceRange(
 }
 
 function compareByProperty(
-  a: JsonOf<Child>,
-  b: JsonOf<Child>,
+  a: Child,
+  b: Child,
   property: 'firstName' | 'lastName'
 ) {
   if (a[property] < b[property]) {
@@ -209,9 +209,7 @@ function deserializeAttendanceResponse(
 ): AttendanceResponse {
   {
     return {
-      children: [...data.children]
-        .sort((a, b) => compareByProperty(a, b, 'lastName'))
-        .sort((a, b) => compareByProperty(a, b, 'firstName'))
+      children: data.children
         .map((attendanceChild) => {
           return {
             ...attendanceChild,
@@ -233,9 +231,15 @@ function deserializeAttendanceResponse(
               ...note,
               modifiedAt: new Date(note.modifiedAt),
               expires: LocalDate.parseIso(note.expires)
+            })),
+            reservations: attendanceChild.reservations.map((reservation) => ({
+              startTime: new Date(reservation.startTime),
+              endTime: new Date(reservation.endTime)
             }))
           }
-        }),
+        })
+        .sort((a, b) => compareByProperty(a, b, 'lastName'))
+        .sort((a, b) => compareByProperty(a, b, 'firstName')),
       groupNotes: data.groupNotes.map((groupNote) => ({
         ...groupNote,
         modifiedAt: new Date(groupNote.modifiedAt),

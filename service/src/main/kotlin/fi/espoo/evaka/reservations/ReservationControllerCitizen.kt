@@ -88,10 +88,7 @@ class ReservationControllerCitizen(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours)
-                if (body.any { !reservableDays.includes(it.date) }) {
-                    throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
-                }
-                createReservationsAsCitizen(tx, PersonId(user.id), body)
+                createReservationsAsCitizen(tx, PersonId(user.id), body.validate(reservableDays))
             }
         }
     }
@@ -196,11 +193,11 @@ LEFT JOIN LATERAL (
     SELECT
         jsonb_agg(
             jsonb_build_object(
-                'startTime', to_char((ar.start_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
-                'endTime', to_char((ar.end_time AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
+                'startTime', to_char(ar.start_time, 'HH24:MI'),
+                'endTime', to_char(ar.end_time, 'HH24:MI')
             ) ORDER BY ar.start_time ASC
         ) AS reservations
-    FROM attendance_reservation ar WHERE ar.child_id = g.child_id AND ar.start_date = t::date
+    FROM attendance_reservation ar WHERE ar.child_id = g.child_id AND ar.date = t::date
 ) ar ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
@@ -284,8 +281,8 @@ fun createReservationsAsCitizen(tx: Database.Transaction, userId: PersonId, rese
 private fun Database.Transaction.insertValidReservations(userId: PersonId, requests: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
-        INSERT INTO attendance_reservation (child_id, start_time, end_time, created_by)
-        SELECT :childId, :start, :end, :userId
+        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
+        SELECT :childId, :date, :start, :end, :userId
         FROM placement pl
         LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
         JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
@@ -302,19 +299,12 @@ private fun Database.Transaction.insertValidReservations(userId: PersonId, reque
 
     requests.forEach { request ->
         request.reservations?.forEach { res ->
-            val start = HelsinkiDateTime.of(
-                date = request.date,
-                time = res.startTime
-            )
-            val end = HelsinkiDateTime.of(
-                date = if (res.endTime.isAfter(res.startTime)) request.date else request.date.plusDays(1),
-                time = res.endTime
-            )
             batch
                 .bind("userId", userId)
                 .bind("childId", request.childId)
-                .bind("start", start)
-                .bind("end", end)
+                .bind("date", request.date)
+                .bind("start", res.startTime)
+                .bind("end", res.endTime)
                 .bind("date", request.date)
                 .add()
         }

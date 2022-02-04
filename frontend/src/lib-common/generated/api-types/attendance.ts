@@ -44,8 +44,8 @@ export interface ArrivalRequest {
 * Generated from fi.espoo.evaka.attendance.AttendanceReservation
 */
 export interface AttendanceReservation {
-  endTime: string
-  startTime: string
+  endTime: Date
+  startTime: Date
 }
 
 /**
@@ -89,7 +89,6 @@ export interface Child {
   lastName: string
   placementType: PlacementType
   preferredName: string | null
-  reservation: AttendanceReservation | null
   reservations: AttendanceReservation[]
   status: AttendanceStatus
   stickyNotes: ChildStickyNote[]

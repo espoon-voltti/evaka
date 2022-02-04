@@ -859,16 +859,24 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
     private fun insertReservations(childId: ChildId, reservations: List<Pair<HelsinkiDateTime, HelsinkiDateTime>>) {
         db.transaction { tx ->
-            reservations.forEach {
-                tx.insertTestReservation(
-                    DevReservation(
-                        childId = childId,
-                        startTime = it.first,
-                        endTime = it.second,
-                        createdBy = EvakaUserId(testUserId.raw)
+            reservations
+                .flatMap { (start, end) ->
+                    if (start.toLocalDate().plusDays(1) == end.toLocalDate()) listOf(
+                        start to HelsinkiDateTime.of(start.toLocalDate(), LocalTime.of(23, 59)),
+                        HelsinkiDateTime.of(end.toLocalDate(), LocalTime.of(0, 0)) to end,
+                    ) else listOf(start to end)
+                }
+                .forEach { (start, end) ->
+                    tx.insertTestReservation(
+                        DevReservation(
+                            childId = childId,
+                            date = start.toLocalDate(),
+                            startTime = start.toLocalTime(),
+                            endTime = end.toLocalTime(),
+                            createdBy = EvakaUserId(testUserId.raw)
+                        )
                     )
-                )
-            }
+                }
         }
     }
 

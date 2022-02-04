@@ -7,6 +7,7 @@ import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
 import { useTranslation } from '../../state/i18n'
 import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
+import { Reservations } from './Reservations'
 import { ServiceTime } from './components'
 
 interface Props {
@@ -24,13 +25,7 @@ export default React.memo(function AttendanceDailyServiceTimes({
   return (
     <ServiceTime>
       {reservations.length > 0 ? (
-        `${
-          reservations.length > 1
-            ? i18n.attendances.serviceTime.reservations
-            : i18n.attendances.serviceTime.reservation
-        } ${reservations
-          .map(({ startTime, endTime }) => `${startTime}-${endTime}`)
-          .join(', ')}`
+        <Reservations i18n={i18n} reservations={reservations} />
       ) : todaysTimes === 'not_set' ? (
         <em>{i18n.attendances.serviceTime.notSet}</em>
       ) : todaysTimes === 'not_today' ? (

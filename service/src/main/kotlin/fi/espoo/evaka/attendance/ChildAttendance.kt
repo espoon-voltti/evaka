@@ -47,10 +47,7 @@ data class Child(
     val stickyNotes: List<ChildStickyNote>,
     val imageUrl: String?,
     val reservations: List<AttendanceReservation>
-) {
-    // Added for backwards compatibility. Remove when employee mobile clients are guaranteed to be recent enough.
-    val reservation = reservations.firstOrNull()
-}
+)
 
 enum class AttendanceStatus {
     COMING, PRESENT, DEPARTED, ABSENT
@@ -73,4 +70,4 @@ data class ChildAbsence(
     val category: AbsenceCategory
 )
 
-data class AttendanceReservation(val startTime: String, val endTime: String)
+data class AttendanceReservation(val startTime: HelsinkiDateTime, val endTime: HelsinkiDateTime)

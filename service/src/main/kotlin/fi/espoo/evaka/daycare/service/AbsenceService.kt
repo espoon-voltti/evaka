@@ -102,17 +102,32 @@ private fun supplementReservationsWithDailyServiceTimes(
     val absenceDates = absences?.map { it.date }?.toSet() ?: setOf()
 
     val reservationRanges = reservations
-        ?.filterNot { absenceDates.contains(it.startTime.toLocalDate()) }
-        ?.map { HelsinkiDateTimeRange(it.startTime, it.endTime) }
+        ?.map {
+            HelsinkiDateTimeRange.of(
+                it.date,
+                it.startTime.withNano(0).withSecond(0),
+                it.endTime.withNano(0).withSecond(0)
+            )
+        }
+        ?.sortedBy { it.start }
+        ?.fold(listOf<HelsinkiDateTimeRange>()) { timeRanges, timeRange ->
+            if (timeRanges.isEmpty()) listOf(timeRange)
+            else {
+                if (timeRange.start.durationSince(timeRanges.last().end).toMinutes() <= 1)
+                    timeRanges.dropLast(1) + HelsinkiDateTimeRange(timeRanges.last().start, timeRange.end)
+                else timeRanges + timeRange
+            }
+        }
+        ?.filterNot { absenceDates.contains(it.start.toLocalDate()) }
         ?: listOf()
 
-    val reservationStartDates = reservationRanges.map { it.start.toLocalDate() }.toSet()
+    val reservedDates = reservationRanges.map { it.start.toLocalDate() }.toSet()
 
     val dailyServiceTimeRanges =
         if (dailyServiceTimes == null) listOf()
         else placementDateRanges
             .flatMap { it.dates() }
-            .filterNot { reservationStartDates.contains(it) }
+            .filterNot { reservedDates.contains(it) }
             .filterNot { absenceDates.contains(it) }
             .filter { unitOperationalDays.contains(it) }
             .mapNotNull { date ->
@@ -162,7 +177,11 @@ private fun sumOfHours(
 
     return dateTimeRanges
         .flatMap { timeRange -> placementDateTimeRanges.mapNotNull { timeRange.intersection(it) } }
-        .fold(0L) { sum, (start, end) -> sum + end.durationSince(start).toMinutes() }
+        .fold(0L) { sum, (start, end) ->
+            sum + end.durationSince(start).toMinutes().let {
+                if (end.toLocalTime().withNano(0).withSecond(0) == LocalTime.of(23, 59)) it + 1 else it
+            }
+        }
         .let { minutes -> BigDecimal(minutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt() }
 }
 
@@ -440,8 +459,9 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
 
 data class ChildReservation(
     val childId: ChildId,
-    val startTime: HelsinkiDateTime,
-    val endTime: HelsinkiDateTime
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime
 )
 
 private fun Database.Read.getGroupReservations(groupId: GroupId, dateRange: FiniteDateRange): List<ChildReservation> =
@@ -450,12 +470,12 @@ private fun Database.Read.getGroupReservations(groupId: GroupId, dateRange: Fini
 WITH all_placements AS (
   $placementsQuery
 )
-SELECT r.child_id, r.start_time, r.end_time FROM attendance_reservation r
-WHERE :dateRange && daterange((r.start_time at time zone 'Europe/Helsinki')::date, (r.end_time at time zone 'Europe/Helsinki')::date, '[]')
+SELECT r.child_id, r.date, r.start_time, r.end_time FROM attendance_reservation r
+WHERE between_start_and_end(:dateRange, r.date)
 AND EXISTS (
     SELECT 1 FROM all_placements p
     WHERE r.child_id = p.child_id
-    AND p.date_range && daterange((r.start_time at time zone 'Europe/Helsinki')::date, (r.end_time at time zone 'Europe/Helsinki')::date, '[]')
+    AND between_start_and_end(p.date_range, r.date)
 )
 """
     )
