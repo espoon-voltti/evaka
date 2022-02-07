@@ -341,16 +341,6 @@ class NewDraftInvoiceGenerator(
                 unitId = codes.unitId,
                 product = product
             )
-        ) + surplusContractDays(
-            period,
-            child,
-            product,
-            price,
-            codes,
-            dailyFeeDivisor,
-            contractDaysPerMonth,
-            attendanceDates,
-            absences
         ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
@@ -362,7 +352,18 @@ class NewDraftInvoiceGenerator(
                 amount = amount,
                 unitPrice = unitPrice(feeAlterationEffect)
             )
-        }
+        } + surplusContractDays(
+            period,
+            child,
+            product,
+            price,
+            codes,
+            feeAlterations,
+            dailyFeeDivisor,
+            contractDaysPerMonth,
+            attendanceDates,
+            absences
+        )
 
         val withDailyModifiers = initialRows + dailyAbsenceRefund(
             initialRows,
@@ -406,6 +407,7 @@ class NewDraftInvoiceGenerator(
         product: ProductKey,
         price: Int,
         codes: DaycareCodes,
+        feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
@@ -431,7 +433,18 @@ class NewDraftInvoiceGenerator(
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(price, dailyFeeDivisor),
                 )
-            )
+            ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
+                InvoiceRow(
+                    id = InvoiceRowId(UUID.randomUUID()),
+                    periodStart = period.start,
+                    periodEnd = period.end,
+                    child = child,
+                    product = productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
+                    unitId = codes.unitId,
+                    amount = surplusAttendanceDays,
+                    unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor)
+                )
+            }
         } else listOf()
     }
 

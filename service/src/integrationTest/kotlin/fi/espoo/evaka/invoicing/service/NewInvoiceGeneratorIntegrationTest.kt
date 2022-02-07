@@ -1640,6 +1640,99 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     }
 
     @Test
+    fun `invoice generation with 15 contract days, 2 surplus days and a fee alteration`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    feeAlterations = listOf(
+                        createFeeDecisionAlterationFixture(
+                            amount = -50,
+                            isAbsolute = false,
+                            effect = -14450,
+                        )
+                    )
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision))
+
+        // 15 operational days first
+        // then planned absences
+        val plannedAbsenceDays = datesBetween(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 29)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+            .toMap()
+        // then 2 more operational days
+
+        db.transaction { tx ->
+            tx.upsertAbsences(
+                plannedAbsenceDays.map { (date, type) ->
+                    AbsenceUpsert(
+                        absenceType = type,
+                        childId = testChild_1.id,
+                        date = date,
+                        category = AbsenceCategory.BILLABLE,
+                    )
+                },
+                EvakaUserId(testDecisionMaker_1.id.raw)
+            )
+        }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            val feeAlterationProduct = productProvider.mapToFeeAlterationProduct(
+                productProvider.mapToProduct(PlacementType.DAYCARE),
+                FeeAlteration.Type.DISCOUNT
+            )
+            assertEquals(16378, invoice.totalPrice)
+            assertEquals(4, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(feeAlterationProduct, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-14450, invoiceRow.unitPrice)
+                assertEquals(-14450, invoiceRow.price)
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(3854, invoiceRow.price)
+            }
+            invoice.rows[3].let { invoiceRow ->
+                assertEquals(feeAlterationProduct, invoiceRow.product)
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(-963, invoiceRow.unitPrice) // -14450 / 15
+                assertEquals(-1926, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with 15 contract days, 1 absence and 2 surplus days`() {
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
