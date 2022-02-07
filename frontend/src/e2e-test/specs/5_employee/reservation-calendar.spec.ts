@@ -31,11 +31,10 @@ let child1DaycarePlacementId: UUID
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
 
-const placementStartDate = LocalDate.today().subWeeks(4)
-const placementEndDate = LocalDate.today().addWeeks(4)
+const mockedToday = LocalDate.of(2022, 1, 31)
+const placementStartDate = mockedToday.subWeeks(4)
+const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
-
-const mockedTime = LocalDate.of(2022, 1, 31).toSystemTzDate()
 
 beforeEach(async () => {
   await resetDatabase()
@@ -80,7 +79,7 @@ beforeEach(async () => {
     })
     .save()
 
-  page = await Page.open({ mockedTime })
+  page = await Page.open({ mockedTime: mockedToday.toSystemTzDate() })
   await employeeLogin(page, unitSupervisor)
 })
 
@@ -114,7 +113,7 @@ describe('Unit group calendar for shift care unit', () => {
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
     await reservationModal.selectRepetitionType('IRREGULAR')
 
-    const startDate = LocalDate.today().startOfWeek()
+    const startDate = mockedToday.startOfWeek()
     await reservationModal.setStartDate(startDate.format())
     await reservationModal.setEndDate(startDate.format())
     await reservationModal.setStartTime('00:00', 0)
@@ -137,7 +136,7 @@ describe('Unit group calendar for shift care unit', () => {
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
     await reservationModal.selectRepetitionType('IRREGULAR')
 
-    const startDate = LocalDate.today().startOfWeek()
+    const startDate = mockedToday.startOfWeek()
 
     await Fixture.childAttendances()
       .with({
