@@ -366,6 +366,7 @@ class NewDraftInvoiceGenerator(
         )
 
         val withDailyModifiers = initialRows + dailyAbsenceRefund(
+            period,
             initialRows,
             child,
             absences,
@@ -449,6 +450,7 @@ class NewDraftInvoiceGenerator(
     }
 
     private fun dailyAbsenceRefund(
+        period: DateRange,
         rows: List<InvoiceRow>,
         child: ChildWithDateOfBirth,
         absences: List<AbsenceStub>,
@@ -460,33 +462,34 @@ class NewDraftInvoiceGenerator(
         if (total == 0) return listOf()
 
         val invoicePeriodTotalDateCount = periodAttendanceDates.size
-        val refundedDayCount = getRefundedDays(child, absences, periodAttendanceDates)
+        val refundedDayCount = getRefundedDays(period, child, absences, dailyFeeDivisor)
         if (refundedDayCount == 0) return listOf()
 
         val (amount, unitPrice) =
-            if (refundedDayCount >= invoicePeriodTotalDateCount) 1 to -total
+            if (refundedDayCount >= dailyFeeDivisor) 1 to -total
             else refundedDayCount to -calculateDailyPriceForInvoiceRow(
                 total,
-                minOf(periodAttendanceDates.size, dailyFeeDivisor)
+                minOf(invoicePeriodTotalDateCount, dailyFeeDivisor)
             )
 
         return listOf(toInvoiceRow(productProvider.dailyRefund, amount, unitPrice))
     }
 
     private fun getRefundedDays(
+        period: DateRange,
         child: ChildWithDateOfBirth,
         absences: List<AbsenceStub>,
-        periodAttendanceDates: List<LocalDate>
+        dailyFeeDivisor: Int,
     ): Int {
         val forceMajeureAbsences = absences.filter { it.absenceType == AbsenceType.FORCE_MAJEURE }
-        val forceMajeureDays = forceMajeureAbsences.filter { periodAttendanceDates.contains(it.date) }
+        val forceMajeureDays = forceMajeureAbsences.filter { period.includes(it.date) }
 
         val parentLeaveAbsences = absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }
         val parentLeaveDays = parentLeaveAbsences
             .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it.date) < 2 }
-            .filter { periodAttendanceDates.contains(it.date) }
+            .filter { period.includes(it.date) }
 
-        return minOf(forceMajeureDays.size + parentLeaveDays.size, periodAttendanceDates.size)
+        return minOf(forceMajeureDays.size + parentLeaveDays.size, dailyFeeDivisor)
     }
 
     private fun monthlyAbsenceDiscount(

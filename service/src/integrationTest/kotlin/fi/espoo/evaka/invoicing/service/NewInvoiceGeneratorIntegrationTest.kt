@@ -2646,7 +2646,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                     AbsenceUpsert(
                         absenceType = AbsenceType.FORCE_MAJEURE,
                         childId = testChild_1.id,
-                        date = LocalDate.of(2021, 1, 3),
+                        date = LocalDate.of(2021, 1, 31),
                         category = AbsenceCategory.BILLABLE
                     )
                 ),
