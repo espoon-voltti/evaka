@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,9 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
+import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
+import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
@@ -106,6 +109,9 @@ class ReservationControllerCitizen(
 
         if (body.dateRange.start.isBefore(dateNow()))
             throw BadRequest("Cannot mark absences for past days")
+
+        if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))
+            throw BadRequest("Invalid absence type")
 
         db.connect { dbc ->
             dbc.transaction { tx ->
