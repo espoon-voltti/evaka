@@ -14,6 +14,7 @@ interface Props
     TextInputProps,
     | 'placeholder'
     | 'hideErrorsBeforeTouched'
+    | 'onBlur'
     | 'info'
     | 'id'
     | 'name'

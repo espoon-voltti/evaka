@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
+import fi.espoo.evaka.daycare.service.deleteChildAbsences
 import fi.espoo.evaka.daycare.service.upsertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/absences")
@@ -72,6 +75,20 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         }
 
         db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
+    }
+
+    data class DeleteChildAbsenceBody(val date: LocalDate)
+
+    @DeleteMapping("/by-child/{childId}")
+    fun deleteAbsence(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable childId: ChildId,
+        @RequestBody body: DeleteChildAbsenceBody
+    ) {
+        Audit.AbsenceDelete.log(targetId = childId, objectId = body.date)
+        accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, childId)
+        db.connect { dbc -> dbc.transaction { it.deleteChildAbsences(childId, body.date) } }
     }
 
     @GetMapping("/by-child/{childId}")

@@ -56,7 +56,8 @@ export class UnitCalendarPage {
   }
 
   async openReservationModal(childId: UUID): Promise<ReservationModal> {
-    await this.page.find(`[data-qa="add-reservation-for-${childId}"]`).click()
+    await this.page.find(`[data-qa="ellipsis-menu-${childId}"]`).click()
+    await this.page.find(`[data-qa="menu-item-reservation-modal"]`).click()
 
     return new ReservationModal(this.page.find('[data-qa="modal"]'))
   }

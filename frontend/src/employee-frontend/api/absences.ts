@@ -73,6 +73,16 @@ export async function deleteGroupAbsences(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function deleteChildAbsences(
+  childId: UUID,
+  date: LocalDate
+): Promise<Result<void>> {
+  return client
+    .delete<void>(`/absences/by-child/${childId}`, { data: { date } })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function getStaffAttendances(
   groupId: UUID,
   params: SearchParams

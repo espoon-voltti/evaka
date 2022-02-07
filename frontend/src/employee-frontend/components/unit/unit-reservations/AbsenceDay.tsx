@@ -6,16 +6,19 @@ import React from 'react'
 
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { absenceColors, absenceIcons } from 'lib-customizations/common'
+import { faTimes } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   type: AbsenceType
+  onDelete?: () => void
 }
 
-export default React.memo(function AbsenceDay({ type }: Props) {
+export default React.memo(function AbsenceDay({ type, onDelete }: Props) {
   const { i18n } = useTranslation()
   return (
     <FixedSpaceRow spacing="xs" alignItems="center">
@@ -25,6 +28,7 @@ export default React.memo(function AbsenceDay({ type }: Props) {
         size="m"
       />
       <span>{i18n.absences.absenceTypesShort[type]}</span>
+      {onDelete && <IconButton icon={faTimes} onClick={onDelete} />}
     </FixedSpaceRow>
   )
 })
