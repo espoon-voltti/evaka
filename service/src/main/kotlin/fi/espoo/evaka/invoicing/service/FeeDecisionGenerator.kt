@@ -51,8 +51,8 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     headOfFamily: PersonId,
     families: List<FridgeFamily>
 ) {
-    val children = families.flatMap { it.children }
-    val fridgeSiblings = families.flatMap { it.fridgeSiblings }
+    val children = families.flatMap { it.children }.toSet()
+    val fridgeSiblings = families.flatMap { it.fridgeSiblings }.toSet()
 
     val prices = getFeeThresholds(from)
     val partnerIds = families.mapNotNull { it.partner }
@@ -218,7 +218,7 @@ private fun Database.Read.getUnitsThatAreInvoiced(): List<DaycareId> {
 
 internal fun Database.Read.getPaidPlacements(
     from: LocalDate,
-    children: List<ChildWithDateOfBirth>
+    children: Set<ChildWithDateOfBirth>
 ): List<Pair<ChildWithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>> {
     return children.map { child ->
         val placements = getActivePaidPlacements(child.id, from)

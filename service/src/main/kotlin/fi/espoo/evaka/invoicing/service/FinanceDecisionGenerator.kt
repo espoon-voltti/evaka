@@ -419,7 +419,7 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
 }
 
 internal fun addECHAFeeAlterations(
-    children: List<ChildWithDateOfBirth>,
+    children: Set<ChildWithDateOfBirth>,
     incomes: List<Income>
 ): List<FeeAlteration> {
     return incomes.filter { it.worksAtECHA }.flatMap { income ->
