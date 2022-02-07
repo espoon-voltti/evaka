@@ -52,15 +52,15 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     child: ChildWithDateOfBirth,
     families: List<FridgeFamily>
 ) {
-    val children = families.flatMap { it.children }
-    val fridgeSiblings = families.flatMap { it.fridgeSiblings }
+    val children = families.flatMap { it.children }.toSet()
+    val fridgeSiblings = families.flatMap { it.fridgeSiblings }.toSet()
 
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults, from)
     val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
-    val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
+    val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
     val serviceVoucherUnits = getServiceVoucherUnits()

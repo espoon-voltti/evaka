@@ -520,6 +520,8 @@ data class DevIncome(
     @Json
     val data: Map<String, IncomeValue> = mapOf(),
     val effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
+    val isEntrepreneur: Boolean = false,
+    val worksAtEcha: Boolean = false,
     val updatedAt: Instant = Instant.now(),
     val updatedBy: EvakaUserId
 )
@@ -527,8 +529,8 @@ data class DevIncome(
 fun Database.Transaction.insertTestIncome(income: DevIncome): IncomeId {
     createUpdate(
         """
-            INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, updated_at, updated_by)
-            VALUES (:id, :personId, :validFrom, :validTo, :data, :effect::income_effect, :updatedAt, :updatedBy)
+            INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, updated_at, updated_by)
+            VALUES (:id, :personId, :validFrom, :validTo, :data, :effect::income_effect, :isEntrepreneur, :worksAtEcha, :updatedAt, :updatedBy)
             """
     )
         .bindKotlin(income)

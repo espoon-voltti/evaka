@@ -1708,6 +1708,56 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `echa increase is applied only once with changing family compositions`() {
+        val firstPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val secondPeriod = DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 12, 31))
+        val combinedPeriod = firstPeriod.copy(end = secondPeriod.end)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), firstPeriod)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), secondPeriod)
+        insertPlacement(testChild_1.id, combinedPeriod, DAYCARE, testDaycare.id)
+        insertEchaIncome(testAdult_1.id, combinedPeriod)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, combinedPeriod.start) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(2, decisions.size)
+        decisions[0].let { decision ->
+            assertEquals(2, decision.familySize)
+            assertEquals(firstPeriod.start, decision.validFrom)
+            assertEquals(firstPeriod.end, decision.validTo)
+            assertEquals(38200, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(38200, child.finalFee)
+                assertEquals(listOf(9300), child.feeAlterations.map { it.effect })
+            }
+        }
+        decisions[1].let { decision ->
+            assertEquals(3, decision.familySize)
+            assertEquals(secondPeriod.start, decision.validFrom)
+            assertEquals(secondPeriod.end, decision.validTo)
+            assertEquals(38200, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(38200, child.finalFee)
+                assertEquals(listOf(9300), child.feeAlterations.map { it.effect })
+            }
+        }
+    }
+
+    @Test
     fun `active fee decisions have their validity end dates updated on changed future placement end date`() {
         val originalPeriod = DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(1))
         val sentDecision = createFeeDecisionFixture(
@@ -2005,6 +2055,22 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                     validTo = period.end,
                     effect = IncomeEffect.INCOME,
                     data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
+            )
+        }
+    }
+
+    private fun insertEchaIncome(adultId: PersonId, period: DateRange) {
+        db.transaction { tx ->
+            tx.insertTestIncome(
+                DevIncome(
+                    personId = adultId,
+                    validFrom = period.start,
+                    validTo = period.end,
+                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                    data = mapOf(),
+                    worksAtEcha = true,
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
             )
