@@ -310,23 +310,21 @@ class NewDraftInvoiceGenerator(
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         absences: List<AbsenceStub>
     ): List<InvoiceRow> {
-        val periodAttendanceDates = attendanceDates.filter { period.includes(it) }
-        if (periodAttendanceDates.isEmpty()) return listOf()
-
         // Make sure the number of operational days in a month doesn't exceed `dailyFeeDivisor`.
         //
         // Example: A child has a placement to a round-the-clock unit for the first half and to a
         // normal unit for the second half of the month. The round-the-clock unit has more operational
         // days, so we have to make sure that we don't invoice more than `dailyFeeDivisor` days.
         //
-        val attendanceDaysLeft = attendanceDates.take(dailyFeeDivisor).filter { period.includes(it) }.size
+        val periodAttendanceDates = attendanceDates.take(dailyFeeDivisor).filter { period.includes(it) }
+        if (periodAttendanceDates.isEmpty()) return listOf()
 
         val product = productProvider.mapToProduct(placement.type)
-        val (amount, unitPrice) = if (attendanceDaysLeft == dailyFeeDivisor) Pair(
+        val (amount, unitPrice) = if (periodAttendanceDates.size == dailyFeeDivisor) Pair(
             1,
             { p: Int -> p }
         ) else Pair(
-            attendanceDaysLeft,
+            periodAttendanceDates.size,
             { p: Int -> calculateDailyPriceForInvoiceRow(p, dailyFeeDivisor) }
         )
 
@@ -458,19 +456,17 @@ class NewDraftInvoiceGenerator(
         dailyFeeDivisor: Int,
         toInvoiceRow: (ProductKey, Int, Int) -> InvoiceRow
     ): List<InvoiceRow> {
+        assert(periodAttendanceDates.size <= dailyFeeDivisor)
+
         val total = invoiceRowTotal(rows)
         if (total == 0) return listOf()
 
-        val invoicePeriodTotalDateCount = periodAttendanceDates.size
         val refundedDayCount = getRefundedDays(period, child, absences, dailyFeeDivisor)
         if (refundedDayCount == 0) return listOf()
 
         val (amount, unitPrice) =
             if (refundedDayCount >= dailyFeeDivisor) 1 to -total
-            else refundedDayCount to -calculateDailyPriceForInvoiceRow(
-                total,
-                minOf(invoicePeriodTotalDateCount, dailyFeeDivisor)
-            )
+            else refundedDayCount to -calculateDailyPriceForInvoiceRow(total, periodAttendanceDates.size)
 
         return listOf(toInvoiceRow(productProvider.dailyRefund, amount, unitPrice))
     }
