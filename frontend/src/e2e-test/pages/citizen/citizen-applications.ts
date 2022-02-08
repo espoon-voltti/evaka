@@ -229,8 +229,10 @@ class CitizenApplicationEditor {
               await this.selectUnit(unit.name)
             }
           } else if (field === 'partTime') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await this.selectBooleanRadio(field, value)
           } else if (field === 'siblingBasis') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await this.setCheckbox(field, value)
             await new Checkbox(
               this.page.find('[data-qa="other-sibling"]')

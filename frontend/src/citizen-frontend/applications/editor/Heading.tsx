@@ -57,6 +57,7 @@ export default React.memo(function Heading({
                 <FixedSpaceColumn spacing="xxs">
                   {errors &&
                     Object.keys(errors)
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                       .filter((section) => getErrorCount(errors[section]) > 0)
                       .map((section) => (
                         <React.Fragment key={section}>
@@ -66,6 +67,7 @@ export default React.memo(function Heading({
                               {t.applications.editor[section].title}:{' '}
                             </strong>
                             {t.applications.editor.heading.errors(
+                              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                               getErrorCount(errors[section])
                             )}
                           </div>

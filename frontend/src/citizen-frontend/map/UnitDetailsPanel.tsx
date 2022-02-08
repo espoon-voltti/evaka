@@ -139,6 +139,7 @@ export default React.memo(function UnitDetailsPanel({
             <Gap size="s" />
             <Label>{t.map.language}</Label>
             <Gap size="xs" />
+            {/* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */}
             <div>{capitalize(t.common.unit.languages[unit.language])}</div>
             <Gap size="s" />
             <Label>{t.map.providerType}</Label>

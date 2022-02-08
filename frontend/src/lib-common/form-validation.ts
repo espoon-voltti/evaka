@@ -166,8 +166,12 @@ export function getErrorCount<T>(errors: ErrorsOf<T>): number {
     return 0
   }
 
-  return Object.keys(errors).reduce<number>((acc, key) => {
-    const isArr = isArrayErrors(errors[key])
-    return acc + (isArr ? getArrayErrorCount(errors[key]) : errors[key] ? 1 : 0)
-  }, 0)
+  return (Object.keys(errors) as Array<keyof ErrorsOf<T>>).reduce<number>(
+    (acc, key) => {
+      const entry = errors[key]
+      const isArr = isArrayErrors(entry)
+      return acc + (isArr ? getArrayErrorCount(entry) : entry ? 1 : 0)
+    },
+    0
+  )
 }

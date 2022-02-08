@@ -166,7 +166,7 @@ export default React.memo(function ThreadView({
   }, [messages, replyEditorVisible])
 
   const onUpdateContent = useCallback(
-    (content) => setReplyContent(threadId, content),
+    (content: string) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
   )
 

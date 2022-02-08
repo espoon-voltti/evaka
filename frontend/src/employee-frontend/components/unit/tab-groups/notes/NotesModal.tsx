@@ -159,7 +159,7 @@ export default React.memo(function NotesModal({
     [group.id, reloadOnSuccess]
   )
   const removeGroupNote = useCallback(
-    (id) => deleteGroupNote(id).then(reloadOnSuccess),
+    (id: string) => deleteGroupNote(id).then(reloadOnSuccess),
     [reloadOnSuccess]
   )
   const saveStickyNote = useCallback(
@@ -175,7 +175,7 @@ export default React.memo(function NotesModal({
     [child, reloadOnSuccess]
   )
   const removeStickyNote = useCallback(
-    (id) => deleteChildStickyNote(id).then(reloadOnSuccess),
+    (id: string) => deleteChildStickyNote(id).then(reloadOnSuccess),
     [reloadOnSuccess]
   )
 

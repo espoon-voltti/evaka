@@ -14,6 +14,7 @@ export function useCheckedState() {
     })
   const checkIds = (ids: string[]) => {
     const idsChecked = ids.map((id) => ({ [id]: true }))
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setChecked({
       ...checked,
       ...Object.assign({}, ...idsChecked)

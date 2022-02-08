@@ -104,7 +104,7 @@ export function useAutoExpandList(
     const allButLast = records.slice(0, records.length - 1)
     const last = records[records.length - 1]
 
-    const emptyRecord = new Array(keysLength).fill('')
+    const emptyRecord = new Array<string>(keysLength).fill('')
     if (!last) {
       onChange([emptyRecord])
       return

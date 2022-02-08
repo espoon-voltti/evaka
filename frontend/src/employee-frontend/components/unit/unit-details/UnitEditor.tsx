@@ -563,11 +563,12 @@ export default function UnitEditor(props: Props): JSX.Element {
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
     updateForm({ careTypes: { ...form.careTypes, ...updates } })
-  const updateDecisionCustomization: UpdateStateFn<UnitDecisionCustomization> =
-    (updates) =>
-      updateForm({
-        decisionCustomization: { ...form.decisionCustomization, ...updates }
-      })
+  const updateDecisionCustomization: UpdateStateFn<
+    UnitDecisionCustomization
+  > = (updates) =>
+    updateForm({
+      decisionCustomization: { ...form.decisionCustomization, ...updates }
+    })
   const updateUnitManager: UpdateStateFn<UnitManager> = (updates) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
 

@@ -52,6 +52,7 @@ const Actions = React.memo(function Actions({
 
             if (result.isFailure) {
               setError(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 i18n.valueDecisions.buttons.errors[result.errorCode ?? ''] ??
                   i18n.common.error.unknown
               )
