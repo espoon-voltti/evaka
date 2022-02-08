@@ -1033,31 +1033,29 @@ export default function UnitEditor(props: Props): JSX.Element {
                   form.costCenter
                 )}
               </FormPart>
-              <FormPart>
-                <div>{i18n.unitEditor.label.financeDecisionHandler}</div>
-                {props.editable ? (
-                  <Combobox
-                    items={props.financeDecisionHandlerOptions}
-                    placeholder={
-                      i18n.unitEditor.placeholder.financeDecisionHandler
-                    }
-                    selectedItem={selectedFinanceDecisionManager ?? null}
-                    onChange={(value) =>
-                      value
-                        ? updateForm({ financeDecisionHandlerId: value.value })
-                        : updateForm({ financeDecisionHandlerId: undefined })
-                    }
-                    clearable
-                    fullWidth
-                    getItemLabel={(item) => item.label}
-                  />
-                ) : (
-                  selectedFinanceDecisionManager?.label
-                )}
-              </FormPart>
             </>
           )}
         </div>
+      </FormPart>
+      <FormPart>
+        <div>{i18n.unitEditor.label.financeDecisionHandler}</div>
+        {props.editable ? (
+          <Combobox
+            items={props.financeDecisionHandlerOptions}
+            placeholder={i18n.unitEditor.placeholder.financeDecisionHandler}
+            selectedItem={selectedFinanceDecisionManager ?? null}
+            onChange={(value) =>
+              value
+                ? updateForm({ financeDecisionHandlerId: value.value })
+                : updateForm({ financeDecisionHandlerId: undefined })
+            }
+            clearable
+            fullWidth
+            getItemLabel={(item) => item.label}
+          />
+        ) : (
+          selectedFinanceDecisionManager?.label
+        )}
       </FormPart>
 
       <FormPart>
