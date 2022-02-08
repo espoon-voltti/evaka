@@ -242,7 +242,7 @@ export default React.memo(function InvoiceRowsSection({
                   data-qa="invoice-button-add-row"
                   text={i18n.invoice.form.rows.addRow}
                 />
-                <Sum title="rowSubTotal" sum={totalPrice(rows)} />
+                <Sum title="rowSubTotal" sum={totalPrice(childRows)} />
               </div>
             )
           })}
