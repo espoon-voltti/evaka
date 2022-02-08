@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -93,10 +94,6 @@ class NewDraftInvoiceGenerator(
     ): Invoice? {
         val headOfFamily = placements.first().headOfFamily
 
-        fun hasPlannedAbsence(childId: ChildId, date: LocalDate): Boolean {
-            return plannedAbsences[childId]?.contains(date) ?: false
-        }
-
         val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
             val relevantPeriod = DateRange(
                 maxOf(invoicePeriod.start, placementsPeriod.start),
@@ -155,39 +152,26 @@ class NewDraftInvoiceGenerator(
             .flatMap { (child, childStubs) ->
                 val separatePeriods = mergePeriods(childStubs)
                 val contractDaysPerMonth = separatePeriods.first().second.contractDaysPerMonth
+                val childPlannedAbsences = plannedAbsences[child.id] ?: setOf()
 
                 val dailyFeeDivisor = contractDaysPerMonth
                     ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
                     ?: operationalDays.generalCase.size
 
-                val relevantAbsences = absences.filter { absence ->
-                    separatePeriods.any { (period, feeData) ->
-                        period.includes(absence.date) &&
-                            operationalDays.forUnit(feeData.placement.unit).contains(absence.date)
-                    }
-                }
+                val attendanceDates =
+                    getAttendanceDates(operationalDays, separatePeriods, contractDaysPerMonth, childPlannedAbsences)
 
-                val attendanceDates = operationalDays.fullMonth
-                    .fold<LocalDate, List<List<LocalDate>>>(listOf()) { weeks, date ->
-                        if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) weeks.plusElement(listOf(date))
-                        else weeks.dropLast(1).plusElement(weeks.last() + date)
-                    }
-                    .flatMap { week ->
-                        val weekOperationalDates = week
-                            .filter { date ->
-                                separatePeriods.any { (period, feeData) ->
-                                    period.includes(date) &&
-                                        operationalDays.forUnit(feeData.placement.unit).contains(date)
-                                }
-                            }
-
-                        if (contractDaysPerMonth != null) {
-                            weekOperationalDates.filterNot { date -> hasPlannedAbsence(child.id, date) }
-                        } else {
-                            // TODO: Use the above planned absence filtering for round-the-clock units, too
-                            weekOperationalDates.take(5)
-                        }
-                    }
+                val relevantAbsences =
+                    absences.filter { absence ->
+                        isUnitOperationalDay(
+                            operationalDays,
+                            separatePeriods,
+                            absence.date
+                        )
+                    } + if (contractDaysPerMonth != null) {
+                        // Turn PLANNED_ABSENCE to OTHER_ABSENCE when they occur on attendance dates
+                        plannedToOtherAbsences(child.id, attendanceDates, childPlannedAbsences)
+                    } else listOf()
 
                 separatePeriods
                     .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
@@ -227,6 +211,73 @@ class NewDraftInvoiceGenerator(
             codebtor = codebtors[headOfFamily],
             rows = rows
         )
+    }
+
+    private fun getAttendanceDates(
+        operationalDays: OperationalDays,
+        separatePeriods: List<Pair<DateRange, InvoiceRowStub>>,
+        contractDaysPerMonth: Int?,
+        childPlannedAbsences: Set<LocalDate>,
+    ): List<LocalDate> {
+        val attendanceDates = operationalDatesByWeek(operationalDays, separatePeriods)
+            .flatMap { weekOperationalDates ->
+                if (contractDaysPerMonth != null) {
+                    // Use real attendance dates (with no planned absences) for contract day children
+                    weekOperationalDates.filterNot { date -> childPlannedAbsences.contains(date) }
+                } else {
+                    // Take at most 5 days per week (for round-the-clock units)
+                    weekOperationalDates.take(5)
+                }
+            }
+
+        // Make sure that contract day children have no less than `contractDaysPerMonth` days even if they have
+        // more planned absences than they should
+        return if (contractDaysPerMonth != null && attendanceDates.size < contractDaysPerMonth) {
+            (
+                attendanceDates + operationalDays.fullMonth.filter { date ->
+                    isUnitOperationalDay(
+                        operationalDays,
+                        separatePeriods,
+                        date
+                    ) && !attendanceDates.contains(date)
+                }.take(contractDaysPerMonth - attendanceDates.size)
+                ).sorted()
+        } else {
+            attendanceDates
+        }
+    }
+
+    private fun operationalDatesByWeek(
+        operationalDays: OperationalDays,
+        separatePeriods: List<Pair<DateRange, InvoiceRowStub>>
+    ): List<List<LocalDate>> {
+        return operationalDays.fullMonth.fold(listOf<List<LocalDate>>()) { weeks, date ->
+            if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) weeks.plusElement(listOf(date))
+            else weeks.dropLast(1).plusElement(weeks.last() + date)
+        }.map { week -> week.filter { date -> isUnitOperationalDay(operationalDays, separatePeriods, date) } }
+    }
+
+    private fun isUnitOperationalDay(
+        operationalDays: OperationalDays,
+        separatePeriods: List<Pair<DateRange, InvoiceRowStub>>,
+        date: LocalDate
+    ): Boolean {
+        return separatePeriods.any { (period, feeData) ->
+            period.includes(date) &&
+                operationalDays.forUnit(feeData.placement.unit).contains(date)
+        }
+    }
+
+    private fun plannedToOtherAbsences(
+        childId: ChildId,
+        attendanceDates: List<LocalDate>,
+        childPlannedAbsences: Set<LocalDate>,
+    ): List<AbsenceStub> {
+        return attendanceDates.filter { date -> childPlannedAbsences.contains(date) }.map { date ->
+            AbsenceStub(
+                childId, date, AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE
+            )
+        }
     }
 
     private fun toInvoiceRows(
@@ -520,14 +571,14 @@ class NewDraftInvoiceGenerator(
         return DateRange(from, to)
     }
 
-        /*
-         An extra invoice row is added for a child in case their invoice row sum is within 0.5€ of the monthly fee.
-         These are typically used only when the child changes placement units and has for accounting reasons their monthly fee
-         split into two invoice rows with daily prices. Daily prices are always rounded to whole cents so rounding mismatch
-         is inevitable.
+    /*
+     An extra invoice row is added for a child in case their invoice row sum is within 0.5€ of the monthly fee.
+     These are typically used only when the child changes placement units and has for accounting reasons their monthly fee
+     split into two invoice rows with daily prices. Daily prices are always rounded to whole cents so rounding mismatch
+     is inevitable.
 
-         A difference of 0.2€ is chosen because it's a bit over the maximum rounding error, which is 0.005€ * 31 (max amount of days in a month)
-         */
+     A difference of 0.2€ is chosen because it's a bit over the maximum rounding error, which is 0.005€ * 31 (max amount of days in a month)
+     */
     private fun applyRoundingRows(
         invoiceRows: List<InvoiceRow>,
         feeDecisions: List<FeeDecision>,
