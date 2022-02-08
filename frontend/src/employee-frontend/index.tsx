@@ -5,10 +5,19 @@
 import 'lib-common/assets/fonts/fonts.css'
 import 'core-js/stable'
 import * as Sentry from '@sentry/browser'
+import {
+  Chart,
+  defaults,
+  LinearScale,
+  LineElement,
+  PointElement,
+  TimeScale
+} from 'chart.js'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 import { getEnvironment } from 'lib-common/utils/helpers'
+import colors from 'lib-customizations/common'
 import { appConfig } from 'lib-customizations/employee'
 import App from './App'
 import 'chartjs-adapter-date-fns'
@@ -25,5 +34,13 @@ Sentry.init({
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
+
+Chart.register(TimeScale, LinearScale, PointElement, LineElement)
+Chart.defaults.animation = false
+Chart.defaults.font = {
+  family: '"Open Sans", "Arial", sans-serif',
+  ...defaults.font
+}
+Chart.defaults.color = colors.grayscale.g100
 
 ReactDOM.render(<App />, document.getElementById('app'))

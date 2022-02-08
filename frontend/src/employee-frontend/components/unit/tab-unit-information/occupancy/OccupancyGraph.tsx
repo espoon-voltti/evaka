@@ -2,20 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChartDataset, ChartOptions, defaults } from 'chart.js'
+import { ChartDataset, ChartOptions } from 'chart.js'
 import { fi } from 'date-fns/locale'
 import React from 'react'
 import { Line } from 'react-chartjs-2'
 import { formatDate } from 'lib-common/date'
 import colors from 'lib-customizations/common'
 import { OccupancyResponse } from '../../../../api/unit'
-
-defaults.animation = false
-defaults.font = {
-  family: '"Open Sans", "Arial", sans-serif',
-  ...defaults.font
-}
-defaults.color = colors.grayscale.g100
 
 type DatePoint = { x: Date; y: number | null | undefined }
 
