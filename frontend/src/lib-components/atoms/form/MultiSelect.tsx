@@ -76,6 +76,7 @@ function MultiSelect<T>({
           onChange(selectionsArray)
         }}
         filterOption={({ data }, q) =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
         }
         controlShouldRenderValue={showSelectedValues ?? true}
@@ -107,12 +108,10 @@ function MultiSelect<T>({
             children,
             innerProps
           }) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const id = getOptionId(data)
             return (
-              <div
-                {...innerProps}
-                data-qa="multivalue"
-                data-id={getOptionId(data)}
-              >
+              <div {...innerProps} data-qa="multivalue" data-id={id}>
                 {children}
               </div>
             )

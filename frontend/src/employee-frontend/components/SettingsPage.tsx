@@ -53,6 +53,7 @@ export default React.memo(function SettingsPage() {
     if (!settings.isSuccess) return
 
     return await putSettings(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       Object.fromEntries(
         Object.entries(settings.value)
           .map(([key, value]) => [key, value.trim()])

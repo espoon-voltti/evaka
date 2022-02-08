@@ -170,7 +170,7 @@ export function SingleThreadView({
 
   const replyContent = getReplyContent(threadId)
   const onUpdateContent = useCallback(
-    (content) => setReplyContent(threadId, content),
+    (content: string) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
   )
   const { recipients, onToggleRecipient } = useRecipients(messages, accountId)

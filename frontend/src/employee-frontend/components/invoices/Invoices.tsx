@@ -84,6 +84,7 @@ export default React.memo(function Invoices({
             setRefreshResult(Loading.of())
             refreshInvoices()
               .then(() => setRefreshResult(Success.of()))
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               .catch((err) => setRefreshResult(Failure.of(err)))
           }}
           text={i18n.invoices.buttons.createInvoices}

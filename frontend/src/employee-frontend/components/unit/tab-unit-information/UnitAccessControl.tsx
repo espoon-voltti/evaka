@@ -183,7 +183,7 @@ function AclRow({
   const onClickEdit = useCallback(() => setEditing(true), [setEditing])
   const onCancelEditing = useCallback(() => setEditing(false), [setEditing])
   const onSave = useCallback(
-    (groupIds) => {
+    (groupIds: UUID[]) => {
       setEditing(false)
       onChangeGroups(groupIds)
     },

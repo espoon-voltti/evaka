@@ -51,7 +51,7 @@ export const ThreadView = React.memo(function ThreadView({
     useContext(MessageContext)
 
   const onUpdateContent = useCallback(
-    (content) => setReplyContent(threadId, content),
+    (content: string) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
   )
 
