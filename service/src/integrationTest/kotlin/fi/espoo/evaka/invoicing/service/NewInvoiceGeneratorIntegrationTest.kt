@@ -3151,7 +3151,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `invoice generation with 15 contract days for half a month`() {
+    fun `invoice generation with 15 contract days for half a month with some planned absences`() {
         // 23 operational days
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
@@ -3160,8 +3160,8 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                // 10 days of daycare
-                DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
+                // 12 operational days
+                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -3179,6 +3179,15 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             ),
         )
         insertDecisionsAndPlacements(decisions)
+
+        // 2 days of planned absences -> total 12 - 2 = 10 attendance days
+        insertAbsences(
+            testChild_1.id,
+            listOf(
+                LocalDate.of(2021, 3, 18) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE,
+            )
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 

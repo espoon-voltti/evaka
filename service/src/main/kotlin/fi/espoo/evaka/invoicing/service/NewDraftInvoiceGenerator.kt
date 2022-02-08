@@ -93,6 +93,7 @@ class NewDraftInvoiceGenerator(
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
         val headOfFamily = placements.first().headOfFamily
+        val partialMonthChildren = getPartialMonthChildren(decisions, operationalDays)
 
         val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
             val relevantPeriod = DateRange(
@@ -158,8 +159,14 @@ class NewDraftInvoiceGenerator(
                     ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
                     ?: operationalDays.generalCase.size
 
-                val attendanceDates =
-                    getAttendanceDates(operationalDays, separatePeriods, contractDaysPerMonth, childPlannedAbsences)
+                val attendanceDates = getAttendanceDates(
+                    child,
+                    operationalDays,
+                    separatePeriods,
+                    contractDaysPerMonth,
+                    childPlannedAbsences,
+                    partialMonthChildren
+                )
 
                 val relevantAbsences =
                     absences.filter { absence ->
@@ -213,11 +220,31 @@ class NewDraftInvoiceGenerator(
         )
     }
 
+    private fun getPartialMonthChildren(
+        decisions: List<FeeDecision>,
+        operationalDays: OperationalDays
+    ): Set<ChildId> {
+        val childIds = decisions.flatMap { decision -> decision.children.map { part -> part.child.id } }.toSet()
+        val childOperationalDaysWithoutDecision = childIds.associateWith { operationalDays.generalCase.toMutableSet() }
+        decisions.forEach { decision ->
+            decision.children.forEach { part ->
+                childOperationalDaysWithoutDecision[part.child.id]!!.removeIf { date ->
+                    decision.validDuring.includes(
+                        date
+                    )
+                }
+            }
+        }
+        return childOperationalDaysWithoutDecision.filterNot { (_, dates) -> dates.isEmpty() }.keys
+    }
+
     private fun getAttendanceDates(
+        child: ChildWithDateOfBirth,
         operationalDays: OperationalDays,
         separatePeriods: List<Pair<DateRange, InvoiceRowStub>>,
         contractDaysPerMonth: Int?,
         childPlannedAbsences: Set<LocalDate>,
+        partialMonthChildren: Set<ChildId>,
     ): List<LocalDate> {
         val attendanceDates = operationalDatesByWeek(operationalDays, separatePeriods)
             .flatMap { weekOperationalDates ->
@@ -230,9 +257,9 @@ class NewDraftInvoiceGenerator(
                 }
             }
 
-        // Make sure that contract day children have no less than `contractDaysPerMonth` days even if they have
-        // more planned absences than they should
-        return if (contractDaysPerMonth != null && attendanceDates.size < contractDaysPerMonth) {
+        // If this is a full month for a contract day child (not int partialMonthChildren), make sure that there's
+        // no less than `contractDaysPerMonth` days even if they have more planned absences than they should
+        return if (contractDaysPerMonth != null && !partialMonthChildren.contains(child.id) && attendanceDates.size < contractDaysPerMonth) {
             (
                 attendanceDates + operationalDays.fullMonth.filter { date ->
                     isUnitOperationalDay(
