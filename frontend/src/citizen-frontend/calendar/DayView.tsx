@@ -8,13 +8,17 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
-  Reservation,
   ReservationChild,
-  ReservationsResponse
+  ReservationsResponse,
+  TimeRange
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { validateTimeRange } from 'lib-common/reservations'
+import {
+  reservationsAndAttendancesDiffer,
+  validateTimeRange
+} from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
+import StatusIcon from 'lib-components/atoms/StatusIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -51,7 +55,8 @@ interface Props {
 interface ChildWithReservations {
   child: ReservationChild
   absence: AbsenceType | undefined
-  reservations: Reservation[]
+  reservations: TimeRange[]
+  attendances: TimeRange[]
   reservationEditable: boolean
 }
 
@@ -83,7 +88,8 @@ function getChildrenWithReservations(
         child,
         reservationEditable,
         absence: childReservations?.absence ?? undefined,
-        reservations: childReservations?.reservations ?? []
+        reservations: childReservations?.reservations ?? [],
+        attendances: childReservations?.attendances ?? []
       }
     })
 }
@@ -198,8 +204,17 @@ export default React.memo(function DayView({
           ([childWithReservation, childState], childIndex) => {
             if (!childWithReservation || !childState) return null
 
-            const { child, absence, reservations, reservationEditable } =
-              childWithReservation
+            const {
+              child,
+              absence,
+              reservations,
+              attendances,
+              reservationEditable
+            } = childWithReservation
+
+            const showAttendanceWarning =
+              !editing &&
+              reservationsAndAttendancesDiffer(reservations, attendances)
 
             return (
               <div key={child.id} data-qa={`reservations-of-${child.id}`}>
@@ -227,7 +242,22 @@ export default React.memo(function DayView({
                     <Reservations reservations={reservations} />
                   )}
                   <Label>{i18n.calendar.realized}</Label>
-                  <span>–</span>
+                  <span>
+                    {attendances.length > 0
+                      ? attendances
+                          .map(
+                            ({ startTime, endTime }) =>
+                              `${startTime} – ${endTime}`
+                          )
+                          .join(', ')
+                      : '–'}
+                  </span>
+                  {showAttendanceWarning && (
+                    <Warning>
+                      {i18n.calendar.attendanceWarning}
+                      <StatusIcon status="warning" />
+                    </Warning>
+                  )}
                 </Grid>
               </div>
             )
@@ -271,13 +301,6 @@ const emptyReservation: TimeRangeWithErrors = {
   errors: { startTime: undefined, endTime: undefined }
 }
 
-function reservationToTimeRange({
-  startTime,
-  endTime
-}: Reservation): TimeRangeWithErrors {
-  return { ...emptyReservation, startTime, endTime }
-}
-
 function useEditState(
   date: LocalDate,
   childrenWithReservations: ChildWithReservations[],
@@ -302,7 +325,10 @@ function useEditState(
         child,
         reservations:
           reservations.length > 0
-            ? reservations.map(reservationToTimeRange)
+            ? reservations.map((reservation) => ({
+                ...reservation,
+                errors: { startTime: undefined, endTime: undefined }
+              }))
             : [emptyReservation]
       })),
     [childrenWithReservations]
@@ -518,7 +544,7 @@ const Absence = React.memo(function Absence({
 const Reservations = React.memo(function Reservations({
   reservations
 }: {
-  reservations: Reservation[]
+  reservations: TimeRange[]
 }) {
   const i18n = useTranslation()
 
@@ -533,7 +559,6 @@ const Reservations = React.memo(function Reservations({
     <span data-qa="reservations">
       {reservations
         .map(({ startTime, endTime }) => `${startTime} – ${endTime}`)
-        .filter((res) => res)
         .join(', ')}
     </span>
   ) : (
@@ -616,4 +641,9 @@ const AbsenceButton = styled(InlineButton)`
   @media (max-width: ${tabletMin}) {
     padding: ${defaultMargins.s};
   }
+`
+
+const Warning = styled.div`
+  grid-column: 1 / 3;
+  color: ${({ theme }) => theme.colors.accents.a2orangeDark};
 `

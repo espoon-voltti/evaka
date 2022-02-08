@@ -197,6 +197,7 @@ const sv: Translations = {
     reservation: 'Reservation',
     realized: 'Förverkligad',
     reservationsAndRealized: 'Reservationer och förverkligade',
+    attendanceWarning: 'Närvaron överskrider reservationen',
     reservationModal: {
       title: 'Reservera',
       selectChildren: 'Barn som reserveras för',

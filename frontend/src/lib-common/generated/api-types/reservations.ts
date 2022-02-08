@@ -24,8 +24,9 @@ export interface AbsenceRequest {
 */
 export interface ChildDailyData {
   absence: AbsenceType | null
+  attendances: TimeRange[]
   childId: UUID
-  reservations: Reservation[]
+  reservations: TimeRange[]
 }
 
 /**
@@ -44,14 +45,6 @@ export interface DailyReservationRequest {
   childId: UUID
   date: LocalDate
   reservations: TimeRange[] | null
-}
-
-/**
-* Generated from fi.espoo.evaka.reservations.Reservation
-*/
-export interface Reservation {
-  endTime: string
-  startTime: string
 }
 
 /**
