@@ -1199,7 +1199,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val absenceDays = datesBetween(period.start, period.end)
             .map { it to AbsenceType.SICKLEAVE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1235,7 +1234,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                     .contains(it.dayOfWeek)
             }
             .map { it to AbsenceType.SICKLEAVE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1271,7 +1269,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                     .contains(it.dayOfWeek)
             }
             .map { it to AbsenceType.UNKNOWN_ABSENCE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1297,7 +1294,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val absenceDays = datesBetween(period.start, period.end)
             .map { it to AbsenceType.UNKNOWN_ABSENCE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1329,7 +1325,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val absenceDays = datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
             .map { it to AbsenceType.PARENTLEAVE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1370,7 +1365,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 )
                     .map { it to AbsenceType.SICKLEAVE }
             )
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1411,7 +1405,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val absenceDays = datesBetween(period.start, period.end)
             .map { it to AbsenceType.PLANNED_ABSENCE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1437,7 +1430,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 4))
             .map { it to AbsenceType.PARENTLEAVE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays, child = testChild_2)
 
@@ -1474,7 +1466,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                     .contains(it.dayOfWeek)
             }
             .map { it to AbsenceType.SICKLEAVE }
-            .toMap()
 
         initDataForAbsences(periods, absenceDays)
 
@@ -1538,13 +1529,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             DateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
         )
 
-        val absenceDays = mapOf(
+        val absenceDays = listOf(
             LocalDate.of(2019, 1, 7) to AbsenceType.PARENTLEAVE,
             LocalDate.of(2019, 1, 14) to AbsenceType.PARENTLEAVE,
             LocalDate.of(2019, 1, 21) to AbsenceType.FORCE_MAJEURE,
             LocalDate.of(2019, 1, 28) to AbsenceType.FORCE_MAJEURE
         )
-
         initDataForAbsences(periods, absenceDays)
 
         db.transaction {
@@ -1612,7 +1602,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             LocalDate.of(2019, 1, 29)
         )
             .map { it to AbsenceType.PLANNED_ABSENCE }
-            .toMap()
         // then 2 more operational days
 
         initDataForAbsences(listOf(period), plannedAbsenceDays, serviceNeed = snDaycareContractDays15)
@@ -1677,22 +1666,8 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             LocalDate.of(2019, 1, 29)
         )
             .map { it to AbsenceType.PLANNED_ABSENCE }
-            .toMap()
         // then 2 more operational days
-
-        db.transaction { tx ->
-            tx.upsertAbsences(
-                plannedAbsenceDays.map { (date, type) ->
-                    AbsenceUpsert(
-                        absenceType = type,
-                        childId = testChild_1.id,
-                        date = date,
-                        category = AbsenceCategory.BILLABLE,
-                    )
-                },
-                EvakaUserId(testDecisionMaker_1.id.raw)
-            )
-        }
+        insertAbsences(testChild_1.id, plannedAbsenceDays)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1748,8 +1723,11 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 2 more operational days
 
-        val absenceDays = (otherAbsenceDays + plannedAbsenceDays).toMap()
-        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            otherAbsenceDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1804,30 +1782,14 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         insertDecisionsAndPlacements(decisions)
 
         // 17 operational days in total, the rest are planned absences
-        val plannedAbsenceDays = (
-            datesBetween(
-                LocalDate.of(2019, 1, 1),
-                LocalDate.of(2019, 1, 4)
-            ) + datesBetween(
-                LocalDate.of(2019, 1, 30),
-                LocalDate.of(2019, 1, 31)
-            )
-            )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
-
-        db.transaction { tx ->
-            tx.upsertAbsences(
-                plannedAbsenceDays.map { (date, type) ->
-                    AbsenceUpsert(
-                        absenceType = type,
-                        childId = testChild_1.id,
-                        date = date,
-                        category = AbsenceCategory.BILLABLE,
-                    )
-                },
-                EvakaUserId(testDecisionMaker_1.id.raw)
-            )
-        }
+        insertAbsences(
+            testChild_1.id,
+            (
+                datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
+                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31))
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1868,9 +1830,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             LocalDate.of(2019, 1, 31)
         )
             .map { it to AbsenceType.PLANNED_ABSENCE }
-        val absenceDays = (otherAbsenceDays + plannedAbsenceDays).toMap()
 
-        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            otherAbsenceDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1906,9 +1871,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             LocalDate.of(2019, 1, 31)
         )
             .map { it to AbsenceType.PLANNED_ABSENCE }
-        val absenceDays = (otherAbsenceDays + plannedAbsenceDays).toMap()
 
-        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            otherAbsenceDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1936,9 +1904,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         // Planned absences for the rest of the month
         val plannedAbsenceDays =
             datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map { it to AbsenceType.PLANNED_ABSENCE }
-        val absenceDays = (forceMajeureAbsenceDays + plannedAbsenceDays).toMap()
 
-        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            forceMajeureAbsenceDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1997,27 +1968,16 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         }
         db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
 
-        val absenceDays = listOf(
-            LocalDate.of(2021, 12, 23) to AbsenceType.OTHER_ABSENCE,
-            LocalDate.of(2021, 12, 27) to AbsenceType.OTHER_ABSENCE,
-            LocalDate.of(2021, 12, 28) to AbsenceType.OTHER_ABSENCE,
-            LocalDate.of(2021, 12, 29) to AbsenceType.OTHER_ABSENCE,
-            LocalDate.of(2021, 12, 30) to AbsenceType.OTHER_ABSENCE,
-            LocalDate.of(2021, 12, 31) to AbsenceType.OTHER_ABSENCE,
-        )
-        db.transaction { tx ->
-            tx.upsertAbsences(
-                absenceDays.map { (date, type) ->
-                    AbsenceUpsert(
-                        absenceType = type,
-                        childId = testChild_1.id,
-                        date = date,
-                        category = AbsenceCategory.BILLABLE
-                    )
-                },
-                EvakaUserId(testDecisionMaker_1.id.raw)
+        insertAbsences(
+            testChild_1.id, listOf(
+                LocalDate.of(2021, 12, 23) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 12, 27) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 12, 28) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 12, 29) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 12, 30) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 12, 31) to AbsenceType.OTHER_ABSENCE,
             )
-        }
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2081,7 +2041,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 31))
             .map { it to AbsenceType.FORCE_MAJEURE }
-            .toMap()
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -2120,9 +2079,12 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 LocalDate.of(2019, 1, 31)
             )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
-        val absenceDays = (forceMajeureAbsenceDays + plannedAbsenceDays).toMap()
 
-        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            forceMajeureAbsenceDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2153,7 +2115,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val absenceDays = datesBetween(
             LocalDate.of(2019, 1, 1),
             LocalDate.of(2019, 1, 31)
-        ).associateWith { AbsenceType.PLANNED_ABSENCE }
+        ).map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -2190,7 +2152,6 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 LocalDate.of(2019, 1, 31)
             )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
-                .toMap()
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -2259,25 +2220,13 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         insertDecisionsAndPlacements(decisions)
 
         // 14 operational days, the rest are planned absences
-        val absenceDays =
+        insertAbsences(
+            testChild_1.id,
             datesBetween(
                 LocalDate.of(2019, 1, 22),
                 LocalDate.of(2019, 1, 31)
-            )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
-        db.transaction { tx ->
-            tx.upsertAbsences(
-                absenceDays.map { (date, absenceType) ->
-                    AbsenceUpsert(
-                        absenceType = absenceType,
-                        childId = testChild_1.id,
-                        date = date,
-                        category = AbsenceCategory.BILLABLE
-                    )
-                },
-                EvakaUserId(testDecisionMaker_1.id.raw)
-            )
-        }
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2738,19 +2687,11 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             )
         )
         insertDecisionsAndPlacements(listOf(decision))
-        db.transaction { tx ->
-            tx.upsertAbsences(
-                listOf(
-                    AbsenceUpsert(
-                        absenceType = AbsenceType.FORCE_MAJEURE,
-                        childId = testChild_1.id,
-                        date = LocalDate.of(2021, 1, 5),
-                        category = AbsenceCategory.BILLABLE
-                    )
-                ),
-                EvakaUserId(testDecisionMaker_1.id.raw)
-            )
-        }
+
+        insertAbsences(
+            testChild_1.id,
+            listOf(LocalDate.of(2021, 1, 5) to AbsenceType.FORCE_MAJEURE)
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2795,19 +2736,11 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             )
         )
         insertDecisionsAndPlacements(listOf(decision))
-        db.transaction { tx ->
-            tx.upsertAbsences(
-                listOf(
-                    AbsenceUpsert(
-                        absenceType = AbsenceType.FORCE_MAJEURE,
-                        childId = testChild_1.id,
-                        date = LocalDate.of(2021, 1, 31),
-                        category = AbsenceCategory.BILLABLE
-                    )
-                ),
-                EvakaUserId(testDecisionMaker_1.id.raw)
-            )
-        }
+
+        insertAbsences(
+            testChild_1.id,
+            listOf(LocalDate.of(2021, 1, 31) to AbsenceType.FORCE_MAJEURE)
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2852,21 +2785,11 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             )
         )
         insertDecisionsAndPlacements(listOf(decision))
-        db.transaction { tx ->
-            tx.upsertAbsences(
-                datesBetween(period.start, period.end)
-                    .map {
-                        AbsenceUpsert(
-                            absenceType = AbsenceType.FORCE_MAJEURE,
-                            childId = testChild_1.id,
-                            date = it,
-                            category = AbsenceCategory.BILLABLE
-                        )
-                    }
-                    .toList(),
-                EvakaUserId(testDecisionMaker_1.id.raw)
-            )
-        }
+
+        insertAbsences(
+            testChild_1.id,
+            datesBetween(period.start, period.end).map { it to AbsenceType.FORCE_MAJEURE }
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2895,7 +2818,8 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val absenceDays = generateSequence(LocalDate.of(2020, 5, 1)) { date -> date.plusDays(1) }
             .takeWhile { date -> date < LocalDate.of(2020, 6, 1) }
             .map { date -> date to AbsenceType.SICKLEAVE }
-            .toMap()
+            .toList()
+
         initDataForAbsences(listOf(weekEnd), absenceDays)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3200,7 +3124,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         val absenceDays = listOf(
             LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE,
             LocalDate.of(2019, 1, 3) to AbsenceType.FORCE_MAJEURE
-        ).toMap()
+        )
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -3457,7 +3381,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
     private fun initDataForAbsences(
         periods: List<DateRange>,
-        absenceDays: Map<LocalDate, AbsenceType>,
+        absenceDays: List<Pair<LocalDate, AbsenceType>>,
         child: DevPerson = testChild_1,
         serviceNeed: ServiceNeedOption = snDaycareFullDay35,
     ) = periods.forEachIndexed { index, period ->
@@ -3500,12 +3424,16 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 endDate = period.end!!
             )
         }
+        insertAbsences(child.id, absenceDays)
+    }
+
+    private fun insertAbsences(childId: ChildId, absenceDays: List<Pair<LocalDate, AbsenceType>>) {
         db.transaction { tx ->
             tx.upsertAbsences(
                 absenceDays.map { (date, type) ->
                     AbsenceUpsert(
                         absenceType = type,
-                        childId = child.id,
+                        childId = childId,
                         date = date,
                         category = AbsenceCategory.BILLABLE
                     )
