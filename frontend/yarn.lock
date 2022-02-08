@@ -1277,7 +1277,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.1, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.14.8, @babel/runtime@npm:^7.16.7, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7":
+"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.1, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.14.8, @babel/runtime@npm:^7.16.7, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7":
   version: 7.17.0
   resolution: "@babel/runtime@npm:7.17.0"
   dependencies:
@@ -2358,6 +2358,137 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-spring/animated@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/animated@npm:9.4.2"
+  dependencies:
+    "@react-spring/shared": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    react: ^16.8.0  || ^17.0.0
+  checksum: 04b94ecf2951f02f416e50d14b2cfa146172166afe3b74c0ce649df7e55b2111963bed737984a3e9623ba52fed93a8340d2fdc76849f0743aef396c2ad63bc83
+  languageName: node
+  linkType: hard
+
+"@react-spring/core@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/core@npm:9.4.2"
+  dependencies:
+    "@react-spring/animated": ~9.4.0
+    "@react-spring/rafz": ~9.4.0
+    "@react-spring/shared": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    react: ^16.8.0  || ^17.0.0
+  checksum: cec76c049b427175a31b95de88c585ca7df7f1dd37f5fd376a3fdd354a95ce32aa69a31a4ad36097bca71d19cb06465ee64e6d487b6a72990ca61eb4c2524fd6
+  languageName: node
+  linkType: hard
+
+"@react-spring/konva@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/konva@npm:9.4.2"
+  dependencies:
+    "@react-spring/animated": ~9.4.0
+    "@react-spring/core": ~9.4.0
+    "@react-spring/shared": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    konva: ">=2.6"
+    react: ^16.8.0  || ^17.0.0
+    react-konva: ^16.8.0  || ^17.0.0
+  checksum: 6ed0ac09a3ff9252fb6316c1b20d815c4049cc5d6182d1462c6217dffde072bbc7c6fa72cc2a35a3d6408f2fe2e7aea5ca933948c5c029f5d58fe69675f48449
+  languageName: node
+  linkType: hard
+
+"@react-spring/native@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/native@npm:9.4.2"
+  dependencies:
+    "@react-spring/animated": ~9.4.0
+    "@react-spring/core": ~9.4.0
+    "@react-spring/shared": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    react: ^16.8.0  || ^17.0.0
+    react-native: ">=0.58"
+  checksum: 9f79577ee0fb4f774c92acdcff56220710365729cc9d9320ae6fd584399148b95b86365c20c4bad9b0737aaa315d672e91ee4084a143794ccfa7aea1afe9cb88
+  languageName: node
+  linkType: hard
+
+"@react-spring/rafz@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/rafz@npm:9.4.2"
+  checksum: c0e1f6ef1d05b8f48c64db25976595da3d3ccbe0cf1e8a497cd6652b94eebdbbb0b4765d34f6cdc5ec21ee584332487d1059d3109a66f4d48c724d8e65eef475
+  languageName: node
+  linkType: hard
+
+"@react-spring/shared@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/shared@npm:9.4.2"
+  dependencies:
+    "@react-spring/rafz": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    react: ^16.8.0  || ^17.0.0
+  checksum: aaf786e7ae91adad002e57cb1d0e14b452424e6c2588f40d0ffb0f68acf1459e9e9bf41385d3c5ceb7f8eafe3b7717aac87dc25ce95ff54a626cda036040fe88
+  languageName: node
+  linkType: hard
+
+"@react-spring/three@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/three@npm:9.4.2"
+  dependencies:
+    "@react-spring/animated": ~9.4.0
+    "@react-spring/core": ~9.4.0
+    "@react-spring/shared": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    "@react-three/fiber": ">=6.0"
+    react: ">=16.11"
+    three: ">=0.126"
+  checksum: 2be2753d53bed9d53610483a58571f378b3ad76092f13444775da25b51550005a6e3c2f617c03c00a61a9953b7fe5cdd55054d78cd6240cbdca6f46b8e828837
+  languageName: node
+  linkType: hard
+
+"@react-spring/types@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/types@npm:9.4.2"
+  checksum: 5ebc1e003fcf3f5aa0e5647b2b620fbd76591b142119fc5c3ac8a5cd1504a3643bc71dddc742e4eabdf4efe5565ee288ad5ccf3ca5504753fa5cf3421069d883
+  languageName: node
+  linkType: hard
+
+"@react-spring/web@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/web@npm:9.4.2"
+  dependencies:
+    "@react-spring/animated": ~9.4.0
+    "@react-spring/core": ~9.4.0
+    "@react-spring/shared": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    react: ^16.8.0  || ^17.0.0
+    react-dom: ^16.8.0  || ^17.0.0
+  checksum: 14dae25e81f2d3257d98a0d508dea096b30d98dd7e28c369fd9915fd9c033abfbc1681a0783b371867eb235b899689b3c3921cc5f6295980006c3bcb04c7ebb9
+  languageName: node
+  linkType: hard
+
+"@react-spring/zdog@npm:~9.4.0":
+  version: 9.4.2
+  resolution: "@react-spring/zdog@npm:9.4.2"
+  dependencies:
+    "@react-spring/animated": ~9.4.0
+    "@react-spring/core": ~9.4.0
+    "@react-spring/shared": ~9.4.0
+    "@react-spring/types": ~9.4.0
+  peerDependencies:
+    react: ^16.8.0  || ^17.0.0
+    react-dom: ^16.8.0  || ^17.0.0
+    react-zdog: ">=1.0"
+    zdog: ">=1.0"
+  checksum: e7e3c7b7a64bfe6bf2a63ef49fc961a6bc3f38e882da0b28a410951fe74bfa8674d82e5d60d028b19c188ce8b95e3f9a6a175d85d279b6471823310596123037
+  languageName: node
+  linkType: hard
+
 "@sentry/browser@npm:6.17.5, @sentry/browser@npm:^6.17.5":
   version: 6.17.5
   resolution: "@sentry/browser@npm:6.17.5"
@@ -2737,15 +2868,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-datepicker@npm:4.1.7":
-  version: 4.1.7
-  resolution: "@types/react-datepicker@npm:4.1.7"
+"@types/react-datepicker@npm:4.3.4":
+  version: 4.3.4
+  resolution: "@types/react-datepicker@npm:4.3.4"
   dependencies:
     "@popperjs/core": ^2.9.2
     "@types/react": "*"
     date-fns: ^2.0.1
     react-popper: ^2.2.5
-  checksum: e1c7beb78e31c49bc4cab0904a02e5d2fc3945e8314b248219b13bc5acf9604347ec0e0a3b511146ce0b8cdb86b11f9f93b5c0b089e43f6ea92caf3e2e11b600
+  checksum: 1107b09feefea90be6dce63e008c2a4b3641a0a300773e4d47891ecd380aec77a4d3410259be6d781d88b57f96e754a35dcfc65d0b86b25c5c741ebc21c360c5
   languageName: node
   linkType: hard
 
@@ -5514,7 +5645,7 @@ __metadata:
     "@types/node": ^15.14.9
     "@types/react": ^17.0.39
     "@types/react-csv": ^1.1.2
-    "@types/react-datepicker": 4.1.7
+    "@types/react-datepicker": 4.3.4
     "@types/react-dom": ^17.0.11
     "@types/react-router-dom": ^5.3.3
     "@types/react-select": 3.0.22
@@ -5567,17 +5698,17 @@ __metadata:
     prettier: ^2.5.1
     react: ^17.0.2
     react-autosize-textarea: ^7.1.0
-    react-chartjs-2: ^3.3.0
-    react-csv: ^2.0.3
-    react-datepicker: ^4.3.0
+    react-chartjs-2: ^4.0.1
+    react-csv: ^2.2.2
+    react-datepicker: ^4.6.0
     react-day-picker: 7.4.10
     react-dom: ^17.0.2
-    react-focus-lock: 2.5.2
-    react-image-crop: ^9.0.4
+    react-focus-lock: 2.7.1
+    react-image-crop: ^9.1.1
     react-leaflet: ^3.2.5
     react-router-dom: ^5.3.0
     react-select: ^3.0.8
-    react-spring: ^8.0.27
+    react-spring: ^9.4.2
     react-tooltip: ^4.2.21
     seamless-scroll-polyfill: 2.1.6
     style-loader: ^3.3.1
@@ -5947,12 +6078,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"focus-lock@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "focus-lock@npm:0.9.1"
+"focus-lock@npm:^0.10.1":
+  version: 0.10.1
+  resolution: "focus-lock@npm:0.10.1"
   dependencies:
     tslib: ^2.0.3
-  checksum: 1ae12a7c0884eeb3c92e4abc95a3ba0405da80d36f4928a21c687e564cfce04a7e71aef077286160250b4fb64f25671f9df219f86c65a17c4848063ae0b2eb51
+  checksum: 4008f72c62ffff92ae89c972b3b29bcd0a527148382e4293861a684a541eb41cb1c48edac69fc71a8e81aa44d94285b4b21534e27a0e98d332c3ec525abcd6ad
   languageName: node
   linkType: hard
 
@@ -9462,13 +9593,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-chartjs-2@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "react-chartjs-2@npm:3.3.0"
+"react-chartjs-2@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "react-chartjs-2@npm:4.0.1"
   peerDependencies:
     chart.js: ^3.5.0
     react: ^16.8.0 || ^17.0.0
-  checksum: ad8b1324a89b1bf7b7bef3f5a09b2abb12d0624105c00616ef95fabe3346457e01846c92b0aa24bfc9f52c5362ae83c37cffc9ce8b2dd7113f9fd0228e248f9c
+  checksum: c22e994c73c0fba8140e9228703b3a94f54a053b00b7a70a53d7056139349f3032daf1512fa38bad23e8e348affc4e36ebbfea8beb5e4c5802bfc8c72d9c68d6
   languageName: node
   linkType: hard
 
@@ -9483,16 +9614,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-csv@npm:^2.0.3":
-  version: 2.0.3
-  resolution: "react-csv@npm:2.0.3"
-  checksum: 5ca5f8bd06e279e016d4e77a08190a43e9e6ae1ca62bc3d9b8a6cec91bcf7b4cf1d84c3513358116b753f48e7078e78c8f40cf2b8bae8f24caf82536fe2ec3df
+"react-csv@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "react-csv@npm:2.2.2"
+  checksum: a6ffabd67fc9ba1478b003977923cfa3ccdd9553ac5edcc3824b4a5ea849b87cb2acfcc0781b0cd0a259bf56e6a7dfd35cfc307576aa51819fc5a32b03118fab
   languageName: node
   linkType: hard
 
-"react-datepicker@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "react-datepicker@npm:4.3.0"
+"react-datepicker@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "react-datepicker@npm:4.6.0"
   dependencies:
     "@popperjs/core": ^2.9.2
     classnames: ^2.2.6
@@ -9503,7 +9634,7 @@ __metadata:
   peerDependencies:
     react: ^16.9.0 || ^17
     react-dom: ^16.9.0 || ^17
-  checksum: 5d14f24015c84bfa7feed74c94131f96372ad2a76f6d67a2675047587172719ce6b74b373134ee530a54939aa923945b80c7717028ac69bd58c33a316b50dd2c
+  checksum: 30c9f04d4223326572ed9399b39834e1e7e3fcda52e4433adc5dc81e84d8d5cf9699bf728889a80098aea76637a7ff759f0a79ec053ccd61b707de0662612adf
   languageName: node
   linkType: hard
 
@@ -9538,30 +9669,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-focus-lock@npm:2.5.2":
-  version: 2.5.2
-  resolution: "react-focus-lock@npm:2.5.2"
+"react-focus-lock@npm:2.7.1":
+  version: 2.7.1
+  resolution: "react-focus-lock@npm:2.7.1"
   dependencies:
     "@babel/runtime": ^7.0.0
-    focus-lock: ^0.9.1
+    focus-lock: ^0.10.1
     prop-types: ^15.6.2
     react-clientside-effect: ^1.2.5
     use-callback-ref: ^1.2.5
     use-sidecar: ^1.0.5
   peerDependencies:
-    react: ^16.8.0 || ^17.0.0
-  checksum: 520b12a4496be21b3228bbf938657f6c33f868e486a0cd355d8bec918129d2c1bf7aabecb20aecdb446a1fbdb61b16f680b5d15b998f544f1b5c0dc5c8914c40
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 186b2f3f95330bd953722412a37f4862b178ae5ffb9b87d78365eb3a636a157898183427c086855db9b14268f7877079c4aa2a99bba63b0b74f1cd5e3c2904ef
   languageName: node
   linkType: hard
 
-"react-image-crop@npm:^9.0.4":
-  version: 9.0.4
-  resolution: "react-image-crop@npm:9.0.4"
+"react-image-crop@npm:^9.1.1":
+  version: 9.1.1
+  resolution: "react-image-crop@npm:9.1.1"
   dependencies:
     clsx: ^1.1.1
   peerDependencies:
     react: ">=16.13.1"
-  checksum: 59e9812269f3bfe69f5195504463d8b0b8726f7a628f7a14db88673b6a1bf081a56eb5fba2a2dd55775eecc45e8f39a7610ab60b7a60eee6fcf3b86e1d303b74
+  checksum: af10ea107124c72d6673693a11b41141bda958e3804bd38bddf45f2d54fc1392d7b11005000ed725996c0a0415e24e9ba4a8f32640fc94857f7edc766b98db7b
   languageName: node
   linkType: hard
 
@@ -9682,16 +9813,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-spring@npm:^8.0.27":
-  version: 8.0.27
-  resolution: "react-spring@npm:8.0.27"
+"react-spring@npm:^9.4.2":
+  version: 9.4.2
+  resolution: "react-spring@npm:9.4.2"
   dependencies:
-    "@babel/runtime": ^7.3.1
-    prop-types: ^15.5.8
-  peerDependencies:
-    react: ">= 16.8.0"
-    react-dom: ">= 16.8.0"
-  checksum: 4f306e30c3a425fd2b11c265ca0a7c261de0f63c0250fa6fa19eddd58c50fc9eaa463927571ee1dec39659a1bf619aaacf3352602b7724695da240ec0bc106cf
+    "@react-spring/core": ~9.4.0
+    "@react-spring/konva": ~9.4.0
+    "@react-spring/native": ~9.4.0
+    "@react-spring/three": ~9.4.0
+    "@react-spring/web": ~9.4.0
+    "@react-spring/zdog": ~9.4.0
+  checksum: d66427c512f99194080bae50544e7e09fb9b1a9dc1ace2a520df76fe0ccd664be55e779babdf7dfeec33b58aab296ed03c63da33a5ca5ef0e9c0e68119bab570
   languageName: node
   linkType: hard
 

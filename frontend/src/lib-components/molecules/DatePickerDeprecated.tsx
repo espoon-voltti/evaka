@@ -156,7 +156,8 @@ export function DatePickerDeprecated({
         minDate={minDate?.toSystemTzDate()}
         maxDate={maxDate?.toSystemTzDate()}
         onChange={(newDate) => {
-          const date = Array.isArray(newDate) ? newDate[0] : newDate
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const date: Date = Array.isArray(newDate) ? newDate[0] : newDate
           onChange(date ? LocalDate.fromSystemTzDate(date) : LocalDate.today())
         }}
         onFocus={onFocus}
@@ -201,7 +202,8 @@ export function DatePickerClearableDeprecated({
         maxDate={maxDate?.toSystemTzDate()}
         strictParsing
         onChange={(newDate) => {
-          const date = Array.isArray(newDate) ? newDate[0] : newDate
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const date: Date = Array.isArray(newDate) ? newDate[0] : newDate
           if (!date) {
             onCleared()
           } else {
