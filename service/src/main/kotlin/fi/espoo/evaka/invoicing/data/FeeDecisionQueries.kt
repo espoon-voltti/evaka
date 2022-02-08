@@ -32,6 +32,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
+// language=SQL
 const val feeDecisionQueryBase =
     """
 SELECT
@@ -54,6 +55,7 @@ FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 """
 
+// language=SQL
 const val feeDecisionDetailedQueryBase =
     """
 SELECT

@@ -22,6 +22,7 @@ class InvoiceGeneratorDiffer(private val draftInvoiceGenerator: DefaultDraftInvo
             invoiceData.operationalDays,
             invoiceData.feeThresholds,
             invoiceData.absences,
+            invoiceData.plannedAbsences,
             invoiceData.freeChildren,
             invoiceData.codebtors
         )
@@ -33,6 +34,7 @@ class InvoiceGeneratorDiffer(private val draftInvoiceGenerator: DefaultDraftInvo
             invoiceData.operationalDays,
             invoiceData.feeThresholds,
             invoiceData.absences,
+            invoiceData.plannedAbsences,
             invoiceData.freeChildren,
             invoiceData.codebtors
         )

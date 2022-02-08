@@ -145,4 +145,4 @@ fun getDueDate(periodEnd: LocalDate): LocalDate {
     }
 }
 
-fun invoiceRowTotal(rows: List<RowWithPrice>): Int = rows.fold(0) { sum, row -> sum + row.price }
+fun invoiceRowTotal(rows: List<RowWithPrice>): Int = rows.sumOf { it.price }
