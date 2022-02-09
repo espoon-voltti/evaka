@@ -13,10 +13,8 @@ import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
-import fi.espoo.evaka.invoicing.service.DefaultDraftInvoiceGenerator
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
-import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
@@ -152,10 +150,6 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
-
-    @Bean
-    fun invoiceGenerator(productProvider: InvoiceProductProvider): InvoiceGenerator =
-        InvoiceGenerator(DefaultDraftInvoiceGenerator(productProvider))
 
     @Bean
     fun permittedRoleActions(): PermittedRoleActions = StaticPermittedRoleActions()
