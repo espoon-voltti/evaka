@@ -92,6 +92,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.MobileDevice,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse {
+        Audit.PinLogin.log(targetId = params.employeeId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
