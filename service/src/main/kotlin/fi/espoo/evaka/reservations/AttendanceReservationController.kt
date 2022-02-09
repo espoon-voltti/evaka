@@ -299,7 +299,6 @@ private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serv
                 )
             )
         }
-        .sortedBy { "${it.child.firstName} ${it.child.lastName}" }
 }
 
 fun createReservationsAsEmployee(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
