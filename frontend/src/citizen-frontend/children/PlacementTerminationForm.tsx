@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { sortBy } from 'lodash'
+import { first, last, sortBy } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import {
   PlacementTerminationRequestBody,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
+import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -55,13 +56,34 @@ const toCheckboxOption = (
   pseudoId: `${grp.unitId}-${grp.type}-${String(terminateDayCareOnly)}`
 })
 
-const toDaycareOnlyTerminatable = (
+const maybeCreateDaycareOnlyTerminatable = (
   grp: TerminatablePlacementGroup
-): CheckboxOption => ({
-  ...toCheckboxOption(grp, true),
-  startDate: grp.additionalPlacements[0].startDate,
-  endDate: grp.additionalPlacements[grp.additionalPlacements.length - 1].endDate
-})
+): CheckboxOption[] => {
+  const isPreschoolDaycareOrPreparatoryDaycare = (p: { type: PlacementType }) =>
+    p.type === 'PRESCHOOL_DAYCARE' || p.type === 'PREPARATORY_DAYCARE'
+
+  const firstBilledStartDate =
+    grp.placements.find(isPreschoolDaycareOrPreparatoryDaycare)?.startDate ??
+    first(grp.additionalPlacements)?.startDate
+
+  if (!firstBilledStartDate) {
+    return []
+  }
+
+  const lastBilledEndDate =
+    last(grp.additionalPlacements)?.endDate ??
+    last(grp.placements.filter(isPreschoolDaycareOrPreparatoryDaycare))
+      ?.endDate ??
+    grp.endDate
+
+  return [
+    {
+      ...toCheckboxOption(grp, true),
+      startDate: firstBilledStartDate,
+      endDate: lastBilledEndDate
+    }
+  ]
+}
 
 interface Props {
   childId: UUID
@@ -107,10 +129,9 @@ export default React.memo(function PlacementTerminationForm({
       return { type: 'invalid-date' }
     }
 
-    const terminateDaycareOnly =
-      (state.placements.length === 0 &&
-        state.placements[0].terminateDaycareOnly) ??
-      false
+    const terminateDaycareOnly = state.placements.every(
+      (p) => p.terminateDaycareOnly
+    )
     return {
       type: 'valid',
       data: {
@@ -136,15 +157,12 @@ export default React.memo(function PlacementTerminationForm({
     onSuccess()
   }, [onSuccess])
 
-  // Add option for terminating only the invoiced placements if in preschool or preparatory placement (has additionalPlacements)
+  // Add option for terminating only the invoiced placements if in preschool or preparatory placement
   const options: CheckboxOption[] = useMemo(
-    () =>
-      placementGroup.additionalPlacements.length > 0
-        ? [
-            toCheckboxOption(placementGroup),
-            toDaycareOnlyTerminatable(placementGroup)
-          ]
-        : [toCheckboxOption(placementGroup)],
+    () => [
+      toCheckboxOption(placementGroup),
+      ...maybeCreateDaycareOnlyTerminatable(placementGroup)
+    ],
     [placementGroup]
   )
 
