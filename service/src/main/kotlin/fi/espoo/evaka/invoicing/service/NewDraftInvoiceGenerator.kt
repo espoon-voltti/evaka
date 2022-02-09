@@ -49,6 +49,7 @@ class NewDraftInvoiceGenerator(
         freeChildren: List<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): List<Invoice> {
+        val absencesByChild = absences.groupBy { absence -> absence.childId }
         return placements.keys.mapNotNull { headOfFamilyId ->
             try {
                 generateDraftInvoice(
@@ -58,7 +59,7 @@ class NewDraftInvoiceGenerator(
                     daycareCodes,
                     operationalDays,
                     feeThresholds,
-                    absences,
+                    absencesByChild,
                     plannedAbsences,
                     freeChildren,
                     codebtors
@@ -92,7 +93,7 @@ class NewDraftInvoiceGenerator(
         daycareCodes: Map<DaycareId, DaycareCodes>,
         operationalDays: OperationalDays,
         feeThresholds: FeeThresholds,
-        absences: List<AbsenceStub>,
+        absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
         freeChildren: List<ChildId>,
         codebtors: Map<PersonId, PersonId?>
@@ -175,7 +176,7 @@ class NewDraftInvoiceGenerator(
                     childrenPartialMonth
                 )
 
-                val relevantAbsences = absences.filter { absence ->
+                val relevantAbsences = (absences[child.id] ?: listOf()).filter { absence ->
                     isUnitOperationalDay(
                         operationalDays,
                         separatePeriods,
@@ -196,7 +197,7 @@ class NewDraftInvoiceGenerator(
                             codes,
                             dailyFeeDivisor,
                             attendanceDates,
-                            relevantAbsences.filter { it.childId == childId },
+                            relevantAbsences,
                             childrenFullMonthAbsences[childId] ?: FullMonthAbsenceType.NOTHING,
                         )
                     }
@@ -244,17 +245,17 @@ class NewDraftInvoiceGenerator(
     private fun getFullMonthAbsences(
         placementsList: List<Placements>,
         operationalDays: OperationalDays,
-        absences: List<AbsenceStub>,
+        absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>
     ): Map<ChildId, FullMonthAbsenceType> {
         fun hasPlannedAbsence(childId: ChildId, date: LocalDate): Boolean {
             return plannedAbsences[childId]?.contains(date) ?: false
         }
         fun hasAbsence(childId: ChildId, date: LocalDate): Boolean {
-            return absences.any { absence -> absence.childId == childId && absence.date == date }
+            return absences[childId]?.any { absence -> absence.date == date } ?: false
         }
         fun hasSickleave(childId: ChildId, date: LocalDate): Boolean {
-            return absences.any { absence -> absence.childId == childId && absence.date == date && absence.absenceType == AbsenceType.SICKLEAVE }
+            return absences[childId]?.any { absence -> absence.date == date && absence.absenceType == AbsenceType.SICKLEAVE } ?: false
         }
         fun hasAnyAbsence(childId: ChildId, date: LocalDate): Boolean {
             return hasPlannedAbsence(childId, date) || hasAbsence(childId, date)
