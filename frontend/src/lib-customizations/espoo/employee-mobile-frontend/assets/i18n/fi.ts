@@ -98,6 +98,7 @@ export const fi = {
       TEMPORARY_VISITOR: 'Varalapsi läsnä',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
+      FREE_ABSENCE: 'Maksuton poissaolo',
       NO_ABSENCE: 'Ei poissaoloa'
     },
     careTypes: {

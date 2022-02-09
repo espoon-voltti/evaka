@@ -19,13 +19,14 @@ import {
 import LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { H1, Label } from 'lib-components/typography'
+import { H1, H3, InformationText, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
@@ -42,14 +43,47 @@ interface FormState {
   end: string
   reservationDeadline: string
   showReservationBannerFrom: string
+
+  useFreeAbsencePeriod: boolean
+  freePeriodDeadline: string
+  freePeriodQuestionLabelFi: string
+  freePeriodQuestionLabelSv: string
+  freePeriodQuestionLabelEn: string
+  freePeriodOptions: string
+  freePeriodOptionLabelFi: string
+  freePeriodOptionLabelSv: string
+  freePeriodOptionLabelEn: string
 }
 
-const toHolidayPeriodBody = (s: FormState): HolidayPeriodBody | undefined => {
+const parseFiniteDateRange = (range: string): FiniteDateRange | null => {
+  const [start, end] = range
+    .split('-')
+    .map((s) => s.trim())
+    .map((s) => LocalDate.parseFiOrNull(s))
+  if (!(start && end && start.isEqualOrBefore(end))) return null
+  return new FiniteDateRange(start, end)
+}
+
+const parseDateRanges = (s: string) =>
+  s
+    .split(',')
+    .map((s) => s.trim())
+    .map(parseFiniteDateRange)
+    .filter(Boolean) as FiniteDateRange[]
+
+const formToHolidayPeriodBody = (
+  s: FormState
+): HolidayPeriodBody | undefined => {
   const parsedDeadline = LocalDate.parseFiOrNull(s.reservationDeadline)
   const parsedBannerDate = LocalDate.parseFiOrNull(s.showReservationBannerFrom)
   const parsedStart = LocalDate.parseFiOrNull(s.start)
   const parsedEnd = LocalDate.parseFiOrNull(s.end)
   if (!(parsedStart && parsedEnd && parsedBannerDate && parsedDeadline)) {
+    return undefined
+  }
+
+  const parsedFreePeriodDeadline = LocalDate.parseFiOrNull(s.freePeriodDeadline)
+  if (s.useFreeAbsencePeriod && !parsedFreePeriodDeadline) {
     return undefined
   }
   return {
@@ -65,36 +99,85 @@ const toHolidayPeriodBody = (s: FormState): HolidayPeriodBody | undefined => {
     },
     period: new FiniteDateRange(parsedStart, parsedEnd),
     reservationDeadline: parsedDeadline,
-    showReservationBannerFrom: parsedBannerDate
+    showReservationBannerFrom: parsedBannerDate,
+    freePeriod:
+      s.useFreeAbsencePeriod && parsedFreePeriodDeadline
+        ? {
+            deadline: parsedFreePeriodDeadline,
+            periodOptionLabel: {
+              fi: s.freePeriodOptionLabelFi,
+              sv: s.freePeriodOptionLabelSv,
+              en: s.freePeriodOptionLabelEn
+            },
+            questionLabel: {
+              fi: s.freePeriodQuestionLabelFi,
+              sv: s.freePeriodQuestionLabelSv,
+              en: s.freePeriodQuestionLabelEn
+            },
+            periodOptions: parseDateRanges(s.freePeriodOptions)
+          }
+        : null
   }
 }
 
-const toFormState = (p: HolidayPeriod | undefined): FormState =>
-  p
-    ? {
-        descriptionFi: p.description.fi,
-        descriptionSv: p.description.sv,
-        descriptionEn: p.description.en,
-        descriptionLinkFi: p.descriptionLink.fi,
-        descriptionLinkSv: p.descriptionLink.sv,
-        descriptionLinkEn: p.descriptionLink.en,
-        start: p.period.start.format(),
-        end: p.period.end.format(),
-        reservationDeadline: p.reservationDeadline.format(),
-        showReservationBannerFrom: p.showReservationBannerFrom.format()
-      }
-    : {
-        descriptionFi: '',
-        descriptionSv: '',
-        descriptionEn: '',
-        descriptionLinkFi: '',
-        descriptionLinkSv: '',
-        descriptionLinkEn: '',
-        start: '',
-        end: '',
-        reservationDeadline: '',
-        showReservationBannerFrom: ''
-      }
+const emptyFreePeriod = () => ({
+  freePeriodDeadline: '',
+  freePeriodOptions: '',
+  freePeriodOptionLabelFi: '',
+  freePeriodOptionLabelSv: '',
+  freePeriodOptionLabelEn: '',
+  freePeriodQuestionLabelFi: '',
+  freePeriodQuestionLabelSv: '',
+  freePeriodQuestionLabelEn: ''
+})
+
+const emptyFormState = (): FormState => ({
+  descriptionFi: '',
+  descriptionSv: '',
+  descriptionEn: '',
+  descriptionLinkFi: '',
+  descriptionLinkSv: '',
+  descriptionLinkEn: '',
+  start: '',
+  end: '',
+  reservationDeadline: '',
+  showReservationBannerFrom: '',
+  useFreeAbsencePeriod: false,
+  ...emptyFreePeriod()
+})
+
+const toFormState = (p: HolidayPeriod | undefined): FormState => {
+  if (!p) {
+    return emptyFormState()
+  }
+  return {
+    descriptionFi: p.description.fi,
+    descriptionSv: p.description.sv,
+    descriptionEn: p.description.en,
+    descriptionLinkFi: p.descriptionLink.fi,
+    descriptionLinkSv: p.descriptionLink.sv,
+    descriptionLinkEn: p.descriptionLink.en,
+    start: p.period.start.format(),
+    end: p.period.end.format(),
+    reservationDeadline: p.reservationDeadline.format(),
+    showReservationBannerFrom: p.showReservationBannerFrom.format(),
+    useFreeAbsencePeriod: !!p.freePeriod,
+    ...(p.freePeriod
+      ? {
+          freePeriodDeadline: p.freePeriod.deadline.format(),
+          freePeriodOptions: p.freePeriod.periodOptions
+            .map((r) => r.format())
+            .join(', '),
+          freePeriodOptionLabelFi: p.freePeriod.periodOptionLabel.fi,
+          freePeriodOptionLabelSv: p.freePeriod.periodOptionLabel.sv,
+          freePeriodOptionLabelEn: p.freePeriod.periodOptionLabel.en,
+          freePeriodQuestionLabelFi: p.freePeriod.questionLabel.fi,
+          freePeriodQuestionLabelSv: p.freePeriod.questionLabel.sv,
+          freePeriodQuestionLabelEn: p.freePeriod.questionLabel.en
+        }
+      : emptyFreePeriod())
+  }
+}
 
 interface Props {
   onSuccess: () => void
@@ -110,7 +193,7 @@ export default React.memo(function HolidayPeriodForm({
   const { i18n, lang } = useTranslation()
 
   const [form, setForm] = useState<FormState>(() => toFormState(holidayPeriod))
-  const update: UpdateStateFn<FormState> = useCallback(
+  const update = useCallback<UpdateStateFn<FormState>>(
     (p) => setForm((old) => ({ ...old, ...p })),
     []
   )
@@ -122,6 +205,10 @@ export default React.memo(function HolidayPeriodForm({
     const parsedDeadline = LocalDate.parseFiOrNull(form.reservationDeadline)
     const parsedStart = LocalDate.parseFiOrNull(form.start)
     const parsedEnd = LocalDate.parseFiOrNull(form.end)
+    const parsedFreePeriodDeadline = LocalDate.parseFiOrNull(
+      form.freePeriodDeadline
+    )
+
     const errors: Record<keyof typeof form, ErrorKey | undefined> = {
       showReservationBannerFrom: !parsedBannerDate
         ? 'required'
@@ -152,14 +239,38 @@ export default React.memo(function HolidayPeriodForm({
         ? 'validDate'
         : parsedStart && parsedEnd.isBefore(parsedStart)
         ? 'dateTooEarly'
-        : undefined
+        : undefined,
+      useFreeAbsencePeriod: undefined,
+      freePeriodDeadline:
+        form.useFreeAbsencePeriod && !parsedFreePeriodDeadline
+          ? 'validDate'
+          : undefined,
+      freePeriodOptionLabelFi: validateIf(
+        form.useFreeAbsencePeriod,
+        form.freePeriodOptionLabelFi,
+        required
+      ),
+      freePeriodOptionLabelSv: undefined,
+      freePeriodOptionLabelEn: undefined,
+      freePeriodOptions:
+        form.useFreeAbsencePeriod &&
+        parseDateRanges(form.freePeriodOptions).length === 0
+          ? 'required'
+          : undefined,
+      freePeriodQuestionLabelFi: validateIf(
+        form.useFreeAbsencePeriod,
+        form.freePeriodQuestionLabelFi,
+        required
+      ),
+      freePeriodQuestionLabelEn: undefined,
+      freePeriodQuestionLabelSv: undefined
     }
     const isValid = Object.values(errors).every((err) => !err)
     return [errors, isValid, parsedStart, parsedEnd]
   }, [form])
 
   const onSubmit = useCallback(() => {
-    const validForm = isValid && toHolidayPeriodBody(form)
+    const validForm = isValid && formToHolidayPeriodBody(form)
     if (!validForm) {
       return Promise.reject()
     }
@@ -281,7 +392,7 @@ export default React.memo(function HolidayPeriodForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayPeriods.descriptionLink} *</Label>
+        <Label>{i18n.holidayPeriods.descriptionLink}</Label>
         <InputField
           width="L"
           placeholder="https://example.com"
@@ -299,7 +410,6 @@ export default React.memo(function HolidayPeriodForm({
         <Label>{i18n.holidayPeriods.descriptionLink} SV</Label>
         <InputField
           width="L"
-          placeholder="https://example.com"
           value={form.descriptionLinkSv}
           onChange={(descriptionLinkSv) => update({ descriptionLinkSv })}
           data-qa="input-description-link-sv"
@@ -314,7 +424,6 @@ export default React.memo(function HolidayPeriodForm({
         <Label>{i18n.holidayPeriods.descriptionLink} EN</Label>
         <InputField
           width="L"
-          placeholder="https://example.com"
           value={form.descriptionLinkEn}
           onChange={(descriptionLinkEn) => update({ descriptionLinkEn })}
           data-qa="input-description-link-en"
@@ -325,7 +434,143 @@ export default React.memo(function HolidayPeriodForm({
           )}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
+
+        <Label>Kysy maksuton kausi</Label>
+        <Checkbox
+          checked={form.useFreeAbsencePeriod}
+          data-qa="input-use-free-absence-period"
+          label=""
+          hiddenLabel
+          onChange={(useFreeAbsencePeriod) => update({ useFreeAbsencePeriod })}
+        />
       </ListGrid>
+
+      {form.useFreeAbsencePeriod && (
+        <>
+          <H3>Maksuton kausi</H3>
+          <ListGrid>
+            <Label>{i18n.holidayPeriods.reservationDeadline} *</Label>
+            <DatePicker
+              date={form.freePeriodDeadline}
+              locale={lang}
+              required
+              onChange={(freePeriodDeadline) => update({ freePeriodDeadline })}
+              data-qa="input-free-period-deadline"
+            />
+
+            <Label>{i18n.holidayPeriods.freePeriodQuestionLabel} *</Label>
+            <TextArea
+              value={form.freePeriodQuestionLabelFi}
+              onChange={(freePeriodQuestionLabelFi) =>
+                update({ freePeriodQuestionLabelFi })
+              }
+              placeholder={
+                i18n.holidayPeriods.freePeriodQuestionLabelPlaceholder
+              }
+              data-qa="input-free-period-question-label-fi"
+              info={errorToInputInfo(
+                errors.freePeriodQuestionLabelFi,
+                i18n.validationErrors
+              )}
+              hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            />
+
+            <Label>{i18n.holidayPeriods.freePeriodQuestionLabel} SV</Label>
+            <TextArea
+              value={form.freePeriodQuestionLabelSv}
+              onChange={(freePeriodQuestionLabelSv) =>
+                update({ freePeriodQuestionLabelSv })
+              }
+              data-qa="input-free-period-question-label-sv"
+              info={errorToInputInfo(
+                errors.freePeriodQuestionLabelSv,
+                i18n.validationErrors
+              )}
+              hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            />
+
+            <Label>{i18n.holidayPeriods.freePeriodQuestionLabel} EN</Label>
+            <TextArea
+              value={form.freePeriodQuestionLabelEn}
+              onChange={(freePeriodQuestionLabelEn) =>
+                update({ freePeriodQuestionLabelEn })
+              }
+              data-qa="input-free-period-question-label-en"
+              info={errorToInputInfo(
+                errors.freePeriodQuestionLabelEn,
+                i18n.validationErrors
+              )}
+              hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            />
+
+            <Label>{i18n.holidayPeriods.freePeriodOptions} *</Label>
+            <TextArea
+              required
+              value={form.freePeriodOptions}
+              onChange={(freePeriodOptions) => update({ freePeriodOptions })}
+              placeholder={i18n.holidayPeriods.freePeriodOptionsPlaceholder}
+              data-qa="input-free-period-options"
+              info={errorToInputInfo(
+                errors.freePeriodOptions,
+                i18n.validationErrors
+              )}
+              hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            />
+
+            <Gap horizontal />
+            <InformationText>
+              {parseDateRanges(form.freePeriodOptions)
+                .map((r) => r.format())
+                .join(', ')}
+            </InformationText>
+
+            <Label>{i18n.holidayPeriods.freePeriodOptionLabel} *</Label>
+            <TextArea
+              required
+              value={form.freePeriodOptionLabelFi}
+              onChange={(freePeriodOptionLabelFi) =>
+                update({ freePeriodOptionLabelFi })
+              }
+              placeholder={i18n.holidayPeriods.freePeriodOptionLabelPlaceholder}
+              data-qa="input-free-period-option-label-fi"
+              info={errorToInputInfo(
+                errors.freePeriodOptionLabelFi,
+                i18n.validationErrors
+              )}
+              hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            />
+
+            <Label>{i18n.holidayPeriods.freePeriodOptionLabel} SV</Label>
+            <TextArea
+              value={form.freePeriodOptionLabelSv}
+              onChange={(freePeriodOptionLabelSv) =>
+                update({ freePeriodOptionLabelSv })
+              }
+              data-qa="input-free-period-option-label-sv"
+              info={errorToInputInfo(
+                errors.freePeriodOptionLabelSv,
+                i18n.validationErrors
+              )}
+              hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            />
+
+            <Label>{i18n.holidayPeriods.freePeriodOptionLabel} EN</Label>
+            <TextArea
+              value={form.freePeriodOptionLabelEn}
+              onChange={(freePeriodOptionLabelEn) =>
+                update({ freePeriodOptionLabelEn })
+              }
+              data-qa="input-free-period-option-label-en"
+              info={errorToInputInfo(
+                errors.freePeriodOptionLabelEn,
+                i18n.validationErrors
+              )}
+              hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            />
+          </ListGrid>
+        </>
+      )}
+
       <Gap />
       <ButtonContainer>
         <AsyncButton

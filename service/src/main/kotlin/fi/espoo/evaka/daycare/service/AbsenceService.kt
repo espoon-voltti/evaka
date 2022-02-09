@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -245,7 +245,8 @@ enum class AbsenceType : DatabaseEnum {
     UNKNOWN_ABSENCE,
     PLANNED_ABSENCE,
     PARENTLEAVE,
-    FORCE_MAJEURE;
+    FORCE_MAJEURE,
+    FREE_ABSENCE;
 
     override val sqlType: String = "absence_type"
 }

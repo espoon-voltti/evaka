@@ -1,14 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
-import {
-  AbsenceCategory,
-  AbsenceType
-} from 'lib-common/generated/api-types/daycare'
+import { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/enums'
-import LocalDate from 'lib-common/local-date'
 import { Translations } from '../state/i18n'
 
 export type ChildAttendanceUIState =
@@ -31,15 +27,6 @@ export function mapChildAttendanceUIState(
       return 'ABSENT'
   }
 }
-
-export const AbsenceTypes: AbsenceType[] = [
-  'OTHER_ABSENCE',
-  'SICKLEAVE',
-  'UNKNOWN_ABSENCE',
-  'PLANNED_ABSENCE',
-  'PARENTLEAVE',
-  'FORCE_MAJEURE'
-]
 
 export function formatCategory(
   category: AbsenceCategory,
@@ -84,9 +71,4 @@ export function formatCategory(
     case 'SCHOOL_SHIFT_CARE':
       return i18n.absences.careTypes.SCHOOL_SHIFT_CARE
   }
-}
-
-export interface AbsenceBackupCare {
-  childId: string
-  date: LocalDate
 }

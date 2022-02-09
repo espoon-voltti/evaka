@@ -76,6 +76,7 @@ export type AbsenceType =
   | 'PLANNED_ABSENCE'
   | 'PARENTLEAVE'
   | 'FORCE_MAJEURE'
+  | 'FREE_ABSENCE'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceUpsert

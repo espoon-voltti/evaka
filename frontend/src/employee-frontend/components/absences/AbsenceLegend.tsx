@@ -21,7 +21,8 @@ const absenceTypesInLegend: CalendarAbsenceType[] = [
   'SICKLEAVE',
   'TEMPORARY_RELOCATION',
   'PARENTLEAVE',
-  'FORCE_MAJEURE'
+  'FORCE_MAJEURE',
+  'FREE_ABSENCE'
 ]
 
 const AbsenceLegendRow = styled.div`

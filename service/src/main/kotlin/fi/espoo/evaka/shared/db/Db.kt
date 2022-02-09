@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.array.SqlArrayType
 import org.jdbi.v3.core.generic.GenericType
@@ -30,6 +31,7 @@ import org.jdbi.v3.jackson2.Jackson2Config
 import org.jdbi.v3.jackson2.Jackson2Plugin
 import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
+import org.postgresql.util.PGobject
 import java.lang.reflect.Type
 import java.sql.ResultSet
 import java.util.Optional
@@ -101,6 +103,12 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.register(productKeyColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
+    jdbi.registerArrayType(FiniteDateRange::class.java, "daterange") {
+        PGobject().apply {
+            type = "daterange"
+            value = "[${it.start},${it.end}]"
+        }
+    }
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(
             (elementType as? Class<*>)?.let { elementClass ->

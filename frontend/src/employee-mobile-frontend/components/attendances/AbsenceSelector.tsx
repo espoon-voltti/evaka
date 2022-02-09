@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,7 +7,16 @@ import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
-import { AbsenceTypes } from '../../types'
+
+const allSelectableAbsenceTypes: AbsenceType[] = [
+  'OTHER_ABSENCE',
+  'SICKLEAVE',
+  'UNKNOWN_ABSENCE',
+  'PLANNED_ABSENCE'
+]
+const selectableAbsenceTypesWithoutUnknown = allSelectableAbsenceTypes.filter(
+  (type) => type !== 'UNKNOWN_ABSENCE'
+)
 
 interface Props {
   selectedAbsenceType: AbsenceType | undefined
@@ -20,16 +29,13 @@ interface Props {
 export default function AbsenceSelector({
   selectedAbsenceType,
   setSelectedAbsenceType,
-  noUnknownAbsences
+  noUnknownAbsences = false
 }: Props) {
   const { i18n } = useTranslation()
 
-  const absenceTypes = AbsenceTypes.filter(
-    (type) =>
-      type !== 'PARENTLEAVE' &&
-      type !== 'FORCE_MAJEURE' &&
-      !(noUnknownAbsences && type === 'UNKNOWN_ABSENCE')
-  )
+  const absenceTypes = noUnknownAbsences
+    ? selectableAbsenceTypesWithoutUnknown
+    : allSelectableAbsenceTypes
 
   return (
     <Fragment>

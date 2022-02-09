@@ -19,6 +19,7 @@ const mapHolidayPeriod = ({
   showReservationBannerFrom,
   period,
   reservationDeadline,
+  freePeriod,
   ...rest
 }: JsonOf<HolidayPeriod>): HolidayPeriod => ({
   ...rest,
@@ -26,7 +27,16 @@ const mapHolidayPeriod = ({
   updated: new Date(updated),
   reservationDeadline: LocalDate.parseIso(reservationDeadline),
   showReservationBannerFrom: LocalDate.parseIso(showReservationBannerFrom),
-  period: FiniteDateRange.parseJson(period)
+  period: FiniteDateRange.parseJson(period),
+  freePeriod: freePeriod
+    ? {
+        ...freePeriod,
+        deadline: LocalDate.parseIso(freePeriod.deadline),
+        periodOptions: freePeriod.periodOptions.map((opt) =>
+          FiniteDateRange.parseJson(opt)
+        )
+      }
+    : null
 })
 
 export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {

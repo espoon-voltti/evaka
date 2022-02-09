@@ -2086,6 +2086,7 @@ export const fi = {
       TEMPORARY_VISITOR: 'Varalapsi läsnä',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
+      FREE_ABSENCE: 'Maksuton poissaolo',
       NO_ABSENCE: 'Ei poissaoloa'
     },
     absenceTypesShort: {
@@ -2096,6 +2097,7 @@ export const fi = {
       TEMPORARY_RELOCATION: 'Varasijoitus',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton',
+      FREE_ABSENCE: 'Maksuton',
       NO_ABSENCE: 'Ei poissa'
     },
     careTypes: {
@@ -2132,6 +2134,7 @@ export const fi = {
         TEMPORARY_VISITOR: 'Varalapsi läsnä',
         PARENTLEAVE: 'Isyysvapaa',
         FORCE_MAJEURE: 'Maksuton päivä (rajoitettu käyttö)',
+        FREE_ABSENCE: 'Maksuton poissaolo',
         NO_ABSENCE: 'Ei poissaoloa'
       },
       free: 'Maksuton',
@@ -3013,6 +3016,15 @@ export const fi = {
     descriptionLink: 'Lisätietolinkki',
     period: 'Aikaväli',
     showReservationBannerFrom: 'Näytetään alkaen',
-    reservationDeadline: 'Varaukset viimeistään'
+    reservationDeadline: 'Varaukset viimeistään',
+    freePeriodQuestionLabel: 'Ilmaisen kauden kysymys',
+    freePeriodQuestionLabelPlaceholder:
+      'Esim. Ovatko lapsenne 30.5.–31.8. välillä poissa yhtenäisesti 8 viikkoa?',
+    freePeriodOptionLabel: 'Ilmaisen kauden valinnan kysymys',
+    freePeriodOptionLabelPlaceholder:
+      'Esim. Lapset ovat 8 viikkoa poissa aikavälillä',
+    freePeriodOptions: 'Ilmaisien kausien vaihtoehdot',
+    freePeriodOptionsPlaceholder:
+      '30.05.2022-24.08.2022, 06.06.2022-31.08.2022 (huom. formaatti!)'
   }
 }
