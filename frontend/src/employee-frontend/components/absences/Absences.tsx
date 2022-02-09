@@ -364,6 +364,10 @@ const AbsencesPage = styled.div`
       border-top-color: ${absenceColors.FORCE_MAJEURE};
     }
 
+    &-FREE_ABSENCE {
+      border-top-color: ${absenceColors.FREE_ABSENCE};
+    }
+
     &-weekend {
       border-top-color: ${colors.grayscale.g4};
     }
@@ -406,6 +410,10 @@ const AbsencesPage = styled.div`
 
     &-FORCE_MAJEURE {
       border-bottom-color: ${absenceColors.FORCE_MAJEURE};
+    }
+
+    &-FREE_ABSENCE {
+      border-bottom-color: ${absenceColors.FREE_ABSENCE};
     }
 
     &-weekend {

@@ -320,7 +320,7 @@ class DefaultDraftInvoiceGenerator(private val productProvider: InvoiceProductPr
                 product = refundProduct
             )
         }
-        return withDailyModifiers + monthlyAbsenceDicount(
+        return withDailyModifiers + monthlyAbsenceDiscount(
             withDailyModifiers,
             placement,
             absences,
@@ -370,16 +370,19 @@ class DefaultDraftInvoiceGenerator(private val productProvider: InvoiceProductPr
     ): List<LocalDate> {
         val relevantOperationalDays = operationalDays.forUnit(placement.unit).filter { period.includes(it) }
 
-        val forceMajeureAbsences = absences.filter { it.absenceType == AbsenceType.FORCE_MAJEURE }
-        val forceMajeureDays =
-            relevantOperationalDays.filter { day -> forceMajeureAbsences.find { day == it.date } != null }
+        val forceMajeureAndFreeDays = absences
+            .filter { it.absenceType == AbsenceType.FORCE_MAJEURE || it.absenceType == AbsenceType.FREE_ABSENCE }
+            .filter { relevantOperationalDays.contains(it.date) }
+            .map { it.date }
 
-        val parentLeaveAbsences = absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }
-        val parentLeaveDays = relevantOperationalDays
-            .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it) < 2 }
-            .filter { day -> parentLeaveAbsences.find { day == it.date } != null }
+        val parentLeaveAbsences = absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }.map { it.date }
+        val parentLeaveDays = if (parentLeaveAbsences.isNotEmpty())
+            relevantOperationalDays
+                .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it) < 2 }
+                .filter { day -> parentLeaveAbsences.contains(day) }
+        else listOf()
 
-        return (forceMajeureDays + parentLeaveDays).distinct().take(operationalDays.generalCase.size)
+        return (forceMajeureAndFreeDays + parentLeaveDays).distinct().take(operationalDays.generalCase.size)
     }
 
     private fun getDailyDiscount(period: DateRange, totalSoFar: Int, operationalDays: List<LocalDate>): Int {
@@ -387,7 +390,7 @@ class DefaultDraftInvoiceGenerator(private val productProvider: InvoiceProductPr
         return BigDecimal(totalSoFar).divide(BigDecimal(dayAmount), 0, RoundingMode.HALF_UP).toInt()
     }
 
-    private fun monthlyAbsenceDicount(
+    private fun monthlyAbsenceDiscount(
         rows: List<InvoiceRow>,
         placement: PlacementStub,
         absences: List<AbsenceStub>,

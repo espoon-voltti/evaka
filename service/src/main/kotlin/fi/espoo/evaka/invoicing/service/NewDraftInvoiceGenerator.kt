@@ -477,13 +477,17 @@ class NewDraftInvoiceGenerator(
         absences: List<AbsenceStub>,
         dailyFeeDivisor: Int,
     ): Int {
-        val forceMajeureAbsences = absences.filter { it.absenceType == AbsenceType.FORCE_MAJEURE }
-        val forceMajeureDays = forceMajeureAbsences.filter { period.includes(it.date) }
+        val forceMajeureAndFreeAbsences = absences
+            .filter { it.absenceType == AbsenceType.FORCE_MAJEURE || it.absenceType == AbsenceType.FREE_ABSENCE }
+            .map { it.date }
+        val forceMajeureDays = forceMajeureAndFreeAbsences.filter { period.includes(it) }
 
-        val parentLeaveAbsences = absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }
-        val parentLeaveDays = parentLeaveAbsences
-            .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it.date) < 2 }
-            .filter { period.includes(it.date) }
+        val parentLeaveAbsences = absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }.map { it.date }
+        val parentLeaveDays = if (parentLeaveAbsences.isNotEmpty())
+            parentLeaveAbsences
+                .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it) < 2 }
+                .filter { period.includes(it) }
+        else listOf()
 
         return minOf(forceMajeureDays.size + parentLeaveDays.size, dailyFeeDivisor)
     }

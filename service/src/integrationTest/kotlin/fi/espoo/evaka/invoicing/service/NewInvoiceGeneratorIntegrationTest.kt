@@ -1532,7 +1532,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `invoice generation with 2 decisions plus parent leave and force majeure absences`() {
+    fun `invoice generation with 2 decisions plus parent leave, force majeure and free absences`() {
         val periods = listOf(
             DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 11)),
             DateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
@@ -1542,7 +1542,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
             LocalDate.of(2019, 1, 7) to AbsenceType.PARENTLEAVE,
             LocalDate.of(2019, 1, 14) to AbsenceType.PARENTLEAVE,
             LocalDate.of(2019, 1, 21) to AbsenceType.FORCE_MAJEURE,
-            LocalDate.of(2019, 1, 28) to AbsenceType.FORCE_MAJEURE
+            LocalDate.of(2019, 1, 28) to AbsenceType.FREE_ABSENCE
         )
 
         initDataForAbsences(periods, absenceDays)
@@ -2114,6 +2114,44 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
 
         val forceMajeureAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
             .map { it to AbsenceType.FORCE_MAJEURE }
+        val plannedAbsenceDays =
+            datesBetween(
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 31)
+            )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays = (forceMajeureAbsenceDays + plannedAbsenceDays).toMap()
+
+        initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(0, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-28900, invoiceRow.unitPrice)
+                assertEquals(-28900, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 7 days of force majeure and 8 days of free absences`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        val forceMajeureAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
+            .mapIndexed { idx, it -> it to if (idx % 2 == 0) AbsenceType.FREE_ABSENCE else AbsenceType.FORCE_MAJEURE }
         val plannedAbsenceDays =
             datesBetween(
                 LocalDate.of(2019, 1, 23),
