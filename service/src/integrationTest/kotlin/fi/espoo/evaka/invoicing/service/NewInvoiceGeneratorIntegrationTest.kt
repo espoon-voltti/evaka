@@ -1403,7 +1403,7 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
     fun `planned absences do not generate a discount on invoices`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, period.end)
+        val absenceDays = datesBetween(period.start, period.end!!.minusDays(1))
             .map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays)
@@ -1420,6 +1420,37 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `planned absences for the whole month generate a discount`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        val absenceDays = datesBetween(period.start, period.end)
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+
+        initDataForAbsences(listOf(period), absenceDays)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(14450, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(invoiceRow.product, productProvider.fullMonthAbsence)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-14450, invoiceRow.unitPrice)
+                assertEquals(-14450, invoiceRow.price)
             }
         }
     }
@@ -1969,7 +2000,8 @@ class NewInvoiceGeneratorIntegrationTest : PureJdbiTest() {
         db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
 
         insertAbsences(
-            testChild_1.id, listOf(
+            testChild_1.id,
+            listOf(
                 LocalDate.of(2021, 12, 23) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 12, 27) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 12, 28) to AbsenceType.OTHER_ABSENCE,

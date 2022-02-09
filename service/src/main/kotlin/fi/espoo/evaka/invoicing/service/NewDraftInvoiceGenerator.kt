@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -31,7 +30,6 @@ import java.math.RoundingMode
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
 @Component
@@ -80,6 +78,13 @@ class NewDraftInvoiceGenerator(
         val contractDaysPerMonth: Int?,
     )
 
+    private enum class FullMonthAbsenceType {
+        SICK_LEAVE_FULL_MONTH,
+        ABSENCE_FULL_MONTH,
+        SICK_LEAVE_11,
+        NOTHING
+    }
+
     private fun generateDraftInvoice(
         decisions: List<FeeDecision>,
         placements: List<Placements>,
@@ -93,7 +98,9 @@ class NewDraftInvoiceGenerator(
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
         val headOfFamily = placements.first().headOfFamily
-        val partialMonthChildren = getPartialMonthChildren(decisions, operationalDays)
+        val childrenPartialMonth = getPartialMonthChildren(placements, operationalDays, decisions)
+        val childrenFullMonthAbsences =
+            getFullMonthAbsences(placements, operationalDays, absences, plannedAbsences)
 
         val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
             val relevantPeriod = DateRange(
@@ -165,24 +172,21 @@ class NewDraftInvoiceGenerator(
                     separatePeriods,
                     contractDaysPerMonth,
                     childPlannedAbsences,
-                    partialMonthChildren
+                    childrenPartialMonth
                 )
 
-                val relevantAbsences =
-                    absences.filter { absence ->
-                        isUnitOperationalDay(
-                            operationalDays,
-                            separatePeriods,
-                            absence.date
-                        )
-                    } + if (contractDaysPerMonth != null) {
-                        // Turn PLANNED_ABSENCE to OTHER_ABSENCE when they occur on attendance dates
-                        plannedToOtherAbsences(child.id, attendanceDates, childPlannedAbsences)
-                    } else listOf()
+                val relevantAbsences = absences.filter { absence ->
+                    isUnitOperationalDay(
+                        operationalDays,
+                        separatePeriods,
+                        absence.date
+                    )
+                }
 
                 separatePeriods
                     .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
                     .flatMap { (period, rowStub) ->
+                        val childId = rowStub.child.id
                         val placementUnit = rowStub.placement.unit
                         val codes = daycareCodes[placementUnit]
                             ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
@@ -192,7 +196,8 @@ class NewDraftInvoiceGenerator(
                             codes,
                             dailyFeeDivisor,
                             attendanceDates,
-                            relevantAbsences.filter { it.childId == rowStub.child.id }
+                            relevantAbsences.filter { it.childId == childId },
+                            childrenFullMonthAbsences[childId] ?: FullMonthAbsenceType.NOTHING,
                         )
                     }
             }
@@ -221,21 +226,68 @@ class NewDraftInvoiceGenerator(
     }
 
     private fun getPartialMonthChildren(
+        placementsList: List<Placements>,
+        operationalDays: OperationalDays,
         decisions: List<FeeDecision>,
-        operationalDays: OperationalDays
     ): Set<ChildId> {
-        val childIds = decisions.flatMap { decision -> decision.children.map { part -> part.child.id } }.toSet()
-        val childOperationalDaysWithoutDecision = childIds.associateWith { operationalDays.generalCase.toMutableSet() }
-        decisions.forEach { decision ->
-            decision.children.forEach { part ->
-                childOperationalDaysWithoutDecision[part.child.id]!!.removeIf { date ->
-                    decision.validDuring.includes(
-                        date
-                    )
+        fun hasFeeDecision(childId: ChildId, date: LocalDate): Boolean {
+            return decisions.any { decision -> decision.validDuring.includes(date) && decision.children.any { part -> part.child.id == childId } }
+        }
+
+        return getChildOperationalDays(placementsList, operationalDays)
+            .mapValues { (childId, childOperationalDays) -> childOperationalDays.any { date -> !hasFeeDecision(childId, date) } }
+            .filter { (_, partialMonth) -> partialMonth }
+            .map { (childId, _) -> childId }
+            .toSet()
+    }
+
+    private fun getFullMonthAbsences(
+        placementsList: List<Placements>,
+        operationalDays: OperationalDays,
+        absences: List<AbsenceStub>,
+        plannedAbsences: Map<ChildId, Set<LocalDate>>
+    ): Map<ChildId, FullMonthAbsenceType> {
+        fun hasPlannedAbsence(childId: ChildId, date: LocalDate): Boolean {
+            return plannedAbsences[childId]?.contains(date) ?: false
+        }
+        fun hasAbsence(childId: ChildId, date: LocalDate): Boolean {
+            return absences.any { absence -> absence.childId == childId && absence.date == date }
+        }
+        fun hasSickleave(childId: ChildId, date: LocalDate): Boolean {
+            return absences.any { absence -> absence.childId == childId && absence.date == date && absence.absenceType == AbsenceType.SICKLEAVE }
+        }
+        fun hasAnyAbsence(childId: ChildId, date: LocalDate): Boolean {
+            return hasPlannedAbsence(childId, date) || hasAbsence(childId, date)
+        }
+
+        return getChildOperationalDays(placementsList, operationalDays)
+            .mapValues { (childId, childOperationalDays) ->
+                if (childOperationalDays.all { date -> hasSickleave(childId, date) }) {
+                    FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
+                } else if (childOperationalDays.filter { date -> hasSickleave(childId, date) }.size >= 11) {
+                    FullMonthAbsenceType.SICK_LEAVE_11
+                } else if (childOperationalDays.all { date -> hasAnyAbsence(childId, date) }) {
+                    FullMonthAbsenceType.ABSENCE_FULL_MONTH
+                } else {
+                    FullMonthAbsenceType.NOTHING
                 }
             }
+    }
+
+    private fun getChildOperationalDays(
+        placementsList: List<Placements>,
+        operationalDays: OperationalDays,
+    ): Map<ChildId, Set<LocalDate>> {
+        return placementsList.flatMap { p ->
+            p.placements.map { (child, placement) ->
+                val unitOperationalDays = operationalDays.forUnit(placement.unit)
+                child.id to unitOperationalDays
+            }
         }
-        return childOperationalDaysWithoutDecision.filterNot { (_, dates) -> dates.isEmpty() }.keys
+            .groupBy { (childId, _) -> childId }
+            .mapValues { (_, operationalDaysList) ->
+                operationalDaysList.flatMap { (_, operationalDays) -> operationalDays }.toSet()
+            }
     }
 
     private fun getAttendanceDates(
@@ -295,25 +347,14 @@ class NewDraftInvoiceGenerator(
         }
     }
 
-    private fun plannedToOtherAbsences(
-        childId: ChildId,
-        attendanceDates: List<LocalDate>,
-        childPlannedAbsences: Set<LocalDate>,
-    ): List<AbsenceStub> {
-        return attendanceDates.filter { date -> childPlannedAbsences.contains(date) }.map { date ->
-            AbsenceStub(
-                childId, date, AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE
-            )
-        }
-    }
-
     private fun toInvoiceRows(
         period: DateRange,
         invoiceRowStub: InvoiceRowStub,
         codes: DaycareCodes,
         dailyFeeDivisor: Int,
         attendanceDates: List<LocalDate>,
-        absences: List<AbsenceStub>
+        absences: List<AbsenceStub>,
+        fullMonthAbsenceType: FullMonthAbsenceType,
     ): List<InvoiceRow> {
         return when (invoiceRowStub.placement.type) {
             PlacementType.TEMPORARY_DAYCARE,
@@ -337,7 +378,8 @@ class NewDraftInvoiceGenerator(
                 invoiceRowStub.contractDaysPerMonth,
                 attendanceDates,
                 invoiceRowStub.feeAlterations,
-                absences
+                absences,
+                fullMonthAbsenceType
             )
         }
     }
@@ -386,7 +428,8 @@ class NewDraftInvoiceGenerator(
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
-        absences: List<AbsenceStub>
+        absences: List<AbsenceStub>,
+        fullMonthAbsenceType: FullMonthAbsenceType,
     ): List<InvoiceRow> {
         // Make sure the number of operational days in a month doesn't exceed `dailyFeeDivisor`.
         //
@@ -462,8 +505,7 @@ class NewDraftInvoiceGenerator(
         }
         return withDailyModifiers + monthlyAbsenceDiscount(
             withDailyModifiers,
-            absences,
-            attendanceDates
+            fullMonthAbsenceType
         ) { absenceProduct, absenceDiscount ->
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
@@ -568,34 +610,24 @@ class NewDraftInvoiceGenerator(
 
     private fun monthlyAbsenceDiscount(
         rows: List<InvoiceRow>,
-        absences: List<AbsenceStub>,
-        attendanceDates: List<LocalDate>,
+        fullMonthAbsenceType: FullMonthAbsenceType,
         toInvoiceRow: (ProductKey, Int) -> InvoiceRow
     ): List<InvoiceRow> {
         val total = invoiceRowTotal(rows)
         if (total == 0) return listOf()
 
-        val sickAbsences = absences.filter { it.absenceType == AbsenceType.SICKLEAVE }.map { it.date }
-        val allAbsences = absences.map { it.date }
-
         val halfPrice = { price: Int ->
             BigDecimal(price).divide(BigDecimal(2), 0, RoundingMode.HALF_UP).toInt()
         }
-        val (product, totalDiscount) = when {
-            sickAbsences.size >= attendanceDates.size -> productProvider.fullMonthSickLeave to -total
-            sickAbsences.size >= 11 -> productProvider.partMonthSickLeave to -halfPrice(total)
-            allAbsences.size >= attendanceDates.size -> productProvider.fullMonthAbsence to -halfPrice(total)
-            else -> return listOf()
+
+        val (product, totalDiscount) = when (fullMonthAbsenceType) {
+            FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH -> productProvider.fullMonthSickLeave to -total
+            FullMonthAbsenceType.SICK_LEAVE_11 -> productProvider.partMonthSickLeave to -halfPrice(total)
+            FullMonthAbsenceType.ABSENCE_FULL_MONTH -> productProvider.fullMonthAbsence to -halfPrice(total)
+            FullMonthAbsenceType.NOTHING -> return listOf()
         }
 
         return listOf(toInvoiceRow(product, totalDiscount))
-    }
-
-    private fun getPreviousMonthRange(): DateRange {
-        val lastMonth = LocalDate.now().minusMonths(1)
-        val from = lastMonth.with(TemporalAdjusters.firstDayOfMonth())
-        val to = lastMonth.with(TemporalAdjusters.lastDayOfMonth())
-        return DateRange(from, to)
     }
 
     /*
