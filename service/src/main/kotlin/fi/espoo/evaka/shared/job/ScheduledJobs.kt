@@ -15,7 +15,8 @@ import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
-import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
+import fi.espoo.evaka.pis.getInactiveEmployees
+import fi.espoo.evaka.pis.resetEmployeeRoles
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -29,7 +30,6 @@ import fi.espoo.evaka.varda.VardaUpdateService
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
-import java.time.Instant
 import java.time.LocalDate
 
 enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
@@ -173,6 +173,10 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
     }
 
     fun inactiveEmployeesRoleReset(db: Database.Connection) {
-        db.transaction { it.clearRolesForInactiveEmployees(Instant.now()) }
+        db.transaction {
+            val ids = it.getInactiveEmployees(HelsinkiDateTime.now())
+            logger.info { "Resetting roles of ${ids.size} inactive employees: $ids" }
+            it.resetEmployeeRoles(ids)
+        }
     }
 }

@@ -18,9 +18,6 @@ import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalTime
 
 data class NewEmployee(
     val firstName: String,
@@ -299,23 +296,34 @@ fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
         .mapTo<Boolean>()
         .firstOrNull() ?: false
 
-/*
-Last login timestamps are tracked since May 2021 so using June 2021 as a default should make sure that this role reset
-is not too eager
-*/
-fun Database.Transaction.clearRolesForInactiveEmployees(now: Instant) = createUpdate(
+fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> = createQuery(
+    """
+SELECT id
+FROM employee
+WHERE (
+    roles != '{}'
+    OR EXISTS (SELECT 1 FROM daycare_acl WHERE employee_id = employee.id)
+    OR EXISTS (SELECT 1 FROM daycare_group_acl WHERE employee_id = employee.id)
+)
+AND last_login IS NULL OR last_login < :now - interval '3 months'
+    """.trimIndent()
+)
+    .bind("now", now)
+    .mapTo<EmployeeId>()
+    .list()
+
+fun Database.Transaction.resetEmployeeRoles(ids: Collection<EmployeeId>) = createUpdate(
     """
 WITH reset_employee AS (
     UPDATE employee
     SET roles = '{}'
-    WHERE coalesce(last_login, :defaultLastLogin) < :now::timestamp with time zone - interval '3 months'
+    WHERE id = ANY(:ids)
     RETURNING id
 ), deleted_daycare_acl AS (
     DELETE FROM daycare_acl WHERE employee_id IN (SELECT id FROM reset_employee)
 )
 DELETE FROM daycare_group_acl WHERE employee_id IN (SELECT id FROM reset_employee)
-"""
+    """.trimIndent()
 )
-    .bind("now", now)
-    .bind("defaultLastLogin", HelsinkiDateTime.of(LocalDate.of(2021, 6, 1), LocalTime.of(0, 0)))
+    .bind("ids", ids.toTypedArray())
     .execute()
