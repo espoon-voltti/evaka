@@ -173,7 +173,7 @@ describe('Child information page sections', () => {
       backupCares: true,
       familyContacts: false,
       applications: true,
-      messageBlocklist: false,
+      messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: false,
       pedagogicalDocuments: false
@@ -194,7 +194,7 @@ describe('Child information page sections', () => {
       backupCares: true,
       familyContacts: false,
       applications: false,
-      messageBlocklist: false,
+      messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: false,
       pedagogicalDocuments: false
@@ -215,7 +215,7 @@ describe('Child information page sections', () => {
       backupCares: true,
       familyContacts: true,
       applications: false,
-      messageBlocklist: false,
+      messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: false,
       pedagogicalDocuments: true
@@ -238,7 +238,7 @@ describe('Child information page sections', () => {
       backupCares: true,
       familyContacts: true,
       applications: false,
-      messageBlocklist: false,
+      messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: true,
       pedagogicalDocuments: true
@@ -262,7 +262,7 @@ describe('Child information page sections', () => {
       backupCares: true,
       familyContacts: true,
       applications: false,
-      messageBlocklist: false,
+      messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: true,
       pedagogicalDocuments: true

@@ -25,6 +25,8 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.security.PermittedRoleActions
+import fi.espoo.evaka.shared.security.StaticPermittedRoleActions
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.auth.JwtKeys
@@ -154,6 +156,9 @@ class SharedIntegrationTestConfig {
     @Bean
     fun invoiceGenerator(productProvider: InvoiceProductProvider): InvoiceGenerator =
         InvoiceGenerator(DefaultDraftInvoiceGenerator(productProvider))
+
+    @Bean
+    fun permittedRoleActions(): PermittedRoleActions = StaticPermittedRoleActions()
 }
 
 val testFeatureConfig = FeatureConfig(

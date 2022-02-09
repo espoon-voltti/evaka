@@ -157,7 +157,18 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
-    { component: 'family-contacts', open: false }
+    { component: 'family-contacts', open: false },
+
+    { component: 'message-blocklist', open: false },
+    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    {
+      component: 'pedagogicalDocuments' as keyof typeof components,
+      open: false
+    },
+    ...(featureFlags.childIncomeEnabled
+      ? [{ component: 'income' as const, open: false }]
+      : []),
+    { component: 'fee-alterations', open: false }
   ],
   ['FINANCE_ADMIN']: [
     ...(featureFlags.childIncomeEnabled
@@ -167,7 +178,17 @@ const layouts: Layouts<typeof components> = {
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false }
+    { component: 'daily-service-times', open: false },
+
+    { component: 'family-contacts', open: false },
+    { component: 'message-blocklist', open: false },
+    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    {
+      component: 'pedagogicalDocuments' as keyof typeof components,
+      open: false
+    },
+    { component: 'assistance', open: false },
+    { component: 'applications', open: false }
   ],
   ['UNIT_SUPERVISOR']: [
     { component: 'guardiansAndParents', open: false },
@@ -180,7 +201,14 @@ const layouts: Layouts<typeof components> = {
     {
       component: 'pedagogicalDocuments' as keyof typeof components,
       open: false
-    }
+    },
+
+    { component: 'message-blocklist', open: false },
+    { component: 'applications', open: false },
+    ...(featureFlags.childIncomeEnabled
+      ? [{ component: 'income' as const, open: false }]
+      : []),
+    { component: 'fee-alterations', open: false }
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
@@ -191,7 +219,16 @@ const layouts: Layouts<typeof components> = {
     {
       component: 'pedagogicalDocuments' as keyof typeof components,
       open: false
-    }
+    },
+
+    { component: 'guardiansAndParents', open: false },
+    { component: 'message-blocklist', open: false },
+    { component: 'assistance', open: false },
+    { component: 'applications', open: false },
+    ...(featureFlags.childIncomeEnabled
+      ? [{ component: 'income' as const, open: false }]
+      : []),
+    { component: 'fee-alterations', open: false }
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
@@ -203,7 +240,15 @@ const layouts: Layouts<typeof components> = {
     },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    { component: 'assistance', open: false }
+    { component: 'assistance', open: false },
+
+    { component: 'guardiansAndParents', open: false },
+    { component: 'message-blocklist', open: false },
+    { component: 'applications', open: false },
+    ...(featureFlags.childIncomeEnabled
+      ? [{ component: 'income' as const, open: false }]
+      : []),
+    { component: 'fee-alterations', open: false }
   ]
 }
 
