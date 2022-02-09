@@ -147,17 +147,15 @@ export default React.memo(function AsyncButton({
       <Content>
         <IconContainer
           style={{
-            width: container.x.interpolate((x) => `${32 * x}px`),
-            paddingRight: container.x.interpolate((x) => `${8 * x}px`)
+            width: container.x.to((x) => `${32 * x}px`),
+            paddingRight: container.x.to((x) => `${8 * x}px`)
           }}
         >
           <Spinner style={spinner} />
           <IconWrapper
             style={{
               opacity: checkmark.opacity,
-              transform: checkmark.opacity.interpolate(
-                (x) => `scale(${x ?? 0})`
-              )
+              transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
             }}
           >
             <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
@@ -165,7 +163,7 @@ export default React.memo(function AsyncButton({
           <IconWrapper
             style={{
               opacity: cross.opacity,
-              transform: cross.opacity.interpolate((x) => `scale(${x ?? 0})`)
+              transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
             }}
           >
             <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />

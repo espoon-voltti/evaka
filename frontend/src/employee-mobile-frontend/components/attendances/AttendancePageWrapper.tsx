@@ -154,7 +154,7 @@ const ChildSearch = React.memo(function Search({
 
   return (
     <SearchContainer
-      style={{ height: containerSpring.x.interpolate((x) => `${100 * x}%`) }}
+      style={{ height: containerSpring.x.to((x) => `${100 * x}%`) }}
     >
       <ContentArea
         opaque={false}
