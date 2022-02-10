@@ -33,6 +33,9 @@ object EspooInvoiceProducts {
         override val fullMonthSickLeave = Product.SICK_LEAVE_100.key
         override val fullMonthAbsence = Product.ABSENCE.key
 
+        override val contractSurplusDay
+            get() = error("Contract days not used in Espoo")
+
         override fun mapToProduct(placementType: PlacementType): ProductKey {
             val product = when (placementType) {
                 PlacementType.DAYCARE,

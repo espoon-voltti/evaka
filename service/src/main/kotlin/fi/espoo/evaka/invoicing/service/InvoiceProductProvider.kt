@@ -16,6 +16,7 @@ interface InvoiceProductProvider {
     val partMonthSickLeave: ProductKey
     val fullMonthSickLeave: ProductKey
     val fullMonthAbsence: ProductKey
+    val contractSurplusDay: ProductKey
 
     fun mapToProduct(placementType: PlacementType): ProductKey
     fun mapToFeeAlterationProduct(productKey: ProductKey, feeAlterationType: FeeAlteration.Type): ProductKey

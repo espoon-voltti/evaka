@@ -15,6 +15,7 @@ class TestInvoiceProductProvider : InvoiceProductProvider {
     override val partMonthSickLeave = ProductKey("PART_MONTH_SICK_LEAVE")
     override val fullMonthSickLeave = ProductKey("FULL_MONTH_SICK_LEAVE")
     override val fullMonthAbsence = ProductKey("FULL_MONTH_ABSENCE")
+    override val contractSurplusDay = ProductKey("SURPLUS_DAY")
 
     override val products: List<ProductWithName> =
         PlacementType.values()

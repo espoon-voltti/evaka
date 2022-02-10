@@ -1651,7 +1651,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
                 assertEquals(3854, invoiceRow.price)
@@ -1718,19 +1718,31 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(feeAlterationProduct, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-14450, invoiceRow.unitPrice)
                 assertEquals(-14450, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
                 assertEquals(3854, invoiceRow.price)
             }
             invoice.rows[3].let { invoiceRow ->
-                assertEquals(feeAlterationProduct, invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.contractSurplusDay,
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(-963, invoiceRow.unitPrice) // -14450 / 15
                 assertEquals(-1926, invoiceRow.price)
@@ -1774,7 +1786,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
                 assertEquals(1927, invoiceRow.price)
@@ -1842,7 +1854,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(4800, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(600, invoiceRow.unitPrice) // 9000 / 15
                 assertEquals(1200, invoiceRow.price)
