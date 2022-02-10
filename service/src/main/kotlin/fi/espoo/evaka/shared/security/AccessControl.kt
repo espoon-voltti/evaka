@@ -653,6 +653,16 @@ WHERE employee_id = :userId
             AuthenticatedUser.SystemInternalUser -> false
         }
 
+    fun getPermittedAssistanceActionActions(
+        user: AuthenticatedUser,
+        ids: Collection<AssistanceActionId>
+    ): Map<AssistanceActionId, Set<Action.AssistanceAction>> = this.assistanceAction.getPermittedActions(user, ids)
+
+    fun getPermittedAssistanceNeedActions(
+        user: AuthenticatedUser,
+        ids: Collection<AssistanceNeedId>
+    ): Map<AssistanceNeedId, Set<Action.AssistanceNeed>> = this.assistanceNeed.getPermittedActions(user, ids)
+
     fun getPermittedBackupCareActions(
         user: AuthenticatedUser,
         ids: Collection<BackupCareId>

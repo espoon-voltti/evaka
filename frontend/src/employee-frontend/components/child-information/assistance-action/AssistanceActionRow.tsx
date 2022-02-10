@@ -80,11 +80,13 @@ export default React.memo(function AssistanceActionRow({
               toggleUiMode(`duplicate-assistance-action_${assistanceAction.id}`)
               scrollToRef(refSectionTop)
             }}
+            editable={assistanceAction.permittedActions.includes('UPDATE')}
             onEdit={() => {
               toggleUiMode(`edit-assistance-action-${assistanceAction.id}`)
               setToggled(true)
               scrollToRef(refForm)
             }}
+            deletable={assistanceAction.permittedActions.includes('DELETE')}
             onDelete={() =>
               toggleUiMode(`remove-assistance-action-${assistanceAction.id}`)
             }

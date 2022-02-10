@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import {
   AssistanceBasisOption,
   AssistanceNeed as ServiceAssistanceNeed
@@ -27,6 +28,7 @@ export interface AssistanceAction {
   actions: Set<string>
   otherAction: string
   measures: Set<AssistanceMeasure>
+  permittedActions: Array<Action.AssistanceAction>
 }
 
 export interface ChildBackupCare {

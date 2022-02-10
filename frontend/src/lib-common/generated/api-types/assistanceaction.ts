@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { UUID } from '../../types'
 
 /**
@@ -18,6 +19,7 @@ export interface AssistanceAction {
   id: UUID
   measures: AssistanceMeasure[]
   otherAction: string
+  permittedActions: Action.AssistanceAction[]
   startDate: LocalDate
 }
 

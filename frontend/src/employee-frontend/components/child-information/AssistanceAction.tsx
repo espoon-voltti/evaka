@@ -4,6 +4,7 @@
 
 import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
+import { ChildState, ChildContext } from 'employee-frontend/state/child'
 import { combine } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -37,6 +38,7 @@ export interface Props {
 
 export default React.memo(function AssistanceAction({ id }: Props) {
   const { i18n } = useTranslation()
+  const { permittedActions } = useContext<ChildState>(ChildContext)
   const [assistanceActions, loadData] = useApiState(
     () => getAssistanceActions(id),
     [id]
@@ -64,16 +66,18 @@ export default React.memo(function AssistanceAction({ id }: Props) {
       <div ref={refSectionTop}>
         <TitleRow>
           <Title size={4}>{i18n.childInformation.assistanceAction.title}</Title>
-          <AddButton
-            flipped
-            text={i18n.childInformation.assistanceAction.create}
-            onClick={() => {
-              toggleUiMode('create-new-assistance-action')
-              scrollToRef(refSectionTop)
-            }}
-            disabled={uiMode === 'create-new-assistance-action'}
-            data-qa="assistance-action-create-btn"
-          />
+          {permittedActions.has('CREATE_ASSISTANCE_ACTION') && (
+            <AddButton
+              flipped
+              text={i18n.childInformation.assistanceAction.create}
+              onClick={() => {
+                toggleUiMode('create-new-assistance-action')
+                scrollToRef(refSectionTop)
+              }}
+              disabled={uiMode === 'create-new-assistance-action'}
+              data-qa="assistance-action-create-btn"
+            />
+          )}
         </TitleRow>
         {uiMode === 'create-new-assistance-action' && (
           <>
