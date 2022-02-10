@@ -485,7 +485,6 @@ class DraftInvoiceGenerator(
         } + surplusContractDays(
             period,
             child,
-            product,
             price,
             codes,
             feeAlterations,
@@ -534,7 +533,6 @@ class DraftInvoiceGenerator(
     private fun surplusContractDays(
         period: DateRange,
         child: ChildWithDateOfBirth,
-        product: ProductKey,
         price: Int,
         codes: DaycareCodes,
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
@@ -558,7 +556,7 @@ class DraftInvoiceGenerator(
                     periodStart = period.start,
                     periodEnd = period.end!!,
                     child = child,
-                    product = product,
+                    product = productProvider.contractSurplusDay,
                     unitId = codes.unitId,
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(price, dailyFeeDivisor),
@@ -569,7 +567,7 @@ class DraftInvoiceGenerator(
                     periodStart = period.start,
                     periodEnd = period.end,
                     child = child,
-                    product = productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
+                    product = productProvider.mapToFeeAlterationProduct(productProvider.contractSurplusDay, feeAlterationType),
                     unitId = codes.unitId,
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor)
