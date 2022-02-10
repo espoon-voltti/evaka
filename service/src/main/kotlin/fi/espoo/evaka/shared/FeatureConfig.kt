@@ -9,4 +9,5 @@ data class FeatureConfig(
     val daycareApplicationServiceNeedOptionsEnabled: Boolean,
     val citizenReservationThresholdHours: Long,
     val dailyFeeDivisorOperationalDaysOverride: Int?,
+    val freeSickLeaveOnContractDays: Boolean,
 )

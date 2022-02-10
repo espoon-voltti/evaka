@@ -78,6 +78,7 @@ class EspooConfig {
         daycareApplicationServiceNeedOptionsEnabled = false,
         citizenReservationThresholdHours = 150,
         dailyFeeDivisorOperationalDaysOverride = null,
+        freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
     )
 
     @Bean
