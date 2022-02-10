@@ -48,7 +48,7 @@ class AssistanceNeedController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
-    ): List<AssistanceNeed> {
+    ): List<AssistanceNeedResponse> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
@@ -57,7 +57,7 @@ class AssistanceNeedController(
             }
             val assistanceNeedIds = assistanceNeeds.map { it.id }
             val permittedActions = accessControl.getPermittedAssistanceNeedActions(user, assistanceNeedIds)
-            assistanceNeeds.map { it.copy(permittedActions = permittedActions[it.id] ?: emptySet()) }
+            assistanceNeeds.map { AssistanceNeedResponse(it, permittedActions[it.id] ?: emptySet()) }
         }
     }
 

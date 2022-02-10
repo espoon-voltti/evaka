@@ -23,7 +23,11 @@ import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
+import {
+  AssistanceBasisOption,
+  AssistanceNeed,
+  AssistanceNeedResponse
+} from '../../../types/child'
 
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
@@ -67,7 +71,7 @@ const coefficientRegex = /^\d(([.,])(\d){1,2})?$/
 
 interface CommonProps {
   onReload: () => undefined | void
-  assistanceNeeds: AssistanceNeed[]
+  assistanceNeeds: AssistanceNeedResponse[]
   assistanceBasisOptions: AssistanceBasisOption[]
 }
 
@@ -113,8 +117,8 @@ const noErrors: AssistanceNeedFormErrors = {
 
 function getExistingAssistanceNeedRanges(props: Props): DateRange[] {
   return props.assistanceNeeds
-    .filter((sn) => isCreate(props) || sn.id != props.assistanceNeed.id)
-    .map(({ startDate, endDate }) => ({ startDate, endDate }))
+    .filter(({ need }) => isCreate(props) || need.id != props.assistanceNeed.id)
+    .map(({ need: { startDate, endDate } }) => ({ startDate, endDate }))
 }
 
 function checkSoftConflict(form: FormState, props: Props): boolean {

@@ -16,8 +16,7 @@ data class AssistanceAction(
     val endDate: LocalDate,
     val actions: Set<String>,
     val otherAction: String,
-    val measures: Set<AssistanceMeasure>,
-    val permittedActions: Set<Action.AssistanceAction> = emptySet()
+    val measures: Set<AssistanceMeasure>
 )
 
 data class AssistanceActionRequest(
@@ -26,6 +25,11 @@ data class AssistanceActionRequest(
     val actions: Set<String> = emptySet(),
     val otherAction: String = "",
     val measures: Set<AssistanceMeasure> = emptySet()
+)
+
+data class AssistanceActionResponse(
+    val action: AssistanceAction,
+    val permittedActions: Set<Action.AssistanceAction>
 )
 
 data class AssistanceActionOption(

@@ -27,7 +27,6 @@ export interface AssistanceNeed {
   childId: UUID
   endDate: LocalDate
   id: UUID
-  permittedActions: Action.AssistanceNeed[]
   startDate: LocalDate
 }
 
@@ -39,4 +38,12 @@ export interface AssistanceNeedRequest {
   capacityFactor: number
   endDate: LocalDate
   startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.AssistanceNeedResponse
+*/
+export interface AssistanceNeedResponse {
+  need: AssistanceNeed
+  permittedActions: Action.AssistanceNeed[]
 }

@@ -52,7 +52,7 @@ export default React.memo(function AssistanceNeed({ id }: Props) {
       !!uiMode && uiMode.startsWith('duplicate-assistance-need')
         ? assistanceNeeds
             .map((needs) =>
-              needs.find((an) => an.id == uiMode.split('_').pop())
+              needs.find((an) => an.need.id == uiMode.split('_').pop())
             )
             .getOrElse(undefined)
         : undefined,
@@ -93,7 +93,7 @@ export default React.memo(function AssistanceNeed({ id }: Props) {
           <>
             <AssistanceNeedForm
               childId={id}
-              assistanceNeed={duplicate}
+              assistanceNeed={duplicate.need}
               onReload={loadData}
               assistanceNeeds={assistanceNeeds}
               assistanceBasisOptions={assistanceBasisOptions}
@@ -103,8 +103,9 @@ export default React.memo(function AssistanceNeed({ id }: Props) {
         )}
         {assistanceNeeds.map((assistanceNeed) => (
           <AssistanceNeedRow
-            key={assistanceNeed.id}
-            assistanceNeed={assistanceNeed}
+            key={assistanceNeed.need.id}
+            assistanceNeed={assistanceNeed.need}
+            permittedActions={assistanceNeed.permittedActions}
             onReload={loadData}
             assistanceNeeds={assistanceNeeds}
             assistanceBasisOptions={assistanceBasisOptions}

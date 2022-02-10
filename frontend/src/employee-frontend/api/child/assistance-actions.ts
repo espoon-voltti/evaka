@@ -7,7 +7,11 @@ import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanc
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { AssistanceAction, AssistanceMeasure } from '../../types/child'
+import {
+  AssistanceAction,
+  AssistanceActionResponse,
+  AssistanceMeasure
+} from '../../types/child'
 import { client } from '../client'
 
 export interface AssistanceActionRequest {
@@ -42,16 +46,21 @@ export async function createAssistanceAction(
 
 export async function getAssistanceActions(
   childId: UUID
-): Promise<Result<AssistanceAction[]>> {
+): Promise<Result<AssistanceActionResponse[]>> {
   return client
-    .get<JsonOf<AssistanceAction[]>>(`/children/${childId}/assistance-actions`)
+    .get<JsonOf<AssistanceActionResponse[]>>(
+      `/children/${childId}/assistance-actions`
+    )
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        startDate: LocalDate.parseIso(data.startDate),
-        endDate: LocalDate.parseIso(data.endDate),
-        actions: new Set(data.actions),
-        measures: new Set(data.measures)
+        action: {
+          ...data.action,
+          startDate: LocalDate.parseIso(data.action.startDate),
+          endDate: LocalDate.parseIso(data.action.endDate),
+          actions: new Set(data.action.actions),
+          measures: new Set(data.action.measures)
+        }
       }))
     )
     .then((v) => Success.of(v))

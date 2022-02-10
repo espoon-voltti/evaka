@@ -53,7 +53,7 @@ export default React.memo(function AssistanceAction({ id }: Props) {
       !!uiMode && uiMode.startsWith('duplicate-assistance-action')
         ? assistanceActions
             .map((actions) =>
-              actions.find((an) => an.id == uiMode.split('_').pop())
+              actions.find((an) => an.action.id == uiMode.split('_').pop())
             )
             .getOrElse(undefined)
         : undefined,
@@ -94,7 +94,7 @@ export default React.memo(function AssistanceAction({ id }: Props) {
           <>
             <AssistanceActionForm
               childId={id}
-              assistanceAction={duplicate}
+              assistanceAction={duplicate.action}
               onReload={loadData}
               assistanceActions={assistanceActions}
               assistanceActionOptions={assistanceActionOptions}
@@ -104,8 +104,9 @@ export default React.memo(function AssistanceAction({ id }: Props) {
         )}
         {assistanceActions.map((assistanceAction) => (
           <AssistanceActionRow
-            key={assistanceAction.id}
-            assistanceAction={assistanceAction}
+            key={assistanceAction.action.id}
+            assistanceAction={assistanceAction.action}
+            permittedActions={assistanceAction.permittedActions}
             onReload={loadData}
             assistanceActions={assistanceActions}
             assistanceActionOptions={assistanceActionOptions}

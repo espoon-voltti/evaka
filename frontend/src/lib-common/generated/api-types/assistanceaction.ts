@@ -19,7 +19,6 @@ export interface AssistanceAction {
   id: UUID
   measures: AssistanceMeasure[]
   otherAction: string
-  permittedActions: Action.AssistanceAction[]
   startDate: LocalDate
 }
 
@@ -41,6 +40,14 @@ export interface AssistanceActionRequest {
   measures: AssistanceMeasure[]
   otherAction: string
   startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceaction.AssistanceActionResponse
+*/
+export interface AssistanceActionResponse {
+  action: AssistanceAction
+  permittedActions: Action.AssistanceAction[]
 }
 
 /**

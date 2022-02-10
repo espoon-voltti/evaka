@@ -18,6 +18,11 @@ export interface AssistanceNeed extends Omit<ServiceAssistanceNeed, 'bases'> {
   bases: Set<string>
 }
 
+export interface AssistanceNeedResponse {
+  need: AssistanceNeed
+  permittedActions: Action.AssistanceNeed[]
+}
+
 export type { AssistanceMeasure }
 
 export interface AssistanceAction {
@@ -28,7 +33,11 @@ export interface AssistanceAction {
   actions: Set<string>
   otherAction: string
   measures: Set<AssistanceMeasure>
-  permittedActions: Array<Action.AssistanceAction>
+}
+
+export interface AssistanceActionResponse {
+  action: AssistanceAction
+  permittedActions: Action.AssistanceAction[]
 }
 
 export interface ChildBackupCare {

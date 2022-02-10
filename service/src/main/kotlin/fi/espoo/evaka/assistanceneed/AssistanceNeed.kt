@@ -17,8 +17,7 @@ data class AssistanceNeed(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val capacityFactor: Double,
-    val bases: Set<String>,
-    val permittedActions: Set<Action.AssistanceNeed> = emptySet()
+    val bases: Set<String>
 )
 
 data class AssistanceNeedRequest(
@@ -26,6 +25,11 @@ data class AssistanceNeedRequest(
     val endDate: LocalDate,
     val capacityFactor: Double,
     val bases: Set<String> = emptySet(),
+)
+
+data class AssistanceNeedResponse(
+    val need: AssistanceNeed,
+    val permittedActions: Set<Action.AssistanceNeed>
 )
 
 data class AssistanceBasisOption(

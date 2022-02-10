@@ -30,7 +30,11 @@ import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { AssistanceAction, AssistanceMeasure } from '../../../types/child'
+import {
+  AssistanceAction,
+  AssistanceActionResponse,
+  AssistanceMeasure
+} from '../../../types/child'
 
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
@@ -57,7 +61,7 @@ interface FormState {
 
 interface CommonProps {
   onReload: () => undefined | void
-  assistanceActions: AssistanceAction[]
+  assistanceActions: AssistanceActionResponse[]
   assistanceActionOptions: AssistanceActionOption[]
 }
 
@@ -101,8 +105,10 @@ const noErrors: AssistanceActionFormErrors = {
 
 const getExistingAssistanceActionRanges = (props: Props): DateRange[] =>
   props.assistanceActions
-    .filter((sn) => isCreate(props) || sn.id != props.assistanceAction.id)
-    .map(({ startDate, endDate }) => ({ startDate, endDate }))
+    .filter(
+      ({ action }) => isCreate(props) || action.id != props.assistanceAction.id
+    )
+    .map(({ action: { startDate, endDate } }) => ({ startDate, endDate }))
 
 function checkSoftConflict(form: FormState, props: Props): boolean {
   if (isDateRangeInverted(form)) return false
