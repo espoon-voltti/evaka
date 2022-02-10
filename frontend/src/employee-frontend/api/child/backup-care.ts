@@ -4,28 +4,27 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import {
+  ChildBackupCareResponse,
+  ChildBackupCaresResponse
+} from 'lib-common/generated/api-types/backupcare'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import { ChildBackupCare } from '../../types/child'
 import { client } from '../client'
-
-interface BackupCaresResponse<T extends ChildBackupCare | UnitBackupCare> {
-  backupCares: T[]
-}
 
 export async function getChildBackupCares(
   childId: UUID
-): Promise<Result<ChildBackupCare[]>> {
+): Promise<Result<ChildBackupCareResponse[]>> {
   return client
-    .get<JsonOf<BackupCaresResponse<ChildBackupCare>>>(
-      `/children/${childId}/backup-cares`
-    )
+    .get<JsonOf<ChildBackupCaresResponse>>(`/children/${childId}/backup-cares`)
     .then((res) =>
       Success.of(
         res.data.backupCares.map((x) => ({
           ...x,
-          period: FiniteDateRange.parseJson(x.period)
+          backupCare: {
+            ...x.backupCare,
+            period: FiniteDateRange.parseJson(x.backupCare.period)
+          }
         }))
       )
     )

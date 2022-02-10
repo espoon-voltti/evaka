@@ -14,6 +14,7 @@ import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -30,7 +31,6 @@ import { getUnits, Unit } from '../../../api/daycare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { ChildBackupCare } from '../../../types/child'
 import { DateRange } from '../../../utils/date'
 import {
   isDateRangeInverted,
@@ -97,8 +97,11 @@ export default function BackupCareForm({
     const existing: DateRange[] = backupCares
       .map((bcs) =>
         bcs
-          .filter((it) => backupCare == undefined || it.id !== backupCare.id)
-          .map(({ period }) => ({
+          .filter(
+            (it) =>
+              backupCare == undefined || it.backupCare.id !== backupCare.id
+          )
+          .map(({ backupCare: { period } }) => ({
             startDate: period.start,
             endDate: period.end
           }))

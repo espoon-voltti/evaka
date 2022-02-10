@@ -106,7 +106,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
             .asUser(serviceWorker)
             .responseObject<ChildBackupCaresResponse>(jsonMapper)
         assertTrue(res.isSuccessful)
-        val backupCares = result.get().backupCares
+        val backupCares = result.get().backupCares.map { it.backupCare }
 
         assertEquals(
             listOf(

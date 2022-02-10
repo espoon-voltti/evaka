@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import {
   AssistanceBasisOption,
@@ -38,19 +37,6 @@ export interface AssistanceAction {
 export interface AssistanceActionResponse {
   action: AssistanceAction
   permittedActions: Action.AssistanceAction[]
-}
-
-export interface ChildBackupCare {
-  id: UUID
-  unit: {
-    id: UUID
-    name: string
-  }
-  group?: {
-    id: UUID
-    name: string
-  }
-  period: FiniteDateRange
 }
 
 export interface ChildBackupPickup {

@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -21,6 +22,11 @@ data class ChildBackupCare(
     @Nested("group_")
     val group: BackupCareGroup?,
     val period: FiniteDateRange
+)
+
+data class ChildBackupCareResponse(
+    val backupCare: ChildBackupCare,
+    val permittedActions: Set<Action.BackupCare>
 )
 
 data class UnitBackupCare(

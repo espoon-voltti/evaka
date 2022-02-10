@@ -25,11 +25,3 @@ export const RequireRole = React.memo(function RequireRole({
   const { roles } = useContext(UserContext)
   return requireRole(roles, ...oneOf) ? <>{children}</> : null
 })
-
-export const ALL_ROLES_BUT_STAFF: AdRole[] = [
-  'ADMIN',
-  'SERVICE_WORKER',
-  'FINANCE_ADMIN',
-  'DIRECTOR',
-  'UNIT_SUPERVISOR'
-]
