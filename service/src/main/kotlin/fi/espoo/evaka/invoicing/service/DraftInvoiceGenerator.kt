@@ -269,11 +269,24 @@ class DraftInvoiceGenerator(
                 allOperationalDays.filter { date -> childHasFeeDecision(decisions, childId, date) }
             }
             .mapValues { (childId, childOperationalDays) ->
-                if (childOperationalDays.all { date -> hasSickleave(childId, date) }) {
+                val allSickLeaves = childOperationalDays.all { date -> hasSickleave(childId, date) }
+                val atLeastOneSickLeave = childOperationalDays.any { date ->
+                    hasSickleave(childId, date)
+                }
+                val allSickLeavesOrPlannedAbsences = childOperationalDays.all { date ->
+                    hasSickleave(childId, date) || hasPlannedAbsence(childId, date)
+                }
+                val atLeast11SickLeaves = childOperationalDays.filter { date -> hasSickleave(childId, date) }.size >= 11
+                val allAbsences = childOperationalDays.all { date -> hasAnyAbsence(childId, date) }
+
+                if (allSickLeaves) {
                     FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
-                } else if (childOperationalDays.filter { date -> hasSickleave(childId, date) }.size >= 11) {
+                } else if (featureConfig.freeSickLeaveOnContractDays && atLeastOneSickLeave && allSickLeavesOrPlannedAbsences) {
+                    // freeSickLeaveOnContractDays: The month becomes free if it has at least one sick leave, and a sick leave or planned absence on all days
+                    FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
+                } else if (atLeast11SickLeaves) {
                     FullMonthAbsenceType.SICK_LEAVE_11
-                } else if (childOperationalDays.all { date -> hasAnyAbsence(childId, date) }) {
+                } else if (allAbsences) {
                     FullMonthAbsenceType.ABSENCE_FULL_MONTH
                 } else {
                     FullMonthAbsenceType.NOTHING
@@ -567,7 +580,10 @@ class DraftInvoiceGenerator(
                     periodStart = period.start,
                     periodEnd = period.end,
                     child = child,
-                    product = productProvider.mapToFeeAlterationProduct(productProvider.contractSurplusDay, feeAlterationType),
+                    product = productProvider.mapToFeeAlterationProduct(
+                        productProvider.contractSurplusDay,
+                        feeAlterationType
+                    ),
                     unitId = codes.unitId,
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor)
