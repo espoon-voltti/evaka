@@ -33,11 +33,11 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Component
-class NewDraftInvoiceGenerator(
+class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
     private val featureConfig: FeatureConfig
-) : DraftInvoiceGenerator {
-    override fun generateDraftInvoices(
+) {
+    fun generateDraftInvoices(
         decisions: Map<PersonId, List<FeeDecision>>,
         placements: Map<PersonId, List<Placements>>,
         period: DateRange,
@@ -236,7 +236,14 @@ class NewDraftInvoiceGenerator(
         }
 
         return getChildOperationalDays(placementsList, operationalDays)
-            .mapValues { (childId, childOperationalDays) -> childOperationalDays.any { date -> !hasFeeDecision(childId, date) } }
+            .mapValues { (childId, childOperationalDays) ->
+                childOperationalDays.any { date ->
+                    !hasFeeDecision(
+                        childId,
+                        date
+                    )
+                }
+            }
             .filter { (_, partialMonth) -> partialMonth }
             .map { (childId, _) -> childId }
             .toSet()
@@ -251,12 +258,16 @@ class NewDraftInvoiceGenerator(
         fun hasPlannedAbsence(childId: ChildId, date: LocalDate): Boolean {
             return plannedAbsences[childId]?.contains(date) ?: false
         }
+
         fun hasAbsence(childId: ChildId, date: LocalDate): Boolean {
             return absences[childId]?.any { absence -> absence.date == date } ?: false
         }
+
         fun hasSickleave(childId: ChildId, date: LocalDate): Boolean {
-            return absences[childId]?.any { absence -> absence.date == date && absence.absenceType == AbsenceType.SICKLEAVE } ?: false
+            return absences[childId]?.any { absence -> absence.date == date && absence.absenceType == AbsenceType.SICKLEAVE }
+                ?: false
         }
+
         fun hasAnyAbsence(childId: ChildId, date: LocalDate): Boolean {
             return hasPlannedAbsence(childId, date) || hasAbsence(childId, date)
         }

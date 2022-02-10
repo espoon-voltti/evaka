@@ -15,7 +15,6 @@ import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
-import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
@@ -31,12 +30,13 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
 import org.jdbi.v3.core.kotlin.mapTo
+import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.TemporalAdjusters
 
+@Component
 class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
-
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
         tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
         val invoiceCalculationData = calculateInvoiceData(tx, range)
@@ -371,19 +371,4 @@ WHERE
 private fun placementOn(year: Int, month: Int): String {
     val firstOfMonth = "'$year-$month-01'"
     return "daterange(start_date, end_date, '[]') && daterange($firstOfMonth::date, ($firstOfMonth::date + INTERVAL '1 month -1 day')::date, '[]')"
-}
-
-interface DraftInvoiceGenerator {
-    fun generateDraftInvoices(
-        decisions: Map<PersonId, List<FeeDecision>>,
-        placements: Map<PersonId, List<Placements>>,
-        period: DateRange,
-        daycareCodes: Map<DaycareId, DaycareCodes>,
-        operationalDays: OperationalDays,
-        feeThresholds: FeeThresholds,
-        absences: List<AbsenceStub> = listOf(),
-        plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
-        freeChildren: List<ChildId> = listOf(),
-        codebtors: Map<PersonId, PersonId?> = mapOf()
-    ): List<Invoice>
 }
