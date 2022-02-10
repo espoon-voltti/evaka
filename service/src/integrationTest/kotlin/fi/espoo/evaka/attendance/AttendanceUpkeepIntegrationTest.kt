@@ -6,6 +6,7 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -13,7 +14,6 @@ import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testRoundTheClockDaycare
-import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,18 +50,13 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         scheduledJobs.endOfDayAttendanceUpkeep(db)
 
         val attendances = db.read {
-            it.createQuery(
-                // language=sql
-                """
-                    SELECT *
-                    FROM child_attendance
-                """.trimIndent()
-            ).mapTo<ChildAttendance>().list()
+            it.createQuery("SELECT end_time FROM child_attendance")
+                .map { rv -> rv.mapColumn<LocalTime?>("end_time") }
+                .toList()
         }
 
         assertEquals(1, attendances.size)
-        val expectedDeparted = HelsinkiDateTime.of(LocalDate.of(2020, 10, 25), LocalTime.of(23, 59))
-        assertEquals(expectedDeparted, attendances.first().departed)
+        assertEquals(LocalTime.of(23, 59), attendances.first())
     }
 
     @Test
@@ -80,10 +75,12 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         scheduledJobs.endOfDayAttendanceUpkeep(db)
 
         val attendances = db.read {
-            it.createQuery("SELECT * FROM child_attendance").mapTo<ChildAttendance>().list()
+            it.createQuery("SELECT id, end_time FROM child_attendance")
+                .map { rv -> rv.mapColumn<LocalTime?>("end_time") }
+                .toList()
         }
 
         assertEquals(1, attendances.size)
-        assertEquals(null, attendances.first().departed)
+        assertEquals(null, attendances.first())
     }
 }

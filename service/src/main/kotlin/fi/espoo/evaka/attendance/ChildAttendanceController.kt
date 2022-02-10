@@ -26,9 +26,9 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.dateNow
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -88,6 +88,7 @@ class ChildAttendanceController(
     fun postArrival(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
         @RequestBody body: ArrivalRequest
@@ -98,15 +99,15 @@ class ChildAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.fetchChildPlacementBasics(childId, unitId)
+                tx.fetchChildPlacementBasics(childId, unitId, evakaClock.today())
 
-                tx.deleteAbsencesByDate(childId, dateNow())
+                tx.deleteAbsencesByDate(childId, evakaClock.today())
                 try {
                     tx.insertAttendance(
                         childId = childId,
                         unitId = unitId,
-                        arrived = HelsinkiDateTime.now().withTime(body.arrived),
-                        departed = null
+                        date = evakaClock.today(),
+                        startTime = body.arrived
                     )
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
@@ -119,6 +120,7 @@ class ChildAttendanceController(
     fun returnToComing(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ) {
@@ -128,21 +130,11 @@ class ChildAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.fetchChildPlacementBasics(childId, unitId)
-                tx.deleteAbsencesByDate(childId, dateNow())
+                tx.fetchChildPlacementBasics(childId, unitId, evakaClock.today())
+                tx.deleteAbsencesByDate(childId, evakaClock.today())
 
-                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
-                if (attendance != null) {
-                    if (attendance.departed == null) {
-                        try {
-                            tx.deleteAttendance(attendance.id)
-                        } catch (e: Exception) {
-                            throw mapPSQLException(e)
-                        }
-                    } else {
-                        throw Conflict("Already departed, did you mean return-to-present?")
-                    }
-                }
+                val attendance = tx.getChildOngoingAttendance(childId, unitId)
+                if (attendance != null) tx.deleteAttendance(attendance.id)
             }
         }
     }
@@ -151,6 +143,7 @@ class ChildAttendanceController(
     fun getChildDeparture(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ): List<AbsenceThreshold> {
@@ -160,24 +153,11 @@ class ChildAttendanceController(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
-
+                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, evakaClock.today())
                 val attendance = tx.getChildOngoingAttendance(childId, unitId)
-                if (attendance == null) {
-                    throw Conflict("Cannot depart, has not yet arrived")
-                } else if (attendance.departed != null) {
-                    throw Conflict("Cannot depart, already departed")
-                }
-
-                val arrived = attendance.arrived.toLocalTime()
-
-                // temporary hotfix for case where scheduled job was missing and child arrived yesterday
-                val forgottenToDepart = attendance.arrived.toLocalDate() != dateNow()
-
-                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
-
-                if (forgottenToDepart) listOf()
-                else getPartialAbsenceThresholds(placementBasics, arrived, childHasPaidServiceNeedToday)
+                    ?: throw Conflict("Cannot depart, has not yet arrived")
+                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId, evakaClock.today())
+                getPartialAbsenceThresholds(placementBasics, attendance.startTime, childHasPaidServiceNeedToday)
             }
         }
     }
@@ -191,6 +171,7 @@ class ChildAttendanceController(
     fun postDeparture(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
         @RequestBody body: DepartureRequest
@@ -201,44 +182,53 @@ class ChildAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
+                val today = evakaClock.today()
+                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, today)
 
-                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
-                if (attendance == null) {
-                    // temporary hotfix for case where scheduled job was missing and child arrived yesterday
-                    val forgottenAttendance: ChildAttendance = tx.getChildOngoingAttendance(childId, unitId)
-                        ?: throw Conflict("Cannot depart, has not yet arrived")
-                    tx.updateAttendanceEnd(
-                        attendanceId = forgottenAttendance.id,
-                        departed = forgottenAttendance.arrived.withTime(LocalTime.of(23, 59))
-                    )
-                    return@transaction tx.getAttendancesResponse(unitId, HelsinkiDateTime.now())
-                } else if (attendance.departed != null) {
-                    throw Conflict("Cannot depart, already departed")
-                }
+                val attendance = tx.getChildOngoingAttendance(childId, unitId)
+                    ?: throw Conflict("Cannot depart, has not yet arrived")
 
-                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId)
+                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId, today)
 
-                val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.arrived.toLocalTime(), childHasPaidServiceNeedToday)
+                val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.startTime, childHasPaidServiceNeedToday)
                     .filter { body.departed <= it.time }
-                tx.deleteAbsencesByDate(childId, dateNow())
+                tx.deleteAbsencesByDate(childId, today)
                 if (absentFrom.isNotEmpty()) {
                     if (body.absenceType == null) {
                         throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
                     }
 
                     absentFrom.forEach { (careType, _) ->
-                        tx.insertAbsence(user, childId, dateNow(), careType, body.absenceType)
+                        tx.insertAbsence(user, childId, today, careType, body.absenceType)
                     }
                 } else if (body.absenceType != null) {
                     throw BadRequest("Request defines absenceType but child was not absent.")
                 }
 
                 try {
-                    tx.updateAttendanceEnd(
-                        attendanceId = attendance.id,
-                        departed = HelsinkiDateTime.now().withTime(body.departed)
-                    )
+                    if (attendance.date == today) {
+                        tx.updateAttendanceEnd(
+                            attendanceId = attendance.id,
+                            endTime = body.departed
+                        )
+                    } else {
+                        tx.updateAttendanceEnd(
+                            attendanceId = attendance.id,
+                            endTime = LocalTime.of(23, 59)
+                        )
+                        generateSequence(attendance.date.plusDays(1)) { it.plusDays(1) }
+                            .takeWhile { it <= today }
+                            .map { date ->
+                                Triple(
+                                    date,
+                                    LocalTime.of(0, 0),
+                                    if (date < today) LocalTime.of(23, 59) else body.departed
+                                )
+                            }
+                            .forEach { (date, startTime, endTime) ->
+                                tx.insertAttendance(childId, unitId, date, startTime, endTime)
+                            }
+                    }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }
@@ -250,6 +240,7 @@ class ChildAttendanceController(
     fun returnToPresent(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ) {
@@ -259,19 +250,11 @@ class ChildAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.fetchChildPlacementBasics(childId, unitId)
-                tx.deleteAbsencesByDate(childId, dateNow())
+                tx.fetchChildPlacementBasics(childId, unitId, evakaClock.today())
+                tx.deleteAbsencesByDate(childId, evakaClock.today())
 
-                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
-
-                if (attendance?.departed == null) {
-                    throw Conflict("Can not return to present since not yet departed")
-                } else {
-                    try {
-                        tx.updateAttendance(attendance.id, attendance.arrived, null)
-                    } catch (e: Exception) {
-                        throw mapPSQLException(e)
-                    }
+                tx.getChildAttendance(childId, unitId, evakaClock.now())?.let { attendance ->
+                    tx.unsetAttendanceEndTime(attendance.id)
                 }
             }
         }
@@ -285,6 +268,7 @@ class ChildAttendanceController(
     fun postFullDayAbsence(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
         @RequestBody body: FullDayAbsenceRequest
@@ -295,17 +279,17 @@ class ChildAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
+                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, evakaClock.today())
 
-                val attendance = tx.getChildAttendance(childId, unitId, HelsinkiDateTime.now())
+                val attendance = tx.getChildAttendance(childId, unitId, evakaClock.now())
                 if (attendance != null) {
                     throw Conflict("Cannot add full day absence, child already has attendance")
                 }
 
                 try {
-                    tx.deleteAbsencesByDate(childId, dateNow())
+                    tx.deleteAbsencesByDate(childId, evakaClock.today())
                     placementBasics.placementType.absenceCategories().forEach { category ->
-                        tx.insertAbsence(user, childId, LocalDate.now(), category, body.absenceType)
+                        tx.insertAbsence(user, childId, evakaClock.today(), category, body.absenceType)
                     }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
@@ -370,26 +354,26 @@ data class ChildPlacementBasics(
     val dateOfBirth: LocalDate
 )
 
-private fun Database.Read.fetchChildPlacementBasics(childId: ChildId, unitId: DaycareId): ChildPlacementBasics {
+private fun Database.Read.fetchChildPlacementBasics(childId: ChildId, unitId: DaycareId, today: LocalDate): ChildPlacementBasics {
     // language=sql
     val sql =
         """
         SELECT p.type AS placement_type, c.date_of_birth
         FROM person c 
         JOIN placement p 
-            ON p.child_id = c.id AND daterange(p.start_date, p.end_date, '[]') @> :date
+            ON p.child_id = c.id AND daterange(p.start_date, p.end_date, '[]') @> :today
         LEFT JOIN backup_care bc
-            ON bc.child_id = c.id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+            ON bc.child_id = c.id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
         WHERE c.id = :childId AND (p.unit_id = :unitId OR bc.unit_id = :unitId)
         """.trimIndent()
 
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("date", dateNow())
+        .bind("today", today)
         .mapTo<ChildPlacementBasics>()
         .list()
-        .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
+        .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on date $today")
 }
 
 data class PlacementTypeDate(
@@ -546,19 +530,22 @@ private fun daycareAbsenceThreshold(placementType: PlacementType, arrived: Local
 }
 
 private fun Database.Read.childHasPaidServiceNeedToday(
-    childId: ChildId
+    childId: ChildId,
+    today: LocalDate
 ): Boolean = createQuery(
     """
 SELECT EXISTS(
     SELECT 1
     FROM placement p  
-        LEFT JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> current_date
+        LEFT JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :today
         LEFT JOIN service_need_option sno ON sn.option_id = sno.id
     WHERE
         p.child_id = :childId
-        AND daterange(p.start_date, p.end_date, '[]') @> current_date
+        AND daterange(p.start_date, p.end_date, '[]') @> :today
         AND sno.fee_coefficient > 0.0)
     """.trimIndent()
-).bind("childId", childId)
+)
+    .bind("childId", childId)
+    .bind("today", today)
     .mapTo<Boolean>()
     .first()

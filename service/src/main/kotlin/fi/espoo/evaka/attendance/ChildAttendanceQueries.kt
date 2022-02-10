@@ -22,28 +22,29 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
+import java.time.LocalTime
 
 fun Database.Transaction.insertAttendance(
     childId: ChildId,
     unitId: DaycareId,
-    arrived: HelsinkiDateTime,
-    departed: HelsinkiDateTime? = null
-): ChildAttendance {
+    date: LocalDate,
+    startTime: LocalTime,
+    endTime: LocalTime? = null
+) {
     // language=sql
     val sql =
         """
-        INSERT INTO child_attendance (child_id, unit_id, arrived, departed)
-        VALUES (:childId, :unitId, :arrived, :departed)
-        RETURNING *
+        INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
+        VALUES (:childId, :unitId, :date, :startTime, :endTime)
         """.trimIndent()
 
-    return createQuery(sql)
+    createUpdate(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("arrived", arrived)
-        .bind("departed", departed)
-        .mapTo<ChildAttendance>()
-        .first()
+        .bind("date", date)
+        .bind("startTime", startTime.withSecond(0).withNano(0))
+        .bind("endTime", endTime?.withSecond(0)?.withNano(0))
+        .execute()
 }
 
 fun Database.Transaction.insertAbsence(
@@ -75,11 +76,11 @@ fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: H
     // language=sql
     val sql =
         """
-        SELECT id, child_id, unit_id, arrived, departed
+        SELECT id, child_id, unit_id, (date + start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived, (date + end_time) AT TIME ZONE 'Europe/Helsinki' AS departed
         FROM child_attendance
         WHERE child_id = :childId AND unit_id = :unitId
-        AND (arrived::date = :date OR tstzrange(arrived, departed) @> :departedThreshold)
-        ORDER BY arrived DESC
+        AND (end_time IS NULL OR (date = :date AND (start_time != '00:00'::time OR (start_time = '00:00'::time AND :departedThreshold < end_time))))
+        ORDER BY date, start_time DESC
         LIMIT 1
         """.trimIndent()
 
@@ -87,26 +88,19 @@ fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: H
         .bind("childId", childId)
         .bind("unitId", unitId)
         .bind("date", now.toLocalDate())
-        .bind("departedThreshold", now.minusMinutes(30))
+        .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
         .mapTo<ChildAttendance>()
         .firstOrNull()
 }
 
-fun Database.Read.getChildOngoingAttendance(childId: ChildId, unitId: DaycareId): ChildAttendance? {
-    // language=sql
-    val sql =
-        """
-        SELECT id, child_id, unit_id, arrived, departed
-        FROM child_attendance
-        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
-        """.trimIndent()
+data class OngoingAttendance(val id: AttendanceId, val date: LocalDate, val startTime: LocalTime)
 
-    return createQuery(sql)
+fun Database.Read.getChildOngoingAttendance(childId: ChildId, unitId: DaycareId): OngoingAttendance? =
+    createQuery("SELECT id, date, start_time FROM child_attendance WHERE child_id = :childId AND unit_id = :unitId AND end_time IS NULL")
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .mapTo<ChildAttendance>()
+        .mapTo<OngoingAttendance>()
         .firstOrNull()
-}
 
 data class ChildBasics(
     val id: ChildId,
@@ -145,7 +139,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
                 ) AND
                 NOT EXISTS (
                     SELECT 1 FROM child_attendance ca
-                    WHERE ca.child_id = p.child_id AND ca.departed IS NULL
+                    WHERE ca.child_id = p.child_id AND ca.end_time IS NULL
                 )
 
             UNION ALL
@@ -166,7 +160,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
                 daterange(bc.start_date, bc.end_date, '[]') @> :date AND
                 NOT EXISTS (
                     SELECT 1 FROM child_attendance ca
-                    WHERE ca.child_id = p.child_id AND ca.departed IS NULL
+                    WHERE ca.child_id = p.child_id AND ca.end_time IS NULL
                 )
 
             UNION ALL
@@ -179,14 +173,14 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
             FROM child_attendance ca
             JOIN placement p
                 ON ca.child_id = p.child_id
-                AND daterange(p.start_date, p.end_date, '[]') @> (ca.arrived at time zone 'Europe/Helsinki')::date
+                AND daterange(p.start_date, p.end_date, '[]') @> ca.date
             JOIN daycare_group_placement gp
                 ON gp.daycare_placement_id = p.id
-                AND daterange(gp.start_date, gp.end_date, '[]') @> (ca.arrived at time zone 'Europe/Helsinki')::date
+                AND daterange(gp.start_date, gp.end_date, '[]') @> ca.date
             LEFT JOIN backup_care bc
                 ON ca.child_id = bc.child_id
-                AND daterange(bc.start_date, bc.end_date, '[]') @> (ca.arrived at time zone 'Europe/Helsinki')::date
-            WHERE ca.departed IS NULL AND ca.unit_id = :unitId
+                AND daterange(bc.start_date, bc.end_date, '[]') @> ca.date
+            WHERE ca.end_time IS NULL AND ca.unit_id = :unitId
         )
         SELECT
             pe.id,
@@ -223,10 +217,16 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
         LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id
         LEFT JOIN child_images cimg ON pe.id = cimg.child_id
         LEFT JOIN LATERAL (
-            SELECT jsonb_build_object('arrived', ca.arrived, 'departed', ca.departed) AS attendance
-            FROM child_attendance ca WHERE ca.child_id = pe.id
-            AND ((ca.arrived at time zone 'Europe/Helsinki')::date = :date OR tstzrange(arrived, departed) @> :departedThreshold)
-            ORDER BY ca.arrived DESC LIMIT 1
+            SELECT
+                jsonb_build_object(
+                    'arrived', coalesce((ca_start.date + ca_start.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki'),
+                    'departed', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki'
+                ) AS attendance
+            FROM child_attendance ca
+            LEFT JOIN child_attendance ca_start ON ca.start_time = '00:00'::time AND ca.child_id = ca_start.child_id AND ca.date = ca_start.date + 1 AND ca_start.end_time = '23:59'::time
+            WHERE ca.child_id = pe.id
+            AND (ca.end_time IS NULL OR (ca.date = :date AND (ca.start_time != '00:00'::time OR (ca.start_time = '00:00'::time AND :departedThreshold < ca.end_time))))
+            ORDER BY ca.date, ca.start_time DESC LIMIT 1
         ) ca ON true
         LEFT JOIN LATERAL (
             SELECT jsonb_agg(jsonb_build_object('category', a.category)) AS absences
@@ -238,7 +238,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
     return createQuery(sql)
         .bind("unitId", unitId)
         .bind("date", instant.toLocalDate())
-        .bind("departedThreshold", instant.minusMinutes(30))
+        .bind("departedThreshold", instant.toLocalTime().minusMinutes(30))
         .map { row ->
             ChildBasics(
                 id = row.mapColumn("id"),
@@ -258,38 +258,16 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
         .list()
 }
 
-fun Database.Transaction.updateAttendance(
-    attendanceId: AttendanceId,
-    arrived: HelsinkiDateTime,
-    departed: HelsinkiDateTime?
-) {
-    // language=sql
-    val sql =
-        """
-        UPDATE child_attendance
-        SET arrived = :arrived, departed = :departed
-        WHERE id = :id
-        """.trimIndent()
-
-    createUpdate(sql)
+fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {
+    createUpdate("UPDATE child_attendance SET end_time = NULL WHERE id = :id")
         .bind("id", attendanceId)
-        .bind("arrived", arrived)
-        .bind("departed", departed)
         .execute()
 }
 
-fun Database.Transaction.updateAttendanceEnd(attendanceId: AttendanceId, departed: HelsinkiDateTime?) {
-    // language=sql
-    val sql =
-        """
-        UPDATE child_attendance
-        SET departed = :departed
-        WHERE id = :id
-        """.trimIndent()
-
-    createUpdate(sql)
+fun Database.Transaction.updateAttendanceEnd(attendanceId: AttendanceId, endTime: LocalTime) {
+    createUpdate("UPDATE child_attendance SET end_time = :endTime WHERE id = :id")
         .bind("id", attendanceId)
-        .bind("departed", departed)
+        .bind("endTime", endTime)
         .execute()
 }
 

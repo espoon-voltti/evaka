@@ -207,11 +207,11 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         SELECT
             jsonb_agg(
                 jsonb_build_object(
-                    'startTime', to_char((GREATEST(att.arrived, t) AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI'),
-                    'endTime', to_char((LEAST(att.departed, t + INTERVAL '1 day') AT TIME ZONE 'Europe/Helsinki')::time, 'HH24:MI')
-                ) ORDER BY att.arrived ASC
+                    'startTime', to_char(att.start_time, 'HH24:MI'),
+                    'endTime', to_char(att.end_time, 'HH24:MI')
+                ) ORDER BY att.start_time ASC
             ) AS attendances
-        FROM child_attendance att WHERE att.child_id = p.id AND ((att.arrived AT TIME ZONE 'Europe/Helsinki')::date = t::date OR DATE_TRUNC('day', att.departed, 'Europe/Helsinki') = t)
+        FROM child_attendance att WHERE att.child_id = p.id AND att.date = t::date
     ) attendances ON true
     LEFT JOIN LATERAL (
         SELECT

@@ -155,7 +155,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         val child = expectOneChild()
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, child.attendance!!.arrived)
+        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
         assertNull(child.attendance!!.departed)
         assertEquals(0, child.absences.size)
     }
@@ -175,8 +175,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         val child = expectOneChild()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, child.attendance!!.arrived)
-        assertEquals(departed, child.attendance!!.departed)
+        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
+        assertEquals(departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.departed)
         assertEquals(0, child.absences.size)
     }
 
@@ -256,7 +256,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         val child = expectOneChild()
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, child.attendance!!.arrived)
+        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
         assertNull(child.attendance!!.departed)
         assertEquals(0, child.absences.size)
     }
@@ -276,8 +276,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         val child = expectOneChild()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, child.attendance!!.arrived)
-        assertEquals(departed, child.attendance!!.departed)
+        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
+        assertEquals(departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.departed)
         assertEquals(0, child.absences.size)
     }
 

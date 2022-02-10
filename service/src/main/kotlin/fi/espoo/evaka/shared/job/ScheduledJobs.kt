@@ -77,9 +77,9 @@ class ScheduledJobs(
                 // language=SQL
                 """
 UPDATE child_attendance ca
-SET departed = ((arrived AT TIME ZONE 'Europe/Helsinki')::date + time '23:59') AT TIME ZONE 'Europe/Helsinki'
+SET end_time = '23:59'::time
 FROM daycare u
-WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.departed IS NULL
+WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.end_time IS NULL
                 """.trimIndent()
             ).execute()
         }

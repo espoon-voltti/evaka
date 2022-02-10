@@ -205,12 +205,11 @@ LEFT JOIN LATERAL (
     SELECT
         jsonb_agg(
             jsonb_build_object(
-                'startTime', to_char(greatest(ca.arrived AT TIME ZONE 'Europe/Helsinki', t), 'HH24:MI'),
-                'endTime', to_char(least(ca.departed AT TIME ZONE 'Europe/Helsinki', t + interval '1 day' - interval '1 minute'), 'HH24:MI')
-            ) ORDER BY ca.arrived ASC
+                'startTime', to_char(ca.start_time, 'HH24:MI'),
+                'endTime', to_char(ca.end_time, 'HH24:MI')
+            ) ORDER BY ca.start_time ASC
         ) AS attendances
-    FROM child_attendance ca WHERE ca.child_id = g.child_id
-    AND daterange((ca.arrived AT TIME ZONE 'Europe/Helsinki')::date, (ca.departed AT TIME ZONE 'Europe/Helsinki')::date, '[]') @> t::date
+    FROM child_attendance ca WHERE ca.child_id = g.child_id AND ca.date = t::date
 ) ca ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1

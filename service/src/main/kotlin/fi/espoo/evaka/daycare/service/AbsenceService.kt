@@ -73,7 +73,7 @@ class AbsenceService {
                 }?.toMap() ?: mapOf(),
                 reservationTotalHours = sumOfHours(supplementedReservations, placementDateRanges, range),
                 attendanceTotalHours = attendances[child.id]
-                    ?.map { HelsinkiDateTimeRange(it.arrived, it.departed) }
+                    ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
                     ?.let { sumOfHours(it, placementDateRanges, range) }
             )
         }
@@ -487,8 +487,9 @@ AND EXISTS (
 
 data class ChildAttendance(
     val childId: ChildId,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime
 )
 
 private fun Database.Read.getGroupAttendances(groupId: GroupId, dateRange: FiniteDateRange): List<ChildAttendance> =
@@ -497,13 +498,12 @@ private fun Database.Read.getGroupAttendances(groupId: GroupId, dateRange: Finit
 WITH all_placements AS (
   $placementsQuery
 )
-SELECT a.child_id, a.arrived, a.departed FROM child_attendance a
-WHERE a.departed IS NOT NULL
-AND :dateRange && daterange((a.arrived at time zone 'Europe/Helsinki')::date, (a.departed at time zone 'Europe/Helsinki')::date, '[]')
+SELECT a.child_id, a.date, a.start_time, a.end_time FROM child_attendance a
+WHERE between_start_and_end(:dateRange, a.date) AND a.end_time IS NOT NULL
 AND EXISTS (
     SELECT 1 FROM all_placements p
     WHERE a.child_id = p.child_id
-    AND p.date_range && daterange((a.arrived at time zone 'Europe/Helsinki')::date, (a.departed at time zone 'Europe/Helsinki')::date, '[]')
+    AND between_start_and_end(p.date_range, a.date)
 )
 """
     )

@@ -98,8 +98,8 @@ data class OccupancyPoint(
 fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDate) = createQuery(
     """
     SELECT 
-        ca.arrived,
-        ca.departed,
+        (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
+        (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed,
         COALESCE(an.capacity_factor, 1) * CASE 
             WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
             WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN 1.75
@@ -109,13 +109,11 @@ fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDat
     JOIN daycare u ON u.id = ca.unit_id
     JOIN person ch ON ch.id = ca.child_id
     LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> :date
-    WHERE ca.unit_id = :unitId AND tstzrange(ca.arrived, ca.departed) && tstzrange(:dayStart, :dayEnd)
+    WHERE ca.unit_id = :unitId AND ca.date = :date
     """.trimIndent()
 )
     .bind("unitId", unitId)
     .bind("date", date)
-    .bind("dayStart", HelsinkiDateTime.of(date, LocalTime.MIN))
-    .bind("dayEnd", HelsinkiDateTime.of(date, LocalTime.MAX))
     .mapTo<ChildOccupancyAttendance>()
     .list()
 

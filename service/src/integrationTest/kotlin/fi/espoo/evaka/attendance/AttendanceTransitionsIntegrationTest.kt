@@ -107,13 +107,6 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `post return to coming - error when departed`() {
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildDeparted()
-        returnToComingAssertFail(409)
-    }
-
-    @Test
     fun `get child departure info - preschool daycare placement and present from preschool start`() {
         val arrived = LocalTime.of(9, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
@@ -328,27 +321,6 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertNotNull(child.attendance!!.arrived)
         assertNull(child.attendance!!.departed)
         assertTrue(child.absences.isEmpty())
-    }
-
-    @Test
-    fun `post return to present - error when coming`() {
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildComing()
-        returnToPresentAssertFail(409)
-    }
-
-    @Test
-    fun `post return to present - error when present`() {
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent()
-        returnToPresentAssertFail(409)
-    }
-
-    @Test
-    fun `post return to present - error when absent`() {
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildAbsent(AbsenceType.UNKNOWN_ABSENCE, AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
-        returnToPresentAssertFail(409)
     }
 
     @Test
