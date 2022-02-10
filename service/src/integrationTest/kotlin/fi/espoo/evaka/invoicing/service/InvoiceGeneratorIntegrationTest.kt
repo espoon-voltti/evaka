@@ -3237,6 +3237,68 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
     }
 
     @Test
+    fun `invoice generation with 15 contract days for a partial month with all days as planned or other absences`() {
+        val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decisions = listOf(
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                // 3 operational days
+                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        // 15 contract days
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
+                )
+            ),
+        )
+        insertDecisionsAndPlacements(decisions)
+
+        // 3 other absences, rest are planned absences
+        insertAbsences(
+            testChild_1.id,
+            listOf(
+                LocalDate.of(2021, 3, 16) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 3, 17) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE,
+            ) +
+                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
+                    .map { date -> date to AbsenceType.PLANNED_ABSENCE }
+        )
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(2889, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(3, invoiceRow.amount)
+                assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(5781, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                // All days
+                assertEquals(3, invoiceRow.amount)
+                assertEquals(-964, invoiceRow.unitPrice) // all days
+                assertEquals(-2892, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with a fixed daily fee divisor for half a month`() {
         // 23 operational days
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))

@@ -99,9 +99,9 @@ class DraftInvoiceGenerator(
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
         val headOfFamily = placements.first().headOfFamily
-        val childrenPartialMonth = getPartialMonthChildren(placements, operationalDays, decisions)
+        val childrenPartialMonth = getPartialMonthChildren(placements, decisions, operationalDays)
         val childrenFullMonthAbsences =
-            getFullMonthAbsences(placements, operationalDays, absences, plannedAbsences)
+            getFullMonthAbsences(placements, decisions, operationalDays, absences, plannedAbsences)
 
         val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
             val relevantPeriod = DateRange(
@@ -228,21 +228,12 @@ class DraftInvoiceGenerator(
 
     private fun getPartialMonthChildren(
         placementsList: List<Placements>,
-        operationalDays: OperationalDays,
         decisions: List<FeeDecision>,
+        operationalDays: OperationalDays,
     ): Set<ChildId> {
-        fun hasFeeDecision(childId: ChildId, date: LocalDate): Boolean {
-            return decisions.any { decision -> decision.validDuring.includes(date) && decision.children.any { part -> part.child.id == childId } }
-        }
-
-        return getChildOperationalDays(placementsList, operationalDays)
+        return getOperationalDaysForChildsUnits(placementsList, operationalDays)
             .mapValues { (childId, childOperationalDays) ->
-                childOperationalDays.any { date ->
-                    !hasFeeDecision(
-                        childId,
-                        date
-                    )
-                }
+                childOperationalDays.any { date -> !childHasFeeDecision(decisions, childId, date) }
             }
             .filter { (_, partialMonth) -> partialMonth }
             .map { (childId, _) -> childId }
@@ -251,6 +242,7 @@ class DraftInvoiceGenerator(
 
     private fun getFullMonthAbsences(
         placementsList: List<Placements>,
+        decisions: List<FeeDecision>,
         operationalDays: OperationalDays,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>
@@ -272,7 +264,10 @@ class DraftInvoiceGenerator(
             return hasPlannedAbsence(childId, date) || hasAbsence(childId, date)
         }
 
-        return getChildOperationalDays(placementsList, operationalDays)
+        return getOperationalDaysForChildsUnits(placementsList, operationalDays)
+            .mapValues { (childId, allOperationalDays) ->
+                allOperationalDays.filter { date -> childHasFeeDecision(decisions, childId, date) }
+            }
             .mapValues { (childId, childOperationalDays) ->
                 if (childOperationalDays.all { date -> hasSickleave(childId, date) }) {
                     FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
@@ -286,7 +281,11 @@ class DraftInvoiceGenerator(
             }
     }
 
-    private fun getChildOperationalDays(
+    private fun childHasFeeDecision(decisions: List<FeeDecision>, childId: ChildId, date: LocalDate): Boolean {
+        return decisions.any { decision -> decision.validDuring.includes(date) && decision.children.any { part -> part.child.id == childId } }
+    }
+
+    private fun getOperationalDaysForChildsUnits(
         placementsList: List<Placements>,
         operationalDays: OperationalDays,
     ): Map<ChildId, Set<LocalDate>> {

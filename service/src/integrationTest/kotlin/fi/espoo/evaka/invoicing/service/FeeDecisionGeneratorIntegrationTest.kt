@@ -51,6 +51,7 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDayPartWeek25
 import fi.espoo.evaka.snDefaultDaycare
@@ -297,6 +298,23 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(PREPARATORY_DAYCARE, result[0].children[0].placement.type)
         assertEquals(BigDecimal("0.80"), result[0].children[0].serviceNeed.feeCoefficient)
         assertEquals(23100, result[0].children[0].finalFee)
+    }
+
+    @Test
+    fun `fee decision placement gets correct contract days`() {
+        val start = LocalDate.of(2019, 1, 1)
+        val end = LocalDate.of(2019, 12, 31)
+        val placementPeriod = DateRange(start, end)
+        val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
+        insertServiceNeed(placementId, FiniteDateRange(start, end), snDaycareContractDays15.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, placementPeriod.start) }
+
+        val result = getAllFeeDecisions()
+
+        assertEquals(DAYCARE, result[0].children[0].placement.type)
+        assertEquals(15, result[0].children[0].serviceNeed.contractDaysPerMonth)
     }
 
     @Test
