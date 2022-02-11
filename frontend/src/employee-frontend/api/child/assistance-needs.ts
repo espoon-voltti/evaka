@@ -7,7 +7,11 @@ import { AssistanceNeedRequest } from 'lib-common/generated/api-types/assistance
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { AssistanceBasisOption, AssistanceNeed } from '../../types/child'
+import {
+  AssistanceBasisOption,
+  AssistanceNeed,
+  AssistanceNeedResponse
+} from '../../types/child'
 import { client } from '../client'
 
 export type { AssistanceNeedRequest }
@@ -35,15 +39,20 @@ export async function createAssistanceNeed(
 
 export async function getAssistanceNeeds(
   childId: UUID
-): Promise<Result<AssistanceNeed[]>> {
+): Promise<Result<AssistanceNeedResponse[]>> {
   return client
-    .get<JsonOf<AssistanceNeed[]>>(`/children/${childId}/assistance-needs`)
+    .get<JsonOf<AssistanceNeedResponse[]>>(
+      `/children/${childId}/assistance-needs`
+    )
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        startDate: LocalDate.parseIso(data.startDate),
-        endDate: LocalDate.parseIso(data.endDate),
-        bases: new Set(data.bases)
+        need: {
+          ...data.need,
+          startDate: LocalDate.parseIso(data.need.startDate),
+          endDate: LocalDate.parseIso(data.need.endDate),
+          bases: new Set(data.need.bases)
+        }
       }))
     )
     .then((v) => Success.of(v))

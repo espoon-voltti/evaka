@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 
 data class AssistanceAction(
@@ -24,6 +25,11 @@ data class AssistanceActionRequest(
     val actions: Set<String> = emptySet(),
     val otherAction: String = "",
     val measures: Set<AssistanceMeasure> = emptySet()
+)
+
+data class AssistanceActionResponse(
+    val action: AssistanceAction,
+    val permittedActions: Set<Action.AssistanceAction>
 )
 
 data class AssistanceActionOption(

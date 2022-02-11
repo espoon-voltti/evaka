@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
+import {
+  AssistanceAction,
+  AssistanceActionResponse
+} from 'employee-frontend/types/child'
+import { Action } from 'lib-common/generated/action'
 import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -15,19 +20,20 @@ import Toolbar from '../../../components/common/Toolbar'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { AssistanceAction } from '../../../types/child'
 import { isActiveDateRange } from '../../../utils/date'
 
 export interface Props {
   assistanceAction: AssistanceAction
+  permittedActions: Action.AssistanceAction[]
   onReload: () => undefined | void
-  assistanceActions: AssistanceAction[]
+  assistanceActions: AssistanceActionResponse[]
   assistanceActionOptions: AssistanceActionOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
 }
 
 export default React.memo(function AssistanceActionRow({
   assistanceAction,
+  permittedActions,
   onReload,
   assistanceActions,
   assistanceActionOptions,
@@ -80,11 +86,13 @@ export default React.memo(function AssistanceActionRow({
               toggleUiMode(`duplicate-assistance-action_${assistanceAction.id}`)
               scrollToRef(refSectionTop)
             }}
+            editable={permittedActions.includes('UPDATE')}
             onEdit={() => {
               toggleUiMode(`edit-assistance-action-${assistanceAction.id}`)
               setToggled(true)
               scrollToRef(refForm)
             }}
+            deletable={permittedActions.includes('DELETE')}
             onDelete={() =>
               toggleUiMode(`remove-assistance-action-${assistanceAction.id}`)
             }

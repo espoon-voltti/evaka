@@ -49,7 +49,15 @@ interface ToolbarProps {
   onDelete?: () => undefined | void
   onRetry?: () => undefined | void
   onCopy?: () => undefined | void
+  editable?: boolean
+  /**
+   * @deprecated use editable-prop with actions
+   */
   editableFor?: AdRole[]
+  deletable?: boolean
+  /**
+   * @deprecated use deletable-prop with actions
+   */
   deletableFor?: AdRole[]
   dataQaEdit?: string
   dataQaDelete?: string
@@ -66,7 +74,9 @@ function Toolbar({
   warning,
   conflict,
   disableAll,
+  editable,
   editableFor,
+  deletable,
   deletableFor,
   dataQaEdit,
   dataQaDelete,
@@ -77,9 +87,13 @@ function Toolbar({
   const { roles } = useContext(UserContext)
 
   const editAllowed: boolean =
-    editableFor === undefined || requireRole(roles, ...editableFor)
+    editable ||
+    (editableFor === undefined && editable === undefined) ||
+    (editableFor !== undefined && requireRole(roles, ...editableFor))
   const deleteAllowed: boolean =
-    deletableFor === undefined || requireRole(roles, ...deletableFor)
+    deletable ||
+    (deletableFor === undefined && deletable === undefined) ||
+    (deletableFor !== undefined && requireRole(roles, ...deletableFor))
 
   return (
     <ToolbarWrapper data-qa={dataQa}>

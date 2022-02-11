@@ -4,6 +4,7 @@
 
 import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
+import { ChildState, ChildContext } from 'employee-frontend/state/child'
 import { combine } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -37,6 +38,7 @@ export interface Props {
 
 export default React.memo(function AssistanceAction({ id }: Props) {
   const { i18n } = useTranslation()
+  const { permittedActions } = useContext<ChildState>(ChildContext)
   const [assistanceActions, loadData] = useApiState(
     () => getAssistanceActions(id),
     [id]
@@ -51,7 +53,7 @@ export default React.memo(function AssistanceAction({ id }: Props) {
       !!uiMode && uiMode.startsWith('duplicate-assistance-action')
         ? assistanceActions
             .map((actions) =>
-              actions.find((an) => an.id == uiMode.split('_').pop())
+              actions.find((an) => an.action.id == uiMode.split('_').pop())
             )
             .getOrElse(undefined)
         : undefined,
@@ -64,16 +66,18 @@ export default React.memo(function AssistanceAction({ id }: Props) {
       <div ref={refSectionTop}>
         <TitleRow>
           <Title size={4}>{i18n.childInformation.assistanceAction.title}</Title>
-          <AddButton
-            flipped
-            text={i18n.childInformation.assistanceAction.create}
-            onClick={() => {
-              toggleUiMode('create-new-assistance-action')
-              scrollToRef(refSectionTop)
-            }}
-            disabled={uiMode === 'create-new-assistance-action'}
-            data-qa="assistance-action-create-btn"
-          />
+          {permittedActions.has('CREATE_ASSISTANCE_ACTION') && (
+            <AddButton
+              flipped
+              text={i18n.childInformation.assistanceAction.create}
+              onClick={() => {
+                toggleUiMode('create-new-assistance-action')
+                scrollToRef(refSectionTop)
+              }}
+              disabled={uiMode === 'create-new-assistance-action'}
+              data-qa="assistance-action-create-btn"
+            />
+          )}
         </TitleRow>
         {uiMode === 'create-new-assistance-action' && (
           <>
@@ -90,7 +94,7 @@ export default React.memo(function AssistanceAction({ id }: Props) {
           <>
             <AssistanceActionForm
               childId={id}
-              assistanceAction={duplicate}
+              assistanceAction={duplicate.action}
               onReload={loadData}
               assistanceActions={assistanceActions}
               assistanceActionOptions={assistanceActionOptions}
@@ -100,8 +104,9 @@ export default React.memo(function AssistanceAction({ id }: Props) {
         )}
         {assistanceActions.map((assistanceAction) => (
           <AssistanceActionRow
-            key={assistanceAction.id}
-            assistanceAction={assistanceAction}
+            key={assistanceAction.action.id}
+            assistanceAction={assistanceAction.action}
+            permittedActions={assistanceAction.permittedActions}
             onReload={loadData}
             assistanceActions={assistanceActions}
             assistanceActionOptions={assistanceActionOptions}

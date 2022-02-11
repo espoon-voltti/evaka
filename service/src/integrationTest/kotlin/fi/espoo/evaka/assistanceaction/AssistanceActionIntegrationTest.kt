@@ -350,10 +350,10 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
     private fun whenGetAssistanceActionsThenExpectSuccess(childId: ChildId, user: AuthenticatedUser = assistanceWorker): List<AssistanceAction> {
         val (_, res, result) = http.get("/children/$childId/assistance-actions")
             .asUser(user)
-            .responseObject<List<AssistanceAction>>(jsonMapper)
+            .responseObject<List<AssistanceActionResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get()
+        return result.get().map { it.action }
     }
 
     private fun whenPutAssistanceActionThenExpectSuccess(id: AssistanceActionId, request: AssistanceActionRequest): AssistanceAction {

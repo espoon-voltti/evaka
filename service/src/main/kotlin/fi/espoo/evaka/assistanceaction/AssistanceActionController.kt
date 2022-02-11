@@ -48,13 +48,16 @@ class AssistanceActionController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
-    ): List<AssistanceAction> {
+    ): List<AssistanceActionResponse> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_ACTION, childId)
         return db.connect { dbc ->
-            assistanceActionService.getAssistanceActionsByChildId(dbc, childId).filter {
+            val assistanceActions = assistanceActionService.getAssistanceActionsByChildId(dbc, childId).filter {
                 accessControl.hasPermissionFor(user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, it.id)
             }
+            val assistanceActionIds = assistanceActions.map { it.id }
+            val permittedActions = accessControl.getPermittedAssistanceActionActions(user, assistanceActionIds)
+            assistanceActions.map { AssistanceActionResponse(it, permittedActions[it.id] ?: emptySet()) }
         }
     }
 

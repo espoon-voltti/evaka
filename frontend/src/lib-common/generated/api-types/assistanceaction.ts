@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { UUID } from '../../types'
 
 /**
@@ -39,6 +40,14 @@ export interface AssistanceActionRequest {
   measures: AssistanceMeasure[]
   otherAction: string
   startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceaction.AssistanceActionResponse
+*/
+export interface AssistanceActionResponse {
+  action: AssistanceAction
+  permittedActions: Action.AssistanceAction[]
 }
 
 /**

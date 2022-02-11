@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
+import { Action } from 'lib-common/generated/action'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -15,19 +16,25 @@ import Toolbar from '../../../components/common/Toolbar'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { AssistanceBasisOption, AssistanceNeed } from '../../../types/child'
+import {
+  AssistanceBasisOption,
+  AssistanceNeed,
+  AssistanceNeedResponse
+} from '../../../types/child'
 import { isActiveDateRange } from '../../../utils/date'
 
 export interface Props {
   assistanceNeed: AssistanceNeed
+  permittedActions: Action.AssistanceNeed[]
   onReload: () => undefined | void
-  assistanceNeeds: AssistanceNeed[]
+  assistanceNeeds: AssistanceNeedResponse[]
   assistanceBasisOptions: AssistanceBasisOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
 }
 
 export default React.memo(function AssistanceNeedRow({
   assistanceNeed,
+  permittedActions,
   onReload,
   assistanceNeeds,
   assistanceBasisOptions,
@@ -81,11 +88,13 @@ export default React.memo(function AssistanceNeedRow({
               toggleUiMode(`duplicate-assistance-need_${assistanceNeed.id}`)
               scrollToRef(refSectionTop)
             }}
+            editable={permittedActions.includes('UPDATE')}
             onEdit={() => {
               toggleUiMode(`edit-assistance-need-${assistanceNeed.id}`)
               setToggled(true)
               scrollToRef(refForm)
             }}
+            deletable={permittedActions.includes('DELETE')}
             onDelete={() =>
               toggleUiMode(`remove-assistance-need-${assistanceNeed.id}`)
             }

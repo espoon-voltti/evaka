@@ -7,6 +7,7 @@ package fi.espoo.evaka.assistanceneed
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -16,7 +17,7 @@ data class AssistanceNeed(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val capacityFactor: Double,
-    val bases: Set<String>,
+    val bases: Set<String>
 )
 
 data class AssistanceNeedRequest(
@@ -24,6 +25,11 @@ data class AssistanceNeedRequest(
     val endDate: LocalDate,
     val capacityFactor: Double,
     val bases: Set<String> = emptySet(),
+)
+
+data class AssistanceNeedResponse(
+    val need: AssistanceNeed,
+    val permittedActions: Set<Action.AssistanceNeed>
 )
 
 data class AssistanceBasisOption(

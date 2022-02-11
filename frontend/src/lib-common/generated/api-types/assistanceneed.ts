@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { UUID } from '../../types'
 
 /**
@@ -37,4 +38,12 @@ export interface AssistanceNeedRequest {
   capacityFactor: number
   endDate: LocalDate
   startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.AssistanceNeedResponse
+*/
+export interface AssistanceNeedResponse {
+  need: AssistanceNeed
+  permittedActions: Action.AssistanceNeed[]
 }
