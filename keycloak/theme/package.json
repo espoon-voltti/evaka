@@ -18,7 +18,7 @@
     "csvtojson": "^2.0.10",
     "mkdirp": "^1.0.4",
     "node-fetch": "^2.6.1",
-    "node-sass": "^6.0.0",
+    "node-sass": "^7.0.0",
     "properties": "^1.2.1",
     "tar": "^6.1.9"
   }
