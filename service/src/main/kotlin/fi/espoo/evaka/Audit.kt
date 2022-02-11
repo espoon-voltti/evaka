@@ -222,6 +222,7 @@ enum class Audit(
     PersonUpdate("evaka.person.update", securityEvent = true, securityLevel = "high"),
     PinCodeLockedRead("evaka.pin-locked.read"),
     PinCodeUpdate("evaka.pin.update"),
+    PinLogin("evaka.pin.login"),
     PisFamilyRead("evaka.pis-family.read"),
     PlacementCancel("evaka.placement.cancel"),
     PlacementCreate("evaka.placement.create"),

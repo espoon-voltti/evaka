@@ -1375,7 +1375,7 @@ data class DevEmployee(
     val email: String? = "test.person@espoo.fi",
     val externalId: ExternalId? = null,
     val roles: Set<UserRole> = setOf(),
-    val lastLogin: Instant? = Instant.now()
+    val lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now()
 )
 
 data class DevMobileDevice(
