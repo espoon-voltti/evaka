@@ -296,34 +296,28 @@ fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
         .mapTo<Boolean>()
         .firstOrNull() ?: false
 
-fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> = createQuery(
-    """
-SELECT id
-FROM employee
-WHERE (
-    roles != '{}'
-    OR EXISTS (SELECT 1 FROM daycare_acl WHERE employee_id = employee.id)
-    OR EXISTS (SELECT 1 FROM daycare_group_acl WHERE employee_id = employee.id)
+fun Database.Transaction.clearRolesForInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
+    return createQuery(
+        """
+WITH employees_to_reset AS (
+    SELECT e.id
+    FROM employee e
+    LEFT JOIN daycare_acl d ON d.employee_id = e.id
+    LEFT JOIN daycare_group_acl dg ON dg.employee_id = e.id
+    WHERE (e.roles != '{}' OR d.employee_id IS NOT NULL OR dg.employee_id IS NOT NULL) AND (e.last_login IS NULL OR (
+        SELECT max(ts)
+        FROM unnest(ARRAY[e.last_login, d.updated, dg.updated]) ts
+    ) < :now - interval '3 months')
+), delete_daycare_acl AS (
+    DELETE FROM daycare_acl WHERE employee_id = ANY(SELECT id FROM employees_to_reset)
+), delete_daycare_group_acl AS (
+    DELETE FROM daycare_group_acl WHERE employee_id = ANY(SELECT id FROM employees_to_reset)
 )
-AND last_login IS NULL OR last_login < :now - interval '3 months'
-    """.trimIndent()
-)
-    .bind("now", now)
-    .mapTo<EmployeeId>()
-    .list()
-
-fun Database.Transaction.resetEmployeeRoles(ids: Collection<EmployeeId>) = createUpdate(
-    """
-WITH reset_employee AS (
-    UPDATE employee
-    SET roles = '{}'
-    WHERE id = ANY(:ids)
-    RETURNING id
-), deleted_daycare_acl AS (
-    DELETE FROM daycare_acl WHERE employee_id IN (SELECT id FROM reset_employee)
-)
-DELETE FROM daycare_group_acl WHERE employee_id IN (SELECT id FROM reset_employee)
-    """.trimIndent()
-)
-    .bind("ids", ids.toTypedArray())
-    .execute()
+UPDATE employee SET roles = '{}' WHERE id = ANY (SELECT id FROM employees_to_reset)
+RETURNING id
+"""
+    )
+        .bind("now", now)
+        .mapTo<EmployeeId>()
+        .toList()
+}
