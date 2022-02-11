@@ -11,7 +11,8 @@ import {
   LinearScale,
   LineElement,
   PointElement,
-  TimeScale
+  TimeScale,
+  Tooltip
 } from 'chart.js'
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -35,7 +36,7 @@ Sentry.init({
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
 
-Chart.register(TimeScale, LinearScale, PointElement, LineElement)
+Chart.register(TimeScale, LinearScale, PointElement, LineElement, Tooltip)
 Chart.defaults.animation = false
 Chart.defaults.font = {
   family: '"Open Sans", "Arial", sans-serif',
