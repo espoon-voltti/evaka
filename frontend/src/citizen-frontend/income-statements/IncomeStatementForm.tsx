@@ -18,7 +18,6 @@ import { OtherIncome } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import UnorderedList from 'lib-components/atoms/UnorderedList'
 import AsyncButton, {
   AsyncClickCallback
 } from 'lib-components/atoms/buttons/AsyncButton'
@@ -36,28 +35,15 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import FileUpload from 'lib-components/molecules/FileUpload'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import {
-  fontWeights,
-  H1,
-  H2,
-  H3,
-  H4,
-  Label,
-  P
-} from 'lib-components/typography'
+import { fontWeights, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fasExclamationTriangle } from 'lib-icons'
 import Footer from '../Footer'
-import {
-  deleteAttachment,
-  getAttachmentBlob,
-  saveIncomeStatementAttachment
-} from '../attachments'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
+import IncomeStatementAttachments from './IncomeStatementAttachments'
 import { AttachmentType } from './types/common'
 import * as Form from './types/form'
 
@@ -296,7 +282,7 @@ export default React.memo(
               <Gap size="L" />
               <OtherInfo formData={otherIncomeFormData} onChange={onChange} />
               <Gap size="L" />
-              <Attachments
+              <IncomeStatementAttachments
                 incomeStatementId={incomeStatementId}
                 requiredAttachments={requiredAttachments}
                 attachments={formData.attachments}
@@ -1097,86 +1083,6 @@ const OtherInfo = React.memo(function OtherInfo({
           id="more-info"
           value={formData.otherInfo}
           onChange={useFieldDispatch(onChange, 'otherInfo')}
-        />
-      </FixedSpaceColumn>
-    </ContentArea>
-  )
-})
-
-const Attachments = React.memo(function Attachments({
-  incomeStatementId,
-  requiredAttachments,
-  attachments,
-  onUploaded,
-  onDeleted
-}: {
-  incomeStatementId: UUID | undefined
-  requiredAttachments: Set<AttachmentType>
-  attachments: Attachment[]
-  onUploaded: (attachment: Attachment) => void
-  onDeleted: (attachmentId: UUID) => void
-}) {
-  const t = useTranslation()
-
-  const handleUpload = useCallback(
-    async (
-      file: File,
-      onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) => {
-      return (
-        await saveIncomeStatementAttachment(
-          incomeStatementId,
-          file,
-          onUploadProgress
-        )
-      ).map((id) => {
-        onUploaded({
-          id,
-          name: file.name,
-          contentType: file.type
-        })
-        return id
-      })
-    },
-    [incomeStatementId, onUploaded]
-  )
-
-  const handleDelete = useCallback(
-    async (id: UUID) => {
-      return (await deleteAttachment(id)).map(() => {
-        onDeleted(id)
-      })
-    },
-    [onDeleted]
-  )
-
-  return (
-    <ContentArea opaque paddingVertical="L">
-      <FixedSpaceColumn spacing="zero">
-        <H3 noMargin>{t.income.attachments.title}</H3>
-        <Gap size="s" />
-        <P noMargin>{t.income.attachments.description}</P>
-        <Gap size="L" />
-        {requiredAttachments.size > 0 && (
-          <>
-            <H4 noMargin>{t.income.attachments.required.title}</H4>
-            <Gap size="s" />
-            <UnorderedList data-qa="required-attachments">
-              {[...requiredAttachments].map((attachmentType) => (
-                <li key={attachmentType}>
-                  {t.income.attachments.attachmentNames[attachmentType]}
-                </li>
-              ))}
-            </UnorderedList>
-            <Gap size="L" />
-          </>
-        )}
-        <FileUpload
-          files={attachments}
-          onUpload={handleUpload}
-          onDelete={handleDelete}
-          onDownloadFile={getAttachmentBlob}
-          i18n={{ upload: t.fileUpload, download: t.fileDownload }}
         />
       </FixedSpaceColumn>
     </ContentArea>

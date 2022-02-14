@@ -23,6 +23,8 @@ import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
+import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
+import ChildIncomeStatementView from './income-statements/ChildIncomeStatementView'
 import CtaBanner from './holiday-periods/CtaBanner'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
@@ -87,6 +89,16 @@ export default function App() {
                             exact
                             path="/income/:incomeStatementId"
                             component={requireAuth(IncomeStatementView)}
+                          />
+                          <Route
+                            exact
+                            path="/child-income/:childId/:incomeStatementId/edit"
+                            component={requireAuth(ChildIncomeStatementEditor)}
+                          />
+                          <Route
+                            exact
+                            path="/child-income/:childId/:incomeStatementId"
+                            component={requireAuth(ChildIncomeStatementView)}
                           />
                           <Route
                             exact

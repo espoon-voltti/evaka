@@ -29,6 +29,39 @@ export async function getIncomeStatements(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function getChildIncomeStatements(
+  childId: string,
+  page: number,
+  pageSize: number
+): Promise<Result<Paged<IncomeStatement>>> {
+  return client
+    .get<JsonOf<Paged<IncomeStatement>>>(
+      `/citizen/income-statements/child/${childId}`,
+      {
+        params: { page, pageSize }
+      }
+    )
+    .then(({ data: { data, ...rest } }) => ({
+      ...rest,
+      data: data.map(deserializeIncomeStatement)
+    }))
+    .then((data) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getChildIncomeStatement(
+  childId: UUID,
+  id: UUID
+): Promise<Result<IncomeStatement>> {
+  return client
+    .get<JsonOf<IncomeStatement>>(
+      `/citizen/income-statements/child/${childId}/${id}`
+    )
+    .then((res) => deserializeIncomeStatement(res.data))
+    .then((data) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function getIncomeStatement(
   id: UUID
 ): Promise<Result<IncomeStatement>> {
@@ -41,7 +74,18 @@ export async function getIncomeStatement(
 
 export const getIncomeStatementStartDates = (): Promise<Result<LocalDate[]>> =>
   client
-    .get<JsonOf<LocalDate[]>>(`/citizen/income-statements/start-dates`)
+    .get<JsonOf<LocalDate[]>>(`/citizen/income-statements/start-dates/`)
+    .then(({ data }) => data.map((d) => LocalDate.parseIso(d)))
+    .then((data) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+
+export const getChildIncomeStatementStartDates = (
+  childId: string
+): Promise<Result<LocalDate[]>> =>
+  client
+    .get<JsonOf<LocalDate[]>>(
+      `/citizen/income-statements/child/start-dates/${childId}`
+    )
     .then(({ data }) => data.map((d) => LocalDate.parseIso(d)))
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
@@ -52,6 +96,13 @@ export async function createIncomeStatement(
   return client.post('/citizen/income-statements', body)
 }
 
+export async function createChildIncomeStatement(
+  childId: string,
+  body: IncomeStatementBody
+): Promise<void> {
+  return client.post(`/citizen/income-statements/child/${childId}`, body)
+}
+
 export async function updateIncomeStatement(
   id: UUID,
   body: IncomeStatementBody
@@ -59,9 +110,27 @@ export async function updateIncomeStatement(
   return client.put(`/citizen/income-statements/${id}`, body)
 }
 
+export async function updateChildIncomeStatement(
+  childId: UUID,
+  id: UUID,
+  body: IncomeStatementBody
+): Promise<void> {
+  return client.put(`/citizen/income-statements/child/${childId}/${id}`, body)
+}
+
 export async function deleteIncomeStatement(id: UUID): Promise<Result<void>> {
   return client
     .delete(`/citizen/income-statements/${id}`)
+    .then(() => Success.of())
+    .catch((err) => Failure.fromError(err))
+}
+
+export async function deleteChildIncomeStatement(
+  childId: UUID,
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/citizen/income-statements/child/${childId}/${id}`)
     .then(() => Success.of())
     .catch((err) => Failure.fromError(err))
 }

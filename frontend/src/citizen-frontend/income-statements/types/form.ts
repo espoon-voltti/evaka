@@ -11,6 +11,7 @@ export interface IncomeStatementForm {
   startDate: string
   endDate: string
   highestFee: boolean
+  childIncome: boolean
   gross: Gross
   entrepreneur: Entrepreneur
   student: boolean
@@ -67,6 +68,7 @@ export const empty: IncomeStatementForm = {
   startDate: LocalDate.today().format(),
   endDate: '',
   highestFee: false,
+  childIncome: false,
   gross: {
     selected: false,
     incomeSource: null,
@@ -139,6 +141,12 @@ export function fromIncomeStatement(
           entrepreneur: mapEntrepreneur(incomeStatement.entrepreneur),
           student: incomeStatement.student,
           alimonyPayer: incomeStatement.alimonyPayer,
+          otherInfo: incomeStatement.otherInfo,
+          attachments: incomeStatement.attachments
+        }
+      : incomeStatement.type === 'CHILD_INCOME'
+      ? {
+          childIncome: true,
           otherInfo: incomeStatement.otherInfo,
           attachments: incomeStatement.attachments
         }

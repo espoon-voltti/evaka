@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { HighestFee, Income } from 'lib-common/api-types/incomeStatement'
+import {
+  ChildIncome,
+  HighestFee,
+  Income
+} from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { stringToInt } from 'lib-common/utils/number'
@@ -12,12 +16,17 @@ type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handled' | 'handlerNote'
 
 export type HighestFeeBody = Omit<HighestFee, ReadOnlyFields>
 
+export interface ChildIncomeBody
+  extends Omit<ChildIncome, ReadOnlyFields | 'attachments'> {
+  attachmentIds: UUID[]
+}
+
 export interface IncomeBody
   extends Omit<Income, ReadOnlyFields | 'attachments'> {
   attachmentIds: UUID[]
 }
 
-export type IncomeStatementBody = HighestFeeBody | IncomeBody
+export type IncomeStatementBody = HighestFeeBody | IncomeBody | ChildIncomeBody
 
 export function fromBody(
   formData: Form.IncomeStatementForm
@@ -34,6 +43,16 @@ export function fromBody(
 
   if (formData.highestFee) {
     return { type: 'HIGHEST_FEE', startDate, endDate }
+  }
+
+  if (formData.childIncome) {
+    return {
+      type: 'CHILD_INCOME',
+      startDate,
+      endDate,
+      otherInfo: formData.otherInfo,
+      attachmentIds: formData.attachments.map((a) => a.id)
+    } as ChildIncomeBody
   }
 
   const gross = validateGross(formData.gross)

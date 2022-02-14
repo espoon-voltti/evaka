@@ -1410,6 +1410,25 @@ const en: Translations = {
         <P>* The information denoted with an asterisk is mandatory.</P>
       </>
     ),
+    childFormTitle: "Child's income information",
+    childFormDescription: (
+      <>
+        <P>
+          The income of a child in early childhood education should be
+          clarified, as the income affects the early childhood education fee.
+          Child income these may include, but are not limited to, maintenance or
+          support, interest and dividend income, and a pension.
+        </P>
+
+        <P>
+          If your child has no income, or your family has agreed to the highest
+          early childhood fee, select &apos;Child has no income, or I have
+          agreed to the highest early childhood education fee&apos;.
+        </P>
+
+        <P>* Information marked with an asterisk is required.</P>
+      </>
+    ),
     confidential: (
       <P>
         <strong>Confidential</strong>
@@ -1419,6 +1438,8 @@ const en: Translations = {
     ),
     addNew: 'New income statement',
     incomeInfo: 'Income information',
+    childIncomeInfo: "Validity of the child's income information",
+    incomeStatementMissing: 'Income statement missing or outdated',
     incomesRegisterConsent:
       'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary',
     incomeType: {
@@ -1437,6 +1458,17 @@ const en: Translations = {
         'I agree to pay the highest early education fee in accordance with the early education time, the valid Act on Client Charges in Healthcare and Social Welfare and the decisions of the City Board for the time being until I declare otherwise or until the early education of my child ends. (No need to provide income information)',
       grossIncome: 'Determination of the client fee by gross income',
       entrepreneurIncome: "Entrepreneur's income information"
+    },
+    childIncome: {
+      subtitle:
+        'Does the child have income that affects the early childhood education fee? *',
+      noIncome:
+        'The child has no income, or I have agreed to the highest early childhood education fee\n',
+      hasIncome:
+        'The child has income and I will provide information about it as attachments below',
+      childAttachments: 'Child income information attached *',
+      additionalInfo: "Learn more about your child's income information",
+      write: 'Write'
     },
     grossIncome: {
       title: 'Filling in gross income data',
@@ -1627,7 +1659,8 @@ const en: Translations = {
         PROFIT_AND_LOSS_STATEMENT: 'Profit and loss account and balance sheet',
         SALARY: 'Payslips of salaries and trade incomes',
         PROOF_OF_STUDIES:
-          'Certificate of student status or a decision on a student benefit from an unemployment fund / training allowance from an employment fund'
+          'Certificate of student status or a decision on a student benefit from an unemployment fund / training allowance from an employment fund',
+        CHILD_INCOME: 'Documents of child income'
       }
     },
     assure: 'I testify that the information I have provided is correct.',
@@ -1717,8 +1750,21 @@ const en: Translations = {
 
       statementTypes: {
         HIGHEST_FEE: 'Consent for the highest fee category',
-        INCOME: 'Income information provided by parent/guardian'
+        INCOME: 'Income information provided by parent/guardian',
+        CHILD_INCOME: 'Child income'
       }
+    },
+    children: {
+      title: 'Children income information',
+      description: (
+        <>
+          The income of children in early childhood education should be
+          clarified. The most common income of a child is maintenance or
+          support, interest and dividend income and pension. You should also
+          report if the child has no income or your family has agreed to the
+          highest early childhood education fee.
+        </>
+      )
     }
   },
   validationErrors: {

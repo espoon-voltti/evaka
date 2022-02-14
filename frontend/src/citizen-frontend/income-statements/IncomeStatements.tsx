@@ -19,8 +19,10 @@ import { Dimmed, H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 import Footer from '../Footer'
+import { getChildren } from '../children/api'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+import ChildrenIncomeStatements from './ChildrenIncomeStatements'
 import { deleteIncomeStatement, getIncomeStatements } from './api'
 
 const HeadingContainer = styled.div`
@@ -118,6 +120,8 @@ export default React.memo(function IncomeStatements() {
     [page]
   )
 
+  const [children, fetchChildren] = useApiState(() => getChildren(), [])
+
   const [deletionState, setDeletionState] = useState<DeletionState>({
     status: 'row-not-selected'
   })
@@ -197,6 +201,15 @@ export default React.memo(function IncomeStatements() {
             />
           )}
         </ContentArea>
+        <Gap size="s" />
+        {renderResult(children, ({ children }) => (
+          <>
+            <ChildrenIncomeStatements
+              childInfo={children}
+              onRemoveIncomeStatement={fetchChildren}
+            />
+          </>
+        ))}
       </Container>
       <Footer />
     </>

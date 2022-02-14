@@ -1365,6 +1365,25 @@ const sv: Translations = {
         <P>* Uppgifter markerade med en asterisk är obligatoriska</P>
       </>
     ),
+    childFormTitle: 'Barnets inkomstutredning',
+    childFormDescription: (
+      <>
+        <P>
+          Eftersom ett barns inkomster kan påverka kostnaden för
+          småbarnspedagogiken bör en utredning av inkomsterna göras. Till ett
+          barns inkomster räknas bl.a. underhållsbidrag eller -stöd, ränte- och
+          aktieinkomster samt pension.
+        </P>
+
+        <P>
+          Välj &apos;Barnet har inga inkomster, eller så har jag gått med på
+          högsta avgiften&apos; om barnet inte har några inkomster, eller er
+          familj har godkännt en högre avgift för småbarnspedagogiken.
+        </P>
+
+        <P>* Uppgifter markerade med en stjärna är obligatoriska.</P>
+      </>
+    ),
     confidential: (
       <P>
         <strong>Sekretessbelagt</strong>
@@ -1374,6 +1393,8 @@ const sv: Translations = {
     ),
     addNew: 'Ny inkomstutredning',
     incomeInfo: 'Inkomstuppgifter',
+    childIncomeInfo: 'Giltigheten av barnets inkomstinformation',
+    incomeStatementMissing: 'Inkomstutredningen saknas eller är föråldrad.',
     incomesRegisterConsent:
       'Jag samtycker till att uppgifterna som rör mina inkomster kontrolleras i inkomstregistret samt hos FPA vid behov',
     incomeType: {
@@ -1396,6 +1417,16 @@ const sv: Translations = {
         'Jag samtycker till att betala den högsta avgiften för småbarnspedagogik som gäller till vidare enligt vid den aktuella tidpunkten gällande lagen om klientavgifter och stadsstyrelsens beslut, tills jag meddelar något annat eller tills mitt barns småbarnspedagogik upphör. (Inkomstuppgifterna behöver inte lämnas in)',
       grossIncome: 'Fastställande av avgiften enligt bruttoinkomster',
       entrepreneurIncome: 'Uppgifter om företagarens inkomster'
+    },
+    childIncome: {
+      subtitle:
+        'Har barnet inkomster som inverkar på avgiften för småbarnspedagogiken? *',
+      noIncome:
+        'Barnet har inga inkomster, eller så har jag gått med på högsta avgiften',
+      hasIncome: 'Barnet har inkomster och jag bifogar dem nedan',
+      childAttachments: 'Information om barnets inkomster bifogas *',
+      additionalInfo: 'Övrig information angående barnets inkomster',
+      write: 'Fyll i'
     },
     grossIncome: {
       title: 'Att fylla i uppgifterna om bruttoinkomster',
@@ -1584,7 +1615,8 @@ const sv: Translations = {
         PROFIT_AND_LOSS_STATEMENT: 'Resultaträkning och balansräkning',
         SALARY: 'Utbetalningsspecifikationer av lön och annan arbetsersättning',
         PROOF_OF_STUDIES:
-          'Studieintyg eller beslut om arbetslöshetskassans studieförmån / sysselsättningsfondens utbildningsstöd'
+          'Studieintyg eller beslut om arbetslöshetskassans studieförmån / sysselsättningsfondens utbildningsstöd',
+        CHILD_INCOME: 'Kvitton på barnets inkomster'
       }
     },
     assure: 'Jag försäkrar att de uppgifter jag lämnat in är riktiga.',
@@ -1674,8 +1706,21 @@ const sv: Translations = {
 
       statementTypes: {
         HIGHEST_FEE: 'Samtycke till den högsta avgiftsklassen',
-        INCOME: 'Inkomstuppgifter som vårdnadshavaren har skickat'
+        INCOME: 'Inkomstuppgifter som vårdnadshavaren har skickat',
+        CHILD_INCOME: 'Barnens inkomstuppgifter'
       }
+    },
+    children: {
+      title: 'Barnens inkomstutredningar',
+      description: (
+        <>
+          En utredning av barnens inkomster bör göras för småbarnspedagogiken.
+          De vanligaste inkomsterna barn har är underhållsbidrag eller -stöd,
+          ränte- och aktieinkomster samt pension. Även om barnet inte har några
+          inkomster, eller om familjen har godkännt den högsta avgiften, bör du
+          göra utredningen.
+        </>
+      )
     }
   },
   validationErrors: {
