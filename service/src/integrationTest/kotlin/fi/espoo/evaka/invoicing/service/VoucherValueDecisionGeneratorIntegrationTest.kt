@@ -31,7 +31,6 @@ import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultFiveYearOldsDaycare
 import fi.espoo.evaka.snDefaultFiveYearOldsPartDayDaycare
 import fi.espoo.evaka.snDefaultPreparatory
-import fi.espoo.evaka.snDefaultPreschool
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -218,17 +217,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(1, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(BigDecimal("1.00"), decision.ageCoefficient)
-            assertEquals(snDefaultPreschool.toValueDecisionServiceNeed(), decision.serviceNeed)
-            assertEquals(43500, decision.voucherValue)
-        }
+        assertEquals(0, voucherValueDecisions.size)
     }
 
     @Test
