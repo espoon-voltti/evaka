@@ -6,24 +6,15 @@
 
 set -eou pipefail
 
-if [ "${DISABLE_JSON_LOG:-false}" = "true" ]; then
-    # Local environment it is easier to read normal loggig
-    rm -f /opt/jboss/keycloak/standalone/configuration/logging.properties.template
-    rm -f /opt/jboss/startup-scripts/logging.cli.template
+if [ "${HTTPS_GENERATE:-false}" = "true" ]; then
+    cd /opt/keycloak
+    keytool -genkeypair -storepass "$HTTPS_STOREPASS" -storetype PKCS12 -keyalg RSA -keysize 2048 \
+        -dname "CN=${HTTPS_DNAME}" -alias server -ext "SAN:c=${HTTPS_SAN:-"DNS:localhost,IP:127.0.0.1"}" -keystore conf/server.keystore
+    cd - 2> /dev/null
 fi
 
-if test -f /opt/jboss/keycloak/standalone/configuration/logging.properties.template; then
-    sed -e "s/\${VOLTTI_ENV}/${VOLTTI_ENV:-local}/" \
-        /opt/jboss/keycloak/standalone/configuration/logging.properties.template \
-            > /opt/jboss/keycloak/standalone/configuration/logging.properties
+if test -f /configuration/evaka.json; then
+    /opt/keycloak/bin/kc.sh import --file=/configuration/evaka.json
 fi
 
-if test -f /opt/jboss/startup-scripts/logging.cli.template; then
-    sed -e "s/\${VOLTTI_ENV}/${VOLTTI_ENV:-local}/" \
-        /opt/jboss/startup-scripts/logging.cli.template \
-            > /opt/jboss/startup-scripts/logging.cli
-    chmod +x /opt/jboss/startup-scripts/logging.cli
-    rm /opt/jboss/startup-scripts/logging.cli.template
-fi
-
-/opt/jboss/tools/docker-entrypoint.sh "$@"
+/opt/keycloak/bin/kc.sh "$@"

@@ -38,6 +38,7 @@ COPY ./theme/ /work/
 
 RUN npm run build
 
+<<<<<<< HEAD
 FROM quay.io/keycloak/keycloak:19.0.3-legacy AS keycloak
 
 CMD ["--server-config=standalone.xml", "-b", "0.0.0.0"]
@@ -46,34 +47,48 @@ USER root
 
 ARG CACHE_BUST=2022-10-25
 
+=======
+FROM quay.io/keycloak/keycloak:19.0.1 AS keycloak
+
+USER root
+
+>>>>>>> KeyCloak quarkus
 RUN microdnf upgrade -y \
  && microdnf install -y jq \
  && microdnf clean all \
  && mkdir -p /opt/jboss/startup-scripts \
  && chown 1000:1000 /opt/jboss/startup-scripts
 
-USER 1000
-
-RUN mkdir -p /opt/jboss/keycloak/standalone/data/password-blacklists/ \
- && curl -sSf "https://raw.githubusercontent.com/danielmiessler/SecLists/2021.1/Passwords/xato-net-10-million-passwords-1000000.txt" \
-      -o /opt/jboss/keycloak/standalone/data/password-blacklists/default.txt \
- && echo "424a3e03a17df0a2bc2b3ca749d81b04e79d59cb7aeec8876a5a3f308d0caf51  /opt/jboss/keycloak/standalone/data/password-blacklists/default.txt" | sha256sum -c -
+#RUN mkdir -p /opt/jboss/keycloak/standalone/data/password-blacklists/ \
+# && curl -sSf "https://raw.githubusercontent.com/danielmiessler/SecLists/2021.1/Passwords/xato-net-10-million-passwords-1000000.txt" \
+#      -o /opt/jboss/keycloak/standalone/data/password-blacklists/default.txt \
+# && echo "424a3e03a17df0a2bc2b3ca749d81b04e79d59cb7aeec8876a5a3f308d0caf51  /opt/jboss/keycloak/standalone/data/password-blacklists/default.txt" | sha256sum -c -
 
 ADD ./bin/* /bin/
-ADD ./cli/ /opt/jboss/startup-scripts/
-ADD ./logging.properties.template /opt/jboss/keycloak/standalone/configuration/logging.properties.template
+#ADD ./cli/ /opt/jboss/startup-scripts/
+#ADD ./logging.properties.template /opt/jboss/keycloak/standalone/configuration/logging.properties.template
 
 ENTRYPOINT ["/bin/entrypoint.sh"]
 
 FROM keycloak
 
-COPY --from=builder-theme /work/evaka /opt/jboss/keycloak/themes/evaka
+COPY --from=builder-theme /work/evaka /opt/keycloak/themes/evaka
 
 COPY --from=builder-authenticator /project/evaka-review-profile/target/evaka-review-profile.jar \
-          /opt/jboss/keycloak/standalone/deployments/
+          /opt/keycloak/providers/
 
 COPY --from=builder-logger /project/target/evaka-logging.jar \
-          /opt/jboss/keycloak/standalone/deployments/
+          /opt/keycloak/providers/
+
+ENV KC_HEALTH_ENABLED=true
+ENV KC_METRICS_ENABLED=true
+ENV KC_DB=postgres
+
+RUN /opt/keycloak/bin/kc.sh build --db=postgres
+
+USER 1000
+
+CMD ["start", "--optimized", "--log-console-output=json"]
 
 ARG build=none
 ARG commit=none
