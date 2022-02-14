@@ -35,7 +35,7 @@ services:
       DB_SCHEMA: public
       DB_PASSWORD: password
       KEYCLOAK_WELCOME_THEME: evaka
-      DIABLE_JSON_LOG: "true"
+      DISABLE_JSON_LOG: "true"
       #KEYCLOAK_LOGLEVEL: DEBUG
     command: [
         '-b',

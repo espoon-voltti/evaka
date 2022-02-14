@@ -2,8 +2,6 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG THEME_IMAGE=307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/keycloak-theme:v0.5.0
-
 FROM maven:3.8.4-openjdk-17-slim AS builder-authenticator
 
 WORKDIR /project/
@@ -40,7 +38,7 @@ COPY ./theme/ /work/
 
 RUN npm run build
 
-FROM quay.io/keycloak/keycloak:16.1.1 AS keycloak
+FROM quay.io/keycloak/keycloak:17.0.0-legacy AS keycloak
 
 CMD ["--server-config=standalone.xml", "-b", "0.0.0.0"]
 
