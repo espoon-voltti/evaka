@@ -6,7 +6,7 @@
 
 set -eou pipefail
 
-if [ "${DIABLE_JSON_LOG:-false}" = "true" ]; then
+if [ "${DISABLE_JSON_LOG:-false}" = "true" ]; then
     # Local environment it is easier to read normal loggig
     rm -f /opt/jboss/keycloak/standalone/configuration/logging.properties.template
     rm -f /opt/jboss/startup-scripts/logging.cli.template
