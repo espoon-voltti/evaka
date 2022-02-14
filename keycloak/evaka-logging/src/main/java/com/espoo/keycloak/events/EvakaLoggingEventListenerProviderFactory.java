@@ -28,10 +28,14 @@ public class EvakaLoggingEventListenerProviderFactory implements EventListenerPr
     private boolean hashIpAdderss;
     private boolean dropIpAdderss;
 
+    private boolean hashIdentity;
+    private boolean dropIdentity;
+
     @Override
     public EventListenerProvider create(KeycloakSession session) {
         return new EvakaLoggingEventListenerProvider(session, logger, successLevel, errorLevel,
-                hashUsername, dropUsername, hashSessionId, dropSessionId, hashIpAdderss, dropIpAdderss);
+                hashUsername, dropUsername, hashSessionId, dropSessionId, hashIpAdderss, dropIpAdderss,
+                hashIdentity, dropIdentity);
     }
 
     private boolean getBooleanEnvironment(String variable) {
@@ -51,6 +55,9 @@ public class EvakaLoggingEventListenerProviderFactory implements EventListenerPr
 
         hashIpAdderss = getBooleanEnvironment("LOG_HASH_IP_ADDRESS");
         dropIpAdderss = getBooleanEnvironment("LOG_DROP_IP_ADDRESS");
+
+        hashIdentity = getBooleanEnvironment("LOG_HASH_IDENTITY");
+        dropIdentity = getBooleanEnvironment("LOG_DROP_IDENTITY");
     }
 
     @Override
