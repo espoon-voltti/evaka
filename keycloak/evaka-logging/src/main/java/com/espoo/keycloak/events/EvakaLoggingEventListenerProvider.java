@@ -26,10 +26,13 @@ public class EvakaLoggingEventListenerProvider extends JBossLoggingEventListener
     private boolean dropSessionId = false;
     private boolean hashIpAdderss = false;
     private boolean dropIpAdderss = false;
+    private boolean hashIdentity = false;
+    private boolean dropIdentity = false;
 
     public EvakaLoggingEventListenerProvider(KeycloakSession session, Logger logger, Logger.Level successLevel,
             Logger.Level errorLevel, boolean hashUsername, boolean dropUsername, boolean hashSessionId,
-            boolean dropSessionId, boolean hashIpAdderss, boolean dropIpAdderss) {
+            boolean dropSessionId, boolean hashIpAdderss, boolean dropIpAdderss, boolean hashIdentity,
+            boolean dropIdentity) {
         super(session, logger, successLevel, errorLevel);
         this.hashUsername = hashUsername;
         this.dropUsername = dropUsername;
@@ -37,6 +40,8 @@ public class EvakaLoggingEventListenerProvider extends JBossLoggingEventListener
         this.dropSessionId = dropSessionId;
         this.hashIpAdderss = hashIpAdderss;
         this.dropIpAdderss = dropIpAdderss;
+        this.hashIdentity = hashIdentity;
+        this.dropIdentity = dropIdentity;
 
         try {
             if (digest == null) {
@@ -57,14 +62,28 @@ public class EvakaLoggingEventListenerProvider extends JBossLoggingEventListener
     public void onEvent(Event event) {
         if (dropUsername) {
             Map<String, String> details = event.getDetails();
-            if (details.containsKey("username")) {
+            if (details != null && details.containsKey("username")) {
                 details.remove("username");
             }
             event.setDetails(details);
         } else if (hashUsername) {
             Map<String, String> details = event.getDetails();
-            if (details.containsKey("username")) {
+            if (details != null && details.containsKey("username")) {
                 details.put("username", sha256(details.get("username")));
+            }
+            event.setDetails(details);
+        }
+
+        if (dropIdentity) {
+            Map<String, String> details = event.getDetails();
+            if (details != null && details.containsKey("identity_provider_identity")) {
+                details.remove("identity_provider_identity");
+            }
+            event.setDetails(details);
+        } else if (hashIdentity) {
+            Map<String, String> details = event.getDetails();
+            if (details != null && details.containsKey("identity_provider_identity")) {
+                details.put("identity_provider_identity", sha256(details.get("identity_provider_identity")));
             }
             event.setDetails(details);
         }
