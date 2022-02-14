@@ -32,7 +32,7 @@ import { DateFormat, DateFormatWithWeekday, formatDate } from './date'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
-const fiPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/
+const fiPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/
 
 type Lang = 'fi' | 'sv' | 'en'
 export default class LocalDate {

@@ -3024,7 +3024,6 @@ export const fi = {
     freePeriodOptionLabelPlaceholder:
       'Esim. Lapset ovat 8 viikkoa poissa aikavälillä',
     freePeriodOptions: 'Ilmaisien kausien vaihtoehdot',
-    freePeriodOptionsPlaceholder:
-      '30.05.2022-24.08.2022, 06.06.2022-31.08.2022 (huom. formaatti!)'
+    freePeriodOptionsPlaceholder: '30.5.2022-24.8.2022, 6.6.2022-31.8.2022'
   }
 }

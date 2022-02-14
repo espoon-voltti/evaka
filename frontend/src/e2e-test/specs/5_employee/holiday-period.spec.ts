@@ -121,7 +121,7 @@ describe('Holiday periods page', () => {
       freePeriodDeadline: '15.4.2022',
       freePeriodQuestion:
         'Ovatko lapsenne 31.5.–29.8. välillä poissa yhtenäisesti 8 viikkoa?',
-      freePeriodOptions: '30.05.2022 - 31.05.2022, 30.06.2022 - 31.07.2022',
+      freePeriodOptions: '30.05.2022 - 31.5.2022, 30.6.2022 - 31.7.2022',
       freePeriodOptionLabel: 'Lapsi on poissa 8 viikkoa aikavälillä'
     })
 
