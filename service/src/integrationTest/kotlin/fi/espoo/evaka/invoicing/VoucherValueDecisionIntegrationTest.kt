@@ -19,10 +19,12 @@ import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -31,11 +33,15 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
@@ -47,6 +53,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -321,17 +328,92 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         assertEquals(0, searchValueDecisions(status = "SENT", searchTerms = "Foobar").total)
     }
 
+    @Test
+    fun `PDF can be downloaded`() {
+        createPlacement(startDate, endDate)
+        val decisionIds = sendAllValueDecisions()
+
+        assertEquals(200, getPdfStatus(decisionIds[0], financeWorker))
+    }
+
+    @Test
+    fun `PDF can not be downloaded if head of family has restricted details`() {
+        db.transaction {
+            // testAdult_7 has restricted details on
+            it.insertTestParentship(
+                headOfChild = testAdult_7.id,
+                childId = testChild_2.id,
+                startDate = testChild_2.dateOfBirth,
+                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            )
+            it.insertTestPartnership(
+                adult1 = testAdult_7.id,
+                adult2 = testAdult_3.id,
+            )
+        }
+        createPlacement(startDate, endDate, childId = testChild_2.id)
+        val decisionIds = sendAllValueDecisions()
+
+        assertEquals(403, getPdfStatus(decisionIds[0], financeWorker))
+    }
+
+    @Test
+    fun `PDF can not be downloaded if child has restricted details`() {
+        val testChildRestricted = testChild_1.copy(
+            id = PersonId(UUID.randomUUID()),
+            ssn = "010617A125W",
+            restrictedDetailsEnabled = true,
+        )
+
+        db.transaction {
+            it.insertTestPerson(testChildRestricted)
+            it.insertTestParentship(
+                headOfChild = testAdult_3.id,
+                childId = testChildRestricted.id,
+                startDate = testChildRestricted.dateOfBirth,
+                endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+            )
+        }
+        createPlacement(startDate, endDate, childId = testChildRestricted.id)
+        val decisionIds = sendAllValueDecisions()
+
+        assertEquals(403, getPdfStatus(decisionIds[0], financeWorker))
+    }
+
+    @Test
+    fun `PDF can be downloaded by admin even if someone in the family has restricted details`() {
+        db.transaction {
+            // testAdult_7 has restricted details on
+            it.insertTestParentship(
+                headOfChild = testAdult_7.id,
+                childId = testChild_2.id,
+                startDate = testChild_2.dateOfBirth,
+                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            )
+            it.insertTestPartnership(
+                adult1 = testAdult_7.id,
+                adult2 = testAdult_3.id,
+            )
+        }
+        createPlacement(startDate, endDate, childId = testChild_2.id)
+        val decisionIds = sendAllValueDecisions()
+
+        assertEquals(200, getPdfStatus(decisionIds[0], adminUser))
+    }
+
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
     private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
 
     private fun createPlacement(
         startDate: LocalDate,
         endDate: LocalDate,
-        unitId: DaycareId = testVoucherDaycare.id
+        unitId: DaycareId = testVoucherDaycare.id,
+        childId: ChildId = testChild_1.id,
     ): PlacementId {
         val body = PlacementCreateRequestBody(
             type = PlacementType.DAYCARE,
-            childId = testChild_1.id,
+            childId = childId,
             unitId = unitId,
             startDate = startDate,
             endDate = endDate
@@ -345,7 +427,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
                 assertEquals(200, res.statusCode)
             }
 
-        val (_, _, data) = http.get("/placements", listOf("childId" to testChild_1.id))
+        val (_, _, data) = http.get("/placements", listOf("childId" to childId))
             .asUser(serviceWorker)
             .responseObject<List<DaycarePlacementWithDetails>>(jsonMapper)
 
@@ -409,7 +491,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         return data.get()
     }
 
-    private fun sendAllValueDecisions(expectedStatusCode: Int = 200, expectedErrorCode: String? = null) {
+    private fun sendAllValueDecisions(expectedStatusCode: Int = 200, expectedErrorCode: String? = null): List<VoucherValueDecisionId> {
         val (_, _, data) = http.post("/value-decisions/search")
             .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
             .withMockedTime(now)
@@ -435,6 +517,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             }
 
         asyncJobRunner.runPendingJobsSync()
+        return decisionIds
     }
 
     private fun getAllValueDecisions(): List<VoucherValueDecision> {
@@ -447,5 +530,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
     private fun endDecisions(now: LocalDate) {
         db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, now) }
+    }
+
+    private fun getPdfStatus(decisionId: VoucherValueDecisionId, user: AuthenticatedUser.Employee): Int {
+        val (_, response, _) = http.get("/value-decisions/pdf/$decisionId")
+            .asUser(user)
+            .response()
+        return response.statusCode
     }
 }
