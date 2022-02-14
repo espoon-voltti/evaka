@@ -66,8 +66,9 @@ const parseFiniteDateRange = (range: string): FiniteDateRange | null => {
 
 const parseDateRanges = (s: string) =>
   s
-    .split(',')
+    .split(/[,\n]/)
     .map((s) => s.trim())
+    .filter(Boolean)
     .map(parseFiniteDateRange)
     .filter(Boolean) as FiniteDateRange[]
 
@@ -520,7 +521,7 @@ export default React.memo(function HolidayPeriodForm({
             <Gap horizontal />
             <InformationText>
               {parseDateRanges(form.freePeriodOptions)
-                .map((r) => r.format())
+                .map((r) => r.formatCompact())
                 .join(', ')}
             </InformationText>
 
