@@ -27,6 +27,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
@@ -41,13 +42,12 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.parseEnum
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -169,12 +169,31 @@ class VoucherValueDecisionController(
     fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, id)
-        val (filename, pdf) = db.connect { dbc -> dbc.read { valueDecisionService.getDecisionPdf(it, id) } }
-        val headers = HttpHeaders().apply {
-            add("Content-Disposition", "attachment; filename=\"$filename\"")
-            add("Content-Type", "application/pdf")
+
+        val (filename, pdf) = db.connect { dbc ->
+            dbc.read { tx ->
+                val decision = tx.getVoucherValueDecision(id) ?: error("Cannot find voucher value decision $id")
+
+                val personIds = listOfNotNull(
+                    decision.headOfFamily.id,
+                    decision.partner?.id,
+                    decision.child.id
+                )
+                val restrictedDetails = personIds.any { personId ->
+                    tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                }
+                if (restrictedDetails && !user.isAdmin) {
+                    throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
+                }
+
+                valueDecisionService.getDecisionPdf(tx, id)
+            }
         }
-        return ResponseEntity(pdf, headers, HttpStatus.OK)
+
+        return ResponseEntity.ok()
+            .header("Content-Disposition", "attachment; filename=\"$filename\"")
+            .header("Content-Type", "application/pdf")
+            .body(pdf)
     }
 
     @PostMapping("/set-type/{uuid}")

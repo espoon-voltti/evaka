@@ -21,6 +21,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -28,6 +29,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -35,6 +37,7 @@ import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -60,6 +63,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_2.id.raw, setOf(UserRole.ADMIN))
 
     private val testDecisions = listOf(
         createFeeDecisionFixture(
@@ -204,7 +208,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     private fun assertEqualEnough(expected: FeeDecisionDetailed, actual: FeeDecisionDetailed) {
         val created = HelsinkiDateTime.now()
         assertEquals(
-            expected.copy(created = created, approvedAt = null, sentAt = null, headOfFamily = expected.headOfFamily.copy(email = null)),
+            expected.copy(
+                created = created,
+                approvedAt = null,
+                sentAt = null,
+                headOfFamily = expected.headOfFamily.copy(email = null)
+            ),
             actual.copy(created = created, approvedAt = null, sentAt = null)
         )
     }
@@ -1522,6 +1531,91 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         deserializeResult(result0.get()).data.let { decisionForFamily ->
             assertEquals(false, decisionForFamily.isElementaryFamily)
         }
+    }
+
+    @Test
+    fun `PDF can be downloaded`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision = createAndConfirmFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1, testChild_2))
+
+        assertEquals(200, getPdfStatus(decision.id, user))
+    }
+
+    @Test
+    fun `PDF can not be downloaded if head of family has restricted details`() {
+        // testAdult_7 has restricted details on
+        db.transaction {
+            it.insertGuardian(testAdult_7.id, testChild_1.id)
+            it.insertGuardian(testAdult_7.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision = createAndConfirmFeeDecisionsForFamily(testAdult_7, testAdult_2, listOf(testChild_1, testChild_2))
+
+        assertEquals(403, getPdfStatus(decision.id, user))
+    }
+
+    @Test
+    fun `PDF can not be downloaded if a child has restricted details`() {
+        val testChildRestricted = testChild_1.copy(
+            id = PersonId(UUID.randomUUID()),
+            ssn = "010617A125W",
+            restrictedDetailsEnabled = true,
+        )
+        db.transaction {
+            it.insertTestPerson(testChildRestricted)
+            it.insertGuardian(testAdult_1.id, testChildRestricted.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChildRestricted.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision = createAndConfirmFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChildRestricted, testChild_2))
+
+        assertEquals(403, getPdfStatus(decision.id, user))
+    }
+
+    @Test
+    fun `PDF can be downloaded by admin even if someone in the family has restricted details`() {
+        // testAdult_7 has restricted details on
+        db.transaction {
+            it.insertGuardian(testAdult_7.id, testChild_1.id)
+            it.insertGuardian(testAdult_7.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision = createAndConfirmFeeDecisionsForFamily(testAdult_7, testAdult_2, listOf(testChild_1, testChild_2))
+
+        assertEquals(200, getPdfStatus(decision.id, adminUser))
+    }
+
+    private fun getPdfStatus(id: FeeDecisionId, user: AuthenticatedUser.Employee): Int {
+        val (_, response, _) = http.get("/decisions/pdf/$id")
+            .asUser(user)
+            .response()
+        return response.statusCode
+    }
+
+    private fun createAndConfirmFeeDecisionsForFamily(
+        headOfFamily: DevPerson,
+        partner: DevPerson?,
+        familyChildren: List<DevPerson>
+    ): FeeDecision {
+        val decision = createFeeDecisionsForFamily(headOfFamily, partner, familyChildren)
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
+
+        val (_, response, _) = http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(jsonMapper.writeValueAsString(listOf(decision.id)))
+            .responseString()
+        assertEquals(200, response.statusCode)
+
+        asyncJobRunner.runPendingJobsSync()
+        return decision
     }
 
     private fun createFeeDecisionsForFamily(
