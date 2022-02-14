@@ -302,5 +302,36 @@ describe('Citizen children page', () => {
         // preschool was in future and is cancelled -> deleted from db -> no sign of termination
       ])
     })
+
+    test('Terminating paid daycare only is possible', async () => {
+      const endDate = LocalDate.today().addYears(2)
+      await createDaycarePlacement(
+        endDate,
+        fixtures.preschoolFixture.id,
+        'PRESCHOOL_DAYCARE'
+      )
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openTerminationCollapsible()
+
+      await childPage.assertTerminatedPlacementCount(0)
+      await assertTerminatablePlacements([
+        `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
+      ])
+      await childPage.togglePlacement(
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
+      )
+      const terminationDate = LocalDate.today().addMonths(1)
+      await childPage.fillTerminationDate(terminationDate)
+      await childPage.submitTermination()
+      await assertTerminatablePlacements([
+        `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${terminationDate.format()}`
+      ])
+
+      await childPage.assertTerminatedPlacementCount(0) // the paid daycare is not terminated, just split to PRESCHOOL_DAYCARE and PRESCHOOL
+    })
   })
 })
