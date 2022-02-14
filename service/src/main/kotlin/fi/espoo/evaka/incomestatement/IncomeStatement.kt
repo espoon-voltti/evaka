@@ -6,8 +6,12 @@ package fi.espoo.evaka.incomestatement
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
@@ -107,12 +111,21 @@ sealed class IncomeStatementBody(
         val otherInfo: String,
         val attachmentIds: List<AttachmentId>
     ) : IncomeStatementBody(startDate, endDate)
+
+    @JsonTypeName("CHILD_INCOME")
+    data class ChildIncome(
+        override val startDate: LocalDate,
+        override val endDate: LocalDate?,
+        val otherInfo: String,
+        val attachmentIds: List<AttachmentId>
+    ) : IncomeStatementBody(startDate, endDate)
 }
 
 fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
     if (body.endDate != null && body.startDate > body.endDate) return false
     return when (body) {
         is IncomeStatementBody.HighestFee -> true
+        is IncomeStatementBody.ChildIncome -> true
         is IncomeStatementBody.Income ->
             if (body.gross == null && body.entrepreneur == null) false
             else
@@ -141,6 +154,26 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
     }
 }
 
+fun createIncomeStatement(dbc: Database.Connection, incomeStatementPersonId: PersonId, attachmentUploadedByPersonId: PersonId, body: IncomeStatementBody) {
+    if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
+
+    if (dbc.read { tx -> tx.incomeStatementExistsForStartDate(incomeStatementPersonId, body.startDate) })
+        throw BadRequest("An income statement for this start date already exists")
+
+    dbc.transaction { tx ->
+        val incomeStatementId = tx.createIncomeStatement(incomeStatementPersonId, body)
+        when (body) {
+            is IncomeStatementBody.Income ->
+                tx.associateAttachments(incomeStatementPersonId, incomeStatementId, body.attachmentIds)
+            is IncomeStatementBody.ChildIncome -> {
+                tx.associateAttachments(attachmentUploadedByPersonId, incomeStatementId, body.attachmentIds)
+            }
+            else ->
+                Unit
+        }
+    }
+}
+
 private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean =
     // Start and end dates must be in the right order
     estimatedIncome?.incomeEndDate == null || estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
@@ -157,6 +190,9 @@ sealed class IncomeStatement(
     val type: IncomeStatementType
 ) {
     abstract val id: IncomeStatementId
+    abstract val personId: PersonId
+    abstract val firstName: String
+    abstract val lastName: String
     abstract val startDate: LocalDate
     abstract val endDate: LocalDate?
     abstract val created: HelsinkiDateTime
@@ -167,6 +203,9 @@ sealed class IncomeStatement(
     @JsonTypeName("HIGHEST_FEE")
     data class HighestFee(
         override val id: IncomeStatementId,
+        override val personId: PersonId,
+        override val firstName: String,
+        override val lastName: String,
         override val startDate: LocalDate,
         override val endDate: LocalDate?,
         override val created: HelsinkiDateTime,
@@ -178,6 +217,9 @@ sealed class IncomeStatement(
     @JsonTypeName("INCOME")
     data class Income(
         override val id: IncomeStatementId,
+        override val personId: PersonId,
+        override val firstName: String,
+        override val lastName: String,
         override val startDate: LocalDate,
         override val endDate: LocalDate?,
         val gross: Gross?,
@@ -191,4 +233,20 @@ sealed class IncomeStatement(
         override val handlerNote: String,
         val attachments: List<Attachment>,
     ) : IncomeStatement(IncomeStatementType.INCOME)
+
+    @JsonTypeName("CHILD_INCOME")
+    data class ChildIncome(
+        override val id: IncomeStatementId,
+        override val personId: PersonId,
+        override val firstName: String,
+        override val lastName: String,
+        override val startDate: LocalDate,
+        override val endDate: LocalDate?,
+        val otherInfo: String,
+        override val created: HelsinkiDateTime,
+        override val updated: HelsinkiDateTime,
+        override val handled: Boolean,
+        override val handlerNote: String,
+        val attachments: List<Attachment>,
+    ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)
 }

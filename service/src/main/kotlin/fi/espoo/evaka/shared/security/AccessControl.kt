@@ -13,12 +13,14 @@ import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
 import fi.espoo.evaka.childimages.hasPermissionForChildImage
+import fi.espoo.evaka.incomestatement.isChildIncomeStatement
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageDraft
 import fi.espoo.evaka.messaging.hasPermissionForMessageDraft
 import fi.espoo.evaka.pedagogicaldocument.citizenHasPermissionForPedagogicalDocument
 import fi.espoo.evaka.pis.employeePinIsCorrect
+import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
@@ -425,7 +427,6 @@ WHERE employee_id = :userId
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, *ids as Array<GroupPlacementId>)
             is Action.Group -> this.group.hasPermission(user, action, *ids as Array<GroupId>)
             is Action.Income -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::incomeActions)
-            is Action.IncomeStatement -> ids.all { id -> hasPermissionForInternal(user, action, id as IncomeStatementId) }
             is Action.Invoice -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::invoiceActions)
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
             is Action.MobileDevice -> this.mobileDevice.hasPermission(user, action, *ids as Array<MobileDeviceId>)
@@ -758,22 +759,6 @@ WHERE employee_id = :userId
 
     private fun hasPermissionForInternal(
         user: AuthenticatedUser,
-        action: Action.IncomeStatement,
-        id: IncomeStatementId
-    ) =
-        when (user) {
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.IncomeStatement.UPLOAD_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.isOwnIncomeStatement(user, id) } }
-                else -> false
-            }
-            is AuthenticatedUser.Employee ->
-                hasPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)
-            else -> false
-        }
-
-    private fun hasPermissionForInternal(
-        user: AuthenticatedUser,
         action: Action.MessageDraft,
         id: MessageDraftId
     ): Boolean =
@@ -830,6 +815,50 @@ WHERE employee_id = :userId
             } else Unit
             else -> throw Forbidden()
         }
+
+    fun requirePermissionFor(
+        user: AuthenticatedUser,
+        action: Action.IncomeStatement,
+        vararg id: UUID
+    ) {
+        when (user) {
+            is AuthenticatedUser.Citizen -> when (action) {
+                Action.IncomeStatement.READ,
+                Action.IncomeStatement.READ_ALL_OWN,
+                Action.IncomeStatement.READ_START_DATES,
+                Action.IncomeStatement.CREATE,
+                Action.IncomeStatement.UPDATE,
+                Action.IncomeStatement.REMOVE,
+                -> Unit
+
+                Action.IncomeStatement.REMOVE_FOR_CHILD,
+                Action.IncomeStatement.READ_CHILDS_START_DATES,
+                Action.IncomeStatement.READ_ALL_CHILDS,
+                Action.IncomeStatement.CREATE_FOR_CHILD,
+                Action.IncomeStatement.UPDATE_FOR_CHILD -> {
+                    Database(jdbi).connect { db ->
+                        if (!db.read { it.getGuardianChildIds(PersonId(user.id)).contains(ChildId(id[0])) }) throw Forbidden()
+                    }
+                }
+
+                Action.IncomeStatement.READ_CHILDS -> {
+                    Database(jdbi).connect { db ->
+                        if (!db.read { it.isChildIncomeStatement(user, IncomeStatementId(id[0])) }) throw Forbidden()
+                    }
+                }
+
+                Action.IncomeStatement.UPLOAD_ATTACHMENT ->
+                    Database(jdbi).connect { db ->
+                        if (!db.read { it.isOwnIncomeStatement(user, IncomeStatementId(id[0])) || it.isChildIncomeStatement(user, IncomeStatementId(id[0])) }) throw Forbidden()
+                    }
+                else -> throw Forbidden()
+            }
+            is AuthenticatedUser.Employee -> {
+                if (!hasPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)) throw Forbidden()
+            }
+            else -> throw Forbidden()
+        }
+    }
 
     fun getPermittedPlacementActions(
         user: AuthenticatedUser,

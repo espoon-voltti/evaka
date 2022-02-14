@@ -57,7 +57,7 @@ class IncomeStatementController(
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
-        Audit.IncomeStatementOfPerson.log(incomeStatementId, personId)
+        Audit.IncomeStatementReadOfPerson.log(incomeStatementId, personId)
         accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.connect { dbc ->
             dbc.read {
@@ -80,7 +80,7 @@ class IncomeStatementController(
         @RequestBody body: SetIncomeStatementHandledBody
     ) {
         Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
+        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId.raw)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateIncomeStatementHandled(
