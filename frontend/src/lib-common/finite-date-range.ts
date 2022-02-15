@@ -127,17 +127,20 @@ export default class FiniteDateRange {
     return `${this.start.format(datePattern)} - ${this.end.format(datePattern)}`
   }
 
-  formatCompact(): string {
+  formatCompact(whitespace = ''): string {
+    const join = (start: string, end: string) =>
+      `${start}${whitespace}-${whitespace}${end}`
+
     if (this.start.getYear() !== this.end.getYear()) {
-      return `${this.start.format()}-${this.end.format()}`
+      return join(this.start.format(), this.end.format())
     }
 
     if (this.start.getMonth() !== this.end.getMonth()) {
-      return `${this.start.format('dd.MM.')}-${this.end.format()}`
+      return join(this.start.format('dd.MM.'), this.end.format())
     }
 
     if (this.start.getDate() !== this.end.getDate()) {
-      return `${this.start.formatExotic('dd.')}-${this.end.format()}`
+      return join(this.start.formatExotic('dd.'), this.end.format())
     }
 
     return this.start.format()

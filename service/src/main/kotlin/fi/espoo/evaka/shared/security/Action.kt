@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
+import fi.espoo.evaka.shared.auth.UserRole.CITIZEN_WEAK
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.END_USER
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
@@ -140,6 +141,7 @@ sealed interface Action {
         READ_HOLIDAY_PERIODS,
         DELETE_HOLIDAY_PERIOD,
         UPDATE_HOLIDAY_PERIOD,
+        READ_ACTION_REQUIRING_HOLIDAY_PERIODS(CITIZEN_WEAK, END_USER),
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

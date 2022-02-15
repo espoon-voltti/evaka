@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
 export default class CitizenHeader {
@@ -114,5 +115,18 @@ export default class CitizenHeader {
     }
 
     await personalDetailsLink.click()
+  }
+
+  async assertHolidayPeriodBannerIsShown(visible: boolean) {
+    const bannerContainer = this.page.findByDataQa(
+      'holiday-period-banner-container'
+    )
+    await waitUntilEqual(
+      () => bannerContainer.getAttribute('data-status'),
+      'success'
+    )
+
+    const banner = bannerContainer.findByDataQa('holiday-period-banner')
+    return visible ? banner.waitUntilVisible() : banner.waitUntilHidden()
   }
 }

@@ -6,6 +6,7 @@ import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
 import { ApplicationForm } from 'lib-common/generated/api-types/application'
+import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
 import {
@@ -271,6 +272,10 @@ export interface PlacementPlan {
   periodEnd: ISODate
   preschoolDaycarePeriodStart?: ISODate | null
   preschoolDaycarePeriodEnd?: ISODate | null
+}
+
+export type DevHolidayPeriod = HolidayPeriodBody & {
+  id: UUID
 }
 
 export interface SuomiFiMessage {

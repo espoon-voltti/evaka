@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.holidaypediod
+package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.HolidayPeriodId

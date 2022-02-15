@@ -5,14 +5,6 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.holidaypediod.FreeAbsencePeriod
-import fi.espoo.evaka.holidaypediod.HolidayPeriod
-import fi.espoo.evaka.holidaypediod.HolidayPeriodBody
-import fi.espoo.evaka.holidaypediod.createHolidayPeriod
-import fi.espoo.evaka.holidaypediod.deleteHolidayPeriod
-import fi.espoo.evaka.holidaypediod.getHolidayPeriod
-import fi.espoo.evaka.holidaypediod.getHolidayPeriods
-import fi.espoo.evaka.holidaypediod.updateHolidayPeriod
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange

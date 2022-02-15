@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.holidaypediod
+package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.Translatable
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -26,8 +25,6 @@ data class FreeAbsencePeriod(
 
 data class HolidayPeriod(
     val id: HolidayPeriodId,
-    val created: HelsinkiDateTime,
-    val updated: HelsinkiDateTime,
     val period: FiniteDateRange,
     val reservationDeadline: LocalDate,
     val showReservationBannerFrom: LocalDate,
