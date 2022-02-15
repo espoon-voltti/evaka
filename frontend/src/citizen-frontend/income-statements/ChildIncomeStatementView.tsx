@@ -44,7 +44,6 @@ export default React.memo(function ChildIncomeStatementView({
 
   const handleEdit = useCallback(() => {
     history.push(`/child-income/${childId}/${incomeStatementId}/edit`)
-    //history.push('edit')
   }, [history, childId, incomeStatementId])
 
   return renderResult(result, (incomeStatement) => (
@@ -59,15 +58,17 @@ export default React.memo(function ChildIncomeStatementView({
                 text={t.common.edit}
                 icon={faPen}
                 onClick={handleEdit}
+                data-qa="edit-button"
               />
             </EditButtonContainer>
           )}
         </FixedSpaceRow>
-        <AttachmentsRow
+        <Row
           label={t.income.view.startDate}
           value={incomeStatement.startDate.format()}
+          dataQa="start-date"
         />
-        <AttachmentsRow
+        <Row
           label={t.income.view.feeBasis}
           value={t.income.view.statementTypes[incomeStatement.type]}
         />
@@ -88,7 +89,7 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
   return (
     <>
       <HorizontalLine />
-      <AttachmentsRow
+      <Row
         label={t.income.view.otherInfo}
         value={incomeStatement.otherInfo || '-'}
       />
@@ -110,7 +111,7 @@ const CitizenAttachments = React.memo(function CitizenAttachments({
       {attachments.length === 0 ? (
         <p>{t.income.view.citizenAttachments.noAttachments}</p>
       ) : (
-        <AttachmentsRow
+        <Row
           label={`${t.income.view.attachments}:`}
           value={<UploadedFiles files={attachments} />}
         />
@@ -141,6 +142,7 @@ const UploadedFiles = React.memo(function UploadedFiles({
             file={file}
             fileFetchFn={getAttachmentBlob}
             onFileUnavailable={onFileUnavailable}
+            data-qa="attachment-download-button"
           />
         </div>
       ))}
@@ -160,20 +162,22 @@ const EditButtonContainer = styled.div`
   justify-content: flex-end;
 `
 
-const AttachmentsRow = React.memo(function Row({
+const Row = React.memo(function Row({
   label,
   light,
-  value
+  value,
+  dataQa
 }: {
   label: string
   light?: boolean
   value: React.ReactNode
+  dataQa?: string
 }) {
   return (
     <>
       <ListGrid>
         <LabelColumn light={light}>{label}</LabelColumn>
-        <div>{value}</div>
+        <div data-qa={dataQa}>{value}</div>
       </ListGrid>
       <Gap size="s" />
     </>

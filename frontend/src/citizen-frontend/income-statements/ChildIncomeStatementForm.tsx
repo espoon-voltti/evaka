@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {useCallback, useImperativeHandle, useMemo, useRef} from 'react'
+import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
-import {Attachment} from 'lib-common/api-types/attachment'
-import {validateIf, validDate} from 'lib-common/form-validation'
+import { Attachment } from 'lib-common/api-types/attachment'
+import { validateIf, validDate } from 'lib-common/form-validation'
 import LocalDate from 'lib-common/local-date'
-import {UUID} from 'lib-common/types'
-import {scrollToRef} from 'lib-common/utils/scrolling'
+import { UUID } from 'lib-common/types'
+import { scrollToRef } from 'lib-common/utils/scrolling'
 import AsyncButton, {
   AsyncClickCallback
 } from 'lib-components/atoms/buttons/AsyncButton'
@@ -16,19 +16,19 @@ import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import Container, {ContentArea} from 'lib-components/layout/Container'
+import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import {AlertBox} from 'lib-components/molecules/MessageBoxes'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import {H1, H2, Label} from 'lib-components/typography'
-import {Gap} from 'lib-components/white-space'
+import { H1, H2, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import Footer from '../Footer'
-import {errorToInputInfo} from '../input-info-helper'
-import {useLang, useTranslation} from '../localization'
-import IncomeStatementAttachments from './IncomeStatementAttachments'
+import { errorToInputInfo } from '../input-info-helper'
+import { useLang, useTranslation } from '../localization'
+import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
 import {
   ActionContainer,
   AssureCheckbox,
@@ -51,10 +51,10 @@ interface Props {
 }
 
 const ChildIncome = React.memo(function ChildIncome({
-                                                      incomeStatementId,
-                                                      formData,
-                                                      onChange
-                                                    }: {
+  incomeStatementId,
+  formData,
+  onChange
+}: {
   incomeStatementId: UUID | undefined
   formData: Form.IncomeStatementForm
   onChange: SetStateCallback<Form.IncomeStatementForm>
@@ -82,21 +82,21 @@ const ChildIncome = React.memo(function ChildIncome({
   return (
     <>
       <Label>{t.income.childIncome.childAttachments}</Label>
-      <Gap size="s"/>
+      <Gap size="s" />
       {formData.childIncome && formData.attachments.length === 0 && (
         <>
-          <LabelError text={t.fileUpload.input.title}/>
-          <Gap size="L"/>
+          <LabelError text={t.fileUpload.input.title} />
+          <Gap size="L" />
         </>
       )}
-      <IncomeStatementAttachments
+      <ChildIncomeStatementAttachments
         incomeStatementId={incomeStatementId}
         attachments={formData.attachments}
         onUploaded={onAttachmentUploaded}
         onDeleted={onAttachmentDeleted}
       />
 
-      <Gap size="L"/>
+      <Gap size="L" />
 
       <Label>{t.income.childIncome.additionalInfo}</Label>
 
@@ -165,13 +165,13 @@ const ChildIncomeTypeSelection = React.memo(
     return (
       <FixedSpaceColumn spacing="zero" ref={ref}>
         <H2 noMargin>{t.income.incomeInfo}</H2>
-        <Gap size="s"/>
+        <Gap size="s" />
         <Label>{t.income.childIncomeInfo}</Label>
-        <Gap size="s"/>
+        <Gap size="s" />
         {showFormErrors && (
           <>
-            <AlertBox noMargin message={t.income.errors.invalidForm}/>
-            <Gap size="s"/>
+            <AlertBox noMargin message={t.income.errors.invalidForm} />
+            <Gap size="s" />
           </>
         )}
         <FixedSpaceRow spacing="XL">
@@ -179,7 +179,7 @@ const ChildIncomeTypeSelection = React.memo(
             <Label htmlFor="start-date">
               {t.income.incomeType.startDate} *
             </Label>
-            <Gap size="xs"/>
+            <Gap size="xs" />
             <DatePicker
               id="start-date"
               date={formData.startDate}
@@ -188,11 +188,12 @@ const ChildIncomeTypeSelection = React.memo(
               hideErrorsBeforeTouched
               locale={lang}
               isValidDate={isValidStartDate}
+              data-qa="start-date"
             />
           </div>
           <div>
             <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
-            <Gap size="xs"/>
+            <Gap size="xs" />
             <DatePicker
               id="end-date"
               date={formData.endDate}
@@ -201,12 +202,13 @@ const ChildIncomeTypeSelection = React.memo(
               info={endDateInputInfo}
               hideErrorsBeforeTouched
               locale={lang}
+              data-qa="end-date"
             />
           </div>
         </FixedSpaceRow>
-        <Gap size="L"/>
+        <Gap size="L" />
         <Label>{t.income.childIncome.subtitle}</Label>
-        <Gap size="s"/>
+        <Gap size="s" />
 
         <Radio
           label={t.income.childIncome.noIncome}
@@ -215,7 +217,7 @@ const ChildIncomeTypeSelection = React.memo(
           onChange={() => onSelect('highestFee', true)}
         />
 
-        <Gap size="s"/>
+        <Gap size="s" />
 
         <Radio
           label={t.income.childIncome.hasIncome}
@@ -301,7 +303,7 @@ export default React.memo(
     return (
       <>
         <Container>
-          <Gap size="s"/>
+          <Gap size="s" />
           <ContentArea opaque paddingVertical="L">
             <ResponsiveFixedSpaceRow>
               <FixedSpaceColumn spacing="zero">
@@ -312,7 +314,7 @@ export default React.memo(
             </ResponsiveFixedSpaceRow>
           </ContentArea>
 
-          <Gap size="s"/>
+          <Gap size="s" />
 
           <ContentArea opaque>
             <ChildIncomeTypeSelection
@@ -325,7 +327,7 @@ export default React.memo(
             />
             {!formData.highestFee && (
               <>
-                <Gap size="L"/>
+                <Gap size="L" />
 
                 <ChildIncome
                   incomeStatementId={incomeStatementId}
@@ -345,18 +347,19 @@ export default React.memo(
               />
             </AssureCheckbox>
             <FixedSpaceRow>
-              <Button text={t.common.cancel} onClick={onCancel}/>
+              <Button text={t.common.cancel} onClick={onCancel} />
               <AsyncButton
                 text={t.common.save}
                 primary
                 onClick={onSave}
                 disabled={!saveButtonEnabled}
                 onSuccess={onSuccess}
+                data-qa="save-btn"
               />
             </FixedSpaceRow>
           </ActionContainer>
         </Container>
-        <Footer/>
+        <Footer />
       </>
     )
   })

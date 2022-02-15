@@ -203,6 +203,6 @@ V202__absence_type_enum.sql
 V203__absence_category.sql
 V204__holiday_periods.sql
 V205__single_date_reservations.sql
-V206__child_income_type.sql
 V206__free_absence_type.sql
 V207__free_holiday_period.sql
+V208__child_income_type.sql

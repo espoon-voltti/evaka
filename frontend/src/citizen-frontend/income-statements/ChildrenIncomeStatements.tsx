@@ -83,7 +83,7 @@ const ChildIncomeStatementsTable = React.memo(
                       <Td>
                         <Link
                           to={getLink(child.id, item.id, 'view')}
-                          data-qa={`button-open-income-statement-${item.id}`}
+                          data-qa="button-open-income-statement"
                         >
                           {item.startDate.format()} - {item.endDate?.format()}
                         </Link>
@@ -98,6 +98,7 @@ const ChildIncomeStatementsTable = React.memo(
                                 icon={faPen}
                                 text={t.common.edit}
                                 onClick={onEdit(item.id)}
+                                data-qa="edit-income-statement"
                               />
                               <Gap size="xs" horizontal />
                               <ResponsiveInlineButton
@@ -110,6 +111,7 @@ const ChildIncomeStatementsTable = React.memo(
                                     childId: child.id
                                   })
                                 }
+                                data-qa="delete-income-statement"
                               />
                             </>
                           )}
@@ -200,11 +202,11 @@ export default React.memo(function ChildrenIncomeStatements({
           {childInfo.map((child) => (
             <ChildIncomeStatementsContainer
               key={child.id}
-              data-qa={`child-income-statement-${child.id}`}
+              data-qa="child-income-statement"
             >
               <Gap size="s" />
               <HeadingContainer>
-                <H3>
+                <H3 data-qa="child-name">
                   {child.firstName} {child.lastName}
                 </H3>
                 <ResponsiveAddButton
@@ -220,31 +222,27 @@ export default React.memo(function ChildrenIncomeStatements({
                 setDeletionState={setDeletionState}
               />
               <Gap size="L" />
-
-              {deletionState.status !== 'row-not-selected' && (
-                <InfoModal
-                  type="warning"
-                  title={t.income.table.deleteConfirm}
-                  text={t.income.table.deleteDescription}
-                  icon={faQuestion}
-                  reject={{
-                    action: () =>
-                      setDeletionState({ status: 'row-not-selected' }),
-                    label: t.common.return
-                  }}
-                  resolve={{
-                    action: () =>
-                      onDelete(
-                        deletionState.childId,
-                        deletionState.rowToDelete
-                      ),
-                    label: t.common.delete,
-                    disabled: deletionState.status === 'deleting'
-                  }}
-                />
-              )}
             </ChildIncomeStatementsContainer>
           ))}
+
+          {deletionState.status !== 'row-not-selected' && (
+            <InfoModal
+              type="warning"
+              title={t.income.table.deleteConfirm}
+              text={t.income.table.deleteDescription}
+              icon={faQuestion}
+              reject={{
+                action: () => setDeletionState({ status: 'row-not-selected' }),
+                label: t.common.return
+              }}
+              resolve={{
+                action: () =>
+                  onDelete(deletionState.childId, deletionState.rowToDelete),
+                label: t.common.delete,
+                disabled: deletionState.status === 'deleting'
+              }}
+            />
+          )}
         </ContentArea>
       </Container>
       <Footer />
