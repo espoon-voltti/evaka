@@ -9,9 +9,8 @@ import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
-import IncomeStatementForm, {
-  IncomeStatementFormAPI
-} from './IncomeStatementForm'
+import { IncomeStatementFormAPI } from './IncomeStatementComponents'
+import IncomeStatementForm from './IncomeStatementForm'
 import {
   createIncomeStatement,
   getIncomeStatement,

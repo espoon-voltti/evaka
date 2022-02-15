@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
+import React, {useCallback, useImperativeHandle, useMemo, useRef} from 'react'
 import styled from 'styled-components'
-import { Attachment } from 'lib-common/api-types/attachment'
-import { validateIf, validDate } from 'lib-common/form-validation'
+import {Attachment} from 'lib-common/api-types/attachment'
+import {validateIf, validDate} from 'lib-common/form-validation'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import { scrollToRef } from 'lib-common/utils/scrolling'
+import {UUID} from 'lib-common/types'
+import {scrollToRef} from 'lib-common/utils/scrolling'
 import AsyncButton, {
   AsyncClickCallback
 } from 'lib-components/atoms/buttons/AsyncButton'
@@ -16,69 +16,28 @@ import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { tabletMin } from 'lib-components/breakpoints'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import Container, {ContentArea} from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import {AlertBox} from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { H1, H2, H3, Label } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import {H1, H2, Label} from 'lib-components/typography'
+import {Gap} from 'lib-components/white-space'
 import Footer from '../Footer'
-import { errorToInputInfo } from '../input-info-helper'
-import { useLang, useTranslation } from '../localization'
+import {errorToInputInfo} from '../input-info-helper'
+import {useLang, useTranslation} from '../localization'
 import IncomeStatementAttachments from './IncomeStatementAttachments'
-import { AttachmentType } from './types/common'
+import {
+  ActionContainer,
+  AssureCheckbox,
+  IncomeStatementFormAPI,
+  LabelError,
+  SetStateCallback,
+  useFieldDispatch
+} from './IncomeStatementComponents'
 import * as Form from './types/form'
-
-const ActionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: ${defaultMargins.m} 0;
-
-  > * {
-    margin: 0 ${defaultMargins.m};
-
-    &:not(:first-child) {
-      margin-top: ${defaultMargins.s};
-    }
-  }
-
-  @media (min-width: ${tabletMin}) {
-    flex-direction: row;
-
-    > * {
-      margin: ${defaultMargins.s} ${defaultMargins.m};
-    }
-  }
-`
-const AssureCheckbox = styled.div`
-  display: flex;
-  align-items: center;
-`
-
-type SetStateCallback<T> = (fn: (prev: T) => T) => void
-
-function useFieldSetState<T, K extends keyof T>(
-  onChange: SetStateCallback<T>,
-  key: K
-): SetStateCallback<T[K]> {
-  return useCallback<SetStateCallback<T[K]>>(
-    (fn) => onChange((prev) => ({ ...prev, [key]: fn(prev[key]) })),
-    [onChange, key]
-  )
-}
-
-function useFieldDispatch<T, K extends keyof T>(
-  onChange: SetStateCallback<T>,
-  key: K
-): (value: T[K]) => void {
-  const setState = useFieldSetState(onChange, key)
-  return useCallback((value: T[K]) => setState(() => value), [setState])
-}
 
 interface Props {
   incomeStatementId: UUID | undefined
@@ -91,22 +50,16 @@ interface Props {
   onCancel: () => void
 }
 
-export interface ChildIncomeStatementFormAPI {
-  scrollToErrors: () => void
-}
-
 const ChildIncome = React.memo(function ChildIncome({
-  incomeStatementId,
-  formData,
-  onChange
-}: {
+                                                      incomeStatementId,
+                                                      formData,
+                                                      onChange
+                                                    }: {
   incomeStatementId: UUID | undefined
   formData: Form.IncomeStatementForm
   onChange: SetStateCallback<Form.IncomeStatementForm>
 }) {
   const t = useTranslation()
-
-  const requiredAttachments = useRequiredAttachments(formData)
 
   const onAttachmentUploaded = useCallback(
     (attachment: Attachment) =>
@@ -128,19 +81,24 @@ const ChildIncome = React.memo(function ChildIncome({
 
   return (
     <>
-      <H3 noMargin>{t.income.childIncome.childAttachments}</H3>
-      <Gap size="s" />
+      <Label>{t.income.childIncome.childAttachments}</Label>
+      <Gap size="s"/>
+      {formData.childIncome && formData.attachments.length === 0 && (
+        <>
+          <LabelError text={t.fileUpload.input.title}/>
+          <Gap size="L"/>
+        </>
+      )}
       <IncomeStatementAttachments
         incomeStatementId={incomeStatementId}
-        requiredAttachments={requiredAttachments}
         attachments={formData.attachments}
         onUploaded={onAttachmentUploaded}
         onDeleted={onAttachmentDeleted}
       />
 
-      <Gap size="L" />
+      <Gap size="L"/>
 
-      <H3 noMargin>{t.income.childIncome.additionalInfo}</H3>
+      <Label>{t.income.childIncome.additionalInfo}</Label>
 
       <TextArea
         id="more-info"
@@ -207,13 +165,13 @@ const ChildIncomeTypeSelection = React.memo(
     return (
       <FixedSpaceColumn spacing="zero" ref={ref}>
         <H2 noMargin>{t.income.incomeInfo}</H2>
-        <Gap size="s" />
-        <H3 noMargin>{t.income.childIncomeInfo}</H3>
-        <Gap size="s" />
+        <Gap size="s"/>
+        <Label>{t.income.childIncomeInfo}</Label>
+        <Gap size="s"/>
         {showFormErrors && (
           <>
-            <AlertBox noMargin message={t.income.errors.invalidForm} />
-            <Gap size="s" />
+            <AlertBox noMargin message={t.income.errors.invalidForm}/>
+            <Gap size="s"/>
           </>
         )}
         <FixedSpaceRow spacing="XL">
@@ -221,7 +179,7 @@ const ChildIncomeTypeSelection = React.memo(
             <Label htmlFor="start-date">
               {t.income.incomeType.startDate} *
             </Label>
-            <Gap size="xs" />
+            <Gap size="xs"/>
             <DatePicker
               id="start-date"
               date={formData.startDate}
@@ -234,7 +192,7 @@ const ChildIncomeTypeSelection = React.memo(
           </div>
           <div>
             <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
-            <Gap size="xs" />
+            <Gap size="xs"/>
             <DatePicker
               id="end-date"
               date={formData.endDate}
@@ -246,43 +204,29 @@ const ChildIncomeTypeSelection = React.memo(
             />
           </div>
         </FixedSpaceRow>
-        <Gap size="L" />
-        <H3 noMargin>{t.income.childIncome.subtitle}</H3>
-        <Gap size="s" />
+        <Gap size="L"/>
+        <Label>{t.income.childIncome.subtitle}</Label>
+        <Gap size="s"/>
 
         <Radio
           label={t.income.childIncome.noIncome}
           data-qa="child-income-no-income"
-          checked={formData.highestFeeSelected === true}
+          checked={formData.highestFeeSelected}
           onChange={() => onSelect('highestFee', true)}
         />
 
-        <Gap size="s" />
+        <Gap size="s"/>
 
         <Radio
           label={t.income.childIncome.hasIncome}
           data-qa="child-income-has-income"
-          checked={formData.highestFeeSelected === false}
+          checked={!formData.highestFeeSelected}
           onChange={() => onSelect('childIncome', true)}
         />
       </FixedSpaceColumn>
     )
   })
 )
-
-export function useRequiredAttachments(
-  formData: Form.IncomeStatementForm
-): Set<AttachmentType> {
-  const { childIncome } = formData
-
-  return useMemo(() => {
-    const result: Set<AttachmentType> = new Set()
-    if (childIncome) {
-      result.add('CHILD_INCOME')
-    }
-    return result
-  }, [childIncome])
-}
 
 const ResponsiveFixedSpaceRow = styled(FixedSpaceRow)`
   @media (max-width: 900px) {
@@ -307,7 +251,7 @@ export default React.memo(
       onSuccess,
       onCancel
     }: Props,
-    ref: React.ForwardedRef<ChildIncomeStatementFormAPI>
+    ref: React.ForwardedRef<IncomeStatementFormAPI>
   ) {
     const t = useTranslation()
     const scrollTarget = useRef<HTMLDivElement>(null)
@@ -357,7 +301,7 @@ export default React.memo(
     return (
       <>
         <Container>
-          <Gap size="s" />
+          <Gap size="s"/>
           <ContentArea opaque paddingVertical="L">
             <ResponsiveFixedSpaceRow>
               <FixedSpaceColumn spacing="zero">
@@ -368,7 +312,7 @@ export default React.memo(
             </ResponsiveFixedSpaceRow>
           </ContentArea>
 
-          <Gap size="s" />
+          <Gap size="s"/>
 
           <ContentArea opaque>
             <ChildIncomeTypeSelection
@@ -381,7 +325,7 @@ export default React.memo(
             />
             {!formData.highestFee && (
               <>
-                <Gap size="L" />
+                <Gap size="L"/>
 
                 <ChildIncome
                   incomeStatementId={incomeStatementId}
@@ -401,7 +345,7 @@ export default React.memo(
               />
             </AssureCheckbox>
             <FixedSpaceRow>
-              <Button text={t.common.cancel} onClick={onCancel} />
+              <Button text={t.common.cancel} onClick={onCancel}/>
               <AsyncButton
                 text={t.common.save}
                 primary
@@ -412,7 +356,7 @@ export default React.memo(
             </FixedSpaceRow>
           </ActionContainer>
         </Container>
-        <Footer />
+        <Footer/>
       </>
     )
   })

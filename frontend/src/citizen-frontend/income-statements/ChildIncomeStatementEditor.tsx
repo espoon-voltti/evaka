@@ -9,9 +9,8 @@ import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
-import ChildIncomeStatementForm, {
-  ChildIncomeStatementFormAPI
-} from './ChildIncomeStatementForm'
+import ChildIncomeStatementForm from './ChildIncomeStatementForm'
+import { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import {
   createChildIncomeStatement,
   getChildIncomeStatement,
@@ -81,7 +80,7 @@ export default React.memo(function ChildIncomeStatementEditor({
     history.push('/income')
   }, [history])
 
-  const form = useRef<ChildIncomeStatementFormAPI | null>(null)
+  const form = useRef<IncomeStatementFormAPI | null>(null)
 
   const updateFormData = useCallback(
     (fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm): void =>

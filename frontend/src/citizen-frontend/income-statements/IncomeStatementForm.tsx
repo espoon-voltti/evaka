@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import {
@@ -39,73 +38,23 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { fontWeights, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { fasExclamationTriangle } from 'lib-icons'
 import Footer from '../Footer'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 import IncomeStatementAttachments from './IncomeStatementAttachments'
+import {
+  ActionContainer,
+  AssureCheckbox,
+  identity,
+  IncomeStatementFormAPI,
+  LabelError,
+  SetStateCallback,
+  useFieldDispatch,
+  useFieldSetState,
+  useFieldSetter
+} from './IncomeStatementComponents'
 import { AttachmentType } from './types/common'
 import * as Form from './types/form'
-
-const ActionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: ${defaultMargins.m} 0;
-
-  > * {
-    margin: 0 ${defaultMargins.m};
-
-    &:not(:first-child) {
-      margin-top: ${defaultMargins.s};
-    }
-  }
-
-  @media (min-width: ${tabletMin}) {
-    flex-direction: row;
-
-    > * {
-      margin: ${defaultMargins.s} ${defaultMargins.m};
-    }
-  }
-`
-const AssureCheckbox = styled.div`
-  display: flex;
-  align-items: center;
-`
-
-function identity<T>(value: T): T {
-  return value
-}
-
-type SetStateCallback<T> = (fn: (prev: T) => T) => void
-
-function useFieldSetState<T, K extends keyof T>(
-  onChange: SetStateCallback<T>,
-  key: K
-): SetStateCallback<T[K]> {
-  return useCallback<SetStateCallback<T[K]>>(
-    (fn) => onChange((prev) => ({ ...prev, [key]: fn(prev[key]) })),
-    [onChange, key]
-  )
-}
-
-function useFieldDispatch<T, K extends keyof T>(
-  onChange: SetStateCallback<T>,
-  key: K
-): (value: T[K]) => void {
-  const setState = useFieldSetState(onChange, key)
-  return useCallback((value: T[K]) => setState(() => value), [setState])
-}
-
-function useFieldSetter<T, K extends keyof T>(
-  onChange: SetStateCallback<T>,
-  key: K,
-  value: T[K]
-): () => void {
-  const setState = useFieldSetState(onChange, key)
-  return useCallback(() => setState(() => value), [setState, value])
-}
 
 interface Props {
   incomeStatementId: UUID | undefined
@@ -116,10 +65,6 @@ interface Props {
   onSave: AsyncClickCallback
   onSuccess: () => void
   onCancel: () => void
-}
-
-export interface IncomeStatementFormAPI {
-  scrollToErrors: () => void
 }
 
 // eslint-disable-next-line react/display-name
@@ -1173,35 +1118,6 @@ const ResponsiveFixedSpaceRow = styled(FixedSpaceRow)`
 
 const Confidential = styled.div`
   flex: 0 0 auto;
-`
-
-const LabelError = styled(
-  React.memo(function LabelError({
-    text,
-    className
-  }: {
-    text: string
-    className?: string
-  }) {
-    const { colors } = useTheme()
-    return (
-      <span className={className}>
-        <FontAwesomeIcon
-          icon={fasExclamationTriangle}
-          color={colors.status.warning}
-        />
-        {text}
-      </span>
-    )
-  })
-)`
-  font-size: 14px;
-  font-weight: ${fontWeights.semibold};
-  color: ${(p) => p.theme.colors.accents.a2orangeDark};
-
-  > :first-child {
-    margin-right: ${defaultMargins.xs};
-  }
 `
 
 const LabelWithError = React.memo(function LabelWithError({
