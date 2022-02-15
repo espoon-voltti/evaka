@@ -29,6 +29,14 @@ import {
   Translations as TranslationsEmployeeMobile
 } from './employeeMobile'
 
+declare global {
+  interface Window {
+    evaka?: EvakaWindowConfig
+  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface EvakaWindowConfig {}
+}
+
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? DeepPartial<U>[]

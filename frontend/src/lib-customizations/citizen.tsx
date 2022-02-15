@@ -4,16 +4,35 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import customizations from '@evaka/customizations/citizen'
+import defaultsUntyped from '@evaka/customizations/citizen'
 import { mergeWith } from 'lodash'
 
-import { translationsMergeCustomizer } from './common'
+import { JsonOf } from 'lib-common/json'
+
+import { mergeCustomizer } from './common'
 import en from './espoo/citizen/assets/i18n/en'
 import fi from './espoo/citizen/assets/i18n/fi'
 import sv from './espoo/citizen/assets/i18n/sv'
 import type { CitizenCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const defaults: CitizenCustomizations = defaultsUntyped
+
+declare global {
+  interface EvakaWindowConfig {
+    citizenCustomizations?: Partial<JsonOf<CitizenCustomizations>>
+  }
+}
+
+const overrides =
+  typeof window !== 'undefined'
+    ? window.evaka?.citizenCustomizations
+    : undefined
+
+const customizations: CitizenCustomizations = overrides
+  ? mergeWith({}, defaults, overrides, mergeCustomizer)
+  : defaults
+
 const {
   appConfig,
   cityLogo,
@@ -38,19 +57,7 @@ export type Lang = 'fi' | 'sv' | 'en'
 export type Translations = typeof fi
 
 export const translations: Record<Lang, Translations> = {
-  fi: mergeWith(
-    fi,
-    (customizations as CitizenCustomizations).translations.fi,
-    translationsMergeCustomizer
-  ),
-  sv: mergeWith(
-    sv,
-    (customizations as CitizenCustomizations).translations.sv,
-    translationsMergeCustomizer
-  ),
-  en: mergeWith(
-    en,
-    (customizations as CitizenCustomizations).translations.en,
-    translationsMergeCustomizer
-  )
+  fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer),
+  sv: mergeWith({}, sv, customizations.translations.sv, mergeCustomizer),
+  en: mergeWith({}, en, customizations.translations.en, mergeCustomizer)
 }

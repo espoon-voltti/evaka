@@ -12,6 +12,14 @@ import playwright, {
   Page
 } from 'playwright'
 
+import { JsonOf } from 'lib-common/json'
+import {
+  CitizenCustomizations,
+  CommonCustomizations,
+  EmployeeCustomizations,
+  EmployeeMobileCustomizations
+} from 'lib-customizations/types'
+
 import config from './config'
 
 declare global {
@@ -68,10 +76,25 @@ afterAll(async () => {
   delete global.evaka
 })
 
-const initScript = (mockedTime?: Date) => `
-window.evakaAutomatedTest = true
-${mockedTime ? `window.evakaMockedTime = '${mockedTime.toISOString()}'` : ''}
-`
+const initScript = (options: EvakaBrowserContextOptions) => {
+  const override = (key: keyof EvakaBrowserContextOptions) => {
+    const value = options[key]
+    return value
+      ? `window.evaka.${key} = JSON.parse('${JSON.stringify(value)}')`
+      : ''
+  }
+  const { mockedTime } = options
+
+  return `
+window.evaka = window.evaka ?? {}
+window.evaka.automatedTest = true
+${mockedTime ? `window.evaka.mockedTime = '${mockedTime.toISOString()}'` : ''}
+${override('citizenCustomizations')}
+${override('commonCustomizations')}
+${override('employeeCustomizations')}
+${override('employeeMobileCustomizations')}
+  `
+}
 
 async function forEachContext(
   fn: (ctxInfo: { ctx: BrowserContext; ctxIndex: number }) => Promise<void>
@@ -147,10 +170,26 @@ function configurePage(page: Page) {
   })
 }
 
+export interface EvakaBrowserContextOptions {
+  mockedTime?: Date
+  citizenCustomizations?: Partial<JsonOf<CitizenCustomizations>>
+  employeeCustomizations?: Partial<JsonOf<EmployeeCustomizations>>
+  employeeMobileCustomizations?: Partial<JsonOf<EmployeeMobileCustomizations>>
+  commonCustomizations?: Partial<JsonOf<CommonCustomizations>>
+}
+
 export async function newBrowserContext(
-  options?: BrowserContextOptions & { mockedTime?: Date }
+  options?: BrowserContextOptions & EvakaBrowserContextOptions
 ): Promise<BrowserContext> {
-  const ctx = await browser.newContext(options)
+  const {
+    mockedTime,
+    citizenCustomizations,
+    employeeCustomizations,
+    employeeMobileCustomizations,
+    commonCustomizations,
+    ...otherOptions
+  } = options ?? {}
+  const ctx = await browser.newContext(otherOptions)
   await ctx.tracing.start({
     snapshots: true,
     screenshots: true,
@@ -158,7 +197,15 @@ export async function newBrowserContext(
   })
   ctx.on('page', configurePage)
   ctx.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
-  await ctx.addInitScript({ content: initScript(options?.mockedTime) })
+  await ctx.addInitScript({
+    content: initScript({
+      mockedTime,
+      citizenCustomizations,
+      employeeCustomizations,
+      employeeMobileCustomizations,
+      commonCustomizations
+    })
+  })
   return ctx
 }
 

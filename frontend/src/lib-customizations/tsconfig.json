@@ -5,7 +5,8 @@
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/lib-customizations",
-    "suppressImplicitAnyIndexErrors": true
+    "suppressImplicitAnyIndexErrors": true,
+    "types": ["node"]
   },
   "references": [
     { "path": "../lib-common" },

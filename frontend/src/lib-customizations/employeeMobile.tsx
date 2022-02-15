@@ -4,12 +4,32 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import customizations from '@evaka/customizations/employeeMobile'
+import defaultsUntyped from '@evaka/customizations/employeeMobile'
 import { mergeWith } from 'lodash'
 
-import { translationsMergeCustomizer } from './common'
+import { JsonOf } from 'lib-common/json'
+
+import { mergeCustomizer } from './common'
 import { fi } from './espoo/employee-mobile-frontend/assets/i18n/fi'
 import type { EmployeeMobileCustomizations } from './types'
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const defaults: EmployeeMobileCustomizations = defaultsUntyped
+
+declare global {
+  interface EvakaWindowConfig {
+    employeeMobileCustomizations?: Partial<JsonOf<EmployeeMobileCustomizations>>
+  }
+}
+
+const overrides =
+  typeof window !== 'undefined'
+    ? window.evaka?.employeeMobileCustomizations
+    : undefined
+
+const customizations: EmployeeMobileCustomizations = overrides
+  ? mergeWith({}, defaults, overrides, mergeCustomizer)
+  : defaults
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const { appConfig }: EmployeeMobileCustomizations = customizations
@@ -19,9 +39,5 @@ export type Lang = 'fi'
 export type Translations = typeof fi
 
 export const translations: { [K in Lang]: Translations } = {
-  fi: mergeWith(
-    fi,
-    (customizations as EmployeeMobileCustomizations).translations.fi,
-    translationsMergeCustomizer
-  )
+  fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer)
 }

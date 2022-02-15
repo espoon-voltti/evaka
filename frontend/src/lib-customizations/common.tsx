@@ -4,10 +4,11 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import customizations from '@evaka/customizations/common'
-import { isArray } from 'lodash'
+import defaultsUntyped from '@evaka/customizations/common'
+import { isArray, mergeWith } from 'lodash'
 import React from 'react'
 
+import { JsonOf } from 'lib-common/json'
 import {
   faBabyCarriage,
   faEuroSign,
@@ -16,6 +17,30 @@ import {
 } from 'lib-icons'
 
 import type { CommonCustomizations } from './types'
+
+export const mergeCustomizer = (
+  original: unknown,
+  customized: unknown
+): unknown =>
+  isArray(original) || React.isValidElement(original as never)
+    ? customized
+    : undefined // fall back to default merge logic
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const defaults: CommonCustomizations = defaultsUntyped
+
+declare global {
+  interface EvakaWindowConfig {
+    commonCustomizations?: Partial<JsonOf<CommonCustomizations>>
+  }
+}
+
+const overrides =
+  typeof window !== 'undefined' ? window.evaka?.commonCustomizations : undefined
+
+const customizations: CommonCustomizations = overrides
+  ? mergeWith({}, defaults, overrides, mergeCustomizer)
+  : defaults
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const { theme }: CommonCustomizations = customizations
@@ -82,19 +107,6 @@ export const careTypeColors = {
   preschool: main.m1,
   'school-shift-care': grayscale.g70,
   temporary: accents.a4violet
-}
-
-export const translationsMergeCustomizer = (
-  origValue: Record<string, unknown>,
-  customizedValue: Record<string, unknown>
-): Record<string, unknown> | undefined => {
-  if (
-    customizedValue != undefined &&
-    (isArray(origValue) || React.isValidElement(origValue))
-  ) {
-    return customizedValue
-  }
-  return undefined
 }
 
 export default colors
