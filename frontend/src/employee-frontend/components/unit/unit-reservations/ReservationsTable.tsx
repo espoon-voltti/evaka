@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import classNames from 'classnames'
 import { sortBy } from 'lodash'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -93,7 +94,7 @@ export default React.memo(function ReservationsTable(props: Props) {
               {operationalDays.map((day) => (
                 <DayTd
                   key={day.date.formatIso()}
-                  highlight={day.date.isToday()}
+                  className={classNames({ 'is-today': day.date.isToday() })}
                   partialRow={multipleRows}
                   rowIndex={index}
                 >
@@ -152,13 +153,7 @@ const StyledTd = styled(Td)<{ partialRow: boolean; rowIndex: number }>`
   ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: dashed;`}
 `
 
-const DayTd = styled(StyledTd)<{ highlight: boolean; partialRow: boolean }>`
-  ${(p) =>
-    p.highlight &&
-    css`
-      border-left: 2px solid ${colors.main.m3};
-      border-right: 2px solid ${colors.main.m3};
-    `}
+const DayTd = styled(StyledTd)`
   padding: 0;
 `
 
