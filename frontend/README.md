@@ -117,7 +117,7 @@ target the private registry in `yarn.lock`.
 Next, fetch the packages with:
 
 ```sh
-npm pack @fortawesome/pro-light-svg-icons@6.0.0-beta2 --userconfig=<path to your .npmrc>
+npm pack @fortawesome/pro-light-svg-icons@6.0.0 --userconfig=<path to your .npmrc>
 # repeat for all packages listed under ./unpack-pro-icons.sh
 ```
 
