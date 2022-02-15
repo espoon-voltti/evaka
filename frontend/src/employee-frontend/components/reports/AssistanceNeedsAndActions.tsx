@@ -137,21 +137,21 @@ function AssistanceNeedsAndActions() {
                 unitProviderType:
                   i18n.reports.common.unitProviderTypes[row.unitProviderType],
                 ...Object.fromEntries(
-                  Object.entries(row.basisCounts).map(([value, count]) => [
+                  report.value.bases.map(({ value }) => [
                     `BASIS-${value}`,
-                    count ?? 0
+                    row.basisCounts[value] ?? 0
                   ])
                 ),
                 ...Object.fromEntries(
-                  Object.entries(row.actionCounts).map(([value, count]) => [
+                  report.value.actions.map(({ value }) => [
                     `ACTION-${value}`,
-                    count ?? 0
+                    row.actionCounts[value] ?? 0
                   ])
                 ),
                 ...Object.fromEntries(
-                  Object.entries(row.measureCounts).map(([value, count]) => [
+                  assistanceMeasures.map((value) => [
                     `MEASURE-${value}`,
-                    count ?? 0
+                    row.measureCounts[value] ?? 0
                   ])
                 )
               }))}
