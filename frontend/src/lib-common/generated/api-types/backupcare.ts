@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { ServiceNeed } from './serviceneed'
 import { UUID } from '../../types'
 
@@ -62,10 +63,18 @@ export interface ChildBackupCare {
 }
 
 /**
+* Generated from fi.espoo.evaka.backupcare.ChildBackupCareResponse
+*/
+export interface ChildBackupCareResponse {
+  backupCare: ChildBackupCare
+  permittedActions: Action.BackupCare[]
+}
+
+/**
 * Generated from fi.espoo.evaka.backupcare.ChildBackupCaresResponse
 */
 export interface ChildBackupCaresResponse {
-  backupCares: ChildBackupCare[]
+  backupCares: ChildBackupCareResponse[]
 }
 
 /**

@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
+import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
@@ -19,7 +20,6 @@ import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { getPlacements } from '../api/child/placements'
 import { getParentshipsByChild } from '../api/parentships'
 import { getChildDetails, getPersonGuardians } from '../api/person'
-import { ChildBackupCare } from '../types/child'
 
 export interface ChildState {
   person: Result<PersonJSON>
@@ -28,8 +28,8 @@ export interface ChildState {
   placements: Result<DaycarePlacementWithDetails[]>
   loadPlacements: () => void
   parentships: Result<Parentship[]>
-  backupCares: Result<ChildBackupCare[]>
-  setBackupCares: (request: Result<ChildBackupCare[]>) => void
+  backupCares: Result<ChildBackupCareResponse[]>
+  setBackupCares: (request: Result<ChildBackupCareResponse[]>) => void
   guardians: Result<PersonJSON[]>
 }
 
@@ -106,9 +106,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
         : Loading.of(),
     [id, permittedActions]
   )
-  const [backupCares, setBackupCares] = useState<Result<ChildBackupCare[]>>(
-    defaultState.backupCares
-  )
+  const [backupCares, setBackupCares] = useState<
+    Result<ChildBackupCareResponse[]>
+  >(defaultState.backupCares)
   const [guardians] = useApiState(() => getPersonGuardians(id), [id])
 
   const value = useMemo(

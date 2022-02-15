@@ -63,15 +63,18 @@ export default function BackupCare({ id, startOpen }: Props) {
           {uiMode === 'create-new-backup-care' && (
             <BackupCareForm childId={id} />
           )}
-          {_.orderBy(backupCares.value, (x) => x.period.start, 'desc').map(
-            (backupCare) => (
-              <BackupCareRow
-                childId={id}
-                key={backupCare.id}
-                backupCare={backupCare}
-              />
-            )
-          )}
+          {_.orderBy(
+            backupCares.value,
+            (x) => x.backupCare.period.start,
+            'desc'
+          ).map((backupCare) => (
+            <BackupCareRow
+              childId={id}
+              key={backupCare.backupCare.id}
+              backupCare={backupCare.backupCare}
+              permittedActions={backupCare.permittedActions}
+            />
+          ))}
         </div>
       )}
     </CollapsibleContentArea>

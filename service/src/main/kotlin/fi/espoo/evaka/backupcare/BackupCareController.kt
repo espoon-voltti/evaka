@@ -36,7 +36,16 @@ class BackupCareController(private val accessControl: AccessControl) {
     ): ChildBackupCaresResponse {
         Audit.ChildBackupCareRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_CARE, childId)
-        return ChildBackupCaresResponse(db.connect { dbc -> dbc.read { it.getBackupCaresForChild(childId) } })
+        return ChildBackupCaresResponse(
+            db.connect { dbc ->
+                dbc.read {
+                    val backupCares = it.getBackupCaresForChild(childId)
+                    val backupCareIds = backupCares.map { bc -> bc.id }
+                    val permittedActions = accessControl.getPermittedBackupCareActions(user, backupCareIds)
+                    backupCares.map { bc -> ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet()) }
+                }
+            }
+        )
     }
 
     @PostMapping("/children/{childId}/backup-cares")
@@ -98,7 +107,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     }
 }
 
-data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCare>)
+data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCareResponse>)
 data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
 data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: GroupId?)
 data class BackupCareCreateResponse(val id: BackupCareId)

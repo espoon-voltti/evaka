@@ -4,6 +4,8 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
+import { Action } from 'lib-common/generated/action'
+import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -17,12 +19,11 @@ import Toolbar from '../../../components/common/Toolbar'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { ChildBackupCare } from '../../../types/child'
-import { ALL_ROLES_BUT_STAFF } from '../../../utils/roles'
 
 export interface Props {
   childId: UUID
   backupCare: ChildBackupCare
+  permittedActions: Array<Action.BackupCare>
 }
 
 const Row = styled.section`
@@ -48,7 +49,11 @@ const Period = styled(Title)`
   width: 50%;
 `
 
-export default function BackupCareRow({ childId, backupCare }: Props) {
+export default function BackupCareRow({
+  childId,
+  backupCare,
+  permittedActions
+}: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const { setBackupCares } = useContext(ChildContext)
@@ -96,8 +101,8 @@ export default function BackupCareRow({ childId, backupCare }: Props) {
             onEdit={() => toggleUiMode(`edit-backup-care-${backupCare.id}`)}
             dataQaEdit="btn-edit-backup-care"
             onDelete={() => toggleUiMode(`remove-backup-care-${backupCare.id}`)}
-            editableFor={ALL_ROLES_BUT_STAFF}
-            deletableFor={ALL_ROLES_BUT_STAFF}
+            editable={permittedActions.includes('UPDATE')}
+            deletable={permittedActions.includes('DELETE')}
             dataQaDelete="btn-remove-backup-care"
           />
         </Row>
