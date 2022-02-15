@@ -5,7 +5,6 @@
 import React, { useCallback, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
-import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { Result } from 'lib-common/api'
 import {
   DailyReservationData,
@@ -20,12 +19,15 @@ import {
 } from 'lib-components/layout/responsive-layout'
 import { Gap } from 'lib-components/white-space'
 import Footer from '../Footer'
+import { UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
+import { useHolidayPeriods } from '../holiday-periods/state'
 import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
 import DayView from './DayView'
+import HolidayModal from './HolidayModal'
 import ReservationModal from './ReservationModal'
 import { getReservations } from './api'
 
@@ -43,9 +45,11 @@ export default React.memo(function CalendarPage() {
   const location = useLocation()
   const user = useUser()
 
+  const { holidayPeriods } = useHolidayPeriods()
+
   const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
   const [openModal, setOpenModal] = useState<
-    | { type: 'pickAction' | 'reservations' }
+    | { type: 'pickAction' | 'reservations' | 'holidays' }
     | { type: 'absences'; initialDate: LocalDate | undefined }
   >()
 
@@ -55,6 +59,10 @@ export default React.memo(function CalendarPage() {
   )
   const openReservationModal = useCallback(
     () => setOpenModal({ type: 'reservations' }),
+    []
+  )
+  const openHolidayModal = useCallback(
+    () => setOpenModal({ type: 'holidays' }),
     []
   )
   const openAbsenceModal = useCallback(
@@ -89,6 +97,13 @@ export default React.memo(function CalendarPage() {
     [data]
   )
 
+  const isHolidayFormActive: boolean = holidayPeriods.mapAll({
+    loading: () => false,
+    failure: () => false,
+    success: ([holidayPeriods]) =>
+      holidayPeriods != undefined && holidayPeriods != null
+  })
+
   if (!user || !user.accessibleFeatures.reservations) return null
 
   return (
@@ -116,6 +131,8 @@ export default React.memo(function CalendarPage() {
                 dailyData={response.dailyData}
                 onCreateReservationClicked={openReservationModal}
                 onCreateAbsencesClicked={openAbsenceModal}
+                onReportHolidaysClicked={openHolidayModal}
+                isHolidayFormActive={isHolidayFormActive}
                 selectedDate={selectedDate}
                 selectDate={selectDate}
                 includeWeekends={response.includesWeekends}
@@ -137,6 +154,8 @@ export default React.memo(function CalendarPage() {
                 close={closeModal}
                 openReservations={openReservationModal}
                 openAbsences={openAbsenceModal}
+                openHolidays={openHolidayModal}
+                isHolidayFormActive={isHolidayFormActive}
               />
             )}
             {openModal?.type === 'reservations' && (
@@ -151,6 +170,13 @@ export default React.memo(function CalendarPage() {
               <AbsenceModal
                 close={closeModal}
                 initialDate={openModal.initialDate}
+                reload={loadDefaultRange}
+                availableChildren={response.children}
+              />
+            )}
+            {openModal?.type === 'holidays' && (
+              <HolidayModal
+                close={closeModal}
                 reload={loadDefaultRange}
                 availableChildren={response.children}
               />

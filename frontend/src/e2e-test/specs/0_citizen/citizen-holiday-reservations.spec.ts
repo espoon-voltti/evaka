@@ -13,6 +13,7 @@ import {
   enduserGuardianFixture,
   Fixture
 } from '../../dev-api/fixtures'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -46,27 +47,39 @@ beforeEach(async () => {
     .child(child1)
     .daycare(daycare)
     .with({
-      startDate: LocalDate.of(2035, 1, 1).formatIso(),
+      startDate: LocalDate.today().formatIso(),
       endDate: LocalDate.of(2036, 6, 30).formatIso()
     })
     .save()
 })
 
 describe('Holiday periods', () => {
-  test('A banner will prompt for holiday reservations is shown', async () => {
-    await Fixture.holidayPeriod()
-      .with({
-        period,
-        reservationDeadline: LocalDate.of(2035, 12, 6),
-        showReservationBannerFrom: LocalDate.today(),
-        description: {
-          en: 'Please submit your reservations for 18.12.2035 - 8.1.2036 asap',
-          fi: 'Ystävällisesti pyydän tekemään varauksenne ajalle 18.12.2035 - 8.1.2036 heti kun mahdollista, kuitenkin viimeistään 6.12.',
-          sv: 'Vänligen samma på svenska för 18.12.2035 - 8.1.2036'
-        }
-      })
-      .save()
-    await enduserLogin(page)
-    await header.assertHolidayPeriodBannerIsShown(true)
+  describe('Holiday period questionnaire is active', () => {
+    beforeEach(async () => {
+      await Fixture.holidayPeriod()
+        .with({
+          period,
+          reservationDeadline: LocalDate.of(2035, 12, 6),
+          showReservationBannerFrom: LocalDate.today(),
+          description: {
+            en: 'Please submit your reservations for 18.12.2035 - 8.1.2036 asap',
+            fi: 'Ystävällisesti pyydän tekemään varauksenne ajalle 18.12.2035 - 8.1.2036 heti kun mahdollista, kuitenkin viimeistään 6.12.',
+            sv: 'Vänligen samma på svenska för 18.12.2035 - 8.1.2036'
+          }
+        })
+        .save()
+    })
+
+    test('A banner will prompt for holiday reservations is shown', async () => {
+      await enduserLogin(page)
+      await header.assertHolidayPeriodBannerIsShown(true)
+    })
+
+    test('The calendar page should show a button for reporting holidays', async () => {
+      await enduserLogin(page)
+      await header.selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayModalButtonVisible()
+    })
   })
 })

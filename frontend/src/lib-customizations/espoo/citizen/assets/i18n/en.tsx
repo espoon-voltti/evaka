@@ -195,6 +195,7 @@ const en: Translations = {
       PLANNED_ABSENCE: 'Planned day off'
     },
     newReservationOrAbsence: 'Reservation / Absence',
+    newHoliday: 'Report holiday',
     newAbsence: 'Report absence',
     newReservationBtn: 'Make a reservation',
     noReservation: 'No reservations',
@@ -231,6 +232,10 @@ const en: Translations = {
         OTHER_ABSENCE: 'Other absence',
         PLANNED_ABSENCE: 'Regular day off/shift care'
       }
+    },
+    holidayModal: {
+      title: 'Report holiday',
+      additionalInformation: 'Read more'
     }
   },
   messages: {

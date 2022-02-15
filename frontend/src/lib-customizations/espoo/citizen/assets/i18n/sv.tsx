@@ -195,6 +195,7 @@ const sv: Translations = {
       PLANNED_ABSENCE: 'Ledig dag'
     },
     newReservationOrAbsence: 'Reservation / Frånvaro',
+    newHoliday: 'Meddela semester',
     newAbsence: 'Anmäl frånvaro',
     newReservationBtn: 'Reservera',
     noReservation: 'Ingen reservation',
@@ -231,6 +232,10 @@ const sv: Translations = {
         OTHER_ABSENCE: 'Annan frånvaro',
         PLANNED_ABSENCE: 'Vanlig ledig dag/skiftvård'
       }
+    },
+    holidayModal: {
+      title: 'Meddela semester',
+      additionalInformation: 'Läs mera'
     }
   },
   messages: {

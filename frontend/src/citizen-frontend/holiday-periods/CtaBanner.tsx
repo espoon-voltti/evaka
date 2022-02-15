@@ -4,20 +4,18 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
-import { UnwrapResult } from './async-rendering'
-import { useUser } from './auth/state'
-import { getActionRequiringHolidayPeriods } from './header/holiday-periods/api'
-import { useTranslation } from './localization'
+import { UnwrapResult } from '../async-rendering'
+import { useUser } from '../auth/state'
+import { useTranslation } from '../localization'
+import { useHolidayPeriods } from './state'
 
 const BannerBackground = styled.div`
   background-color: ${colors.grayscale.g0};
@@ -57,13 +55,7 @@ const HolidayPeriodBanner = React.memo(function HolidayPeriodBanner({
 
 export default React.memo(function CtaBanner() {
   const user = useUser()
-  const [holidayPeriods] = useApiState(
-    () =>
-      user
-        ? getActionRequiringHolidayPeriods()
-        : Promise.resolve(Success.of([])),
-    [user]
-  )
+  const { holidayPeriods } = useHolidayPeriods()
   const status = useDataStatus(holidayPeriods)
 
   if (!user) return null

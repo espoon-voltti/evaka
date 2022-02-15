@@ -9,19 +9,23 @@ import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faCalendarPlus, faUserMinus } from 'lib-icons'
+import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 import { useTranslation } from '../localization'
 
 interface Props {
   close: () => void
   openReservations: () => void
   openAbsences: (initialDate: LocalDate | undefined) => void
+  openHolidays: () => void
+  isHolidayFormActive: boolean
 }
 
 export default React.memo(function ActionPickerModal({
   close,
   openReservations,
-  openAbsences
+  openAbsences,
+  openHolidays,
+  isHolidayFormActive
 }: Props) {
   const i18n = useTranslation()
   const onCreateAbsences = useCallback(
@@ -32,6 +36,15 @@ export default React.memo(function ActionPickerModal({
   return (
     <ModalBackground onClick={close}>
       <Container>
+        {isHolidayFormActive && (
+          <Action onClick={openHolidays} data-qa="calendar-action-holidays">
+            {i18n.calendar.newHoliday}
+            <IconBackground>
+              <FontAwesomeIcon icon={faTreePalm} size="1x" />
+            </IconBackground>
+          </Action>
+        )}
+        <Gap size="s" />
         <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
           {i18n.calendar.newAbsence}
           <IconBackground>
