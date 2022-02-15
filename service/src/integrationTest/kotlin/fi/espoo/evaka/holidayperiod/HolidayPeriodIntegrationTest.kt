@@ -5,6 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.holidaypediod.FreeAbsencePeriod
 import fi.espoo.evaka.holidaypediod.HolidayPeriod
 import fi.espoo.evaka.holidaypediod.HolidayPeriodBody
 import fi.espoo.evaka.holidaypediod.createHolidayPeriod
@@ -34,6 +35,7 @@ class HolidayPeriodIntegrationTest : PureJdbiTest() {
         descriptionLink = emptyTranslatable,
         showReservationBannerFrom = summerRange.start.minusWeeks(6),
         reservationDeadline = summerRange.start.minusWeeks(3),
+        freePeriod = null
     )
     private val christmasRange =
         FiniteDateRange(start = LocalDate.of(2021, 12, 18), end = LocalDate.of(2022, 1, 6))
@@ -60,8 +62,9 @@ class HolidayPeriodIntegrationTest : PureJdbiTest() {
             en = "https://www.example.com/en",
         )
         updateHolidayPeriod(christmas.id, christmasPeriod.copy(descriptionLink = newLinks))
-        val foo = getHolidayPeriods()
-        assertEquals(listOf(emptyTranslatable, newLinks), foo.map { p -> p.descriptionLink })
+        val periods = getHolidayPeriods()
+        assertEquals(listOf(emptyTranslatable, newLinks), periods.map { p -> p.descriptionLink })
+        assertEquals(listOf(summerPeriod.freePeriod, summerPeriod.freePeriod), periods.map { p -> p.freePeriod })
 
         deleteHolidayPeriod(summer.id)
         assertEquals(listOf(christmas.id), getHolidayPeriods().map { p -> p.id })
@@ -88,6 +91,24 @@ class HolidayPeriodIntegrationTest : PureJdbiTest() {
         val created = createHolidayPeriod(summerPeriod.copy(description = descriptionsWithSpecialCharacters))
 
         assertEquals(descriptionsWithSpecialCharacters, created.description)
+    }
+
+    @Test
+    fun `holiday periods can contain a free period`() {
+        val period = summerPeriod.copy(
+            freePeriod = FreeAbsencePeriod(
+                deadline = LocalDate.of(2022, 6, 1),
+                periodOptions = listOf(
+                    FiniteDateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 7, 7)),
+                    FiniteDateRange(LocalDate.of(2022, 7, 8), LocalDate.of(2022, 7, 14)),
+                ),
+                periodOptionLabel = emptyTranslatable,
+                questionLabel = emptyTranslatable
+            )
+        )
+        val created = createHolidayPeriod(period)
+
+        assertEquals(period.freePeriod, created.freePeriod)
     }
 
     private fun assertConstraintViolation(executable: () -> Any) {

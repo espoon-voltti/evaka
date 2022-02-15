@@ -8,8 +8,21 @@ import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.Translatable
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
+
+data class FreeAbsencePeriod(
+    @PropagateNull
+    val deadline: LocalDate,
+    @Json
+    val questionLabel: Translatable, // "Will your children be on holiday for 8 consecutive weeks during...?"
+
+    val periodOptions: List<FiniteDateRange>,
+    @Json
+    val periodOptionLabel: Translatable
+)
 
 data class HolidayPeriod(
     val id: HolidayPeriodId,
@@ -22,6 +35,8 @@ data class HolidayPeriod(
     val description: Translatable,
     @Json
     val descriptionLink: Translatable,
+    @Nested("free_period")
+    val freePeriod: FreeAbsencePeriod?
 )
 
 data class HolidayPeriodBody(
@@ -32,4 +47,6 @@ data class HolidayPeriodBody(
     val description: Translatable,
     @Json
     val descriptionLink: Translatable,
+    @Nested("free_period")
+    val freePeriod: FreeAbsencePeriod?
 )

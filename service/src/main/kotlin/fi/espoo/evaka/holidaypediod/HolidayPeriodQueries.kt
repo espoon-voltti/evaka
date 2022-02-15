@@ -10,33 +10,58 @@ import fi.espoo.evaka.shared.db.updateExactlyOne
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 
+val holidayPeriodSelect = """
+    SELECT id,
+           created,
+           updated,
+           period,
+           reservation_deadline,
+           show_reservation_banner_from,
+           description,
+           description_link,
+           free_period_deadline,
+           free_period_question_label,
+           free_period_period_options,
+           free_period_period_option_label
+    FROM holiday_period
+""".trimIndent()
+
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
-    this.createQuery(
-        """
-SELECT id, created, updated, period, reservation_deadline, show_reservation_banner_from, description, description_link 
-FROM holiday_period
-ORDER BY period
-        """.trimIndent()
-    )
+    this.createQuery("$holidayPeriodSelect ORDER BY period")
         .mapTo<HolidayPeriod>()
         .list()
 
 fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
-    this.createQuery(
-        """
-SELECT id, created, updated, period, reservation_deadline, show_reservation_banner_from, description, description_link
-FROM holiday_period
-WHERE id = :id
-        """.trimIndent()
-    ).bind("id", id)
+    this.createQuery("$holidayPeriodSelect WHERE id = :id")
+        .bind("id", id)
         .mapTo<HolidayPeriod>()
         .firstOrNull()
 
 fun Database.Transaction.createHolidayPeriod(data: HolidayPeriodBody): HolidayPeriod =
     this.createQuery(
         """
-INSERT INTO holiday_period (period, reservation_deadline, show_reservation_banner_from, description, description_link)
-VALUES (:period, :reservationDeadline, :showReservationBannerFrom, :description, :descriptionLink)
+INSERT INTO holiday_period (
+    period,
+    reservation_deadline,
+    show_reservation_banner_from,
+    description,
+    description_link,
+    free_period_deadline,
+    free_period_question_label,
+    free_period_period_options,
+    free_period_period_option_label
+)
+VALUES (
+    :period,
+    :reservationDeadline,
+    :showReservationBannerFrom,
+    :description,
+    :descriptionLink,
+    :freePeriod?.deadline,
+    :freePeriod?.questionLabel,
+    :freePeriod?.periodOptions,
+    :freePeriod?.periodOptionLabel
+)
 RETURNING *
         """.trimIndent()
     )
@@ -53,7 +78,11 @@ SET
     reservation_deadline = :reservationDeadline,
     show_reservation_banner_from = :showReservationBannerFrom,
     description = :description,
-    description_link = :descriptionLink
+    description_link = :descriptionLink,
+    free_period_deadline = :freePeriod?.deadline,
+    free_period_question_label = :freePeriod?.questionLabel,
+    free_period_period_options = :freePeriod?.periodOptions,
+    free_period_period_option_label = :freePeriod?.periodOptionLabel
 WHERE id = :id
     """
             .trimIndent()

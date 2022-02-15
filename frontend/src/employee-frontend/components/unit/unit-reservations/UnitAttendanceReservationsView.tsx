@@ -47,7 +47,8 @@ const legendAbsenceTypes: AbsenceType[] = [
   'UNKNOWN_ABSENCE',
   'PLANNED_ABSENCE',
   'PARENTLEAVE',
-  'FORCE_MAJEURE'
+  'FORCE_MAJEURE',
+  'FREE_ABSENCE'
 ]
 
 const formatWeekTitle = (dateRange: FiniteDateRange) =>

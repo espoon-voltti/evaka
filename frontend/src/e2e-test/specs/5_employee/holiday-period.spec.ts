@@ -103,4 +103,33 @@ describe('Holiday periods page', () => {
       Object.values(descriptions)
     )
   })
+
+  test('Holiday periods can have an optional free period', async () => {
+    await holidayPeriodsPage.clickAddButton()
+    await holidayPeriodsPage.fillForm({
+      start: '31.5.2022',
+      end: '29.8.2022',
+      reservationDeadline: '3.5.2022',
+      showReservationBannerFrom: '15.2.2022',
+      description:
+        'Pyydämme ilmoittamaan 3.5. mennessä lapsenne kesälomat. Jos lapsi on ennalta ilmoitetusti yhtenäisesti poissa 8 viikon ajan 31.5.–29.8. välillä, niin asiakasmaksu hyvitetään kesä- ja heinäkuulta.'
+    })
+
+    await holidayPeriodsPage.toggleFreePeriod()
+
+    await holidayPeriodsPage.fillForm({
+      freePeriodDeadline: '15.4.2022',
+      freePeriodQuestion:
+        'Ovatko lapsenne 31.5.–29.8. välillä poissa yhtenäisesti 8 viikkoa?',
+      freePeriodOptions: '30.05.2022 - 31.5.2022, 30.6.2022 - 31.7.2022',
+      freePeriodOptionLabel: 'Lapsi on poissa 8 viikkoa aikavälillä'
+    })
+
+    await holidayPeriodsPage.submit()
+
+    await waitUntilEqual(
+      () => holidayPeriodsPage.visiblePeriods,
+      ['31.05.2022 - 29.08.2022']
+    )
+  })
 })

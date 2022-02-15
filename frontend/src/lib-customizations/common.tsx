@@ -33,6 +33,7 @@ export const absenceColors = {
   PLANNED_ABSENCE: status.success,
   PARENTLEAVE: accents.a5orangeLight,
   FORCE_MAJEURE: status.danger,
+  FREE_ABSENCE: accents.a7mint,
   TEMPORARY_RELOCATION: status.warning,
   TEMPORARY_VISITOR: status.warning,
   NO_ABSENCE: accents.a8lightBlue
@@ -45,6 +46,7 @@ export const absenceIcons = {
   PLANNED_ABSENCE: 'P',
   PARENTLEAVE: faBabyCarriage,
   FORCE_MAJEURE: faEuroSign,
+  FREE_ABSENCE: faEuroSign,
   TEMPORARY_RELOCATION: '-',
   TEMPORARY_VISITOR: '-',
   NO_ABSENCE: '-'

@@ -11,12 +11,23 @@ import { Translatable } from './shared'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.holidaypediod.FreeAbsencePeriod
+*/
+export interface FreeAbsencePeriod {
+  deadline: LocalDate
+  periodOptionLabel: Translatable
+  periodOptions: FiniteDateRange[]
+  questionLabel: Translatable
+}
+
+/**
 * Generated from fi.espoo.evaka.holidaypediod.HolidayPeriod
 */
 export interface HolidayPeriod {
   created: Date
   description: Translatable
   descriptionLink: Translatable
+  freePeriod: FreeAbsencePeriod | null
   id: UUID
   period: FiniteDateRange
   reservationDeadline: LocalDate
@@ -30,6 +41,7 @@ export interface HolidayPeriod {
 export interface HolidayPeriodBody {
   description: Translatable
   descriptionLink: Translatable
+  freePeriod: FreeAbsencePeriod | null
   period: FiniteDateRange
   reservationDeadline: LocalDate
   showReservationBannerFrom: LocalDate

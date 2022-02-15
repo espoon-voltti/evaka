@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DatePicker, Page, TextInput } from '../../utils/page'
+import { Checkbox, DatePicker, Page, TextInput } from '../../utils/page'
 
 export class HolidayPeriodsPage {
   constructor(private readonly page: Page) {}
@@ -46,6 +46,18 @@ export class HolidayPeriodsPage {
     ),
     descriptionLinkEn: new TextInput(
       this.page.findByDataQa('input-description-link-en')
+    ),
+    freePeriodDeadline: new TextInput(
+      this.page.findByDataQa('input-free-period-deadline')
+    ),
+    freePeriodQuestion: new TextInput(
+      this.page.findByDataQa('input-free-period-question-label-fi')
+    ),
+    freePeriodOptions: new TextInput(
+      this.page.findByDataQa('input-free-period-options')
+    ),
+    freePeriodOptionLabel: new TextInput(
+      this.page.findByDataQa('input-free-period-option-label-fi')
     )
   }
 
@@ -60,12 +72,23 @@ export class HolidayPeriodsPage {
     end?: string
     reservationDeadline?: string
     showReservationBannerFrom?: string
+    freePeriodDeadline?: string
+    freePeriodQuestion?: string
+    freePeriodOptions?: string
+    freePeriodOptionLabel?: string
   }) {
     for (const [key, val] of Object.entries(params)) {
       if (val !== undefined) {
         await this.#inputs[key as keyof typeof params].fill(val)
       }
     }
+  }
+
+  toggleFreePeriod(check = true) {
+    const checkbox = new Checkbox(
+      this.page.findByDataQa('input-use-free-absence-period')
+    )
+    return check ? checkbox.check() : checkbox.uncheck()
   }
 
   async submit() {
