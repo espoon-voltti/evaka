@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { Translatable } from 'lib-common/generated/api-types/shared'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -27,8 +26,6 @@ export const HolidayModal = React.memo(function HolidayModal({
   const i18n = useTranslation()
   const [lang] = useLang()
   const { holidayPeriods } = useHolidayPeriods()
-
-  const translate = useCallback((t: Translatable) => t[lang], [lang])
 
   return (
     <AsyncFormModal
@@ -56,10 +53,10 @@ export const HolidayModal = React.memo(function HolidayModal({
           holidayPeriod && (
             <>
               <div>
-                <div>{translate(holidayPeriod.description)}</div>
+                <div>{holidayPeriod.description[lang]}</div>
                 <ExternalLink
                   text={i18n.calendar.holidayModal.additionalInformation}
-                  href={translate(holidayPeriod.descriptionLink)}
+                  href={holidayPeriod.descriptionLink[lang]}
                   newTab
                 />
               </div>
