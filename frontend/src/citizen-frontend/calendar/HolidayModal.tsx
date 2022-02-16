@@ -3,12 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { UnwrapResult } from 'citizen-frontend/async-rendering'
+import { renderResult } from 'citizen-frontend/async-rendering'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import Spinner from 'lib-components/atoms/state/Spinner'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { useHolidayPeriods } from '../holiday-periods/state'
 
@@ -42,14 +40,9 @@ export const HolidayModal = React.memo(function HolidayModal({
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
     >
-      <UnwrapResult
-        result={holidayPeriods}
-        loading={() => <Spinner />}
-        failure={() => (
-          <ErrorSegment title={i18n.common.errors.genericGetError} />
-        )}
-      >
-        {([holidayPeriod]) =>
+      {renderResult(
+        holidayPeriods,
+        ([holidayPeriod]) =>
           holidayPeriod && (
             <>
               <div>
@@ -68,8 +61,7 @@ export const HolidayModal = React.memo(function HolidayModal({
                 .join(', ')}
             </>
           )
-        }
-      </UnwrapResult>
+      )}
     </AsyncFormModal>
   )
 })

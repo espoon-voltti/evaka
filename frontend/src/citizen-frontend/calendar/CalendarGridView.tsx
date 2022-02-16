@@ -68,7 +68,7 @@ export default React.memo(function CalendarGridView({
         <Container>
           <PageHeaderRow>
             <H1 noMargin>{i18n.calendar.title}</H1>
-            <div>
+            <ButtonContainer>
               {isHolidayFormActive && (
                 <InlineButton
                   onClick={onReportHolidaysClicked}
@@ -89,7 +89,7 @@ export default React.memo(function CalendarGridView({
                 icon={faCalendarPlus}
                 data-qa="open-reservations-modal"
               />
-            </div>
+            </ButtonContainer>
           </PageHeaderRow>
         </Container>
       </StickyHeader>
@@ -242,10 +242,11 @@ const PageHeaderRow = styled(ContentArea).attrs({ opaque: false })`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  & > div {
-    display: flex;
-    gap: ${defaultMargins.L};
-  }
+`
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: ${defaultMargins.L};
 `
 
 const gridPattern = (includeWeekends: boolean) => css`
