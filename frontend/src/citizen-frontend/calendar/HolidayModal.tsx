@@ -8,6 +8,8 @@ import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { Translatable } from 'lib-common/generated/api-types/shared'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import Spinner from 'lib-components/atoms/state/Spinner'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { useHolidayPeriods } from '../holiday-periods/state'
 
@@ -45,8 +47,10 @@ export const HolidayModal = React.memo(function HolidayModal({
     >
       <UnwrapResult
         result={holidayPeriods}
-        loading={() => null}
-        failure={() => null}
+        loading={() => <Spinner />}
+        failure={() => (
+          <ErrorSegment title={i18n.common.errors.genericGetError} />
+        )}
       >
         {([holidayPeriod]) =>
           holidayPeriod && (

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
@@ -97,12 +97,15 @@ export default React.memo(function CalendarPage() {
     [data]
   )
 
-  const isHolidayFormActive: boolean = holidayPeriods.mapAll({
-    loading: () => false,
-    failure: () => false,
-    success: ([holidayPeriods]) =>
-      holidayPeriods != undefined && holidayPeriods != null
-  })
+  const isHolidayFormActive: boolean = useMemo(
+    () =>
+      holidayPeriods.mapAll({
+        loading: () => false,
+        failure: () => false,
+        success: (holidayPeriods) => holidayPeriods.length > 0
+      }),
+    [holidayPeriods]
+  )
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
