@@ -23,10 +23,12 @@ export interface Props {
   onHoverButtonClick: () => void
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsHolidayPeriod: (date: LocalDate) => boolean
 }
 
 export default React.memo(function CalendarListView({
   dailyData,
+  dayIsHolidayPeriod,
   onHoverButtonClick,
   selectDate,
   dayIsReservable
@@ -40,9 +42,10 @@ export default React.memo(function CalendarListView({
         {weeklyData.map((w) => (
           <WeekElem
             {...w}
-            key={`${w.dailyReservations[0].date.formatIso()}`}
+            key={w.dailyReservations[0].date.formatIso()}
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
+            dayIsHolidayPeriod={dayIsHolidayPeriod}
           />
         ))}
       </FixedSpaceColumn>

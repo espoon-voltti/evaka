@@ -41,24 +41,16 @@ export interface Theme {
       info: string
     }
     accents: {
-      /** Accent 5 */
       a1greenDark: string
-      /** Accent 6 */
       a2orangeDark: string
-      /** Accent 7 */
       a3emerald: string
-      /** Accent 8 */
       a4violet: string
-      /** Accent 9 */
       a5orangeLight: string
-      /** Accent 10 */
       a6turquoise: string
-      /** Accent 11 */
       a7mint: string
-      /** Accent 12 */
       a8lightBlue: string
-      /** Accent 13 */
       a9pink: string
+      a10powder: string
     }
   }
   typography: {

@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/citizen/holiday-period")
 class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
-    @GetMapping("/action-required")
+    @GetMapping
     fun getHolidayPeriods(
         db: Database,
         user: AuthenticatedUser,
     ): List<HolidayPeriod> {
-        Audit.HolidayPeriodsActionRequiringList.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ACTION_REQUIRING_HOLIDAY_PERIODS)
-        return db.connect { dbc -> dbc.read { it.getActionRequiringHolidayPeriods() } }
+        Audit.HolidayPeriodsList.log()
+        accessControl.requirePermissionFor(user, Action.Global.READ_HOLIDAY_PERIODS)
+        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
     }
 }

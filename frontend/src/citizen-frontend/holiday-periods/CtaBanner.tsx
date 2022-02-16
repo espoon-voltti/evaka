@@ -18,6 +18,7 @@ import { UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
+import { isHolidayFormCurrentlyActive } from './holiday-period'
 import { useHolidayPeriods } from './state'
 
 const BannerBackground = styled.div`
@@ -73,14 +74,15 @@ export default React.memo(function CtaBanner() {
         loading={() => null}
         failure={() => null}
       >
-        {([holidayPeriod]) =>
-          holidayPeriod ? (
+        {(periods) => {
+          const activePeriod = periods.find(isHolidayFormCurrentlyActive)
+          return activePeriod ? (
             <HolidayPeriodBanner
-              period={holidayPeriod.period}
-              reservationDeadline={holidayPeriod.reservationDeadline}
+              period={activePeriod.period}
+              reservationDeadline={activePeriod.reservationDeadline}
             />
           ) : null
-        }
+        }}
       </UnwrapResult>
     </BannerBackground>
   )

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useRef } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { headerHeightMobile } from 'citizen-frontend/header/const'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
@@ -25,11 +25,13 @@ import { Reservations } from './calendar-elements'
 interface Props extends WeeklyData {
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsHolidayPeriod: (date: LocalDate) => boolean
 }
 
 export default React.memo(function WeekElem({
   weekNumber,
   dailyReservations,
+  dayIsHolidayPeriod,
   selectDate,
   dayIsReservable
 }: Props) {
@@ -45,7 +47,8 @@ export default React.memo(function WeekElem({
             dailyReservations={d}
             key={d.date.formatIso()}
             selectDate={selectDate}
-            dayIsReservable={dayIsReservable}
+            isReservable={dayIsReservable(d)}
+            isHolidayPeriod={dayIsHolidayPeriod(d.date)}
           />
         ))}
       </div>
@@ -68,13 +71,15 @@ const WeekDiv = styled.div`
 interface DayProps {
   dailyReservations: DailyReservationData
   selectDate: (date: LocalDate) => void
-  dayIsReservable: (dailyData: DailyReservationData) => boolean
+  isReservable: boolean
+  isHolidayPeriod: boolean
 }
 
 const DayElem = React.memo(function DayElem({
   dailyReservations,
   selectDate,
-  dayIsReservable
+  isReservable,
+  isHolidayPeriod
 }: DayProps) {
   const [lang] = useLang()
   const ref = useRef<HTMLDivElement>()
@@ -99,10 +104,11 @@ const DayElem = React.memo(function DayElem({
       }}
       alignItems="center"
       today={dailyReservations.date.isToday()}
+      holidayPeriod={isHolidayPeriod}
       onClick={() => selectDate(dailyReservations.date)}
       data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
-      <DayColumn spacing="xxs" inactive={!dayIsReservable(dailyReservations)}>
+      <DayColumn spacing="xxs" inactive={!isReservable}>
         <div>{dailyReservations.date.format('EEEEEE', lang)}</div>
         <div>{dailyReservations.date.format('d.M.')}</div>
       </DayColumn>
@@ -114,13 +120,21 @@ const DayElem = React.memo(function DayElem({
   )
 })
 
-const DayDiv = styled(FixedSpaceRow)<{ today: boolean }>`
+const DayDiv = styled(FixedSpaceRow)<{
+  today: boolean
+  holidayPeriod: boolean
+}>`
   position: relative;
   padding: ${defaultMargins.s} ${defaultMargins.s};
   border-bottom: 1px solid ${colors.grayscale.g15};
   border-left: 6px solid
     ${(p) => (p.today ? colors.status.success : 'transparent')};
   cursor: pointer;
+  ${(p) =>
+    p.holidayPeriod &&
+    css`
+      background-color: ${colors.accents.a10powder};
+    `}
 `
 
 const DayColumn = styled(FixedSpaceColumn)<{ inactive: boolean }>`

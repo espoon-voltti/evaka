@@ -138,10 +138,9 @@ sealed interface Action {
 
         CREATE_HOLIDAY_PERIOD,
         READ_HOLIDAY_PERIOD,
-        READ_HOLIDAY_PERIODS,
+        READ_HOLIDAY_PERIODS(CITIZEN_WEAK, END_USER),
         DELETE_HOLIDAY_PERIOD,
         UPDATE_HOLIDAY_PERIOD,
-        READ_ACTION_REQUIRING_HOLIDAY_PERIODS(CITIZEN_WEAK, END_USER),
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
