@@ -14,18 +14,18 @@ export default class CitizenCalendarPage {
     private readonly type: 'desktop' | 'mobile'
   ) {}
 
-  #openCalendarActionsModal = this.page.find(
-    '[data-qa="open-calendar-actions-modal"]'
+  #openCalendarActionsModal = this.page.findByDataQa(
+    'open-calendar-actions-modal'
   )
   #dayCell = (date: LocalDate) =>
-    this.page.find(`[data-qa="${this.type}-calendar-day-${date.formatIso()}"]`)
+    this.page.findByDataQa(`${this.type}-calendar-day-${date.formatIso()}`)
 
   async openReservationsModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
-      await this.page.find('[data-qa="calendar-action-reservations"]').click()
+      await this.page.findByDataQa('calendar-action-reservations').click()
     } else {
-      await this.page.find('[data-qa="open-reservations-modal"]').click()
+      await this.page.findByDataQa('open-reservations-modal').click()
     }
     return new ReservationsModal(this.page)
   }
@@ -33,11 +33,22 @@ export default class CitizenCalendarPage {
   async openAbsencesModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
-      await this.page.find('[data-qa="calendar-action-absences"]').click()
+      await this.page.findByDataQa('calendar-action-absences').click()
     } else {
-      await this.page.find('[data-qa="open-absences-modal"]').click()
+      await this.page.findByDataQa('open-absences-modal').click()
     }
     return new AbsencesModal(this.page)
+  }
+
+  async assertHolidayModalButtonVisible() {
+    if (this.type === 'mobile') {
+      await this.#openCalendarActionsModal.click()
+      await this.page
+        .findByDataQa('calendar-action-holidays')
+        .waitUntilVisible()
+    } else {
+      await this.page.findByDataQa('open-holiday-modal').click()
+    }
   }
 
   async openDayView(date: LocalDate) {

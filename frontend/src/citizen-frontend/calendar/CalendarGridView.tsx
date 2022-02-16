@@ -11,9 +11,9 @@ import { scrollToPos } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faCalendarPlus, faUserMinus } from 'lib-icons'
+import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { asWeeklyData, WeeklyData } from './CalendarListView'
 import { Reservations } from './calendar-elements'
@@ -22,6 +22,8 @@ export interface Props {
   dailyData: DailyReservationData[]
   onCreateReservationClicked: () => void
   onCreateAbsencesClicked: (initialDate: LocalDate | undefined) => void
+  onReportHolidaysClicked: () => void
+  isHolidayFormActive: boolean
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
@@ -32,6 +34,8 @@ export default React.memo(function CalendarGridView({
   dailyData,
   onCreateReservationClicked,
   onCreateAbsencesClicked,
+  onReportHolidaysClicked,
+  isHolidayFormActive,
   selectedDate,
   selectDate,
   includeWeekends,
@@ -64,21 +68,28 @@ export default React.memo(function CalendarGridView({
         <Container>
           <PageHeaderRow>
             <H1 noMargin>{i18n.calendar.title}</H1>
-            <div>
+            <ButtonContainer>
+              {isHolidayFormActive && (
+                <InlineButton
+                  onClick={onReportHolidaysClicked}
+                  text={i18n.calendar.newHoliday}
+                  icon={faTreePalm}
+                  data-qa="open-holiday-modal"
+                />
+              )}
               <InlineButton
                 onClick={onCreateAbsences}
                 text={i18n.calendar.newAbsence}
                 icon={faUserMinus}
                 data-qa="open-absences-modal"
               />
-              <Gap size="L" horizontal />
               <InlineButton
                 onClick={onCreateReservationClicked}
                 text={i18n.calendar.newReservationBtn}
                 icon={faCalendarPlus}
                 data-qa="open-reservations-modal"
               />
-            </div>
+            </ButtonContainer>
           </PageHeaderRow>
         </Container>
       </StickyHeader>
@@ -231,6 +242,11 @@ const PageHeaderRow = styled(ContentArea).attrs({ opaque: false })`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: ${defaultMargins.L};
 `
 
 const gridPattern = (includeWeekends: boolean) => css`

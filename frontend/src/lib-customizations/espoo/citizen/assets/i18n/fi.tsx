@@ -194,6 +194,7 @@ export default {
       PLANNED_ABSENCE: 'Vapaapäivä'
     },
     newReservationOrAbsence: 'Varaus / Poissaolo',
+    newHoliday: 'Ilmoita loma',
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',
     noReservation: 'Ei varausta',
@@ -230,6 +231,10 @@ export default {
         OTHER_ABSENCE: 'Muu poissaolo',
         PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
       }
+    },
+    holidayModal: {
+      title: 'Ilmoita loma',
+      additionalInformation: 'Lisätietoja'
     }
   },
   messages: {

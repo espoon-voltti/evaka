@@ -11,7 +11,6 @@ import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal
 import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 import CitizenReloadNotification from './CitizenReloadNotification'
-import CtaBanner from './CtaBanner'
 import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
@@ -24,6 +23,8 @@ import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
+import CtaBanner from './holiday-periods/CtaBanner'
+import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
 import IncomeStatements from './income-statements/IncomeStatements'
@@ -51,89 +52,91 @@ export default function App() {
               <OverlayContextProvider>
                 <MessageContextProvider>
                   <PedagogicalDocumentsContextProvider>
-                    <Header />
-                    <CtaBanner />
-                    <Main>
-                      <Switch>
-                        <Route path="/applying" component={ApplyingRouter} />
-                        <Route
-                          exact
-                          path="/applications/new/:childId"
-                          component={requireAuth(ApplicationCreation)}
-                        />
-                        <Route
-                          exact
-                          path="/applications/:applicationId"
-                          component={requireAuth(ApplicationReadView)}
-                        />
-                        <Route
-                          exact
-                          path="/personal-details"
-                          component={requireAuth(PersonalDetails, false)}
-                        />
-                        <Route
-                          exact
-                          path="/income"
-                          component={requireAuth(IncomeStatements)}
-                        />
-                        <Route
-                          exact
-                          path="/income/:incomeStatementId/edit"
-                          component={requireAuth(IncomeStatementEditor)}
-                        />
-                        <Route
-                          exact
-                          path="/income/:incomeStatementId"
-                          component={requireAuth(IncomeStatementView)}
-                        />
-                        <Route
-                          exact
-                          path="/applications/:applicationId/edit"
-                          component={requireAuth(ApplicationEditor)}
-                        />
-                        {featureFlags.experimental?.placementTermination && (
+                    <HolidayPeriodsContextProvider>
+                      <Header />
+                      <CtaBanner />
+                      <Main>
+                        <Switch>
+                          <Route path="/applying" component={ApplyingRouter} />
                           <Route
                             exact
-                            path="/children/:childId"
-                            component={requireAuth(ChildPage)}
+                            path="/applications/new/:childId"
+                            component={requireAuth(ApplicationCreation)}
                           />
-                        )}
-                        {featureFlags.experimental?.placementTermination && (
                           <Route
                             exact
-                            path="/children"
-                            component={requireAuth(ChildrenPage)}
+                            path="/applications/:applicationId"
+                            component={requireAuth(ApplicationReadView)}
                           />
-                        )}
-                        <Route
-                          exact
-                          path="/decisions/by-application/:applicationId"
-                          component={requireAuth(DecisionResponseList)}
-                        />
-                        <Route
-                          exact
-                          path="/messages"
-                          component={requireAuth(MessagesPage, false)}
-                        />
-                        <Route
-                          exact
-                          path="/calendar"
-                          component={requireAuth(CalendarPage, false)}
-                        />
-                        <Route
-                          exact
-                          path="/pedagogical-documents"
-                          component={requireAuth(PedagogicalDocuments)}
-                        />
-                        <Route path="/">
-                          <HandleRedirection />
-                        </Route>
-                      </Switch>
-                    </Main>
-                    <GlobalInfoDialog />
-                    <GlobalErrorDialog />
-                    <CitizenReloadNotification />
-                    <LoginErrorModal translations={i18n.login.failedModal} />
+                          <Route
+                            exact
+                            path="/personal-details"
+                            component={requireAuth(PersonalDetails, false)}
+                          />
+                          <Route
+                            exact
+                            path="/income"
+                            component={requireAuth(IncomeStatements)}
+                          />
+                          <Route
+                            exact
+                            path="/income/:incomeStatementId/edit"
+                            component={requireAuth(IncomeStatementEditor)}
+                          />
+                          <Route
+                            exact
+                            path="/income/:incomeStatementId"
+                            component={requireAuth(IncomeStatementView)}
+                          />
+                          <Route
+                            exact
+                            path="/applications/:applicationId/edit"
+                            component={requireAuth(ApplicationEditor)}
+                          />
+                          {featureFlags.experimental?.placementTermination && (
+                            <Route
+                              exact
+                              path="/children/:childId"
+                              component={requireAuth(ChildPage)}
+                            />
+                          )}
+                          {featureFlags.experimental?.placementTermination && (
+                            <Route
+                              exact
+                              path="/children"
+                              component={requireAuth(ChildrenPage)}
+                            />
+                          )}
+                          <Route
+                            exact
+                            path="/decisions/by-application/:applicationId"
+                            component={requireAuth(DecisionResponseList)}
+                          />
+                          <Route
+                            exact
+                            path="/messages"
+                            component={requireAuth(MessagesPage, false)}
+                          />
+                          <Route
+                            exact
+                            path="/calendar"
+                            component={requireAuth(CalendarPage, false)}
+                          />
+                          <Route
+                            exact
+                            path="/pedagogical-documents"
+                            component={requireAuth(PedagogicalDocuments)}
+                          />
+                          <Route path="/">
+                            <HandleRedirection />
+                          </Route>
+                        </Switch>
+                      </Main>
+                      <GlobalInfoDialog />
+                      <GlobalErrorDialog />
+                      <CitizenReloadNotification />
+                      <LoginErrorModal translations={i18n.login.failedModal} />
+                    </HolidayPeriodsContextProvider>
                   </PedagogicalDocumentsContextProvider>
                 </MessageContextProvider>
               </OverlayContextProvider>
