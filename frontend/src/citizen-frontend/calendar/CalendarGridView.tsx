@@ -11,7 +11,7 @@ import { scrollToPos } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 import { useTranslation } from '../localization'
@@ -77,14 +77,12 @@ export default React.memo(function CalendarGridView({
                   data-qa="open-holiday-modal"
                 />
               )}
-              <Gap size="L" horizontal />
               <InlineButton
                 onClick={onCreateAbsences}
                 text={i18n.calendar.newAbsence}
                 icon={faUserMinus}
                 data-qa="open-absences-modal"
               />
-              <Gap size="L" horizontal />
               <InlineButton
                 onClick={onCreateReservationClicked}
                 text={i18n.calendar.newReservationBtn}
@@ -244,6 +242,10 @@ const PageHeaderRow = styled(ContentArea).attrs({ opaque: false })`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  & > div {
+    display: flex;
+    gap: ${defaultMargins.L};
+  }
 `
 
 const gridPattern = (includeWeekends: boolean) => css`

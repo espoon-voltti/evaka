@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 import { useTranslation } from '../localization'
 
@@ -44,14 +44,12 @@ export default React.memo(function ActionPickerModal({
             </IconBackground>
           </Action>
         )}
-        <Gap size="s" />
         <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
           {i18n.calendar.newAbsence}
           <IconBackground>
             <FontAwesomeIcon icon={faUserMinus} size="1x" />
           </IconBackground>
         </Action>
-        <Gap size="s" />
         <Action
           onClick={openReservations}
           data-qa="calendar-action-reservations"
@@ -74,6 +72,7 @@ const Container = styled.div`
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
+  gap: ${defaultMargins.s};
 `
 
 const Action = styled(Button)`
