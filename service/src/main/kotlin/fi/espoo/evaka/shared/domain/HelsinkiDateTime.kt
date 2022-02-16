@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.domain
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.util.StdConverter
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.Duration
@@ -16,8 +15,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
+
+val europeHelsinki: ZoneId = ZoneId.of("Europe/Helsinki")
 
 fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from(this)
 

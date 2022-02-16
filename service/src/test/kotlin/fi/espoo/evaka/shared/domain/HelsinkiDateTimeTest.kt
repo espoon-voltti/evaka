@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.domain
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import fi.espoo.evaka.shared.config.defaultJsonMapper
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.Clock

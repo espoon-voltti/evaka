@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
-import fi.espoo.evaka.shared.utils.dateNow
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -107,7 +106,7 @@ class ReservationControllerCitizen(
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.childIds)
 
-        if (body.dateRange.start.isBefore(dateNow()))
+        if (body.dateRange.start.isBefore(HelsinkiDateTime.now().toLocalDate()))
             throw BadRequest("Cannot mark absences for past days")
 
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))

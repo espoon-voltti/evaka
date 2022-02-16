@@ -25,7 +25,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach

@@ -21,8 +21,8 @@ import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
@@ -219,7 +219,12 @@ WHERE id = :id
     .bindKotlin(fields)
     .execute()
 
-fun Database.Read.getApplicationUnits(type: ApplicationUnitType, date: LocalDate, shiftCare: Boolean?, onlyApplicable: Boolean): List<PublicUnit> {
+fun Database.Read.getApplicationUnits(
+    type: ApplicationUnitType,
+    date: LocalDate,
+    shiftCare: Boolean?,
+    onlyApplicable: Boolean
+): List<PublicUnit> {
     // language=sql
     val sql = """
 SELECT
@@ -298,7 +303,7 @@ ORDER BY name ASC
     """.trimIndent()
 
     return createQuery(sql)
-        .bind("today", LocalDate.now(europeHelsinki))
+        .bind("today", HelsinkiDateTime.now().toLocalDate())
         .mapTo<PublicUnit>()
         .toList()
 }

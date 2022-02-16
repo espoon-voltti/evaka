@@ -23,7 +23,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.varda.VardaResetService
 import fi.espoo.evaka.varda.VardaUpdateService
 import fi.espoo.voltti.logging.loggers.info
