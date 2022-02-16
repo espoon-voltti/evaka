@@ -10,7 +10,7 @@ LABEL maintainer="https://github.com/espoon-voltti/evaka"
 ENV NGINX_ENV=local \
     TZ=UTC
 
-ARG CACHE_BUST=2022-01-21
+ARG CACHE_BUST=2022-02-16
 
 RUN apt-get update \
  && apt-get -y dist-upgrade \
