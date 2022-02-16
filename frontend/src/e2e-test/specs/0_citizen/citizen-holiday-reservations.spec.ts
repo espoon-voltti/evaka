@@ -47,7 +47,7 @@ beforeEach(async () => {
     .child(child1)
     .daycare(daycare)
     .with({
-      startDate: LocalDate.today().formatIso(),
+      startDate: LocalDate.of(2022, 1, 1).formatIso(),
       endDate: LocalDate.of(2036, 6, 30).formatIso()
     })
     .save()
