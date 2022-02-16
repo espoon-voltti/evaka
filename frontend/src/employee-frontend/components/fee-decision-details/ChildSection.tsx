@@ -64,10 +64,6 @@ const ChildSection = React.memo(function ChildSection({
             value: placementUnit.areaName
           },
           {
-            label: i18n.feeDecision.form.child.careArea,
-            value: placementUnit.areaName
-          },
-          {
             label: i18n.feeDecision.form.child.daycare,
             value: placementUnit.name
           },
