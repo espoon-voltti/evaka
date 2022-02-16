@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
@@ -38,6 +39,7 @@ class ReservationControllerCitizen(
     fun getReservations(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
@@ -58,7 +60,7 @@ class ReservationControllerCitizen(
                     it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
                 }
                 val reservations = tx.getReservationsCitizen(PersonId(user.id), range, includeWeekends)
-                val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours).let { reservableDays ->
+                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours).let { reservableDays ->
                     val maxPlacementEnd = children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
                     if (reservableDays.start > maxPlacementEnd) null
                     else FiniteDateRange(
@@ -80,6 +82,7 @@ class ReservationControllerCitizen(
     fun postReservations(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
@@ -89,7 +92,7 @@ class ReservationControllerCitizen(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val reservableDays = getReservableDays(HelsinkiDateTime.now(), featureConfig.citizenReservationThresholdHours)
+                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours)
                 createReservationsAsCitizen(tx, PersonId(user.id), body.validate(reservableDays))
             }
         }
@@ -99,6 +102,7 @@ class ReservationControllerCitizen(
     fun postAbsences(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: AbsenceRequest
     ) {
         Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
@@ -106,7 +110,7 @@ class ReservationControllerCitizen(
         user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
         accessControl.requireGuardian(user, body.childIds)
 
-        if (body.dateRange.start.isBefore(HelsinkiDateTime.now().toLocalDate()))
+        if (body.dateRange.start.isBefore(evakaClock.today()))
             throw BadRequest("Cannot mark absences for past days")
 
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))
@@ -335,20 +339,7 @@ private fun Database.Transaction.insertAbsences(userId: PersonId, request: Absen
             :absenceType,
             :userId
         FROM (
-            SELECT unnest((CASE type
-                WHEN 'CLUB'::placement_type THEN '{NONBILLABLE}'
-                WHEN 'SCHOOL_SHIFT_CARE'::placement_type THEN '{NONBILLABLE}'
-                WHEN 'PRESCHOOL'::placement_type THEN '{NONBILLABLE}'
-                WHEN 'PREPARATORY'::placement_type THEN '{NONBILLABLE}'
-                WHEN 'PRESCHOOL_DAYCARE'::placement_type THEN '{NONBILLABLE, BILLABLE}'
-                WHEN 'PREPARATORY_DAYCARE'::placement_type THEN '{NONBILLABLE, BILLABLE}'
-                WHEN 'DAYCARE'::placement_type THEN '{BILLABLE}'
-                WHEN 'DAYCARE_PART_TIME'::placement_type THEN '{BILLABLE}'
-                WHEN 'DAYCARE_FIVE_YEAR_OLDS'::placement_type THEN '{BILLABLE, NONBILLABLE}'
-                WHEN 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'::placement_type THEN '{BILLABLE, NONBILLABLE}'
-                WHEN 'TEMPORARY_DAYCARE'::placement_type THEN '{}'
-                WHEN 'TEMPORARY_DAYCARE_PART_DAY'::placement_type THEN '{}'
-            END)::absence_category[]) AS category
+            SELECT unnest(absence_categories(type)) AS category
             FROM placement
             WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
         ) care_type
