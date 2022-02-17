@@ -7,7 +7,10 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import {
+  AbsenceRequest,
+  ReservationChild
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import {
@@ -22,7 +25,7 @@ import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
-import { AbsencesRequest, postAbsences } from './api'
+import { postAbsences } from './api'
 
 interface Props {
   close: () => void
@@ -175,7 +178,7 @@ interface Form {
 
 const validateForm = (
   form: Form
-): [AbsencesRequest] | [undefined, ErrorsOf<Form>] => {
+): [AbsenceRequest] | [undefined, ErrorsOf<Form>] => {
   const startDate = LocalDate.parseFiOrNull(form.startDate)
   const endDate = LocalDate.parseFiOrNull(form.endDate)
 

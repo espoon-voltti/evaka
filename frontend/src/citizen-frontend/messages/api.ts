@@ -13,7 +13,8 @@ import {
   MessageAccount,
   MessageThread,
   ReplyToMessageBody,
-  ThreadReply
+  ThreadReply,
+  UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -64,11 +65,6 @@ export async function markThreadRead(id: string): Promise<Result<void>> {
     .put(`/citizen/messages/threads/${id}/read`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
-}
-
-export type UnreadCountByAccount = {
-  accountId: UUID
-  unreadCount: number
 }
 
 export async function getUnreadMessagesCount(): Promise<

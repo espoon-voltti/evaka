@@ -6,8 +6,8 @@ import React from 'react'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Label } from 'lib-components/typography'
-import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 import { useTranslation } from '../../../localization'
+import { ApplicationDataGridLabelWidth } from './const'
 
 type Props = {
   formData: ApplicationFormData

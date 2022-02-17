@@ -11,7 +11,6 @@ import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { UnitType } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { UnitProviderType } from 'lib-customizations/types'
 
 export interface FamilyConflictReportRow {
   careAreaName: string
@@ -50,7 +49,7 @@ export interface ApplicationsReportRow {
   careAreaName: string
   unitId: UUID
   unitName: string
-  unitProviderType: UnitProviderType
+  unitProviderType: ProviderType
   under3Years: number
   over3Years: number
   preschool: number
@@ -62,7 +61,7 @@ export interface DecisionsReportRow {
   careAreaName: string
   unitId: string
   unitName: string
-  unitProviderType: UnitProviderType
+  unitProviderType: ProviderType
   daycareUnder3: number
   daycareOver3: number
   preschool: number
@@ -89,7 +88,7 @@ export interface ServiceNeedReportRow {
   careAreaName: string
   unitName: string
   unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
-  unitProviderType: UnitProviderType
+  unitProviderType: ProviderType
   age: number
   fullDay: number
   partDay: number
@@ -163,7 +162,7 @@ export interface UnitBasicsAbstractReportRow {
   unitId: UUID
   unitName: string
   unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
-  unitProviderType: UnitProviderType
+  unitProviderType: ProviderType
 }
 
 export interface GroupBasicsAbstractReportRow

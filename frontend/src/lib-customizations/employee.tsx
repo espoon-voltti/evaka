@@ -6,7 +6,7 @@
 // @ts-ignore
 import customizations from '@evaka/customizations/employee'
 import { mergeWith } from 'lodash'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { translationsMergeCustomizer } from './common'
 import { fi } from './espoo/employee/assets/i18n/fi'
 import { fi as vasuFI } from './espoo/employee/assets/i18n/vasu/fi'

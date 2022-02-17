@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result, Success } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Loader from 'lib-components/atoms/Loader'
@@ -28,7 +29,6 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { Translations, useTranslation } from '../../state/i18n'
 import { OccupancyReportRow } from '../../types/reports'
-import { CareArea } from '../../types/unit'
 import { FlexRow } from '../common/styled/containers'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
@@ -181,7 +181,7 @@ function getDisplayCells(
 function Occupancies() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<OccupancyReportRow[]>>(Success.of([]))
-  const [areas, setAreas] = useState<CareArea[]>([])
+  const [areas, setAreas] = useState<DaycareCareArea[]>([])
   const [filters, setFilters] = useState<OccupancyReportFilters>({
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,

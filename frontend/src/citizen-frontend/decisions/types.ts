@@ -2,19 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationDecisions } from 'lib-common/generated/api-types/application'
+import {
+  DecisionStatus,
+  DecisionType,
+  DecisionUnit
+} from 'lib-common/generated/api-types/decision'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-
-export type DecisionType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY_EDUCATION'
-
-export type DecisionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
 
 export function deserializeApplicationDecisions(
   json: JsonOf<ApplicationDecisions>
@@ -27,20 +23,6 @@ export function deserializeApplicationDecisions(
       resolved: LocalDate.parseNullableIso(decision.resolved)
     }))
   }
-}
-
-export interface ApplicationDecisions {
-  applicationId: UUID
-  childName: string
-  decisions: DecisionSummary[]
-}
-
-export interface DecisionSummary {
-  decisionId: UUID
-  type: DecisionType
-  status: DecisionStatus
-  sentDate: LocalDate
-  resolved: LocalDate | null
 }
 
 export function deserializeDecision(json: JsonOf<Decision>): Decision {
@@ -65,18 +47,4 @@ export interface Decision {
   decisionNumber: number
   sentDate: LocalDate
   status: DecisionStatus
-}
-
-export interface DecisionUnit {
-  id: UUID
-  name: string
-  daycareDecisionName: string
-  preschoolDecisionName: string
-  manager: string | null
-  streetAddress: string
-  postalCode: string
-  postOffice: string
-  approverName: string
-  decisionHandler: string
-  decisionHandlerAddress: string
 }

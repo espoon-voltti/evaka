@@ -11,6 +11,7 @@ import React, {
   createContext
 } from 'react'
 import { Loading, Result } from 'lib-common/api'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecisionStatus,
   VoucherValueDecisionStatus,
@@ -22,7 +23,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { Unit } from '../api/daycare'
-import { CareArea } from '../types/unit'
 
 export interface Checked {
   [id: string]: boolean
@@ -105,8 +105,8 @@ interface SharedState {
   setFinanceDecisionHandlers: Dispatch<
     SetStateAction<Result<FinanceDecisionHandlerOption[]>>
   >
-  availableAreas: Result<CareArea[]>
-  setAvailableAreas: Dispatch<SetStateAction<Result<CareArea[]>>>
+  availableAreas: Result<DaycareCareArea[]>
+  setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
 }
 
 interface UiState {
@@ -228,9 +228,9 @@ export const InvoicingUIContextProvider = React.memo(
     const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
       Result<FinanceDecisionHandlerOption[]>
     >(defaultState.shared.financeDecisionHandlers)
-    const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
-      defaultState.shared.availableAreas
-    )
+    const [availableAreas, setAvailableAreas] = useState<
+      Result<DaycareCareArea[]>
+    >(defaultState.shared.availableAreas)
 
     const value = useMemo(
       () => ({

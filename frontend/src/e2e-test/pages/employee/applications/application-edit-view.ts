@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { OtherGuardianAgreementStatus } from '../../../dev-api/types'
+import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
 import { waitUntilEqual, waitUntilFalse } from '../../../utils'
 import {
   Checkbox,

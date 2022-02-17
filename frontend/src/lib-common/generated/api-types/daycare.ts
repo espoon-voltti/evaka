@@ -322,9 +322,9 @@ export interface DaycareGroup {
 * Generated from fi.espoo.evaka.daycare.FinanceDecisionHandler
 */
 export interface FinanceDecisionHandler {
-  LastName: string
   firstName: string
   id: UUID
+  lastName: string
 }
 
 /**

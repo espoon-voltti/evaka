@@ -8,8 +8,10 @@ import {
   ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
-import { OtherGuardianAgreementStatus } from 'lib-common/generated/enums'
+import {
+  OtherGuardianAgreementStatus,
+  ServiceNeedOption
+} from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 
 export type ServiceNeedFormData = {

@@ -14,13 +14,18 @@ import {
   PreschoolTerm
 } from 'lib-common/api-types/units/terms'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationSummary,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
-import { ApplicationType } from 'lib-common/generated/enums'
+import {
+  PlacementPlanConfirmationStatus,
+  PlacementPlanRejectReason
+} from 'lib-common/generated/api-types/placement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import { SearchOrder } from '../types'
 import {
   ApplicationNote,
@@ -29,7 +34,6 @@ import {
   SortByApplications
 } from '../types/application'
 import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
-import { PlacementPlanConfirmationStatus } from '../types/unit'
 import { client } from './client'
 
 export async function getApplication(

@@ -19,10 +19,10 @@ import {
   validate,
   validDate
 } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { DecisionType } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
-import { DecisionType } from '../../decisions/types'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>

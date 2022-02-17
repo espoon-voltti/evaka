@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { combine, Loading, Result } from 'lib-common/api'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 import { getAreas } from '../../../api/daycare'
@@ -18,14 +19,13 @@ import {
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { TitleContext, TitleState } from '../../../state/title'
-import { CareArea } from '../../../types/unit'
 import { renderResult } from '../../async-rendering'
 
 export default function UnitDetailsPage(): JSX.Element {
   const { id } = useParams<{ id: string }>()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
-  const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
+  const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, setEditable] = useState(false)

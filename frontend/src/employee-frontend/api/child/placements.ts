@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { PlacementType } from 'lib-common/generated/enums'
+import {
+  DaycarePlacementWithDetails,
+  PlacementType
+} from 'lib-common/generated/api-types/placement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'

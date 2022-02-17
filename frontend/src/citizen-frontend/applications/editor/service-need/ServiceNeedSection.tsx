@@ -6,8 +6,11 @@ import React from 'react'
 import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
+import {
+  ApplicationStatus,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import EditorSection from '../../../applications/editor/EditorSection'

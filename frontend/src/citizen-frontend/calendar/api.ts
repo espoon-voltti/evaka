@@ -4,8 +4,8 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
+  AbsenceRequest,
   DailyReservationRequest,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
@@ -50,14 +50,8 @@ export async function postReservations(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface AbsencesRequest {
-  childIds: string[]
-  dateRange: FiniteDateRange
-  absenceType: AbsenceType
-}
-
 export async function postAbsences(
-  request: AbsencesRequest
+  request: AbsenceRequest
 ): Promise<Result<void>> {
   return client
     .post('/citizen/absences', request)

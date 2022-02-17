@@ -5,11 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 import { useTranslation } from '../../../localization'
 import {
   ServiceNeedUrgency,
@@ -18,6 +17,7 @@ import {
 import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
 import ServiceNeedPartTime from './ServiceNeedPartTime'
 import ServiceNeedPreparatory from './ServiceNeedPreparatory'
+import { ApplicationDataGridLabelWidth } from './const'
 
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData

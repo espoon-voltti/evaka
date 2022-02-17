@@ -5,6 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import {
   DistinctiveParams,
   FeeDecisionStatus,
@@ -12,7 +14,6 @@ import {
   InvoiceStatus,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { ApplicationType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -43,7 +44,6 @@ import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationSummaryStatus } from '../../types/application'
-import { CareArea } from '../../types/unit'
 import { FlexRow } from './styled/containers'
 
 interface Props {
@@ -211,7 +211,7 @@ export function FreeTextSearch({
 }
 
 interface AreaFilterProps {
-  areas: CareArea[]
+  areas: DaycareCareArea[]
   toggled: string[]
   toggle: (area: string) => () => void
   showAll?: boolean

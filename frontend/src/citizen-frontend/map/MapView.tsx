@@ -6,10 +6,13 @@ import _ from 'lodash'
 import React, { ReactNode, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Result, Success } from 'lib-common/api'
-import { UnitLanguage } from 'lib-common/api-types/units/enums'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  Language,
+  ProviderType,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -92,7 +95,7 @@ export default React.memo(function MapView() {
     null
   )
   const [careType, setCareType] = useState<CareTypeOption>('DAYCARE')
-  const [languages, setLanguages] = useState<UnitLanguage[]>([])
+  const [languages, setLanguages] = useState<Language[]>([])
   const [providerTypes, setProviderTypes] = useState<ProviderTypeOption[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
 
@@ -176,7 +179,7 @@ export default React.memo(function MapView() {
 const filterUnits = (
   unitsResult: Result<PublicUnit[]>,
   careType: CareTypeOption,
-  languages: UnitLanguage[],
+  languages: Language[],
   providerTypes: ProviderTypeOption[],
   shiftCare: boolean
 ): Result<PublicUnit[]> =>

@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { Result } from 'lib-common/api'
-import { MessageType } from 'lib-common/generated/enums'
+import { MessageType } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
 import {

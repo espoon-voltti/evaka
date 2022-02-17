@@ -12,7 +12,8 @@ import React, {
 import { Loading, Paged, Result, Success } from 'lib-common/api'
 import {
   MessageThread,
-  ThreadReply
+  ThreadReply,
+  UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -23,8 +24,7 @@ import {
   getUnreadMessagesCount,
   markThreadRead,
   replyToThread,
-  ReplyToThreadParams,
-  UnreadCountByAccount
+  ReplyToThreadParams
 } from './api'
 
 const initialThreadState: ThreadsState = {

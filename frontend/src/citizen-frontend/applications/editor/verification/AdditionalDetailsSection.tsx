@@ -8,8 +8,8 @@ import { ApplicationFormData } from 'lib-common/api-types/application/Applicatio
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 import { useTranslation } from '../../../localization'
+import { ApplicationDataGridLabelWidth } from './const'
 
 type AdditionalDetailsProps = {
   formData: ApplicationFormData

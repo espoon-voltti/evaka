@@ -76,7 +76,7 @@ data class Daycare(
 data class FinanceDecisionHandler(
     val id: EmployeeId,
     val firstName: String,
-    val LastName: String
+    val lastName: String
 )
 
 data class UnitManager(

@@ -11,7 +11,11 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import {
+  AssistanceActionOption,
+  AssistanceActionRequest,
+  AssistanceMeasure
+} from 'lib-common/generated/api-types/assistanceaction'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -22,7 +26,6 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import {
-  AssistanceActionRequest,
   createAssistanceAction,
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
@@ -32,8 +35,7 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
   AssistanceAction,
-  AssistanceActionResponse,
-  AssistanceMeasure
+  AssistanceActionResponse
 } from '../../../types/child'
 
 import { DateRange, rangeContainsDate } from '../../../utils/date'

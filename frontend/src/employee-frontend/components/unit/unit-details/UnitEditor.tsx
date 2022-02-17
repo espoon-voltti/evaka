@@ -7,6 +7,13 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
+import {
+  CareType,
+  DaycareCareArea,
+  Language,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
+import { Coordinate } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -28,37 +35,31 @@ import { fontWeights, H1, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
-import { UnitProviderType } from 'lib-customizations/types'
 import { faPen } from 'lib-icons'
 import { DaycareFields } from '../../../api/unit'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { DayOfWeek } from '../../../types'
-import {
-  CareArea,
-  Coordinate,
-  Unit,
-  UnitLanguage,
-  UnitTypes
-} from '../../../types/unit'
+import { Unit } from '../../../types/unit'
 
-type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
-type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
+// CareType is a mix of these two enums
+type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
+type OnlyDaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
 
 interface FormData {
   name: string
   openingDate: LocalDate | null
   closingDate: LocalDate | null
   areaId: string
-  careTypes: Record<CareType, boolean>
-  daycareType: DaycareType | undefined
+  careTypes: Record<OnlyCareType, boolean>
+  daycareType: OnlyDaycareType | undefined
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: UnitProviderType
+  providerType: ProviderType
   roundTheClock: boolean
   capacity: string
-  language: UnitLanguage
+  language: Language
   ghostUnit: boolean
   uploadToVarda: boolean
   uploadChildrenToVarda: boolean
@@ -257,7 +258,7 @@ function parseLocation(value: string): Coordinate | undefined {
 }
 
 interface Props {
-  areas: CareArea[]
+  areas: DaycareCareArea[]
   financeDecisionHandlerOptions: FinanceDecisionHandlerOption[]
   unit?: Unit
   editable: boolean
@@ -272,7 +273,7 @@ function validateForm(
   form: FormData
 ): [DaycareFields | undefined, string[]] {
   const errors: string[] = []
-  const typeMap: Record<UnitTypes, boolean> = {
+  const typeMap: Record<CareType, boolean> = {
     CLUB: form.careTypes.CLUB,
     CENTRE: form.daycareType === 'CENTRE',
     PRESCHOOL: form.careTypes.PRESCHOOL,
@@ -280,7 +281,7 @@ function validateForm(
     FAMILY: form.daycareType === 'FAMILY',
     GROUP_FAMILY: form.daycareType === 'GROUP_FAMILY'
   }
-  const type = (Object.keys(typeMap) as UnitTypes[]).filter(
+  const type = (Object.keys(typeMap) as CareType[]).filter(
     (key) => typeMap[key]
   )
   const name = form.name.trim() || null
@@ -724,7 +725,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               data-qa="care-type-checkbox-DAYCARE"
             />
             {form.careTypes.DAYCARE && (
-              <Combobox<DaycareType>
+              <Combobox<OnlyDaycareType>
                 disabled={!props.editable}
                 fullWidth
                 items={['CENTRE', 'FAMILY', 'GROUP_FAMILY']}

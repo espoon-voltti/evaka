@@ -8,7 +8,7 @@ import {
   PersonDetailed,
   UnitData
 } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/enums'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faUserFriends } from 'lib-icons'
 import LabelValueList from '../../components/common/LabelValueList'

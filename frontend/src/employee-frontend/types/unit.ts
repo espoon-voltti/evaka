@@ -4,54 +4,43 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  CareType,
+  DaycareCareArea,
+  DaycareDecisionCustomization,
+  FinanceDecisionHandler,
+  Language,
+  MailingAddress,
+  ProviderType,
+  UnitManager,
+  VisitingAddress
+} from 'lib-common/generated/api-types/daycare'
+import {
+  PlacementPlanConfirmationStatus,
+  PlacementPlanRejectReason,
+  PlacementType
+} from 'lib-common/generated/api-types/placement'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { Coordinate, PilotFeature } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
-import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import {
-  PlacementPlanRejectReason,
-  UnitProviderType
-} from 'lib-customizations/types'
 import { DayOfWeek } from './index'
-
-export interface CareArea {
-  id: UUID
-  name: string
-  shortName: string
-}
-
-export type UnitTypes =
-  | 'CLUB'
-  | 'FAMILY'
-  | 'CENTRE'
-  | 'GROUP_FAMILY'
-  | 'PRESCHOOL'
-  | 'PREPARATORY_EDUCATION'
-
-export type UnitLanguage = 'fi' | 'sv'
-
-interface FinanceDecisionHandler {
-  id: UUID
-  firstName: string
-  lastName: string
-}
 
 export interface Unit {
   id: UUID
   name: string
   openingDate: LocalDate | null
   closingDate: LocalDate | null
-  area: CareArea
-  type: UnitTypes[]
+  area: DaycareCareArea
+  type: CareType[]
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: UnitProviderType
+  providerType: ProviderType
   roundTheClock: boolean
   capacity: number
-  language: UnitLanguage
+  language: Language
   ghostUnit: boolean
   uploadToVarda: boolean
   uploadChildrenToVarda: boolean
@@ -67,42 +56,11 @@ export interface Unit {
   location: Coordinate | null
   mailingAddress: MailingAddress
   unitManager: UnitManager | null
-  decisionCustomization: DecisionCustomization
+  decisionCustomization: DaycareDecisionCustomization
   ophUnitOid: string | null
   ophOrganizerOid: string | null
   operationDays: DayOfWeek[] | null
   enabledPilotFeatures: PilotFeature[]
-}
-
-export interface DecisionCustomization {
-  daycareName: string
-  preschoolName: string
-  handler: string
-  handlerAddress: string
-}
-
-export interface UnitManager {
-  name: string | null
-  email: string | null
-  phone: string | null
-}
-
-export interface VisitingAddress {
-  streetAddress: string
-  postalCode: string
-  postOffice: string
-}
-
-export interface MailingAddress {
-  streetAddress: string | null
-  poBox: string | null
-  postalCode: string | null
-  postOffice: string | null
-}
-
-export interface Coordinate {
-  lat: number
-  lon: number
 }
 
 export interface UnitFiltersType {
@@ -144,12 +102,6 @@ export interface TerminatedPlacement {
   terminatedBy: EvakaUser
   currentDaycareGroupName: string | null
 }
-
-export type PlacementPlanConfirmationStatus =
-  | 'PENDING'
-  | 'ACCEPTED'
-  | 'REJECTED'
-  | 'REJECTED_NOT_CONFIRMED'
 
 export interface DaycarePlacementPlan {
   id: UUID
@@ -215,8 +167,6 @@ export interface DaycareGroup {
 export interface DaycareGroupWithPlacements extends DaycareGroup {
   placements: DaycareGroupPlacementDetailed[]
 }
-
-export type OccupancyType = 'CONFIRMED' | 'PLANNED' | 'REALIZED'
 
 export interface Occupancy {
   period: FiniteDateRange

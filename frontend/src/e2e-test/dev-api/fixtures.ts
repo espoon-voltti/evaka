@@ -5,7 +5,12 @@
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ApplicationForm } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationForm,
+  ApplicationStatus,
+  ApplicationType,
+  OtherGuardianAgreementStatus
+} from 'lib-common/generated/api-types/application'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import {
   FeeDecision,
@@ -16,7 +21,6 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { ApplicationStatus, ApplicationType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import {
@@ -37,7 +41,6 @@ import {
   DevVardaServiceNeed,
   EmployeeDetail,
   EmployeePin,
-  OtherGuardianAgreementStatus,
   PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
@@ -583,7 +586,7 @@ const applicationForm = (
   guardian: PersonDetail,
   guardian2Phone: string,
   guardian2Email: string,
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus,
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null,
   preferredStartDate: LocalDate,
   preferredUnits: string[],
   connectedDaycare = false
@@ -668,7 +671,7 @@ export const applicationFixture = (
   guardian: PersonDetail,
   otherGuardian: PersonDetail | undefined = undefined,
   type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null = null,
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false,
   status: ApplicationStatus = 'SENT',

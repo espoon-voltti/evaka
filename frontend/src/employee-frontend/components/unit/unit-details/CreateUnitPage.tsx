@@ -5,18 +5,18 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { combine, Loading, Result } from 'lib-common/api'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import { createDaycare, DaycareFields } from '../../../api/unit'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { CareArea } from '../../../types/unit'
 import { renderResult } from '../../async-rendering'
 
 export default function CreateUnitPage(): JSX.Element {
   const history = useHistory()
-  const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
+  const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [submitState, setSubmitState] = useState<Result<void> | undefined>(

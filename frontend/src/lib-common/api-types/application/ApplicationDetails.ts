@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import {
   ApplicationOrigin,
   ApplicationStatus,
   ApplicationType,
-  AttachmentType,
-  OtherGuardianAgreementStatus
-} from 'lib-common/generated/enums'
+  OtherGuardianAgreementStatus,
+  PreferredUnit,
+  ServiceNeedOption
+} from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { AttachmentType } from '../../generated/api-types/attachment'
 import { JsonOf } from '../../json'
 import { Attachment } from '../attachment'
 
@@ -196,11 +197,6 @@ export interface ApplicationPreferences {
   siblingBasis: { siblingName: string; siblingSsn: string } | null
   preparatory: boolean
   urgent: boolean
-}
-
-export interface PreferredUnit {
-  id: string
-  name: string
 }
 
 export interface ApplicationServiceNeed {

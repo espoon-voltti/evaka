@@ -5,39 +5,6 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable prettier/prettier */
 
-export type ApplicationOrigin =
-  | 'ELECTRONIC'
-  | 'PAPER'
-
-export type ApplicationStatus =
-  | 'ACTIVE'
-  | 'CANCELLED'
-  | 'CREATED'
-  | 'REJECTED'
-  | 'SENT'
-  | 'WAITING_CONFIRMATION'
-  | 'WAITING_DECISION'
-  | 'WAITING_MAILING'
-  | 'WAITING_PLACEMENT'
-  | 'WAITING_UNIT_CONFIRMATION'
-
-export type ApplicationType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'PRESCHOOL'
-
-export type AttachmentType =
-  | 'EXTENDED_CARE'
-  | 'URGENCY'
-
-export type CareType =
-  | 'CENTRE'
-  | 'CLUB'
-  | 'FAMILY'
-  | 'GROUP_FAMILY'
-  | 'PREPARATORY_EDUCATION'
-  | 'PRESCHOOL'
-
 export type DailyServiceTimesType =
   | 'IRREGULAR'
   | 'REGULAR'
@@ -46,15 +13,6 @@ export type DailyServiceTimesType =
 export type IncomeSource =
   | 'ATTACHMENTS'
   | 'INCOMES_REGISTER'
-
-export type MessageType =
-  | 'BULLETIN'
-  | 'MESSAGE'
-
-export type OtherGuardianAgreementStatus =
-  | 'AGREED'
-  | 'NOT_AGREED'
-  | 'RIGHT_TO_GET_NOTIFIED'
 
 export type OtherIncome =
   | 'ACCIDENT_INSURANCE_COMPENSATION'
@@ -81,25 +39,3 @@ export type OtherIncome =
   | 'REWARD_OR_BONUS'
   | 'SICKNESS_ALLOWANCE'
   | 'UNEMPLOYMENT_ALLOWANCE'
-
-export type PlacementType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_FIVE_YEAR_OLDS'
-  | 'DAYCARE_PART_TIME'
-  | 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
-  | 'PREPARATORY'
-  | 'PREPARATORY_DAYCARE'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'SCHOOL_SHIFT_CARE'
-  | 'TEMPORARY_DAYCARE'
-  | 'TEMPORARY_DAYCARE_PART_DAY'
-
-export type ProviderType =
-  | 'EXTERNAL_PURCHASED'
-  | 'MUNICIPAL'
-  | 'MUNICIPAL_SCHOOL'
-  | 'PRIVATE'
-  | 'PRIVATE_SERVICE_VOUCHER'
-  | 'PURCHASED'

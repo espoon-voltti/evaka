@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -19,14 +19,14 @@ import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import Footer from '../Footer'
+import { useUser } from '../auth/state'
+import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 import {
   createApplication,
   getActivePlacementsByApplicationType,
   getDuplicateApplications
-} from '../applications/api'
-import { useUser } from '../auth/state'
-import { useTranslation } from '../localization'
-import useTitle from '../useTitle'
+} from './api'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()

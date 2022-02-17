@@ -8,7 +8,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import {
   ApplicationType,
   OtherGuardianAgreementStatus
-} from 'lib-common/generated/enums'
+} from 'lib-common/generated/api-types/application'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
