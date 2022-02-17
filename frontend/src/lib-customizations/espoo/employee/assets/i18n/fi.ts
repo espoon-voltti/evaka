@@ -1316,7 +1316,8 @@ export const fi = {
 
     statementTypes: {
       HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
-      INCOME: 'Huoltajan toimittamat tulotiedot'
+      INCOME: 'Huoltajan toimittamat tulotiedot',
+      CHILD_INCOME: 'Lapsen tulotiedot'
     },
     table: {
       title: 'Käsittelyä odottavat tuloselvitykset',

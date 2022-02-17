@@ -1274,10 +1274,10 @@ export default {
       <>
         <p>
           Tällä sivulla voit lähettää selvitykset varhaiskasvatusmaksuun
-          vaikuttavista tuloistasi. Voit myös tarkastella palauttamiasi
-          tuloselvityksiä ja muokata tai poistaa niitä, kunnes viranomainen on
-          käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit päivittää
-          tulotietojasi toimittamalla uuden lomakkeen.
+          vaikuttavista omista ja lastesi tuloistasi. Voit myös tarkastella
+          palauttamiasi tuloselvityksiä ja muokata tai poistaa niitä, kunnes
+          viranomainen on käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit
+          päivittää tulotietojasi toimittamalla uuden lomakkeen.
         </p>
         <p>
           Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
@@ -1349,6 +1349,25 @@ export default {
         <P>* Tähdellä merkityt tiedot ovat pakollisia</P>
       </>
     ),
+    childFormTitle: 'Lapsen tuloselvitys',
+    childFormDescription: (
+      <>
+        <P>
+          Varhaiskasvatuksessa olevan lapsen tuloista tulee tehdä selvistys,
+          sillä tulot vaikuttavat varhaiskasvatusmaksuun. Lapsen tuloja voivat
+          olla muun muassa elatusapu tai -tuki, korko- ja osinkotulot sekä
+          eläke.
+        </P>
+
+        <P>
+          Jos lapsella ei ole tuloja, tai perheenne on suostunut korkeimpaan
+          varhaiskasvatusmaksuun, valitse alta &apos;Lapsella ei ole tuloja, tai
+          olen suostunut korkeimpaan varhaiskasvatusmaksuun&apos;.
+        </P>
+
+        <P>* Tähdellä merkityt tiedot ovat pakollisia.</P>
+      </>
+    ),
     confidential: (
       <P>
         <strong>Salassapidettävä</strong>
@@ -1358,6 +1377,8 @@ export default {
     ),
     addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
+    childIncomeInfo: 'Lapsen tulotietojen voimassaoloaika',
+    incomeStatementMissing: 'Tuloselvitys puuttuu tai on vanhentunut.',
     incomesRegisterConsent:
       'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tulorekisteristä, sekä Kelasta tarvittaessa',
     incomeType: {
@@ -1376,6 +1397,15 @@ export default {
         'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
       grossIncome: 'Maksun määritteleminen bruttotulojen mukaan',
       entrepreneurIncome: 'Yrittäjän tulotiedot'
+    },
+    childIncome: {
+      subtitle: 'Onko lapsella varhaiskasvatusmaksuun vaikuttavia tuloja? *',
+      noIncome:
+        'Lapsella ei ole tuloja, tai olen suostunut korkeimpaan varhaiskasvatusmaksuun',
+      hasIncome: 'Lapsella on tuloja ja toimitan tiedot niistä liitteinä alla',
+      childAttachments: 'Lapsen tulotiedot liitteinä *',
+      additionalInfo: 'Lisätietoja lapsen tulotietoihin liittyen',
+      write: 'Kirjoita'
     },
     grossIncome: {
       title: 'Bruttotulotietojen täyttäminen',
@@ -1558,7 +1588,8 @@ export default {
         PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
         SALARY: 'Maksutositteet palkoista ja työkorvauksista',
         PROOF_OF_STUDIES:
-          'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta'
+          'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta',
+        CHILD_INCOME: 'Tositteet lapsen tuloista'
       }
     },
     assure: 'Vakuutan antamani tiedot oikeiksi.',
@@ -1570,8 +1601,8 @@ export default {
       deleteFailed: 'Tuloselvitystä ei voitu poistaa'
     },
     table: {
-      title: 'Tuloselvitykset',
-      incomeStatementForm: 'Tuloselvityslomake',
+      title: 'Omat tuloselvitykseni',
+      incomeStatementForm: 'Tuloselvitys',
       startDate: 'Voimassa alkaen',
       endDate: 'Voimassa asti',
       handled: 'Käsitelty',
@@ -1647,8 +1678,21 @@ export default {
 
       statementTypes: {
         HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
-        INCOME: 'Huoltajan toimittamat tulotiedot'
+        INCOME: 'Huoltajan toimittamat tulotiedot',
+        CHILD_INCOME: 'Lasten tulotiedot'
       }
+    },
+    children: {
+      title: 'Lasten tuloselvitykset',
+      description: (
+        <>
+          Varhaiskasvatuksessa olevien lasten tuloista tulee tehdä selvistys.
+          Yleisimpiä lapsen tuloja ovat elatusapu tai -tuki, korko- ja
+          osinkotulot sekä eläke. Sinun tulee ilmoittaa myös, mikäli lapsella ei
+          ole tuloja, tai perheenne on suostunut korkeimpaan
+          varhaiskasvatusmaksuun.
+        </>
+      )
     }
   },
   validationErrors: {

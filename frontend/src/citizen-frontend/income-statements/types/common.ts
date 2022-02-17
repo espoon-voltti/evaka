@@ -13,7 +13,8 @@ export const attachmentType = [
   'ACCOUNTANT_REPORT',
   'ACCOUNTANT_REPORT_LLC',
   'PROFIT_AND_LOSS_STATEMENT',
-  'PROOF_OF_STUDIES'
+  'PROOF_OF_STUDIES',
+  'CHILD_INCOME'
 ] as const
 
 export type AttachmentType = typeof attachmentType[number]

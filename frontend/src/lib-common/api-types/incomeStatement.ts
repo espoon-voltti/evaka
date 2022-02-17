@@ -49,6 +49,12 @@ export interface HighestFee extends Base {
   type: 'HIGHEST_FEE'
 }
 
+export interface ChildIncome extends Base {
+  type: 'CHILD_INCOME'
+  otherInfo: string
+  attachments: IncomeStatementAttachment[]
+}
+
 export interface Income extends Base {
   type: 'INCOME'
   gross: Gross | null
@@ -105,7 +111,7 @@ export interface IncomeStatementAttachment extends Attachment {
   uploadedByEmployee: boolean
 }
 
-export type IncomeStatement = HighestFee | Income
+export type IncomeStatement = HighestFee | Income | ChildIncome
 type IncomeStatementType = IncomeStatement['type']
 
 export interface IncomeStatementAwaitingHandler {
@@ -132,6 +138,8 @@ export function deserializeIncomeStatement(
   const updated = new Date(data.updated)
   switch (data.type) {
     case 'HIGHEST_FEE':
+      return { ...data, startDate, endDate, created, updated }
+    case 'CHILD_INCOME':
       return { ...data, startDate, endDate, created, updated }
     case 'INCOME':
       return {

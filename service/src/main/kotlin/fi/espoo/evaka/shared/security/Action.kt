@@ -417,7 +417,20 @@ sealed interface Action {
     }
     enum class IncomeStatement(private val roles: EnumSet<UserRole>) : ScopedAction<IncomeStatementId> {
         UPDATE_HANDLED(FINANCE_ADMIN),
-        UPLOAD_ATTACHMENT(FINANCE_ADMIN);
+        UPLOAD_ATTACHMENT(FINANCE_ADMIN),
+        READ,
+        READ_CHILDS,
+        READ_ALL_OWN,
+        READ_ALL_CHILDS,
+        READ_START_DATES,
+        READ_CHILDS_START_DATES,
+        CREATE,
+        CREATE_FOR_CHILD,
+        UPDATE,
+        UPDATE_FOR_CHILD,
+        REMOVE,
+        REMOVE_FOR_CHILD,
+        ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"

@@ -21,7 +21,12 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
-import { deleteIncomeStatement, getIncomeStatements } from './api'
+import ChildrenIncomeStatements from './ChildrenIncomeStatements'
+import {
+  deleteIncomeStatement,
+  getGuardianIncomeStatementChildren,
+  getIncomeStatements
+} from './api'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -118,6 +123,11 @@ export default React.memo(function IncomeStatements() {
     [page]
   )
 
+  const [children, fetchChildren] = useApiState(
+    () => getGuardianIncomeStatementChildren(),
+    []
+  )
+
   const [deletionState, setDeletionState] = useState<DeletionState>({
     status: 'row-not-selected'
   })
@@ -197,6 +207,15 @@ export default React.memo(function IncomeStatements() {
             />
           )}
         </ContentArea>
+        <Gap size="s" />
+        {renderResult(children, (children) => (
+          <>
+            <ChildrenIncomeStatements
+              childInfo={children}
+              onRemoveIncomeStatement={fetchChildren}
+            />
+          </>
+        ))}
       </Container>
       <Footer />
     </>

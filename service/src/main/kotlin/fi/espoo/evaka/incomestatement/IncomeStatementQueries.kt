@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
@@ -23,6 +25,7 @@ import java.time.LocalDate
 enum class IncomeStatementType {
     HIGHEST_FEE,
     INCOME,
+    CHILD_INCOME
 }
 
 private fun selectQuery(single: Boolean, excludeEmployeeAttachments: Boolean): String {
@@ -30,6 +33,9 @@ private fun selectQuery(single: Boolean, excludeEmployeeAttachments: Boolean): S
     return """
 SELECT
     ist.id,
+    ist.person_id,
+    p.first_name,
+    p.last_name,
     start_date,
     end_date,
     type,
@@ -74,7 +80,8 @@ SELECT
         ORDER BY a.created
     ) s) AS attachments,
    COUNT(*) OVER () AS count
-FROM income_statement ist
+FROM income_statement ist 
+    JOIN person p ON p.id = ist.person_id
 WHERE person_id = :personId
 ${if (single) "AND ist.id = :id" else "ORDER BY start_date DESC LIMIT :limit OFFSET :offset"}
         """
@@ -82,6 +89,9 @@ ${if (single) "AND ist.id = :id" else "ORDER BY start_date DESC LIMIT :limit OFF
 
 private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): IncomeStatement {
     val id = row.mapColumn<IncomeStatementId>("id")
+    val personId = row.mapColumn<PersonId>("person_id")
+    val firstName = row.mapColumn<String>("first_name")
+    val lastName = row.mapColumn<String>("last_name")
     val startDate = row.mapColumn<LocalDate>("start_date")
     val endDate = row.mapColumn<LocalDate?>("end_date")
     val created = row.mapColumn<HelsinkiDateTime>("created")
@@ -92,6 +102,9 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
                 id = id,
+                personId = personId,
+                firstName = firstName,
+                lastName = lastName,
                 startDate = startDate,
                 endDate = endDate,
                 created = created,
@@ -150,6 +163,9 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
 
             IncomeStatement.Income(
                 id = id,
+                personId = personId,
+                firstName = firstName,
+                lastName = lastName,
                 startDate = startDate,
                 endDate = endDate,
                 gross = gross,
@@ -164,6 +180,22 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
                 attachments = row.mapJsonColumn("attachments")
             )
         }
+
+        IncomeStatementType.CHILD_INCOME ->
+            IncomeStatement.ChildIncome(
+                id = id,
+                personId = personId,
+                firstName = firstName,
+                lastName = lastName,
+                startDate = startDate,
+                endDate = endDate,
+                created = created,
+                updated = updated,
+                handled = handled,
+                handlerNote = handlerNote,
+                otherInfo = row.mapColumn("other_info"),
+                attachments = row.mapJsonColumn("attachments")
+            )
     }
 }
 
@@ -220,6 +252,9 @@ private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBo
             when (body) {
                 is IncomeStatementBody.HighestFee ->
                     bind("type", IncomeStatementType.HIGHEST_FEE)
+                is IncomeStatementBody.ChildIncome ->
+                    bind("type", IncomeStatementType.CHILD_INCOME)
+                        .bind("otherInfo", body.otherInfo)
                 is IncomeStatementBody.Income -> {
                     bind("type", IncomeStatementType.INCOME)
                         .run { if (body.gross != null) bindGross(body.gross) else this }
@@ -340,7 +375,6 @@ RETURNING id
 }
 
 fun Database.Transaction.updateIncomeStatement(
-    personId: PersonId,
     incomeStatementId: IncomeStatementId,
     body: IncomeStatementBody
 ): Boolean {
@@ -374,11 +408,9 @@ UPDATE income_statement SET
     alimony_payer = :alimonyPayer,
     other_info = :otherInfo
 WHERE id = :id
-  AND person_id = :personId
         """.trimIndent()
     )
         .bind("id", incomeStatementId)
-        .bind("personId", personId)
         .bindIncomeStatementBody(body)
         .execute()
 
@@ -478,9 +510,9 @@ LIMIT :pageSize OFFSET :offset
         .bind("offset", (page - 1) * pageSize)
         .mapToPaged(pageSize)
 
-fun Database.Read.readIncomeStatementStartDates(user: AuthenticatedUser.Citizen): List<LocalDate> =
+fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalDate> =
     createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")
-        .bind("personId", user.id)
+        .bind("personId", personId)
         .mapTo<LocalDate>()
         .list()
 
@@ -491,9 +523,41 @@ fun Database.Read.isOwnIncomeStatement(user: AuthenticatedUser.Citizen, id: Inco
         .mapTo<Int>()
         .any()
 
-fun Database.Read.incomeStatementExistsForStartDate(user: AuthenticatedUser.Citizen, startDate: LocalDate): Boolean =
+fun Database.Read.isChildIncomeStatement(guardian: AuthenticatedUser.Citizen, id: IncomeStatementId): Boolean =
+    createQuery("SELECT 1 FROM income_statement statement LEFT JOIN guardian g on g.child_id = statement.person_id WHERE id = :id AND g.guardian_id = :personId")
+        .bind("id", id)
+        .bind("personId", guardian.id)
+        .mapTo<Int>()
+        .any()
+
+fun Database.Read.incomeStatementExistsForStartDate(personId: PersonId, startDate: LocalDate): Boolean =
     createQuery("SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate")
-        .bind("personId", user.id)
+        .bind("personId", personId)
         .bind("startDate", startDate)
         .mapTo<Int>()
         .any()
+
+data class ChildBasicInfo(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String
+)
+
+fun Database.Read.getIncomeStatementChildrenByGuardian(guardianId: PersonId): List<ChildBasicInfo> =
+    this.createQuery(
+        """
+SELECT
+    p.id, p.first_name, p.last_name, p.date_of_birth
+FROM guardian g
+    INNER JOIN person p ON g.child_id = p.id
+    LEFT JOIN placement pl ON pl.child_id = p.id AND pl.end_date >= :today::date
+WHERE g.guardian_id = :guardianId
+    AND pl.type = ANY(:invoicedPlacementTypes::placement_type[])
+ORDER BY p.date_of_birth, p.last_name, p.first_name
+        """.trimIndent()
+    )
+        .bind("today", HelsinkiDateTime.now().toLocalDate())
+        .bind("guardianId", guardianId)
+        .bind("invoicedPlacementTypes", PlacementType.invoiced().toTypedArray())
+        .mapTo<ChildBasicInfo>()
+        .list()

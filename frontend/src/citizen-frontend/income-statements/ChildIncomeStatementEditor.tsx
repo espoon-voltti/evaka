@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,13 +9,13 @@ import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { renderResult } from '../async-rendering'
+import ChildIncomeStatementForm from './ChildIncomeStatementForm'
 import { IncomeStatementFormAPI } from './IncomeStatementComponents'
-import IncomeStatementForm from './IncomeStatementForm'
 import {
-  createIncomeStatement,
-  getIncomeStatement,
-  getIncomeStatementStartDates,
-  updateIncomeStatement
+  createChildIncomeStatement,
+  getChildIncomeStatement,
+  getChildIncomeStatementStartDates,
+  updateChildIncomeStatement
 } from './api'
 import { fromBody } from './types/body'
 import * as Form from './types/form'
@@ -28,13 +28,17 @@ interface EditorState {
 }
 
 async function initializeEditorState(
+  childId: UUID,
   id: UUID | undefined
 ): Promise<Result<EditorState>> {
   const incomeStatementPromise: Promise<Result<IncomeStatement | undefined>> =
-    id ? getIncomeStatement(id) : Promise.resolve(Success.of(undefined))
+    id
+      ? getChildIncomeStatement(childId, id)
+      : Promise.resolve(Success.of(undefined))
+
   const [incomeStatement, startDates] = await Promise.all([
     incomeStatementPromise,
-    getIncomeStatementStartDates()
+    getChildIncomeStatementStartDates(childId)
   ])
 
   return combine(incomeStatement, startDates).map(
@@ -43,25 +47,32 @@ async function initializeEditorState(
       startDates,
       formData:
         incomeStatement === undefined
-          ? initialFormData(startDates)
+          ? {
+              ...initialFormData(startDates),
+              childIncome: true,
+              highestFee: true
+            }
           : Form.fromIncomeStatement(incomeStatement)
     })
   )
 }
 
-export default React.memo(function IncomeStatementEditor({
+export default React.memo(function ChildIncomeStatementEditor({
   history,
   match
-}: RouteComponentProps<{ incomeStatementId: string }>) {
+}: RouteComponentProps<{ incomeStatementId: string; childId: string }>) {
   const incomeStatementId =
     match.params.incomeStatementId === 'new'
       ? undefined
       : match.params.incomeStatementId
+
+  const childId = match.params.childId
+
   const [state, setState] = useState<Result<EditorState>>(Loading.of())
 
   useEffect(() => {
-    void initializeEditorState(incomeStatementId).then(setState)
-  }, [incomeStatementId])
+    void initializeEditorState(childId, incomeStatementId).then(setState)
+  }, [incomeStatementId, childId])
 
   const [showFormErrors, setShowFormErrors] = useState(false)
 
@@ -86,9 +97,9 @@ export default React.memo(function IncomeStatementEditor({
       const validatedData = formData ? fromBody(formData) : undefined
       if (validatedData) {
         if (id) {
-          return updateIncomeStatement(id, validatedData)
+          return updateChildIncomeStatement(childId, id, validatedData)
         } else {
-          return createIncomeStatement(validatedData)
+          return createChildIncomeStatement(childId, validatedData)
         }
       } else {
         setShowFormErrors(true)
@@ -98,7 +109,7 @@ export default React.memo(function IncomeStatementEditor({
     }
 
     return (
-      <IncomeStatementForm
+      <ChildIncomeStatementForm
         incomeStatementId={id}
         formData={formData}
         showFormErrors={showFormErrors}

@@ -205,3 +205,4 @@ V204__holiday_periods.sql
 V205__single_date_reservations.sql
 V206__free_absence_type.sql
 V207__free_holiday_period.sql
+V208__child_income_type.sql

@@ -69,6 +69,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
+                personId = testAdult_1.id,
+                firstName = testAdult_1.firstName,
+                lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
                 created = incomeStatement1.created,
@@ -85,6 +88,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
+                personId = testAdult_1.id,
+                firstName = testAdult_1.firstName,
+                lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
                 created = incomeStatement1.created,
@@ -101,6 +107,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
+                personId = testAdult_1.id,
+                firstName = testAdult_1.firstName,
+                lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
                 created = incomeStatement1.created,
@@ -143,6 +152,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
         assertEquals(
             IncomeStatement.Income(
                 id = id,
+                personId = testAdult_1.id,
+                firstName = testAdult_1.firstName,
+                lastName = testAdult_1.lastName,
                 startDate = LocalDate.now(),
                 endDate = null,
                 gross = Gross(
