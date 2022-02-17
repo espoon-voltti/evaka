@@ -54,13 +54,6 @@ import { client } from './client'
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
     ...unit,
-    financeDecisionHandler: unit.financeDecisionHandler
-      ? {
-          id: unit.financeDecisionHandler.id,
-          firstName: unit.financeDecisionHandler.firstName,
-          LastName: unit.financeDecisionHandler.LastName
-        }
-      : null,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
     daycareApplyPeriod: unit.daycareApplyPeriod
