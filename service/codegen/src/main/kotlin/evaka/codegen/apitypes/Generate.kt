@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package evaka.codegen.apitypes
 
+import evaka.codegen.fileHeader
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
 import java.nio.file.Path
@@ -37,7 +38,7 @@ fun getApiTypesInTypeScript(): Map<Path, String> {
     val root = locateRoot()
     return analyzeClasses().entries.associate { (mainPackage, classes) ->
         val path = root / "api-types" / "$mainPackage.ts"
-        val content = """$header
+        val content = """$fileHeader
 ${getImports(classes).sorted().joinToString("\n")}
 
 ${classes.sortedBy { it.name.substringAfterLast('.') }.joinToString("\n\n") { it.toTs() }}

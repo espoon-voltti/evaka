@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package evaka.codegen.apitypes
 
 import fi.espoo.evaka.shared.Id
@@ -10,14 +14,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 const val basePackage = "fi.espoo.evaka"
-
-const val header = """// SPDX-FileCopyrightText: 2017-2021 City of Espoo
-//
-// SPDX-License-Identifier: LGPL-2.1-or-later
-
-// GENERATED FILE: no manual modifications
-/* eslint-disable import/order, prettier/prettier */
-"""
 
 private val standardTsMapping: Map<String, String> = mapOf(
     "kotlin.String" to "string",
