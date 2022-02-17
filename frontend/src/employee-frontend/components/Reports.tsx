@@ -401,6 +401,21 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
+          <RequireRole oneOf={['DIRECTOR', 'REPORT_VIEWER']}>
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon
+                  size="L"
+                  color={colors.main.m2}
+                  content={faDiagnoses}
+                />
+                <LinkTitle data-qa="report-sextet" to="/reports/sextet">
+                  {i18n.reports.sextet.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>{i18n.reports.sextet.description}</Description>
+            </ReportItem>
+          </RequireRole>
           <RequireRole oneOf={['ADMIN', 'REPORT_VIEWER']}>
             <ReportItem>
               <TitleRow>

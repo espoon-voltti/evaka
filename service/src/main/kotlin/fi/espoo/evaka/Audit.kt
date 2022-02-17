@@ -252,6 +252,7 @@ enum class Audit(
     SettingsRead("evaka.settings.read"),
     SettingsUpdate("evaka.settings.update"),
     ServiceWorkerNoteUpdate("evaka.note.service-worer.update"),
+    SextetReportRead("evaka.sextet-report.read"),
     UnitStaffAttendanceRead("evaka.unit-staff-attendance.read"),
     StaffAttendanceArrivalCreate("evaka.staff-attendance.arrival.create"),
     StaffAttendanceArrivalExternalCreate("evaka.staff-attendance.arrival-external.create"),

@@ -422,6 +422,16 @@ export interface ServiceVoucherValueUnitAggregate {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.SextetReportRow
+*/
+export interface SextetReportRow {
+  attendanceDays: number
+  placementType: PlacementType
+  unitId: UUID
+  unitName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.StartingPlacementsRow
 */
 export interface StartingPlacementsRow {
