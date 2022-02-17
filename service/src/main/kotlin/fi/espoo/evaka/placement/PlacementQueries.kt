@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -172,6 +172,19 @@ fun Database.Transaction.updatePlacementStartAndEndDate(placementId: PlacementId
         .execute()
 }
 
+fun Database.Transaction.updatePlacementType(placementId: PlacementId, type: PlacementType) {
+    createUpdate("UPDATE placement SET type = :type WHERE id = :id")
+        .bind("id", placementId)
+        .bind("type", type)
+        .execute()
+}
+
+fun Database.Transaction.deleteServiceNeedsFromPlacement(placementId: PlacementId) {
+    createUpdate("DELETE FROM service_need WHERE placement_id = :id")
+        .bind("id", placementId)
+        .execute()
+}
+
 fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, LocalDate, LocalDate> {
     data class QueryResult(
         val childId: ChildId,
@@ -188,12 +201,7 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, Local
         .bind("id", id)
         .execute()
 
-    createUpdate(
-        //language=SQL
-        """DELETE FROM service_need WHERE placement_id = :id""".trimIndent()
-    )
-        .bind("id", id)
-        .execute()
+    deleteServiceNeedsFromPlacement(id)
 
     return createQuery(
         //language=SQL

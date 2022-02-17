@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -259,6 +259,32 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
         .singleOrNull()
 }
 
+fun Database.Transaction.deleteServiceNeedsFromPlacementAfter(id: PlacementId, date: LocalDate) {
+    createUpdate(
+        """
+DELETE FROM service_need 
+WHERE placement_id = :placementId
+    AND start_date > :date
+        """.trimIndent()
+    )
+        .bind("placementId", id)
+        .bind("date", date)
+        .execute()
+
+    createUpdate(
+        //language=SQL
+        """
+UPDATE service_need 
+SET end_date = :date 
+WHERE placement_id = :placementId
+    AND daterange(start_date, end_date, '[]') @> :date::date
+        """.trimIndent()
+    )
+        .bind("placementId", id)
+        .bind("date", date)
+        .execute()
+}
+
 fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, placementTerminationDate: LocalDate, terminatedBy: EvakaUserId?) {
     createUpdate(
         //language=SQL
@@ -272,30 +298,7 @@ WHERE daycare_placement_id = :placementId
         .bind("placementTerminationDate", placementTerminationDate)
         .execute()
 
-    createUpdate(
-        //language=SQL
-        """
-DELETE FROM service_need 
-WHERE placement_id = :placementId
-    AND start_date > :placementTerminationDate
-        """.trimIndent()
-    )
-        .bind("placementId", placementId)
-        .bind("placementTerminationDate", placementTerminationDate)
-        .execute()
-
-    createUpdate(
-        //language=SQL
-        """
-UPDATE service_need 
-SET end_date = :placementTerminationDate 
-WHERE placement_id = :placementId
-    AND daterange(start_date, end_date, '[]') @> :placementTerminationDate::date
-        """.trimIndent()
-    )
-        .bind("placementId", placementId)
-        .bind("placementTerminationDate", placementTerminationDate)
-        .execute()
+    deleteServiceNeedsFromPlacementAfter(placementId, placementTerminationDate)
 
     createUpdate(
         """

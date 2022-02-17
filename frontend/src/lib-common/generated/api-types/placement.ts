@@ -240,7 +240,7 @@ export interface PlacementUpdateRequestBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.TerminatablePlacementGroup
+* Generated from fi.espoo.evaka.placement.TerminatablePlacementGroup
 */
 export interface TerminatablePlacementGroup {
   additionalPlacements: ChildPlacement[]
@@ -254,7 +254,7 @@ export interface TerminatablePlacementGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.TerminatablePlacementType
+* Generated from fi.espoo.evaka.placement.TerminatablePlacementType
 */
 export type TerminatablePlacementType = 
   | 'CLUB'

@@ -74,11 +74,15 @@ const maybeCreateDaycareOnlyTerminatable = (
   }
 
   const lastBilledEndDate =
-    last(grp.additionalPlacements)?.endDate ??
-    last(grp.placements.filter(isPreschoolDaycareOrPreparatoryDaycare))
-      ?.endDate ??
-    grp.endDate
-
+    last(
+      sortBy(
+        [
+          ...grp.placements.filter(isPreschoolDaycareOrPreparatoryDaycare),
+          ...grp.additionalPlacements
+        ],
+        (a) => a.startDate
+      )
+    )?.endDate ?? grp.endDate
   return [
     {
       ...toCheckboxOption(grp, true),
