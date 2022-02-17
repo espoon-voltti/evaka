@@ -5,7 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/enums'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { CareArea } from '../types/unit'

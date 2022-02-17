@@ -14,9 +14,11 @@ import {
   PreschoolTerm
 } from 'lib-common/api-types/units/terms'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationSummary,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
-import { ApplicationType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'

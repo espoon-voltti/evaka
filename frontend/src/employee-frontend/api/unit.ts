@@ -12,6 +12,7 @@ import {
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
+import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { Stats } from 'lib-common/generated/api-types/daycare'
 import {
@@ -19,12 +20,12 @@ import {
   RealtimeOccupancy
 } from 'lib-common/generated/api-types/occupancy'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import {
   ServiceNeed,
   ServiceNeedOptionSummary
 } from 'lib-common/generated/api-types/serviceneed'
-import { ApplicationStatus, PlacementType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'

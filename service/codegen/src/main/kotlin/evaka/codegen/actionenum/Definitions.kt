@@ -4,18 +4,9 @@
 
 package evaka.codegen.actionenum
 
-import fi.espoo.evaka.application.ApplicationOrigin
-import fi.espoo.evaka.application.ApplicationStatus
-import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.application.OtherGuardianAgreementStatus
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
-import fi.espoo.evaka.daycare.CareType
-import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.OtherIncome
-import fi.espoo.evaka.messaging.MessageType
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.security.Action
 import java.nio.file.Path
 import kotlin.io.path.writeText
@@ -49,18 +40,9 @@ val generatedFiles = listOf(
     ),
     defineFile(
         "enums.d.ts",
-        generateEnum<ApplicationOrigin>(),
-        generateEnum<ApplicationStatus>(),
-        generateEnum<ApplicationType>(),
-        generateEnum<AttachmentType>(),
-        generateEnum<CareType>(),
         generateEnum<DailyServiceTimesType>(),
         generateEnum<IncomeSource>(),
-        generateEnum<MessageType>(),
-        generateEnum<OtherGuardianAgreementStatus>(),
         generateEnum<OtherIncome>(),
-        generateEnum<PlacementType>(),
-        generateEnum<ProviderType>(),
     )
 )
 

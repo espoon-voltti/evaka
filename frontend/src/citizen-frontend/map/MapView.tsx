@@ -7,9 +7,12 @@ import React, { ReactNode, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Result, Success } from 'lib-common/api'
 import { UnitLanguage } from 'lib-common/api-types/units/enums'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  ProviderType,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { ApplicationType, ProviderType } from 'lib-common/generated/enums'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'

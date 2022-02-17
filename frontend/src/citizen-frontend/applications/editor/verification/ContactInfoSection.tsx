@@ -4,14 +4,14 @@
 
 import React from 'react'
 import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 import { useTranslation } from '../../../localization'
 import ContactInfoSecondGuardianDaycare from './ContactInfoSecondGuardianDaycare'
 import ContactInfoSecondGuardianPreschool from './ContactInfoSecondGuardianPreschool'
+import { ApplicationDataGridLabelWidth } from './const'
 
 type ContactInfoProps = {
   formData: ContactInfoFormData

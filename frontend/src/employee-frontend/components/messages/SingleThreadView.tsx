@@ -15,9 +15,9 @@ import styled from 'styled-components'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import {
   Message,
-  MessageThread
+  MessageThread,
+  MessageType
 } from 'lib-common/generated/api-types/messaging'
-import { MessageType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'

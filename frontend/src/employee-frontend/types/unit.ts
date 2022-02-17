@@ -4,10 +4,10 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
-import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import {

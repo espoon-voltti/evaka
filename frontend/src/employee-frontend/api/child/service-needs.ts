@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   ServiceNeedCreateRequest,
   ServiceNeedOption,
   ServiceNeedOptionPublicInfo,
   ServiceNeedUpdateRequest
 } from 'lib-common/generated/api-types/serviceneed'
-import { PlacementType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../client'

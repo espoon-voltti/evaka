@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { MessageType } from 'lib-common/generated/enums'
+import { MessageType } from 'lib-common/generated/api-types/messaging'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { colors } from 'lib-customizations/common'
 

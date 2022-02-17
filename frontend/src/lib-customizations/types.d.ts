@@ -4,7 +4,7 @@
 
 import type { LatLngExpression } from 'leaflet'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/enums'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
 import {

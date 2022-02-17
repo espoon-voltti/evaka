@@ -19,9 +19,10 @@ import {
   deserializePreschoolTerm,
   PreschoolTerm
 } from 'lib-common/api-types/units/terms'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { ApplicationType, PlacementType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { client } from '../api-client'

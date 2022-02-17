@@ -19,7 +19,7 @@ import {
   validate,
   validDate
 } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/enums'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
 import { DecisionType } from '../../decisions/types'

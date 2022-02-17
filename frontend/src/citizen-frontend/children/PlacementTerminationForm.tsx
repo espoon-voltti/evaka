@@ -6,9 +6,9 @@ import { first, last, sortBy } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import {
   PlacementTerminationRequestBody,
+  PlacementType,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
-import { PlacementType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'

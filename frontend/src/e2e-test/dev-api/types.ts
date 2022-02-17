@@ -5,15 +5,15 @@
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
-import { ApplicationForm } from 'lib-common/generated/api-types/application'
-import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { PilotFeature } from 'lib-common/generated/api-types/shared'
 import {
+  ApplicationForm,
   ApplicationOrigin,
   ApplicationStatus,
   ApplicationType
-} from 'lib-common/generated/enums'
+} from 'lib-common/generated/api-types/application'
+import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { PilotFeature } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'

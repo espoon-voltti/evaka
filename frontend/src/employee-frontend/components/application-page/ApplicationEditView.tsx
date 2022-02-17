@@ -14,10 +14,10 @@ import {
   ApplicationFutureAddress,
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
+import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { AttachmentType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'

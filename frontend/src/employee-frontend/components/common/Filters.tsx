@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import {
   DistinctiveParams,
   FeeDecisionStatus,
@@ -12,7 +13,6 @@ import {
   InvoiceStatus,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { ApplicationType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
