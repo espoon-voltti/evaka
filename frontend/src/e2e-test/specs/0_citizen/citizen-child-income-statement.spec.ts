@@ -2,7 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { resetDatabase } from '../../dev-api'
+import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from '../../dev-api/data-init'
+import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -14,9 +19,20 @@ let child1ISList: CitizenChildIncomeStatementListPage
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
+let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
   await resetDatabase()
+
+  fixtures = await initializeAreaAndPersonData()
+
+  await insertDaycarePlacementFixtures([
+    createDaycarePlacementFixture(
+      uuidv4(),
+      fixtures.enduserChildFixtureJari.id,
+      fixtures.daycareFixture.id
+    )
+  ])
 
   page = await Page.open()
   await enduserLogin(page)

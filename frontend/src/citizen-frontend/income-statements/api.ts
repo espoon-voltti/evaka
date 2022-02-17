@@ -7,6 +7,7 @@ import {
   deserializeIncomeStatement,
   IncomeStatement
 } from 'lib-common/api-types/incomeStatement'
+import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -133,4 +134,13 @@ export async function deleteChildIncomeStatement(
     .delete(`/citizen/income-statements/child/${childId}/${id}`)
     .then(() => Success.of())
     .catch((err) => Failure.fromError(err))
+}
+
+export function getGuardianIncomeStatementChildren(): Promise<
+  Result<ChildBasicInfo[]>
+> {
+  return client
+    .get<JsonOf<ChildBasicInfo[]>>('/citizen/income-statements/children')
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

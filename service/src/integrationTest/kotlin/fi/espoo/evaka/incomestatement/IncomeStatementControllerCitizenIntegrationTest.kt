@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -19,11 +20,14 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -768,6 +772,49 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `guardian does not see children without an active billable placement`() {
+        assertEquals(getIncomeStatementChildren().size, 0)
+    }
+
+    @Test
+    fun `guardian sees children with an active billable placement`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+
+            it.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now(),
+                    type = PlacementType.DAYCARE,
+                    unitId = testDaycare.id
+                )
+            )
+        }
+
+        assertEquals(getIncomeStatementChildren().size, 1)
+    }
+
+    @Test
+    fun `guardian does not see children with an inactive billable placement`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+
+            it.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    startDate = LocalDate.now().minusWeeks(1),
+                    endDate = LocalDate.now().minusWeeks(1),
+                    type = PlacementType.DAYCARE,
+                    unitId = testDaycare.id
+                )
+            )
+        }
+
+        assertEquals(getIncomeStatementChildren().size, 0)
+    }
+
     private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): Paged<IncomeStatement> =
         http.get("/citizen/income-statements?page=$page&pageSize=$pageSize")
             .timeout(1000000)
@@ -790,6 +837,14 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
             .timeoutRead(1000000)
             .asUser(citizen)
             .responseObject<IncomeStatement>(jsonMapper)
+            .let { (_, _, body) -> body.get() }
+
+    private fun getIncomeStatementChildren(): List<ChildBasicInfo> =
+        http.get("/citizen/income-statements/children/")
+            .timeout(1000000)
+            .timeoutRead(1000000)
+            .asUser(citizen)
+            .responseObject<List<ChildBasicInfo>>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 
     private fun createIncomeStatement(body: IncomeStatementBody, expectedStatus: Int = 200) {

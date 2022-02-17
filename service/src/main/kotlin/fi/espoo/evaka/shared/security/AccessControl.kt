@@ -819,7 +819,7 @@ WHERE employee_id = :userId
     fun requirePermissionFor(
         user: AuthenticatedUser,
         action: Action.IncomeStatement,
-        vararg id: UUID
+        id: UUID? = null
     ) {
         when (user) {
             is AuthenticatedUser.Citizen -> when (action) {
@@ -837,19 +837,19 @@ WHERE employee_id = :userId
                 Action.IncomeStatement.CREATE_FOR_CHILD,
                 Action.IncomeStatement.UPDATE_FOR_CHILD -> {
                     Database(jdbi).connect { db ->
-                        if (!db.read { it.getGuardianChildIds(PersonId(user.id)).contains(ChildId(id[0])) }) throw Forbidden()
+                        if (!db.read { it.getGuardianChildIds(PersonId(user.id)).contains(ChildId(id!!)) }) throw Forbidden()
                     }
                 }
 
                 Action.IncomeStatement.READ_CHILDS -> {
                     Database(jdbi).connect { db ->
-                        if (!db.read { it.isChildIncomeStatement(user, IncomeStatementId(id[0])) }) throw Forbidden()
+                        if (!db.read { it.isChildIncomeStatement(user, IncomeStatementId(id!!)) }) throw Forbidden()
                     }
                 }
 
                 Action.IncomeStatement.UPLOAD_ATTACHMENT ->
                     Database(jdbi).connect { db ->
-                        if (!db.read { it.isOwnIncomeStatement(user, IncomeStatementId(id[0])) || it.isChildIncomeStatement(user, IncomeStatementId(id[0])) }) throw Forbidden()
+                        if (!db.read { it.isOwnIncomeStatement(user, IncomeStatementId(id!!)) || it.isChildIncomeStatement(user, IncomeStatementId(id)) }) throw Forbidden()
                     }
                 else -> throw Forbidden()
             }

@@ -25,7 +25,6 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import Footer from '../Footer'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
@@ -49,6 +48,10 @@ interface Props {
   onSuccess: () => void
   onCancel: () => void
 }
+
+const OtherInfoContainer = styled.div`
+  max-width: 716px;
+`
 
 const ChildIncome = React.memo(function ChildIncome({
   incomeStatementId,
@@ -100,12 +103,14 @@ const ChildIncome = React.memo(function ChildIncome({
 
       <Label>{t.income.childIncome.additionalInfo}</Label>
 
-      <TextArea
-        id="more-info"
-        placeholder={t.income.childIncome.write}
-        value={formData.otherInfo}
-        onChange={useFieldDispatch(onChange, 'otherInfo')}
-      />
+      <OtherInfoContainer>
+        <TextArea
+          id="more-info"
+          placeholder={t.income.childIncome.write}
+          value={formData.otherInfo}
+          onChange={useFieldDispatch(onChange, 'otherInfo')}
+        />
+      </OtherInfoContainer>
     </>
   )
 })
@@ -359,7 +364,6 @@ export default React.memo(
             </FixedSpaceRow>
           </ActionContainer>
         </Container>
-        <Footer />
       </>
     )
   })

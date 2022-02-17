@@ -245,6 +245,13 @@ class IncomeStatementControllerCitizen(
         }
     }
 
+    @GetMapping("/children")
+    fun getIncomeStatementChildren(db: Database, user: AuthenticatedUser.Citizen): List<ChildBasicInfo> {
+        Audit.CitizenChildrenRead.log()
+        accessControl.requirePermissionFor(user, Action.Global.READ_OWN_CHILDREN)
+        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(PersonId(user.id)) } }
+    }
+
     private fun verifyIncomeStatementModificationsAllowed(
         tx: Database.Transaction,
         personId: PersonId,

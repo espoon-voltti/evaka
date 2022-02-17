@@ -9,6 +9,15 @@ import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.incomestatement.ChildBasicInfo
+*/
+export interface ChildBasicInfo {
+  firstName: string
+  id: UUID
+  lastName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {

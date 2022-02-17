@@ -1274,10 +1274,10 @@ export default {
       <>
         <p>
           Tällä sivulla voit lähettää selvitykset varhaiskasvatusmaksuun
-          vaikuttavista tuloistasi. Voit myös tarkastella palauttamiasi
-          tuloselvityksiä ja muokata tai poistaa niitä, kunnes viranomainen on
-          käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit päivittää
-          tulotietojasi toimittamalla uuden lomakkeen.
+          vaikuttavista omista ja lastesi tuloistasi. Voit myös tarkastella
+          palauttamiasi tuloselvityksiä ja muokata tai poistaa niitä, kunnes
+          viranomainen on käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit
+          päivittää tulotietojasi toimittamalla uuden lomakkeen.
         </p>
         <p>
           Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät

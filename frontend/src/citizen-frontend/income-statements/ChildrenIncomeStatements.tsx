@@ -6,7 +6,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { renderResult } from 'citizen-frontend/async-rendering'
-import { Child } from 'lib-common/generated/api-types/children'
+import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
@@ -20,7 +20,6 @@ import { Dimmed, H1, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
-import Footer from '../Footer'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 import { deleteChildIncomeStatement, getChildIncomeStatements } from './api'
@@ -48,7 +47,7 @@ const ChildIncomeStatementsTable = React.memo(
     child,
     setDeletionState
   }: {
-    child: Child
+    child: ChildBasicInfo
     setDeletionState: (deletionState: DeletionState) => void
   }) {
     const t = useTranslation()
@@ -154,7 +153,7 @@ type DeletionState =
     }
 
 interface ChildrenIncomeStatementsProps {
-  childInfo: Child[]
+  childInfo: ChildBasicInfo[]
   onRemoveIncomeStatement: () => void
 }
 
@@ -245,7 +244,6 @@ export default React.memo(function ChildrenIncomeStatements({
           )}
         </ContentArea>
       </Container>
-      <Footer />
     </>
   )
 })

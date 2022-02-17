@@ -1335,11 +1335,12 @@ const en: Translations = {
     description: (
       <>
         <p>
-          On this page, you can submit statements on your earnings that affect
-          the early childhood education fee. You can also view, edit, or delete
-          income statements that you have submitted until the authority has
-          processed the information. After the form has been processed, you can
-          update your income information by submitting a new form.
+          On this page, you can submit statements on your and your
+          children&apos;s earnings that affect the early childhood education
+          fee. You can also view, edit, or delete income statements that you
+          have submitted until the authority has processed the information.
+          After the form has been processed, you can update your income
+          information by submitting a new form.
         </p>
         <p>
           The client fees for municipal early childhood education are determined

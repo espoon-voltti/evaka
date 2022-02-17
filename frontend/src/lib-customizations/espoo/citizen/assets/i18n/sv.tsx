@@ -1287,11 +1287,12 @@ const sv: Translations = {
     description: (
       <>
         <p>
-          På denna sida kan du skicka utredningar om dina inkomster som påverkar
-          avgiften för småbarnspedagogik. Du kan också granska, redigera eller
-          radera inkomstutredningar som du har lämnat in tills myndigheten har
-          behandlat uppgifterna. Efter att blanketten har behandlats kan du
-          uppdatera dina inkomstuppgifter genom att lämna in en ny blankett.
+          På denna sida kan du skicka utredningar om dina och dina barns
+          inkomster som påverkar avgiften för småbarnspedagogik. Du kan också
+          granska, redigera eller radera inkomstutredningar som du har lämnat in
+          tills myndigheten har behandlat uppgifterna. Efter att blanketten har
+          behandlats kan du uppdatera inkomstuppgifterna genom att lämna in en
+          ny blankett.
         </p>
         <p>
           Avgifterna för kommunal småbarnspedagogik beräknas i procentandel av
