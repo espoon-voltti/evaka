@@ -5,6 +5,10 @@
 import _ from 'lodash'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
+import {
+  PlacementPlanConfirmationStatus,
+  PlacementPlanRejectReason
+} from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -15,7 +19,6 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
 
 import {
   acceptPlacementProposal,
@@ -24,10 +27,7 @@ import {
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import {
-  DaycarePlacementPlan,
-  PlacementPlanConfirmationStatus
-} from '../../../types/unit'
+import { DaycarePlacementPlan } from '../../../types/unit'
 
 const ButtonRow = styled.div`
   display: flex;

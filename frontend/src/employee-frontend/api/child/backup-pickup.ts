@@ -3,19 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import {
+  ChildBackupPickup,
+  ChildBackupPickupContent,
+  ChildBackupPickupCreateResponse
+} from 'lib-common/generated/api-types/backuppickup'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import { ChildBackupPickup } from '../../types/child'
 import { client } from '../client'
-
-interface ChildBackupPickupContent {
-  name: string
-  phone: string
-}
-
-interface ChildBackupPickupCreateResponse {
-  id: UUID
-}
 
 export async function createBackupPickup(
   childId: UUID,

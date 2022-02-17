@@ -3,8 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
+import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import {
+  PlacementPlanRejectReason,
+  PlacementType
+} from 'lib-common/generated/api-types/placement'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
 import {
@@ -29,28 +34,6 @@ type DeepPartial<T> = {
     ? Readonly<DeepPartial<U>>[]
     : DeepPartial<T[P]>
 }
-
-export type AssistanceMeasure =
-  | 'SPECIAL_ASSISTANCE_DECISION'
-  | 'INTENSIFIED_ASSISTANCE'
-  | 'EXTENDED_COMPULSORY_EDUCATION'
-  | 'CHILD_SERVICE'
-  | 'CHILD_ACCULTURATION_SUPPORT'
-  | 'TRANSPORT_BENEFIT'
-
-export type PlacementPlanRejectReason =
-  | 'OTHER'
-  | 'REASON_1'
-  | 'REASON_2'
-  | 'REASON_3'
-
-export type UnitProviderType =
-  | 'MUNICIPAL'
-  | 'PURCHASED'
-  | 'PRIVATE'
-  | 'MUNICIPAL_SCHOOL'
-  | 'PRIVATE_SERVICE_VOUCHER'
-  | 'EXTERNAL_PURCHASED'
 
 interface ImgProps {
   src: string
@@ -143,7 +126,7 @@ export interface EmployeeCustomizations {
   placementTypes: PlacementType[]
   assistanceMeasures: AssistanceMeasure[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
-  unitProviderTypes: UnitProviderType[]
+  unitProviderTypes: ProviderType[]
   voucherValueDecisionTypes: VoucherValueDecisionType[]
 }
 

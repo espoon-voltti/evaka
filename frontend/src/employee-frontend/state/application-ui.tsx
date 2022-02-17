@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { Result, Loading, Paged } from 'lib-common/api'
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -26,7 +27,6 @@ import {
   ApplicationDistinctions,
   TransferApplicationFilter
 } from '../components/common/Filters'
-import { CareArea } from '../types/unit'
 
 // Nothing in here yet. Filters will be added here in next PR.
 
@@ -38,8 +38,8 @@ interface UIState {
   setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
   area: string[]
   setArea: (areas: string[]) => void
-  availableAreas: Result<CareArea[]>
-  setAvailableAreas: Dispatch<SetStateAction<Result<CareArea[]>>>
+  availableAreas: Result<DaycareCareArea[]>
+  setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
   units: string[]
   setUnits: (units: string[]) => void
   type: ApplicationTypeToggle
@@ -135,9 +135,9 @@ export const ApplicationUIContextProvider = React.memo(
       Result<Paged<ApplicationSummary>>
     >(Loading.of())
     const [area, setArea] = useState<string[]>(defaultState.area)
-    const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
-      defaultState.availableAreas
-    )
+    const [availableAreas, setAvailableAreas] = useState<
+      Result<DaycareCareArea[]>
+    >(defaultState.availableAreas)
     const [status, setStatus] = useState<ApplicationSummaryStatusOptions>(
       defaultState.status
     )

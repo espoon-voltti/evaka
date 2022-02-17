@@ -5,6 +5,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import {
+  PlacementPlanConfirmationStatus,
+  PlacementPlanRejectReason
+} from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import CheckIconButton from 'lib-components/atoms/buttons/CheckIconButton'
 import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
@@ -12,14 +16,10 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
 import { faFileAlt } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../../constants'
 import { useTranslation } from '../../../state/i18n'
-import {
-  DaycarePlacementPlan,
-  PlacementPlanConfirmationStatus
-} from '../../../types/unit'
+import { DaycarePlacementPlan } from '../../../types/unit'
 import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { CareTypeChip } from '../../common/CareTypeLabel'

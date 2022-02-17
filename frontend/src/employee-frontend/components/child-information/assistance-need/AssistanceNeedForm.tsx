@@ -5,6 +5,10 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { UpdateStateFn } from 'lib-common/form-state'
+import {
+  AssistanceBasisOption,
+  AssistanceNeedRequest
+} from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
@@ -15,7 +19,6 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import {
-  AssistanceNeedRequest,
   createAssistanceNeed,
   updateAssistanceNeed
 } from '../../../api/child/assistance-needs'
@@ -23,11 +26,7 @@ import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import {
-  AssistanceBasisOption,
-  AssistanceNeed,
-  AssistanceNeedResponse
-} from '../../../types/child'
+import { AssistanceNeed, AssistanceNeedResponse } from '../../../types/child'
 
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {

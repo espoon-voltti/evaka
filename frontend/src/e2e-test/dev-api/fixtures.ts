@@ -8,7 +8,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationForm,
   ApplicationStatus,
-  ApplicationType
+  ApplicationType,
+  OtherGuardianAgreementStatus
 } from 'lib-common/generated/api-types/application'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import {
@@ -40,7 +41,6 @@ import {
   DevVardaServiceNeed,
   EmployeeDetail,
   EmployeePin,
-  OtherGuardianAgreementStatus,
   PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
@@ -586,7 +586,7 @@ const applicationForm = (
   guardian: PersonDetail,
   guardian2Phone: string,
   guardian2Email: string,
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus,
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null,
   preferredStartDate: LocalDate,
   preferredUnits: string[],
   connectedDaycare = false
@@ -671,7 +671,7 @@ export const applicationFixture = (
   guardian: PersonDetail,
   otherGuardian: PersonDetail | undefined = undefined,
   type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null = null,
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false,
   status: ApplicationStatus = 'SENT',

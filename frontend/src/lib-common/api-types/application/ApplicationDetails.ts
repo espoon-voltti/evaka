@@ -7,6 +7,7 @@ import {
   ApplicationStatus,
   ApplicationType,
   OtherGuardianAgreementStatus,
+  PreferredUnit,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
@@ -196,11 +197,6 @@ export interface ApplicationPreferences {
   siblingBasis: { siblingName: string; siblingSsn: string } | null
   preparatory: boolean
   urgent: boolean
-}
-
-export interface PreferredUnit {
-  id: string
-  name: string
 }
 
 export interface ApplicationServiceNeed {

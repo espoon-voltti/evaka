@@ -8,6 +8,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { Loading, Result, Success } from 'lib-common/api'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -32,7 +33,6 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
-import { CareArea } from '../../types/unit'
 import { FlexRow } from '../common/styled/containers'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
@@ -77,7 +77,9 @@ function VoucherServiceProviders() {
     }),
     [i18n]
   )
-  const [areaOptions, setAreaOptions] = useState<CareArea[]>([allAreasOption])
+  const [areaOptions, setAreaOptions] = useState<DaycareCareArea[]>([
+    allAreasOption
+  ])
   const [filters, setFilters] = useState<VoucherServiceProvidersFilters>(() => {
     const { search } = location
     const queryParams = new URLSearchParams(search)

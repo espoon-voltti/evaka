@@ -14,7 +14,16 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Stats } from 'lib-common/generated/api-types/daycare'
+import {
+  CareType,
+  DaycareDecisionCustomization,
+  Language,
+  MailingAddress,
+  ProviderType,
+  Stats,
+  UnitManager,
+  VisitingAddress
+} from 'lib-common/generated/api-types/daycare'
 import {
   OccupancyResponseSpeculated,
   RealtimeOccupancy
@@ -26,26 +35,19 @@ import {
   ServiceNeed,
   ServiceNeedOptionSummary
 } from 'lib-common/generated/api-types/serviceneed'
+import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { UnitProviderType } from 'lib-customizations/types'
 import { DayOfWeek } from '../types'
 import {
-  Coordinate,
   DaycareGroup,
   DaycarePlacement,
   DaycarePlacementPlan,
-  DecisionCustomization,
-  MailingAddress,
   Occupancy,
   TerminatedPlacement,
   Unit,
-  UnitChildrenCapacityFactors,
-  UnitLanguage,
-  UnitManager,
-  UnitTypes,
-  VisitingAddress
+  UnitChildrenCapacityFactors
 } from '../types/unit'
 import { client } from './client'
 
@@ -56,7 +58,7 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
       ? {
           id: unit.financeDecisionHandler.id,
           firstName: unit.financeDecisionHandler.firstName,
-          lastName: unit.financeDecisionHandler.lastName
+          LastName: unit.financeDecisionHandler.LastName
         }
       : null,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
@@ -780,14 +782,14 @@ export interface DaycareFields {
   openingDate: LocalDate | null
   closingDate: LocalDate | null
   areaId: UUID
-  type: UnitTypes[]
+  type: CareType[]
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
-  providerType: UnitProviderType
+  providerType: ProviderType
   roundTheClock: boolean
   capacity: number
-  language: UnitLanguage
+  language: Language
   ghostUnit: boolean
   uploadToVarda: boolean
   uploadChildrenToVarda: boolean
@@ -803,7 +805,7 @@ export interface DaycareFields {
   location: Coordinate | null
   mailingAddress: MailingAddress
   unitManager: UnitManager | null
-  decisionCustomization: DecisionCustomization
+  decisionCustomization: DaycareDecisionCustomization
   ophUnitOid: string | null
   ophOrganizerOid: string | null
   operationDays: DayOfWeek[] | null

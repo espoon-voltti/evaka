@@ -11,29 +11,23 @@ import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
+import { Language } from 'lib-common/generated/api-types/daycare'
+import {
+  DecisionStatus,
+  DecisionType
+} from 'lib-common/generated/api-types/decision'
 import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import {
+  Coordinate,
+  PilotFeature,
+  UserRole
+} from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 type ISODate = string
-
-export type Language = 'fi' | 'sv' | 'en'
-
-export interface Coordinate {
-  lat: number
-  lon: number
-}
-
-export interface FeeDecisionThresholds {
-  minIncomeThreshold: number
-  maxIncomeThreshold: number
-  minFee: number
-  maxFee: number
-  incomeMultiplier: number
-}
 
 export type HighestFeeFixture = Pick<
   HighestFee,
@@ -177,18 +171,6 @@ export interface EmployeeDetail {
   pin?: string
 }
 
-export type UserRole =
-  | 'ADMIN'
-  | 'FINANCE_ADMIN'
-  | 'UNIT_SUPERVISOR'
-  | 'SERVICE_WORKER'
-  | 'STAFF'
-  | 'END_USER'
-  | 'DIRECTOR'
-  | 'REPORT_VIEWER'
-  | 'MOBILE'
-  | 'SPECIAL_EDUCATION_TEACHER'
-
 export interface Application {
   id: UUID
   type: ApplicationType
@@ -206,12 +188,6 @@ export interface Application {
   otherGuardianId?: UUID
   form: ApplicationForm
 }
-
-export type OtherGuardianAgreementStatus =
-  | 'AGREED'
-  | 'NOT_AGREED'
-  | 'RIGHT_TO_GET_NOTIFIED'
-  | null
 
 export interface ApplicationDaycareAdditionalDetails {
   allergyType: string
@@ -334,15 +310,6 @@ export interface VtjRestrictedDetails {
   enabled: boolean
   endDate: ISODate | null
 }
-
-export type DecisionType =
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY_EDUCATION'
-
-export type DecisionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
 
 export interface DecisionFixture {
   id: string

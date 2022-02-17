@@ -4,6 +4,7 @@
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { Action } from 'lib-common/generated/action'
+import { AssistanceBasisOption } from 'lib-common/generated/api-types/assistanceneed'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -16,11 +17,7 @@ import Toolbar from '../../../components/common/Toolbar'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import {
-  AssistanceBasisOption,
-  AssistanceNeed,
-  AssistanceNeedResponse
-} from '../../../types/child'
+import { AssistanceNeed, AssistanceNeedResponse } from '../../../types/child'
 import { isActiveDateRange } from '../../../utils/date'
 
 export interface Props {

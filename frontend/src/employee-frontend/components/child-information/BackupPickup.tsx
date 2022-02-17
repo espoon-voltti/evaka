@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
+import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -30,7 +31,6 @@ import {
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { ChildBackupPickup } from '../../types/child'
 import { RequireRole } from '../../utils/roles'
 import { FlexRow } from '../common/styled/containers'
 

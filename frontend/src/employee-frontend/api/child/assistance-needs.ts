@@ -3,18 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { AssistanceNeedRequest } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceBasisOption,
+  AssistanceNeedRequest
+} from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import {
-  AssistanceBasisOption,
-  AssistanceNeed,
-  AssistanceNeedResponse
-} from '../../types/child'
+import { AssistanceNeed, AssistanceNeedResponse } from '../../types/child'
 import { client } from '../client'
-
-export type { AssistanceNeedRequest }
 
 export async function createAssistanceNeed(
   childId: UUID,

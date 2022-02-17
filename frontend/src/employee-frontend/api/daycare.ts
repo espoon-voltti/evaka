@@ -4,11 +4,13 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import {
+  DaycareCareArea,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { CareArea } from '../types/unit'
 import { client } from './client'
 
 export interface Unit {
@@ -38,9 +40,9 @@ export async function getUnits(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getAreas(): Promise<Result<CareArea[]>> {
+export async function getAreas(): Promise<Result<DaycareCareArea[]>> {
   return client
-    .get<JsonOf<CareArea[]>>('/areas')
+    .get<JsonOf<DaycareCareArea[]>>('/areas')
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

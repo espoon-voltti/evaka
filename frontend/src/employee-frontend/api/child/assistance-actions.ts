@@ -3,24 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import {
+  AssistanceActionOption,
+  AssistanceActionRequest
+} from 'lib-common/generated/api-types/assistanceaction'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import {
-  AssistanceAction,
-  AssistanceActionResponse,
-  AssistanceMeasure
-} from '../../types/child'
+import { AssistanceAction, AssistanceActionResponse } from '../../types/child'
 import { client } from '../client'
-
-export interface AssistanceActionRequest {
-  startDate: LocalDate
-  endDate: LocalDate
-  actions: string[]
-  otherAction: string
-  measures: AssistanceMeasure[]
-}
 
 export async function createAssistanceAction(
   childId: UUID,

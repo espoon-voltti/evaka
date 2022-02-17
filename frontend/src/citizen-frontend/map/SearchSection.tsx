@@ -5,8 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Result } from 'lib-common/api'
-import { UnitLanguage } from 'lib-common/api-types/units/enums'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { Language, PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -30,8 +29,8 @@ interface Props {
   allUnits: Result<PublicUnit[]>
   careType: CareTypeOption
   setCareType: (c: CareTypeOption) => void
-  languages: UnitLanguage[]
-  setLanguages: (val: UnitLanguage[]) => void
+  languages: Language[]
+  setLanguages: (val: Language[]) => void
   providerTypes: ProviderTypeOption[]
   setProviderTypes: (val: ProviderTypeOption[]) => void
   shiftCare: boolean

@@ -5,16 +5,6 @@
 import config from '../config'
 import { Page } from './page'
 
-export type UserRole =
-  | 'ADMIN'
-  | 'FINANCE_ADMIN'
-  | 'UNIT_SUPERVISOR'
-  | 'SERVICE_WORKER'
-  | 'STAFF'
-  | 'DIRECTOR'
-  | 'REPORT_VIEWER'
-  | 'SPECIAL_EDUCATION_TEACHER'
-
 export type DevLoginRole = typeof devLoginRoles[number]
 const devLoginRoles = [
   'SERVICE_WORKER',
