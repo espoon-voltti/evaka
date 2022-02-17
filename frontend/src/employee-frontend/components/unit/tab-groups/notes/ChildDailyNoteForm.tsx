@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useCallback, useState } from 'react'
+
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   ChildDailyNote,
@@ -26,6 +27,7 @@ import {
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faTrash } from 'lib-icons'
+
 import {
   deleteChildDailyNote,
   postChildDailyNote,

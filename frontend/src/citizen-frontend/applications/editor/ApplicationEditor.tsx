@@ -4,6 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import {
   apiDataToFormData,
@@ -24,6 +25,7 @@ import ActionRow from 'lib-components/layout/ActionRow'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
+
 import Footer from '../../Footer'
 import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
 import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'
@@ -42,6 +44,7 @@ import {
   sendApplication,
   updateApplication
 } from '../api'
+
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,

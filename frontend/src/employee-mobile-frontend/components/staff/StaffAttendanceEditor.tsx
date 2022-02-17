@@ -5,6 +5,7 @@
 import { endOfYesterday } from 'date-fns'
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import { formatDate, formatTime } from 'lib-common/date'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
@@ -17,7 +18,9 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { Translations, useTranslation } from '../../state/i18n'
+
 import PlusMinus from './PlusMinus'
 
 export interface Props {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,6 +9,7 @@ import {
 } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+
 import { client } from '../client'
 
 export async function getChildPedagogicalDocuments(

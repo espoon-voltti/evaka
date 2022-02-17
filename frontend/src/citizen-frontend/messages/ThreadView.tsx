@@ -12,6 +12,7 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
+
 import { formatDate } from 'lib-common/date'
 import {
   Message,
@@ -30,9 +31,11 @@ import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageContext } from './state'

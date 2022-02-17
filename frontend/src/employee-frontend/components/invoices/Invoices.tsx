@@ -7,6 +7,7 @@ import { uniqBy } from 'lodash'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { InvoiceSummary } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
@@ -28,6 +29,7 @@ import {
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faExclamation, faSync } from 'lib-icons'
+
 import { SortByInvoices } from '../../api/invoicing'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
@@ -35,6 +37,7 @@ import { SearchOrder } from '../../types'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 import { StatusIconContainer } from '../common/StatusIconContainer'
+
 import { InvoicesActions } from './invoices-state'
 
 interface Props {

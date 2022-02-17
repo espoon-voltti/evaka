@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@
 // @ts-ignore
 import customizations from '@evaka/customizations/citizen'
 import { mergeWith } from 'lodash'
+
 import { translationsMergeCustomizer } from './common'
 import en from './espoo/citizen/assets/i18n/en'
 import fi from './espoo/citizen/assets/i18n/fi'

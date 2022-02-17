@@ -7,6 +7,7 @@ import { sortBy } from 'lodash'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
+
 import {
   Child,
   ChildDailyRecords,
@@ -19,9 +20,11 @@ import { fontWeights, H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus } from 'lib-icons'
+
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import AgeIndicatorIcon from '../../common/AgeIndicatorIcon'
+
 import ChildDay from './ChildDay'
 
 interface Props {

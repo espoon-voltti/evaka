@@ -20,9 +20,11 @@ import {
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import { SearchOrder } from '../types'
 import { Decision } from '../types/decision'
 import { deserializePersonJSON, SearchColumn } from '../types/person'
+
 import { client } from './client'
 
 export async function getPerson(id: UUID): Promise<Result<PersonJSON>> {

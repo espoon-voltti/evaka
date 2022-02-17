@@ -5,6 +5,7 @@
 import { ChartDataset, ChartOptions, ScatterDataPoint } from 'chart.js'
 import React, { useEffect, useState } from 'react'
 import { Line } from 'react-chartjs-2'
+
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -14,6 +15,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { client } from '../../api/client'
 
 export default React.memo(function AIPage() {

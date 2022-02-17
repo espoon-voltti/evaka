@@ -6,7 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
+
 import { faChevronDown } from 'lib-icons'
+
 import { borderStyles, DropdownProps, Root } from './shared'
 
 type SelectProps<T> = DropdownProps<T, HTMLSelectElement> &

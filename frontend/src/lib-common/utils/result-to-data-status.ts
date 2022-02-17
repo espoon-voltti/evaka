@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useMemo } from 'react'
+
 import { Result } from '../api'
 
 type DataStatus = 'failure' | 'loading' | 'success'

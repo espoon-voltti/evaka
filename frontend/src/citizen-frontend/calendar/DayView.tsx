@@ -5,6 +5,7 @@
 import { zip } from 'lodash'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
@@ -38,7 +39,9 @@ import {
   faTrash,
   faUserMinus
 } from 'lib-icons'
+
 import { useLang, useTranslation } from '../localization'
+
 import CalendarModal from './CalendarModal'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'

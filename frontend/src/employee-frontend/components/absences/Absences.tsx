@@ -5,6 +5,7 @@
 import { flatMap, partition } from 'lodash'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import {
   AbsenceCategory,
   AbsenceDelete,
@@ -19,6 +20,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors, { absenceColors } from 'lib-customizations/common'
+
 import {
   deleteGroupAbsences,
   getGroupAbsences,
@@ -34,6 +36,7 @@ import {
   defaultAbsenceCategories
 } from '../../types/absence'
 import { renderResult } from '../async-rendering'
+
 import { AbsenceLegend } from './AbsenceLegend'
 import AbsenceModal from './AbsenceModal'
 import AbsenceTable from './AbsenceTable'

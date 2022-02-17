@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
-
 import { range } from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Loading, Result, Success } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
@@ -20,6 +20,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
+
 import { getAreas } from '../../api/daycare'
 import {
   getOccupanciesReport,
@@ -30,6 +31,7 @@ import ReportDownload from '../../components/reports/ReportDownload'
 import { Translations, useTranslation } from '../../state/i18n'
 import { OccupancyReportRow } from '../../types/reports'
 import { FlexRow } from '../common/styled/containers'
+
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const StyledTd = styled(Td)`

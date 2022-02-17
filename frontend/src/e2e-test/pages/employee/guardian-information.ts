@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
+
 import config from '../../config'
 import { waitUntilEqual, waitUntilNotEqual, waitUntilTrue } from '../../utils'
 import {
@@ -18,6 +19,7 @@ import {
   Select,
   TextInput
 } from '../../utils/page'
+
 import { IncomeStatementPage } from './IncomeStatementPage'
 
 export default class GuardianInformationPage {

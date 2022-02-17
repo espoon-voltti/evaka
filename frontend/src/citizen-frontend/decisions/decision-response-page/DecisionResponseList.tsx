@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -14,6 +15,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronLeft, faExclamation } from 'lib-icons'
+
 import Footer from '../../Footer'
 import { renderResult } from '../../async-rendering'
 import { getApplicationDecisions } from '../../decisions/api'
@@ -21,6 +23,7 @@ import { decisionOrderComparator } from '../../decisions/shared'
 import { Decision } from '../../decisions/types'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
+
 import DecisionResponse from './DecisionResponse'
 
 export default React.memo(function DecisionResponseList() {

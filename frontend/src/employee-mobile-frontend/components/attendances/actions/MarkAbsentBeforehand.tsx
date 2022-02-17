@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
-
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -25,9 +25,9 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights, Label, P } from 'lib-components/typography'
-
 import { Gap } from 'lib-components/white-space'
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
+
 import {
   deleteAbsenceRange,
   getFutureAbsencesByChild,

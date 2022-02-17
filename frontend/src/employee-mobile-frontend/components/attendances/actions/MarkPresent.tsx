@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'

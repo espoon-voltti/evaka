@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+
 import { useHolidayPeriods } from '../holiday-periods/state'
 
 interface Props {

@@ -7,6 +7,7 @@ import { range, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Loading, Result } from 'lib-common/api'
 import {
   VoucherReportRowType,
@@ -39,6 +40,7 @@ import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faHome, faLockAlt } from 'lib-icons'
+
 import {
   getVoucherServiceProviderUnitReport,
   VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
@@ -47,6 +49,7 @@ import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const FilterWrapper = styled.div`

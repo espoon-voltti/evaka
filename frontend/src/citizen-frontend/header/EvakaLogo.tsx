@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 

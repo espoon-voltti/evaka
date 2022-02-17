@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from 'lib-common/types'
+
 import config from '../../config'
 import { Daycare } from '../../dev-api/types'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
@@ -18,6 +19,7 @@ import {
   Select,
   TextInput
 } from '../../utils/page'
+
 import CreateApplicationModal from './applications/create-application-modal'
 
 export default class ChildInformationPage {

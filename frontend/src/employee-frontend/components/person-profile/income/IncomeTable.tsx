@@ -1,15 +1,18 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
+
 import { IncomeCoefficient } from 'lib-common/api-types/income'
 import { formatCents } from 'lib-common/money'
 import { Table, Tbody } from 'lib-components/layout/Table'
+
 import { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { IncomeFields, IncomeOption } from '../../../types/income'
+
 import IncomeSum from './income-table/IncomeSum'
 import IncomeTableHeader from './income-table/IncomeTableHeader'
 import IncomeTableRow from './income-table/IncomeTableRow'

@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as _ from 'lodash'
 import React, { useEffect, useState } from 'react'
+
 import { Loading, Result } from 'lib-common/api'
 import {
   InvoiceReport,
@@ -17,9 +18,11 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+
 import { getInvoiceReport, InvoiceReportFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
+
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 function ReportInvoices() {

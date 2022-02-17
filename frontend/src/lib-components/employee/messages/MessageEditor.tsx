@@ -5,6 +5,7 @@
 import classNames from 'classnames'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
+
 import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UpdateStateFn } from 'lib-common/form-state'
@@ -49,6 +50,7 @@ import {
   faTrash,
   faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
+
 import Combobox from '../../atoms/dropdowns/Combobox'
 
 type Message = UpsertableDraftContent & {

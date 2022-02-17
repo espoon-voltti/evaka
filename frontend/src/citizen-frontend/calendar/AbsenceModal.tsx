@@ -4,6 +4,7 @@
 
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
@@ -23,8 +24,10 @@ import DatePicker, {
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
+
 import { postAbsences } from './api'
 
 interface Props {

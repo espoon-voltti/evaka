@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,6 +9,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
+
 import { Loading, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
@@ -17,6 +18,7 @@ import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+
 import { getPlacements } from '../api/child/placements'
 import { getParentshipsByChild } from '../api/parentships'
 import { getChildDetails, getPersonGuardians } from '../api/person'

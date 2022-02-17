@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
+
 import { Loading } from 'lib-common/api'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { getAreas, getUnits } from '../../api/daycare'
 import {
   ApplicationUIContext,

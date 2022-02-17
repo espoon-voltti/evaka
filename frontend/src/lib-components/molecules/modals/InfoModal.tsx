@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Gap } from 'lib-components/white-space'
+
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
 
 type Props = Omit<ModalBaseProps, 'mobileFullScreen'> &

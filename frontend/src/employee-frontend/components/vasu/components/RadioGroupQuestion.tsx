@@ -1,15 +1,18 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { QuestionOption, RadioGroupQuestion } from 'lib-common/api-types/vasu'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
+
 import QuestionInfo from '../QuestionInfo'
+
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 
 interface Props {

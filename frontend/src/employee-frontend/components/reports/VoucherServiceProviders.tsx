@@ -7,6 +7,7 @@ import { range } from 'lodash'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Loading, Result, Success } from 'lib-common/api'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
@@ -25,6 +26,7 @@ import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faLockAlt, faSearch } from 'lib-icons'
+
 import { getAreas } from '../../api/daycare'
 import {
   getVoucherServiceProvidersReport,
@@ -34,6 +36,7 @@ import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { FlexRow } from '../common/styled/containers'
+
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const StyledTd = styled(Td)`

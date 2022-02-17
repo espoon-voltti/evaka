@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -17,12 +18,14 @@ import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { colors } from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
+
 import { deletePerson, mergePeople } from '../../api/person'
 import { getDuplicatePeopleReport } from '../../api/reports'
 import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { DuplicatePeopleReportRow } from '../../types/reports'
+
 import { TableScrollable } from './common'
 
 interface RowProps {

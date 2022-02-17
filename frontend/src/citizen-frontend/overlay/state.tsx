@@ -4,6 +4,7 @@
 
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import React, { useMemo, useState, createContext } from 'react'
+
 import { ModalType } from 'lib-components/molecules/modals/BaseModal'
 
 export interface InfoMessage {

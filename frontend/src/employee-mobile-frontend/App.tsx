@@ -14,8 +14,10 @@ import {
   useRouteMatch
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
+
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
+
 import EnsureAuthenticated from './components/EnsureAuthenticated'
 import MobileReloadNotification from './components/MobileReloadNotification'
 import UnitList from './components/UnitList'

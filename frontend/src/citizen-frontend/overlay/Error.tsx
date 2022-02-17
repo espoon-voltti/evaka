@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
+
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faExclamation } from 'lib-icons'
+
 import { OverlayContext } from './state'
 
 function GlobalErrorDialog() {

@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled, { css } from 'styled-components'
+
 import {
   DailyServiceTimes,
   getTimesOnWeekday,
@@ -23,7 +24,9 @@ import { attendanceTimeDiffers } from 'lib-common/reservations'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
+
 import { useTranslation } from '../../../state/i18n'
+
 import AbsenceDay from './AbsenceDay'
 
 type ReservationOrServiceTime =

@@ -28,6 +28,7 @@ import {
   startOfWeek,
   getISOWeek
 } from 'date-fns'
+
 import { DateFormat, DateFormatWithWeekday, formatDate } from './date'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 

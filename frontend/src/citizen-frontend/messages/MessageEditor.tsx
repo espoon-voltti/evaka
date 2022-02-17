@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+
 import {
   CitizenMessageBody,
   MessageAccount
@@ -18,6 +19,7 @@ import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
+
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 

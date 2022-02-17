@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
+
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -10,6 +11,7 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
+
 import { InlineAsyncButton } from './InlineAsyncButton'
 import { EditedNote, Note } from './notes'
 

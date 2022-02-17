@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import {
   ChildDailyData,
   DailyReservationData
@@ -11,6 +12,7 @@ import {
 import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import { Light } from 'lib-components/typography'
+
 import { Translations, useTranslation } from '../localization'
 
 export const Reservations = React.memo(function Reservations({

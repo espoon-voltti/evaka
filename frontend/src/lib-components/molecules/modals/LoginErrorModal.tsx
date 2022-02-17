@@ -5,8 +5,10 @@
 import React, { useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { P } from 'lib-components/typography'
 import { faTimes } from 'lib-icons'
+
 import InfoModal from './InfoModal'
 
 const ReturnContainer = styled.div`

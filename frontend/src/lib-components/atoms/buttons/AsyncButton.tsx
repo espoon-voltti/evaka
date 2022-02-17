@@ -7,8 +7,10 @@ import classNames from 'classnames'
 import React, { useEffect, useRef, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
+
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { faCheck, faTimes } from 'lib-icons'
+
 import { StyledButton } from './Button'
 
 export type AsyncClickCallback = (

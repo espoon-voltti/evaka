@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -17,6 +18,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import {
   deleteAttachment,
   getAttachmentBlob,
@@ -24,6 +26,7 @@ import {
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
+
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 const Hyphenbox = styled.div`

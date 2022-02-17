@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactNode } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
+
 import { modalZIndex } from '../../layout/z-helpers'
 
 interface Props extends ZIndexProp {

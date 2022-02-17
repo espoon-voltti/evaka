@@ -22,6 +22,7 @@ import {
   deserializeReceiver,
   SaveDraftParams
 } from 'lib-components/employee/messages/types'
+
 import { client } from './client'
 
 export async function getMessagingAccounts(

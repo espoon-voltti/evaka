@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from 'react'
 import { Prompt } from 'react-router-dom'
+
 import { Result } from 'lib-common/api'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -16,6 +17,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLockAlt } from 'lib-icons'
+
 import { isPinCodeLocked, updatePinCode } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'

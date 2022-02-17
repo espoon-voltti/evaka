@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { FormEvent, useCallback } from 'react'
+
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import Button from '../../atoms/buttons/Button'
 import { Gap } from '../../white-space'
+
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
 
 type FormModalProps = ModalBaseProps & {

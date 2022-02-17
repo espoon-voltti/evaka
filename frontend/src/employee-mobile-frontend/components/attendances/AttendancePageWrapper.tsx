@@ -12,6 +12,7 @@ import React, {
 import { useHistory, useParams } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
+
 import {
   AttendanceResponse,
   Child,
@@ -19,6 +20,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
+
 import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
@@ -27,6 +29,7 @@ import { renderResult } from '../async-rendering'
 import FreeTextSearch from '../common/FreeTextSearch'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { zIndex } from '../constants'
+
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
 

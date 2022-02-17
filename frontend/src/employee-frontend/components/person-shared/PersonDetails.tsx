@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { Loading, Result, Success } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
@@ -24,6 +25,7 @@ import {
   ExpandingInfoBox
 } from 'lib-components/molecules/ExpandingInfo'
 import { faPen } from 'lib-icons'
+
 import { patchPersonDetails, updateSsnAddingDisabled } from '../../api/person'
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'

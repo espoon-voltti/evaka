@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
@@ -16,11 +17,13 @@ import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
+
 import { getApplicationsReport, PeriodFilters } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 import { ApplicationsReportRow } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
+
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 

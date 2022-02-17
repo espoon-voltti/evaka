@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
@@ -13,6 +14,7 @@ import {
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+
 import EditorSection from '../../../applications/editor/EditorSection'
 import AssistanceNeedSubSection from '../../../applications/editor/service-need/AssistanceNeedSubSection'
 import PreferredStartSubSection from '../../../applications/editor/service-need/PreferredStartSubSection'

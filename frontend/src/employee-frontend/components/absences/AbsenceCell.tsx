@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo } from 'react'
+
 import { formatDate } from 'lib-common/date'
 import {
   AbsenceCategory,
@@ -10,6 +11,7 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'

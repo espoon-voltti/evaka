@@ -4,6 +4,7 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { Paged, Result } from 'lib-common/api'
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -12,6 +13,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
 import { getApplications } from '../../api/applications'
 import ApplicationsList from '../../components/applications/ApplicationsList'
 import { ApplicationUIContext } from '../../state/application-ui'
@@ -21,6 +23,7 @@ import {
   ApplicationSearchParams,
   SortByApplications
 } from '../../types/application'
+
 import ApplicationFilters from './ApplicationsFilters'
 
 const PaddedDiv = styled.div`

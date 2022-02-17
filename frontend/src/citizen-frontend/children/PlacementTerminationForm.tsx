@@ -4,6 +4,7 @@
 
 import { first, last, sortBy } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
+
 import {
   PlacementTerminationRequestBody,
   PlacementType,
@@ -17,7 +18,9 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
+
 import { useLang, useTranslation } from '../localization'
+
 import { terminatePlacement } from './api'
 
 type TerminationFormState =

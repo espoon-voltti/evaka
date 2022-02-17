@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { getErrorCount } from 'lib-common/form-validation'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -10,7 +11,9 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { useTranslation } from '../../localization'
+
 import { ApplicationFormDataErrors, applicationHasErrors } from './validations'
 
 type HeadingProps = {

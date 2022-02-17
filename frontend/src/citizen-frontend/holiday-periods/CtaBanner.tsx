@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
@@ -12,9 +13,11 @@ import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
+
 import { UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
+
 import { useHolidayPeriods } from './state'
 
 const BannerBackground = styled.div`

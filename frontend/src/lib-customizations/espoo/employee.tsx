@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import type { EmployeeCustomizations } from 'lib-customizations/types'
+
 import { employeeConfig } from './appConfigs'
 import Logo from './assets/EspooLogoPrimary.svg'
 import featureFlags from './featureFlags'

@@ -4,6 +4,7 @@
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
+
 import { DecisionSummary } from 'lib-common/generated/api-types/application'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
@@ -15,6 +16,7 @@ import {
   faPlay,
   faFile
 } from 'lib-icons'
+
 import { Decision } from './types'
 
 export const Status = styled.span`

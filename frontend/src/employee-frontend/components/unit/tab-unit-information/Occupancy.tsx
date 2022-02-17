@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
+
 import { UnitOccupancies } from '../../../api/unit'
 import OccupancyCard from '../../../components/unit/tab-unit-information/occupancy/OccupancyCard'
 import OccupancyGraph from '../../../components/unit/tab-unit-information/occupancy/OccupancyGraph'

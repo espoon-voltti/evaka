@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInSeconds } from 'date-fns'
 import { isEqual } from 'lodash'
 import { BaseError } from 'make-error-cause'
+
 import config from '../config'
 
 /**

@@ -5,6 +5,7 @@
 import React, { useCallback, useState, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import {
   DailyReservationData,
@@ -18,10 +19,12 @@ import {
   MobileAndTablet
 } from 'lib-components/layout/responsive-layout'
 import { Gap } from 'lib-components/white-space'
+
 import Footer from '../Footer'
 import { UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
 import { useHolidayPeriods } from '../holiday-periods/state'
+
 import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'

@@ -5,6 +5,7 @@
 import { set } from 'lodash/fp'
 import React, { useState } from 'react'
 import styled from 'styled-components'
+
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { getAge } from 'lib-common/utils/local-date'
@@ -15,6 +16,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
+
 import { createPerson } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'

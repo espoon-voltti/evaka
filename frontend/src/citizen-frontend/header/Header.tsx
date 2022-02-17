@@ -1,17 +1,20 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
+
 import { useUser } from '../auth/state'
 import { MessageContext, MessagePageState } from '../messages/state'
 import {
   PedagogicalDocumentsContext,
   PedagogicalDocumentsState
 } from '../pedagogical-documents/state'
+
 import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
 import EvakaLogo from './EvakaLogo'

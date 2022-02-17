@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,6 +11,7 @@ import React, {
   useRef
 } from 'react'
 import styled from 'styled-components'
+
 import { isLoading, Result } from 'lib-common/api'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import LocalDate from 'lib-common/local-date'
@@ -21,9 +22,11 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import { Td, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
+
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
+
 import { DisabledCell } from './AbsenceCell'
 
 type Props = {

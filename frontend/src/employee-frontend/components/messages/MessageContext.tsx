@@ -9,6 +9,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
+
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
   DraftContent,
@@ -23,8 +24,10 @@ import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { ReactSelectOption } from 'lib-components/employee/messages/SelectorNode'
+
 import { client } from '../../api/client'
 import { UserContext } from '../../state/user'
+
 import {
   getMessageDrafts,
   getMessagingAccounts,

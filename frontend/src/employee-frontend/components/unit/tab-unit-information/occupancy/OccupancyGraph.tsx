@@ -6,8 +6,10 @@ import { ChartDataset, ChartOptions } from 'chart.js'
 import { fi } from 'date-fns/locale'
 import React from 'react'
 import { Line } from 'react-chartjs-2'
+
 import { formatDate } from 'lib-common/date'
 import colors from 'lib-customizations/common'
+
 import { OccupancyResponse } from '../../../../api/unit'
 
 type DatePoint = { x: Date; y: number | null | undefined }

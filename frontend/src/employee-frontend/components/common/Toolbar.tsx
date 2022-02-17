@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,9 +6,11 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
+
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import colors from 'lib-customizations/common'
 import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
+
 import StatusLabel from '../../components/common/StatusLabel'
 import Tooltip from '../../components/common/Tooltip'
 import { UserContext } from '../../state/user'

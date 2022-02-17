@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
+
 import { isLoading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -12,10 +13,12 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
+
 import { getFeeThresholds } from '../../api/finance-basics'
 import { useTranslation } from '../../state/i18n'
 import { FeeThresholds } from '../../types/finance-basics'
 import { renderResult } from '../async-rendering'
+
 import FeeThresholdsEditor from './FeeThresholdsEditor'
 import { FeeThresholdsItem } from './FeeThresholdsItem'
 

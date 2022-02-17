@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import _ from 'lodash'
 import React, { Fragment, useContext, useState } from 'react'
+
 import { combine } from 'lib-common/api'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
@@ -12,6 +13,7 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { getServiceNeedOptions } from '../../api/child/service-needs'
 import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
 import PlacementRow from '../../components/child-information/placements/PlacementRow'

@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../utils'
 import { Element, Page } from '../../utils/page'
+
 import ApplicationReadView from './applications/application-read-view'
 
 export default class ApplicationsPage {

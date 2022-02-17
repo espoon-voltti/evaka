@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   AssistanceBasisOption,
@@ -18,6 +19,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
+
 import {
   createAssistanceNeed,
   updateAssistanceNeed
@@ -27,7 +29,6 @@ import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { AssistanceNeed, AssistanceNeedResponse } from '../../../types/child'
-
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
   FormErrors,

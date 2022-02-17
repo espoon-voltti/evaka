@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { MultiFieldQuestion } from 'lib-common/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
 import {
@@ -12,7 +13,9 @@ import {
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
+
 import QuestionInfo from '../QuestionInfo'
+
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
 

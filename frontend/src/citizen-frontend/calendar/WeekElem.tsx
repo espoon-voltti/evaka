@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
+
 import { headerHeightMobile } from 'citizen-frontend/header/const'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -15,7 +16,9 @@ import {
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { useLang, useTranslation } from '../localization'
+
 import { WeeklyData } from './CalendarListView'
 import { Reservations } from './calendar-elements'
 

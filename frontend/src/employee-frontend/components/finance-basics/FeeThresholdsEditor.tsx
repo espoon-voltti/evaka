@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
@@ -21,6 +22,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import {
   createFeeThresholds,
   updateFeeThresholds
@@ -32,6 +34,7 @@ import {
   FeeThresholds,
   FeeThresholdsWithId
 } from '../../types/finance-basics'
+
 import { FormState } from './FeesSection'
 
 export default React.memo(function FeeThresholdsEditor({

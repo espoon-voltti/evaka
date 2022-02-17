@@ -1,19 +1,22 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+
 import { formatTime } from 'lib-common/date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
+
 import { postExternalStaffDeparture } from '../../api/realtimeStaffAttendances'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnwrapResult } from '../async-rendering'
+
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { TimeInfo } from './components/staff-components'

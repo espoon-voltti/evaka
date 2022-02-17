@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
+
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 

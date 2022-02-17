@@ -7,12 +7,14 @@
 import customizations from '@evaka/customizations/common'
 import { isArray } from 'lodash'
 import React from 'react'
+
 import {
   faBabyCarriage,
   faEuroSign,
   faThermometer,
   faTreePalm
 } from 'lib-icons'
+
 import type { CommonCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

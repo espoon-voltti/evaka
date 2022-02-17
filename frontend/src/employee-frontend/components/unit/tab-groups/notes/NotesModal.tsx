@@ -4,6 +4,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
@@ -17,6 +18,7 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
+
 import {
   deleteChildStickyNote,
   deleteGroupNote,
@@ -27,6 +29,7 @@ import {
 } from '../../../../api/daycare-notes'
 import { Translations, useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
+
 import ChildDailyNoteForm from './ChildDailyNoteForm'
 
 const getLabels = (i18n: Translations, title: string, placeholder: string) => ({

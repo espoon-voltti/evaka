@@ -1,14 +1,16 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DayModifiers } from 'react-day-picker'
 import styled from 'styled-components'
+
 import LocalDate from 'lib-common/local-date'
 
 import { InputInfo } from '../../atoms/form/InputField'
 import { defaultMargins } from '../../white-space'
+
 import DatePickerDay from './DatePickerDay'
 import DatePickerInput from './DatePickerInput'
 

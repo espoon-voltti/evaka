@@ -1,13 +1,16 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { CheckboxQuestion } from 'lib-common/api-types/vasu'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { VasuTranslations } from 'lib-customizations/employee'
+
 import { useTranslation } from '../../../state/i18n'
 import QuestionInfo from '../QuestionInfo'
+
 import { ReadOnlyValue } from './ReadOnlyValue'
 import { QuestionProps } from './question-props'
 

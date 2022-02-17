@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
@@ -28,8 +29,10 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H3, InformationText, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { useTranslation } from '../../state/i18n'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
+
 import { createHolidayPeriod, updateHolidayPeriod } from './api'
 
 interface FormState {

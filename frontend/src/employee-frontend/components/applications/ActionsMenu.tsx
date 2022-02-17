@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import colors from 'lib-customizations/common'
 import { faEllipsisVAlt } from 'lib-icons'
+
 import { Action } from './ApplicationActions'
 
 type Props = {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,6 +10,7 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
+
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   AssistanceActionOption,
@@ -25,6 +26,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+
 import {
   createAssistanceAction,
   updateAssistanceAction
@@ -37,7 +39,6 @@ import {
   AssistanceAction,
   AssistanceActionResponse
 } from '../../../types/child'
-
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
   FormErrors,

@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { cloneDeep, range } from 'lodash'
 import React, { useContext, useEffect, useState } from 'react'
+
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -20,6 +21,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import {
   getFamilyContacts,
   updateFamilyContacts
@@ -30,6 +32,7 @@ import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { FamilyContact } from '../../types/family-overview'
 import { formatName } from '../../utils'
+
 import BackupPickup from './BackupPickup'
 
 interface FamilyContactsProps {

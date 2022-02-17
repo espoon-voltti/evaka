@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as fs from 'fs/promises'
+
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
+
 import {
   ApplicationDetails,
   deserializeApplicationDetails
@@ -26,7 +28,9 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import config from '../config'
+
 import {
   Application,
   ApplicationEmail,

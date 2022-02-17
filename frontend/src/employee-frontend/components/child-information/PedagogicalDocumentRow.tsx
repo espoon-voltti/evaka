@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
+
 import {
   Attachment,
   PedagogicalDocument
@@ -17,6 +18,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
+
 import {
   deleteAttachment,
   getAttachmentBlob,

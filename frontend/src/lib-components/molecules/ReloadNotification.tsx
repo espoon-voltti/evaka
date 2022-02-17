@@ -1,12 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from 'styled-components'
+
 import { appVersion } from 'lib-common/globals'
 import { faInfo, faRedo } from 'lib-icons'
+
 import InlineButton from '../atoms/buttons/InlineButton'
+
 import Toast from './Toast'
 
 // If the user closes the toast, remind every 5 minutes

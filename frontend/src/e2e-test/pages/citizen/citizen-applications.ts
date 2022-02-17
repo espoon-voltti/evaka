@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+
 import { waitUntilEqual, waitUntilDefined, waitUntilTrue } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
 import { Page, Checkbox, Radio, TextInput, FileInput } from '../../utils/page'

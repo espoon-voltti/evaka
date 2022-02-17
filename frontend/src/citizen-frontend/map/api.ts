@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import axios from 'axios'
 import _ from 'lodash'
+
 import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
@@ -12,7 +13,9 @@ import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { mapConfig } from 'lib-customizations/citizen'
+
 import { client } from '../api-client'
+
 import { MapAddress } from './MapView'
 import { UnitWithDistance, UnitWithStraightDistance } from './distances'
 

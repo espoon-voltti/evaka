@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
+
 import { Loading, Result, Success } from 'lib-common/api'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
@@ -19,6 +20,7 @@ import ServiceNeedSection from '../../applications/editor/service-need/ServiceNe
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
 import { useTranslation } from '../../localization'
 import { getServiceNeedOptionPublicInfos } from '../api'
+
 import { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormDaycare({

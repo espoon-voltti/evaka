@@ -4,6 +4,7 @@
 
 import { Property } from 'csstype'
 import styled from 'styled-components'
+
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 
 interface FixedSpaceRowProps {

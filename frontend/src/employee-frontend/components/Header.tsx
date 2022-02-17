@@ -13,6 +13,7 @@ import {
   withRouter
 } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
+
 import { combine } from 'lib-common/api'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -25,9 +26,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
+
 import { logoutUrl } from '../api/auth'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
+
 import { MessageContext } from './messages/MessageContext'
 
 export const headerHeight = '80px'

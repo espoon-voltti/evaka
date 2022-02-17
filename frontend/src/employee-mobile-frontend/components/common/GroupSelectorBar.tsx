@@ -5,14 +5,17 @@
 import React, { useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
+
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleDown, faAngleUp, faSearch } from 'lib-icons'
+
 import { useTranslation } from '../../state/i18n'
 import { zIndex } from '../constants'
+
 import GroupSelector, { CountInfo } from './GroupSelector'
 
 const GroupContainer = styled.div`

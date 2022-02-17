@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment } from 'react'
+
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
+
 import { useTranslation } from '../../state/i18n'
 
 const allSelectableAbsenceTypes: AbsenceType[] = [

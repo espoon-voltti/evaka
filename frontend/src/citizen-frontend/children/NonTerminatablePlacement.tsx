@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
 import { H3, InformationText, P } from 'lib-components/typography'
+
 import { useTranslation } from '../localization'
 
 interface Props {

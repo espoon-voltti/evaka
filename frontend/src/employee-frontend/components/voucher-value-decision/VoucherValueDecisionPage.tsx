@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
+
 import { Loading, Result } from 'lib-common/api'
 import {
   VoucherValueDecisionDetailed,
@@ -11,9 +12,11 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
+
 import { getVoucherValueDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
+
 import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'

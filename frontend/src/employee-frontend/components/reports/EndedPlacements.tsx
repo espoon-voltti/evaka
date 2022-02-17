@@ -6,6 +6,7 @@ import { range } from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Loading, Result, Success } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
@@ -14,6 +15,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+
 import {
   getEndedPlacementsReport,
   PlacementsReportFilters
@@ -22,6 +24,7 @@ import { Translations, useTranslation } from '../../state/i18n'
 import { EndedPlacementsReportRow } from '../../types/reports'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
+
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 
 const StyledTd = styled(Td)`

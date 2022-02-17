@@ -24,7 +24,9 @@ import {
   deserializeReceiver,
   SaveDraftParams
 } from 'lib-components/employee/messages/types'
+
 import { client } from '../../api/client'
+
 import { deserializeDraftContent, deserializeSentMessage } from './types'
 
 export async function getReceivers(

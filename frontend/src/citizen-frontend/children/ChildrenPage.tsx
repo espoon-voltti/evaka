@@ -5,6 +5,7 @@
 import React, { useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+
 import Footer from 'citizen-frontend/Footer'
 import { Child } from 'lib-common/generated/api-types/children'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -27,8 +28,10 @@ import {
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronRight, faUser } from 'lib-icons'
+
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
+
 import { getChildren } from './api'
 
 const Children = styled.div`

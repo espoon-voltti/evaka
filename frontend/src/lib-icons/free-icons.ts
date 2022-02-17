@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -104,6 +104,7 @@ import {
   faDownLeftAndUpRightToCenter
 } from '@fortawesome/free-solid-svg-icons'
 import { faLockOpen } from '@fortawesome/free-solid-svg-icons/faLockOpen'
+
 import { IconSet } from '.'
 
 const icons: IconSet = {

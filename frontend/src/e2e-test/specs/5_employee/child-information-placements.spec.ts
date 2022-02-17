@@ -5,6 +5,7 @@
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import config from '../../config'
 import {
   insertDaycareGroupFixtures,

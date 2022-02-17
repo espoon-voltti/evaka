@@ -8,8 +8,10 @@ import classNames from 'classnames'
 import { readableColor, shade } from 'polished'
 import React from 'react'
 import styled from 'styled-components'
+
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+
 import { fontWeights } from '../typography'
 import { BaseProps } from '../utils'
 

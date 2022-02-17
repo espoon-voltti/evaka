@@ -4,12 +4,15 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faArrowLeft, faTimes } from 'lib-icons'
+
 import { useTranslation } from '../../state/i18n'
 import { topBarHeight, zIndex } from '../constants'
+
 import { LoggedInUser } from './top-bar/LoggedInUser'
 import { TopBarIconContainer } from './top-bar/TopBarIconContainer'
 

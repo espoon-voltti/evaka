@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
+
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -10,6 +11,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { InlineAsyncButton } from './InlineAsyncButton'
 import { Note } from './notes'
 

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
+
 import { isLoading, Result } from 'lib-common/api'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -11,6 +12,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { UnitData } from '../../api/unit'
 import UnitDataFilters from '../../components/unit/UnitDataFilters'
 import Occupancy from '../../components/unit/tab-unit-information/Occupancy'

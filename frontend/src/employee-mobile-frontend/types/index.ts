@@ -5,6 +5,7 @@
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+
 import { Translations } from '../state/i18n'
 
 export type ChildAttendanceUIState =

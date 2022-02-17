@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -18,6 +19,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
+
 import {
   getApplication,
   getClubTerms,
@@ -35,6 +37,7 @@ import { UserContext } from '../state/user'
 import { ApplicationResponse } from '../types/application'
 import { hasRole, RequireRole } from '../utils/roles'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
+
 import { renderResult } from './async-rendering'
 
 const ApplicationArea = styled(ContentArea)`

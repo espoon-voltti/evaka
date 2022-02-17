@@ -4,11 +4,13 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { absenceColors, absenceIcons } from 'lib-customizations/common'
+
 import { useTranslation } from '../../state/i18n'
 
 type CalendarAbsenceType = AbsenceType | 'TEMPORARY_RELOCATION' | 'NO_ABSENCE'

@@ -4,6 +4,7 @@
 
 import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -30,8 +31,10 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus, faTrash } from 'lib-icons'
+
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
+
 import { postReservations } from './api'
 
 interface Props {

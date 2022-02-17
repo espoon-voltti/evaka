@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,6 +10,7 @@ import {
   useMemo,
   useState
 } from 'react'
+
 import { Result } from 'lib-common/api'
 import {
   Followup,
@@ -26,6 +27,7 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
+
 import {
   editFollowupEntry,
   EditFollowupEntryParams,

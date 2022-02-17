@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
+
 import { isLoading } from 'lib-common/api'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
@@ -14,6 +15,7 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
 import { faPen } from 'lib-icons'
+
 import {
   getAdditionalInformation,
   updateAdditionalInformation

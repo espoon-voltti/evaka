@@ -1,17 +1,20 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { useApiState } from 'lib-common/utils/useRestApi'
+
 import { getChildSensitiveInformation } from '../../../api/sensitive'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { renderPinRequiringResult } from '../../auth/renderPinRequiringResult'
 import TopBar from '../../common/TopBar'
 import { TallContentArea } from '../../mobile/components'
+
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 
 export default React.memo(function ChildSensitiveInfoPage() {

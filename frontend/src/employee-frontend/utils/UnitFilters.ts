@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+
 import { UnitFiltersType } from '../types/unit'
 
 export type FilterTimePeriod = '1 day' | '3 months' | '6 months' | '1 year'

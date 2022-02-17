@@ -11,6 +11,7 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
+
 import { combine, isLoading } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
@@ -32,6 +33,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
+
 import { getEmployees } from '../../../api/employees'
 import {
   addDaycareAclSpecialEducationTeacher,

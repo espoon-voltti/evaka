@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
+
 import { FeeThresholdsWithId, FeeThresholds } from '../types/finance-basics'
+
 import { client } from './client'
 
 export async function getFeeThresholds(): Promise<

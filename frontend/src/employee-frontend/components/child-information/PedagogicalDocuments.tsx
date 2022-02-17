@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as _ from 'lodash'
 import React, { useContext, useEffect, useState } from 'react'
+
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -13,6 +14,7 @@ import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
+
 import {
   createPedagogicalDocument,
   deletePedagogicalDocument,
@@ -22,6 +24,7 @@ import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
+
 import PedagogicalDocumentRow from './PedagogicalDocumentRow'
 
 interface Props {

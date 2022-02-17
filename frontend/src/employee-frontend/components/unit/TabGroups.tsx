@@ -1,16 +1,19 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
+
 import { combine, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+
 import Groups from '../../components/unit/tab-groups/Groups'
 import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGroupPlacements'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
+
 import TerminatedPlacements from './tab-groups/TerminatedPlacements'
 
 interface Props {

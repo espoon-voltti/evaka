@@ -4,6 +4,7 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
@@ -14,6 +15,7 @@ import {
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+
 import {
   deleteAttachment,
   getAttachmentBlob,
@@ -23,6 +25,7 @@ import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { footerHeight } from '../Footer'
 import { headerHeight } from '../Header'
+
 import { MessageContext } from './MessageContext'
 import ReceiverSelection from './ReceiverSelection'
 import Sidebar from './Sidebar'

@@ -4,11 +4,13 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { cityLogo } from 'lib-customizations/employee'
+
 import { useTranslation } from '../state/i18n'
 
 export const footerHeight = '120px'

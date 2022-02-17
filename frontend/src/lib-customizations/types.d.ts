@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
+
 import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
@@ -12,6 +13,7 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
+
 import {
   Lang as LangCitizen,
   Translations as TranslationsCitizen

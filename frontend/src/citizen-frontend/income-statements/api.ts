@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,7 +11,9 @@ import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import { client } from '../api-client'
+
 import { IncomeStatementBody } from './types/body'
 
 export async function getIncomeStatements(

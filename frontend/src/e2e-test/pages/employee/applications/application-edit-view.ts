@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
+
 import { waitUntilEqual, waitUntilFalse } from '../../../utils'
 import {
   Checkbox,
@@ -13,6 +14,7 @@ import {
   Radio,
   TextInput
 } from '../../../utils/page'
+
 import ApplicationReadView from './application-read-view'
 
 export default class ApplicationEditView {

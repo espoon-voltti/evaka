@@ -3,10 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
+
 import { useTranslation } from '../../state/i18n'
+
 import FeesSection from './FeesSection'
 
 export default React.memo(function FinanceBasicsPage() {

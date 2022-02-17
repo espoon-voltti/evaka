@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
+
 import { Paged } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
@@ -42,6 +43,7 @@ import {
   faTimes,
   faTrash
 } from 'lib-icons'
+
 import { updateServiceWorkerNote } from '../../api/applications'
 import ActionBar from '../../components/applications/ActionBar'
 import ApplicationActions from '../../components/applications/ApplicationActions'
@@ -56,6 +58,7 @@ import { isPartDayPlacement } from '../../utils/placements'
 import { hasRole, RequireRole } from '../../utils/roles'
 import { AgeIndicatorIconWithTooltip } from '../common/AgeIndicatorIcon'
 import { CareTypeChip } from '../common/CareTypeLabel'
+
 import { CircleIconGreen, CircleIconRed } from './CircleIcon'
 
 const TitleRowContainer = styled.div`

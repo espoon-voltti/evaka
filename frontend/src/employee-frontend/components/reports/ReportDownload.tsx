@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,9 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import styled from 'styled-components'
+
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faFileSpreadsheet } from 'lib-icons'
+
 import { useTranslation } from '../../state/i18n'
 
 const RowRightAligned = styled.div`
