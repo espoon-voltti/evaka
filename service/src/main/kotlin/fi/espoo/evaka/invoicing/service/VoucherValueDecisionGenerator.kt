@@ -187,7 +187,9 @@ private fun generateNewValueDecisions(
                     val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth, voucherValue)
                     val value = calculateVoucherValue(voucherValue, ageCoefficient, capacityFactor, placement.serviceNeed.voucherValueCoefficient)
 
-                    period to VoucherValueDecision(
+                    // Do not generate a decision if the value towards the voucher unit is zero
+                    if (value == 0) null
+                    else period to VoucherValueDecision(
                         id = VoucherValueDecisionId(UUID.randomUUID()),
                         status = VoucherValueDecisionStatus.DRAFT,
                         decisionType = VoucherValueDecisionType.NORMAL,
