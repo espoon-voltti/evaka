@@ -195,22 +195,14 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, Local
         .bind("id", id)
         .execute()
 
-    return createUpdate(
+    return createQuery(
         //language=SQL
         """DELETE FROM placement WHERE id = :id RETURNING child_id, start_date, end_date""".trimIndent()
     )
         .bind("id", id)
-        .executeAndReturnGeneratedKeys()
         .mapTo<QueryResult>()
-        .findFirst()
-        .orElse(null)
-        .let {
-            Triple(
-                it.childId,
-                it.startDate,
-                it.endDate
-            )
-        }
+        .first()
+        .let { Triple(it.childId, it.startDate, it.endDate) }
 }
 
 fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
