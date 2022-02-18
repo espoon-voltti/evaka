@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.AbsenceType.FREE_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
@@ -113,7 +114,7 @@ class ReservationControllerCitizen(
         if (body.dateRange.start.isBefore(evakaClock.today()))
             throw BadRequest("Cannot mark absences for past days")
 
-        if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))
+        if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE, FREE_ABSENCE).contains(body.absenceType))
             throw BadRequest("Invalid absence type")
 
         db.connect { dbc ->

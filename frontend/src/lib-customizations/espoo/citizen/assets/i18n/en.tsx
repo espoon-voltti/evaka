@@ -236,7 +236,8 @@ const en: Translations = {
     },
     holidayModal: {
       title: 'Report holiday',
-      additionalInformation: 'Read more'
+      additionalInformation: 'Read more',
+      holidayFor: 'Holiday for:'
     }
   },
   messages: {
