@@ -2,14 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -117,31 +119,37 @@ export default React.memo(function PlacementRow({
     setEndDateWarning(false)
   }
 
-  function submitUpdate() {
-    void updatePlacement(placement.id, form).then((res) => {
-      if (res.isSuccess) {
-        setEditing(false)
-        onRefreshNeeded()
-      } else if (res.isFailure) {
-        const message =
-          res.statusCode === 403
-            ? i18n.common.error.forbidden
-            : res.statusCode === 409
-            ? i18n.childInformation.placements.error.conflict.title
-            : i18n.common.error.unknown
-        const text =
-          res.statusCode === 409
-            ? i18n.childInformation.placements.error.conflict.text
-            : ''
-        setErrorMessage({
-          type: 'error',
-          title: message,
-          text: text,
-          resolveLabel: i18n.common.ok
-        })
-      }
-    })
-  }
+  const onSuccess = useCallback(() => {
+    setEditing(false)
+    onRefreshNeeded()
+  }, [onRefreshNeeded])
+
+  const onFailure = useCallback(
+    (res: Failure<unknown> | undefined) => {
+      const message =
+        res?.statusCode === 403
+          ? i18n.common.error.forbidden
+          : res?.statusCode === 409
+          ? i18n.childInformation.placements.error.conflict.title
+          : i18n.common.error.unknown
+      const text =
+        res?.statusCode === 409
+          ? i18n.childInformation.placements.error.conflict.text
+          : ''
+      setErrorMessage({
+        type: 'error',
+        title: message,
+        text: text,
+        resolveLabel: i18n.common.ok
+      })
+    },
+    [i18n, setErrorMessage]
+  )
+
+  const submitUpdate = useCallback(
+    () => updatePlacement(placement.id, form),
+    [placement.id, form]
+  )
 
   function submitDelete() {
     void deletePlacement(placement.id).then((res) => {
@@ -335,9 +343,11 @@ export default React.memo(function PlacementRow({
                 onClick={() => setEditing(false)}
                 text={i18n.common.cancel}
               />
-              <Button
+              <AsyncButton
                 primary
-                onClick={() => submitUpdate()}
+                onClick={submitUpdate}
+                onSuccess={onSuccess}
+                onFailure={onFailure}
                 text={i18n.common.save}
               />
             </FixedSpaceRow>

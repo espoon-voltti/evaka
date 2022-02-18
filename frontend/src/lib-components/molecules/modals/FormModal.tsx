@@ -4,6 +4,8 @@
 
 import React, { FormEvent, useCallback } from 'react'
 
+import { Result } from 'lib-common/api'
+
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import Button from '../../atoms/buttons/Button'
 import { Gap } from '../../white-space'
@@ -61,7 +63,7 @@ export default React.memo(function FormModal({
 type AsyncModalProps = ModalBaseProps & {
   resolveAction: (
     cancel: () => Promise<void>
-  ) => Promise<void | { isFailure: boolean }>
+  ) => Promise<void | Result<unknown>>
   resolveLabel: string
   resolveDisabled?: boolean
   onSuccess: () => void
