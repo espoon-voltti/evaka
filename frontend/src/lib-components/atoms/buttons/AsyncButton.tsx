@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
 
+import { Failure, Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { faCheck, faTimes } from 'lib-icons'
 
@@ -15,7 +16,7 @@ import { StyledButton } from './Button'
 
 export type AsyncClickCallback = (
   cancel: () => Promise<void>
-) => Promise<void | Result>
+) => Promise<void | Result<unknown>>
 
 type Props = {
   text: string
@@ -23,16 +24,12 @@ type Props = {
   textDone?: string
   onClick: AsyncClickCallback
   onSuccess: () => void
-  onFailure?: () => void
+  onFailure?: (result?: Failure<unknown> | undefined) => void
   type?: 'button' | 'submit'
   primary?: boolean
   disabled?: boolean
   className?: string
   'data-qa'?: string
-}
-
-type Result = {
-  isFailure: boolean
 }
 
 export default React.memo(function AsyncButton({
@@ -53,12 +50,11 @@ export default React.memo(function AsyncButton({
   const [showSuccess, setShowSuccess] = useState(false)
   const [showFailure, setShowFailure] = useState(false)
   const onSuccessRef = useRef(onSuccess)
-  const onFailureRef = useRef(onFailure)
   const canceledRef = useRef(false)
 
-  const handleFailure = () => {
+  const handleFailure = (result: Failure<unknown> | undefined) => {
     setShowFailure(true)
-    onFailure && onFailure()
+    onFailure && onFailure(result)
   }
 
   const callback = () => {
@@ -74,22 +70,18 @@ export default React.memo(function AsyncButton({
         }
 
         if (result && result.isFailure) {
-          handleFailure()
+          handleFailure(result)
         } else {
           setShowSuccess(true)
         }
       })
-      .catch(() => handleFailure())
+      .catch(() => handleFailure(undefined))
       .finally(() => setInProgress(false))
   }
 
   useEffect(() => {
     onSuccessRef.current = onSuccess
-  }, [onSuccess, onSuccessRef])
-
-  useEffect(() => {
-    onFailureRef.current = onFailure
-  }, [onFailure, onFailureRef])
+  }, [onSuccess])
 
   useEffect(() => {
     const runOnSuccess = showSuccess
