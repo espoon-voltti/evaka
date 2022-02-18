@@ -6,6 +6,7 @@ import React from 'react'
 import { useHistory } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { formatTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -15,7 +16,9 @@ import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Dimmed } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+
 import { useTranslation } from '../../state/i18n'
+
 import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
 import { VasuContainer } from './components/VasuContainer'
 import { BasicsSection } from './sections/BasicsSection'

@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
+
 import config from '../../../config'
 import { postPairingChallenge } from '../../../dev-api'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
@@ -16,6 +17,7 @@ import {
   Page,
   TextInput
 } from '../../../utils/page'
+
 import { UnitCalendarPage } from './unit-calendar-page'
 import { UnitGroupsPage } from './unit-groups-page'
 

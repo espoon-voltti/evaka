@@ -12,6 +12,7 @@ import {
   useParams
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
+
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
@@ -19,6 +20,7 @@ import ReloadNotification from 'lib-components/molecules/ReloadNotification'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
+
 import { getAuthStatus } from './api/auth'
 import { client } from './api/client'
 import ApplicationPage from './components/ApplicationPage'

@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import colors from 'lib-customizations/common'
 import { fasArrowDown, fasArrowUp } from 'lib-icons'
+
 import { useTranslation } from '../../state/i18n'
 
 type Props = { isUnder3: boolean } | { dateOfBirth: LocalDate }

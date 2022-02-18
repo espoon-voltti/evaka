@@ -4,6 +4,7 @@
 
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
+
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { Child } from 'lib-common/api-types/reservations'
@@ -22,9 +23,11 @@ import { fontWeights, H3, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
+
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
+
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import ReservationsTable from './ReservationsTable'
 

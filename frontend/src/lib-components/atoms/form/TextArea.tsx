@@ -6,8 +6,10 @@ import classNames from 'classnames'
 import React, { RefObject, useMemo, useState } from 'react'
 import TextareaAutosize from 'react-autosize-textarea'
 import styled from 'styled-components'
+
 import { BaseProps } from '../../utils'
 import UnderRowStatusIcon from '../StatusIcon'
+
 import { InputFieldUnderRow, InputInfo } from './InputField'
 
 interface TextAreaInputProps extends BaseProps {

@@ -1,14 +1,17 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins as dM } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { useTranslation } from '../localization'
+
 import { formatCareTypes } from './format'
 
 type Props = {

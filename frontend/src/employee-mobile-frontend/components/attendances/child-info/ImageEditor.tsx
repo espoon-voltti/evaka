@@ -6,10 +6,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import ReactCrop, { Crop } from 'react-image-crop'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
 import { uploadChildImage } from '../../../api/childImages'
 import { useTranslation } from '../../../state/i18n'
 import 'react-image-crop/dist/ReactCrop.css'

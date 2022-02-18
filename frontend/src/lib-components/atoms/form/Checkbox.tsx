@@ -6,7 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useRef } from 'react'
 import styled from 'styled-components'
+
 import { faCheck } from 'lib-icons'
+
 import { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
 

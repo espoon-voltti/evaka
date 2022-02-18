@@ -3,14 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { P } from 'lib-components/typography'
+
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
+
 import NonTerminatablePlacement from './NonTerminatablePlacement'
 import PlacementTerminationForm from './PlacementTerminationForm'
 import TerminatedPlacements from './TerminatedPlacements'

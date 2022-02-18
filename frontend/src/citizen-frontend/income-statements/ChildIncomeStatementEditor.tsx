@@ -4,11 +4,14 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { RouteComponentProps } from 'react-router'
+
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import { renderResult } from '../async-rendering'
+
 import ChildIncomeStatementForm from './ChildIncomeStatementForm'
 import { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import {

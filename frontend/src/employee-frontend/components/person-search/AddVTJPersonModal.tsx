@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { Loading, Result } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -12,6 +13,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
+
 import { getOrCreatePersonBySsn } from '../../api/person'
 import { useTranslation } from '../../state/i18n'
 import { isSsnValid } from '../../utils/validation/validations'

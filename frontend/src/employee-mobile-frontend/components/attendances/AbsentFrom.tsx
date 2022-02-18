@@ -1,15 +1,18 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { Child } from 'lib-common/generated/api-types/attendance'
 import { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
+
 import { useTranslation } from '../../state/i18n'
 import { formatCategory } from '../../types'
+
 import { CustomHorizontalLine } from './components'
 
 const AbsentFromWrapper = styled.div`

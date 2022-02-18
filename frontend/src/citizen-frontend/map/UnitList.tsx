@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -15,7 +16,9 @@ import { fontWeights, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleDown } from 'lib-icons'
+
 import { useTranslation } from '../localization'
+
 import { MapAddress } from './MapView'
 import UnitListItem from './UnitListItem'
 import { formatDistance, UnitWithDistance } from './distances'

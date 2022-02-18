@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,9 +8,11 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import 'lib-common/assets/fonts/fonts.css'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
+
 import { getEnvironment } from 'lib-common/utils/helpers'
 import 'leaflet/dist/leaflet.css'
 import { appConfig } from 'lib-customizations/citizen'
+
 import App from './App'
 import './index.css'
 

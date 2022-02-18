@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import Pagination from 'lib-components/Pagination'
@@ -11,7 +12,9 @@ import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFol
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1, H2 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+
 import { useTranslation } from '../../state/i18n'
+
 import { MessageContext } from './MessageContext'
 import { SingleThreadView } from './SingleThreadView'
 import { ThreadList, ThreadListItem } from './ThreadList'

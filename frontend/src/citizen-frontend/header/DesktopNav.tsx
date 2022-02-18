@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
+
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
@@ -22,9 +23,11 @@ import {
   faSignOut,
   faUser
 } from 'lib-icons'
+
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'
+
 import AttentionIndicator from './AttentionIndicator'
 import { getLoginUri, getLogoutUri } from './const'
 

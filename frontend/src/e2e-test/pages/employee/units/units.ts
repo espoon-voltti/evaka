@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from 'lib-common/types'
+
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
 import { Checkbox, Element, Page, TextInput } from '../../../utils/page'
+
 import { UnitEditor, UnitPage } from './unit'
 
 export default class UnitsPage {

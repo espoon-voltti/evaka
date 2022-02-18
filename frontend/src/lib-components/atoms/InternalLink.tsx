@@ -5,7 +5,9 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { Link } from 'react-router-dom'
+
 import { faLink } from 'lib-icons'
+
 import { Bold } from '../typography'
 
 interface Props {

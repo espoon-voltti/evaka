@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
+
 import { Failure, Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
@@ -26,6 +26,7 @@ import {
   faPlus,
   faTimes
 } from 'lib-icons'
+
 import InlineButton from '../atoms/buttons/InlineButton'
 
 const fileUploadErrorKeys = {

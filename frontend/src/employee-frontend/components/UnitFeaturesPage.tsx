@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
 import {
@@ -17,7 +18,9 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
+
 import { client } from '../api/client'
+
 import { renderResult } from './async-rendering'
 
 async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {

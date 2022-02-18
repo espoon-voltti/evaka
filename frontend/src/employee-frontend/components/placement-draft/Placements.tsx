@@ -5,11 +5,13 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
+
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
+
 import StatusLabel from '../../components/common/StatusLabel'
 import { useTranslation } from '../../state/i18n'
 import { PlacementDraftPlacement } from '../../types/placementdraft'

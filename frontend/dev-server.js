@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 const assert = require('assert')
+
 const express = require('express')
 const proxy = require('express-http-proxy')
 const { trimEnd } = require('lodash')

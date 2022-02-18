@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React from 'react'
 import styled from 'styled-components'
+
 import { BaseProps } from '../../utils'
 import { IconSize } from '../icon-size'
 

@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { combine } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -11,8 +12,10 @@ import { tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
+
 import { headerHeightDesktop } from '../header/const'
 import { useTranslation } from '../localization'
+
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
 import ThreadList from './ThreadList'

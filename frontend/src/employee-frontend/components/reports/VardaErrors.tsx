@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
@@ -16,12 +17,14 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+
 import {
   getVardaErrorsReport,
   markChildForVardaReset,
   runResetVardaChildren
 } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
+
 import { TableScrollable } from './common'
 
 const FlatList = styled.ul`

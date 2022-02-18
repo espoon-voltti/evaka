@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { combine } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import {
@@ -24,6 +25,7 @@ import {
   faUser,
   fasUser
 } from 'lib-icons'
+
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from '../../state/messages'
 import { UnitContext } from '../../state/unit'

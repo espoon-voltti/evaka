@@ -5,6 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import {
   MessageReceiversResponse,
@@ -20,6 +21,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faArrowLeft } from 'lib-icons'
+
 import {
   deleteAttachment,
   getAttachmentBlob,

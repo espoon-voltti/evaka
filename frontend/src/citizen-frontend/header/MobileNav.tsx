@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { desktopMin } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
@@ -29,9 +30,11 @@ import {
   faTimes,
   faUser
 } from 'lib-icons'
+
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
+
 import AttentionIndicator from './AttentionIndicator'
 import { CircledChar } from './DesktopNav'
 import { getLoginUri, getLogoutUri } from './const'

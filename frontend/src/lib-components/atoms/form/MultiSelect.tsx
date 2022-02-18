@@ -6,9 +6,11 @@ import classNames from 'classnames'
 import React from 'react'
 import ReactSelect, { Props } from 'react-select'
 import styled from 'styled-components'
+
 import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
 import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'
+
 import { StaticCheckBox } from './Checkbox'
 
 interface MultiSelectProps<T> {

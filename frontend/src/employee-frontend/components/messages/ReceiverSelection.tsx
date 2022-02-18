@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
@@ -19,6 +20,7 @@ import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faAngleUp, faAngleDown } from 'lib-icons'
+
 import { useTranslation } from '../../state/i18n'
 
 const Container = styled(ContentArea)`

@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useQuery } from 'lib-common/utils/useQuery'
@@ -14,10 +15,12 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { UUID_REGEX } from '../../utils/validation/validations'
 import Absences from '../absences/Absences'
+
 import GroupSelector from './tab-calendar/GroupSelector'
 import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceReservationsView'
 

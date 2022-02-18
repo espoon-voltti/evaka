@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
+
 import { EmployeeFeatures } from '../generated/api-types/shared'
 import { UUID } from '../types'
 

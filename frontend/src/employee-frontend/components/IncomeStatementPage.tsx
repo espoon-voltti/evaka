@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
+
 import { combine, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import {
@@ -31,6 +32,7 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
 import {
   deleteAttachment,
   getAttachmentBlob,
@@ -42,6 +44,7 @@ import {
 } from '../api/income-statement'
 import { getPerson } from '../api/person'
 import { Translations, useTranslation } from '../state/i18n'
+
 import { renderResult } from './async-rendering'
 
 export default React.memo(function IncomeStatementPage({

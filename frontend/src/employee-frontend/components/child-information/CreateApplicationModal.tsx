@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
+
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -17,6 +18,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
 import { faFileAlt } from 'lib-icons'
+
 import {
   createPaperApplication,
   PaperApplicationRequest

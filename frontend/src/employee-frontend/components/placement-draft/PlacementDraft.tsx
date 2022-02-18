@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
+
 import { isLoading, Loading, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -24,6 +25,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import { getApplicationUnits } from '../../api/daycare'
 import Tooltip from '../../components/common/Tooltip'
@@ -37,6 +39,7 @@ import {
 } from '../../types/placementdraft'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
 import UnitCards from './UnitCards'

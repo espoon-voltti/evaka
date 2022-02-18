@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import { useParams } from 'react-router-dom'
+
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
+
 import Footer from '../../Footer'
 import ApplicationReadViewContents from '../../applications/read-view/ApplicationReadViewContents'
 import { renderResult } from '../../async-rendering'

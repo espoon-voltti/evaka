@@ -5,12 +5,14 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
+
 import {
   faChevronUp,
   faChevronDown,
   fasChevronUp,
   fasChevronDown
 } from 'lib-icons'
+
 import { fontWeights } from '../typography'
 import { defaultMargins, Gap } from '../white-space'
 

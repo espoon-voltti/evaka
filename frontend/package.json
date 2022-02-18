@@ -238,7 +238,8 @@
             "parent",
             "sibling",
             "index"
-          ]
+          ],
+          "newlines-between": "always"
         }
       ],
       "react/jsx-curly-brace-presence": [

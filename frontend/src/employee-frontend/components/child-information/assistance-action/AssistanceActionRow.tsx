@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
+
 import {
   AssistanceAction,
   AssistanceActionResponse
@@ -13,6 +14,7 @@ import { scrollToRef } from 'lib-common/utils/scrolling'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
+
 import { removeAssistanceAction } from '../../../api/child/assistance-actions'
 import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
 import LabelValueList from '../../../components/common/LabelValueList'

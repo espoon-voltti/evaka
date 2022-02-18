@@ -7,7 +7,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
+
 import { faAngleDown, faAngleUp } from 'lib-icons'
+
 import { desktopMin } from '../breakpoints'
 import { H3 } from '../typography'
 import { BaseProps } from '../utils'

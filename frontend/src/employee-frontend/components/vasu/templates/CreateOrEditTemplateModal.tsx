@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CreateTemplateRequest,
@@ -19,8 +20,10 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
+
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+
 import {
   createVasuTemplate,
   curriculumTypes,

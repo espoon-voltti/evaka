@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ import { cloneDeep } from 'lodash'
 import { last } from 'lodash'
 import React, { Dispatch, Fragment, SetStateAction } from 'react'
 import styled, { css } from 'styled-components'
+
 import {
   CheckboxQuestion,
   Followup,
@@ -25,6 +26,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
+
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
 import DateQuestionElem from '../components/DateQuestion'
 import FollowupQuestionElem from '../components/FollowupQuestion'

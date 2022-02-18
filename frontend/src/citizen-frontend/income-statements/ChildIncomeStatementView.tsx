@@ -7,6 +7,7 @@ import React, { useCallback, useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Attachment } from 'lib-common/api-types/attachment'
 import { ChildIncome } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
@@ -25,10 +26,12 @@ import { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPen } from 'lib-icons'
+
 import { renderResult } from '../async-rendering'
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+
 import { getChildIncomeStatement } from './api'
 
 export default React.memo(function ChildIncomeStatementView({

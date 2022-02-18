@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import _ from 'lodash'
 import React from 'react'
 import { Link } from 'react-router-dom'
+
 import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
@@ -12,6 +13,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faChild } from 'lib-icons'
+
 import { getPersonDependants } from '../../api/person'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'

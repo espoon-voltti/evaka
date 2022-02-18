@@ -4,6 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
+
 import {
   Absence,
   AbsenceCategory,
@@ -16,6 +17,7 @@ import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { faAbacus } from 'lib-icons'
+
 import { getAbsencesByChild } from '../../api/invoicing'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
+
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -18,6 +19,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
+
 import { isValidDecisionStartDate } from '../../applications/editor/validations'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'

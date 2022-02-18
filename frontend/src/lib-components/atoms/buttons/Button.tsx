@@ -5,9 +5,12 @@
 import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
+
 import { isAutomatedTest } from 'lib-common/utils/helpers'
+
 import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
+
 import { defaultButtonTextStyle } from './button-commons'
 
 export const StyledButton = styled.button`

@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useRef, useState } from 'react'
+
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -13,6 +14,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
+
 import {
   createFeeAlteration,
   deleteFeeAlteration,
@@ -23,6 +25,7 @@ import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
 import { renderResult } from '../async-rendering'
+
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 

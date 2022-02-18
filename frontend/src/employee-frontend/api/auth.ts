@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { JsonOf } from 'lib-common/json'
+
 import { client } from './client'
 
 export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`

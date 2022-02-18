@@ -5,6 +5,7 @@
 import { sortBy, uniqBy } from 'lodash'
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import {
   MessageReceiversResponse,
@@ -20,8 +21,10 @@ import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'

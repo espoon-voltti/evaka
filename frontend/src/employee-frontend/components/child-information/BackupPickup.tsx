@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { Loading, Result } from 'lib-common/api'
 import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
 import { UUID } from 'lib-common/types'
@@ -22,6 +23,7 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, Label } from 'lib-components/typography'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
+
 import {
   createBackupPickup,
   getChildBackupPickups,

@@ -23,6 +23,7 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import {
   Application,
   AssistanceNeed,
@@ -47,6 +48,7 @@ import {
   PlacementPlan,
   ServiceNeedFixture
 } from './types'
+
 import {
   addVardaReset,
   addVardaServiceNeed,

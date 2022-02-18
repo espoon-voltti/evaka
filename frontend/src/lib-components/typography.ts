@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled, { css } from 'styled-components'
-import { defaultMargins } from 'lib-components/white-space'
-import { tabletMin } from './breakpoints'
 
+import { defaultMargins } from 'lib-components/white-space'
+
+import { tabletMin } from './breakpoints'
 import { BaseProps } from './utils'
 
 export const fontWeights = {

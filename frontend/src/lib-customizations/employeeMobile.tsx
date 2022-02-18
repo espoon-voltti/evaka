@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@
 // @ts-ignore
 import customizations from '@evaka/customizations/employeeMobile'
 import { mergeWith } from 'lodash'
+
 import { translationsMergeCustomizer } from './common'
 import { fi } from './espoo/employee-mobile-frontend/assets/i18n/fi'
 import type { EmployeeMobileCustomizations } from './types'

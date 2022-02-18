@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,12 +6,14 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { combine } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontSizesMobile, H1, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { UserContext } from '../../state/user'
@@ -19,6 +21,7 @@ import { renderResult } from '../async-rendering'
 import BottomNavBar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { WideLinkButton } from '../mobile/components'
+
 import { HeaderContainer } from './MessagesPage'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {

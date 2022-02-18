@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { Redirect } from 'react-router-dom'
+
 import { getWeakLoginUri, getLoginUri } from '../header/const'
+
 import { AuthContext } from './state'
 
 export function refreshRedirect(uri: string) {

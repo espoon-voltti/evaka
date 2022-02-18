@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+
 import { client } from '../api-client'
 
 export async function getPedagogicalDocuments(): Promise<

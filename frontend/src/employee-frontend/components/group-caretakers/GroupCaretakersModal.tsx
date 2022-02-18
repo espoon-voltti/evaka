@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -15,6 +16,7 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faPen, faPlus } from 'lib-icons'
+
 import { postCaretakers, putCaretakers } from '../../api/caretakers'
 import { useTranslation } from '../../state/i18n'
 import { CaretakerAmount } from '../../types/caretakers'

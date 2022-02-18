@@ -1,12 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
+
 import LocalDate from 'lib-common/local-date'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { Gap } from 'lib-components/white-space'
+
 import { useTranslation } from '../../state/i18n'
 
 type NullableEnd = {

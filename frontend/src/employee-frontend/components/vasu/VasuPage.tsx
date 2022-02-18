@@ -5,9 +5,11 @@
 import React from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { UUID } from 'lib-common/types'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
 import { VasuStateTransitionButtons } from './VasuStateTransitionButtons'
 import { VasuContainer } from './components/VasuContainer'
 import { BasicsSection } from './sections/BasicsSection'

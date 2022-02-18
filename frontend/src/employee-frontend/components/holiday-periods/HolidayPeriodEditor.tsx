@@ -5,10 +5,13 @@
 import React, { useCallback } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { useHistory } from 'react-router-dom'
+
 import { Success } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container, { ContentArea } from 'lib-components/layout/Container'
+
 import { renderResult } from '../async-rendering'
+
 import HolidayPeriodForm from './HolidayPeriodForm'
 import { getHolidayPeriod } from './api'
 

@@ -6,7 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React from 'react'
 import styled from 'styled-components'
+
 import { faMeh } from 'lib-icons'
+
 import { defaultMargins, Gap } from '../../white-space'
 
 const StyledSegment = styled.div`

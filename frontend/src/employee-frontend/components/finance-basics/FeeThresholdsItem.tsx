@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { FeeThresholds } from 'lib-common/api-types/finance'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -18,6 +19,7 @@ import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/employee'
 import { faCopy, faPen } from 'lib-icons'
+
 import { familySizes } from '../../types/finance-basics'
 import StatusLabel from '../common/StatusLabel'
 

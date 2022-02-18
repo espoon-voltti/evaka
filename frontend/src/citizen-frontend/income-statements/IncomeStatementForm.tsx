@@ -4,6 +4,7 @@
 
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
+
 import { Attachment } from 'lib-common/api-types/attachment'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import {
@@ -38,9 +39,11 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { fontWeights, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
 import Footer from '../Footer'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
+
 import IncomeStatementAttachments from './IncomeStatementAttachments'
 import {
   ActionContainer,

@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, FormEvent, useEffect } from 'react'
+
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -10,6 +11,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
+
 import DateRangeInput from '../../../components/common/DateRangeInput'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
@@ -17,6 +19,7 @@ import {
   FeeAlteration,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
+
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 
 const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -25,6 +25,7 @@ import { Coordinate, PilotFeature } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import { DayOfWeek } from './index'
 
 export interface Unit {

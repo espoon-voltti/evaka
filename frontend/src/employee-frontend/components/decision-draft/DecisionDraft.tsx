@@ -15,6 +15,7 @@ import React, {
 } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
+
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
@@ -30,6 +31,7 @@ import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faEnvelope } from 'lib-icons'
+
 import {
   getDecisionDrafts,
   getDecisionUnits,

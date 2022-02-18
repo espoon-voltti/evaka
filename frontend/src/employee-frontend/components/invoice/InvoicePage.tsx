@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
+
 import { Loading, Result } from 'lib-common/api'
 import {
   InvoiceCodes,
@@ -18,6 +19,7 @@ import { getInvoice, getInvoiceCodes } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { totalPrice } from '../../utils/pricing'
+
 import Actions from './Actions'
 import InvoiceDetailsSection from './InvoiceDetailsSection'
 import InvoiceHeadOfFamilySection from './InvoiceHeadOfFamilySection'

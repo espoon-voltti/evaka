@@ -4,9 +4,11 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { MessageType } from 'lib-common/generated/api-types/messaging'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { colors } from 'lib-customizations/common'
+
 import { useTranslation } from '../../state/i18n'
 
 // TODO is the 20px line-height in StaticChip unintentional?

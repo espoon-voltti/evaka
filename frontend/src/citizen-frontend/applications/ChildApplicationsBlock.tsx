@@ -8,6 +8,7 @@ import { noop } from 'lodash'
 import React, { useContext } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
 import { formatDate } from 'lib-common/date'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
@@ -28,9 +29,11 @@ import {
   faTimes,
   faTrash
 } from 'lib-icons'
+
 import { applicationStatusIcon, Status } from '../decisions/shared'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+
 import { removeUnprocessedApplication } from './api'
 
 const StyledLink = styled(Link)`

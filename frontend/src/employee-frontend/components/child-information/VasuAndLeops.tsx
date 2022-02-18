@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
+
 import { combine, Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
 import {
@@ -34,6 +35,7 @@ import FullScreenDimmedSpinner from 'lib-components/molecules/FullScreenDimmedSp
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'

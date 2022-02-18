@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isAfter, parse } from 'date-fns'
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+
 import { combine, Success } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
@@ -19,6 +20,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { postStaffArrival } from '../../api/realtimeStaffAttendances'
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
@@ -27,6 +29,7 @@ import { renderResult } from '../async-rendering'
 import { Actions } from '../attendances/components'
 import TopBar from '../common/TopBar'
 import { TallContentArea } from '../mobile/components'
+
 import { TimeWrapper } from './components/staff-components'
 
 export default React.memo(function StaffMarkArrivedPage() {

@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { formatDecimal } from 'lib-common/utils/number'
 import { BigNumber } from 'lib-components/typography'
 import colors from 'lib-customizations/common'

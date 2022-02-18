@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -18,6 +19,7 @@ import { BigNumber, H4 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faTimes } from 'lib-icons'
+
 import { useTranslation } from '../../../localization'
 
 export type PreferredUnitBoxProps = {

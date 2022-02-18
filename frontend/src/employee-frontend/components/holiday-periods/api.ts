@@ -10,6 +10,7 @@ import {
 } from 'lib-common/generated/api-types/holidayperiod'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
+
 import { client } from '../../api/client'
 
 export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {

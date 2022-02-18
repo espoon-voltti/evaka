@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+
 import { Loading, Result } from 'lib-common/api'
 import { GlobalRole, globalRoles } from 'lib-common/api-types/employee-auth'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -16,6 +17,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
+
 import { getEmployeeDetails, updateEmployee } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { EmployeeUser } from '../../types/employee'

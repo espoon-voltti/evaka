@@ -5,11 +5,13 @@
 import React, { Fragment, useContext, useMemo } from 'react'
 import { RouteComponentProps } from 'react-router'
 import styled from 'styled-components'
+
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
 import { defaultMargins } from 'lib-components/white-space'
+
 import CircularLabel from '../components/common/CircularLabel'
 import WarningLabel from '../components/common/WarningLabel'
 import PersonApplications from '../components/person-profile/PersonApplications'
@@ -24,6 +26,7 @@ import PersonInvoices from '../components/person-profile/PersonInvoices'
 import { useTranslation } from '../state/i18n'
 import { PersonContext, PersonContextProvider } from '../state/person'
 import { UserContext } from '../state/user'
+
 import { getLayout, Layouts } from './layouts'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'

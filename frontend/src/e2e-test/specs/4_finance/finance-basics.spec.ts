@@ -4,6 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
+
 import config from '../../config'
 import { insertFeeThresholds, resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'

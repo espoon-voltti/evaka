@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useMemo, useContext } from 'react'
+
 import { useUser } from 'citizen-frontend/auth/state'
 import { Loading, Result, Success } from 'lib-common/api'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { useApiState } from 'lib-common/utils/useRestApi'
+
 import { getActionRequiringHolidayPeriods } from './api'
 
 export interface HolidayPeriodsState {

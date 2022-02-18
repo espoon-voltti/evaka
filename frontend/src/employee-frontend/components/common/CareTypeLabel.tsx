@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { careTypeColors } from 'lib-customizations/common'
+
 import { useTranslation } from '../../state/i18n'
 import { CareTypeLabel } from '../../types'
 

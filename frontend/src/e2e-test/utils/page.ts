@@ -8,7 +8,9 @@ import {
   Locator,
   Page as PlaywrightPage
 } from 'playwright'
+
 import { newBrowserContext } from '../browser'
+
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 
 export class Page {

@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactElement } from 'react'
 import styled from 'styled-components'
+
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronUp, faChevronDown } from 'lib-icons'
+
 import StatusLabel, {
   StatusLabelType
 } from '../../components/common/StatusLabel'

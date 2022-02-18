@@ -5,6 +5,7 @@
 import { transparentize } from 'polished'
 import React from 'react'
 import styled from 'styled-components'
+
 import { spinnerOverlayZIndex } from '../../layout/z-helpers'
 import { defaultMargins, SpacingSize } from '../../white-space'
 

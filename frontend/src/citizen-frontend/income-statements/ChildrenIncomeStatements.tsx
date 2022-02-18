@@ -5,6 +5,7 @@
 import React, { useCallback, useContext, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
@@ -20,8 +21,10 @@ import { Dimmed, H1, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
+
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+
 import { deleteChildIncomeStatement, getChildIncomeStatements } from './api'
 
 const HeadingContainer = styled.div`

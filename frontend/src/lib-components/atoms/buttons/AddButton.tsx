@@ -7,10 +7,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { ReactNode } from 'react'
 import styled from 'styled-components'
+
 import { faPlus } from 'lib-icons'
+
 import { fontWeights } from '../../typography'
 import { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
+
 import { defaultButtonTextStyle } from './button-commons'
 
 const StyledButton = styled.button`

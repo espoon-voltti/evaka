@@ -5,6 +5,7 @@
 import React, { Fragment, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
@@ -29,6 +30,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation, faTrash } from 'lib-icons'
+
 import {
   deleteChildDailyNote,
   postChildDailyNote,
@@ -36,6 +38,7 @@ import {
 } from '../../../api/notes'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
+
 import { ChildDailyNoteFormData } from './daily-note'
 
 const Time = styled.div`

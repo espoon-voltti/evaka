@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,11 +9,14 @@ import React, {
   useEffect,
   useMemo
 } from 'react'
+
 import { Loading, Result } from 'lib-common/api'
 import { CitizenUserDetails } from 'lib-common/generated/api-types/vtjclient'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
+
 import { client } from '../api-client'
+
 import { getAuthStatus } from './api'
 
 export type User = CitizenUserDetails & {

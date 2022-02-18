@@ -5,6 +5,7 @@
 import React, { useContext } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import {
   AttendanceStatus,
   Child
@@ -17,9 +18,11 @@ import { Bold, InformationText } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
+
 import { Translations, useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
+
 import { Reservations } from './Reservations'
 
 const ChildBox = styled.div`

@@ -4,6 +4,7 @@
 
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
+
 import { Attachment } from 'lib-common/api-types/attachment'
 import { validateIf, validDate } from 'lib-common/form-validation'
 import LocalDate from 'lib-common/local-date'
@@ -25,8 +26,10 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
+
 import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
 import {
   ActionContainer,

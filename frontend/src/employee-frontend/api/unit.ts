@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { mapValues } from 'lodash'
+
 import { Failure, Result, Success } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import {
@@ -39,6 +40,7 @@ import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
 import { DayOfWeek } from '../types'
 import {
   DaycareGroup,
@@ -49,6 +51,7 @@ import {
   Unit,
   UnitChildrenCapacityFactors
 } from '../types/unit'
+
 import { client } from './client'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {

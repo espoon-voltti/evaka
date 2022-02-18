@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { Result, Success } from 'lib-common/api'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -21,10 +22,12 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { UnwrapResult } from '../../../async-rendering'
 import { useTranslation } from '../../../localization'
 import { ApplicationUnitType, getApplicationUnits } from '../../api'
+
 import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
 
 const maxUnits = 3

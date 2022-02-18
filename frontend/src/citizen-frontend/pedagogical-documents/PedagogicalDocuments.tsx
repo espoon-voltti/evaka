@@ -11,6 +11,7 @@ import React, {
   useMemo
 } from 'react'
 import styled from 'styled-components'
+
 import {
   Attachment,
   PedagogicalDocumentCitizen
@@ -29,10 +30,12 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
+
 import { renderResult } from '../async-rendering'
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
 

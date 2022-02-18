@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo } from 'react'
+
 import { Result } from 'lib-common/api'
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
@@ -11,6 +12,7 @@ import {
   StickyNoteTabLabels
 } from 'lib-components/employee/notes/StickyNoteTab'
 import { EditedNote } from 'lib-components/employee/notes/notes'
+
 import {
   deleteChildStickyNote,
   postChildStickyNote,

@@ -4,9 +4,11 @@
 
 import React, { ReactNode, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
+
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fasInfo, faTimes } from 'lib-icons'
+
 import RoundIcon from '../atoms/RoundIcon'
 import IconButton from '../atoms/buttons/IconButton'
 import { tabletMin } from '../breakpoints'

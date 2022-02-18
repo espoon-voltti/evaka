@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { voucherValueDecisionTypes } from 'lib-customizations/employee'
+
 import { useTranslation } from '../../state/i18n'
 
 interface TypeSelectProps {

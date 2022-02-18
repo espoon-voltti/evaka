@@ -4,7 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
+
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+
 import BottomNavbar, { BottomNavbarProps } from './BottomNavbar'
 import TopBarWithGroupSelector, {
   TopBarWithGroupSelectorProps

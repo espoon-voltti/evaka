@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,9 +17,11 @@ import {
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
+
 import { getEnvironment } from 'lib-common/utils/helpers'
 import colors from 'lib-customizations/common'
 import { appConfig } from 'lib-customizations/employee'
+
 import App from './App'
 import 'chartjs-adapter-date-fns'
 import './index.css'

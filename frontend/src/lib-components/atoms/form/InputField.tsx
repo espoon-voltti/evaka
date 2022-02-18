@@ -7,7 +7,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { HTMLAttributes, RefObject, useState } from 'react'
 import styled, { css } from 'styled-components'
+
 import { faTimes } from 'lib-icons'
+
 import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'

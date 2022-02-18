@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as _ from 'lodash'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
+
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -14,6 +15,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 import { faFileAlt } from 'lib-icons'
+
 import { getChildApplicationSummaries } from '../../api/person'
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
 import { ChildContext } from '../../state'

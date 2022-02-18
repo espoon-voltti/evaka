@@ -4,6 +4,7 @@
 
 import React, { Fragment, useCallback, useState } from 'react'
 import { useHistory } from 'react-router'
+
 import { Translatable } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -17,8 +18,10 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
+
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+
 import { deleteHolidayPeriod, getHolidayPeriods } from './api'
 
 const translatableKeys: (keyof Translatable)[] = ['fi', 'sv', 'en']

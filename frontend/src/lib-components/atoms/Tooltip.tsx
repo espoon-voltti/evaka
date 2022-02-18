@@ -5,12 +5,14 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
+
 import {
   fasCaretDown,
   fasCaretLeft,
   fasCaretRight,
   fasCaretUp
 } from 'lib-icons'
+
 import { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 

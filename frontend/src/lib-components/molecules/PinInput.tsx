@@ -6,6 +6,7 @@ import classNames from 'classnames'
 import { range } from 'lodash'
 import React, { RefObject, useMemo, useRef } from 'react'
 import styled from 'styled-components'
+
 import UnderRowStatusIcon from '../atoms/StatusIcon'
 import InputField, {
   InputFieldUnderRow,

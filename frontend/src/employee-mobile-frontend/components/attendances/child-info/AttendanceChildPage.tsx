@@ -5,6 +5,7 @@
 import React, { useContext, useMemo, useRef, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
@@ -30,6 +31,7 @@ import Absences from '../Absences'
 import AttendanceDailyServiceTimes from '../AttendanceDailyServiceTimes'
 import { IconBox } from '../ChildListItem'
 import { FlexColumn } from '../components'
+
 import ArrivalAndDeparture from './ArrivalAndDeparture'
 import ChildButtons from './ChildButtons'
 import ImageEditor from './ImageEditor'

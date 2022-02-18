@@ -4,6 +4,7 @@
 
 import React, { Dispatch, SetStateAction, useCallback } from 'react'
 import styled from 'styled-components'
+
 import { isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -17,6 +18,7 @@ import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
 import { Bold, H1, InformationText, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
 import { getSpeculatedOccupancyRates } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { DaycarePlacementPlan } from '../../types/placementdraft'

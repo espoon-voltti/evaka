@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -14,8 +15,10 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
+
 import { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function ChildSubSection({

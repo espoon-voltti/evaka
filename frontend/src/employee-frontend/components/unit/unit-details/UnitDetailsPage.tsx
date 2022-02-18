@@ -4,10 +4,12 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+
 import { combine, Loading, Result } from 'lib-common/api'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
+
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import {

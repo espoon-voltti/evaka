@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useContext, useCallback } from 'react'
 import styled, { css } from 'styled-components'
 import { v4 as uuid } from 'uuid'
+
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Followup, FollowupEntry } from 'lib-common/api-types/vasu'
 import { PermittedFollowupActions } from 'lib-common/api-types/vasu'
@@ -18,8 +19,10 @@ import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { VasuTranslations } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
+
 import { UserContext } from '../../../state/user'
 import QuestionInfo from '../QuestionInfo'
+
 import { QuestionProps } from './question-props'
 
 const FollowupEntryElement = React.memo(function FollowupEntryElement({

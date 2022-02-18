@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,6 +12,7 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
+
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import {
   Message,
@@ -31,9 +32,11 @@ import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleLeft } from 'lib-icons'
+
 import { getAttachmentBlob } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { View } from './types-view'

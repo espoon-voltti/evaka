@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
+
 import { IncomeStatementAwaitingHandler } from 'lib-common/api-types/incomeStatement'
 import { formatDate } from 'lib-common/date'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -13,6 +14,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+
 import { getAreas } from '../../api/daycare'
 import {
   getIncomeStatementsAwaitingHandler,

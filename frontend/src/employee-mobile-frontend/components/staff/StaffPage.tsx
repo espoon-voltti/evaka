@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+
 import { combine, Success } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
@@ -11,12 +12,14 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
+
 import { getRealizedOccupancyToday } from '../../api/occupancy'
 import { getUnitStaffAttendances, postStaffAttendance } from '../../api/staff'
 import { UnitContext } from '../../state/unit'
 import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
+
 import StaffAttendanceEditor from './StaffAttendanceEditor'
 
 export default React.memo(function StaffPage() {

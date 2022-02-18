@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,9 +7,11 @@ import { fi } from 'date-fns/locale'
 import { ceil } from 'lodash'
 import React from 'react'
 import { Line } from 'react-chartjs-2'
+
 import { formatTime } from 'lib-common/date'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import colors from 'lib-customizations/common'
+
 import { useTranslation } from '../../../../state/i18n'
 
 type DatePoint = { x: Date; y: number | null }

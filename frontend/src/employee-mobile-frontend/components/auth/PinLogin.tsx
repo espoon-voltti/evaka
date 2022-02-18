@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,6 +11,7 @@ import React, {
   useState
 } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -19,6 +20,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { PlainPinInput } from 'lib-components/molecules/PinInput'
 import { H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
 import { pinLogin } from '../../api/auth'
 import { ChildAttendanceContext } from '../../state/child-attendance'
 import { useTranslation } from '../../state/i18n'
