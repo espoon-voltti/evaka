@@ -1,19 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package evaka.codegen.actionenum
 
+import evaka.codegen.fileHeader
 import kotlin.reflect.KClass
-
-val fileHeader = """
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
-//
-// SPDX-License-Identifier: LGPL-2.1-or-later
-
-// GENERATED FILE: no manual modifications
-/* eslint-disable prettier/prettier */
-""".trimStart()
 
 typealias Generator = () -> String
 
