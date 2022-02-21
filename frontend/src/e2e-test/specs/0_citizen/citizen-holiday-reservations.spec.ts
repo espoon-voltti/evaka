@@ -15,12 +15,10 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
-let header: CitizenHeader
 
 const period = new FiniteDateRange(
   LocalDate.of(2035, 12, 18),
@@ -31,7 +29,6 @@ const child = enduserChildFixtureJari
 beforeEach(async () => {
   await resetDatabase()
   page = await Page.open()
-  header = new CitizenHeader(page)
 
   const daycare = await Fixture.daycare()
     .with(daycareFixture)
@@ -71,14 +68,16 @@ describe('Holiday periods', () => {
         .save()
     })
 
-    test('A banner will prompt for holiday reservations is shown', async () => {
+    test('A holiday reservations banner is shown on calendar page', async () => {
       await enduserLogin(page)
-      await header.assertHolidayPeriodBannerIsShown(true)
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      expect(await calendar.getHolidayBannerContent()).toEqual(
+        'Ilmoita lomat ja tee varaukset 18.12.2035-08.01.2036 välille viimeistään 06.12.2035.'
+      )
     })
 
     test('The calendar page should show a button for reporting holidays', async () => {
       await enduserLogin(page)
-      await header.selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayModalButtonVisible()
     })

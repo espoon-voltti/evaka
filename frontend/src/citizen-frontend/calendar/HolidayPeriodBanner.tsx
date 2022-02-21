@@ -9,6 +9,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { desktopMin } from 'lib-components/breakpoints'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -16,12 +17,17 @@ import { faTreePalm } from 'lib-icons'
 
 import { UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
+import { headerHeightDesktop, headerHeightMobile } from '../header/const'
+import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
 
-import { isHolidayFormCurrentlyActive } from './holiday-period'
-import { useHolidayPeriods } from './state'
-
 const BannerBackground = styled.div`
+  position: sticky;
+  z-index: 2;
+  top: ${headerHeightMobile}px;
+  @media (min-width: ${desktopMin}) {
+    top: ${headerHeightDesktop}px;
+  }
   background-color: ${colors.grayscale.g0};
 `
 
@@ -31,7 +37,6 @@ const Banner = styled(Container)`
   align-items: center;
   gap: ${defaultMargins.s};
   padding: ${defaultMargins.s};
-  margin-top: 1px;
 `
 
 interface HolidayPeriodBannerProps {
@@ -57,12 +62,14 @@ const HolidayPeriodBanner = React.memo(function HolidayPeriodBanner({
   )
 })
 
-export default React.memo(function CtaBanner() {
+export default React.memo(function BannerWrapper() {
   const user = useUser()
-  const { holidayPeriods } = useHolidayPeriods()
-  const status = useDataStatus(holidayPeriods)
+  const { activePeriod } = useHolidayPeriods()
+  const status = useDataStatus(activePeriod)
 
-  if (!user) return null
+  if (!user) {
+    return null
+  }
 
   return (
     <BannerBackground
@@ -70,12 +77,11 @@ export default React.memo(function CtaBanner() {
       data-status={status}
     >
       <UnwrapResult
-        result={holidayPeriods}
+        result={activePeriod}
         loading={() => null}
         failure={() => null}
       >
-        {(periods) => {
-          const activePeriod = periods.find(isHolidayFormCurrentlyActive)
+        {(activePeriod) => {
           return activePeriod ? (
             <HolidayPeriodBanner
               period={activePeriod.period}

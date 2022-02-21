@@ -10,13 +10,16 @@ import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { getHolidayPeriods } from './api'
+import { isHolidayFormCurrentlyActive } from './holiday-period'
 
 export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
+  activePeriod: Result<HolidayPeriod | undefined>
 }
 
 const defaultState: HolidayPeriodsState = {
-  holidayPeriods: Loading.of()
+  holidayPeriods: Loading.of(),
+  activePeriod: Loading.of()
 }
 
 export const HolidayPeriodsContext =
@@ -36,7 +39,10 @@ export const HolidayPeriodsContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        holidayPeriods
+        holidayPeriods,
+        activePeriod: holidayPeriods.map((periods) =>
+          periods.find(isHolidayFormCurrentlyActive)
+        )
       }),
       [holidayPeriods]
     )
