@@ -51,20 +51,47 @@ WITH operational_days AS (
     WHERE
        date <> ALL (SELECT date FROM holiday)
        OR daycare.operation_days = '{1,2,3,4,5,6,7}'::int[]
+), effective_placements AS (
+    SELECT
+        od.date AS date,
+        b.unit_id,
+        b.child_id,
+        p.type AS placement_type
+    FROM operational_days od
+    JOIN backup_care b ON b.unit_id = od.unit_id AND od.date BETWEEN b.start_date AND b.end_date
+    JOIN placement p ON p.child_id = b.child_id AND od.date BETWEEN p.start_date AND p.end_date
+
+    UNION ALL
+
+    SELECT
+        od.date AS date,
+        p.unit_id,
+        p.child_id,
+        p.type AS placement_type
+    FROM operational_days od
+    JOIN placement p ON p.unit_id = od.unit_id AND od.date BETWEEN p.start_date AND p.end_date
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM backup_care b
+        WHERE b.child_id = p.child_id AND od.date BETWEEN b.start_date AND b.end_date
+    )
 )
-SELECT d.id as unit_id, d.name as unit_name, p.type as placement_type, count(p.id) AS attendance_days
-FROM operational_days od
-JOIN placement p ON p.unit_id = od.unit_id AND od.date BETWEEN p.start_date AND p.end_date
-JOIN daycare d ON p.unit_id = d.id
+SELECT
+    ep.unit_id,
+    d.name AS unit_name,
+    ep.placement_type,
+    count(ep.date) AS attendance_days
+FROM effective_placements ep
+JOIN daycare d ON d.id = ep.unit_id
 WHERE NOT EXISTS (
     SELECT 1
     FROM absence
-    WHERE child_id = p.child_id AND date = od.date
-    HAVING count(category) >= cardinality(absence_categories(p.type))
+    WHERE child_id = ep.child_id AND date = ep.date
+    HAVING count(category) >= cardinality(absence_categories(ep.placement_type))
 )
-AND p.type = :placementType
-GROUP BY d.id, d.name, p.type
-ORDER BY d.name, p.type
+AND ep.placement_type = :placementType
+GROUP BY ep.unit_id, d.name, ep.placement_type
+ORDER BY d.name
     """
     )
         .bind("from", from)

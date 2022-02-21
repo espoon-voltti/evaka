@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -18,10 +19,10 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
+import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testRoundTheClockDaycare
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -31,15 +32,9 @@ class SextetReportTest : PureJdbiTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
+            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestHoliday(LocalDate.of(2021, 12, 6))
-        }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 
@@ -48,6 +43,9 @@ class SextetReportTest : PureJdbiTest() {
         // 10 operational days (6.12. is a holiday)
         val startDate = LocalDate.of(2021, 12, 1)
         val endDate = LocalDate.of(2021, 12, 15)
+
+        // midpoint
+        val midDate = LocalDate.of(2021, 12, 8)
 
         db.transaction { tx ->
             // DAYCARE
@@ -95,7 +93,7 @@ class SextetReportTest : PureJdbiTest() {
 
             // PRESCHOOL_DAYCARE
 
-            // 10
+            // 9
             tx.insertTestPlacement(
                 childId = testChild_5.id,
                 unitId = testDaycare.id,
@@ -109,25 +107,47 @@ class SextetReportTest : PureJdbiTest() {
                 date = LocalDate.of(2021, 12, 1),
                 category = AbsenceCategory.BILLABLE,
             )
+            // Affects because both halves off
+            tx.insertTestAbsence(
+                childId = testChild_5.id,
+                date = LocalDate.of(2021, 12, 2),
+                category = AbsenceCategory.BILLABLE,
+            )
+            tx.insertTestAbsence(
+                childId = testChild_5.id,
+                date = LocalDate.of(2021, 12, 2),
+                category = AbsenceCategory.NONBILLABLE,
+            )
 
-            // 9
+            // 5 to daycare 1
             tx.insertTestPlacement(
                 childId = testChild_6.id,
                 unitId = testDaycare.id,
                 type = PlacementType.PRESCHOOL_DAYCARE,
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
             )
-            // Affects because both halves off
-            tx.insertTestAbsence(
+            // 5 to daycare 2 (backup care)
+            tx.insertTestBackUpCare(
                 childId = testChild_6.id,
-                date = LocalDate.of(2021, 12, 1),
-                category = AbsenceCategory.BILLABLE,
+                unitId = testDaycare2.id,
+                startDate = startDate,
+                endDate = midDate,
             )
-            tx.insertTestAbsence(
-                childId = testChild_6.id,
-                date = LocalDate.of(2021, 12, 1),
-                category = AbsenceCategory.NONBILLABLE,
+
+            // 10 to daycare 1 (same unit in backup care)
+            tx.insertTestPlacement(
+                childId = testChild_7.id,
+                unitId = testDaycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = startDate,
+                endDate = endDate,
+            )
+            tx.insertTestBackUpCare(
+                childId = testChild_7.id,
+                unitId = testDaycare.id,
+                startDate = startDate,
+                endDate = midDate,
             )
         }
 
@@ -158,7 +178,8 @@ class SextetReportTest : PureJdbiTest() {
 
         assertEquals(
             listOf(
-                SextetReportRow(testDaycare.id, testDaycare.name, PlacementType.PRESCHOOL_DAYCARE, 10 + 9),
+                SextetReportRow(testDaycare.id, testDaycare.name, PlacementType.PRESCHOOL_DAYCARE, 9 + 5 + 10),
+                SextetReportRow(testDaycare2.id, testDaycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5),
             ),
             report2,
         )
