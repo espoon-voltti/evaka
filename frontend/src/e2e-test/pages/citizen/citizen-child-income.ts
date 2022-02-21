@@ -106,6 +106,16 @@ export class CitizenChildIncomeStatementListPage {
     )
   }
 
+  async assertChildCount(expected: number) {
+    await this.page
+      .find('[data-qa="children-income-statements"]')
+      .waitUntilVisible()
+    await waitUntilEqual(
+      () => this.page.findAll(`[data-qa="child-income-statement"]`).count(),
+      expected
+    )
+  }
+
   async assertChildIncomeStatementRowCount(expected: number) {
     await this.childIncomeStatementList.find('table').waitUntilVisible()
     await waitUntilEqual(() => this.childIncomeStatementRow.count(), expected)

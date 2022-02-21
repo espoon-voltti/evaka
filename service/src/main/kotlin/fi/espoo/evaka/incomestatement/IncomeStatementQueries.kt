@@ -547,13 +547,13 @@ fun Database.Read.getIncomeStatementChildrenByGuardian(guardianId: PersonId): Li
     this.createQuery(
         """
 SELECT
-    p.id, p.first_name, p.last_name, p.date_of_birth
+    DISTINCT p.id, p.first_name, p.last_name, p.date_of_birth
 FROM guardian g
     INNER JOIN person p ON g.child_id = p.id
     LEFT JOIN placement pl ON pl.child_id = p.id AND pl.end_date >= :today::date
 WHERE g.guardian_id = :guardianId
     AND pl.type = ANY(:invoicedPlacementTypes::placement_type[])
-ORDER BY p.date_of_birth, p.last_name, p.first_name
+ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         """.trimIndent()
     )
         .bind("today", HelsinkiDateTime.now().toLocalDate())
