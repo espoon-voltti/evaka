@@ -138,6 +138,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             <FixedSpaceColumn spacing="L">
               {selectedGroup ? (
                 <ReservationsTable
+                  unitId={unitId}
                   operationalDays={data.operationalDays}
                   allDayRows={selectedGroup.children}
                   onMakeReservationForChild={setCreatingReservationChild}
@@ -146,6 +147,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                 />
               ) : (
                 <ReservationsTable
+                  unitId={unitId}
                   operationalDays={data.operationalDays}
                   allDayRows={data.ungrouped}
                   onMakeReservationForChild={setCreatingReservationChild}

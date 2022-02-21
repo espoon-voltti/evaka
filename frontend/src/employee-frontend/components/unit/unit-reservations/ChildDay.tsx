@@ -57,6 +57,8 @@ interface Props {
   deleteAbsence: (i: number, d: LocalDate) => void
   updateReservation: (i: number, d: LocalDate, r: TimeRange) => void
   saveReservation: (d: LocalDate) => void
+  updateAttendance: (i: number, d: LocalDate, r: TimeRange) => void
+  saveAttendance: (d: LocalDate) => void
 }
 
 export default React.memo(function ChildDay({
@@ -67,7 +69,9 @@ export default React.memo(function ChildDay({
   editState,
   deleteAbsence,
   updateReservation,
-  saveReservation
+  saveReservation,
+  updateAttendance,
+  saveAttendance
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -151,24 +155,36 @@ export default React.memo(function ChildDay({
         )}
       </TimesRow>
       <TimesRow>
-        <AttendanceTime
-          data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${0}`}
-          warning={attendanceTimeDiffers(
-            expectedTimeForThisDay?.start,
-            dailyData.attendance?.startTime
-          )}
-        >
-          {dailyData.attendance?.startTime ?? '–'}
-        </AttendanceTime>
-        <AttendanceTime
-          data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${1}`}
-          warning={attendanceTimeDiffers(
-            dailyData.attendance?.endTime,
-            expectedTimeForThisDay?.end
-          )}
-        >
-          {dailyData.attendance?.endTime ?? '–'}
-        </AttendanceTime>
+        {editState ? (
+          <TimeRangeEditor
+            timeRange={editState.attendances[rowIndex][day.date.formatIso()]}
+            update={(timeRange) =>
+              updateAttendance(rowIndex, day.date, timeRange)
+            }
+            save={() => saveAttendance(day.date)}
+          />
+        ) : (
+          <>
+            <AttendanceTime
+              data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${0}`}
+              warning={attendanceTimeDiffers(
+                expectedTimeForThisDay?.start,
+                dailyData.attendance?.startTime
+              )}
+            >
+              {dailyData.attendance?.startTime ?? '–'}
+            </AttendanceTime>
+            <AttendanceTime
+              data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${1}`}
+              warning={attendanceTimeDiffers(
+                dailyData.attendance?.endTime,
+                expectedTimeForThisDay?.end
+              )}
+            >
+              {dailyData.attendance?.endTime ?? '–'}
+            </AttendanceTime>
+          </>
+        )}
       </TimesRow>
     </DateCell>
   )

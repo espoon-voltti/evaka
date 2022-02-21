@@ -15,6 +15,7 @@ import {
   OperationalDay
 } from 'lib-common/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { fontWeights, H4 } from 'lib-components/typography'
@@ -31,6 +32,7 @@ import ChildDay from './ChildDay'
 import { useUnitReservationEditState } from './reservation-table-edit-state'
 
 interface Props {
+  unitId: UUID
   operationalDays: OperationalDay[]
   allDayRows: ChildDailyRecords[]
   onMakeReservationForChild: (child: Child) => void
@@ -41,14 +43,12 @@ interface Props {
 export default React.memo(function ReservationsTable(props: Props) {
   const { operationalDays, onMakeReservationForChild, selectedDate } = props
   const { i18n, lang } = useTranslation()
-  const {
-    editState,
-    stopEditing,
-    startEditing,
-    deleteAbsence,
-    updateReservation,
-    saveReservation
-  } = useUnitReservationEditState(props.allDayRows, props.reloadReservations)
+  const { editState, stopEditing, startEditing, ...editCallbacks } =
+    useUnitReservationEditState(
+      props.allDayRows,
+      props.reloadReservations,
+      props.unitId
+    )
 
   useEffect(stopEditing, [stopEditing, selectedDate])
 
@@ -128,9 +128,7 @@ export default React.memo(function ReservationsTable(props: Props) {
                       dataForAllDays={childDailyRecordRow}
                       rowIndex={index}
                       editState={childEditState}
-                      deleteAbsence={deleteAbsence}
-                      updateReservation={updateReservation}
-                      saveReservation={saveReservation}
+                      {...editCallbacks}
                     />
                   </DayTd>
                 ))}

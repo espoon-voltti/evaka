@@ -14,6 +14,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
   CareType,
@@ -835,6 +836,17 @@ export async function postReservations(
 ): Promise<Result<void>> {
   return client
     .post('/attendance-reservations', reservations)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postAttendances(
+  childId: UUID,
+  unitId: UUID,
+  attendances: AttendancesRequest
+): Promise<Result<void>> {
+  return client
+    .post(`/attendances/units/${unitId}/children/${childId}`, attendances)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

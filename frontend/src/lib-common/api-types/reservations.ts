@@ -61,7 +61,7 @@ export interface DailyChildData {
   absence: { type: AbsenceType } | null
 }
 
-interface AttendanceTimes {
+export interface AttendanceTimes {
   startTime: string
   endTime: string | null
 }

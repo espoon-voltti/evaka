@@ -11,15 +11,17 @@ import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { TimeRangeErrors, validateTimeRange } from 'lib-common/reservations'
+import { UUID } from 'lib-common/types'
 
 import { deleteChildAbsences } from '../../../api/absences'
-import { postReservations } from '../../../api/unit'
+import { postAttendances, postReservations } from '../../../api/unit'
 
 export interface EditState {
   childId: string
   date: LocalDate
   request: Result<void>
   reservations: Record<JsonOf<LocalDate>, TimeRangeWithErrors>[]
+  attendances: Record<JsonOf<LocalDate>, TimeRangeWithErrors>[]
   absences: Record<JsonOf<LocalDate>, { type: AbsenceType } | null>[]
 }
 
@@ -29,7 +31,8 @@ export interface TimeRangeWithErrors extends TimeRange {
 
 export function useUnitReservationEditState(
   dailyData: ChildDailyRecords[],
-  reloadReservations: () => void
+  reloadReservations: () => void,
+  unitId: UUID
 ) {
   const [state, setState] = useState<EditState>()
 
@@ -70,6 +73,19 @@ export function useUnitReservationEditState(
               date,
               {
                 ...(reservation ?? { startTime: '', endTime: '' }),
+                errors: { startTime: undefined, endTime: undefined }
+              }
+            ])
+          )
+        ),
+        attendances: childData.map((row) =>
+          Object.fromEntries(
+            Object.entries(row).map(([date, { attendance }]) => [
+              date,
+              {
+                ...(attendance
+                  ? { ...attendance, endTime: attendance.endTime ?? '' }
+                  : { startTime: '', endTime: '' }),
                 errors: { startTime: undefined, endTime: undefined }
               }
             ])
@@ -158,12 +174,66 @@ export function useUnitReservationEditState(
     [state, startRequest, updateRequestStatus]
   )
 
+  const updateAttendance = useCallback(
+    (index: number, date: LocalDate, times: TimeRange) => {
+      setState((previousState) =>
+        previousState
+          ? {
+              ...previousState,
+              attendances: previousState.attendances.map((res, i) =>
+                i === index
+                  ? {
+                      ...res,
+                      [date.formatIso()]: {
+                        ...times,
+                        errors: validateTimeRange(times, true)
+                      }
+                    }
+                  : res
+              )
+            }
+          : previousState
+      )
+    },
+    []
+  )
+
+  const saveAttendance = useCallback(
+    (date: LocalDate) => {
+      if (!state?.childId) return
+
+      const attendances = state.attendances.map(
+        (dailyData) => dailyData[date.formatIso()]
+      )
+      if (attendances.some(({ errors }) => errors.startTime || errors.endTime))
+        return
+
+      const body = {
+        date,
+        attendances: attendances
+          .filter(({ startTime }) => startTime)
+          .map(({ startTime, endTime }) => ({
+            startTime,
+            endTime: endTime || null
+          }))
+      }
+
+      startRequest()
+      void postAttendances(state.childId, unitId, body).then(
+        updateRequestStatus
+      )
+    },
+    [unitId, state, startRequest, updateRequestStatus]
+  )
+
   return {
     editState: state,
     stopEditing,
     startEditing,
     deleteAbsence,
     updateReservation,
-    saveReservation
+    saveReservation,
+    updateAttendance,
+    saveAttendance
   } as const
 }

@@ -76,12 +76,14 @@ export function validateForm(
   }
 
   if (formData.repetition === 'DAILY') {
-    errors['dailyTimes'] = formData.dailyTimes.map(validateTimeRange)
+    errors['dailyTimes'] = formData.dailyTimes.map((timeRange) =>
+      validateTimeRange(timeRange)
+    )
   }
 
   if (formData.repetition === 'WEEKLY') {
     errors['weeklyTimes'] = formData.weeklyTimes.map((times) =>
-      times ? times.map(validateTimeRange) : undefined
+      times ? times.map((timeRange) => validateTimeRange(timeRange)) : undefined
     )
   }
 
@@ -89,7 +91,9 @@ export function validateForm(
     errors['irregularTimes'] = Object.fromEntries(
       Object.entries(formData.irregularTimes).map(([date, times]) => [
         date,
-        times ? times.map(validateTimeRange) : undefined
+        times
+          ? times.map((timeRange) => validateTimeRange(timeRange))
+          : undefined
       ])
     )
   }
@@ -167,7 +171,10 @@ function errorsExist(errors: ReservationErrors): boolean {
   return false
 }
 
-export function validateTimeRange(timeRange: TimeRange): TimeRangeErrors {
+export function validateTimeRange(
+  timeRange: TimeRange,
+  openEnd = false
+): TimeRangeErrors {
   let startTime: ErrorKey | undefined
   if (timeRange.startTime === '' && timeRange.endTime !== '') {
     startTime = 'timeRequired'
@@ -176,7 +183,7 @@ export function validateTimeRange(timeRange: TimeRange): TimeRangeErrors {
     startTime ?? regexp(timeRange.startTime, TIME_REGEXP, 'timeFormat')
 
   let endTime: ErrorKey | undefined
-  if (timeRange.endTime === '' && timeRange.startTime !== '') {
+  if (!openEnd && timeRange.endTime === '' && timeRange.startTime !== '') {
     endTime = 'timeRequired'
   }
   endTime = endTime ?? regexp(timeRange.endTime, TIME_REGEXP, 'timeFormat')
