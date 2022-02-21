@@ -1213,6 +1213,7 @@ export const fi = {
     },
     incomeStatement: {
       title: 'Tuloselvitykset',
+      custodianTitle: 'Huollettavien tuloselvitykset',
       noIncomeStatements: 'Ei tuloselvityksiä',
       incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
       createdHeading: 'Saapumispäivä',
