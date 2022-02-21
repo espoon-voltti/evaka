@@ -14,7 +14,8 @@ import {
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  Income
+  Income,
+  ChildIncome
 } from 'lib-common/api-types/incomeStatement'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
@@ -94,6 +95,9 @@ export default React.memo(function IncomeStatementPage({
               />
               {incomeStatement.type === 'INCOME' && (
                 <IncomeInfo incomeStatement={incomeStatement} />
+              )}
+              {incomeStatement.type === 'CHILD_INCOME' && (
+                <ChildIncomeInfo incomeStatement={incomeStatement} />
               )}
             </ContentArea>
             {incomeStatement.type === 'INCOME' && (
@@ -346,6 +350,29 @@ function AccountantInfo({ accountant }: { accountant: Accountant }) {
       <Row label={i18n.incomeStatement.email} value={accountant.email} />
       <Row label={i18n.incomeStatement.phone} value={accountant.phone} />
       <Row label={i18n.incomeStatement.address} value={accountant.address} />
+    </>
+  )
+}
+
+function ChildIncomeInfo({
+  incomeStatement
+}: {
+  incomeStatement: ChildIncome
+}) {
+  const { i18n } = useTranslation()
+  return (
+    <>
+      <H2>{i18n.incomeStatement.otherInfoTitle}</H2>
+      <Row
+        label={i18n.incomeStatement.otherInfo}
+        value={incomeStatement.otherInfo || '-'}
+      />
+      <HorizontalLine />
+      <CitizenAttachments
+        attachments={incomeStatement.attachments.filter(
+          (attachment) => !attachment.uploadedByEmployee
+        )}
+      />
     </>
   )
 }
