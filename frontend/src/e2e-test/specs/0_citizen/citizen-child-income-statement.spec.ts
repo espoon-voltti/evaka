@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
+
 import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
@@ -30,7 +32,16 @@ beforeEach(async () => {
     createDaycarePlacementFixture(
       uuidv4(),
       fixtures.enduserChildFixtureJari.id,
-      fixtures.daycareFixture.id
+      fixtures.daycareFixture.id,
+      LocalDate.today().formatIso(),
+      LocalDate.today().formatIso()
+    ),
+    createDaycarePlacementFixture(
+      uuidv4(),
+      fixtures.enduserChildFixtureJari.id,
+      fixtures.daycareFixture.id,
+      LocalDate.today().addDays(1).formatIso(),
+      LocalDate.today().addDays(1).formatIso()
     )
   ])
 
@@ -52,6 +63,8 @@ describe('Child Income statements', () => {
   test('Create a highest fee income statement, change it as child income statement, view and delete it', async () => {
     // Create
     await header.selectTab('income')
+    await child1ISList.assertChildCount(1)
+
     const editPage = await child1ISList.createIncomeStatement()
     await editPage.selectNoIncome()
     await editPage.selectAssure()

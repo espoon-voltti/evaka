@@ -1766,6 +1766,9 @@ const en: Translations = {
           report if the child has no income or your family has agreed to the
           highest early childhood education fee.
         </>
+      ),
+      noChildIncomeStatementsNeeded: (
+        <>You currently have no children to report income.</>
       )
     }
   },
