@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useMemo, useContext } from 'react'
+import React, { createContext, useContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { Loading, Result, Success } from 'lib-common/api'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getActionRequiringHolidayPeriods } from './api'
+import { getHolidayPeriods } from './api'
 
 export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
@@ -30,10 +30,7 @@ export const HolidayPeriodsContextProvider = React.memo(
   }) {
     const user = useUser()
     const [holidayPeriods] = useApiState(
-      () =>
-        user
-          ? getActionRequiringHolidayPeriods()
-          : Promise.resolve(Success.of([])),
+      () => (user ? getHolidayPeriods() : Promise.resolve(Success.of([]))),
       [user]
     )
 

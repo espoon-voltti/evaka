@@ -6,6 +6,7 @@ import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
 import { headerHeightDesktop } from 'citizen-frontend/header/const'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { scrollToPos } from 'lib-common/utils/scrolling'
@@ -16,6 +17,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
+import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
@@ -63,6 +65,12 @@ export default React.memo(function CalendarGridView({
   const onCreateAbsences = useCallback(
     () => onCreateAbsencesClicked(undefined),
     [onCreateAbsencesClicked]
+  )
+
+  const { holidayPeriods: holidayPeriodResult } = useHolidayPeriods()
+  const holidayPeriods = useMemo<FiniteDateRange[]>(
+    () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
+    [holidayPeriodResult]
   )
 
   return (
@@ -129,6 +137,9 @@ export default React.memo(function CalendarGridView({
                           }
                         }}
                         today={isToday}
+                        holidayPeriod={holidayPeriods.some((p) =>
+                          p.includes(d.date)
+                        )}
                         selected={
                           dateIsOnMonth &&
                           d.date.formatIso() === selectedDate?.formatIso()
@@ -238,7 +249,7 @@ const StickyHeader = styled.div`
   z-index: 2;
   width: 100%;
   background: ${(p) => p.theme.colors.grayscale.g0};
-  box-shadow: 0px 4px 8px 2px #0000000a;
+  box-shadow: 0 4px 8px 2px #0000000a;
 `
 
 const PageHeaderRow = styled(ContentArea).attrs({ opaque: false })`
@@ -281,11 +292,18 @@ const MonthTitle = styled(H2).attrs({ noMargin: true })`
   color: ${(p) => p.theme.colors.main.m1};
 `
 
-const DayCell = styled.div<{ today: boolean; selected: boolean }>`
+const DayCell = styled.div<{
+  today: boolean
+  selected: boolean
+  holidayPeriod: boolean
+}>`
   position: relative;
   min-height: 150px;
   padding: ${defaultMargins.s};
-  background: ${(p) => p.theme.colors.grayscale.g0};
+  background-color: ${(p) =>
+    p.holidayPeriod
+      ? p.theme.colors.accents.a10powder
+      : p.theme.colors.grayscale.g0};
   outline: 1px solid ${colors.grayscale.g15};
   cursor: pointer;
   user-select: none;
@@ -301,7 +319,7 @@ const DayCell = styled.div<{ today: boolean; selected: boolean }>`
   ${(p) =>
     p.selected
       ? css`
-          box-shadow: 0px 2px 3px 2px #00000030;
+          box-shadow: 0 2px 3px 2px #00000030;
           z-index: 1;
           /* higher z-index causes right and bottom borders to shift when using outline */
           margin-left: -1px;

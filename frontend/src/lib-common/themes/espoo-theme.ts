@@ -42,7 +42,8 @@ const theme: Theme = {
       a6turquoise: '#7ff6fc',
       a7mint: '#bcfdce',
       a8lightBlue: '#c9d4dd',
-      a9pink: '#fca5c7'
+      a9pink: '#fca5c7',
+      a10powder: '#fde6db'
     }
   },
   typography: {

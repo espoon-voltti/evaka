@@ -9,11 +9,9 @@ import { JsonOf } from 'lib-common/json'
 
 import { client } from '../api-client'
 
-export function getActionRequiringHolidayPeriods(): Promise<
-  Result<HolidayPeriod[]>
-> {
+export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {
   return client
-    .get<JsonOf<HolidayPeriod[]>>(`/citizen/holiday-period/action-required`)
+    .get<JsonOf<HolidayPeriod[]>>(`/citizen/holiday-period`)
     .then((res) => Success.of(res.data.map(deserializeHolidayPeriod)))
     .catch((e) => Failure.fromError(e))
 }

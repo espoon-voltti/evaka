@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -21,8 +21,9 @@ import {
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
-import { UnwrapResult } from '../async-rendering'
+import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
+import { isHolidayFormCurrentlyActive } from '../holiday-periods/holiday-period'
 import { useHolidayPeriods } from '../holiday-periods/state'
 
 import AbsenceModal from './AbsenceModal'
@@ -100,13 +101,19 @@ export default React.memo(function CalendarPage() {
     [data]
   )
 
+  const dayIsHolidayPeriod = useCallback(
+    (date: LocalDate) =>
+      holidayPeriods
+        .map((periods) => periods.some((p) => p.period.includes(date)))
+        .getOrElse(false),
+    [holidayPeriods]
+  )
+
   const isHolidayFormActive: boolean = useMemo(
     () =>
-      holidayPeriods.mapAll({
-        loading: () => false,
-        failure: () => false,
-        success: (holidayPeriods) => holidayPeriods.length > 0
-      }),
+      holidayPeriods
+        .map((periods) => periods.some(isHolidayFormCurrentlyActive))
+        .getOrElse(false),
     [holidayPeriods]
   )
 
@@ -114,82 +121,77 @@ export default React.memo(function CalendarPage() {
 
   return (
     <>
-      <UnwrapResult result={data}>
-        {(response) => (
-          <>
-            <MobileAndTablet>
-              <ContentArea
-                opaque
-                paddingVertical="zero"
-                paddingHorizontal="zero"
-              >
-                <CalendarListView
-                  dailyData={response.dailyData}
-                  onHoverButtonClick={openPickActionModal}
-                  selectDate={selectDate}
-                  dayIsReservable={dayIsReservable}
-                />
-              </ContentArea>
-            </MobileAndTablet>
-            <DesktopOnly>
-              <Gap size="s" />
-              <CalendarGridView
+      {renderResult(data, (response) => (
+        <>
+          <MobileAndTablet>
+            <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
+              <CalendarListView
                 dailyData={response.dailyData}
-                onCreateReservationClicked={openReservationModal}
-                onCreateAbsencesClicked={openAbsenceModal}
-                onReportHolidaysClicked={openHolidayModal}
-                isHolidayFormActive={isHolidayFormActive}
-                selectedDate={selectedDate}
+                onHoverButtonClick={openPickActionModal}
                 selectDate={selectDate}
-                includeWeekends={response.includesWeekends}
                 dayIsReservable={dayIsReservable}
+                dayIsHolidayPeriod={dayIsHolidayPeriod}
               />
-            </DesktopOnly>
-            {selectedDate && (
-              <DayView
-                date={selectedDate}
-                reservationsResponse={response}
-                selectDate={selectDate}
-                reloadData={loadDefaultRange}
-                close={closeDayView}
-                openAbsenceModal={openAbsenceModal}
-              />
-            )}
-            {openModal?.type === 'pickAction' && (
-              <ActionPickerModal
-                close={closeModal}
-                openReservations={openReservationModal}
-                openAbsences={openAbsenceModal}
-                openHolidays={openHolidayModal}
-                isHolidayFormActive={isHolidayFormActive}
-              />
-            )}
-            {openModal?.type === 'reservations' && (
-              <ReservationModal
-                onClose={closeModal}
-                availableChildren={response.children}
-                onReload={loadDefaultRange}
-                reservableDays={response.reservableDays}
-              />
-            )}
-            {openModal?.type === 'absences' && (
-              <AbsenceModal
-                close={closeModal}
-                initialDate={openModal.initialDate}
-                reload={loadDefaultRange}
-                availableChildren={response.children}
-              />
-            )}
-            {openModal?.type === 'holidays' && (
-              <HolidayModal
-                close={closeModal}
-                reload={loadDefaultRange}
-                availableChildren={response.children}
-              />
-            )}
-          </>
-        )}
-      </UnwrapResult>
+            </ContentArea>
+          </MobileAndTablet>
+          <DesktopOnly>
+            <Gap size="s" />
+            <CalendarGridView
+              dailyData={response.dailyData}
+              onCreateReservationClicked={openReservationModal}
+              onCreateAbsencesClicked={openAbsenceModal}
+              onReportHolidaysClicked={openHolidayModal}
+              isHolidayFormActive={isHolidayFormActive}
+              selectedDate={selectedDate}
+              selectDate={selectDate}
+              includeWeekends={response.includesWeekends}
+              dayIsReservable={dayIsReservable}
+            />
+          </DesktopOnly>
+          {selectedDate && (
+            <DayView
+              date={selectedDate}
+              reservationsResponse={response}
+              selectDate={selectDate}
+              reloadData={loadDefaultRange}
+              close={closeDayView}
+              openAbsenceModal={openAbsenceModal}
+            />
+          )}
+          {openModal?.type === 'pickAction' && (
+            <ActionPickerModal
+              close={closeModal}
+              openReservations={openReservationModal}
+              openAbsences={openAbsenceModal}
+              openHolidays={openHolidayModal}
+              isHolidayFormActive={isHolidayFormActive}
+            />
+          )}
+          {openModal?.type === 'reservations' && (
+            <ReservationModal
+              onClose={closeModal}
+              availableChildren={response.children}
+              onReload={loadDefaultRange}
+              reservableDays={response.reservableDays}
+            />
+          )}
+          {openModal?.type === 'absences' && (
+            <AbsenceModal
+              close={closeModal}
+              initialDate={openModal.initialDate}
+              reload={loadDefaultRange}
+              availableChildren={response.children}
+            />
+          )}
+          {openModal?.type === 'holidays' && (
+            <HolidayModal
+              close={closeModal}
+              reload={loadDefaultRange}
+              availableChildren={response.children}
+            />
+          )}
+        </>
+      ))}
       <Footer />
     </>
   )

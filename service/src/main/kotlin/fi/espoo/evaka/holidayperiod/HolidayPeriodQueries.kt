@@ -12,8 +12,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 
 val holidayPeriodSelect = """
     SELECT id,
-           created,
-           updated,
            period,
            reservation_deadline,
            show_reservation_banner_from,
@@ -95,15 +93,3 @@ fun Database.Transaction.deleteHolidayPeriod(id: HolidayPeriodId) =
     this.createUpdate("DELETE FROM holiday_period WHERE id = :id")
         .bind("id", id)
         .execute()
-
-fun Database.Read.getActionRequiringHolidayPeriods(): List<HolidayPeriod> =
-    this.createQuery(
-        """
-$holidayPeriodSelect
-WHERE show_reservation_banner_from < now()
-    AND reservation_deadline >= now()
-ORDER BY period
-        """.trimIndent()
-    )
-        .mapTo<HolidayPeriod>()
-        .list()
