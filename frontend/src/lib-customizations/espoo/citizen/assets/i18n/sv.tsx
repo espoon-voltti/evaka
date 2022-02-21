@@ -1722,6 +1722,9 @@ const sv: Translations = {
           inkomster, eller om familjen har godkännt den högsta avgiften, bör du
           göra utredningen.
         </>
+      ),
+      noChildIncomeStatementsNeeded: (
+        <>Du har för närvarande inga barn att redovisa inkomst.</>
       )
     }
   },

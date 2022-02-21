@@ -1693,6 +1693,12 @@ export default {
           ole tuloja, tai perheenne on suostunut korkeimpaan
           varhaiskasvatusmaksuun.
         </>
+      ),
+      noChildIncomeStatementsNeeded: (
+        <>
+          Sinulla ei tällä hetkellä ole lapsia joiden tulotiedot pitää
+          ilmoittaa.
+        </>
       )
     }
   },
