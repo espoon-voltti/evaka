@@ -807,29 +807,42 @@ fun Database.Transaction.insertTestAbsence(
 }
 
 fun Database.Transaction.insertTestChildAttendance(
-    id: AttendanceId = AttendanceId(UUID.randomUUID()),
     childId: ChildId,
     unitId: DaycareId,
     arrived: HelsinkiDateTime,
     departed: HelsinkiDateTime?
 ) {
-    //language=sql
-    val sql =
+    val attendances: List<Triple<LocalDate, LocalTime, LocalTime?>> =
+        if (departed == null) listOf(Triple(arrived.toLocalDate(), arrived.toLocalTime(), null))
+        else generateSequence(arrived.toLocalDate()) { it.plusDays(1) }
+            .takeWhile { it <= departed.toLocalDate() }
+            .map { date ->
+                Triple(
+                    date,
+                    if (arrived.toLocalDate() == date) arrived.toLocalTime() else LocalTime.of(0, 0),
+                    if (departed.toLocalDate() == date) departed.toLocalTime() else LocalTime.of(23, 59)
+                )
+            }
+            .toList()
+
+    prepareBatch(
         """
-        INSERT INTO child_attendance (id, child_id, unit_id, arrived, departed)
-        VALUES (:id, :childId, :unitId, :arrived, :departed)
+        INSERT INTO child_attendance (id, child_id, unit_id, date, start_time, end_time)
+        VALUES (:id, :childId, :unitId, :date, :startTime, :endTime)
         """.trimIndent()
-    createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "childId" to childId,
-                "unitId" to unitId,
-                "arrived" to arrived,
-                "departed" to departed
-            )
-        )
-        .execute()
+    ).also { batch ->
+        attendances.forEach { (date, startTime, endTime) ->
+            batch
+                .bind("id", AttendanceId(UUID.randomUUID()))
+                .bind("childId", childId)
+                .bind("unitId", unitId)
+                .bind("date", date)
+                .bind("startTime", startTime.withSecond(0).withNano(0))
+                .bind("endTime", endTime?.withSecond(0)?.withNano(0))
+                .add()
+        }
+        batch.execute()
+    }
 }
 
 fun Database.Transaction.insertTestBackUpCare(
