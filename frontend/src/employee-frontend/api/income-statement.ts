@@ -9,7 +9,7 @@ import {
   IncomeStatement,
   IncomeStatementAwaitingHandler
 } from 'lib-common/api-types/incomeStatement'
-import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
+import {ChildBasicInfo, SetIncomeStatementHandledBody} from 'lib-common/generated/api-types/incomestatement'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -82,5 +82,14 @@ export async function updateIncomeStatementHandled(
   return client
     .post(`/income-statements/${incomeStatementId}/handled`, body)
     .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getGuardianIncomeStatementChildren(guardianId: UUID): Promise<
+  Result<ChildBasicInfo[]>
+  > {
+  return client
+    .get<JsonOf<ChildBasicInfo[]>>(`/income-statements/guardian/${guardianId}/children`)
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

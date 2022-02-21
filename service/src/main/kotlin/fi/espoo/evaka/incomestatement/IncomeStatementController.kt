@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
@@ -46,6 +47,24 @@ class IncomeStatementController(
                     page = page,
                     pageSize = pageSize
                 )
+            }
+        }
+    }
+
+    @GetMapping("/child/{childId}")
+    fun getChildIncomeStatements(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        @PathVariable childId: ChildId,
+        @RequestParam page: Int,
+        @RequestParam pageSize: Int
+    ): Paged<IncomeStatement> {
+        Audit.IncomeStatementsOfChild.log(user.id, childId)
+        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, PersonId(childId.raw))
+
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.readIncomeStatementsForPerson(PersonId(childId.raw), includeEmployeeContent = true, page = page, pageSize = pageSize)
             }
         }
     }
@@ -111,6 +130,21 @@ class IncomeStatementController(
                     page,
                     pageSize
                 )
+            }
+        }
+    }
+
+    @GetMapping("/guardian/{guardianId}/children")
+    fun getIncomeStatementChildren(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable guardianId: PersonId
+    ): List<ChildBasicInfo> {
+        Audit.IncomeStatementsOfChild.log()
+        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS)
+        return db.connect { dbc ->
+            dbc.read {
+                it.getIncomeStatementChildrenByGuardian(guardianId)
             }
         }
     }
