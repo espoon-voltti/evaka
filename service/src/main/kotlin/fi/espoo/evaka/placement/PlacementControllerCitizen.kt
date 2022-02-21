@@ -87,7 +87,7 @@ class PlacementControllerCitizen(
                     it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, id) }
                 }
                 .let { mapToTerminatablePlacements(it) }
-                .find { it.unitId == body.unitId && it.type == body.type && it.endDate.isAfter(terminationDate) }
+                .find { it.unitId == body.unitId && it.type == body.type }
                 ?: throw NotFound("Matching placement type not found")
 
             dbc.transaction { tx ->
