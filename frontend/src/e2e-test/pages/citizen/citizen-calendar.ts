@@ -72,6 +72,17 @@ export default class CitizenCalendarPage {
       ].join(', ')
     )
   }
+
+  async getHolidayBannerContent(): Promise<string> {
+    const bannerContainer = this.page.findByDataQa(
+      'holiday-period-banner-container'
+    )
+    await waitUntilEqual(
+      () => bannerContainer.getAttribute('data-status'),
+      'success'
+    )
+    return bannerContainer.findByDataQa('holiday-period-banner').innerText
+  }
 }
 
 class ReservationsModal {

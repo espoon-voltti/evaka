@@ -25,7 +25,6 @@ import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
-import CtaBanner from './holiday-periods/CtaBanner'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
 import ChildIncomeStatementView from './income-statements/ChildIncomeStatementView'
@@ -58,7 +57,6 @@ export default function App() {
                   <PedagogicalDocumentsContextProvider>
                     <HolidayPeriodsContextProvider>
                       <Header />
-                      <CtaBanner />
                       <Main>
                         <Switch>
                           <Route path="/applying" component={ApplyingRouter} />
