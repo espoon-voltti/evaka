@@ -6,11 +6,16 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
+  insertGuardianFixtures,
   insertIncomeStatements,
   insertPersonFixture,
   resetDatabase
 } from '../../dev-api'
-import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  enduserChildFixtureJari,
+  enduserGuardianFixture,
+  Fixture
+} from '../../dev-api/fixtures'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -28,18 +33,7 @@ beforeEach(async () => {
   page = await Page.open({ acceptDownloads: true })
 
   await insertPersonFixture(enduserGuardianFixture)
-  await insertIncomeStatements(enduserGuardianFixture.id, [
-    {
-      type: 'HIGHEST_FEE',
-      startDate: LocalDate.today().addYears(-1),
-      endDate: LocalDate.today().addDays(-1)
-    },
-    {
-      type: 'HIGHEST_FEE',
-      startDate: LocalDate.today(),
-      endDate: null
-    }
-  ])
+  await insertPersonFixture(enduserChildFixtureJari)
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
   await employeeLogin(page, financeAdmin.data)
@@ -56,6 +50,19 @@ async function navigateToIncomeStatements() {
 
 describe('Income statements', () => {
   test('Income statement can be set handled', async () => {
+    await insertIncomeStatements(enduserGuardianFixture.id, [
+      {
+        type: 'HIGHEST_FEE',
+        startDate: LocalDate.today().addYears(-1),
+        endDate: LocalDate.today().addDays(-1)
+      },
+      {
+        type: 'HIGHEST_FEE',
+        startDate: LocalDate.today(),
+        endDate: null
+      }
+    ])
+
     let incomeStatementsPage = await navigateToIncomeStatements()
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 2)
     const personProfilePage = await incomeStatementsPage.openNthIncomeStatement(
@@ -83,5 +90,32 @@ describe('Income statements', () => {
 
     incomeStatementsPage = await navigateToIncomeStatements()
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+  })
+
+  test('Child income statements', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: enduserGuardianFixture.id,
+        childId: enduserChildFixtureJari.id
+      }
+    ])
+
+    await insertIncomeStatements(enduserChildFixtureJari.id, [
+      {
+        type: 'CHILD_INCOME',
+        otherInfo: 'Test other info',
+        startDate: LocalDate.today(),
+        endDate: LocalDate.today(),
+        attachmentIds: []
+      }
+    ])
+
+    const incomeStatementsPage = await navigateToIncomeStatements()
+    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.assertNthIncomeStatement(
+      0,
+      `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`,
+      'lapsen tulotiedot'
+    )
   })
 })

@@ -36,7 +36,7 @@ export const otherIncome: OtherIncome[] = [
   'OTHER_INCOME'
 ]
 
-interface Base {
+export interface IncomeBase {
   id: UUID
   startDate: LocalDate
   endDate: LocalDate | null
@@ -46,17 +46,17 @@ interface Base {
   handlerNote: string
 }
 
-export interface HighestFee extends Base {
+export interface HighestFee extends IncomeBase {
   type: 'HIGHEST_FEE'
 }
 
-export interface ChildIncome extends Base {
+export interface ChildIncome extends IncomeBase {
   type: 'CHILD_INCOME'
   otherInfo: string
   attachments: IncomeStatementAttachment[]
 }
 
-export interface Income extends Base {
+export interface Income extends IncomeBase {
   type: 'INCOME'
   gross: Gross | null
   entrepreneur: Entrepreneur | null

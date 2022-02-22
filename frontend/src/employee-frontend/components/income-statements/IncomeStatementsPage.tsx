@@ -51,7 +51,7 @@ function IncomeStatementsList({
             <Td>{row.primaryCareArea}</Td>
             <Td>{formatDate(row.created)}</Td>
             <Td>{row.startDate.format()}</Td>
-            <Td>
+            <Td data-qa="income-statement-type">
               {i18n.incomeStatement.statementTypes[row.type].toLowerCase()}
             </Td>
           </Tr>

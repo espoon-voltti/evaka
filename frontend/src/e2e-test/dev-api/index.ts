@@ -57,7 +57,6 @@ import {
   FamilyContact,
   FridgeChild,
   FridgePartner,
-  HighestFeeFixture,
   PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
@@ -441,9 +440,17 @@ export async function insertFeeThresholds(
   }
 }
 
+export interface IncomeStatementFixture {
+  type: string
+  startDate: LocalDate
+  endDate: LocalDate | null
+  otherInfo?: string
+  attachmentIds?: UUID[]
+}
+
 export async function insertIncomeStatements(
   personId: UUID,
-  data: HighestFeeFixture[]
+  data: IncomeStatementFixture[]
 ): Promise<void> {
   try {
     await devClient.post(`/income-statements`, { personId, data })
