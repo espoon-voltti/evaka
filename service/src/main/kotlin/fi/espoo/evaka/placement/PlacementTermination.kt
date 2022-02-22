@@ -145,14 +145,15 @@ fun terminateBilledDaycare(
         if (placementsToSkip.contains(placement)) {
             continue
         }
+        val newPlacementType = when (placement.type) {
+            PRESCHOOL_DAYCARE -> PRESCHOOL
+            PREPARATORY_DAYCARE -> PREPARATORY
+            else -> throw IllegalStateException("Should not be handling any other placement types here")
+        }
         // It is possible that we already have an adjacent placement of the same type, e.g. when the billed DAYCARE part
         // of a PRESCHOOL_DAYCARE placement has been terminated before. Detect those and prevent duplicates.
         val adjacentPlacement = terminatablePlacementGroup.placements.find {
-            it.type == when (placement.type) {
-                PRESCHOOL_DAYCARE -> PRESCHOOL
-                PREPARATORY_DAYCARE -> PREPARATORY
-                else -> throw IllegalStateException("Should not be handling any other placement types here")
-            } && it.startDate == placement.endDate.plusDays(1)
+            it.type == newPlacementType && it.startDate == placement.endDate.plusDays(1)
         }?.also { placementsToSkip.add(it) }
 
         // If placement is in the future
@@ -168,16 +169,12 @@ fun terminateBilledDaycare(
                 tx.cancelPlacement(placement.id)
                 tx.updatePlacementStartDate(adjacentPlacement.id, placement.startDate)
             } else {
-                // convert all future PRESCHOOL_DAYCARE and PREPARATORY_DAYCARE placements to PRESCHOOL and PREPARATORY
+                // convert PRESCHOOL_DAYCARE and PREPARATORY_DAYCARE placement to PRESCHOOL and PREPARATORY
                 // and remove their service needs
                 tx.deleteServiceNeedsFromPlacement(placement.id)
                 tx.updatePlacementType(
                     placementId = placement.id,
-                    type = when (placement.type) {
-                        PRESCHOOL_DAYCARE -> PRESCHOOL
-                        PREPARATORY_DAYCARE -> PREPARATORY
-                        else -> throw IllegalStateException("Should not be handling any other placement types here")
-                    }
+                    type = newPlacementType
                 )
             }
         } else {
@@ -188,10 +185,8 @@ fun terminateBilledDaycare(
             } else {
                 // create new placement without daycare for the remaining period
                 // with placement type to PRESCHOOL / PREPARATORY
-                val typeForRemainingPeriod =
-                    if (placement.type === PRESCHOOL_DAYCARE) PRESCHOOL else PREPARATORY
                 tx.insertPlacement(
-                    type = typeForRemainingPeriod,
+                    type = newPlacementType,
                     childId = childId,
                     unitId = unitId,
                     startDate = terminationDate.plusDays(1),
