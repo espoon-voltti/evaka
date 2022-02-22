@@ -66,7 +66,7 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
           {children.map((child) => (
             <ChildIncomeStatementsContainer key={child.id}>
               <Gap size="m" />
-              <span>{`${i18n.personProfile.incomeStatement.title}: ${child.firstName} ${child.lastName}`}</span>
+              <span data-qa="child-income-statement-title">{`${child.firstName} ${child.lastName}`}</span>
               <IncomeStatements personId={child.id} />
             </ChildIncomeStatementsContainer>
           ))}

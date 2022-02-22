@@ -92,7 +92,7 @@ describe('Income statements', () => {
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
   })
 
-  test('Child income statements', async () => {
+  test('Child income statement is listed on finance worker unhandled income statement list', async () => {
     await insertGuardianFixtures([
       {
         guardianId: enduserGuardianFixture.id,

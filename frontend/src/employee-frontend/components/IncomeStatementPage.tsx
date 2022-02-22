@@ -366,6 +366,7 @@ function ChildIncomeInfo({
       <Row
         label={i18n.incomeStatement.otherInfo}
         value={incomeStatement.otherInfo || '-'}
+        dataQa="other-info"
       />
       <HorizontalLine />
       <CitizenAttachments
@@ -383,11 +384,14 @@ function CitizenAttachments({ attachments }: { attachments: Attachment[] }) {
     <>
       <H2>{i18n.incomeStatement.citizenAttachments.title}</H2>
       {attachments.length === 0 ? (
-        <p>{i18n.incomeStatement.citizenAttachments.noAttachments}</p>
+        <p data-qa="no-attachments">
+          {i18n.incomeStatement.citizenAttachments.noAttachments}
+        </p>
       ) : (
         <Row
           label={`${i18n.incomeStatement.attachments}:`}
           value={<UploadedFiles files={attachments} />}
+          dataQa="attachments"
         />
       )}
     </>
@@ -398,7 +402,7 @@ function UploadedFiles({ files }: { files: Attachment[] }) {
   return (
     <FixedSpaceColumn>
       {files.map((file) => (
-        <div key={file.id}>
+        <div key={file.id} data-qa="attachment">
           <FileIcon icon={fileIcon(file)} />
           <FileDownloadButton
             file={file}
@@ -519,17 +523,19 @@ function HandlerNotesForm({
 function Row({
   label,
   light,
-  value
+  value,
+  dataQa
 }: {
   label: string
   light?: boolean
   value: React.ReactNode
+  dataQa?: string
 }) {
   return (
     <>
       <FixedSpaceRow>
         <LabelColumn light={light}>{label}</LabelColumn>
-        <div>{value}</div>
+        <div data-qa={dataQa}>{value}</div>
       </FixedSpaceRow>
       <Gap size="s" />
     </>

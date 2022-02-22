@@ -230,6 +230,20 @@ export class IncomesSection extends Section {
   // Income statements
 
   #incomeStatementRows = this.findAll(`[data-qa="income-statement-row"]`)
+  #childIncomeStatementsTitles = this.findAll(
+    '[data-qa="child-income-statement-title"]'
+  )
+
+  async assertIncomeStatementChildName(nth: number, childName: string) {
+    await waitUntilEqual(
+      () => this.#childIncomeStatementsTitles.nth(nth).textContent,
+      childName
+    )
+  }
+
+  async assertIncomeStatementRowCount(expected: number) {
+    await this.#incomeStatementRows.assertCount(expected)
+  }
 
   async isIncomeStatementHandled(nth = 0) {
     return new Checkbox(
