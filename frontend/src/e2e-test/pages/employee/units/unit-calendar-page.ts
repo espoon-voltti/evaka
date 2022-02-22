@@ -16,6 +16,15 @@ import {
 export class UnitCalendarPage {
   constructor(private readonly page: Page) {}
 
+  #reservationCell = (date: LocalDate, row: number) =>
+    this.page.findByDataQa(`reservation-${date.formatIso()}-${row}`)
+  #attendanceCell = (date: LocalDate, row: number) =>
+    this.page.findByDataQa(`attendance-${date.formatIso()}-${row}`)
+
+  #ellipsisMenu = (childId: UUID) =>
+    this.page.find(`[data-qa="ellipsis-menu-${childId}"]`)
+  #editInline = this.page.find('[data-qa="menu-item-edit-row"]')
+
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="unit-groups-page"][data-loading="false"]')
@@ -35,28 +44,69 @@ export class UnitCalendarPage {
       .count()
   }
 
-  async attendanceCell(
-    date: LocalDate,
-    row: number,
-    col: number
-  ): Promise<string> {
-    return this.page.find(
-      `[data-qa="attendance-${date.formatIso()}-${row}-${col}"]`
-    ).innerText
+  getReservationStart(date: LocalDate, row: number): Promise<string> {
+    return this.#reservationCell(date, row).findByDataQa('reservation-start')
+      .innerText
   }
 
-  async reservationCell(
+  getReservationEnd(date: LocalDate, row: number): Promise<string> {
+    return this.#reservationCell(date, row).findByDataQa('reservation-end')
+      .innerText
+  }
+
+  getAttendanceStart(date: LocalDate, row: number): Promise<string> {
+    return this.#attendanceCell(date, row).findByDataQa('attendance-start')
+      .innerText
+  }
+
+  getAttendanceEnd(date: LocalDate, row: number): Promise<string> {
+    return this.#attendanceCell(date, row).findByDataQa('attendance-end')
+      .innerText
+  }
+
+  async openInlineEditor(childId: UUID) {
+    await this.#ellipsisMenu(childId).click()
+    await this.#editInline.click()
+  }
+
+  async closeInlineEditor() {
+    await this.page.findByDataQa('inline-editor-state-button').click()
+  }
+
+  async setReservationTimes(
     date: LocalDate,
-    row: number,
-    col: number
-  ): Promise<string> {
-    return this.page.find(
-      `[data-qa="reservation-${date.formatIso()}-${row}-${col}"]`
-    ).innerText
+    startTime: string,
+    endTime: string
+  ) {
+    const reservations = this.#reservationCell(date, 0)
+    await new TextInput(reservations.findByDataQa('input-start-time')).fill(
+      startTime
+    )
+    await new TextInput(reservations.findByDataQa('input-end-time')).fill(
+      endTime
+    )
+    // Click table header to trigger last input's onblur
+    await this.page.find('thead').click()
+  }
+
+  async setAttendanceTimes(
+    date: LocalDate,
+    startTime: string,
+    endTime: string
+  ) {
+    const attendances = this.#attendanceCell(date, 0)
+    await new TextInput(attendances.findByDataQa('input-start-time')).fill(
+      startTime
+    )
+    await new TextInput(attendances.findByDataQa('input-end-time')).fill(
+      endTime
+    )
+    // Click table header to trigger last input's onblur
+    await this.page.find('thead').click()
   }
 
   async openReservationModal(childId: UUID): Promise<ReservationModal> {
-    await this.page.find(`[data-qa="ellipsis-menu-${childId}"]`).click()
+    await this.#ellipsisMenu(childId).click()
     await this.page.find(`[data-qa="menu-item-reservation-modal"]`).click()
 
     return new ReservationModal(this.page.find('[data-qa="modal"]'))

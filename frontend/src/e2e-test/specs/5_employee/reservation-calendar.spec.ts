@@ -171,51 +171,95 @@ describe('Unit group calendar for shift care unit', () => {
 
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
 
-    const expectedReservations = [
-      ['00:00', '12:00', startDate],
-      ['20:00', '23:59', startDate],
-      ['00:00', '12:00', startDate.addDays(1)],
-      ['20:00', '23:59', startDate.addDays(1)]
-    ]
-
-    await Promise.all(
-      expectedReservations.map((res, rowIndex) => {
-        return [0, 1].map(
-          (colIndex) => () =>
-            waitUntilEqual(
-              () =>
-                calendarPage.reservationCell(
-                  res[2] as LocalDate,
-                  rowIndex % 2,
-                  colIndex
-                ),
-              res[colIndex]
-            )
-        )
-      })
+    await waitUntilEqual(
+      () => calendarPage.getReservationStart(startDate, 0),
+      '00:00'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getReservationEnd(startDate, 0),
+      '12:00'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getReservationStart(startDate, 1),
+      '20:00'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getReservationEnd(startDate, 1),
+      '23:59'
     )
 
-    const expectedAttendances = [
-      ['10:30', '15:30', startDate],
-      ['20:15', '00:00', startDate],
-      ['00:00', '07:30', startDate.addDays(1)]
-    ]
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceStart(startDate, 0),
+      '10:30'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceEnd(startDate, 0),
+      '15:30'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceStart(startDate, 1),
+      '20:15'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceEnd(startDate, 1),
+      '23:59'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceStart(startDate.addDays(1), 0),
+      '00:00'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceEnd(startDate.addDays(1), 0),
+      '07:30'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceStart(startDate.addDays(1), 1),
+      '–'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceEnd(startDate.addDays(1), 1),
+      '–'
+    )
+  })
 
-    await Promise.all(
-      expectedAttendances.map((att, rowIndex) => {
-        return [0, 1].map(
-          (colIndex) => () =>
-            waitUntilEqual(
-              () =>
-                calendarPage.attendanceCell(
-                  att[2] as LocalDate,
-                  rowIndex % 2,
-                  colIndex
-                ),
-              att[colIndex]
-            )
-        )
-      })
+  test('Employee can edit attendances and reservations inline', async () => {
+    calendarPage = await loadUnitCalendarPage()
+    await calendarPage.selectMode('week')
+    await calendarPage.openInlineEditor(child1Fixture.id)
+    await calendarPage.setReservationTimes(mockedToday, '08:00', '16:00')
+    await calendarPage.setAttendanceTimes(mockedToday, '08:02', '15:54')
+    await calendarPage.closeInlineEditor()
+    await waitUntilEqual(
+      () => calendarPage.getReservationStart(mockedToday, 0),
+      '08:00'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getReservationEnd(mockedToday, 0),
+      '16:00'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceStart(mockedToday, 0),
+      '08:02'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceEnd(mockedToday, 0),
+      '15:54'
+    )
+  })
+
+  test('Employee can add attendance without an end', async () => {
+    calendarPage = await loadUnitCalendarPage()
+    await calendarPage.selectMode('week')
+    await calendarPage.openInlineEditor(child1Fixture.id)
+    await calendarPage.setAttendanceTimes(mockedToday, '08:02', '')
+    await calendarPage.closeInlineEditor()
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceStart(mockedToday, 0),
+      '08:02'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceEnd(mockedToday, 0),
+      '–'
     )
   })
 })

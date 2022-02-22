@@ -107,7 +107,7 @@ export default React.memo(function ChildDay({
 
   return (
     <DateCell>
-      <TimesRow>
+      <TimesRow data-qa={`reservation-${day.date.formatIso()}-${rowIndex}`}>
         {absence ? (
           <AbsenceDay
             type={absence.type}
@@ -126,35 +126,28 @@ export default React.memo(function ChildDay({
         ) : expectedTimeForThisDay ? (
           /* show actual reservation or service time if exists */
           <>
-            <ReservationTime
-              data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${0}`}
-            >
+            <ReservationTime data-qa="reservation-start">
               {expectedTimeForThisDay.start}
               {maybeServiceTimeIndicator}
             </ReservationTime>
-            <ReservationTime
-              data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${1}`}
-            >
+            <ReservationTime data-qa="reservation-end">
               {expectedTimeForThisDay.end}
               {maybeServiceTimeIndicator}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
           /* else if daily service times are known but there is none for this day of week, show day off */
-          <ReservationTime data-qa={`reservation-${rowIndex}-${0}`}>
+          <ReservationTime data-qa="reservation-day-off">
             {i18n.unit.attendanceReservations.dayOff}
           </ReservationTime>
         ) : (
           /* else show missing service time */
-          <ReservationTime
-            warning
-            data-qa={`reservation-${day.date.formatIso()}-${rowIndex}-${0}`}
-          >
+          <ReservationTime warning data-qa="reservation-missing">
             {i18n.unit.attendanceReservations.missingServiceTime}
           </ReservationTime>
         )}
       </TimesRow>
-      <TimesRow>
+      <TimesRow data-qa={`attendance-${day.date.formatIso()}-${rowIndex}`}>
         {editState ? (
           <TimeRangeEditor
             timeRange={editState.attendances[rowIndex][day.date.formatIso()]}
@@ -166,7 +159,7 @@ export default React.memo(function ChildDay({
         ) : (
           <>
             <AttendanceTime
-              data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${0}`}
+              data-qa="attendance-start"
               warning={attendanceTimeDiffers(
                 expectedTimeForThisDay?.start,
                 dailyData.attendance?.startTime
@@ -175,7 +168,7 @@ export default React.memo(function ChildDay({
               {dailyData.attendance?.startTime ?? '–'}
             </AttendanceTime>
             <AttendanceTime
-              data-qa={`attendance-${day.date.formatIso()}-${rowIndex}-${1}`}
+              data-qa="attendance-end"
               warning={attendanceTimeDiffers(
                 dailyData.attendance?.endTime,
                 expectedTimeForThisDay?.end
@@ -208,12 +201,14 @@ const TimeRangeEditor = React.memo(function TimeRangeEditor({
         onChange={(value) => update({ startTime: value, endTime })}
         onBlur={save}
         info={errors.startTime ? { status: 'warning', text: '' } : undefined}
+        data-qa="input-start-time"
       />
       <TimeInputWithoutPadding
         value={endTime}
         onChange={(value) => update({ startTime, endTime: value })}
         onBlur={save}
         info={errors.endTime ? { status: 'warning', text: '' } : undefined}
+        data-qa="input-end-time"
       />
     </>
   )

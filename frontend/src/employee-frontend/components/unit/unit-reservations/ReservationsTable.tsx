@@ -175,6 +175,7 @@ const EditStateIndicator = React.memo(function EditStateIndicator({
       icon={faCheck}
       onClick={stopEditing}
       disabled={status.isLoading}
+      data-qa="inline-editor-state-button"
     />
   )
 })
