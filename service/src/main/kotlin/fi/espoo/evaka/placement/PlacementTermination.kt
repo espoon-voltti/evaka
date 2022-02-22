@@ -26,6 +26,8 @@ data class TerminatablePlacementGroup(
     val unitName: String,
     val terminatable: Boolean,
     val placements: List<ChildPlacement>,
+    /** Relevant for PRESCHOOL/PREPARATORY only.
+     *  Contains all daycare placements which start after the first PRESCHOOL/PREPARATORY placement. */
     val additionalPlacements: List<ChildPlacement>
 )
 
@@ -149,7 +151,7 @@ fun terminateBilledDaycare(
             it.type == when (placement.type) {
                 PRESCHOOL_DAYCARE -> PRESCHOOL
                 PREPARATORY_DAYCARE -> PREPARATORY
-                else -> false
+                else -> throw IllegalStateException("Should not be handling any other placement types here")
             } && it.startDate == placement.endDate.plusDays(1)
         }?.also { placementsToSkip.add(it) }
 

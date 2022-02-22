@@ -9,12 +9,14 @@ import fi.espoo.evaka.application.cancelAllActiveTransferApplicationsAfterDate
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -28,7 +30,8 @@ import java.time.LocalDate
 
 @RestController
 class PlacementControllerCitizen(
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
 
     data class ChildPlacementResponse(
@@ -76,7 +79,7 @@ class PlacementControllerCitizen(
     ) {
         Audit.PlacementTerminate.log(body.unitId, body.type)
 
-        val terminationDate = body.terminationDate.also { if (it.isBefore(HelsinkiDateTime.now().toLocalDate())) throw BadRequest("Invalid terminationDate") }
+        val terminationDate = body.terminationDate.also { if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate") }
         db.connect { dbc ->
             if (dbc.read { it.getUnitFeatures(body.unitId) }?.features?.contains(PilotFeature.PLACEMENT_TERMINATION) != true) {
                 throw Forbidden("Placement termination not enabled for unit", "PLACEMENT_TERMINATION_DISABLED")
@@ -110,6 +113,7 @@ class PlacementControllerCitizen(
                 }
 
                 tx.cancelAllActiveTransferApplicationsAfterDate(childId, terminationDate)
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(terminationDate, null))))
             }
         }
     }
