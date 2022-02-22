@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
@@ -172,6 +173,19 @@ fun Database.Transaction.updatePlacementStartAndEndDate(placementId: PlacementId
         .execute()
 }
 
+fun Database.Transaction.updatePlacementType(placementId: PlacementId, type: PlacementType) {
+    createUpdate("UPDATE placement SET type = :type WHERE id = :id")
+        .bind("id", placementId)
+        .bind("type", type)
+        .execute()
+}
+
+fun Database.Transaction.deleteServiceNeedsFromPlacement(placementId: PlacementId) {
+    createUpdate("DELETE FROM service_need WHERE placement_id = :id")
+        .bind("id", placementId)
+        .execute()
+}
+
 fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, LocalDate, LocalDate> {
     data class QueryResult(
         val childId: ChildId,
@@ -181,24 +195,13 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, Local
 
     getPlacement(id) ?: throw NotFound("Placement $id not found")
 
-    createUpdate(
-        //language=SQL
-        """DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id""".trimIndent()
-    )
+    createUpdate("DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id")
         .bind("id", id)
         .execute()
 
-    createUpdate(
-        //language=SQL
-        """DELETE FROM service_need WHERE placement_id = :id""".trimIndent()
-    )
-        .bind("id", id)
-        .execute()
+    deleteServiceNeedsFromPlacement(id)
 
-    return createQuery(
-        //language=SQL
-        """DELETE FROM placement WHERE id = :id RETURNING child_id, start_date, end_date""".trimIndent()
-    )
+    return createQuery("DELETE FROM placement WHERE id = :id RETURNING child_id, start_date, end_date")
         .bind("id", id)
         .mapTo<QueryResult>()
         .first()
@@ -207,7 +210,6 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, Local
 
 fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
     createUpdate(
-        //language=SQL
         """
             DELETE from daycare_group_placement
             WHERE daycare_placement_id = :id AND start_date > :date
@@ -218,7 +220,6 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, dat
         .execute()
 
     createUpdate(
-        //language=SQL
         """
             UPDATE daycare_group_placement SET end_date = :date
             WHERE daycare_placement_id = :id AND start_date <= :date AND end_date > :date
@@ -640,4 +641,49 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
         endDate = rs.getDate("placement_end").toLocalDate(),
         type = rs.getEnum("placement_type")
     )
+}
+
+fun Database.Transaction.deleteServiceNeedsFromPlacementAfter(id: PlacementId, date: LocalDate) {
+    createUpdate(
+        """
+DELETE FROM service_need
+WHERE placement_id = :placementId
+    AND start_date > :date
+        """.trimIndent()
+    )
+        .bind("placementId", id)
+        .bind("date", date)
+        .execute()
+
+    createUpdate(
+        """
+UPDATE service_need
+SET end_date = :date
+WHERE placement_id = :placementId
+    AND daterange(start_date, end_date, '[]') @> :date::date
+        """.trimIndent()
+    )
+        .bind("placementId", id)
+        .bind("date", date)
+        .execute()
+}
+
+fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalDate, placementId: PlacementId, terminationDate: LocalDate, terminatedBy: EvakaUserId?) {
+    clearGroupPlacementsAfter(placementId, terminationDate)
+    deleteServiceNeedsFromPlacementAfter(placementId, terminationDate)
+
+    createUpdate(
+        """
+UPDATE placement
+SET termination_requested_date = :terminationRequestedDate,
+    terminated_by = :terminationRequestedBy,
+    end_date = :placementTerminationDate
+WHERE id = :placementId
+        """.trimIndent()
+    )
+        .bindNullable("terminationRequestedDate", if (terminatedBy == null) null else terminationRequestedDate)
+        .bindNullable("terminationRequestedBy", terminatedBy)
+        .bind("placementTerminationDate", terminationDate)
+        .bind("placementId", placementId)
+        .execute()
 }

@@ -15,6 +15,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -36,6 +37,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -84,7 +86,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(2, childPlacements.size)
         assertEquals(placementStart, childPlacements[0].startDate)
         assertEquals(placementEnd, childPlacements[0].endDate)
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
+        assertEquals(TerminatablePlacementType.DAYCARE, childPlacements[0].type)
         assertEquals(1, childPlacements[0].placements.size)
         assertEquals(PlacementType.DAYCARE, childPlacements[0].placements[0].type)
         assertEquals(null, childPlacements[0].placements[0].terminationRequestedDate)
@@ -102,7 +104,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         terminatePlacements(
             child.id,
             PlacementControllerCitizen.PlacementTerminationRequestBody(
-                type = PlacementControllerCitizen.TerminatablePlacementType.DAYCARE,
+                type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
                 terminateDaycareOnly = false,
@@ -113,7 +115,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(2, childPlacements.size)
         assertEquals(placementStart, childPlacements[0].startDate)
         assertEquals(placementTerminationDate, childPlacements[0].endDate)
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
+        assertEquals(TerminatablePlacementType.DAYCARE, childPlacements[0].type)
         assertEquals(1, childPlacements[0].placements.size)
         assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
         assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
@@ -176,7 +178,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         terminatePlacements(
             childId,
             PlacementControllerCitizen.PlacementTerminationRequestBody(
-                type = PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL,
+                type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
                 terminateDaycareOnly = false,
@@ -187,7 +189,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
 
         assertEquals(2, childPlacements.size)
         val preschoolPlacement = childPlacements[0]
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL, preschoolPlacement.type)
+        assertEquals(TerminatablePlacementType.PRESCHOOL, preschoolPlacement.type)
         assertEquals(startPreschool, preschoolPlacement.startDate)
         assertEquals(placementTerminationDate, preschoolPlacement.endDate)
         assertEquals(1, preschoolPlacement.placements.size)
@@ -199,7 +201,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         val clubPlacement = childPlacements[1]
         assertEquals(startClub, clubPlacement.startDate)
         assertEquals(endClub, clubPlacement.endDate)
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.CLUB, clubPlacement.type)
+        assertEquals(TerminatablePlacementType.CLUB, clubPlacement.type)
         assertEquals(1, clubPlacement.placements.size)
         assertNull(clubPlacement.placements[0].terminationRequestedDate)
         assertEquals(PlacementType.CLUB, clubPlacement.placements[0].type)
@@ -209,7 +211,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     fun `terminating PRESCHOOL_DAYCARE with daycare only changes the remainder of the preschool to PRESCHOOL`() {
         val placementTerminationDate = today.plusWeeks(1)
 
-        val startPreschool = LocalDate.now().minusWeeks(2)
+        val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
         val childId = child2.id
         db.transaction {
@@ -243,7 +245,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         val placementsBefore = getChildPlacements(childId)
         assertEquals(1, placementsBefore.size)
         val placementBefore = placementsBefore[0]
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL, placementBefore.type)
+        assertEquals(TerminatablePlacementType.PRESCHOOL, placementBefore.type)
         assertEquals(startPreschool, placementBefore.startDate)
         assertEquals(endPreschool, placementBefore.endDate)
 
@@ -253,7 +255,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         terminatePlacements(
             childId,
             PlacementControllerCitizen.PlacementTerminationRequestBody(
-                type = PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL,
+                type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
                 terminateDaycareOnly = true,
@@ -264,7 +266,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, childPlacements.size)
         val first = childPlacements[0]
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL, first.type)
+        assertEquals(TerminatablePlacementType.PRESCHOOL, first.type)
         assertEquals(startPreschool, first.startDate)
         assertEquals(endPreschool, first.endDate)
         assertEquals(2, first.placements.size)
@@ -286,62 +288,45 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `terminating PRESCHOOL_DAYCARE with daycare only changes the remainder of the preschool to PRESCHOOL and terminates upcoming daycare`() {
-        val placementTerminationDate = today.plusWeeks(1)
 
-        val startPreschool = LocalDate.now().minusWeeks(2)
+        // |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+        // 1. terminateDaycareOnly = true
+        // |--- PRESCHOOL_DAYCARE -------||- PRESCHOOL -|                            |------- PRESCHOOL -------|
+        // 2. terminate again terminateDaycareOnly = true
+        // |--- PRESCHOOL_DAYCARE --||------ PRESCHOOL -|                            |------- PRESCHOOL -------|
+
+        val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
         val startDaycare = endPreschool.plusDays(1)
         val endDaycare = startDaycare.plusMonths(1)
+        val startNextPreschoolDaycare = endDaycare.plusDays(1)
+        val endNextPreschoolDaycare = startNextPreschoolDaycare.plusMonths(1)
         val childId = child2.id
-        db.transaction {
-            val id = it.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = startPreschool,
-                endDate = endPreschool,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-            )
-            it.insertServiceNeed(
-                id,
-                startPreschool,
-                endPreschool.minusDays(10),
-                snPreschoolDaycare45.id,
-                false,
-                null,
-                null
-            )
-            it.insertServiceNeed(
-                id,
-                endPreschool.minusDays(9),
-                endPreschool,
-                snPreschoolDaycarePartDay35.id,
-                false,
-                null,
-                null
-            )
-            it.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = startDaycare,
-                endDate = endDaycare,
-                type = PlacementType.DAYCARE,
-            )
-        }
+        insertComplexPlacements(
+            childId,
+            startPreschool,
+            endPreschool,
+            startDaycare,
+            endDaycare,
+            startNextPreschoolDaycare,
+            endNextPreschoolDaycare
+        )
 
         val placementsBefore = getChildPlacements(childId)
         assertEquals(1, placementsBefore.size)
         val placementBefore = placementsBefore[0]
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL, placementBefore.type)
+        assertEquals(TerminatablePlacementType.PRESCHOOL, placementBefore.type)
         assertEquals(startPreschool, placementBefore.startDate)
-        assertEquals(endPreschool, placementBefore.endDate)
+        assertEquals(endNextPreschoolDaycare, placementBefore.endDate)
 
-        assertEquals(listOf(PlacementType.PRESCHOOL_DAYCARE), placementBefore.placements.map { it.type })
+        assertEquals(listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PRESCHOOL_DAYCARE), placementBefore.placements.map { it.type })
         assertEquals(listOf(PlacementType.DAYCARE), placementBefore.additionalPlacements.map { it.type })
 
+        val placementTerminationDate = today.plusWeeks(1)
         terminatePlacements(
             childId,
             PlacementControllerCitizen.PlacementTerminationRequestBody(
-                type = PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL,
+                type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
                 terminateDaycareOnly = true,
@@ -352,10 +337,10 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, childPlacements.size)
         val first = childPlacements[0]
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.PRESCHOOL, first.type)
+        assertEquals(TerminatablePlacementType.PRESCHOOL, first.type)
         assertEquals(startPreschool, first.startDate)
-        assertEquals(endPreschool, first.endDate)
-        assertEquals(2, first.placements.size)
+        assertEquals(endNextPreschoolDaycare, first.endDate)
+        assertEquals(3, first.placements.size)
         assertEquals(0, first.additionalPlacements.size)
 
         val currentPlacement = first.placements[0]
@@ -370,12 +355,199 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(PlacementType.PRESCHOOL, remainderOfPreschool.type)
         assertEquals(placementTerminationDate.plusDays(1), remainderOfPreschool.startDate)
         assertEquals(endPreschool, remainderOfPreschool.endDate)
+
+        // the next PRESCHOOL_DAYCARE is simply converted to PRESCHOOL
+        val nextPreschool = first.placements[2]
+        assertNull(nextPreschool.terminationRequestedDate)
+        assertEquals(PlacementType.PRESCHOOL, nextPreschool.type)
+        assertEquals(startNextPreschoolDaycare, nextPreschool.startDate)
+        assertEquals(endNextPreschoolDaycare, nextPreschool.endDate)
+
+        // when terminated again with an earlier date
+        val terminationDate2 = placementTerminationDate.minusDays(5)
+        terminatePlacements(
+            childId,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.PRESCHOOL,
+                terminationDate = terminationDate2,
+                unitId = daycareId,
+                terminateDaycareOnly = true,
+            )
+        )
+
+        // then only the preschool+daycare and preschool start and end dates are modified
+        val placementsAfterSecondTermination = getChildPlacements(childId)
+        assertEquals(1, placementsAfterSecondTermination.size)
+        assertEquals(3, placementsAfterSecondTermination[0].placements.size)
+        assertEquals(currentPlacement.copy(endDate = terminationDate2), placementsAfterSecondTermination[0].placements[0])
+        assertEquals(remainderOfPreschool.copy(startDate = terminationDate2.plusDays(1)), placementsAfterSecondTermination[0].placements[1])
+
+        // untouched
+        val lastPreschool = placementsAfterSecondTermination[0].placements[2]
+        assertNull(lastPreschool.terminationRequestedDate)
+        assertEquals(PlacementType.PRESCHOOL, lastPreschool.type)
+        assertEquals(startNextPreschoolDaycare, lastPreschool.startDate)
+        assertEquals(endNextPreschoolDaycare, lastPreschool.endDate)
+    }
+
+    @Test
+    fun `terminating PRESCHOOL_DAYCARE with daycare only does not affect anything before termination date`() {
+
+        // |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+        // 1. terminateDaycareOnly = true
+        //                                                          terminationDate   x
+        // |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||------ P_D --------|--P--|
+        // 2. terminate again terminateDaycareOnly = true
+        //                      terminationDate   x
+        // |--- PRESCHOOL_DAYCARE ---||- DAYCARE -|               |------- PRESCHOOL -------|
+
+        val startPreschool = today.minusWeeks(2)
+        val endPreschool = startPreschool.plusMonths(1)
+        val startDaycare = endPreschool.plusDays(1)
+        val endDaycare = startDaycare.plusMonths(1)
+        val startNextPreschoolDaycare = endDaycare.plusDays(1)
+        val endNextPreschoolDaycare = startNextPreschoolDaycare.plusMonths(1)
+        val childId = child2.id
+        insertComplexPlacements(
+            childId,
+            startPreschool,
+            endPreschool,
+            startDaycare,
+            endDaycare,
+            startNextPreschoolDaycare,
+            endNextPreschoolDaycare
+        )
+
+        val placementTerminationDate = endNextPreschoolDaycare.minusWeeks(1)
+        terminatePlacements(
+            childId,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.PRESCHOOL,
+                terminationDate = placementTerminationDate,
+                unitId = daycareId,
+                terminateDaycareOnly = true,
+            )
+        )
+
+        val placementGroups = getChildPlacements(childId)
+        assertEquals(1, placementGroups.size)
+        val group1 = placementGroups[0]
+        assertEquals(TerminatablePlacementType.PRESCHOOL, group1.type)
+        assertEquals(startPreschool, group1.startDate)
+        assertEquals(endNextPreschoolDaycare, group1.endDate)
+        assertEquals(3, group1.placements.size)
+        assertEquals(1, group1.additionalPlacements.size)
+
+        assertPlacements(
+            listOf(
+                Triple(PlacementType.PRESCHOOL_DAYCARE, startPreschool, endPreschool),
+                Triple(PlacementType.DAYCARE, startDaycare, endDaycare),
+                Triple(PlacementType.PRESCHOOL_DAYCARE, startNextPreschoolDaycare, placementTerminationDate),
+                Triple(PlacementType.PRESCHOOL, placementTerminationDate.plusDays(1), endNextPreschoolDaycare),
+            ),
+            group1
+        )
+
+        // when terminated again with an earlier date
+        val terminationDate2 = startDaycare.plusWeeks(1)
+        terminatePlacements(
+            childId,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.PRESCHOOL,
+                terminationDate = terminationDate2,
+                unitId = daycareId,
+                terminateDaycareOnly = true,
+            )
+        )
+
+        val groups = getChildPlacements(childId)
+        assertEquals(1, groups.size)
+        val group = groups[0]
+        assertEquals(TerminatablePlacementType.PRESCHOOL, group.type)
+        assertEquals(startPreschool, group.startDate)
+        assertEquals(endNextPreschoolDaycare, group.endDate)
+
+        assertPlacements(
+            listOf(
+                Triple(PlacementType.PRESCHOOL_DAYCARE, startPreschool, endPreschool),
+                Triple(PlacementType.DAYCARE, startDaycare, terminationDate2),
+                Triple(PlacementType.PRESCHOOL, startNextPreschoolDaycare, endNextPreschoolDaycare),
+            ),
+            group
+        )
+    }
+
+    private fun assertPlacements(
+        expected: List<Triple<PlacementType, LocalDate, LocalDate>>,
+        group: TerminatablePlacementGroup
+    ) {
+        val placements = group.placements + group.additionalPlacements
+
+        expected.forEach { (type, start, end) ->
+            assertNotNull(placements.find { it.type == type && it.startDate == start && it.endDate == end }, "$type $start $end not found in $placements")
+        }
+
+        assertEquals(expected.size, placements.size)
+    }
+
+    // |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+    private fun insertComplexPlacements(
+        childId: PersonId,
+        startPreschool: LocalDate,
+        endPreschool: LocalDate,
+        startDaycare: LocalDate,
+        endDaycare: LocalDate,
+        startNextPreschoolDaycare: LocalDate,
+        endNextPreschoolDaycare: LocalDate
+    ) {
+        db.transaction {
+            it.insertTestPlacement(
+                childId = childId,
+                unitId = daycareId,
+                startDate = startPreschool,
+                endDate = endPreschool,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+            ).let { id ->
+                it.insertServiceNeed(
+                    id,
+                    startPreschool,
+                    endPreschool.minusDays(10),
+                    snPreschoolDaycare45.id,
+                    false,
+                    null,
+                    null
+                )
+                it.insertServiceNeed(
+                    id,
+                    endPreschool.minusDays(9),
+                    endPreschool,
+                    snPreschoolDaycarePartDay35.id,
+                    false,
+                    null,
+                    null
+                )
+            }
+            it.insertTestPlacement(
+                childId = childId,
+                unitId = daycareId,
+                startDate = startDaycare,
+                endDate = endDaycare,
+                type = PlacementType.DAYCARE,
+            )
+            it.insertTestPlacement(
+                childId = childId,
+                unitId = daycareId,
+                startDate = startNextPreschoolDaycare,
+                endDate = endNextPreschoolDaycare,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+            )
+        }
     }
 
     @Test
     fun `placement cannot be terminated if placement termination is not in unit's enabled features`() {
         val body = PlacementControllerCitizen.PlacementTerminationRequestBody(
-            type = PlacementControllerCitizen.TerminatablePlacementType.DAYCARE,
+            type = TerminatablePlacementType.DAYCARE,
             terminationDate = today.plusDays(1),
             unitId = daycare2Id,
             terminateDaycareOnly = false,
@@ -413,7 +585,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         terminatePlacements(
             child.id,
             PlacementControllerCitizen.PlacementTerminationRequestBody(
-                type = PlacementControllerCitizen.TerminatablePlacementType.DAYCARE,
+                type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
                 terminateDaycareOnly = false,
@@ -427,7 +599,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
         assertEquals(2, childPlacements.size)
         assertEquals(placementStart, childPlacements[0].startDate)
         assertEquals(placementTerminationDate, childPlacements[0].endDate)
-        assertEquals(PlacementControllerCitizen.TerminatablePlacementType.DAYCARE, childPlacements[0].type)
+        assertEquals(TerminatablePlacementType.DAYCARE, childPlacements[0].type)
         assertEquals(1, childPlacements[0].placements.size)
         assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
         assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
@@ -447,7 +619,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
             .also { assertEquals(expectedStatus, it.second.statusCode) }
     }
 
-    private fun getChildPlacements(childId: ChildId): List<PlacementControllerCitizen.TerminatablePlacementGroup> {
+    private fun getChildPlacements(childId: ChildId): List<TerminatablePlacementGroup> {
         return http.get("/citizen/children/$childId/placements")
             .asUser(authenticatedParent)
             .responseObject<PlacementControllerCitizen.ChildPlacementResponse>(jsonMapper)
