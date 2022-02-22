@@ -162,7 +162,7 @@ fun Database.Read.fetchUnitStats(
 WITH present_children AS (
     SELECT ca.unit_id, count(*)
     FROM child_attendance ca
-    WHERE ca.unit_id = ANY(:unitIds) AND ca.arrived IS NOT NULL AND ca.departed IS NULL
+    WHERE ca.unit_id = ANY(:unitIds) AND ca.end_time IS NULL
     GROUP BY ca.unit_id
 ), total_children AS (
     SELECT p.unit_id, count(*)
