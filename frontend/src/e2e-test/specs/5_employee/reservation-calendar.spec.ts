@@ -262,4 +262,18 @@ describe('Unit group calendar for shift care unit', () => {
       '–'
     )
   })
+
+  test('Employee cannot edit attendances in the future', async () => {
+    calendarPage = await loadUnitCalendarPage()
+    await calendarPage.selectMode('week')
+    await calendarPage.openInlineEditor(child1Fixture.id)
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceStart(mockedToday.addDays(1), 0),
+      '–'
+    )
+    await waitUntilEqual(
+      () => calendarPage.getAttendanceEnd(mockedToday.addDays(1), 0),
+      '–'
+    )
+  })
 })
