@@ -32,8 +32,8 @@ import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import fi.espoo.evaka.shared.utils.dateNow
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
@@ -957,7 +957,7 @@ RETURNING id
 """
 )
     .bind("cancelled", ApplicationStatus.CANCELLED)
-    .bind("yesterday", dateNow().minusDays(1))
+    .bind("yesterday", HelsinkiDateTime.now().toLocalDate().minusDays(1))
     .bind(
         "notDaycarePlacements",
         arrayOf(

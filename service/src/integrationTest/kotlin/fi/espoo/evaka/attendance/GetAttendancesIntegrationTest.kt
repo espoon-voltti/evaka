@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -115,8 +114,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 childId = testChild_1.id,
                 unitId = testDaycare2.id,
                 groupId = groupId2,
-                startDate = LocalDate.now(europeHelsinki),
-                endDate = LocalDate.now(europeHelsinki)
+                startDate = HelsinkiDateTime.now().toLocalDate(),
+                endDate = HelsinkiDateTime.now().toLocalDate(),
             )
         }
         val response = fetchAttendances()
@@ -130,8 +129,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 groupId = groupId,
-                startDate = LocalDate.now(europeHelsinki),
-                endDate = LocalDate.now(europeHelsinki)
+                startDate = HelsinkiDateTime.now().toLocalDate(),
+                endDate = HelsinkiDateTime.now().toLocalDate(),
             )
         }
         val child = expectOneChild()
@@ -308,8 +307,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 childId = testChild_1.id,
                 unitId = backupUnitId,
                 groupId = groupId2,
-                startDate = LocalDate.now(europeHelsinki).minusDays(1),
-                endDate = LocalDate.now(europeHelsinki)
+                startDate = HelsinkiDateTime.now().minusDays(1).toLocalDate(),
+                endDate = HelsinkiDateTime.now().toLocalDate()
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -335,8 +334,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 childId = testChild_1.id,
                 unitId = backupUnitId,
                 groupId = groupId2,
-                startDate = LocalDate.now(europeHelsinki).minusDays(2),
-                endDate = LocalDate.now(europeHelsinki).minusDays(1)
+                startDate = HelsinkiDateTime.now().minusDays(2).toLocalDate(),
+                endDate = HelsinkiDateTime.now().minusDays(1).toLocalDate()
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,

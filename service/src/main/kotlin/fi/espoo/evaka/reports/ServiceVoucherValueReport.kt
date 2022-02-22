@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -373,9 +371,8 @@ private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
     return createQuery("SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month")
         .bind("year", year)
         .bind("month", month)
-        .mapTo<Instant>()
-        .firstOrNull()
-        ?.let { LocalDate.ofInstant(it, europeHelsinki) }
+        .mapTo<HelsinkiDateTime>()
+        .firstOrNull()?.toLocalDate()
 }
 
 private fun Database.Read.getSnapshotVoucherValues(

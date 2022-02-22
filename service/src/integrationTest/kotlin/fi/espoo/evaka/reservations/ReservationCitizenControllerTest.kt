@@ -7,17 +7,23 @@ package fi.espoo.evaka.reservations
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.withMockedTime
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -26,18 +32,33 @@ import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 
 class ReservationCitizenControllerTest : FullApplicationTest() {
+    // Monday
+    private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
 
-    val testDate = LocalDate.now().let { it.minusDays(it.dayOfWeek.value - 1L) }.plusWeeks(3)
-    val startTime = LocalTime.of(9, 0)
-    val endTime = LocalTime.of(17, 0)
+    // Also Monday
+    private val testDate = LocalDate.of(2021, 11, 15)
+    private val startTime = LocalTime.of(9, 0)
+    private val endTime = LocalTime.of(17, 0)
 
     @BeforeEach
     fun before() {
         db.transaction {
             it.resetDatabase()
             it.insertGeneralTestFixtures()
-            it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = testDate, endDate = testDate.plusDays(1))
-            it.insertTestPlacement(childId = testChild_2.id, unitId = testDaycare.id, startDate = testDate, endDate = testDate.plusDays(1))
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = testDate,
+                endDate = testDate.plusDays(1)
+            )
+            it.insertTestPlacement(
+                childId = testChild_2.id,
+                unitId = testDaycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = testDate,
+                endDate = testDate.plusDays(1)
+            )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_2.id)
         }
@@ -58,8 +79,24 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                ReservationChild(testChild_1.id, testChild_1.firstName, "", testDate, testDate.plusDays(1), setOf(1, 2, 3, 4, 5), false),
-                ReservationChild(testChild_2.id, testChild_2.firstName, "", testDate, testDate.plusDays(1), setOf(1, 2, 3, 4, 5), false)
+                ReservationChild(
+                    testChild_1.id,
+                    testChild_1.firstName,
+                    "",
+                    testDate,
+                    testDate.plusDays(1),
+                    setOf(1, 2, 3, 4, 5),
+                    false
+                ),
+                ReservationChild(
+                    testChild_2.id,
+                    testChild_2.firstName,
+                    "",
+                    testDate,
+                    testDate.plusDays(1),
+                    setOf(1, 2, 3, 4, 5),
+                    false
+                )
             ).sortedBy { it.firstName },
             res.children
         )
@@ -93,28 +130,142 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
     fun `adding reservations fails if past citizen reservation threshold setting`() {
         val request = listOf(testChild_1.id, testChild_2.id).flatMap { child ->
             listOf(
-                DailyReservationRequest(child, LocalDate.now(), listOf(TimeRange(startTime, endTime))),
-                DailyReservationRequest(child, LocalDate.now().plusDays(1), listOf(TimeRange(startTime, endTime)))
+                DailyReservationRequest(child, mockToday, listOf(TimeRange(startTime, endTime))),
+                DailyReservationRequest(child, mockToday.plusDays(1), listOf(TimeRange(startTime, endTime)))
             )
         }
         postReservations(request, 400)
+    }
+
+    @Test
+    fun `adding absences works`() {
+        val request = AbsenceRequest(
+            childIds = setOf(testChild_1.id, testChild_2.id),
+            dateRange = FiniteDateRange(testDate, testDate.plusDays(2)),
+            absenceType = AbsenceType.OTHER_ABSENCE,
+        )
+        postAbsences(request)
+
+        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(2)))
+        assertEquals(3, res.dailyData.size)
+
+        assertEquals(LocalDate.of(2021, 11, 15), res.dailyData[0].date)
+        assertEquals(
+            setOf(
+                ChildDailyData(
+                    childId = testChild_1.id,
+                    absence = AbsenceType.OTHER_ABSENCE,
+                    reservations = listOf(),
+                    attendances = listOf()
+                ),
+                ChildDailyData(
+                    childId = testChild_2.id,
+                    absence = AbsenceType.OTHER_ABSENCE,
+                    reservations = listOf(),
+                    attendances = listOf()
+                )
+            ),
+            res.dailyData[0].children.toSet()
+        )
+
+        assertEquals(LocalDate.of(2021, 11, 16), res.dailyData[1].date)
+        assertEquals(
+            setOf(
+                ChildDailyData(
+                    childId = testChild_1.id,
+                    absence = AbsenceType.OTHER_ABSENCE,
+                    reservations = listOf(),
+                    attendances = listOf()
+                ),
+                ChildDailyData(
+                    childId = testChild_2.id,
+                    absence = AbsenceType.OTHER_ABSENCE,
+                    reservations = listOf(),
+                    attendances = listOf()
+                )
+            ),
+            res.dailyData[1].children.toSet()
+        )
+
+        assertEquals(LocalDate.of(2021, 11, 17), res.dailyData[2].date)
+        assertEquals(listOf(), res.dailyData[2].children)
+
+        // PRESCHOOL_DAYCARE generates two absences per day (nonbillable and billable)
+        assertAbsenceCounts(
+            testChild_1.id,
+            listOf(
+                LocalDate.of(2021, 11, 15) to 2,
+                LocalDate.of(2021, 11, 16) to 2,
+            )
+        )
+
+        // DAYCARE generates one absences per day
+        assertAbsenceCounts(
+            testChild_2.id,
+            listOf(
+                LocalDate.of(2021, 11, 15) to 1,
+                LocalDate.of(2021, 11, 16) to 1,
+            )
+        )
     }
 
     private fun postReservations(request: List<DailyReservationRequest>, expectedStatus: Int? = 200) {
         val (_, res, _) = http.post("/citizen/reservations")
             .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
+            .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
             .response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
 
+    private fun postAbsences(request: AbsenceRequest) {
+        val (_, res, _) = http.post("/citizen/absences")
+            .jsonBody(jsonMapper.writeValueAsString(request))
+            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
+            .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
+            .response()
+
+        assertEquals(200, res.statusCode)
+    }
+
     private fun getReservations(range: FiniteDateRange): ReservationsResponse {
-        val (_, res, result) = http.get("/citizen/reservations?from=${range.start.format(DateTimeFormatter.ISO_DATE)}&to=${range.end.format(DateTimeFormatter.ISO_DATE)}")
+        val (_, res, result) = http.get(
+            "/citizen/reservations?from=${range.start.format(DateTimeFormatter.ISO_DATE)}&to=${
+            range.end.format(
+                DateTimeFormatter.ISO_DATE
+            )
+            }"
+        )
             .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
             .responseObject<ReservationsResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
+    }
+
+    private fun assertAbsenceCounts(childId: ChildId, counts: List<Pair<LocalDate, Int>>) {
+        data class QueryResult(
+            val date: LocalDate,
+            val count: Int,
+        )
+
+        val expected = counts.map { QueryResult(it.first, it.second) }
+        val actual = db.read {
+            it.createQuery(
+                """
+                SELECT date, COUNT(category) as count 
+                FROM absence WHERE 
+                child_id = :childId 
+                GROUP BY date
+                ORDER BY date
+            """
+            )
+                .bind("childId", childId)
+                .mapTo<QueryResult>()
+                .list()
+        }
+
+        assertEquals(expected, actual)
     }
 }

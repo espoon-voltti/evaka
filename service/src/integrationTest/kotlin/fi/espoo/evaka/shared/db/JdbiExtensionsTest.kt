@@ -11,7 +11,7 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json

@@ -2574,6 +2574,15 @@ export const fi = {
       resetChild: 'Resetoi',
       updating: 'Päivittää'
     },
+    sextet: {
+      title: 'Kuusikkovertailu',
+      description:
+        'Raportti vuoden toteutuneista läsnäolopäivistä yksiköittäin ja sijoitustyypeittäin',
+      placementType: 'Sijoitustyyppi',
+      year: 'Vuosi',
+      unitName: 'Yksikkö',
+      attendanceDays: 'Todelliset läsnäolopäivät'
+    },
     invoiceGeneratorDiff: {
       title: 'Laskugeneraattorien eroavaisuudet',
       description:

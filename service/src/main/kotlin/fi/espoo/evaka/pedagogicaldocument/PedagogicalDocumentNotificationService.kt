@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.dateNow
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -63,7 +62,7 @@ class PedagogicalDocumentNotificationService(
 
         return tx.createQuery(sql)
             .bind("id", id)
-            .bind("date", dateNow())
+            .bind("date", HelsinkiDateTime.now().toLocalDate())
             .map { row ->
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,

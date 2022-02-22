@@ -49,7 +49,7 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
@@ -69,10 +69,8 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
-import java.time.Instant
 import java.time.LocalDate
-import java.time.Period
-import java.time.ZoneOffset
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -109,7 +107,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private val connectedPeriod = FiniteDateRange(mainPeriod.start.minusDays(12), mainPeriod.end.plusDays(15))
 
     private val today: LocalDate = LocalDate.of(2020, 2, 16)
-    private val now: Instant = today.atTime(12, 0, 0).toInstant(ZoneOffset.ofHours(2))
+    private val now: HelsinkiDateTime = HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0))
 
     @BeforeEach
     private fun beforeEach() {
@@ -272,11 +270,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
     }
 
-    private fun assertDueDate(applicationId: ApplicationId, expected: Instant?) {
+    private fun assertDueDate(applicationId: ApplicationId, expected: LocalDate?) {
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
             if (expected != null) {
-                assertEquals(LocalDate.ofInstant(expected, europeHelsinki), application.dueDate)
+                assertEquals(expected, application.dueDate)
             } else {
                 assertNull(application.dueDate)
             }
@@ -307,12 +305,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
                 .bind("applicationId", applicationId)
-                .bind("receivedAt", now.minus(Period.ofWeeks(1)))
+                .bind("receivedAt", now.minusWeeks(1))
                 .execute()
         }
         assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw)))
         // then
-        assertDueDate(applicationId, now.plus(Period.ofWeeks(2))) // end date >= earliest attachment.receivedAt
+        assertDueDate(applicationId, now.plusWeeks(2).toLocalDate()) // end date >= earliest attachment.receivedAt
     }
 
     @Test
@@ -339,12 +337,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
                 .bind("type", AttachmentType.EXTENDED_CARE)
                 .bind("applicationId", applicationId)
-                .bind("receivedAt", now.plus(Period.ofWeeks(1)))
+                .bind("receivedAt", now.plusWeeks(1))
                 .execute()
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
                 .bind("type", AttachmentType.URGENCY)
                 .bind("applicationId", applicationId)
-                .bind("receivedAt", now.plus(Period.ofDays(3)))
+                .bind("receivedAt", now.plusDays(3))
                 .execute()
         }
         db.transaction { tx ->
@@ -352,7 +350,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         // then
-        assertDueDate(applicationId, now.plus(Period.ofDays(14 + 3))) // attachments received after application sent
+        assertDueDate(applicationId, now.plusDays(14 + 3).toLocalDate()) // attachments received after application sent
     }
 
     @Test

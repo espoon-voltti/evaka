@@ -4,11 +4,13 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   InvoiceReport,
   RawReportRow,
   ServiceVoucherReport,
   ServiceVoucherUnitReport,
+  SextetReportRow,
   VardaErrorReportRow
 } from 'lib-common/generated/api-types/reports'
 import { JsonOf } from 'lib-common/json'
@@ -421,6 +423,18 @@ export function getVoucherServiceProviderUnitReport(
         }))
       })
     )
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getSextetReport(
+  year: number,
+  placementType: PlacementType
+): Promise<Result<SextetReportRow[]>> {
+  return client
+    .get<SextetReportRow[]>(
+      `/reports/sextet?year=${year}&placementType=${placementType}`
+    )
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
