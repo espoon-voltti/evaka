@@ -137,6 +137,7 @@ enum class Audit(
     HolidayPeriodDelete("evaka.holiday-period.delete"),
     HolidayPeriodsList("evaka.holiday-period.list"),
     HolidayPeriodUpdate("evaka.holiday-period.update"),
+    HolidayAbsenceCreate("evaka.holiday-period.absence.create"),
     IncomeStatementCreate("evaka.income-statement.create"),
     IncomeStatementCreateForChild("evaka.income-statement.child.create"),
     IncomeStatementDelete("evaka.income-statement.delete"),

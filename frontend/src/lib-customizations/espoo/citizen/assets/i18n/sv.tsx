@@ -236,7 +236,8 @@ const sv: Translations = {
     },
     holidayModal: {
       title: 'Meddela semester',
-      additionalInformation: 'Läs mera'
+      additionalInformation: 'Läs mera',
+      holidayFor: 'Semestertid för:'
     }
   },
   messages: {

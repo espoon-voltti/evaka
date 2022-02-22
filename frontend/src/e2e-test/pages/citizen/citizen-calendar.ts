@@ -41,6 +41,16 @@ export default class CitizenCalendarPage {
     return new AbsencesModal(this.page)
   }
 
+  async openHolidayModal() {
+    if (this.type === 'mobile') {
+      await this.#openCalendarActionsModal.click()
+      await this.page.findByDataQa('calendar-action-holidays').click()
+    } else {
+      await this.page.findByDataQa('open-holiday-modal').click()
+    }
+    return new HolidayModal(this.page)
+  }
+
   async assertHolidayModalButtonVisible() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
@@ -63,7 +73,7 @@ export default class CitizenCalendarPage {
     reservations: { startTime: string; endTime: string }[]
   ) {
     await waitUntilEqual(
-      () => this.#dayCell(date).find('[data-qa="reservations"]').innerText,
+      () => this.#dayCell(date).findByDataQa('reservations').innerText,
       [
         ...(absence ? ['Poissa'] : []),
         ...reservations.map(
@@ -82,6 +92,13 @@ export default class CitizenCalendarPage {
       'success'
     )
     return bannerContainer.findByDataQa('holiday-period-banner').innerText
+  }
+
+  async assertNoReservationsOrAbsences(date: LocalDate) {
+    await waitUntilEqual(
+      () => this.#dayCell(date).findByDataQa('reservations').innerText,
+      'Ei varausta'
+    )
   }
 }
 
@@ -239,5 +256,18 @@ class DayViewEditor {
 
   async save() {
     await this.#saveButton.click()
+  }
+}
+
+class HolidayModal {
+  constructor(private readonly page: Page) {}
+
+  #childHolidaySelect = (childId: string) =>
+    new Select(this.page.findByDataQa(`holiday-period-select-${childId}`))
+  #modalSendButton = this.page.findByDataQa('modal-okBtn')
+
+  async markHoliday(child: { id: string }, option: string) {
+    await this.#childHolidaySelect(child.id).selectOption(option)
+    await this.#modalSendButton.click()
   }
 }

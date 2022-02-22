@@ -21,6 +21,13 @@ export interface FreeAbsencePeriod {
 }
 
 /**
+* Generated from fi.espoo.evaka.holidayperiod.HolidayAbsenceRequest
+*/
+export interface HolidayAbsenceRequest {
+  childHolidays: Record<string, FiniteDateRange | null>
+}
+
+/**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriod
 */
 export interface HolidayPeriod {

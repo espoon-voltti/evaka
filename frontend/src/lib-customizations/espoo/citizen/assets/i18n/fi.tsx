@@ -235,7 +235,8 @@ export default {
     },
     holidayModal: {
       title: 'Ilmoita loma',
-      additionalInformation: 'Lisätietoja'
+      additionalInformation: 'Lisätietoja',
+      holidayFor: 'Loman ajankohta:'
     }
   },
   messages: {
