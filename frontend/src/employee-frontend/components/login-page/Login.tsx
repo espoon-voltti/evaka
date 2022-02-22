@@ -6,8 +6,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 import Title from 'lib-components/atoms/Title'
+import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -19,46 +19,6 @@ import ErrorMessage from './login/ErrorMessage'
 interface Props {
   error?: string
 }
-
-const LoginButton = styled.a`
-  -webkit-font-smoothing: antialiased;
-  text-size-adjust: 100%;
-  box-sizing: inherit;
-  height: 45px;
-  padding: 0 27px;
-  width: fit-content;
-  min-width: 100px;
-  text-align: center;
-  overflow-x: hidden;
-  border: 1px solid ${(p) => p.theme.colors.main.m2};
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  line-height: 16px;
-  font-weight: ${fontWeights.semibold};
-  text-transform: uppercase;
-  white-space: nowrap;
-  letter-spacing: 0.2px;
-  color: ${(p) => p.theme.colors.grayscale.g0};
-  background-color: ${(p) => p.theme.colors.main.m2};
-  margin-right: 0;
-  text-decoration: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  :hover {
-    background-color: ${(p) => p.theme.colors.main.m2Hover};
-  }
-  :focus {
-    background-color: ${(p) => p.theme.colors.main.m2Focus};
-  }
-  :active {
-    background-color: ${(p) => p.theme.colors.main.m2Active};
-  }
-`
 
 const Center = styled.div`
   display: flex;
@@ -80,14 +40,14 @@ function Login({ error }: Props) {
           {i18n.login.subtitle}
         </Title>
         <Center>
-          <LoginButton data-qa="login-btn" href={getLoginUrl('saml')}>
+          <LinkButton data-qa="login-btn" href={getLoginUrl('saml')}>
             <span>{i18n.login.loginAD}</span>
-          </LoginButton>
+          </LinkButton>
           <Gap horizontal />
           {featureFlags.evakaLogin && (
-            <LoginButton data-qa="login-btn" href={getLoginUrl('evaka')}>
+            <LinkButton data-qa="login-btn" href={getLoginUrl('evaka')}>
               <span>{i18n.login.loginEvaka}</span>
-            </LoginButton>
+            </LinkButton>
           )}
         </Center>
         <ErrorMessage error={error} />

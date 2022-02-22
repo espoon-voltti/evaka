@@ -119,6 +119,23 @@ const en: Translations = {
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
+  loginPage: {
+    title: 'City of Espoo early childhood education',
+    login: {
+      title: 'Log in to eVaka',
+      paragraph:
+        'Take care of your child’s daily early childhood education affairs in eVaka.',
+      link: 'Log in'
+    },
+    applying: {
+      title: 'Applications',
+      paragraph:
+        'Apply to early childhood education, pre-primary education and clubs (requires strong authentication).',
+      link: 'Apply',
+      mapText: 'Look up the units that you can apply to in eVaka on the map.',
+      mapLink: 'Units on the map'
+    }
+  },
   ctaBanner: {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Report holidays and make reservations for ${period} by ${deadline}.`

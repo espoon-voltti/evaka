@@ -13,6 +13,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
 import CitizenReloadNotification from './CitizenReloadNotification'
+import LoginPage from './LoginPage'
 import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
@@ -32,6 +33,7 @@ import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
 import IncomeStatements from './income-statements/IncomeStatements'
 import { Localization, useTranslation } from './localization'
+import MapView from './map/MapView'
 import MessagesPage from './messages/MessagesPage'
 import { MessageContextProvider } from './messages/state'
 import GlobalErrorDialog from './overlay/Error'
@@ -59,7 +61,12 @@ export default function App() {
                       <Header />
                       <Main>
                         <Switch>
-                          <Route path="/applying" component={ApplyingRouter} />
+                          <Route path="/login" component={LoginPage} />
+                          <Route path="/map" component={MapView} />
+                          <Route
+                            path="/applying"
+                            component={requireAuth(ApplyingRouter)}
+                          />
                           <Route
                             exact
                             path="/applications/new/:childId"
@@ -162,6 +169,11 @@ export default function App() {
 
 function HandleRedirection() {
   const user = useUser()
+
+  if (!user) {
+    return <Redirect to="/login" />
+  }
+
   const hasAccessToCalendar = !!user?.accessibleFeatures.reservations
   return hasAccessToCalendar ? (
     <Redirect to="/calendar" />
