@@ -30,7 +30,8 @@ export const isProduction = (): boolean => {
 }
 
 export const isAutomatedTest =
-  typeof window !== 'undefined' && 'evakaAutomatedTest' in window
+  (typeof window !== 'undefined' ? window.evaka?.automatedTest : undefined) ??
+  false
 
 export const isIOS = () =>
   ['iPad', 'iPhone', 'iPad Simulator', 'iPhone Simulator'].includes(
@@ -40,11 +41,13 @@ export const isIOS = () =>
 
 declare global {
   interface Window {
-    evakaMockedTime: string | undefined
+    evaka?: EvakaWindowConfig
+  }
+  interface EvakaWindowConfig {
+    automatedTest?: boolean
+    mockedTime?: string | undefined
   }
 }
 
 export const mockNow = (): string | undefined =>
-  typeof window !== 'undefined' && 'evakaMockedTime' in window
-    ? (window.evakaMockedTime as string)
-    : undefined
+  typeof window !== 'undefined' ? window.evaka?.mockedTime : undefined

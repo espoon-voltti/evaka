@@ -3,8 +3,12 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
+    "jsx": "react",
     "outDir": "../../dist/e2e-test",
     "types": ["jest", "node"]
   },
-  "references": [{ "path": "../lib-common" }]
+  "references": [
+    { "path": "../lib-common" },
+    { "path": "../lib-customizations" }
+  ]
 }

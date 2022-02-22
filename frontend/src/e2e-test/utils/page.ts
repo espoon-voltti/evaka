@@ -9,14 +9,16 @@ import {
   Page as PlaywrightPage
 } from 'playwright'
 
-import { newBrowserContext } from '../browser'
+import { EvakaBrowserContextOptions, newBrowserContext } from '../browser'
 
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 
 export class Page {
   readonly keyboard: Keyboard
 
-  static async open(options?: BrowserContextOptions & { mockedTime?: Date }) {
+  static async open(
+    options?: BrowserContextOptions & EvakaBrowserContextOptions
+  ) {
     const ctx = await newBrowserContext(options)
     const page = await ctx.newPage()
     return new Page(page)

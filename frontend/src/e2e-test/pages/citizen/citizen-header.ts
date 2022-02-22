@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Lang } from 'lib-customizations/citizen'
+
 import { Page } from '../../utils/page'
 
 export default class CitizenHeader {
@@ -18,6 +20,10 @@ export default class CitizenHeader {
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
   #userMenu = this.page.find(`[data-qa="user-menu-title-${this.type}"]`)
   #applyingTab = this.page.find('[data-qa="nav-applying"]')
+
+  #languageOption(lang: Lang) {
+    return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)
+  }
 
   async logIn() {
     if (this.type === 'mobile') {
@@ -71,7 +77,19 @@ export default class CitizenHeader {
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
     await this.#languageMenuToggle.click()
-    await this.#languageOptionList.find(`[data-qa="lang-${lang}"]`).click()
+    await this.#languageOption(lang).click()
+  }
+
+  async listLanguages(): Promise<Record<Lang, boolean>> {
+    const isVisible = (lang: Lang) => this.#languageOption(lang).visible
+    await this.#languageMenuToggle.click()
+    const languages = {
+      fi: await isVisible('fi'),
+      sv: await isVisible('sv'),
+      en: await isVisible('en')
+    }
+    await this.#languageMenuToggle.click()
+    return languages
   }
 
   async assertDOMLangAttrib(lang: 'fi' | 'sv' | 'en') {
