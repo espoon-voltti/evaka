@@ -12,6 +12,8 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -32,6 +34,7 @@ import java.time.LocalDate
 @RequestMapping("/occupancy")
 class OccupancyController(
     private val accessControl: AccessControl,
+    private val acl: AccessControlList,
     private val placementPlanService: PlacementPlanService
 ) {
     @GetMapping("/by-unit/{unitId}/realtime")
@@ -68,7 +71,7 @@ class OccupancyController(
 
         val occupancies = db.connect { dbc ->
             dbc.read {
-                it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type)
+                it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type, acl.getAuthorizedUnits(user))
             }
         }
 
@@ -129,6 +132,7 @@ class OccupancyController(
                 val (threeMonths, sixMonths) = calculateSpeculatedMaxOccupancies(
                     tx,
                     LocalDate.now(),
+                    acl.getAuthorizedUnits(user),
                     unitId,
                     speculatedPlacements,
                     from,
@@ -158,7 +162,12 @@ class OccupancyController(
 
         val occupancies = db.connect { dbc ->
             dbc.read {
-                it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type)
+                it.calculateOccupancyPeriodsGroupLevel(
+                    unitId,
+                    FiniteDateRange(from, to),
+                    type,
+                    acl.getAuthorizedUnits(user)
+                )
             }
         }
 
@@ -206,28 +215,30 @@ data class OccupancyResponseSpeculated(
 fun Database.Read.calculateOccupancyPeriods(
     unitId: DaycareId,
     period: FiniteDateRange,
-    type: OccupancyType
+    type: OccupancyType,
+    aclAuth: AclAuthorization
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
 
     return reduceDailyOccupancyValues(
-        calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
+        calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, aclAuth, unitId = unitId)
     ).flatMap { (_, values) -> values }
 }
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     unitId: DaycareId,
     period: FiniteDateRange,
-    type: OccupancyType
+    type: OccupancyType,
+    aclAuth: AclAuthorization
 ): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
 
     return reduceDailyOccupancyValues(
-        calculateDailyGroupOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
+        calculateDailyGroupOccupancyValues(LocalDate.now(), period, type, aclAuth, unitId = unitId)
     ).flatMap { (groupKey, values) ->
         values.map { value ->
             OccupancyPeriodGroupLevel(
@@ -250,6 +261,7 @@ private data class SpeculatedMaxOccupancies(
 private fun calculateSpeculatedMaxOccupancies(
     tx: Database.Read,
     now: LocalDate,
+    aclAuth: AclAuthorization,
     unitId: DaycareId,
     speculatedPlacements: List<Placement>,
     from: LocalDate,
@@ -262,12 +274,14 @@ private fun calculateSpeculatedMaxOccupancies(
         now,
         longestPeriod,
         OccupancyType.PLANNED,
+        aclAuth,
         unitId = unitId
     )
     val speculatedOccupancies = tx.calculateDailyUnitOccupancyValues(
         now,
         longestPeriod,
         OccupancyType.PLANNED,
+        aclAuth,
         unitId = unitId,
         speculatedPlacements = speculatedPlacements
     )

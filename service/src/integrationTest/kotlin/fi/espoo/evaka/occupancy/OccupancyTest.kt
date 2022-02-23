@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -110,8 +111,13 @@ class OccupancyTest : PureJdbiTest() {
 
         db.read {
             val period = FiniteDateRange(today.minusDays(1), today)
-            val occupancyValues =
-                it.calculateDailyUnitOccupancyValues(today, period, OccupancyType.CONFIRMED, areaId = careArea1)
+            val occupancyValues = it.calculateDailyUnitOccupancyValues(
+                today,
+                period,
+                OccupancyType.CONFIRMED,
+                AclAuthorization.All,
+                areaId = careArea1
+            )
 
             assertEquals(1, occupancyValues.size)
             assertEquals(daycareInArea1, occupancyValues[0].key.unitId)
@@ -148,7 +154,13 @@ class OccupancyTest : PureJdbiTest() {
 
         db.read { tx ->
             val occupancyValues =
-                tx.calculateDailyGroupOccupancyValues(today, FiniteDateRange(today, today), OccupancyType.CONFIRMED, unitId = daycareInArea1)
+                tx.calculateDailyGroupOccupancyValues(
+                    today,
+                    FiniteDateRange(today, today),
+                    OccupancyType.CONFIRMED,
+                    AclAuthorization.All,
+                    unitId = daycareInArea1
+                )
 
             assertEquals(2, occupancyValues.size)
             assertEquals(1, occupancyValues.filter { it.key.groupId == daycareGroup1 }.size)
@@ -393,6 +405,7 @@ class OccupancyTest : PureJdbiTest() {
                 today = today,
                 queryPeriod = FiniteDateRange(today.minusDays(2), today.plusDays(1)),
                 type = OccupancyType.REALIZED,
+                aclAuth = AclAuthorization.All,
                 unitId = daycareInArea1
             ).first { it.key.groupId == daycareGroup1 }.occupancies
 
@@ -426,6 +439,7 @@ class OccupancyTest : PureJdbiTest() {
                 today = today,
                 queryPeriod = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
                 type = OccupancyType.REALIZED,
+                aclAuth = AclAuthorization.All,
                 unitId = daycareInArea1
             )
             assertTrue(values.isEmpty())
@@ -523,6 +537,7 @@ class OccupancyTest : PureJdbiTest() {
                 today = today,
                 queryPeriod = FiniteDateRange(today.minusDays(3), today.plusDays(10)),
                 type = OccupancyType.CONFIRMED,
+                aclAuth = AclAuthorization.All,
                 unitId = daycareInArea1
             ).let { reduceDailyOccupancyValues(it) }
 
@@ -581,6 +596,7 @@ class OccupancyTest : PureJdbiTest() {
                 today = today,
                 queryPeriod = FiniteDateRange(date, date),
                 type = type,
+                aclAuth = AclAuthorization.All,
                 unitId = unitId
             )
         )
@@ -602,6 +618,7 @@ class OccupancyTest : PureJdbiTest() {
                 today = today,
                 queryPeriod = FiniteDateRange(date, date),
                 type = type,
+                aclAuth = AclAuthorization.All,
                 unitId = unitId
             )
         )

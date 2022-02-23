@@ -40,6 +40,8 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -56,7 +58,7 @@ import java.time.LocalDate
 
 @RestController
 @RequestMapping("/views/units")
-class UnitsView(private val accessControl: AccessControl) {
+class UnitsView(private val accessControl: AccessControl, private val acl: AccessControlList) {
     private val terminatedPlacementsViewWeeks = 2L
 
     @GetMapping("/{unitId}")
@@ -80,8 +82,23 @@ class UnitsView(private val accessControl: AccessControl) {
                 val groups = tx.getDaycareGroups(unitId, from, to)
                 val placements = tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
                 val backupCares = tx.getBackupCaresForDaycare(unitId, period)
-                val missingGroupPlacements = if (accessControl.hasPermissionFor(user, Action.Unit.READ_MISSING_GROUP_PLACEMENTS, unitId)) getMissingGroupPlacements(tx, unitId) else emptyList()
-                val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(user, Action.Unit.READ_TERMINATED_PLACEMENTS, unitId)) tx.getTerminatedPlacements(evakaClock.today(), unitId, evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks), evakaClock.today()) else emptyList()
+                val missingGroupPlacements = if (accessControl.hasPermissionFor(
+                        user,
+                        Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
+                        unitId
+                    )
+                ) getMissingGroupPlacements(tx, unitId) else emptyList()
+                val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(
+                        user,
+                        Action.Unit.READ_TERMINATED_PLACEMENTS,
+                        unitId
+                    )
+                ) tx.getTerminatedPlacements(
+                    evakaClock.today(),
+                    unitId,
+                    evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks),
+                    evakaClock.today()
+                ) else emptyList()
                 val caretakers = Caretakers(
                     unitCaretakers = tx.getUnitStats(unitId, from, to),
                     groupCaretakers = tx.getGroupStats(unitId, from, to)
@@ -99,9 +116,10 @@ class UnitsView(private val accessControl: AccessControl) {
                         } else null
                     }.toSet()
 
-                val capacities = if (accessControl.hasPermissionFor(user, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId))
-                    tx.getUnitChildrenCapacities(unitId, from)
-                else listOf()
+                val capacities =
+                    if (accessControl.hasPermissionFor(user, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId))
+                        tx.getUnitChildrenCapacities(unitId, from)
+                    else listOf()
 
                 val basicData = UnitDataResponse(
                     groups = groups,
@@ -122,8 +140,8 @@ class UnitsView(private val accessControl: AccessControl) {
                 )
 
                 if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
-                    val unitOccupancies = getUnitOccupancies(tx, unitId, period)
-                    val groupOccupancies = getGroupOccupancies(tx, unitId, period)
+                    val unitOccupancies = getUnitOccupancies(tx, unitId, period, acl.getAuthorizedUnits(user))
+                    val groupOccupancies = getGroupOccupancies(tx, unitId, period, acl.getAuthorizedUnits(user))
                     val placementProposals = tx.getPlacementPlans(
                         evakaClock.today(),
                         unitId,
@@ -136,7 +154,11 @@ class UnitsView(private val accessControl: AccessControl) {
                         unitId,
                         null,
                         null,
-                        listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING, ApplicationStatus.REJECTED)
+                        listOf(
+                            ApplicationStatus.WAITING_CONFIRMATION,
+                            ApplicationStatus.WAITING_MAILING,
+                            ApplicationStatus.REJECTED
+                        )
                     )
                     val applications = tx.getApplicationUnitSummaries(unitId)
 
@@ -189,12 +211,20 @@ data class UnitOccupancies(
 private fun getUnitOccupancies(
     tx: Database.Read,
     unitId: DaycareId,
-    period: FiniteDateRange
+    period: FiniteDateRange,
+    aclAuth: AclAuthorization
 ): UnitOccupancies {
     return UnitOccupancies(
-        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED)),
-        confirmed = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.CONFIRMED)),
-        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED)),
+        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED, aclAuth)),
+        confirmed = getOccupancyResponse(
+            tx.calculateOccupancyPeriods(
+                unitId,
+                period,
+                OccupancyType.CONFIRMED,
+                aclAuth
+            )
+        ),
+        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED, aclAuth)),
         realtime = period.start.takeIf { it == period.end }?.let { date ->
             RealtimeOccupancy(
                 childAttendances = tx.getChildOccupancyAttendances(unitId, date),
@@ -220,21 +250,24 @@ data class GroupOccupancies(
 private fun getGroupOccupancies(
     tx: Database.Read,
     unitId: DaycareId,
-    period: FiniteDateRange
+    period: FiniteDateRange,
+    aclAuth: AclAuthorization
 ): GroupOccupancies {
     return GroupOccupancies(
         confirmed = getGroupOccupancyResponses(
             tx.calculateOccupancyPeriodsGroupLevel(
                 unitId,
                 period,
-                OccupancyType.CONFIRMED
+                OccupancyType.CONFIRMED,
+                aclAuth
             )
         ),
         realized = getGroupOccupancyResponses(
             tx.calculateOccupancyPeriodsGroupLevel(
                 unitId,
                 period,
-                OccupancyType.REALIZED
+                OccupancyType.REALIZED,
+                aclAuth
             )
         )
     )

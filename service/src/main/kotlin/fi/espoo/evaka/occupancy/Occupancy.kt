@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
@@ -90,15 +91,16 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
+    aclAuth: AclAuthorization,
     areaId: AreaId? = null,
     unitId: DaycareId? = null,
-    speculatedPlacements: List<Placement> = listOf(),
+    speculatedPlacements: List<Placement> = listOf()
 ): List<DailyOccupancyValues<UnitKey>> {
     if (areaId == null && unitId == null) error("Must provide areaId or unitId")
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
-    val caretakerCounts = getCaretakers(type, period, areaId, unitId) { row ->
+    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, unitId) { row ->
         Caretakers(
             UnitKey(
                 unitId = row.mapColumn("unit_id"),
@@ -124,6 +126,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
+    aclAuth: AclAuthorization,
     areaId: AreaId? = null,
     unitId: DaycareId? = null
 ): List<DailyOccupancyValues<UnitGroupKey>> {
@@ -131,7 +134,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
-    val caretakerCounts = getCaretakers(type, period, areaId, unitId) { row ->
+    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, unitId) { row ->
         Caretakers(
             UnitGroupKey(
                 unitId = row.mapColumn("unit_id"),
@@ -199,6 +202,7 @@ private fun getAndValidatePeriod(
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretakers(
     type: OccupancyType,
     period: FiniteDateRange,
+    aclAuth: AclAuthorization,
     areaId: AreaId?,
     unitId: DaycareId?,
     noinline mapper: (RowView) -> Caretakers<K>
@@ -228,12 +232,14 @@ LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
 AND (:areaId::uuid IS NULL OR u.care_area_id = :areaId)
 AND (:unitId::uuid IS NULL OR u.id = :unitId)
+AND (:unitIds::uuid[] IS NULL OR u.id = ANY(:unitIds))
 GROUP BY $groupBy, t
 """
 
     return createQuery(query)
         .bindNullable("areaId", areaId)
         .bindNullable("unitId", unitId)
+        .bindNullable("unitIds", aclAuth.ids?.toTypedArray())
         .bind("start", period.start)
         .bind("end", period.end)
         .map(mapper)
