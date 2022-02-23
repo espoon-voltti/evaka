@@ -115,6 +115,7 @@ describe('Holiday periods', () => {
 
     test('Holidays can be reported', async () => {
       await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
 
       await calendar.assertNoReservationsOrAbsences(LocalDate.of(2035, 12, 26))
