@@ -15,6 +15,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -98,6 +99,7 @@ describe('Holiday periods', () => {
 
     test('A holiday reservations banner is shown on calendar page', async () => {
       await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       expect(await calendar.getHolidayBannerContent()).toEqual(
         'Ilmoita lomat ja tee varaukset 18.12.2035-08.01.2036 välille viimeistään 06.12.2035.'
@@ -106,6 +108,7 @@ describe('Holiday periods', () => {
 
     test('The calendar page should show a button for reporting holidays', async () => {
       await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayModalButtonVisible()
     })

@@ -69,7 +69,7 @@ beforeAll(async () => {
 })
 beforeEach(async () => {
   page = await Page.open()
-  await page.goto(config.enduserUrl)
+  await page.goto(`${config.enduserUrl}/map`)
   mapPage = new CitizenMapPage(page)
 })
 

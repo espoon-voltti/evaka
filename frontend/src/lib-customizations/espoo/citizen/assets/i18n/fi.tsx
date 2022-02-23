@@ -107,7 +107,7 @@ export default {
       sv: 'På svenska',
       en: 'In English'
     },
-    login: 'Tunnistaudu palveluun',
+    login: 'Kirjaudu sisään',
     logout: 'Kirjaudu ulos'
   },
   footer: {
@@ -117,6 +117,22 @@ export default {
     sendFeedback: 'Lähetä palautetta',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
+  loginPage: {
+    title: 'Espoon kaupungin varhaiskasvatus',
+    login: {
+      title: 'Kirjaudu eVakaan',
+      paragraph: 'Hoida lapsesi päivittäisiä varhaiskasvatusasioita eVakassa.',
+      link: 'Kirjaudu sisään'
+    },
+    applying: {
+      title: 'Hae paikkaa',
+      paragraph:
+        'Hae lapsellesi varhaiskasvatus-, esiopetus- tai kerhopaikkaa (vaatii vahvan tunnistautumisen).',
+      link: 'Tee hakemus',
+      mapText: 'Katso kartalta yksiköt, joihin voit hakea eVakassa.',
+      mapLink: 'Yksiköt kartalla'
+    }
   },
   ctaBanner: {
     holidayPeriodCta: (period: string, deadline: string) =>

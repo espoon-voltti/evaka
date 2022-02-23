@@ -119,6 +119,23 @@ const sv: Translations = {
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
+  loginPage: {
+    title: 'Esbo stads småbarnspedagogik',
+    login: {
+      title: 'Logga in i eVaka',
+      paragraph:
+        'Sköt ditt barns dagliga ärenden rörande småbarnspedagogiken i eVaka.',
+      link: 'Logga in'
+    },
+    applying: {
+      title: 'Ansök om plats',
+      paragraph:
+        'Ansök om en plats till småbarnspedagogiken, förskolan, eller klubbverksamheten åt ditt barn (kräver stark identifiering).',
+      link: 'Ansök',
+      mapText: 'Se en karta över alla eVaka enheter du kan ansöka till.',
+      mapLink: 'Enheter på kartan'
+    }
+  },
   ctaBanner: {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`

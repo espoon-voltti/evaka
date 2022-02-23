@@ -17,8 +17,7 @@ const devLoginRoles = [
 
 export async function enduserLogin(page: Page) {
   await page.goto(config.enduserUrl)
-  await page.find('[data-qa="login-btn"]').click()
-  await page.find('[data-qa="user-menu-title-desktop"]').waitUntilVisible()
+  await page.findByDataQa('strong-login').click()
 }
 
 export async function employeeLogin(page: Page, user: { externalId: string }) {

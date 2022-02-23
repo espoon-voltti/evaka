@@ -5,7 +5,6 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
-import config from '../../config'
 import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
@@ -13,6 +12,7 @@ import { PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
+import { enduserLogin } from '../../utils/user'
 
 describe('Citizen attendance reservations (desktop)', () => {
   citizenReservationTests('desktop')
@@ -54,10 +54,9 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
         : { width: 1920, height: 1080 }
 
     page = await Page.open({ viewport, screen: viewport })
-    await page.goto(config.enduserUrl)
+    await enduserLogin(page)
     header = new CitizenHeader(page, env)
     calendarPage = new CitizenCalendarPage(page, env)
-    await header.logIn()
     await header.selectTab('calendar')
   })
 
