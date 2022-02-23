@@ -34,9 +34,12 @@ export async function getReservations(
           placementMinStart: LocalDate.parseIso(child.placementMinStart),
           placementMaxEnd: LocalDate.parseIso(child.placementMaxEnd)
         })),
-        reservableDays: res.data.reservableDays.map((r) =>
-          FiniteDateRange.parseJson(r)
-        )
+        // TODO Array.isArray is only for backward compatibility – remove ternaries when this is in production
+        reservableDays: Array.isArray(res.data.reservableDays)
+          ? res.data.reservableDays.map((r) => FiniteDateRange.parseJson(r))
+          : res.data.reservableDays
+          ? [FiniteDateRange.parseJson(res.data.reservableDays)]
+          : []
       })
     )
     .catch((e) => Failure.fromError(e))
