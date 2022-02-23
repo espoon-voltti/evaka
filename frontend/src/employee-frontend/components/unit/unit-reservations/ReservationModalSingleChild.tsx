@@ -83,7 +83,7 @@ export default React.memo(function ReservationModalSingleChild({
 
   const [showAllErrors, setShowAllErrors] = useState(false)
   const validationResult = useMemo(
-    () => validateForm(reservableDates, formData),
+    () => validateForm([reservableDates], formData),
     [formData]
   )
 

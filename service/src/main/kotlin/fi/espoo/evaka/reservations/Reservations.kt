@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -21,8 +21,8 @@ data class DailyReservationRequest(
     val reservations: List<TimeRange>?
 )
 
-fun List<DailyReservationRequest>.validate(reservableDates: FiniteDateRange? = null): List<DailyReservationRequest> {
-    if (reservableDates != null && this.any { !reservableDates.includes(it.date) }) {
+fun List<DailyReservationRequest>.validate(reservableDates: List<FiniteDateRange>? = null): List<DailyReservationRequest> {
+    if (reservableDates != null && this.any { request -> !reservableDates.any { it.includes(request.date) } }) {
         throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
     }
 

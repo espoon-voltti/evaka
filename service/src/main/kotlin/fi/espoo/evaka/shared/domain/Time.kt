@@ -89,7 +89,7 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
                 FiniteDateRange(other.end.plusDays(1), this.end)
             )
 
-            else -> throw Error("Bug: missing when case")
+            else -> error("Bug: missing when case")
         }
     }
 

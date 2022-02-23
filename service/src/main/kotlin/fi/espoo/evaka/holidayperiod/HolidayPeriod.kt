@@ -47,3 +47,9 @@ data class HolidayPeriodBody(
     @Nested("free_period")
     val freePeriod: FreeAbsencePeriod?
 )
+
+data class HolidayPeriodDeadline(
+    val id: HolidayPeriodId,
+    val period: FiniteDateRange,
+    val reservationDeadline: LocalDate,
+)
