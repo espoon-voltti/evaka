@@ -148,6 +148,15 @@ export interface FamilyContact {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.FamilyContactPriorityUpdate
+*/
+export interface FamilyContactPriorityUpdate {
+  childId: UUID
+  contactPersonId: UUID
+  priority: number | null
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.FamilyContactRole
 */
 export type FamilyContactRole = 
@@ -160,9 +169,11 @@ export type FamilyContactRole =
 * Generated from fi.espoo.evaka.pis.controllers.FamilyContactUpdate
 */
 export interface FamilyContactUpdate {
+  backupPhone: string | null
   childId: UUID
   contactPersonId: UUID
-  priority: number | null
+  email: string | null
+  phone: string | null
 }
 
 /**

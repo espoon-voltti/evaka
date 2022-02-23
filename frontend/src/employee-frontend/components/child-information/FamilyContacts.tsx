@@ -11,8 +11,6 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
@@ -24,14 +22,14 @@ import { Gap } from 'lib-components/white-space'
 
 import {
   getFamilyContacts,
-  updateFamilyContacts
+  updateFamilyContactDetails,
+  updateFamilyContactPriority
 } from '../../api/family-overview'
-import { patchPersonDetails } from '../../api/person'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { UserContext } from '../../state/user'
 import { FamilyContact } from '../../types/family-overview'
 import { formatName } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 import BackupPickup from './BackupPickup'
 
@@ -40,13 +38,15 @@ interface FamilyContactsProps {
   startOpen: boolean
 }
 
-function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
+export default React.memo(function FamilyContacts({
+  id,
+  startOpen
+}: FamilyContactsProps) {
   const { i18n } = useTranslation()
   const [result, setResult] = useState<Result<FamilyContact[]>>(Loading.of())
   const [dirty, setDirty] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [open, setOpen] = useState(startOpen)
-  const { roles } = useContext(UserContext)
   const { permittedActions } = useContext(ChildContext)
 
   const loadContacts = useRestApi(getFamilyContacts, setResult)
@@ -75,16 +75,12 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
       data
         .filter((row) => row.id === personId)
         .map((person) => {
-          void patchPersonDetails(personId, {
-            firstName: undefined,
-            lastName: undefined,
-            dateOfBirth: undefined,
-            streetAddress: undefined,
-            postalCode: undefined,
-            postOffice: undefined,
-            email: person.email ?? undefined,
-            phone: person.phone ?? undefined,
-            backupPhone: person.backupPhone ?? undefined
+          void updateFamilyContactDetails({
+            childId: id,
+            contactPersonId: personId,
+            email: person.email ?? null,
+            phone: person.phone ?? null,
+            backupPhone: person.backupPhone ?? null
           }).then(() => {
             loadContacts(id)
           })
@@ -93,16 +89,6 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
     setDirty(false)
     setSubmitting(false)
   }
-
-  const editableContacts = roles.find((r) =>
-    [
-      'ADMIN',
-      'SERVICE_WORKER',
-      'UNIT_SUPERVISOR',
-      'FINANCE_ADMIN',
-      'STAFF'
-    ].includes(r)
-  )
 
   return (
     <CollapsibleContentArea
@@ -113,9 +99,7 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
       paddingVertical="L"
       data-qa="family-contacts-collapsible"
     >
-      {result.isLoading && <SpinnerSegment />}
-      {result.isFailure && <ErrorSegment />}
-      {result.isSuccess && (
+      {renderResult(result, (result) => (
         <>
           <Gap size="m" />
           <H3 noMargin>{i18n.childInformation.familyContacts.contacts}</H3>
@@ -127,11 +111,11 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
                 <Th>{i18n.childInformation.familyContacts.contact}</Th>
                 <Th>{i18n.childInformation.familyContacts.contactPerson}</Th>
                 <Th>{i18n.childInformation.familyContacts.address}</Th>
-                <Th></Th>
+                <Th />
               </Tr>
             </Thead>
             <Tbody>
-              {result.value.map((row) => (
+              {result.map((row) => (
                 <Tr
                   key={`${row.role}:${row.lastName || ''}:${
                     row.firstName || ''
@@ -142,7 +126,7 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
                     {i18n.childInformation.familyContacts.roles[row.role]}
                   </Td>
                   <Td>
-                    {editableContacts ? (
+                    {permittedActions.has('UPDATE_FAMILY_CONTACT_DETAILS') ? (
                       <FixedSpaceColumn spacing="xs">
                         {row.email && (
                           <span>
@@ -227,20 +211,24 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
                   </Td>
                   <Td>
                     {row.role !== 'LOCAL_SIBLING' ? (
-                      <Select
-                        selectedItem={row.priority}
-                        items={contactPriorityOptions}
-                        onChange={(value) => {
-                          void updateFamilyContacts({
-                            childId: id,
-                            contactPersonId: row.id,
-                            priority: value ? Number(value) : undefined
-                          }).then(() => {
-                            loadContacts(id)
-                          })
-                        }}
-                        placeholder="-"
-                      />
+                      permittedActions.has('UPDATE_FAMILY_CONTACT_PRIORITY') ? (
+                        <Select
+                          selectedItem={row.priority}
+                          items={contactPriorityOptions}
+                          onChange={(value) => {
+                            void updateFamilyContactPriority({
+                              childId: id,
+                              contactPersonId: row.id,
+                              priority: value ? Number(value) : null
+                            }).then(() => {
+                              loadContacts(id)
+                            })
+                          }}
+                          placeholder="-"
+                        />
+                      ) : (
+                        row.priority
+                      )
                     ) : null}
                   </Td>
                   <Td>{`${row.streetAddress}, ${row.postalCode} ${row.postOffice}`}</Td>
@@ -265,11 +253,9 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
             </Tbody>
           </Table>
         </>
-      )}
+      ))}
       <Gap size="XL" />
       {permittedActions.has('READ_BACKUP_PICKUP') && <BackupPickup id={id} />}
     </CollapsibleContentArea>
   )
-}
-
-export default FamilyContacts
+})

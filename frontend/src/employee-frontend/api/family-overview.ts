@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import {
+  FamilyContactPriorityUpdate,
+  FamilyContactUpdate
+} from 'lib-common/generated/api-types/pis'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -48,17 +52,19 @@ export async function getFamilyContacts(
     .catch((e) => Failure.fromError(e))
 }
 
-interface FamilyContactUpdateBody {
-  childId: string
-  contactPersonId: string
-  priority?: number
-}
-
-export async function updateFamilyContacts(
-  body: FamilyContactUpdateBody
+export async function updateFamilyContactDetails(
+  body: FamilyContactUpdate
 ): Promise<Result<void>> {
   return client
     .post<void>('/family/contacts', body)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+export async function updateFamilyContactPriority(
+  body: FamilyContactPriorityUpdate
+): Promise<Result<void>> {
+  return client
+    .post<void>('/family/contacts/priority', body)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
