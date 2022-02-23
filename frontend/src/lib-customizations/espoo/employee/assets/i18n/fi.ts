@@ -263,8 +263,8 @@ export const fi = {
       status: 'Tila',
       note: 'Huom',
       basis: 'Perusteet',
-      lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',
-      morethan3: 'Yli 3-vuotias hoidontarpeen alkaessa',
+      lessthan3: 'Alle 3-vuotias',
+      morethan3: 'Yli 3-vuotias',
       currentUnit: 'Nyk.',
       addNote: 'Lisää muistiinpano',
       serviceWorkerNote: 'Palveluohjauksen huomio'
