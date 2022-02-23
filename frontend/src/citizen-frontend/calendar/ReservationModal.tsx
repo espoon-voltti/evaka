@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useMemo, useState } from 'react'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -41,7 +41,7 @@ interface Props {
   onClose: () => void
   onReload: () => void
   availableChildren: ReservationChild[]
-  reservableDays: FiniteDateRange | null
+  reservableDays: FiniteDateRange[]
 }
 
 export default React.memo(function ReservationModal({
@@ -55,7 +55,7 @@ export default React.memo(function ReservationModal({
 
   const [formData, setFormData] = useState<ReservationFormData>({
     selectedChildren: availableChildren.map((child) => child.id),
-    startDate: reservableDays?.start.format() ?? '',
+    startDate: reservableDays[0]?.start.format() ?? '',
     endDate: '',
     repetition: 'DAILY',
     dailyTimes: [
@@ -120,6 +120,11 @@ export default React.memo(function ReservationModal({
       combinedOperationDays.includes(day)
     )
   }, [availableChildren])
+
+  const isValidDate = useCallback(
+    (date: LocalDate) => reservableDays.some((r) => r.includes(date)),
+    [reservableDays]
+  )
 
   return (
     <AsyncFormModal
@@ -190,7 +195,7 @@ export default React.memo(function ReservationModal({
           date={formData.startDate}
           onChange={(date) => updateForm({ startDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDays?.includes(date) ?? false}
+          isValidDate={isValidDate}
           info={errorToInputInfo(
             validationResult.errors?.startDate,
             i18n.validationErrors
@@ -203,14 +208,15 @@ export default React.memo(function ReservationModal({
           date={formData.endDate}
           onChange={(date) => updateForm({ endDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDays?.includes(date) ?? false}
+          isValidDate={isValidDate}
           info={errorToInputInfo(
             validationResult.errors?.endDate,
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!showAllErrors}
           initialMonth={
-            LocalDate.parseFiOrNull(formData.startDate) ?? reservableDays?.start
+            LocalDate.parseFiOrNull(formData.startDate) ??
+            reservableDays[0]?.start
           }
           data-qa="end-date"
         />

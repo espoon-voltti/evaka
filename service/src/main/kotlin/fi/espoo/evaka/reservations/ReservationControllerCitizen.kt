@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
+import fi.espoo.evaka.holidayperiod.getHolidayPeriodDeadlines
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
@@ -19,7 +20,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
@@ -61,14 +61,10 @@ class ReservationControllerCitizen(
                     it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
                 }
                 val reservations = tx.getReservationsCitizen(PersonId(user.id), range, includeWeekends)
-                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours).let { reservableDays ->
-                    val maxPlacementEnd = children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
-                    if (reservableDays.start > maxPlacementEnd) null
-                    else FiniteDateRange(
-                        maxOf(reservableDays.start, children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN),
-                        minOf(reservableDays.end, maxPlacementEnd)
-                    )
-                }
+                val deadlines = tx.getHolidayPeriodDeadlines()
+                val placementRange = FiniteDateRange(children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN, children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX)
+                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
+                    .flatMap { range -> listOfNotNull(range.intersection(placementRange)) }
                 ReservationsResponse(
                     dailyData = reservations,
                     children = children,
@@ -93,7 +89,8 @@ class ReservationControllerCitizen(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours)
+                val deadlines = tx.getHolidayPeriodDeadlines()
+                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
                 createReservationsAsCitizen(tx, PersonId(user.id), body.validate(reservableDays))
             }
         }
@@ -133,7 +130,7 @@ class ReservationControllerCitizen(
 data class ReservationsResponse(
     val dailyData: List<DailyReservationData>,
     val children: List<ReservationChild>,
-    val reservableDays: FiniteDateRange?,
+    val reservableDays: List<FiniteDateRange>,
     val includesWeekends: Boolean
 )
 
@@ -271,28 +268,6 @@ ORDER BY first_name
         .bind("range", range)
         .mapTo<ReservationChild>()
         .list()
-}
-
-fun getNextMonday(now: LocalDate): LocalDate = now.plusDays(7 - now.dayOfWeek.value + 1L)
-
-fun getNextReservableMonday(now: HelsinkiDateTime, thresholdHours: Long, nextMonday: LocalDate): LocalDate =
-    if (nextMonday.isAfter(now.plusHours(thresholdHours).toLocalDate())) {
-        nextMonday
-    } else {
-        getNextReservableMonday(now, thresholdHours, nextMonday.plusWeeks(1))
-    }
-
-fun getReservableDays(now: HelsinkiDateTime, thresholdHours: Long): FiniteDateRange {
-    val nextReservableMonday = getNextReservableMonday(now, thresholdHours, getNextMonday(now.toLocalDate()))
-
-    val firstOfJuly = nextReservableMonday.withMonth(7).withDayOfMonth(1)
-    val lastReservableDay = if (nextReservableMonday.isBefore(firstOfJuly)) {
-        firstOfJuly.withDayOfMonth(31)
-    } else {
-        firstOfJuly.withDayOfMonth(31).plusYears(1)
-    }
-
-    return FiniteDateRange(nextReservableMonday, lastReservableDay)
 }
 
 fun createReservationsAsCitizen(tx: Database.Transaction, userId: PersonId, reservations: List<DailyReservationRequest>) {

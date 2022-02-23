@@ -51,7 +51,7 @@ export type ValidationResult =
   | { errors: undefined; requestPayload: DailyReservationRequest[] }
 
 export function validateForm(
-  reservableDays: FiniteDateRange | null,
+  reservableDays: FiniteDateRange[],
   formData: ReservationFormData
 ): ValidationResult {
   const errors: ReservationErrors = {}
@@ -61,19 +61,18 @@ export function validateForm(
   }
 
   const startDate = LocalDate.parseFiOrNull(formData.startDate)
-  if (startDate === null || reservableDays === null) {
+  if (
+    startDate === null ||
+    !reservableDays.some((r) => r.includes(startDate))
+  ) {
     errors['startDate'] = 'validDate'
-  } else if (startDate.isBefore(reservableDays.start)) {
-    errors['startDate'] = 'dateTooEarly'
   }
 
   const endDate = LocalDate.parseFiOrNull(formData.endDate)
-  if (endDate === null || reservableDays === null) {
+  if (endDate === null || !reservableDays.some((r) => r.includes(endDate))) {
     errors['endDate'] = 'validDate'
   } else if (startDate && endDate.isBefore(startDate)) {
     errors['endDate'] = 'dateTooEarly'
-  } else if (endDate.isAfter(reservableDays.end)) {
-    errors['endDate'] = 'dateTooLate'
   }
 
   if (formData.repetition === 'DAILY') {

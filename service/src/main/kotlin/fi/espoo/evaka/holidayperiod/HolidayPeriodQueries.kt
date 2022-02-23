@@ -10,6 +10,11 @@ import fi.espoo.evaka.shared.db.updateExactlyOne
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 
+fun Database.Read.getHolidayPeriodDeadlines(): List<HolidayPeriodDeadline> =
+    this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period")
+        .mapTo<HolidayPeriodDeadline>()
+        .list()
+
 val holidayPeriodSelect = """
     SELECT id,
            period,

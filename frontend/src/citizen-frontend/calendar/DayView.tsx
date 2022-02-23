@@ -307,12 +307,12 @@ const emptyReservation: TimeRangeWithErrors = {
 function useEditState(
   date: LocalDate,
   childrenWithReservations: ChildWithReservations[],
-  reservableDays: FiniteDateRange | null,
+  reservableDays: FiniteDateRange[],
   reloadData: () => void
 ) {
   const editable = useMemo(
     () =>
-      (reservableDays?.includes(date) ?? false) &&
+      reservableDays.some((r) => r.includes(date)) &&
       childrenWithReservations.some(
         ({ reservationEditable }) => reservationEditable
       ),
