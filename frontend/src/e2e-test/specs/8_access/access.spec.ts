@@ -155,7 +155,8 @@ describe('Child information page sections', () => {
       messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: true,
-      pedagogicalDocuments: true
+      pedagogicalDocuments: true,
+      income: true
     })
   })
 
@@ -176,7 +177,8 @@ describe('Child information page sections', () => {
       messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: false,
-      pedagogicalDocuments: false
+      pedagogicalDocuments: false,
+      income: false
     })
   })
 
@@ -197,7 +199,8 @@ describe('Child information page sections', () => {
       messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: false,
-      pedagogicalDocuments: false
+      pedagogicalDocuments: false,
+      income: true
     })
   })
 
@@ -218,7 +221,8 @@ describe('Child information page sections', () => {
       messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: false,
-      pedagogicalDocuments: true
+      pedagogicalDocuments: true,
+      income: false
     })
   })
 
@@ -241,7 +245,8 @@ describe('Child information page sections', () => {
       messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: true,
-      pedagogicalDocuments: true
+      pedagogicalDocuments: true,
+      income: false
     })
   })
 
@@ -265,7 +270,8 @@ describe('Child information page sections', () => {
       messageBlocklist: true,
       dailyServiceTimes: true,
       vasuAndLeops: true,
-      pedagogicalDocuments: true
+      pedagogicalDocuments: true,
+      income: false
     })
   })
 })

@@ -79,7 +79,7 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
   )
 })
 
-const IncomeStatements = React.memo(function IncomeStatements({
+export const IncomeStatements = React.memo(function IncomeStatements({
   personId
 }: {
   personId: UUID

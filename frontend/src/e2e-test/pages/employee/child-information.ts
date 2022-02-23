@@ -21,6 +21,7 @@ import {
 } from '../../utils/page'
 
 import CreateApplicationModal from './applications/create-application-modal'
+import { IncomeSection } from './guardian-information'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
@@ -602,6 +603,10 @@ const collapsibles = {
   feeAlterations: {
     selector: '[data-qa="fee-alteration-collapsible"]',
     section: FeeAlterationsSection
+  },
+  income: {
+    selector: '[data-qa="income-collapsible"]',
+    section: IncomeSection
   }
 }
 

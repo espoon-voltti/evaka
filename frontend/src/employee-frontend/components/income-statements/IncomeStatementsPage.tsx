@@ -46,7 +46,15 @@ function IncomeStatementsList({
         {data.map((row) => (
           <Tr key={row.id} data-qa="income-statement-row">
             <Td>
-              <Link to={`/profile/${row.personId}`}>{row.personName}</Link>
+              <Link
+                to={
+                  row.type !== 'CHILD_INCOME'
+                    ? `/profile/${row.personId}`
+                    : `/child-information/${row.personId}`
+                }
+              >
+                {row.personName}
+              </Link>
             </Td>
             <Td>{row.primaryCareArea}</Td>
             <Td>{formatDate(row.created)}</Td>

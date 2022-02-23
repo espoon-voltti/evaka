@@ -226,7 +226,7 @@ class DecisionsSection extends Section {
   }
 }
 
-export class IncomesSection extends Section {
+export class IncomeSection extends Section {
   // Income statements
 
   #incomeStatementRows = this.findAll(`[data-qa="income-statement-row"]`)
@@ -466,7 +466,7 @@ const collapsibles = {
   },
   incomes: {
     selector: '[data-qa="person-income-collapsible"]',
-    section: IncomesSection
+    section: IncomeSection
   },
   feeDecisions: {
     selector: '[data-qa="person-fee-decisions-collapsible"]',
