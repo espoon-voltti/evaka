@@ -12,14 +12,15 @@ import { fasArrowDown, fasArrowUp } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-type Props = { position?: TooltipProps['position'] } & (
-  | { isUnder3: boolean }
-  | { dateOfBirth: LocalDate }
-)
+type Props = {
+  position?: TooltipProps['position']
+  tooltipText?: 'placement-start'
+} & ({ isUnder3: boolean } | { dateOfBirth: LocalDate })
 
-export const AgeIndicatorIcon = React.memo(function AgeIndicatorIconTooltip(
-  props: Props
-) {
+export const AgeIndicatorIcon = React.memo(function AgeIndicatorIconTooltip({
+  tooltipText,
+  ...props
+}: Props) {
   const { i18n } = useTranslation()
 
   const under3 =
@@ -27,17 +28,17 @@ export const AgeIndicatorIcon = React.memo(function AgeIndicatorIconTooltip(
       ? props.isUnder3
       : LocalDate.today().differenceInYears(props.dateOfBirth) < 3
 
+  const tooltip =
+    tooltipText === 'placement-start'
+      ? under3
+        ? i18n.ageIndicator.under3AtPlacementStart
+        : i18n.ageIndicator.over3AtPlacementStart
+      : under3
+      ? i18n.ageIndicator.under3
+      : i18n.ageIndicator.over3
+
   return (
-    <Tooltip
-      tooltip={
-        <span>
-          {under3
-            ? i18n.applications.list.lessthan3
-            : i18n.applications.list.morethan3}
-        </span>
-      }
-      position={props.position}
-    >
+    <Tooltip tooltip={<span>{tooltip}</span>} position={props.position}>
       <RoundIcon
         content={under3 ? fasArrowDown : fasArrowUp}
         color={under3 ? colors.status.success : colors.main.m1}

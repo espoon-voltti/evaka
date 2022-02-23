@@ -204,6 +204,7 @@ const ApplicationsList = React.memo(function Applications({
             isUnder3={
               startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
             }
+            tooltipText="placement-start"
           />
           <span>
             {application.socialSecurityNumber ||

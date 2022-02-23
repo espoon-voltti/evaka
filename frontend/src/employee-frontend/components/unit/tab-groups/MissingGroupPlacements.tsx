@@ -46,6 +46,8 @@ function renderMissingGroupPlacementRow(
     placementType
   } = missingPlacement
 
+  const childIsUnder3 = placementPeriod.start.differenceInYears(dateOfBirth) < 3
+
   return (
     <Tr
       key={`${childId}:${gap.start.formatIso()}`}
@@ -59,7 +61,8 @@ function renderMissingGroupPlacementRow(
       <Td>
         <FixedSpaceRow spacing="xs">
           <AgeIndicatorIcon
-            isUnder3={placementPeriod.start.differenceInYears(dateOfBirth) < 3}
+            isUnder3={childIsUnder3}
+            tooltipText="placement-start"
           />
           <span data-qa="child-dob">{dateOfBirth.format()}</span>
         </FixedSpaceRow>
