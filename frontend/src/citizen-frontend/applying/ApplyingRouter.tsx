@@ -25,14 +25,14 @@ export default React.memo(function ApplyingRouter() {
 
   const tabs = [
     {
-      id: 'map',
-      link: '/applying/map',
-      label: t.header.nav.map
-    },
-    {
       id: 'applications',
       link: '/applying/applications',
       label: t.header.nav.applications
+    },
+    {
+      id: 'map',
+      link: '/applying/map',
+      label: t.header.nav.map
     },
     {
       id: 'decisions',
@@ -48,18 +48,18 @@ export default React.memo(function ApplyingRouter() {
         <Tabs tabs={tabs} data-qa="applying-subnavigation" />
       </WhiteBg>
       <Switch>
-        <Route exact path="/applying/map" component={MapView} />
         <Route
           exact
           path="/applying/applications"
           component={requireAuth(Applications)}
         />
+        <Route exact path="/applying/map" component={MapView} />
         <Route
           exact
           path="/applying/decisions"
           component={requireAuth(Decisions)}
         />
-        <Redirect to="/applying/map" />
+        <Redirect to="/applying/applications" />
       </Switch>
     </>
   )
