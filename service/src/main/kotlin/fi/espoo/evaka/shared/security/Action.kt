@@ -177,8 +177,8 @@ sealed interface Action {
         ACCEPT_DECISION(SERVICE_WORKER, UNIT_SUPERVISOR),
         REJECT_DECISION(SERVICE_WORKER, UNIT_SUPERVISOR),
 
-        READ_NOTES(SERVICE_WORKER, SPECIAL_EDUCATION_TEACHER),
-        CREATE_NOTE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+        READ_NOTES(SERVICE_WORKER),
+        CREATE_NOTE(SERVICE_WORKER),
 
         UPLOAD_ATTACHMENT(SERVICE_WORKER)
         ;
@@ -188,8 +188,8 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class ApplicationNote(private val roles: EnumSet<UserRole>) : ScopedAction<ApplicationNoteId> {
-        UPDATE,
-        DELETE
+        UPDATE(SERVICE_WORKER),
+        DELETE(SERVICE_WORKER)
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())
