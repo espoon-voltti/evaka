@@ -29,7 +29,7 @@ import { AuthContext, User } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
-import { getLoginUri, getLogoutUri } from './const'
+import { getLogoutUri, getWeakLoginUri } from './const'
 
 interface Props {
   unreadMessagesCount: number
@@ -98,7 +98,7 @@ export default React.memo(function DesktopNav({
             {user ? (
               <UserMenu user={user} />
             ) : (
-              <Login href={getLoginUri()} data-qa="login-btn">
+              <Login href={getWeakLoginUri()} data-qa="login-btn">
                 <Icon icon={faSignIn} />
                 <Gap size="xs" horizontal />
                 {t.header.login}

@@ -37,7 +37,7 @@ import { langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
 import { CircledChar } from './DesktopNav'
-import { getLoginUri, getLogoutUri } from './const'
+import { getLogoutUri, getWeakLoginUri } from './const'
 
 type Props = {
   showMenu: boolean
@@ -107,7 +107,7 @@ export default React.memo(function MobileNav({
                       </LogInLogOutButton>
                     </a>
                   ) : (
-                    <a href={getLoginUri()} data-qa="login-btn">
+                    <a href={getWeakLoginUri()} data-qa="login-btn">
                       <LogInLogOutButton>
                         <FontAwesomeIcon icon={faSignIn} size="lg" />
                         <Gap size="xs" horizontal />

@@ -107,7 +107,7 @@ export default {
       sv: 'På svenska',
       en: 'In English'
     },
-    login: 'Tunnistaudu palveluun',
+    login: 'Kirjaudu sisään',
     logout: 'Kirjaudu ulos'
   },
   footer: {

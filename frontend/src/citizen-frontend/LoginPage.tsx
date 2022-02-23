@@ -40,7 +40,7 @@ export default React.memo(function LoginPage() {
             <Gap size="m" />
             <P noMargin>{i18n.loginPage.login.paragraph}</P>
             <Gap size="s" />
-            <LinkButton href={getWeakLoginUri('/')}>
+            <LinkButton href={getWeakLoginUri('/')} data-qa="weak-login">
               {i18n.loginPage.login.link}
             </LinkButton>
           </ContentArea>
@@ -49,7 +49,7 @@ export default React.memo(function LoginPage() {
             <Gap size="m" />
             <P noMargin>{i18n.loginPage.applying.paragraph}</P>
             <Gap size="s" />
-            <LinkButton href={getLoginUri('/applying')}>
+            <LinkButton href={getLoginUri('/applying')} data-qa="strong-login">
               {i18n.loginPage.applying.link}
             </LinkButton>
             <Gap size="m" />

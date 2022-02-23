@@ -4,14 +4,14 @@
 
 import { User } from '../auth/state'
 
-export const getWeakLoginUri = (path: string) =>
+export const getWeakLoginUri = (path?: string) =>
   `/api/application/auth/evaka-customer/login?RelayState=${encodeURIComponent(
-    path
+    path ?? window.location.pathname
   )}`
 
 export const getLoginUri = (path?: string) =>
   `/api/application/auth/saml/login?RelayState=${encodeURIComponent(
-    `${path ? path : window.location.pathname}${window.location.search}${
+    `${path ?? window.location.pathname}${window.location.search}${
       window.location.hash
     }`
   )}`
