@@ -56,7 +56,7 @@ import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { hasRole, RequireRole } from '../../utils/roles'
-import { AgeIndicatorIconWithTooltip } from '../common/AgeIndicatorIcon'
+import { AgeIndicatorIcon } from '../common/AgeIndicatorIcon'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
 import { CircleIconGreen, CircleIconRed } from './CircleIcon'
@@ -200,7 +200,7 @@ const ApplicationsList = React.memo(function Applications({
       application.dateOfBirth &&
       startDateOrDueDate && (
         <FixedSpaceRow spacing="xs">
-          <AgeIndicatorIconWithTooltip
+          <AgeIndicatorIcon
             isUnder3={
               startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
             }

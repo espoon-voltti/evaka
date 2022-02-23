@@ -252,13 +252,17 @@ const AbsencesPage = styled.div`
 
   .absence-child-name {
     white-space: nowrap;
-    overflow: hidden;
-    width: 130px;
-    max-width: 130px;
 
-    @media screen and (min-width: 1216px) {
-      width: 206px;
-      max-width: 206px;
+    a {
+      display: inline-block;
+      overflow: hidden;
+      width: 100px;
+      max-width: 100px;
+
+      @media screen and (min-width: 1216px) {
+        width: 176px;
+        max-width: 176px;
+      }
     }
   }
 

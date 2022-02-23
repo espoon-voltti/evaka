@@ -178,7 +178,7 @@ const Beak = styled.div<{ position: Position }>`
 
 type Position = 'top' | 'bottom' | 'right' | 'left'
 
-type TooltipProps = BaseProps & {
+export type TooltipProps = BaseProps & {
   children: React.ReactNode
   tooltip: React.ReactNode
   position?: Position

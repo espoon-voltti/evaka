@@ -19,7 +19,7 @@ import { fasExclamationTriangle } from 'lib-icons'
 import Tooltip from '../../components/common/Tooltip'
 import { Translations, useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
-import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+import { AgeIndicatorIcon } from '../common/AgeIndicatorIcon'
 
 import AbsenceCell, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'

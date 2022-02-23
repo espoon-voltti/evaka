@@ -2531,8 +2531,6 @@ export const fi = {
       serviceNeed: 'Palveluntarve',
       capacityFactor: 'Tuen tarve',
       partTime: 'Osa/Koko',
-      under3: 'Alle 3-vuotias',
-      atLeast3: 'Vähintään 3-vuotias',
       type: {
         NEW: 'Uusi päätös',
         REFUND: 'Hyvitys',

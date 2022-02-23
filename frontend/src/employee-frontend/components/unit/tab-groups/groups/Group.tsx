@@ -69,7 +69,7 @@ import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'
 import { renderResult } from '../../../async-rendering'
-import { AgeIndicatorIconWithTooltip } from '../../../common/AgeIndicatorIcon'
+import { AgeIndicatorIcon } from '../../../common/AgeIndicatorIcon'
 import { CareTypeChip } from '../../../common/CareTypeLabel'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
@@ -593,7 +593,7 @@ export default React.memo(function Group({
                         </Td>
                         <Td>
                           <FixedSpaceRow spacing="xs">
-                            <AgeIndicatorIconWithTooltip
+                            <AgeIndicatorIcon
                               isUnder3={
                                 filters.startDate.differenceInYears(
                                   dateOfBirth
