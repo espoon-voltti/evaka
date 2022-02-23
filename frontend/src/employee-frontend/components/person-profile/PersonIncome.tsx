@@ -101,6 +101,7 @@ export const IncomeStatements = React.memo(function IncomeStatements({
             currentPage={page}
             setPage={setPage}
             label={i18n.common.page}
+            hideIfOnlyOnePage={true}
           />
         </>
       ))}

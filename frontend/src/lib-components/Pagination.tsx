@@ -27,13 +27,15 @@ interface Props {
   currentPage: number
   setPage: (page: number) => void
   label: string
+  hideIfOnlyOnePage?: boolean
 }
 
 export default React.memo(function Pagination({
   pages = 0,
   currentPage,
   setPage,
-  label
+  label,
+  hideIfOnlyOnePage = false
 }: Props) {
   const firstPage = 1
   const lastPage = pages
@@ -48,7 +50,9 @@ export default React.memo(function Pagination({
     ? Math.ceil(Math.min(currentPage + NUMBER_OF_PAGES_TO_SHOW / 2, lastPage))
     : lastPage
 
-  return (
+  const hide = hideIfOnlyOnePage && pages <= 1
+
+  return !hide ? (
     <div>
       <span>{label}:</span>
 
@@ -90,5 +94,5 @@ export default React.memo(function Pagination({
         </PageItem>
       )}
     </div>
-  )
+  ) : null
 })

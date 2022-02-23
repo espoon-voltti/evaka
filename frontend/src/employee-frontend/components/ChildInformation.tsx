@@ -168,7 +168,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'fee-alterations', open: false }
   ],
   ['FINANCE_ADMIN']: [
-    { component: 'income' as const, open: false },
+    { component: 'income', open: true },
     { component: 'fee-alterations', open: true },
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
