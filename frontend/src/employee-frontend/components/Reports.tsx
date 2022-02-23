@@ -194,7 +194,13 @@ function Reports() {
             </ReportItem>
           </RequireRole>
           <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'REPORT_VIEWER']}
+            oneOf={[
+              'ADMIN',
+              'SERVICE_WORKER',
+              'DIRECTOR',
+              'REPORT_VIEWER',
+              'UNIT_SUPERVISOR'
+            ]}
           >
             <ReportItem>
               <TitleRow>
