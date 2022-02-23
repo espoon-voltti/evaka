@@ -12,16 +12,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import org.jdbi.v3.core.kotlin.mapTo
 
-fun Database.Read.getApplicationNoteCreatedBy(id: ApplicationNoteId): EvakaUserId {
-    // language=SQL
-    val sql = "SELECT created_by FROM application_note WHERE id = :id"
-
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<EvakaUserId>()
-        .first()
-}
-
 fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<ApplicationNote> {
     // language=SQL
     val sql =

@@ -188,8 +188,8 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class ApplicationNote(private val roles: EnumSet<UserRole>) : ScopedAction<ApplicationNoteId> {
-        UPDATE(),
-        DELETE()
+        UPDATE,
+        DELETE
         ;
 
         constructor(vararg roles: UserRole) : this(roles.toEnumSet())

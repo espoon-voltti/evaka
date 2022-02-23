@@ -6,12 +6,12 @@ package fi.espoo.evaka.application.notes
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.ApplicationNote
-import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -22,9 +22,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
 
 @RestController
 @RequestMapping("/note")
@@ -34,7 +31,7 @@ class NoteController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
-    ): List<NoteJSON> {
+    ): List<ApplicationNoteResponse> {
         Audit.NoteRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_NOTES, applicationId)
 
@@ -43,7 +40,15 @@ class NoteController(private val accessControl: AccessControl) {
                 it.getApplicationNotes(applicationId)
             }
         }
-        return notes.map(NoteJSON.DomainMapping::toJSON)
+
+        val permittedActions = accessControl.getPermittedApplicationNoteActions(user, notes.map { it.id })
+
+        return notes.map {
+            ApplicationNoteResponse(
+                note = it,
+                permittedActions = permittedActions[it.id] ?: setOf()
+            )
+        }
     }
 
     @PostMapping("/application/{id}")
@@ -52,16 +57,15 @@ class NoteController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @PathVariable("id") applicationId: ApplicationId,
         @RequestBody note: NoteRequest
-    ): NoteJSON {
+    ): ApplicationNote {
         Audit.NoteCreate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.CREATE_NOTE, applicationId)
 
-        val newNote = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.transaction {
                 it.createApplicationNote(applicationId, note.text, user.evakaUserId)
             }
         }
-        return NoteJSON.toJSON(newNote)
     }
 
     @PutMapping("/{noteId}")
@@ -118,28 +122,19 @@ data class NoteRequest(
     val text: String
 )
 
-data class NoteJSON(
+data class ApplicationNoteResponse(
+    val note: ApplicationNote,
+    val permittedActions: Set<Action.ApplicationNote>
+)
+
+data class ApplicationNote(
     val applicationId: ApplicationId,
     val id: ApplicationNoteId,
     val text: String,
-    val created: LocalDateTime,
+    val created: HelsinkiDateTime,
     val createdBy: EvakaUserId,
     val createdByName: String,
-    val updated: LocalDateTime,
+    val updated: HelsinkiDateTime,
     val updatedBy: EvakaUserId?,
     val updatedByName: String?
-) {
-    companion object DomainMapping {
-        fun toJSON(note: ApplicationNote) = NoteJSON(
-            id = note.id,
-            applicationId = note.applicationId,
-            created = OffsetDateTime.ofInstant(note.created, ZoneId.systemDefault()).toHelsinkiLocalDateTime(),
-            createdBy = note.createdBy,
-            createdByName = note.createdByName,
-            updated = OffsetDateTime.ofInstant(note.updated, ZoneId.systemDefault()).toHelsinkiLocalDateTime(),
-            updatedBy = note.updatedBy,
-            updatedByName = note.updatedByName,
-            text = note.content
-        )
-    }
-}
+)

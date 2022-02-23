@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { AttachmentType } from './attachment'
 import { CreatePersonBody } from './pis'
 import { Decision } from './decision'
@@ -119,6 +120,29 @@ export interface ApplicationFormUpdate {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationNote
+*/
+export interface ApplicationNote {
+  applicationId: UUID
+  content: string
+  created: Date
+  createdBy: UUID
+  createdByName: string
+  id: UUID
+  updated: Date
+  updatedBy: UUID
+  updatedByName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.application.notes.ApplicationNoteResponse
+*/
+export interface ApplicationNoteResponse {
+  note: ApplicationNote
+  permittedActions: Action.ApplicationNote[]
+}
+
+/**
 * Generated from fi.espoo.evaka.application.ApplicationOrigin
 */
 export type ApplicationOrigin = 
@@ -133,6 +157,7 @@ export interface ApplicationResponse {
   attachments: ApplicationAttachment[]
   decisions: Decision[]
   guardians: PersonJSON[]
+  permittedActions: Action.Application[]
 }
 
 /**
@@ -377,21 +402,6 @@ export interface GuardianUpdate {
   email: string
   futureAddress: FutureAddress | null
   phoneNumber: string
-}
-
-/**
-* Generated from fi.espoo.evaka.application.notes.NoteJSON
-*/
-export interface NoteJSON {
-  applicationId: UUID
-  created: Date
-  createdBy: UUID
-  createdByName: string
-  id: UUID
-  text: string
-  updated: Date
-  updatedBy: UUID | null
-  updatedByName: string | null
 }
 
 /**

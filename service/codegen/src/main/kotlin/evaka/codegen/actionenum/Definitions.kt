@@ -18,6 +18,7 @@ val generatedFiles = listOf(
             "Action",
             generateEnum<Action.Global>(),
             generateEnum<Action.Application>(),
+            generateEnum<Action.ApplicationNote>(),
             generateEnum<Action.AssistanceAction>(),
             generateEnum<Action.AssistanceNeed>(),
             generateEnum<Action.BackupCare>(),

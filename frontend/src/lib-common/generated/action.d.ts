@@ -94,6 +94,10 @@ export type Application =
   | 'VERIFY'
   | 'WITHDRAW_PLACEMENT_PROPOSAL'
 
+export type ApplicationNote =
+  | 'DELETE'
+  | 'UPDATE'
+
 export type AssistanceAction =
   | 'DELETE'
   | 'READ_PRE_PRESCHOOL_ASSISTANCE_ACTION'

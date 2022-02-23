@@ -7,6 +7,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
+import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -21,7 +22,6 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import { createNote, deleteNote, updateNote } from '../../api/applications'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { ApplicationNote } from '../../types/application'
 import { formatParagraphs } from '../../utils/html-utils'
 
 const NoteContainer = styled.div`
@@ -58,6 +58,7 @@ const DetailText = styled(Light)`
 interface ReadProps {
   note: ApplicationNote
   editable: boolean
+  deletable: boolean
   onStartEdit: () => undefined | void
   onDelete: () => undefined | void
 }
@@ -103,7 +104,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [text, setText] = useState<string>('')
   useEffect(() => {
-    setText(isEdit(props) ? props.note.text : '')
+    setText(isEdit(props) ? props.note.content : '')
   }, [props])
 
   const save = () => {
@@ -197,22 +198,26 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
             )}
           </Creator>
 
-          {isRead(props) && props.editable && (
+          {isRead(props) && (props.editable || props.deletable) && (
             <FixedSpaceRow spacing="xs">
-              <IconButton icon={faPen} onClick={props.onStartEdit} size="s" />
-              <IconButton
-                icon={faTrash}
-                onClick={() => setConfirmingDelete(true)}
-                size="s"
-                data-qa="delete-note"
-              />
+              {props.editable && (
+                <IconButton icon={faPen} onClick={props.onStartEdit} size="s" />
+              )}
+              {props.deletable && (
+                <IconButton
+                  icon={faTrash}
+                  onClick={() => setConfirmingDelete(true)}
+                  size="s"
+                  data-qa="delete-note"
+                />
+              )}
             </FixedSpaceRow>
           )}
         </TopBar>
 
         {isRead(props) && (
           <div data-qa="application-note-content">
-            {formatParagraphs(props.note.text)}
+            {formatParagraphs(props.note.content)}
           </div>
         )}
 
