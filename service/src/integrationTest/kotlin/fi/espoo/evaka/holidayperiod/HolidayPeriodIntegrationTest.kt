@@ -19,16 +19,6 @@ import kotlin.test.assertEquals
 
 class HolidayPeriodIntegrationTest : PureJdbiTest() {
 
-    private val emptyTranslatable = Translatable("", "", "")
-    private val summerRange = FiniteDateRange(start = LocalDate.of(2021, 6, 1), end = LocalDate.of(2021, 8, 31))
-    private val summerPeriod = HolidayPeriodBody(
-        period = summerRange,
-        description = Translatable("Varaathan \n 'quote' \"double\" loma-aikasi", "", ""),
-        descriptionLink = emptyTranslatable,
-        showReservationBannerFrom = summerRange.start.minusWeeks(6),
-        reservationDeadline = summerRange.start.minusWeeks(3),
-        freePeriod = null
-    )
     private val christmasRange =
         FiniteDateRange(start = LocalDate.of(2021, 12, 18), end = LocalDate.of(2022, 1, 6))
     private val christmasPeriod =
@@ -87,17 +77,7 @@ class HolidayPeriodIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `holiday periods can contain a free period`() {
-        val period = summerPeriod.copy(
-            freePeriod = FreeAbsencePeriod(
-                deadline = LocalDate.of(2022, 6, 1),
-                periodOptions = listOf(
-                    FiniteDateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 7, 7)),
-                    FiniteDateRange(LocalDate.of(2022, 7, 8), LocalDate.of(2022, 7, 14)),
-                ),
-                periodOptionLabel = emptyTranslatable,
-                questionLabel = emptyTranslatable
-            )
-        )
+        val period = summerPeriodWithFreePeriod
         val created = createHolidayPeriod(period)
 
         assertEquals(period.freePeriod, created.freePeriod)
