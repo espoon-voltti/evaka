@@ -63,10 +63,7 @@ export default function App() {
                         <Switch>
                           <Route path="/login" component={LoginPage} />
                           <Route path="/map" component={MapView} />
-                          <Route
-                            path="/applying"
-                            component={requireAuth(ApplyingRouter)}
-                          />
+                          <Route path="/applying" component={ApplyingRouter} />
                           <Route
                             exact
                             path="/applications/new/:childId"
