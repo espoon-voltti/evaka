@@ -233,6 +233,12 @@ export const fi = {
       returnMessage: 'Palaa takaisin'
     }
   },
+  ageIndicator: {
+    under3: 'Alle 3-vuotias',
+    over3: 'Yli 3-vuotias',
+    under3AtPlacementStart: 'Alle 3-vuotias sijoituksen alkaessa',
+    over3AtPlacementStart: 'Yli 3-vuotias sijoituksen alkaessa'
+  },
   applications: {
     list: {
       title: 'Hakemukset',
@@ -263,8 +269,6 @@ export const fi = {
       status: 'Tila',
       note: 'Huom',
       basis: 'Perusteet',
-      lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',
-      morethan3: 'Yli 3-vuotias hoidontarpeen alkaessa',
       currentUnit: 'Nyk.',
       addNote: 'Lisää muistiinpano',
       serviceWorkerNote: 'Palveluohjauksen huomio'
@@ -1471,6 +1475,8 @@ export const fi = {
       title: 'Ryhmää odottavat lapset',
       name: 'Nimi',
       birthday: 'Syntymäaika',
+      under3: 'Alle 3-vuotias sijoituksen alkaessa',
+      over3: 'Yli 3-vuotias sijoituksen alkaessa',
       placementDuration: 'Sijoitettu yksikköön',
       missingGroup: 'Ryhmä puuttuu',
       type: 'Toimintamuoto',
@@ -2531,8 +2537,6 @@ export const fi = {
       serviceNeed: 'Palveluntarve',
       capacityFactor: 'Tuen tarve',
       partTime: 'Osa/Koko',
-      under3: 'Alle 3-vuotias',
-      atLeast3: 'Vähintään 3-vuotias',
       type: {
         NEW: 'Uusi päätös',
         REFUND: 'Hyvitys',

@@ -23,7 +23,7 @@ import { faCalendarPlus } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
-import AgeIndicatorIcon from '../../common/AgeIndicatorIcon'
+import { AgeIndicatorIcon } from '../../common/AgeIndicatorIcon'
 
 import ChildDay from './ChildDay'
 

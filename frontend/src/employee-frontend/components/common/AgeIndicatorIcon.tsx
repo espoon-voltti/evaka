@@ -6,54 +6,44 @@ import React from 'react'
 
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import Tooltip from 'lib-components/atoms/Tooltip'
+import Tooltip, { TooltipProps } from 'lib-components/atoms/Tooltip'
 import colors from 'lib-customizations/common'
 import { fasArrowDown, fasArrowUp } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-type Props = { isUnder3: boolean } | { dateOfBirth: LocalDate }
+type Props = {
+  position?: TooltipProps['position']
+  tooltipText?: 'placement-start'
+} & ({ isUnder3: boolean } | { dateOfBirth: LocalDate })
 
-export const AgeIndicatorIcon = React.memo(function AgeIndicatorIcon(
-  props: Props
-) {
+export const AgeIndicatorIcon = React.memo(function AgeIndicatorIconTooltip({
+  tooltipText,
+  ...props
+}: Props) {
+  const { i18n } = useTranslation()
+
   const under3 =
     'isUnder3' in props
       ? props.isUnder3
       : LocalDate.today().differenceInYears(props.dateOfBirth) < 3
 
+  const tooltip =
+    tooltipText === 'placement-start'
+      ? under3
+        ? i18n.ageIndicator.under3AtPlacementStart
+        : i18n.ageIndicator.over3AtPlacementStart
+      : under3
+      ? i18n.ageIndicator.under3
+      : i18n.ageIndicator.over3
+
   return (
-    <RoundIcon
-      content={under3 ? fasArrowDown : fasArrowUp}
-      color={under3 ? colors.status.success : colors.main.m1}
-      size="s"
-    />
+    <Tooltip tooltip={<span>{tooltip}</span>} position={props.position}>
+      <RoundIcon
+        content={under3 ? fasArrowDown : fasArrowUp}
+        color={under3 ? colors.status.success : colors.main.m1}
+        size="s"
+      />
+    </Tooltip>
   )
 })
-
-export default AgeIndicatorIcon
-
-export const AgeIndicatorIconWithTooltip = React.memo(
-  function AgeIndicatorIconTooltip(props: Props) {
-    const { i18n } = useTranslation()
-
-    const under3 =
-      'isUnder3' in props
-        ? props.isUnder3
-        : LocalDate.today().differenceInYears(props.dateOfBirth) < 3
-
-    return (
-      <Tooltip
-        tooltip={
-          <span>
-            {under3
-              ? i18n.applications.list.lessthan3
-              : i18n.applications.list.morethan3}
-          </span>
-        }
-      >
-        <AgeIndicatorIcon isUnder3={under3} />
-      </Tooltip>
-    )
-  }
-)

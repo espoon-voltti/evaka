@@ -48,7 +48,7 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
-import AgeIndicatorIcon from '../common/AgeIndicatorIcon'
+import { AgeIndicatorIcon } from '../common/AgeIndicatorIcon'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
@@ -433,20 +433,10 @@ function VoucherServiceProviderUnit() {
                             )}
                           </Link>
                           <FixedSpaceRow spacing="xs">
-                            <Tooltip
-                              tooltip={
-                                <div>
-                                  {
-                                    i18n.reports.voucherServiceProviderUnit[
-                                      under3YearsOld ? 'under3' : 'atLeast3'
-                                    ]
-                                  }
-                                </div>
-                              }
+                            <AgeIndicatorIcon
+                              isUnder3={under3YearsOld}
                               position="right"
-                            >
-                              <AgeIndicatorIcon isUnder3={under3YearsOld} />
-                            </Tooltip>
+                            />
                             <span>{row.childDateOfBirth.format()}</span>
                           </FixedSpaceRow>
                         </FixedSpaceColumn>
