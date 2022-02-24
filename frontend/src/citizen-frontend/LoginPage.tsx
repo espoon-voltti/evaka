@@ -55,13 +55,11 @@ export default React.memo(function LoginPage() {
             <Gap size="m" />
             <P noMargin>{i18n.loginPage.applying.mapText}</P>
             <Gap size="xs" />
-            <P noMargin>
-              <MapLink to="/map">
-                <FontAwesomeIcon icon={farMap} />
-                <Gap size="xs" horizontal />
-                {i18n.loginPage.applying.mapLink}
-              </MapLink>
-            </P>
+            <MapLink to="/map">
+              <FontAwesomeIcon icon={farMap} />
+              <Gap size="xs" horizontal />
+              {i18n.loginPage.applying.mapLink}
+            </MapLink>
           </ContentArea>
         </FixedSpaceColumn>
       </Container>
