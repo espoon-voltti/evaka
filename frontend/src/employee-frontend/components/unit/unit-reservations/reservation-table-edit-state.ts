@@ -27,6 +27,7 @@ export interface EditState {
 
 export interface TimeRangeWithErrors extends TimeRange {
   errors: TimeRangeErrors
+  lastSavedState: TimeRange
 }
 
 export function useUnitReservationEditState(
@@ -69,26 +70,34 @@ export function useUnitReservationEditState(
         request: Success.of(),
         reservations: childData.map((row) =>
           Object.fromEntries(
-            Object.entries(row).map(([date, { reservation }]) => [
-              date,
-              {
-                ...(reservation ?? { startTime: '', endTime: '' }),
-                errors: { startTime: undefined, endTime: undefined }
-              }
-            ])
+            Object.entries(row).map(([date, { reservation }]) => {
+              const initial = reservation ?? { startTime: '', endTime: '' }
+              return [
+                date,
+                {
+                  ...initial,
+                  errors: { startTime: undefined, endTime: undefined },
+                  lastSavedState: initial
+                }
+              ]
+            })
           )
         ),
         attendances: childData.map((row) =>
           Object.fromEntries(
-            Object.entries(row).map(([date, { attendance }]) => [
-              date,
-              {
-                ...(attendance
-                  ? { ...attendance, endTime: attendance.endTime ?? '' }
-                  : { startTime: '', endTime: '' }),
-                errors: { startTime: undefined, endTime: undefined }
-              }
-            ])
+            Object.entries(row).map(([date, { attendance }]) => {
+              const initialRange = attendance
+                ? { ...attendance, endTime: attendance.endTime ?? '' }
+                : { startTime: '', endTime: '' }
+              return [
+                date,
+                {
+                  ...initialRange,
+                  errors: { startTime: undefined, endTime: undefined },
+                  lastSavedState: initialRange
+                }
+              ]
+            })
           )
         ),
         absences: childData.map((row) =>
@@ -134,6 +143,7 @@ export function useUnitReservationEditState(
                   ? {
                       ...res,
                       [date.formatIso()]: {
+                        ...res[date.formatIso()],
                         ...times,
                         errors: validateTimeRange(times)
                       }
@@ -154,6 +164,7 @@ export function useUnitReservationEditState(
       const reservations = state.reservations.map(
         (dailyData) => dailyData[date.formatIso()]
       )
+      if (reservations.every(lastSavedStateHasNotChanged)) return
       if (reservations.some(({ errors }) => errors.startTime || errors.endTime))
         return
 
@@ -169,7 +180,27 @@ export function useUnitReservationEditState(
       }
 
       startRequest()
-      void postReservations([body]).then(updateRequestStatus)
+      void postReservations([body])
+        .then(updateRequestStatus)
+        .then(() =>
+          setState((previousState) =>
+            previousState
+              ? {
+                  ...previousState,
+                  reservations: previousState.reservations.map((res, i) => ({
+                    ...res,
+                    [date.formatIso()]: {
+                      ...res[date.formatIso()],
+                      lastSavedState: {
+                        startTime: reservations[i].startTime,
+                        endTime: reservations[i].endTime
+                      }
+                    }
+                  }))
+                }
+              : previousState
+          )
+        )
     },
     [state, startRequest, updateRequestStatus]
   )
@@ -185,6 +216,7 @@ export function useUnitReservationEditState(
                   ? {
                       ...res,
                       [date.formatIso()]: {
+                        ...res[date.formatIso()],
                         ...times,
                         errors: validateTimeRange(times, true)
                       }
@@ -205,6 +237,7 @@ export function useUnitReservationEditState(
       const attendances = state.attendances.map(
         (dailyData) => dailyData[date.formatIso()]
       )
+      if (attendances.every(lastSavedStateHasNotChanged)) return
       if (attendances.some(({ errors }) => errors.startTime || errors.endTime))
         return
 
@@ -219,9 +252,27 @@ export function useUnitReservationEditState(
       }
 
       startRequest()
-      void postAttendances(state.childId, unitId, body).then(
-        updateRequestStatus
-      )
+      void postAttendances(state.childId, unitId, body)
+        .then(updateRequestStatus)
+        .then(() =>
+          setState((previousState) =>
+            previousState
+              ? {
+                  ...previousState,
+                  attendances: previousState.attendances.map((res, i) => ({
+                    ...res,
+                    [date.formatIso()]: {
+                      ...res[date.formatIso()],
+                      lastSavedState: {
+                        startTime: attendances[i].startTime,
+                        endTime: attendances[i].endTime
+                      }
+                    }
+                  }))
+                }
+              : previousState
+          )
+        )
     },
     [unitId, state, startRequest, updateRequestStatus]
   )
@@ -237,3 +288,7 @@ export function useUnitReservationEditState(
     saveAttendance
   } as const
 }
+
+const lastSavedStateHasNotChanged = (timeRange: TimeRangeWithErrors) =>
+  timeRange.startTime === timeRange.lastSavedState.startTime &&
+  timeRange.endTime === timeRange.lastSavedState.endTime
