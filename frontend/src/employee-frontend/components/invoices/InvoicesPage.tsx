@@ -137,7 +137,7 @@ const Modal = React.memo(function Modal({
             data-qa="invoice-due-date-input"
           />
         </div>
-        {!allInvoicesToggle ? (
+        {!allInvoicesToggle && i18n.invoices.buttons.individualSendAlertText ? (
           <>
             <Gap size="s" />
             <AlertBox
