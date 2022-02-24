@@ -298,6 +298,13 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
         .execute()
 }
 
+fun Database.Transaction.deleteAttendancesByDate(childId: ChildId, date: LocalDate) {
+    createUpdate("DELETE FROM child_attendance WHERE child_id = :childId AND date = :date")
+        .bind("childId", childId)
+        .bind("date", date)
+        .execute()
+}
+
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: ChildId, dateRange: FiniteDateRange) {
     // language=sql
     val sql =

@@ -80,6 +80,50 @@ class ChildAttendanceController(
         return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, HelsinkiDateTime.now()) } }
     }
 
+    data class AttendancesRequest(
+        val date: LocalDate,
+        val attendances: List<AttendanceTimeRange>
+    )
+
+    data class AttendanceTimeRange(
+        val startTime: LocalTime,
+        val endTime: LocalTime?
+    )
+
+    @PostMapping("/units/{unitId}/children/{childId}")
+    fun upsertAttendances(
+        db: Database,
+        user: AuthenticatedUser,
+        evakaClock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @PathVariable childId: ChildId,
+        @RequestBody body: AttendancesRequest
+    ) {
+        Audit.ChildAttendancesUpsert.log(targetId = childId)
+        @Suppress("DEPRECATION")
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.deleteAbsencesByDate(childId, evakaClock.today())
+                tx.deleteAttendancesByDate(childId, body.date)
+                try {
+                    body.attendances.forEach {
+                        tx.insertAttendance(
+                            childId = childId,
+                            unitId = unitId,
+                            date = body.date,
+                            startTime = it.startTime,
+                            endTime = it.endTime
+                        )
+                    }
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
+                }
+            }
+        }
+    }
+
     data class ArrivalRequest(
         @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )

@@ -21,10 +21,10 @@ import {
   withdrawPlacementProposal
 } from '../../api/applications'
 import ActionCheckbox from '../../components/applications/ActionCheckbox'
-import ActionMenu from '../../components/applications/ActionsMenu'
 import PrimaryAction from '../../components/applications/PrimaryAction'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import EllipsisMenu, { MenuItem } from '../common/EllipsisMenu'
 import { ApplicationSummaryStatusOptions } from '../common/Filters'
 
 export type Action = {
@@ -199,9 +199,13 @@ export default React.memo(function ApplicationActions({
     [i18n, application] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
-  const applicableActions = actions.filter(({ enabled }) => enabled)
-  const primaryAction = actions.find(
-    (action) => action.primaryStatus === application.status
+  const applicableActions = useMemo(
+    () => actions.filter(({ enabled }) => enabled),
+    [actions]
+  )
+  const primaryAction = useMemo(
+    () => actions.find((action) => action.primaryStatus === application.status),
+    [application.status, actions]
   )
 
   return (
@@ -218,3 +222,11 @@ const ActionsContainer = styled.div`
   flex-direction: row;
   justify-content: flex-end;
 `
+
+const ActionMenu = React.memo(function ActionMenu({
+  actions
+}: {
+  actions: MenuItem[]
+}) {
+  return <EllipsisMenu items={actions} data-qa="application-actions-menu" />
+})

@@ -6,23 +6,33 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import colors from 'lib-customizations/common'
+import { defaultMargins } from 'lib-components/white-space'
 import { faEllipsisVAlt } from 'lib-icons'
 
-import { Action } from './ApplicationActions'
-
-type Props = {
-  actions: Action[]
+interface Props {
+  items: MenuItem[]
+  ['data-qa']?: string
 }
 
-export default React.memo(function ActionsMenu({ actions }: Props) {
+export interface MenuItem {
+  id: string
+  label: string
+  onClick: () => void
+  disabled?: boolean
+}
+
+export default React.memo(function EllipsisMenu({
+  items,
+  ['data-qa']: dataQa
+}: Props) {
   const [showMenu, setShowMenu] = useState(false)
   const closeMenu = () => setShowMenu(false)
 
   return (
     <Container>
-      {actions.length > 0 && (
+      {items.length > 0 && (
         <>
           <IconButton
             size="m"
@@ -31,9 +41,9 @@ export default React.memo(function ActionsMenu({ actions }: Props) {
               setShowMenu((value) => !value)
               e.stopPropagation()
             }}
-            data-qa="application-actions-menu"
+            data-qa={dataQa}
           />
-          {showMenu && <MenuList actions={actions} closeMenu={closeMenu} />}
+          {showMenu && <MenuList items={items} closeMenu={closeMenu} />}
         </>
       )}
     </Container>
@@ -45,25 +55,30 @@ const Container = styled.div`
 `
 
 type MenuListProps = {
-  actions: Action[]
+  items: MenuItem[]
   closeMenu: () => void
 }
 
 const MenuList = React.memo(function MenuList({
-  actions,
+  items,
   closeMenu
 }: MenuListProps) {
   const containerRef = useCloseOnOutsideClick<HTMLDivElement>(closeMenu)
 
   return (
     <Menu ref={containerRef} onClick={(e) => e.stopPropagation()}>
-      {actions
-        .filter((action) => !action.disabled)
-        .map(({ id, label, onClick }) => (
-          <MenuItem key={id} onClick={onClick} data-qa={`action-item-${id}`}>
-            {label}
-          </MenuItem>
-        ))}
+      {items.map(({ id, label, onClick, disabled }) => (
+        <MenuItem
+          key={id}
+          onClick={() => {
+            onClick()
+            closeMenu()
+          }}
+          disabled={disabled}
+          data-qa={`menu-item-${id}`}
+          text={label}
+        />
+      ))}
     </Menu>
   )
 })
@@ -73,7 +88,7 @@ const Menu = styled.div`
   top: 0;
   right: 40px;
   z-index: 2;
-  background: ${colors.grayscale.g0};
+  background: ${({ theme }) => theme.colors.grayscale.g0};
   box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -82,12 +97,14 @@ const Menu = styled.div`
   cursor: auto;
 `
 
-const MenuItem = styled.span`
+const MenuItem = styled(InlineButton)`
+  color: ${({ theme }) => theme.colors.grayscale.g100};
+  font-weight: 400;
   white-space: nowrap;
-  margin: 10px;
+  margin: ${defaultMargins.xs};
   cursor: pointer;
 
   &:hover {
-    color: ${colors.grayscale.g35};
+    color: ${({ theme }) => theme.colors.grayscale.g70};
   }
 `

@@ -1605,6 +1605,8 @@ export const fi = {
       childName: 'Lapsen nimi',
       startTime: 'Saapuu',
       endTime: 'Lähtee',
+      editRow: 'Muokkaa aikoja',
+      openReservationModal: 'Tee toistuva varaus',
       reservationModal: {
         title: 'Tee varaus',
         selectedChildren: 'Lapset, joille varaus tehdään',

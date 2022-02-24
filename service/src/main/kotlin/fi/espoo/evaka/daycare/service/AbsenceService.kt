@@ -301,6 +301,13 @@ fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
     batch.execute()
 }
 
+fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate) {
+    createUpdate("DELETE FROM absence WHERE child_id = :childId AND date = :date")
+        .bind("childId", childId)
+        .bind("date", date)
+        .execute()
+}
+
 fun Database.Read.getGroupName(groupId: GroupId): String? {
     //language=SQL
     val sql =

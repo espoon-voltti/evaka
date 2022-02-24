@@ -136,20 +136,23 @@ export default React.memo(function UnitAttendanceReservationsView({
             </WeekPicker>
             <Gap size="s" />
             <FixedSpaceColumn spacing="L">
-              {selectedGroup && (
+              {selectedGroup ? (
                 <ReservationsTable
+                  unitId={unitId}
                   operationalDays={data.operationalDays}
                   allDayRows={selectedGroup.children}
                   onMakeReservationForChild={setCreatingReservationChild}
                   selectedDate={selectedDate}
+                  reloadReservations={reload}
                 />
-              )}
-              {groupId === 'no-group' && (
+              ) : (
                 <ReservationsTable
+                  unitId={unitId}
                   operationalDays={data.operationalDays}
                   allDayRows={data.ungrouped}
                   onMakeReservationForChild={setCreatingReservationChild}
                   selectedDate={selectedDate}
+                  reloadReservations={reload}
                 />
               )}
             </FixedSpaceColumn>
