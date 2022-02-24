@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -39,6 +41,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     fun postAbsences(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: HolidayAbsenceRequest
     ) {
         val childIds = body.childHolidays.keys
@@ -48,7 +51,18 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                val activeHolidayPeriod = tx.getActiveFreeHolidayPeriod(evakaClock.today())
+                if (activeHolidayPeriod?.freePeriod == null) {
+                    throw BadRequest("No active free holiday period found")
+                }
+
                 val childToDateRange = body.childHolidays.entries.filter { it.value != null }.map { it.key to it.value!! }
+                    .onEach { (_, dateRange) ->
+                        if (!activeHolidayPeriod.freePeriod.periodOptions.contains(dateRange)) {
+                            throw BadRequest("Free holiday period not found")
+                        }
+                    }
+
                 val childToDates = childToDateRange.flatMap { (childId, dateRange) ->
                     dateRange.dates().map { childId to it }
                 }
