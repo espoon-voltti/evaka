@@ -19,7 +19,7 @@ import { postAttendances, postReservations } from '../../../api/unit'
 export interface EditState {
   childId: string
   date: LocalDate
-  request: Result<void>
+  request: { id: number; result: Result<void> }
   reservations: Record<JsonOf<LocalDate>, TimeRangeWithErrors>[]
   attendances: Record<JsonOf<LocalDate>, TimeRangeWithErrors>[]
   absences: Record<JsonOf<LocalDate>, { type: AbsenceType } | null>[]
@@ -30,6 +30,8 @@ export interface TimeRangeWithErrors extends TimeRange {
   lastSavedState: TimeRange
 }
 
+let requestId = 0
+
 export function useUnitReservationEditState(
   dailyData: ChildDailyRecords[],
   reloadReservations: () => void,
@@ -37,20 +39,25 @@ export function useUnitReservationEditState(
 ) {
   const [state, setState] = useState<EditState>()
 
-  const startRequest = useCallback(
-    () =>
-      setState((previousState) =>
-        previousState
-          ? { ...previousState, request: Loading.of() }
-          : previousState
-      ),
-    []
-  )
+  const startRequest = useCallback(() => {
+    const id = requestId++
+    setState((previousState) =>
+      previousState
+        ? {
+            ...previousState,
+            request: { id, result: Loading.of() }
+          }
+        : previousState
+    )
+    return id
+  }, [])
 
   const updateRequestStatus = useCallback(
-    (result: Result<void>) =>
+    (id: number) => (result: Result<void>) =>
       setState((previousState) =>
-        previousState ? { ...previousState, request: result } : previousState
+        previousState && previousState.request.id === id
+          ? { ...previousState, request: { id, result } }
+          : previousState
       ),
     []
   )
@@ -67,7 +74,7 @@ export function useUnitReservationEditState(
       setState({
         childId,
         date,
-        request: Success.of(),
+        request: { id: requestId, result: Success.of() },
         reservations: childData.map((row) =>
           Object.fromEntries(
             Object.entries(row).map(([date, { reservation }]) => {
@@ -113,9 +120,9 @@ export function useUnitReservationEditState(
   const deleteAbsence = useCallback(
     (index: number, date: LocalDate) => {
       if (!state?.childId) return
-      startRequest()
+      const reqId = startRequest()
       void deleteChildAbsences(state?.childId, date)
-        .then(updateRequestStatus)
+        .then(updateRequestStatus(reqId))
         .then(() =>
           setState((previousState) =>
             previousState
@@ -179,9 +186,9 @@ export function useUnitReservationEditState(
           }))
       }
 
-      startRequest()
+      const reqId = startRequest()
       void postReservations([body])
-        .then(updateRequestStatus)
+        .then(updateRequestStatus(reqId))
         .then(() =>
           setState((previousState) =>
             previousState
@@ -251,9 +258,9 @@ export function useUnitReservationEditState(
           }))
       }
 
-      startRequest()
+      const reqId = startRequest()
       void postAttendances(state.childId, unitId, body)
-        .then(updateRequestStatus)
+        .then(updateRequestStatus(reqId))
         .then(() =>
           setState((previousState) =>
             previousState

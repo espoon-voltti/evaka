@@ -140,7 +140,7 @@ export default React.memo(function ReservationsTable(props: Props) {
                   >
                     {childEditState ? (
                       <EditStateIndicator
-                        status={childEditState.request}
+                        status={childEditState.request.result}
                         stopEditing={stopEditing}
                       />
                     ) : (
