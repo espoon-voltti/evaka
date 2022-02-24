@@ -17,6 +17,7 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -42,7 +43,6 @@ import {
   faTrash
 } from 'lib-icons'
 
-import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationSummaryStatus } from '../../types/application'
@@ -980,11 +980,8 @@ export function ApplicationBasisFilter({
       <Gap size="xs" />
       <FixedSpaceRow spacing="xxs">
         <Tooltip
-          tooltipId="application-basis-ADDITIONAL_INFO"
-          tooltipText={i18n.applications.basisTooltip.ADDITIONAL_INFO}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.ADDITIONAL_INFO}
+          position="top"
         >
           <RoundIcon
             content="L"
@@ -995,11 +992,8 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId="application-basis-SIBLING_BASIS"
-          tooltipText={i18n.applications.basisTooltip.SIBLING_BASIS}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.SIBLING_BASIS}
+          position="top"
         >
           <RoundIcon
             content="S"
@@ -1010,11 +1004,8 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId="application-basis-ASSISTANCE_NEED"
-          tooltipText={i18n.applications.basisTooltip.ASSISTANCE_NEED}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.ASSISTANCE_NEED}
+          position="top"
         >
           <RoundIcon
             content="T"
@@ -1025,11 +1016,8 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId="application-basis-CLUB_CARE"
-          tooltipText={i18n.applications.basisTooltip.CLUB_CARE}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.CLUB_CARE}
+          position="top"
         >
           <RoundIcon
             content="K"
@@ -1040,11 +1028,8 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId="application-basis-DAYCARE"
-          tooltipText={i18n.applications.basisTooltip.DAYCARE}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.DAYCARE}
+          position="top"
         >
           <RoundIcon
             content="P"
@@ -1055,11 +1040,8 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId="application-basis-EXTENDED_CARE"
-          tooltipText={i18n.applications.basisTooltip.EXTENDED_CARE}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.EXTENDED_CARE}
+          position="top"
         >
           <RoundIcon
             content="V"
@@ -1070,11 +1052,8 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId="application-basis-DUPLICATE_APPLICATION"
-          tooltipText={i18n.applications.basisTooltip.DUPLICATE_APPLICATION}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.DUPLICATE_APPLICATION}
+          position="top"
         >
           <RoundIcon
             content="2"
@@ -1082,15 +1061,10 @@ export function ApplicationBasisFilter({
             size="m"
             onClick={toggle('DUPLICATE_APPLICATION')}
             active={toggled.includes('DUPLICATE_APPLICATION')}
+            data-qa="application-basis-DUPLICATE_APPLICATION"
           />
         </Tooltip>
-        <Tooltip
-          tooltipId="application-basis-URGENT"
-          tooltipText={i18n.applications.basisTooltip.URGENT}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
-        >
+        <Tooltip tooltip={i18n.applications.basisTooltip.URGENT} position="top">
           <RoundIcon
             content="!"
             color={applicationBasisColors['URGENT']}
@@ -1100,11 +1074,8 @@ export function ApplicationBasisFilter({
           />
         </Tooltip>
         <Tooltip
-          tooltipId="application-basis-HAS_ATTACHMENTS"
-          tooltipText={i18n.applications.basisTooltip.HAS_ATTACHMENTS}
-          place="top"
-          className="application-basis-tooltip"
-          delayShow={750}
+          tooltip={i18n.applications.basisTooltip.HAS_ATTACHMENTS}
+          position="top"
         >
           <RoundIcon
             content={faPaperclip}
@@ -1187,13 +1158,7 @@ export function ApplicationDistinctionsFilter({
   return (
     <Fragment>
       {disableSecondary ? (
-        <Tooltip
-          tooltipId="application-distinctions-SECONDARY"
-          tooltipText={i18n.applications.secondaryTooltip}
-          place="top"
-          className="application-distinctions-SECONDARY-tooltip"
-          delayShow={250}
-        >
+        <Tooltip tooltip={i18n.applications.secondaryTooltip} position="top">
           <Checkbox
             label={i18n.applications.distinctiveDetails['SECONDARY']}
             checked={toggled.includes('SECONDARY')}

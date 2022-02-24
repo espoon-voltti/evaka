@@ -26,7 +26,8 @@ const TooltipWrapper = styled.div`
   }
 `
 
-const tooltipPositions = (position: Position) => {
+const tooltipPositions = (position: Position, width: Width) => {
+  const widthInPx = width === 'large' ? '-200px' : '-70px'
   const top = (() => {
     switch (position) {
       case 'top':
@@ -35,7 +36,7 @@ const tooltipPositions = (position: Position) => {
         return `calc(100% + ${defaultMargins.xs})`
       case 'left':
       case 'right':
-        return '-70px'
+        return widthInPx
     }
   })()
 
@@ -47,7 +48,7 @@ const tooltipPositions = (position: Position) => {
         return 'auto'
       case 'left':
       case 'right':
-        return '-70px'
+        return widthInPx
     }
   }
 
@@ -55,7 +56,7 @@ const tooltipPositions = (position: Position) => {
     switch (position) {
       case 'top':
       case 'bottom':
-        return '-70px'
+        return widthInPx
       case 'left':
         return 'auto'
       case 'right':
@@ -67,7 +68,7 @@ const tooltipPositions = (position: Position) => {
     switch (position) {
       case 'top':
       case 'bottom':
-        return '-70px'
+        return widthInPx
       case 'left':
         return `calc(100% + ${defaultMargins.xs})`
       case 'right':
@@ -78,21 +79,20 @@ const tooltipPositions = (position: Position) => {
   return { top, bottom, left, right }
 }
 
-const TooltipPositioner = styled.div<{ position: Position }>`
+const TooltipPositioner = styled.div<{
+  position: Position
+  width: Width
+}>`
   position: absolute;
   z-index: 99999;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  top: calc(100% + ${defaultMargins.xs});
-  left: -70px;
-  right: -70px;
-
-  top: ${({ position }) => tooltipPositions(position).top};
-  bottom: ${({ position }) => tooltipPositions(position).bottom};
-  left: ${({ position }) => tooltipPositions(position).left};
-  right: ${({ position }) => tooltipPositions(position).right};
+  top: ${({ position, width }) => tooltipPositions(position, width).top};
+  bottom: ${({ position, width }) => tooltipPositions(position, width).bottom};
+  left: ${({ position, width }) => tooltipPositions(position, width).left};
+  right: ${({ position, width }) => tooltipPositions(position, width).right};
 `
 
 const TooltipDiv = styled.div`
@@ -177,11 +177,13 @@ const Beak = styled.div<{ position: Position }>`
 `
 
 type Position = 'top' | 'bottom' | 'right' | 'left'
+type Width = 'small' | 'large'
 
 export type TooltipProps = BaseProps & {
   children: React.ReactNode
   tooltip: React.ReactNode
   position?: Position
+  width?: Width
 }
 
 export default React.memo(function Tooltip({
@@ -201,6 +203,8 @@ export const TooltipWithoutAnchor = React.memo(function Tooltip({
   'data-qa': dataQa,
   ...props
 }: Omit<TooltipProps, 'children'>) {
+  if (!tooltip) return null
+
   const position = props.position ?? 'bottom'
   const icon = (() => {
     switch (position) {
@@ -216,7 +220,11 @@ export const TooltipWithoutAnchor = React.memo(function Tooltip({
   })()
 
   return (
-    <TooltipPositioner className="tooltip" position={position}>
+    <TooltipPositioner
+      className="tooltip"
+      position={position}
+      width={props.width ?? 'small'}
+    >
       <TooltipDiv data-qa={dataQa}>
         <Beak position={position}>
           <FontAwesomeIcon

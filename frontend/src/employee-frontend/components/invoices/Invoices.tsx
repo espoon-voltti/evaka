@@ -15,6 +15,7 @@ import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
@@ -31,7 +32,6 @@ import colors from 'lib-customizations/common'
 import { faExclamation, faSync } from 'lib-icons'
 
 import { SortByInvoices } from '../../api/invoicing'
-import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
 import ChildrenCell from '../common/ChildrenCell'
@@ -313,9 +313,8 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
           <Td>
             {item.headOfFamily.restrictedDetailsEnabled && (
               <Tooltip
-                tooltipId={`restricted-details-${item.id}`}
-                tooltipText={`${i18n.personProfile.restrictedDetails}`}
-                place="right"
+                tooltip={`${i18n.personProfile.restrictedDetails}`}
+                position="right"
               >
                 <StatusIconContainer color={colors.status.danger}>
                   <FontAwesomeIcon icon={faExclamation} inverse />

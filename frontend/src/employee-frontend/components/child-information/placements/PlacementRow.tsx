@@ -212,10 +212,7 @@ export default React.memo(function PlacementRow({
             dataQaDelete="btn-remove-placement"
             warning={
               placement.missingServiceNeedDays > 0
-                ? {
-                    text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
-                    tooltipId: `tooltip_missing-service-need_${placement.id}`
-                  }
+                ? `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`
                 : undefined
             }
           />

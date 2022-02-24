@@ -8,12 +8,12 @@ import styled from 'styled-components'
 
 import { formatPercentage } from 'lib-common/utils/number'
 import Title from 'lib-components/atoms/Title'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faEye, faEyeSlash } from 'lib-icons'
 
 import { OccupancyResponse } from '../../../../api/unit'
-import Tooltip from '../../../../components/common/Tooltip'
 import { useTranslation } from '../../../../state/i18n'
 
 interface CardProps {
@@ -102,11 +102,7 @@ export default React.memo(function OccupancyCard({
       </HeaderContainer>
       {data.min && data.max ? (
         <DataContainer>
-          <Tooltip
-            tooltipId={`occupancy-${type}-min-date`}
-            tooltipText={data.min.period.start.format()}
-            place="right"
-          >
+          <Tooltip tooltip={data.min.period.start.format()} position="right">
             <DataMinMaxContainer>
               <IconContainer>
                 <FontAwesomeIcon
@@ -119,11 +115,7 @@ export default React.memo(function OccupancyCard({
               </Value>
             </DataMinMaxContainer>
           </Tooltip>
-          <Tooltip
-            tooltipId={`occupancy-${type}-max-date`}
-            tooltipText={data.max.period.start.format()}
-            place="right"
-          >
+          <Tooltip tooltip={data.max.period.start.format()} position="right">
             <DataMinMaxContainer>
               <IconContainer>
                 <FontAwesomeIcon

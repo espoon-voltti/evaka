@@ -8,11 +8,11 @@ import React, { useContext } from 'react'
 import styled from 'styled-components'
 
 import { AdRole } from 'lib-common/api-types/employee-auth'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import colors from 'lib-customizations/common'
 import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
 
 import StatusLabel from '../../components/common/StatusLabel'
-import Tooltip from '../../components/common/Tooltip'
 import { UserContext } from '../../state/user'
 import { DateRangeOpen, getStatusLabelByDateRange } from '../../utils/date'
 import { requireRole } from '../../utils/roles'
@@ -37,15 +37,10 @@ const ToolbarStatus = styled.div`
   justify-content: flex-end;
 `
 
-interface Warning {
-  text: string
-  tooltipId: string
-}
-
 interface ToolbarProps {
   dateRange?: DateRangeOpen
   conflict?: boolean
-  warning?: Warning
+  warning?: string
   disableAll?: boolean
   onEdit?: () => undefined | void
   onDelete?: () => undefined | void
@@ -100,11 +95,7 @@ function Toolbar({
   return (
     <ToolbarWrapper data-qa={dataQa}>
       {warning && (
-        <Tooltip
-          tooltipId={warning?.tooltipId}
-          tooltipText={warning?.text}
-          place="right"
-        >
+        <Tooltip tooltip={warning} position="right">
           <FontAwesomeIcon
             icon={faExclamationTriangle}
             size="1x"

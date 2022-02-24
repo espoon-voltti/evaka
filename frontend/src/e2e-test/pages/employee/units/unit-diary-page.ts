@@ -101,7 +101,7 @@ export class DiaryChildRow extends Element {
   async hoverAndGetTooltip(n: number): Promise<string> {
     const cell = this.#absenceCells.nth(n)
     await cell.hover()
-    return (await cell.find('[data-id="tooltip"]').textContent) || ''
+    return (await cell.findByDataQa('absence-cell-tooltip').textContent) || ''
   }
 }
 

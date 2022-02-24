@@ -14,6 +14,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { faAbacus } from 'lib-icons'
@@ -21,7 +22,6 @@ import { faAbacus } from 'lib-icons'
 import { getAbsencesByChild } from '../../api/invoicing'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'
-import Tooltip from '../../components/common/Tooltip'
 import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { AbsenceTypes } from '../../types/absence'
@@ -112,16 +112,13 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
                   </TableData>
                   <TableData>
                     <Tooltip
-                      tooltipId={`tooltip_free-${absenceType}`}
-                      tooltipText={createTooltipText(
+                      tooltip={createTooltipText(
                         absences,
                         absenceType,
                         'NONBILLABLE',
                         lang
                       )}
-                      place="left"
-                      className="absence-tooltip"
-                      delayShow={1}
+                      position="left"
                     >
                       {calculateAbsences(
                         absences,
@@ -133,16 +130,13 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
                   </TableData>
                   <TableData>
                     <Tooltip
-                      tooltipId={`tooltip_paid-${absenceType}`}
-                      tooltipText={createTooltipText(
+                      tooltip={createTooltipText(
                         absences,
                         absenceType,
                         'BILLABLE',
                         lang
                       )}
-                      place="right"
-                      className="absence-tooltip"
-                      delayShow={1}
+                      position="right"
                     >
                       {calculateAbsences(
                         absences,

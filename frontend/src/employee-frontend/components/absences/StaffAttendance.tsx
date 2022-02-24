@@ -19,12 +19,12 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
 import { useDebouncedSave } from 'lib-common/utils/useDebouncedSave'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
-import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 
 import { DisabledCell } from './AbsenceCell'
@@ -118,7 +118,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
             isLoading(staffCount) ? (
               <DisabledCell />
             ) : !isActive(date) ? (
-              <InactiveCell date={date} />
+              <InactiveCell />
             ) : (
               <StaffAttendanceCell
                 date={date}
@@ -143,20 +143,19 @@ const DisabledStaffIcon = styled(FontAwesomeIcon)`
   color: ${colors.grayscale.g70};
 `
 
-const InactiveCell = ({ date }: { date: LocalDate }) => {
+const InactiveCell = React.memo(function InactiveCell() {
   const { i18n } = useTranslation()
   return (
     <div className="absence-cell disabled-staff-cell-container">
       <Tooltip
-        tooltipId={`tooltip_disabled-staff-cell-${date.formatIso()}`}
-        tooltipText={i18n.absences.table.disabledStaffCellTooltip}
-        place="top"
+        tooltip={i18n.absences.table.disabledStaffCellTooltip}
+        position="top"
       >
         <DisabledStaffIcon icon={faTimes} />
       </Tooltip>
     </div>
   )
-}
+})
 
 interface StaffAttendanceCellProps {
   date: LocalDate

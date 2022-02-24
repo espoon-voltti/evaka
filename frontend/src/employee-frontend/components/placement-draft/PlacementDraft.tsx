@@ -19,6 +19,7 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { InternalLink } from 'lib-components/atoms/InternalLink'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -28,7 +29,6 @@ import { Gap } from 'lib-components/white-space'
 
 import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import { getApplicationUnits } from '../../api/daycare'
-import Tooltip from '../../components/common/Tooltip'
 import WarningLabel from '../../components/common/WarningLabel'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
@@ -258,10 +258,8 @@ export default React.memo(function PlacementDraft({
                 {placementDraft.guardianHasRestrictedDetails && (
                   <FloatRight>
                     <Tooltip
-                      tooltipId="tooltip_warning"
-                      tooltipText={i18n.placementDraft.restrictedDetailsTooltip}
-                      place="top"
-                      delayShow={750}
+                      tooltip={i18n.placementDraft.restrictedDetailsTooltip}
+                      position="top"
                     >
                       <WarningLabel
                         text={i18n.placementDraft.restrictedDetails}

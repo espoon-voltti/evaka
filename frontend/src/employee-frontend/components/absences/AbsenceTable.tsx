@@ -11,12 +11,12 @@ import styled, { css, useTheme } from 'styled-components'
 import { AbsenceChild } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { fasExclamationTriangle } from 'lib-icons'
 
-import Tooltip from '../../components/common/Tooltip'
 import { Translations, useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
 import { AgeIndicatorIcon } from '../common/AgeIndicatorIcon'
@@ -86,10 +86,8 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
             isUnder3={selectedDate.differenceInYears(child.dateOfBirth) < 3}
           />
           <Tooltip
-            tooltipId={`tooltip_absence-child-name-${child.id}`}
-            tooltipText={`${child.lastName}, ${child.firstName}`}
-            place="top"
-            delayShow={750}
+            tooltip={`${child.lastName}, ${child.firstName}`}
+            position="top"
           >
             <Link
               to={`/child-information/${child.id}`}
