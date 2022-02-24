@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
@@ -10,13 +11,13 @@ import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 
 export default React.memo(function Logo() {
   return (
-    <Container>
+    <Container to="/">
       <EvakaLogo />
     </Container>
   )
 })
 
-const Container = styled.div`
+const Container = styled(Link)`
   display: flex;
   flex-direction: row;
   justify-content: center;
