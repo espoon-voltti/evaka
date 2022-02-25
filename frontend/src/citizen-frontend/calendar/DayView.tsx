@@ -14,6 +14,7 @@ import {
   TimeRange
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { formatPreferredName } from 'lib-common/names'
 import {
   reservationsAndAttendancesDiffer,
   validateTimeRange
@@ -223,7 +224,7 @@ export default React.memo(function DayView({
               <div key={child.id} data-qa={`reservations-of-${child.id}`}>
                 {childIndex !== 0 ? <Separator /> : null}
                 <H3 noMargin data-qa="child-name">
-                  {child.preferredName || child.firstName.split(' ')[0]}
+                  {formatPreferredName(child)}
                 </H3>
                 <Gap size="s" />
                 <Grid>

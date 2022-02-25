@@ -15,6 +15,7 @@ import {
   FreeAbsencePeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import { formatPreferredName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -22,9 +23,6 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, Label } from 'lib-components/typography'
 
 import { useHolidayPeriods } from '../holiday-periods/state'
-
-const formatChildName = (child: ReservationChild) =>
-  child.preferredName || child.firstName.split(' ')[0]
 
 type FreeHolidaySelectorProps = {
   child: ReservationChild
@@ -138,7 +136,7 @@ export const HolidayModal = React.memo(function HolidayModal({
                   <HolidaySection key={child.id}>
                     <H2>
                       {i18n.calendar.holidayModal.holidayFor}{' '}
-                      {formatChildName(child)}
+                      {formatPreferredName(child)}
                     </H2>
                     {holidayPeriod.freePeriod && (
                       <FreeHolidaySelector

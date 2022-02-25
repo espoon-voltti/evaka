@@ -13,6 +13,7 @@ import React, {
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { formatPreferredName } from 'lib-common/names'
 import { desktopMin } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
@@ -362,7 +363,7 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
         </AttentionIndicator>
         <Gap size="s" horizontal />
         <UserName>
-          {user.preferredName || user.firstName} {user.lastName}
+          {formatPreferredName(user)} {user.lastName}
         </UserName>
         <Gap size="s" horizontal />
         <HorizontalSpacer />
