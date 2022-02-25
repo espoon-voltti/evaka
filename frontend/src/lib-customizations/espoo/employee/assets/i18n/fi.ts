@@ -2109,6 +2109,24 @@ export const fi = {
       FREE_ABSENCE: 'Maksuton',
       NO_ABSENCE: 'Ei poissa'
     },
+    absenceTypeInfo: {
+      OTHER_ABSENCE:
+        'Käytetään tavallisissa päiväkodeissa aina, kun poissaolosta on ilmoitettu, mukaan lukien säännölliset vapaat ja loma-aika.',
+      SICKLEAVE:
+        '11 päivää ylittävä yhtäjaksoinen sairauspoissaolo vaikuttaa alentavasti maksuun.',
+      UNKNOWN_ABSENCE:
+        'Käytetään silloin, kun huoltaja ei ole ilmoittanut poissaolosta, vaikuttaa heinäkuussa myös laskutukseen. Koodi muutetaan vain, jos kyseessä on sairauspoissaolo, jonka jatkumisesta huoltaja ilmoittaa seuraavana päivänä.',
+      PLANNED_ABSENCE:
+        'Käytetään vain vuoroyksiköissä, kun kyse on vuorotyöstä johtuvasta vapaasta, loma-ajat merkitään Poissa- koodilla. Ei oikeuta maksualennukseen laskulla.',
+      TEMPORARY_RELOCATION:
+        'Lapselle on tehty varasijoitus toiseen yksikköön. Poissaolon voi merkitä, mikäli sellainen on tiedossa. Tutustu kuitenkin loma-ajan ohjeeseen, mikäli poissaolo koskee loma-aikaa.',
+      PARENTLEAVE:
+        'Isyysvapaa, merkitään vain sille lapselle, jonka vuoksi huoltaja on isyysvapaalla, ei sisaruksille. Vaikuttaa maksuun siten, että ko. aika on maksuton.',
+      FORCE_MAJEURE:
+        'Käytetään vain erikoistilanteissa hallinnon ohjeiden mukaan.',
+      FREE_ABSENCE: 'Kesäajan maksuton poissaolo',
+      NO_ABSENCE: 'Jos lapsi on paikalla, älä merkitse mitään.'
+    },
     careTypes: {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
       PRESCHOOL: 'Esiopetus',
