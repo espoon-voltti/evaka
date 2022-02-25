@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo } from 'react'
+import React, { Fragment, useCallback, useMemo } from 'react'
 
 import { formatDate } from 'lib-common/date'
 import {
@@ -11,8 +11,8 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import Tooltip from 'lib-components/atoms/Tooltip'
 
-import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
 
@@ -160,17 +160,18 @@ export default React.memo(function AbsenceCell({
     () =>
       backupCare
         ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
-        : absences
-            ?.map(
-              ({ category, absenceType, modifiedAt, modifiedByType }) =>
-                `${i18n.absences.absenceCategories[category]}: ${
-                  i18n.absences.absenceTypes[absenceType]
-                }<br/>
-            ${formatDate(modifiedAt)} ${
+        : absences?.map(
+            ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
+              <Fragment key={index}>
+                {index !== 0 && <br />}
+                {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
+                <br />
+                {`${formatDate(modifiedAt)} ${
                   i18n.absences.modifiedByType[modifiedByType]
-                }`
+                }`}
+              </Fragment>
             )
-            .join('<br/>') ?? '',
+          ),
     [absences, backupCare, i18n]
   )
 
@@ -181,11 +182,10 @@ export default React.memo(function AbsenceCell({
 
   return (
     <Tooltip
-      tooltipId={`tooltip_absence-${date.formatIso()}-${childId}`}
-      tooltipText={tooltipText}
-      place="top"
-      className="absence-tooltip"
-      delayShow={750}
+      tooltip={tooltipText}
+      position="top"
+      width="large"
+      data-qa="absence-cell-tooltip"
     >
       <AbsenceCellParts
         id={id}

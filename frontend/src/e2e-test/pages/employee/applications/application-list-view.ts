@@ -39,9 +39,7 @@ export default class ApplicationListView {
   }
 
   specialFilterItems = {
-    duplicate: this.page.find(
-      '[data-for="application-basis-DUPLICATE_APPLICATION"]'
-    )
+    duplicate: this.page.findByDataQa('application-basis-DUPLICATE_APPLICATION')
   }
 
   #unitFilter = new MultiSelect(this.page.find('[data-qa="unit-selector"]'))
