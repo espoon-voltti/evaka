@@ -363,24 +363,29 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
         .execute()
 }
 
-fun Database.Transaction.setDraftsSent(idNumberPairs: List<Pair<InvoiceId, Long>>, sentBy: EvakaUserId) {
-    val sql =
-        """
-        UPDATE invoice
-        SET
-            number = :number,
-            sent_at = now(),
-            sent_by = :sentBy,
-            status = :status::invoice_status
-        WHERE id = :id
-    """
+fun Database.Transaction.setDraftsSent(invoices: List<InvoiceDetailed>, sentBy: EvakaUserId) {
+    if (invoices.isEmpty()) return
 
-    val batch = prepareBatch(sql)
-    idNumberPairs.forEach { (id, number) ->
+    val batch = prepareBatch(
+        """
+UPDATE invoice
+SET
+    number = :number,
+    invoice_date = :invoiceDate,
+    due_date = :dueDate,
+    sent_at = now(),
+    sent_by = :sentBy,
+    status = :status::invoice_status
+WHERE id = :id
+"""
+    )
+    invoices.forEach {
         batch
-            .bind("id", id)
-            .bind("number", number)
-            .bind("status", InvoiceStatus.SENT.toString())
+            .bind("id", it.id)
+            .bind("invoiceDate", it.invoiceDate)
+            .bind("dueDate", it.dueDate)
+            .bind("number", it.number)
+            .bind("status", InvoiceStatus.SENT)
             .bind("sentBy", sentBy)
             .add()
     }
@@ -399,24 +404,26 @@ AND invoice_id = ANY(:invoiceIds)
     .bind("invoiceIds", invoiceIds.toTypedArray())
     .execute()
 
-fun Database.Transaction.updateToWaitingForSending(invoiceIds: List<InvoiceId>) {
-    if (invoiceIds.isEmpty()) return
+fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
+    if (invoices.isEmpty()) return
 
-    createUpdate("UPDATE invoice SET status = :status::invoice_status WHERE id = ANY(:ids)")
-        .bind("ids", invoiceIds.toTypedArray())
-        .bind("status", InvoiceStatus.WAITING_FOR_SENDING.toString())
-        .execute()
-}
-
-fun Database.Transaction.updateInvoiceDates(invoiceIds: List<InvoiceId>, invoiceDate: LocalDate, dueDate: LocalDate) {
-    if (invoiceIds.isEmpty()) return
-
-    val sql = "UPDATE invoice SET invoice_date = :invoiceDate, due_date = :dueDate WHERE id = ANY(:ids)"
-    createUpdate(sql)
-        .bind("ids", invoiceIds.toTypedArray())
-        .bind("invoiceDate", invoiceDate)
-        .bind("dueDate", dueDate)
-        .execute()
+    val batch = prepareBatch(
+        """
+UPDATE invoice
+SET status = :status::invoice_status, number = :number, invoice_date = :invoiceDate, due_date = :dueDate
+WHERE id = :id
+"""
+    )
+    invoices.forEach {
+        batch
+            .bind("id", it.id)
+            .bind("number", it.number)
+            .bind("invoiceDate", it.invoiceDate)
+            .bind("dueDate", it.dueDate)
+            .bind("status", InvoiceStatus.WAITING_FOR_SENDING)
+            .add()
+    }
+    batch.execute()
 }
 
 fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {

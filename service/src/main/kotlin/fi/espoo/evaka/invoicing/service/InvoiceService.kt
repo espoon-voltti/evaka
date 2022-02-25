@@ -10,8 +10,7 @@ import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
 import fi.espoo.evaka.invoicing.data.saveCostCenterFields
 import fi.espoo.evaka.invoicing.data.setDraftsSent
-import fi.espoo.evaka.invoicing.data.updateInvoiceDates
-import fi.espoo.evaka.invoicing.data.updateToWaitingForSending
+import fi.espoo.evaka.invoicing.data.setDraftsWaitingForManualSending
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -53,11 +52,8 @@ class InvoiceService(
             throw BadRequest("Some invoices were not drafts")
         }
 
-        val (withSSNs, withoutSSNs) = invoices
-            .partition { invoice -> invoice.headOfFamily.ssn != null }
-
         val maxInvoiceNumber = tx.getMaxInvoiceNumber().let { if (it >= 5000000000) it + 1 else 5000000000 }
-        val updatedInvoices = withSSNs.mapIndexed { index, invoice ->
+        val updatedInvoices = invoices.mapIndexed { index, invoice ->
             invoice.copy(
                 number = maxInvoiceNumber + index,
                 invoiceDate = invoiceDate ?: invoice.invoiceDate,
@@ -65,14 +61,10 @@ class InvoiceService(
             )
         }
 
-        val (succeeded, _) = integrationClient.send(updatedInvoices)
-
-        if (invoiceDate != null && dueDate != null) {
-            tx.updateInvoiceDates(succeeded.map { it.id }, invoiceDate, dueDate)
-        }
-        tx.setDraftsSent(succeeded.map { it.id to it.number!! }, user.evakaUserId)
-        tx.saveCostCenterFields(succeeded.map { it.id } + withoutSSNs.map { it.id })
-        tx.updateToWaitingForSending(withoutSSNs.map { it.id })
+        val sendResult = integrationClient.send(updatedInvoices)
+        tx.setDraftsSent(sendResult.succeeded, user.evakaUserId)
+        tx.setDraftsWaitingForManualSending(sendResult.manuallySent)
+        tx.saveCostCenterFields(sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id })
     }
 
     fun updateInvoice(tx: Database.Transaction, uuid: InvoiceId, invoice: Invoice) {

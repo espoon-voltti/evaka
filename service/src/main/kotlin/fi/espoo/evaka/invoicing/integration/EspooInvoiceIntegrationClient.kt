@@ -24,7 +24,9 @@ class EspooInvoiceIntegrationClient(
     private val jsonMapper: JsonMapper
 ) : InvoiceIntegrationClient {
     override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult {
-        return invoices
+        val (withSSN, withoutSSN) = invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
+
+        return withSSN
             .groupBy { it.agreementType }
             .map { (agreementType, invoices) ->
                 val success = if (agreementType != null) {
@@ -36,7 +38,7 @@ class EspooInvoiceIntegrationClient(
                 }
                 success to invoices
             }
-            .fold(InvoiceIntegrationClient.SendResult()) { result, (success, invoices) ->
+            .fold(InvoiceIntegrationClient.SendResult(manuallySent = withoutSSN)) { result, (success, invoices) ->
                 if (success) result.copy(succeeded = result.succeeded + invoices)
                 else result.copy(failed = result.failed + invoices)
             }
