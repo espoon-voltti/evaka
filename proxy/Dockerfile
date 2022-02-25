@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG NGINX_VERSION=1.21.4
+ARG NGINX_VERSION=1.21.6
 FROM nginx:${NGINX_VERSION}
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
@@ -10,7 +10,7 @@ LABEL maintainer="https://github.com/espoon-voltti/evaka"
 ENV NGINX_ENV=local \
     TZ=UTC
 
-ARG CACHE_BUST=2022-02-16
+ARG CACHE_BUST=2022-02-25
 
 RUN apt-get update \
  && apt-get -y dist-upgrade \
@@ -23,8 +23,8 @@ RUN apt-get update \
 
 
 # https://docs.datadoghq.com/tracing/setup_overview/proxy_setup/?tab=nginx # update version using get_latest_release
-ARG OPENTRACING_NGINX_VERSION=v0.22.1
-ARG OPENTRACING_NGINX_SHA256="a3d47dbea39fe16c1fb332d5a71c8a68c53da7137586f0c6ca079a219dd878a6"
+ARG OPENTRACING_NGINX_VERSION=v0.24.0
+ARG OPENTRACING_NGINX_SHA256="0873da40f53566273336e8ec941bd713377e1c4af07bed2ca30280c18fb4aba1"
 ARG DD_OPENTRACING_CPP_VERSION=v1.3.1
 ARG DD_OPENTRACING_CPP_SHA256="fee2a0340e340b8042a245ac6421175c755e23e08e3f109576038a2322305082"
 
