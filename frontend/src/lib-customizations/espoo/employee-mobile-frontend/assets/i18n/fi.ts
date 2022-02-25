@@ -90,10 +90,10 @@ export const fi = {
   absences: {
     title: 'Poissaolomerkintä',
     absenceTypes: {
-      OTHER_ABSENCE: 'Muu poissaolo',
+      OTHER_ABSENCE: 'Poissaolo',
       SICKLEAVE: 'Sairaus',
       UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
-      PLANNED_ABSENCE: 'Suunniteltu poissaolo / vuorohoito',
+      PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
       TEMPORARY_RELOCATION: 'Lapsi varasijoitettuna muualla',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',

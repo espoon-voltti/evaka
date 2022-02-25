@@ -207,8 +207,7 @@ export default {
     holiday: 'Pyhäpäivä',
     absent: 'Poissa',
     absences: {
-      SICKLEAVE: 'Sairauspoissaolo',
-      PLANNED_ABSENCE: 'Vapaapäivä'
+      SICKLEAVE: 'Sairauspoissaolo'
     },
     newReservationOrAbsence: 'Varaus / Poissaolo',
     newHoliday: 'Ilmoita loma',
@@ -245,8 +244,8 @@ export default {
       absenceType: 'Poissaolon syy',
       absenceTypes: {
         SICKLEAVE: 'Sairaus',
-        OTHER_ABSENCE: 'Muu poissaolo',
-        PLANNED_ABSENCE: 'Säännöllinen vapaapäivä/vuorohoito'
+        OTHER_ABSENCE: 'Poissaolo',
+        PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
       }
     },
     holidayModal: {

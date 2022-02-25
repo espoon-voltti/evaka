@@ -2088,10 +2088,10 @@ export const fi = {
   absences: {
     title: 'Poissaolot',
     absenceTypes: {
-      OTHER_ABSENCE: 'Muu poissaolo',
+      OTHER_ABSENCE: 'Poissaolo',
       SICKLEAVE: 'Sairaus',
       UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
-      PLANNED_ABSENCE: 'Suunniteltu poissaolo / vuorohoito',
+      PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
       TEMPORARY_RELOCATION: 'Lapsi varasijoitettuna muualla',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
@@ -2099,10 +2099,10 @@ export const fi = {
       NO_ABSENCE: 'Ei poissaoloa'
     },
     absenceTypesShort: {
-      OTHER_ABSENCE: 'Muu',
+      OTHER_ABSENCE: 'Poissaolo',
       SICKLEAVE: 'Sairaus',
       UNKNOWN_ABSENCE: 'Ilmoittamaton',
-      PLANNED_ABSENCE: 'Suunniteltu',
+      PLANNED_ABSENCE: 'Vuorotyö',
       TEMPORARY_RELOCATION: 'Varasijoitus',
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton',
@@ -2135,10 +2135,10 @@ export const fi = {
       saveButton: 'Tallenna',
       cancelButton: 'Peruuta',
       absenceTypes: {
-        OTHER_ABSENCE: 'Muu poissaolo',
+        OTHER_ABSENCE: 'Poissaolo',
         SICKLEAVE: 'Sairaus',
         UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
-        PLANNED_ABSENCE: 'Suunniteltu poissaolo / vuorotyö',
+        PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
         TEMPORARY_RELOCATION: 'Varasijoitettuna muualla',
         PARENTLEAVE: 'Isyysvapaa',
         FORCE_MAJEURE: 'Maksuton päivä (rajoitettu käyttö)',

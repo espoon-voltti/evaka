@@ -209,8 +209,7 @@ const en: Translations = {
     holiday: 'Holiday',
     absent: 'Absent',
     absences: {
-      SICKLEAVE: 'Sickness absence',
-      PLANNED_ABSENCE: 'Planned day off'
+      SICKLEAVE: 'Sickness absence'
     },
     newReservationOrAbsence: 'Reservation / Absence',
     newHoliday: 'Report holiday',
@@ -247,8 +246,8 @@ const en: Translations = {
       absenceType: 'Reason for absence',
       absenceTypes: {
         SICKLEAVE: 'Sickness',
-        OTHER_ABSENCE: 'Other absence',
-        PLANNED_ABSENCE: 'Regular day off/shift care'
+        OTHER_ABSENCE: 'Absence',
+        PLANNED_ABSENCE: 'Shift work absence'
       }
     },
     holidayModal: {

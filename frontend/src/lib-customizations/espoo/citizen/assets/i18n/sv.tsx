@@ -209,8 +209,7 @@ const sv: Translations = {
     holiday: 'Helgdag',
     absent: 'Frånvarande',
     absences: {
-      SICKLEAVE: 'Sjukskriven',
-      PLANNED_ABSENCE: 'Ledig dag'
+      SICKLEAVE: 'Sjukskriven'
     },
     newReservationOrAbsence: 'Reservation / Frånvaro',
     newHoliday: 'Meddela semester',
@@ -247,8 +246,8 @@ const sv: Translations = {
       absenceType: 'Anledning till frånvaro',
       absenceTypes: {
         SICKLEAVE: 'Sjukdom',
-        OTHER_ABSENCE: 'Annan frånvaro',
-        PLANNED_ABSENCE: 'Vanlig ledig dag/skiftvård'
+        OTHER_ABSENCE: 'Frånvaro',
+        PLANNED_ABSENCE: 'Skiftarbete frånvaro'
       }
     },
     holidayModal: {
