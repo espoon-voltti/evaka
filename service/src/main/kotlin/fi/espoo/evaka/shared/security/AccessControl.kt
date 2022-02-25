@@ -362,6 +362,18 @@ WHERE employee_id = :userId
             createUnits = hasPermissionFor(user, Action.Global.CREATE_UNIT),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
             personalMobileDevice = user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR),
+
+            // Everyone else except FINANCE_ADMIN
+            pinCode = user.hasOneOfRoles(
+                UserRole.ADMIN,
+                UserRole.REPORT_VIEWER,
+                UserRole.DIRECTOR,
+                UserRole.SERVICE_WORKER,
+                UserRole.UNIT_SUPERVISOR,
+                UserRole.STAFF,
+                UserRole.SPECIAL_EDUCATION_TEACHER,
+                UserRole.GROUP_STAFF,
+            )
         )
 
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {

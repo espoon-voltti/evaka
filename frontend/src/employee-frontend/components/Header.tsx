@@ -361,13 +361,15 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   {i18n.personalMobileDevices.title}
                 </Link>
               )}
-              <Link
-                to="/pin-code"
-                onClick={closeUserPopup}
-                data-qa="user-popup-pin-code"
-              >
-                {i18n.pinCode.link}
-              </Link>
+              {user?.accessibleFeatures.pinCode && (
+                <Link
+                  to="/pin-code"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-pin-code"
+                >
+                  {i18n.pinCode.link}
+                </Link>
+              )}
               <LogoutLink
                 data-qa="logout-btn"
                 href={logoutUrl}
