@@ -13,6 +13,7 @@ import {
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { formatPreferredName } from 'lib-common/names'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import {
   FixedSpaceFlexWrap,
@@ -104,7 +105,7 @@ export default React.memo(function AbsenceModal({
         {availableChildren.map((child) => (
           <SelectionChip
             key={child.id}
-            text={child.preferredName || child.firstName.split(' ')[0]}
+            text={formatPreferredName(child)}
             selected={form.selectedChildren.includes(child.id)}
             onChange={(checked) =>
               updateForm({

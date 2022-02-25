@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { formatPreferredName } from 'lib-common/names'
 import {
   Repetition,
   ReservationFormData,
@@ -154,7 +155,7 @@ export default React.memo(function ReservationModal({
         {availableChildren.map((child) => (
           <SelectionChip
             key={child.id}
-            text={child.preferredName || child.firstName.split(' ')[0]}
+            text={formatPreferredName(child)}
             selected={formData.selectedChildren.includes(child.id)}
             onChange={(selected) => {
               if (selected) {

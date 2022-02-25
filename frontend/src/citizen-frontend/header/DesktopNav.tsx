@@ -7,6 +7,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
+import { formatPreferredName } from 'lib-common/names'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
@@ -241,7 +242,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
           <Icon icon={faUser} />
         </AttentionIndicator>
         <Gap size="s" horizontal />
-        {user.preferredName || user.firstName} {user.lastName}
+        {formatPreferredName(user)} {user.lastName}
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
       {open ? (
