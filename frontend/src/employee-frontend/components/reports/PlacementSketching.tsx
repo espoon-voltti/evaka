@@ -41,7 +41,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function PlacementSketching() {
+export default React.memo(function PlacementSketching() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<PlacementSketchingRow[]>>(
     Loading.of()
@@ -265,6 +265,4 @@ function PlacementSketching() {
       </ContentArea>
     </Container>
   )
-}
-
-export default PlacementSketching
+})

@@ -21,7 +21,7 @@ import { FamilyContactsReportRow } from '../../types/reports'
 
 import { TableScrollable } from './common'
 
-function FamilyContacts() {
+export default React.memo(function FamilyContacts() {
   const { unitId } = useParams<{ unitId: UUID }>()
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<FamilyContactsReportRow[]>>(
@@ -175,6 +175,4 @@ function FamilyContacts() {
       </ContentArea>
     </Container>
   )
-}
-
-export default FamilyContacts
+})

@@ -114,7 +114,7 @@ const minYear = new Date().getFullYear() - 4
 const maxYear = new Date().getFullYear()
 const yearOptions = range(maxYear, minYear - 1, -1)
 
-function VoucherServiceProviderUnit() {
+export default React.memo(function VoucherServiceProviderUnit() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const { unitId } = useParams<{ unitId: UUID }>()
@@ -470,7 +470,7 @@ function VoucherServiceProviderUnit() {
       </ContentArea>
     </Container>
   )
-}
+})
 
 const TitleContainer = styled.div`
   display: flex;
@@ -482,5 +482,3 @@ const TitleContainer = styled.div`
 const LinkInCaps = styled(Link)`
   text-transform: uppercase;
 `
-
-export default VoucherServiceProviderUnit

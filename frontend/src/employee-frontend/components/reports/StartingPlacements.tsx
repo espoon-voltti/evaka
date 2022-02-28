@@ -79,7 +79,7 @@ const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
 
-const StartingPlacements = React.memo(function StartingPlacements() {
+export default React.memo(function StartingPlacements() {
   const { i18n, lang } = useTranslation()
   const [rows, setRows] = useState<Result<StartingPlacementsRow[]>>(
     Success.of([])
@@ -253,5 +253,3 @@ const StartingPlacements = React.memo(function StartingPlacements() {
     </Container>
   )
 })
-
-export default StartingPlacements

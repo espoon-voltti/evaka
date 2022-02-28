@@ -48,7 +48,7 @@ const ButtonsContainer = styled.div`
   flex-direction: row;
 `
 
-function Search() {
+export default React.memo(function Search() {
   const { i18n } = useTranslation()
   const {
     searchTerm,
@@ -205,6 +205,4 @@ function Search() {
       ) : null}
     </Container>
   )
-}
-
-export default Search
+})

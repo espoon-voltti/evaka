@@ -36,7 +36,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function ChildAgeLanguage() {
+export default React.memo(function ChildAgeLanguage() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<ChildAgeLanguageReportRow[]>>(
     Loading.of()
@@ -291,6 +291,4 @@ function ChildAgeLanguage() {
       </ContentArea>
     </Container>
   )
-}
-
-export default ChildAgeLanguage
+})

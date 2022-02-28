@@ -10,7 +10,8 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import { RouteComponentProps, useHistory } from 'react-router'
+import { useHistory } from 'react-router'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading, Loading, Result, Success } from 'lib-common/api'
@@ -88,10 +89,8 @@ function hasOverlap(
   )
 }
 
-export default React.memo(function PlacementDraft({
-  match
-}: RouteComponentProps<{ id: UUID }>) {
-  const { id: applicationId } = match.params
+export default React.memo(function PlacementDraft() {
+  const { id: applicationId } = useParams<{ id: UUID }>()
   const { i18n } = useTranslation()
   const history = useHistory()
   const [placementDraft, setPlacementDraft] = useState<Result<PlacementDraft>>(

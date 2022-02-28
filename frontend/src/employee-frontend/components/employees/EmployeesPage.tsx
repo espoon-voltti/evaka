@@ -42,7 +42,7 @@ const PaginationContainer = styled.div`
   justify-content: flex-end;
 `
 
-export default function EmployeesPage() {
+export default React.memo(function EmployeesPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState<number>(1)
   const [totalEmployees, setTotalEmployees] = useState<number>()
@@ -114,4 +114,4 @@ export default function EmployeesPage() {
       </ContentArea>
     </Container>
   )
-}
+})

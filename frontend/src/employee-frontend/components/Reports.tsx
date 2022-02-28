@@ -62,7 +62,7 @@ const Description = styled.p`
   width: 70%;
 `
 
-function Reports() {
+export default React.memo(function Reports() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
 
@@ -430,6 +430,4 @@ function Reports() {
       </ContentArea>
     </Container>
   )
-}
-
-export default Reports
+})

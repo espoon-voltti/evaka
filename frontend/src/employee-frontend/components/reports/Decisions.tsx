@@ -40,7 +40,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function Decisions() {
+export default React.memo(function Decisions() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<DecisionsReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
@@ -294,6 +294,4 @@ function Decisions() {
       </ContentArea>
     </Container>
   )
-}
-
-export default Decisions
+})

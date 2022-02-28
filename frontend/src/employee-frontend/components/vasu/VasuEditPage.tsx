@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { useHistory } from 'react-router'
-import { RouteComponentProps } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
@@ -46,10 +46,8 @@ const StatusContainer = styled.div`
   }
 `
 
-export default React.memo(function VasuEditPage({
-  match
-}: RouteComponentProps<{ id: UUID }>) {
-  const { id } = match.params
+export default React.memo(function VasuEditPage() {
+  const { id } = useParams<{ id: UUID }>()
   const { i18n } = useTranslation()
   const history = useHistory()
 

@@ -34,7 +34,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function FamilyConflicts() {
+export default React.memo(function FamilyConflicts() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<FamilyConflictReportRow[]>>(
     Loading.of()
@@ -169,6 +169,4 @@ function FamilyConflicts() {
       </ContentArea>
     </Container>
   )
-}
-
-export default FamilyConflicts
+})

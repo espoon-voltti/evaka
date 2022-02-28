@@ -41,7 +41,7 @@ const TopBar = styled.div`
   }
 `
 
-function Units() {
+export default React.memo(function Units() {
   const history = useHistory()
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -196,6 +196,4 @@ function Units() {
       </ContentArea>
     </Container>
   )
-}
-
-export default Units
+})

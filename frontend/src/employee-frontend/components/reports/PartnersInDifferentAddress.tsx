@@ -34,7 +34,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function PartnersInDifferentAddress() {
+export default React.memo(function PartnersInDifferentAddress() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<
     Result<PartnersInDifferentAddressReportRow[]>
@@ -165,6 +165,4 @@ function PartnersInDifferentAddress() {
       </ContentArea>
     </Container>
   )
-}
-
-export default PartnersInDifferentAddress
+})

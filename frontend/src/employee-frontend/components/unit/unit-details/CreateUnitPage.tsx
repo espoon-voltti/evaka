@@ -16,7 +16,7 @@ import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
 
-export default function CreateUnitPage(): JSX.Element {
+export default React.memo(function CreateUnitPage() {
   const history = useHistory()
   const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
@@ -71,4 +71,4 @@ export default function CreateUnitPage(): JSX.Element {
       </ContentArea>
     </Container>
   )
-}
+})

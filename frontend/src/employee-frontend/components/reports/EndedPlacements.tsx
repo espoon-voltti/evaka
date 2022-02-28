@@ -47,7 +47,7 @@ function getFilename(i18n: Translations, year: number, month: number) {
   return `Päättyvät_sijoitukset-${time}.csv`
 }
 
-function EndedPlacements() {
+export default React.memo(function EndedPlacements() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<EndedPlacementsReportRow[]>>(
     Success.of([])
@@ -150,6 +150,4 @@ function EndedPlacements() {
       </ContentArea>
     </Container>
   )
-}
-
-export default EndedPlacements
+})

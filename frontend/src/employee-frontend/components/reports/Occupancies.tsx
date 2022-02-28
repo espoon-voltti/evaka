@@ -180,7 +180,7 @@ function getDisplayCells(
   })
 }
 
-function Occupancies() {
+export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<OccupancyReportRow[]>>(Success.of([]))
   const [areas, setAreas] = useState<DaycareCareArea[]>([])
@@ -408,7 +408,7 @@ function Occupancies() {
       </ContentArea>
     </Container>
   )
-}
+})
 
 const caretakersMissingSymbol = 'X'
 
@@ -418,5 +418,3 @@ const Legend = styled.div`
   justify-content: flex-end;
   color: ${(p) => p.theme.colors.grayscale.g70};
 `
-
-export default Occupancies

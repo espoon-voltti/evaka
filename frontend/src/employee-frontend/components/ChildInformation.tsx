@@ -5,7 +5,7 @@
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useMemo } from 'react'
-import { Link, RouteComponentProps } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
@@ -337,10 +337,8 @@ const ChildInformation = React.memo(function ChildInformation({
   )
 })
 
-export default React.memo(function ChildInformationWrapper(
-  props: RouteComponentProps<{ id: UUID }>
-) {
-  const { id } = props.match.params
+export default React.memo(function ChildInformationWrapper() {
+  const { id } = useParams<{ id: UUID }>()
   return (
     <ChildContextProvider id={id}>
       <ChildInformation id={id} />

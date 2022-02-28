@@ -20,7 +20,7 @@ import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow } from './common'
 
-function Raw() {
+export default React.memo(function Raw() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<RawReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
@@ -162,6 +162,4 @@ function Raw() {
       </ContentArea>
     </Container>
   )
-}
-
-export default Raw
+})

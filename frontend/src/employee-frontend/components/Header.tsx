@@ -6,12 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { partition } from 'lodash'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import {
-  Link,
-  NavLink,
-  RouteComponentProps,
-  withRouter
-} from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -173,7 +168,8 @@ const UserPopup = styled.div`
   }
 `
 
-const Header = React.memo(function Header({ location }: RouteComponentProps) {
+export default React.memo(function Header() {
+  const location = useLocation()
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
   const { accounts, unreadCountsByAccount } = useContext(MessageContext)
@@ -383,5 +379,3 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
     </HeaderContainer>
   )
 })
-
-export default withRouter(Header)

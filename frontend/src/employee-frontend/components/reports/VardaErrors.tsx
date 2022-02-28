@@ -33,7 +33,7 @@ const FlatList = styled.ul`
   margin-top: 0;
 `
 
-function VardaErrors() {
+export default React.memo(function VardaErrors() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<VardaErrorReportRow[]>>(Loading.of())
   const [dirty, setDirty] = useState<boolean>(false)
@@ -147,6 +147,4 @@ function VardaErrors() {
       </ContentArea>
     </Container>
   )
-}
-
-export default VardaErrors
+})

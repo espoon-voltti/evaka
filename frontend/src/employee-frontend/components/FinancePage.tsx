@@ -10,7 +10,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../state/i18n'
 
-import { RouteWithTitle } from './RouteWithTitle'
+import EmployeeRoute from './EmployeeRoute'
 import FeeDecisionsPage from './fee-decisions/FeeDecisionsPage'
 import IncomeStatementsPage from './income-statements/IncomeStatementsPage'
 import InvoicesPage from './invoices/InvoicesPage'
@@ -50,36 +50,47 @@ export default React.memo(function FinancePage() {
       <Tabs tabs={tabs} />
       <Gap size="s" />
       <Switch>
-        <RouteWithTitle
+        <Route
           exact
           path="/finance/fee-decisions"
-          component={FeeDecisionsPage}
-          title={i18n.titles.feeDecisions}
+          render={() => (
+            <EmployeeRoute title={i18n.titles.feeDecisions}>
+              <FeeDecisionsPage />
+            </EmployeeRoute>
+          )}
         />
-        <RouteWithTitle
+        <Route
           exact
           path="/finance/value-decisions"
-          component={VoucherValueDecisionsPage}
-          title={i18n.titles.valueDecisions}
+          render={() => (
+            <EmployeeRoute title={i18n.titles.valueDecisions}>
+              <VoucherValueDecisionsPage />
+            </EmployeeRoute>
+          )}
         />
-        <RouteWithTitle
+        <Route
           exact
           path="/finance/invoices"
-          component={InvoicesPage}
-          title={i18n.titles.invoices}
+          render={() => (
+            <EmployeeRoute title={i18n.titles.invoices}>
+              <InvoicesPage />
+            </EmployeeRoute>
+          )}
         />
-        <RouteWithTitle
+        <Route
           exact
           path="/finance/income-statements"
-          component={IncomeStatementsPage}
-          title={i18n.titles.incomeStatements}
+          render={() => (
+            <EmployeeRoute title={i18n.titles.incomeStatements}>
+              <IncomeStatementsPage />
+            </EmployeeRoute>
+          )}
         />
-        <Route path="/" component={RedirectToFeeDecisions} />
+        <Route
+          path="/"
+          render={() => <Redirect to="/finance/fee-decisions" />}
+        />
       </Switch>
     </>
   )
 })
-
-function RedirectToFeeDecisions() {
-  return <Redirect to="/finance/fee-decisions" />
-}

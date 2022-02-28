@@ -26,7 +26,7 @@ interface FormData {
   globalRoles: GlobalRole[]
 }
 
-export default function EmployeePage() {
+export default React.memo(function EmployeePage() {
   const { i18n } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const [employee, setEmployee] = useState<Result<EmployeeUser>>(Loading.of())
@@ -101,4 +101,4 @@ export default function EmployeePage() {
       </ContentArea>
     </Container>
   )
-}
+})

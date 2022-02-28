@@ -25,7 +25,7 @@ import { useTranslation } from '../../state/i18n'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
-function ReportInvoices() {
+export default React.memo(function ReportInvoices() {
   const { i18n } = useTranslation()
   const [report, setReport] = useState<Result<InvoiceReport>>(Loading.of())
   const [filters, setFilters] = useState<InvoiceReportFilters>({
@@ -104,6 +104,4 @@ function ReportInvoices() {
       </ContentArea>
     </Container>
   )
-}
-
-export default ReportInvoices
+})

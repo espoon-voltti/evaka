@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useMemo } from 'react'
-import { RouteComponentProps } from 'react-router'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -162,10 +162,8 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
   )
 })
 
-export default React.memo(function PersonProfileWrapper(
-  props: RouteComponentProps<{ id: UUID }>
-) {
-  const { id } = props.match.params
+export default React.memo(function PersonProfileWrapper() {
+  const { id } = useParams<{ id: UUID }>()
   return (
     <PersonContextProvider id={id}>
       <PersonProfile id={id} />

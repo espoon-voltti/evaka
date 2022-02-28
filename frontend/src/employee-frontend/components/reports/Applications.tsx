@@ -39,7 +39,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function Applications() {
+export default React.memo(function Applications() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<ApplicationsReportRow[]>>(
     Loading.of()
@@ -234,6 +234,4 @@ function Applications() {
       </ContentArea>
     </Container>
   )
-}
-
-export default Applications
+})
