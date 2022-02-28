@@ -11,6 +11,14 @@ import { Translatable } from './shared'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.holidayperiod.ChildHolidays
+*/
+export interface ChildHolidays {
+  freePeriod: FiniteDateRange | null
+  holidays: FiniteDateRange[]
+}
+
+/**
 * Generated from fi.espoo.evaka.holidayperiod.FreeAbsencePeriod
 */
 export interface FreeAbsencePeriod {
@@ -24,7 +32,7 @@ export interface FreeAbsencePeriod {
 * Generated from fi.espoo.evaka.holidayperiod.HolidayAbsenceRequest
 */
 export interface HolidayAbsenceRequest {
-  childHolidays: Record<string, FiniteDateRange | null>
+  childHolidays: Record<string, ChildHolidays>
 }
 
 /**

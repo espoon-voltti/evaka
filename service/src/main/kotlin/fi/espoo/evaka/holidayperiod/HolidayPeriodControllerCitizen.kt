@@ -7,7 +7,7 @@ package fi.espoo.evaka.holidayperiod
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.reservations.AbsenceInsert
-import fi.espoo.evaka.reservations.clearOldAbsences
+import fi.espoo.evaka.reservations.clearAbsencesWithinPeriod
 import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
@@ -38,7 +38,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     }
 
     @PostMapping("/holidays")
-    fun postAbsences(
+    fun postHolidays(
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
@@ -51,30 +51,50 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val activeHolidayPeriod = tx.getActiveFreeHolidayPeriod(evakaClock.today())
-                if (activeHolidayPeriod?.freePeriod == null) {
-                    throw BadRequest("No active free holiday period found")
-                }
-
-                val childToDateRange = body.childHolidays.entries.filter { it.value != null }.map { it.key to it.value!! }
-                    .onEach { (_, dateRange) ->
-                        if (!activeHolidayPeriod.freePeriod.periodOptions.contains(dateRange)) {
+                // TODO handle reservable days
+                val holidayPeriod = tx.getActiveHolidayPeriod(evakaClock.today()) ?: throw BadRequest("No active holiday period")
+                val freePeriods = body.childHolidays.entries
+                    .mapNotNull { (childId, selections) -> if (selections.freePeriod != null) childId to selections.freePeriod else null }
+                    .onEach { (_, freePeriod) ->
+                        if (holidayPeriod.freePeriod == null || !holidayPeriod.freePeriod.periodOptions.contains(freePeriod)
+                        ) {
                             throw BadRequest("Free holiday period not found")
                         }
                     }
 
-                val childToDates = childToDateRange.flatMap { (childId, dateRange) ->
-                    dateRange.dates().map { childId to it }
+                val otherHolidays = body.childHolidays.entries
+                    .map { (childId, selections) ->
+                        if (selections.holidays.any { !holidayPeriod.period.contains(it) }) {
+                            throw BadRequest("Holiday period does not contain selected holiday", "OUT_OF_HOLIDAY_PERIOD")
+                        }
+                        val allPeriods = (selections.holidays + selections.freePeriod).filterNotNull().toSet()
+                        if (selections.holidays.any { holiday -> allPeriods.any { it != holiday && it.overlaps(holiday) } }) {
+                            throw BadRequest("Overlapping holidays", "HOLIDAYS_OVERLAP")
+                        }
+                        childId to selections.holidays
+                    }
+
+                val absenceInserts = freePeriods.map { (childId, dateRange) ->
+                    AbsenceInsert(
+                        setOf(childId), dateRange, AbsenceType.FREE_ABSENCE
+                    )
+                } + otherHolidays.flatMap { (childId, dateRanges) ->
+                    dateRanges.map { AbsenceInsert(setOf(childId), it, AbsenceType.OTHER_ABSENCE) }
                 }
 
-                tx.clearOldAbsences(childToDates)
+                tx.clearAbsencesWithinPeriod(holidayPeriod.period, childIds)
 
-                tx.insertAbsences(PersonId(user.id), childToDateRange.map { (childId, dateRange) -> AbsenceInsert(setOf(childId), dateRange, AbsenceType.FREE_ABSENCE) })
+                tx.insertAbsences(PersonId(user.id), absenceInserts)
             }
         }
     }
 }
 
+data class ChildHolidays(
+    val holidays: List<FiniteDateRange>,
+    val freePeriod: FiniteDateRange? = null
+)
+
 data class HolidayAbsenceRequest(
-    val childHolidays: Map<ChildId, FiniteDateRange?>
+    val childHolidays: Map<ChildId, ChildHolidays>
 )

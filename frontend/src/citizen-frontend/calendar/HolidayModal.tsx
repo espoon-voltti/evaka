@@ -10,10 +10,7 @@ import { postHolidayAbsences } from 'citizen-frontend/holiday-periods/api'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  FreeAbsencePeriod,
-  HolidayAbsenceRequest
-} from 'lib-common/generated/api-types/holidayperiod'
+import { FreeAbsencePeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -90,11 +87,11 @@ export const HolidayModal = React.memo(function HolidayModal({
   )
 
   const selectFreePeriod = useCallback(
-    (childId: string, dateRange: FiniteDateRange | null) => {
+    (childId: string, selectedFreePeriod: FiniteDateRange | null) => {
       setForm((previous) => ({
-        selections: {
-          ...previous.selections,
-          [childId]: { selectedFreePeriod: dateRange }
+        childHolidays: {
+          ...previous.childHolidays,
+          [childId]: { ...previous.childHolidays[childId], selectedFreePeriod }
         }
       }))
     },
@@ -138,7 +135,7 @@ export const HolidayModal = React.memo(function HolidayModal({
                   <FreeHolidaySelector
                     key={child.id}
                     freeAbsencePeriod={holidayPeriod.freePeriod}
-                    value={form.selections[child.id].selectedFreePeriod}
+                    value={form.childHolidays[child.id].selectedFreePeriod}
                     onSelectPeriod={(dateRange) =>
                       selectFreePeriod(child.id, dateRange)
                     }
@@ -159,30 +156,37 @@ const HolidaySection = styled.div`
 
 type SelectedHolidays = {
   selectedFreePeriod: FiniteDateRange | null
+  otherHolidays: FiniteDateRange[]
 }
 type HolidayForm = {
-  selections: Record<string, SelectedHolidays>
+  childHolidays: Record<string, SelectedHolidays>
 }
 
 const initializeForm = (children: ReservationChild[]): HolidayForm => ({
-  selections: children.reduce(
-    (map, child) => ({ ...map, [child.id]: { selectedFreePeriod: null } }),
+  childHolidays: children.reduce(
+    (map, child) => ({
+      ...map,
+      [child.id]: { selectedFreePeriod: null, otherHolidays: [] }
+    }),
     {}
   )
 })
 
-const postHolidays = (form: HolidayForm): Promise<Result<void>> => {
-  const request: HolidayAbsenceRequest = {
-    childHolidays: Object.entries(form.selections).reduce(
-      (acc, [childId, selectedHolidays]) => ({
+const postHolidays = ({
+  childHolidays
+}: HolidayForm): Promise<Result<void>> => {
+  return postHolidayAbsences({
+    childHolidays: Object.entries(childHolidays).reduce(
+      (acc, [childId, { otherHolidays, selectedFreePeriod }]) => ({
         ...acc,
-        [childId]: selectedHolidays.selectedFreePeriod
+        [childId]: {
+          holidays: otherHolidays,
+          freePeriod: selectedFreePeriod
+        }
       }),
       {}
     )
-  }
-
-  return postHolidayAbsences(request)
+  })
 }
 
 export default HolidayModal

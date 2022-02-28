@@ -75,6 +75,15 @@ fun convertMidnightEndTime(timeRange: TimeRange) =
         timeRange.copy(endTime = LocalTime.of(23, 59))
     else timeRange
 
+fun Database.Transaction.clearAbsencesWithinPeriod(period: FiniteDateRange, childIds: Set<ChildId>) {
+    this.createUpdate(
+        "DELETE FROM absence WHERE child_id = ANY(:childIds) AND :period @> date"
+    )
+        .bind("childIds", childIds.toTypedArray())
+        .bind("period", period)
+        .execute()
+}
+
 fun Database.Transaction.clearOldAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>) {
     val batch = prepareBatch(
         "DELETE FROM absence WHERE child_id = :childId AND date = :date"
