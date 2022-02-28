@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isBefore, parse } from 'date-fns'
+import { isAfter, parse } from 'date-fns'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 
@@ -58,7 +58,7 @@ function validateTime(
   try {
     const parsedTime = parse(time, 'HH:mm', new Date())
 
-    if (isBefore(parsedTime, attendance.arrived)) {
+    if (!isAfter(parsedTime, attendance.arrived)) {
       return `${i18n.attendances.arrived} ${formatTime(attendance.arrived)}`
     }
   } catch (e) {
