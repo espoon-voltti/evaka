@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
+  OpenTimeRange,
   ReservationChild,
   ReservationsResponse,
   TimeRange
@@ -60,7 +61,7 @@ interface ChildWithReservations {
   child: ReservationChild
   absence: AbsenceType | undefined
   reservations: TimeRange[]
-  attendances: TimeRange[]
+  attendances: OpenTimeRange[]
   reservationEditable: boolean
 }
 
@@ -251,7 +252,7 @@ export default React.memo(function DayView({
                       ? attendances
                           .map(
                             ({ startTime, endTime }) =>
-                              `${startTime} – ${endTime}`
+                              `${startTime} – ${endTime ?? ''}`
                           )
                           .join(', ')
                       : '–'}

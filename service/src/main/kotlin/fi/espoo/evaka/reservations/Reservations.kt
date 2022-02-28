@@ -44,10 +44,25 @@ class TimeRangeSerializer : JsonSerializer<TimeRange>() {
         gen.writeObjectField("endTime", value.endTime.format())
         gen.writeEndObject()
     }
-
-    private fun LocalTime.format() = "${padWithZeros(hour)}:${padWithZeros(minute)}"
-    private fun padWithZeros(hoursOrMinutes: Int) = hoursOrMinutes.toString().padStart(2, '0')
 }
+
+@JsonSerialize(using = OpenTimeRangeSerializer::class)
+data class OpenTimeRange(
+    val startTime: LocalTime,
+    val endTime: LocalTime?,
+)
+
+class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
+    override fun serialize(value: OpenTimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
+        gen.writeStartObject()
+        gen.writeObjectField("startTime", value.startTime.format())
+        gen.writeObjectField("endTime", value.endTime?.format())
+        gen.writeEndObject()
+    }
+}
+
+private fun LocalTime.format() = "${padWithZeros(hour)}:${padWithZeros(minute)}"
+private fun padWithZeros(hoursOrMinutes: Int) = hoursOrMinutes.toString().padStart(2, '0')
 
 fun validateReservationTimeRange(timeRange: TimeRange) {
     if (timeRange.endTime <= timeRange.startTime) {

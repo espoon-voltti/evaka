@@ -146,7 +146,7 @@ data class ChildDailyData(
     val childId: ChildId,
     val absence: AbsenceType?,
     val reservations: List<TimeRange>,
-    val attendances: List<TimeRange>
+    val attendances: List<OpenTimeRange>
 )
 
 data class ReservationChild(
