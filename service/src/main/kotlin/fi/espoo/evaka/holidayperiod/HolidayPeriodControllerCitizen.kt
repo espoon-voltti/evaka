@@ -52,12 +52,12 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 // TODO handle reservable days
+                // TODO handle deadlines
                 val holidayPeriod = tx.getActiveHolidayPeriod(evakaClock.today()) ?: throw BadRequest("No active holiday period")
                 val freePeriods = body.childHolidays.entries
                     .mapNotNull { (childId, selections) -> if (selections.freePeriod != null) childId to selections.freePeriod else null }
                     .onEach { (_, freePeriod) ->
-                        if (holidayPeriod.freePeriod == null || !holidayPeriod.freePeriod.periodOptions.contains(freePeriod)
-                        ) {
+                        if (holidayPeriod.freePeriod == null || !holidayPeriod.freePeriod.periodOptions.contains(freePeriod)) {
                             throw BadRequest("Free holiday period not found")
                         }
                     }
@@ -82,6 +82,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     dateRanges.map { AbsenceInsert(setOf(childId), it, AbsenceType.OTHER_ABSENCE) }
                 }
 
+                // TODO clear reservations from absence days
                 tx.clearAbsencesWithinPeriod(holidayPeriod.period, childIds)
 
                 tx.insertAbsences(PersonId(user.id), absenceInserts)

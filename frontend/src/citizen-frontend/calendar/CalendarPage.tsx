@@ -31,10 +31,10 @@ import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
 import DayView from './DayView'
-import HolidayModal from './HolidayModal'
 import HolidayPeriodBanner from './HolidayPeriodBanner'
 import ReservationModal from './ReservationModal'
 import { getReservations } from './api'
+import HolidayModal from './holiday-modal/HolidayModal'
 
 async function getReservationsDefaultRange(): Promise<
   Result<ReservationsResponse>
