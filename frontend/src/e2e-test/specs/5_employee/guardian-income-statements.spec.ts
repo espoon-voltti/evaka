@@ -16,23 +16,25 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareFixture,
-  enduserChildFixtureJari,
   enduserGuardianFixture,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import { PersonDetail } from '../../dev-api/types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let personId: UUID
+let child: PersonDetail
 
 beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
   personId = fixtures.enduserGuardianFixture.id
+  child = fixtures.enduserChildFixturePorriHatterRestricted
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
@@ -45,7 +47,7 @@ describe('Guardian income statements', () => {
   test("Shows placed child's income statements", async () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),
-      enduserChildFixtureJari.id,
+      child.id,
       daycareFixture.id
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
@@ -53,11 +55,11 @@ describe('Guardian income statements', () => {
     await insertGuardianFixtures([
       {
         guardianId: enduserGuardianFixture.id,
-        childId: enduserChildFixtureJari.id
+        childId: child.id
       }
     ])
 
-    await insertIncomeStatements(enduserChildFixtureJari.id, [
+    await insertIncomeStatements(child.id, [
       {
         type: 'CHILD_INCOME',
         otherInfo: 'Test other info',
@@ -73,7 +75,7 @@ describe('Guardian income statements', () => {
     const incomesSection = guardianPage.getCollapsible('incomes')
     await incomesSection.assertIncomeStatementChildName(
       0,
-      `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`
+      `${child.firstName} ${child.lastName}`
     )
     await incomesSection.assertIncomeStatementRowCount(1)
     const incomeStatementPage = await incomesSection.openIncomeStatement(0)
