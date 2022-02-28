@@ -51,7 +51,8 @@ export default toRequestHandler(async (req, res) => {
         lastName,
         globalRoles,
         allScopedRoles,
-        accessibleFeatures
+        accessibleFeatures,
+        permittedGlobalActions
       } = await getEmployeeDetails(req, user.id)
       const name = [firstName, lastName].filter((x) => !!x).join(' ')
 
@@ -68,7 +69,12 @@ export default toRequestHandler(async (req, res) => {
       await saveSession(req)
       res.status(200).json({
         loggedIn: true,
-        user: { id, name, accessibleFeatures: accessibleFeatures ?? {} },
+        user: {
+          id,
+          name,
+          accessibleFeatures: accessibleFeatures ?? {},
+          permittedGlobalActions: permittedGlobalActions ?? []
+        },
         globalRoles,
         allScopedRoles,
         roles: [...globalRoles, ...allScopedRoles],

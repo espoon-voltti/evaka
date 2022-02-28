@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -32,7 +32,7 @@ import {
 } from 'lib-icons'
 
 import { useTranslation } from '../state/i18n'
-import { RequireRole } from '../utils/roles'
+import { UserContext } from '../state/user'
 
 const ReportItems = styled.div`
   margin: 20px 0;
@@ -64,13 +64,14 @@ const Description = styled.p`
 
 function Reports() {
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
 
   return (
     <Container>
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.title}</Title>
         <ReportItems>
-          <RequireRole oneOf={['ADMIN']}>
+          {user?.permittedGlobalActions.has('READ_DUPLICATE_PEOPLE_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -86,15 +87,8 @@ function Reports() {
                 {i18n.reports.duplicatePeople.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          )}
+          {user?.permittedGlobalActions.has('READ_FAMILY_CONFLICT_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -110,15 +104,10 @@ function Reports() {
                 {i18n.reports.familyConflicts.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_MISSING_HEAD_OF_FAMILY_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -134,15 +123,10 @@ function Reports() {
                 {i18n.reports.missingHeadOfFamily.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_MISSING_SERVICE_NEED_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -158,8 +142,10 @@ function Reports() {
                 {i18n.reports.missingServiceNeed.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']}>
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -175,8 +161,10 @@ function Reports() {
                 {i18n.reports.partnersInDifferentAddress.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']}>
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -192,10 +180,8 @@ function Reports() {
                 {i18n.reports.childrenInDifferentAddress.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'REPORT_VIEWER']}
-          >
+          )}
+          {user?.permittedGlobalActions.has('READ_APPLICATIONS_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -212,10 +198,8 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.applications.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'REPORT_VIEWER']}
-          >
+          )}
+          {user?.permittedGlobalActions.has('READ_DECISIONS_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon size="L" color={colors.main.m2} content={faGavel} />
@@ -225,10 +209,8 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.decisions.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'REPORT_VIEWER']}
-          >
+          )}
+          {user?.permittedGlobalActions.has('READ_OCCUPANCY_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -242,16 +224,10 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.occupancies.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'DIRECTOR',
-              'REPORT_VIEWER',
-              'SPECIAL_EDUCATION_TEACHER'
-            ]}
-          >
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_CHILD_AGE_AND_LANGUAGE_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon size="L" color={colors.main.m2} content={faChild} />
@@ -263,16 +239,8 @@ function Reports() {
                 {i18n.reports.childAgeLanguage.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'DIRECTOR',
-              'REPORT_VIEWER',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          )}
+          {user?.permittedGlobalActions.has('READ_SERVICE_NEED_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon size="L" color={colors.main.m2} content={faChild} />
@@ -282,17 +250,10 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.serviceNeeds.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'DIRECTOR',
-              'REPORT_VIEWER',
-              'UNIT_SUPERVISOR',
-              'SPECIAL_EDUCATION_TEACHER'
-            ]}
-          >
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -308,8 +269,8 @@ function Reports() {
                 {i18n.reports.assistanceNeedsAndActions.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'FINANCE_ADMIN']}>
+          )}
+          {user?.permittedGlobalActions.has('READ_INVOICE_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -323,8 +284,10 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.invoices.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'FINANCE_ADMIN']}>
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_STARTING_PLACEMENTS_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -340,8 +303,8 @@ function Reports() {
                 {i18n.reports.startingPlacements.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'FINANCE_ADMIN']}>
+          )}
+          {user?.permittedGlobalActions.has('READ_ENDED_PLACEMENTS_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -357,8 +320,8 @@ function Reports() {
                 {i18n.reports.endedPlacements.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'DIRECTOR', 'REPORT_VIEWER']}>
+          )}
+          {user?.permittedGlobalActions.has('READ_PRESENCE_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -372,16 +335,8 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.presence.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'FINANCE_ADMIN',
-              'DIRECTOR',
-              'REPORT_VIEWER',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          )}
+          {user?.permittedGlobalActions.has('READ_SERVICE_VOUCHER_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -400,8 +355,8 @@ function Reports() {
                 {i18n.reports.voucherServiceProviders.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['DIRECTOR', 'REPORT_VIEWER']}>
+          )}
+          {user?.permittedGlobalActions.has('READ_SEXTET_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -415,8 +370,8 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.sextet.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'REPORT_VIEWER']}>
+          )}
+          {user?.permittedGlobalActions.has('READ_RAW_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -430,8 +385,10 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.raw.description}</Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER']}>
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_PLACEMENT_SKETCHING_REPORT'
+          ) && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -450,8 +407,8 @@ function Reports() {
                 {i18n.reports.placementSketching.description}
               </Description>
             </ReportItem>
-          </RequireRole>
-          <RequireRole oneOf={['ADMIN']}>
+          )}
+          {user?.permittedGlobalActions.has('READ_VARDA_REPORT') && (
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -468,7 +425,7 @@ function Reports() {
               </TitleRow>
               <Description>{i18n.reports.vardaErrors.description}</Description>
             </ReportItem>
-          </RequireRole>
+          )}
         </ReportItems>
       </ContentArea>
     </Container>

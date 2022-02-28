@@ -114,6 +114,7 @@ export interface EmployeeUserResponse {
   globalRoles: UserRole[]
   id: UUID
   lastName: string
+  permittedGlobalActions: Action.Global[]
 }
 
 /**

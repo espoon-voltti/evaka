@@ -6,8 +6,11 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.security.AccessControl
@@ -19,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-class ApplicationsReportController(private val accessControl: AccessControl) {
+class ApplicationsReportController(private val accessControl: AccessControl, private val acl: AccessControlList) {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
         db: Database,
@@ -31,11 +34,15 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, Action.Global.READ_APPLICATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.connect { dbc -> dbc.read { it.getApplicationsRows(from, to) } }
+        return db.connect { dbc -> dbc.read { it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user)) } }
     }
 }
 
-private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): List<ApplicationsReportRow> {
+private fun Database.Read.getApplicationsRows(
+    from: LocalDate,
+    to: LocalDate,
+    aclAuth: AclAuthorization
+): List<ApplicationsReportRow> {
     // language=sql
     val sql =
         """
@@ -56,6 +63,7 @@ private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): L
                 AND a.startdate BETWEEN :from AND :to
                 AND a.transferapplication != true
             LEFT JOIN person ch ON ch.id = a.childid
+            WHERE (:unitIds::uuid[] IS NULL OR u.id = ANY(:unitIds))
         )
         SELECT
             care_area_name,
@@ -74,6 +82,7 @@ private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): L
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
+        .bindNullable("unitIds", aclAuth.ids?.toTypedArray())
         .map { rs, _ ->
             ApplicationsReportRow(
                 careAreaName = rs.getString("care_area_name"),

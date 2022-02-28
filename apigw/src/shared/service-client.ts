@@ -74,6 +74,7 @@ export interface EmployeeUser {
 
 export interface EmployeeUserResponse extends EmployeeUser {
   accessibleFeatures: object
+  permittedGlobalActions?: string[]
 }
 
 export interface CitizenLoginRequest {

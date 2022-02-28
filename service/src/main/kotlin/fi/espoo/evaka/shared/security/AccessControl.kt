@@ -400,6 +400,12 @@ WHERE employee_id = :userId
             .plus(UserRole.ADMIN)
     }
 
+    fun getPermittedGlobalActions(user: AuthenticatedUser): Set<Action.Global> {
+        return Action.Global.values()
+            .filter { action -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::globalActions) }
+            .toSet()
+    }
+
     fun <A : Action.ScopedAction<I>, I> requirePermissionFor(user: AuthenticatedUser, action: A, vararg ids: I) {
         if (!hasPermissionFor(user, action, *ids)) {
             throw Forbidden()

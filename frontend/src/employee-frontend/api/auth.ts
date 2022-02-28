@@ -22,5 +22,13 @@ export function getLoginUrl(type: 'evaka' | 'saml' = 'saml') {
 export async function getAuthStatus(): Promise<AuthStatus<User>> {
   return client
     .get<JsonOf<AuthStatus<User>>>('/auth/status')
-    .then((res) => res.data)
+    .then(({ data }) => ({
+      ...data,
+      user: data.user
+        ? {
+            ...data.user,
+            permittedGlobalActions: new Set(data.user.permittedGlobalActions)
+          }
+        : data.user
+    }))
 }
