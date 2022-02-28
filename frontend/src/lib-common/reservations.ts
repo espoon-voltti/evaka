@@ -6,6 +6,7 @@ import FiniteDateRange from './finite-date-range'
 import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
 import {
   DailyReservationRequest,
+  OpenTimeRange,
   TimeRange
 } from './generated/api-types/reservations'
 import LocalDate from './local-date'
@@ -228,13 +229,13 @@ export function attendanceTimeDiffers(
 
 export function reservationsAndAttendancesDiffer(
   reservations: TimeRange[],
-  attendances: TimeRange[]
+  attendances: OpenTimeRange[]
 ): boolean {
   return reservations.some((reservation) => {
     const matchingAttendance = attendances.find(
       (attendance) =>
         attendance.startTime <= reservation.endTime &&
-        reservation.startTime <= attendance.endTime
+        (!attendance.endTime || reservation.startTime <= attendance.endTime)
     )
 
     if (!matchingAttendance) return false
