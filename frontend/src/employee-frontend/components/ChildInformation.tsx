@@ -17,7 +17,6 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import { faUsers } from 'lib-icons'
 
 import { ChildContext, ChildContextProvider, ChildState } from '../state/child'
@@ -148,10 +147,8 @@ const layouts: Layouts<typeof components> = {
     },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
-    ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as const, open: false }]
-      : []),
-    { component: 'fee-alterations', open: false }
+    { component: 'fee-alterations', open: false },
+    { component: 'income', open: false }
   ],
   ['SERVICE_WORKER']: [
     { component: 'guardiansAndParents', open: false },
@@ -168,15 +165,10 @@ const layouts: Layouts<typeof components> = {
       component: 'pedagogicalDocuments' as keyof typeof components,
       open: false
     },
-    ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as const, open: false }]
-      : []),
     { component: 'fee-alterations', open: false }
   ],
   ['FINANCE_ADMIN']: [
-    ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as const, open: false }]
-      : []),
+    { component: 'income', open: true },
     { component: 'fee-alterations', open: true },
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
@@ -208,9 +200,6 @@ const layouts: Layouts<typeof components> = {
 
     { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
-    ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as const, open: false }]
-      : []),
     { component: 'fee-alterations', open: false }
   ],
   ['STAFF']: [
@@ -228,9 +217,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'message-blocklist', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
-    ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as const, open: false }]
-      : []),
     { component: 'fee-alterations', open: false }
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
@@ -248,9 +234,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'guardiansAndParents', open: false },
     { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
-    ...(featureFlags.childIncomeEnabled
-      ? [{ component: 'income' as const, open: false }]
-      : []),
     { component: 'fee-alterations', open: false }
   ]
 }

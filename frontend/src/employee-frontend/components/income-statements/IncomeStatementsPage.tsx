@@ -46,12 +46,20 @@ function IncomeStatementsList({
         {data.map((row) => (
           <Tr key={row.id} data-qa="income-statement-row">
             <Td>
-              <Link to={`/profile/${row.personId}`}>{row.personName}</Link>
+              <Link
+                to={
+                  row.type !== 'CHILD_INCOME'
+                    ? `/profile/${row.personId}`
+                    : `/child-information/${row.personId}`
+                }
+              >
+                {row.personName}
+              </Link>
             </Td>
             <Td>{row.primaryCareArea}</Td>
             <Td>{formatDate(row.created)}</Td>
             <Td>{row.startDate.format()}</Td>
-            <Td>
+            <Td data-qa="income-statement-type">
               {i18n.incomeStatement.statementTypes[row.type].toLowerCase()}
             </Td>
           </Tr>

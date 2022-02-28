@@ -388,4 +388,22 @@ export class IncomeStatementsPage {
     await page.waitUntilLoaded()
     return page
   }
+
+  async assertNthIncomeStatement(
+    nth: number,
+    expectedName: string,
+    expecteTypeText: string
+  ) {
+    await waitUntilEqual(
+      () => this.#incomeStatementRows.nth(nth).find('a').textContent,
+      expectedName
+    )
+    await waitUntilEqual(
+      () =>
+        this.#incomeStatementRows
+          .nth(nth)
+          .find('[data-qa="income-statement-type"]').textContent,
+      expecteTypeText
+    )
+  }
 }

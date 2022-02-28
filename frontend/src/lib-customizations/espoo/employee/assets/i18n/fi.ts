@@ -1169,10 +1169,10 @@ export const fi = {
           INCOME: 'Huoltajan toimittamat tulotiedot',
           NOT_AVAILABLE: 'Puutteelliset tulotiedot'
         },
-        miscTitle: 'Päämiehen tiedot',
-        incomeTitle: 'Päämiehen tulot',
+        miscTitle: 'Lisätiedot',
+        incomeTitle: 'Tulot',
         income: 'Tulot',
-        expensesTitle: 'Päämiehen menot',
+        expensesTitle: 'Menot',
         expenses: 'Menot',
         amount: '€',
         coefficient: 'Kerroin',
@@ -1213,6 +1213,7 @@ export const fi = {
     },
     incomeStatement: {
       title: 'Tuloselvitykset',
+      custodianTitle: 'Huollettavien tuloselvitykset',
       noIncomeStatements: 'Ei tuloselvityksiä',
       incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
       createdHeading: 'Saapumispäivä',

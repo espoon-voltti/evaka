@@ -226,10 +226,24 @@ class DecisionsSection extends Section {
   }
 }
 
-export class IncomesSection extends Section {
+export class IncomeSection extends Section {
   // Income statements
 
   #incomeStatementRows = this.findAll(`[data-qa="income-statement-row"]`)
+  #childIncomeStatementsTitles = this.findAll(
+    '[data-qa="child-income-statement-title"]'
+  )
+
+  async assertIncomeStatementChildName(nth: number, childName: string) {
+    await waitUntilEqual(
+      () => this.#childIncomeStatementsTitles.nth(nth).textContent,
+      childName
+    )
+  }
+
+  async assertIncomeStatementRowCount(expected: number) {
+    await this.#incomeStatementRows.assertCount(expected)
+  }
 
   async isIncomeStatementHandled(nth = 0) {
     return new Checkbox(
@@ -452,7 +466,7 @@ const collapsibles = {
   },
   incomes: {
     selector: '[data-qa="person-income-collapsible"]',
-    section: IncomesSection
+    section: IncomeSection
   },
   feeDecisions: {
     selector: '[data-qa="person-fee-decisions-collapsible"]',

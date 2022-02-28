@@ -10,7 +10,7 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
 import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
-  IncomesSection
+  IncomeSection
 } from '../../pages/employee/guardian-information'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
@@ -18,7 +18,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let personId: UUID
-let incomesSection: IncomesSection
+let incomesSection: IncomeSection
 
 beforeEach(async () => {
   await resetDatabase()

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+import styled from 'styled-components'
 
 import { combine, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
@@ -10,8 +11,9 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { H3 } from 'lib-components/typography'
+import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { faEuroSign } from 'lib-icons'
 
 import {
@@ -20,7 +22,10 @@ import {
   getIncomes,
   updateIncome
 } from '../../api/income'
-import { getIncomeStatements } from '../../api/income-statement'
+import {
+  getGuardianIncomeStatementChildren,
+  getIncomeStatements
+} from '../../api/income-statement'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
@@ -39,6 +44,12 @@ interface Props {
 
 export default React.memo(function PersonIncome({ id, open }: Props) {
   const { i18n } = useTranslation()
+
+  const [children] = useApiState(
+    () => getGuardianIncomeStatementChildren(id),
+    [id]
+  )
+
   return (
     <CollapsibleSection
       icon={faEuroSign}
@@ -46,15 +57,29 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
       data-qa="person-income-collapsible"
       startCollapsed={!open}
     >
+      <H4>{i18n.personProfile.incomeStatement.title}</H4>
       <IncomeStatements personId={id} />
-      <Gap />
+      <Gap size="L" />
+      {renderResult(children, (children) => (
+        <>
+          <H4>{i18n.personProfile.incomeStatement.custodianTitle}</H4>
+          {children.map((child) => (
+            <ChildIncomeStatementsContainer key={child.id}>
+              <Gap size="m" />
+              <span data-qa="child-income-statement-title">{`${child.firstName} ${child.lastName}`}</span>
+              <IncomeStatements personId={child.id} />
+            </ChildIncomeStatementsContainer>
+          ))}
+        </>
+      ))}
+      <Gap size="L" />
       <H3>{i18n.personProfile.income.title}</H3>
       <Incomes personId={id} />
     </CollapsibleSection>
   )
 })
 
-const IncomeStatements = React.memo(function IncomeStatements({
+export const IncomeStatements = React.memo(function IncomeStatements({
   personId
 }: {
   personId: UUID
@@ -68,7 +93,6 @@ const IncomeStatements = React.memo(function IncomeStatements({
 
   return (
     <>
-      <H3>{i18n.personProfile.incomeStatement.title}</H3>
       {renderResult(incomeStatements, ({ data, pages }) => (
         <>
           <IncomeStatementsTable personId={personId} incomeStatements={data} />
@@ -77,6 +101,7 @@ const IncomeStatements = React.memo(function IncomeStatements({
             currentPage={page}
             setPage={setPage}
             label={i18n.common.page}
+            hideIfOnlyOnePage={true}
           />
         </>
       ))}
@@ -212,3 +237,9 @@ export const Incomes = React.memo(function Incomes({
     </>
   )
 })
+
+const ChildIncomeStatementsContainer = styled.div`
+  border-style: solid;
+  border-color: ${colors.grayscale.g35};
+  border-width: 1px 0 0 0;
+`
