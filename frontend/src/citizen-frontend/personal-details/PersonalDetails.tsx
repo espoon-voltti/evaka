@@ -34,8 +34,7 @@ import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
-import { refreshRedirect } from '../auth/requireAuth'
-import { getLoginUri } from '../header/const'
+import { getStrongLoginUri } from '../header/const'
 import { Translations, useTranslation } from '../localization'
 
 import { updatePersonalData } from './api'
@@ -61,7 +60,10 @@ export default React.memo(function PersonalDetails() {
     [user]
   )
 
-  const navigateToLogin = useCallback(() => refreshRedirect(getLoginUri()), [])
+  const navigateToLogin = useCallback(
+    () => window.location.replace(getStrongLoginUri()),
+    []
+  )
 
   const formWrapper = (children: React.ReactNode) =>
     editing ? (

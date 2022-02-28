@@ -9,7 +9,7 @@ export const getWeakLoginUri = (path?: string) =>
     path ?? window.location.pathname
   )}`
 
-export const getLoginUri = (path?: string) =>
+export const getStrongLoginUri = (path?: string) =>
   `/api/application/auth/saml/login?RelayState=${encodeURIComponent(
     `${path ?? window.location.pathname}${window.location.search}${
       window.location.hash

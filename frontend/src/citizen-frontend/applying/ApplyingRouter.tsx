@@ -10,8 +10,8 @@ import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 
+import RequireAuth from '../RequireAuth'
 import Applications from '../applications/Applications'
-import requireAuth from '../auth/requireAuth'
 import Decisions from '../decisions/decisions-page/Decisions'
 import { useTranslation } from '../localization'
 import MapView from '../map/MapView'
@@ -51,15 +51,26 @@ export default React.memo(function ApplyingRouter() {
         <Route
           exact
           path="/applying/applications"
-          component={requireAuth(Applications)}
+          render={() => (
+            <RequireAuth>
+              <Applications />
+            </RequireAuth>
+          )}
         />
-        <Route exact path="/applying/map" component={MapView} />
+        <Route exact path="/applying/map" render={() => <MapView />} />
         <Route
           exact
           path="/applying/decisions"
-          component={requireAuth(Decisions)}
+          render={() => (
+            <RequireAuth>
+              <Decisions />
+            </RequireAuth>
+          )}
         />
-        <Redirect to="/applying/applications" />
+        <Route
+          path="/"
+          render={() => <Redirect to="/applying/applications" />}
+        />
       </Switch>
     </>
   )
