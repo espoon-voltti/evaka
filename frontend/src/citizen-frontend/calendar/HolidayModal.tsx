@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -11,8 +11,8 @@ import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  HolidayAbsenceRequest,
-  FreeAbsencePeriod
+  FreeAbsencePeriod,
+  HolidayAbsenceRequest
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
@@ -25,14 +25,12 @@ import { H2, Label } from 'lib-components/typography'
 import { useHolidayPeriods } from '../holiday-periods/state'
 
 type FreeHolidaySelectorProps = {
-  child: ReservationChild
   freeAbsencePeriod: FreeAbsencePeriod
   value: FiniteDateRange | null
   onSelectPeriod: (selection: FiniteDateRange | null) => void
 }
 
 const FreeHolidaySelector = React.memo(function FreeHolidaySelector({
-  child,
   freeAbsencePeriod,
   value,
   onSelectPeriod
@@ -66,7 +64,7 @@ const FreeHolidaySelector = React.memo(function FreeHolidaySelector({
         onChange={(item) => onSelectPeriod(item?.period ?? null)}
         getItemValue={({ name }) => name}
         getItemLabel={({ name }) => name}
-        data-qa={`holiday-period-select-${child.id}`}
+        data-qa="free-period-select"
       />
     </div>
   )
@@ -85,7 +83,7 @@ export const HolidayModal = React.memo(function HolidayModal({
 }: HolidayModalProps) {
   const i18n = useTranslation()
   const [lang] = useLang()
-  const { holidayPeriods } = useHolidayPeriods()
+  const { activePeriod } = useHolidayPeriods()
 
   const [form, setForm] = useState<HolidayForm>(() =>
     initializeForm(availableChildren)
@@ -107,9 +105,7 @@ export const HolidayModal = React.memo(function HolidayModal({
     <AsyncFormModal
       mobileFullScreen
       title={i18n.calendar.holidayModal.title}
-      resolveAction={(_cancel) => {
-        return postHolidays(form)
-      }}
+      resolveAction={(_cancel) => postHolidays(form)}
       onSuccess={() => {
         close()
         reload()
@@ -118,42 +114,40 @@ export const HolidayModal = React.memo(function HolidayModal({
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
     >
-      {renderResult(
-        holidayPeriods,
-        ([holidayPeriod]) =>
-          holidayPeriod && (
-            <FixedSpaceColumn>
-              <HolidaySection>
-                <div>{holidayPeriod.description[lang]}</div>
-                <ExternalLink
-                  text={i18n.calendar.holidayModal.additionalInformation}
-                  href={holidayPeriod.descriptionLink[lang]}
-                  newTab
-                />
+      {renderResult(activePeriod, (holidayPeriod) =>
+        holidayPeriod ? (
+          <FixedSpaceColumn>
+            <HolidaySection>
+              <div>{holidayPeriod.description[lang]}</div>
+              <ExternalLink
+                text={i18n.calendar.holidayModal.additionalInformation}
+                href={holidayPeriod.descriptionLink[lang]}
+                newTab
+              />
+            </HolidaySection>
+            {availableChildren.map((child) => (
+              <HolidaySection
+                key={child.id}
+                data-qa={`holiday-section-${child.id}`}
+              >
+                <H2>
+                  {i18n.calendar.holidayModal.holidayFor}{' '}
+                  {formatPreferredName(child)}
+                </H2>
+                {holidayPeriod.freePeriod && (
+                  <FreeHolidaySelector
+                    key={child.id}
+                    freeAbsencePeriod={holidayPeriod.freePeriod}
+                    value={form.selections[child.id].selectedFreePeriod}
+                    onSelectPeriod={(dateRange) =>
+                      selectFreePeriod(child.id, dateRange)
+                    }
+                  />
+                )}
               </HolidaySection>
-              {availableChildren.map((child) => {
-                return (
-                  <HolidaySection key={child.id}>
-                    <H2>
-                      {i18n.calendar.holidayModal.holidayFor}{' '}
-                      {formatPreferredName(child)}
-                    </H2>
-                    {holidayPeriod.freePeriod && (
-                      <FreeHolidaySelector
-                        key={child.id}
-                        child={child}
-                        freeAbsencePeriod={holidayPeriod.freePeriod}
-                        value={form.selections[child.id].selectedFreePeriod}
-                        onSelectPeriod={(dateRange) =>
-                          selectFreePeriod(child.id, dateRange)
-                        }
-                      />
-                    )}
-                  </HolidaySection>
-                )
-              })}
-            </FixedSpaceColumn>
-          )
+            ))}
+          </FixedSpaceColumn>
+        ) : null
       )}
     </AsyncFormModal>
   )
