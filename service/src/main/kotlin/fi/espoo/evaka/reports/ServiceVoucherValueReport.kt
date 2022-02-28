@@ -51,6 +51,7 @@ class ServiceVoucherValueReportController(
         @RequestParam month: Int,
         @RequestParam(required = false) areaId: AreaId?
     ): ServiceVoucherReport {
+        accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_VOUCHER_REPORT)
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
         return db.connect { dbc ->

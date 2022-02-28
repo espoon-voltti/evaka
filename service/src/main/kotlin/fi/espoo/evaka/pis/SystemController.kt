@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.EmployeeFeatures
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
@@ -98,7 +99,8 @@ class SystemController(private val personService: PersonService, private val acc
                         lastName = employeeUser.lastName,
                         globalRoles = employeeUser.globalRoles,
                         allScopedRoles = employeeUser.allScopedRoles,
-                        accessibleFeatures = accessControl.getPermittedFeatures(AuthenticatedUser.Employee(employeeUser))
+                        accessibleFeatures = accessControl.getPermittedFeatures(AuthenticatedUser.Employee(employeeUser)),
+                        permittedGlobalActions = accessControl.getPermittedGlobalActions(AuthenticatedUser.Employee(employeeUser))
                     )
                 }
             }
@@ -147,5 +149,6 @@ class SystemController(private val personService: PersonService, private val acc
         val globalRoles: Set<UserRole> = setOf(),
         val allScopedRoles: Set<UserRole> = setOf(),
         val accessibleFeatures: EmployeeFeatures,
+        val permittedGlobalActions: Set<Action.Global>
     )
 }

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Action } from 'lib-common/generated/action'
 import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
 import { EmployeeFeatures } from '../generated/api-types/shared'
@@ -11,6 +12,7 @@ export interface User {
   id: UUID
   name: string
   accessibleFeatures: EmployeeFeatures
+  permittedGlobalActions: Set<Action.Global>
 }
 
 export interface MobileUser extends MobileDeviceDetails {
