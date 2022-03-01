@@ -5,7 +5,6 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
@@ -121,7 +120,10 @@ class ReservationControllerCitizen(
                         body.dateRange.dates().map { childId to it }
                     }
                 )
-                tx.insertAbsences(PersonId(user.id), listOf(AbsenceInsert(body.childIds, body.dateRange, body.absenceType)))
+                tx.insertAbsences(
+                    PersonId(user.id),
+                    body.childIds.map { AbsenceInsert(it, body.dateRange, body.absenceType) }
+                )
             }
         }
     }
@@ -160,13 +162,6 @@ data class ReservationChild(
 )
 
 data class AbsenceRequest(
-    val childIds: Set<ChildId>,
-    val dateRange: FiniteDateRange,
-    val absenceType: AbsenceType
-)
-
-@ExcludeCodeGen
-data class AbsenceInsert(
     val childIds: Set<ChildId>,
     val dateRange: FiniteDateRange,
     val absenceType: AbsenceType
@@ -305,41 +300,6 @@ private fun Database.Transaction.insertValidReservations(userId: PersonId, reque
                 .bind("end", res.endTime)
                 .bind("date", request.date)
                 .add()
-        }
-    }
-
-    batch.execute()
-}
-
-fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<AbsenceInsert>) {
-    val batch = prepareBatch(
-        """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
-        SELECT
-            :childId,
-            :date,
-            category,
-            :absenceType,
-            :userId
-        FROM (
-            SELECT unnest(absence_categories(type)) AS category
-            FROM placement
-            WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
-        ) care_type
-        ON CONFLICT DO NOTHING
-        """.trimIndent()
-    )
-
-    absenceInserts.forEach { (childIds, dateRange, absenceType) ->
-        childIds.forEach { childId ->
-            dateRange.dates().forEach { date ->
-                batch
-                    .bind("childId", childId)
-                    .bind("date", date)
-                    .bind("absenceType", absenceType)
-                    .bind("userId", userId)
-                    .add()
-            }
         }
     }
 

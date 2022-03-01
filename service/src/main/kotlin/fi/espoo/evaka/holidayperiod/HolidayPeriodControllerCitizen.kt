@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.reservations.AbsenceInsert
 import fi.espoo.evaka.reservations.clearAbsencesWithinPeriod
+import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
@@ -75,14 +76,14 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     }
 
                 val absenceInserts = freePeriods.map { (childId, dateRange) ->
-                    AbsenceInsert(
-                        setOf(childId), dateRange, AbsenceType.FREE_ABSENCE
-                    )
+                    AbsenceInsert(childId, dateRange, AbsenceType.FREE_ABSENCE)
                 } + otherHolidays.flatMap { (childId, dateRanges) ->
-                    dateRanges.map { AbsenceInsert(setOf(childId), it, AbsenceType.OTHER_ABSENCE) }
+                    dateRanges.map { AbsenceInsert(childId, it, AbsenceType.OTHER_ABSENCE) }
                 }
 
-                // TODO clear reservations from absence days
+                // clear reservations only from days with absences
+                tx.clearOldReservations(absenceInserts.flatMap { absence -> absence.dateRange.dates().map { absence.childId to it } })
+                // clear all absences within holiday period
                 tx.clearAbsencesWithinPeriod(holidayPeriod.period, childIds)
 
                 tx.insertAbsences(PersonId(user.id), absenceInserts)
