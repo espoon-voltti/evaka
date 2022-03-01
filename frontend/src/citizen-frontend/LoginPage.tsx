@@ -17,7 +17,7 @@ import { farMap } from 'lib-icons'
 
 import Footer from './Footer'
 import { useUser } from './auth/state'
-import { getLoginUri, getWeakLoginUri } from './header/const'
+import { getStrongLoginUri, getWeakLoginUri } from './header/const'
 import { useTranslation } from './localization'
 
 export default React.memo(function LoginPage() {
@@ -49,7 +49,10 @@ export default React.memo(function LoginPage() {
             <Gap size="m" />
             <P noMargin>{i18n.loginPage.applying.paragraph}</P>
             <Gap size="s" />
-            <LinkButton href={getLoginUri('/applying')} data-qa="strong-login">
+            <LinkButton
+              href={getStrongLoginUri('/applying')}
+              data-qa="strong-login"
+            >
               {i18n.loginPage.applying.link}
             </LinkButton>
             <Gap size="m" />

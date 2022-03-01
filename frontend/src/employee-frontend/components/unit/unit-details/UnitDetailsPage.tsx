@@ -23,7 +23,7 @@ import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { TitleContext, TitleState } from '../../../state/title'
 import { renderResult } from '../../async-rendering'
 
-export default function UnitDetailsPage(): JSX.Element {
+export default React.memo(function UnitDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
@@ -91,4 +91,4 @@ export default function UnitDetailsPage(): JSX.Element {
       </ContentArea>
     </Container>
   )
-}
+})

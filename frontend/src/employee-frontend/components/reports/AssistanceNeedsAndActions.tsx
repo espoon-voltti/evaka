@@ -43,7 +43,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function AssistanceNeedsAndActions() {
+export default React.memo(function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
   const [report, setReport] = useState<Result<AssistanceNeedsAndActionsReport>>(
     Loading.of()
@@ -345,6 +345,4 @@ function AssistanceNeedsAndActions() {
       </ContentArea>
     </Container>
   )
-}
-
-export default AssistanceNeedsAndActions
+})

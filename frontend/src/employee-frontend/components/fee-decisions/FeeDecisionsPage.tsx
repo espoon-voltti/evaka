@@ -30,7 +30,7 @@ export type PagedFeeDecisions = {
   [k: number]: Result<FeeDecisionSummary[]>
 }
 
-const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
+export default React.memo(function FeeDecisionsPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<SortByFeeDecisions>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
@@ -138,5 +138,3 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
     </Container>
   )
 })
-
-export default FeeDecisionsPage

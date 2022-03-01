@@ -28,7 +28,7 @@ const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
 
-function ServiceNeeds() {
+export default React.memo(function ServiceNeeds() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<ServiceNeedReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<DateFilters>({
@@ -140,6 +140,4 @@ function ServiceNeeds() {
       </ContentArea>
     </Container>
   )
-}
-
-export default ServiceNeeds
+})

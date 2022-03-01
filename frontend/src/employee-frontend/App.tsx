@@ -6,8 +6,8 @@ import { ErrorBoundary } from '@sentry/react'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import {
   BrowserRouter as Router,
-  Redirect,
   Route,
+  Redirect,
   Switch,
   useParams
 } from 'react-router-dom'
@@ -25,6 +25,7 @@ import { getAuthStatus } from './api/auth'
 import { client } from './api/client'
 import ApplicationPage from './components/ApplicationPage'
 import ChildInformation from './components/ChildInformation'
+import EmployeeRoute from './components/EmployeeRoute'
 import FinancePage from './components/FinancePage'
 import { Footer } from './components/Footer'
 import GroupCaretakers from './components/GroupCaretakers'
@@ -35,7 +36,6 @@ import MobilePairingModal from './components/MobilePairingModal'
 import PersonProfile from './components/PersonProfile'
 import PersonalMobileDevicesPage from './components/PersonalMobileDevicesPage'
 import Reports from './components/Reports'
-import { RouteWithTitle } from './components/RouteWithTitle'
 import Search from './components/Search'
 import SettingsPage from './components/SettingsPage'
 import UnitFeaturesPage from './components/UnitFeaturesPage'
@@ -49,7 +49,6 @@ import DecisionPage from './components/decision-draft/DecisionDraft'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import EmployeePage from './components/employees/EmployeePage'
 import EmployeesPage from './components/employees/EmployeesPage'
-import ensureAuthenticated from './components/ensureAuthenticated'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import HolidayPeriodEditor from './components/holiday-periods/HolidayPeriodEditor'
@@ -114,366 +113,574 @@ export default function App() {
               <Router basename="/employee">
                 <Header />
                 <Switch>
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/login"
-                    component={LoginPage}
-                    title={i18n.titles.login}
+                    render={() => (
+                      <EmployeeRoute
+                        requireAuth={false}
+                        title={i18n.titles.login}
+                      >
+                        <LoginPage />
+                      </EmployeeRoute>
+                    )}
                   />
                   {featureFlags.experimental?.ai && (
-                    <RouteWithTitle
+                    <Route
                       exact
                       path="/ai"
-                      component={AIPage}
-                      title={i18n.titles.ai}
+                      render={() => (
+                        <EmployeeRoute title={i18n.titles.ai}>
+                          <AIPage />
+                        </EmployeeRoute>
+                      )}
                     />
                   )}
                   <Route
                     exact
                     path="/settings"
-                    component={ensureAuthenticated(SettingsPage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <SettingsPage />
+                      </EmployeeRoute>
+                    )}
                   />
                   <Route
                     exact
                     path="/unit-features"
-                    component={ensureAuthenticated(UnitFeaturesPage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <UnitFeaturesPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/units"
-                    component={ensureAuthenticated(Units)}
-                    title={i18n.titles.units}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.units}>
+                        <Units />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/units/new"
-                    component={ensureAuthenticated(CreateUnitPage)}
-                    title={i18n.titles.createUnit}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.createUnit}>
+                        <CreateUnitPage />
+                      </EmployeeRoute>
+                    )}
                   />
                   <Route
                     exact
                     path="/units/:id/details"
-                    component={ensureAuthenticated(UnitDetailsPage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <UnitDetailsPage />
+                      </EmployeeRoute>
+                    )}
                   />
                   <Route
                     exact
                     path="/units/:unitId/family-contacts"
-                    component={ensureAuthenticated(ReportFamilyContacts)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <ReportFamilyContacts />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/units/:unitId/groups/:groupId/caretakers"
-                    component={ensureAuthenticated(GroupCaretakers)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <GroupCaretakers />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     path="/units/:id"
-                    component={ensureAuthenticated(UnitPage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <UnitPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/search"
-                    component={ensureAuthenticated(Search)}
-                    title={i18n.titles.customers}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.customers}>
+                        <Search />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/profile/:id"
-                    component={ensureAuthenticated(PersonProfile)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <PersonProfile />
+                      </EmployeeRoute>
+                    )}
                   />
                   <Route
                     exact
                     path="/profile/:personId/income-statement/:incomeStatementId"
-                    component={ensureAuthenticated(IncomeStatementPage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <IncomeStatementPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/child-information/:id"
-                    component={ensureAuthenticated(ChildInformation)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <ChildInformation />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/applications"
-                    component={ensureAuthenticated(ApplicationsPage)}
-                    title={i18n.titles.applications}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.applications}>
+                        <ApplicationsPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/applications/:id"
-                    component={ensureAuthenticated(ApplicationPage)}
-                    title={i18n.titles.applications}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.applications}>
+                        <ApplicationPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/applications/:id/placement"
-                    component={ensureAuthenticated(PlacementDraftPage)}
-                    title={i18n.titles.placementDraft}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.placementDraft}>
+                        <PlacementDraftPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/applications/:id/decisions"
-                    component={ensureAuthenticated(DecisionPage)}
-                    title={i18n.titles.decision}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.decision}>
+                        <DecisionPage />
+                      </EmployeeRoute>
+                    )}
                   />
                   {featureFlags.financeBasicsPage ? (
                     <Route
                       exact
                       path="/finance/basics"
-                      component={ensureAuthenticated(FinanceBasicsPage)}
+                      render={() => (
+                        <EmployeeRoute>
+                          <FinanceBasicsPage />
+                        </EmployeeRoute>
+                      )}
                     />
                   ) : null}
                   <Route
                     exact
                     path="/finance/fee-decisions/:id"
-                    component={ensureAuthenticated(FeeDecisionDetailsPage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <FeeDecisionDetailsPage />
+                      </EmployeeRoute>
+                    )}
                   />
                   <Route
                     exact
                     path="/finance/value-decisions/:id"
-                    component={ensureAuthenticated(VoucherValueDecisionPage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <VoucherValueDecisionPage />
+                      </EmployeeRoute>
+                    )}
                   />
                   <Route
                     exact
                     path="/finance/invoices/:id"
-                    component={ensureAuthenticated(InvoicePage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <InvoicePage />
+                      </EmployeeRoute>
+                    )}
                   />
                   <Route
                     path="/finance"
-                    component={ensureAuthenticated(FinancePage)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <FinancePage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports"
-                    component={ensureAuthenticated(Reports)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <Reports />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/family-conflicts"
-                    component={ensureAuthenticated(ReportFamilyConflicts)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportFamilyConflicts />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/missing-head-of-family"
-                    component={ensureAuthenticated(ReportMissingHeadOfFamily)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportMissingHeadOfFamily />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/missing-service-need"
-                    component={ensureAuthenticated(ReportMissingServiceNeed)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportMissingServiceNeed />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/applications"
-                    component={ensureAuthenticated(ReportApplications)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportApplications />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/decisions"
-                    component={ensureAuthenticated(ReportDecisions)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportDecisions />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/partners-in-different-address"
-                    component={ensureAuthenticated(
-                      ReportPartnersInDifferentAddress
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportPartnersInDifferentAddress />
+                      </EmployeeRoute>
                     )}
-                    title={i18n.titles.reports}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/children-in-different-address"
-                    component={ensureAuthenticated(
-                      ReportChildrenInDifferentAddress
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportChildrenInDifferentAddress />
+                      </EmployeeRoute>
                     )}
-                    title={i18n.titles.reports}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/child-age-language"
-                    component={ensureAuthenticated(ReportChildAgeLanguage)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportChildAgeLanguage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/assistance-needs-and-actions"
-                    component={ensureAuthenticated(
-                      ReportAssistanceNeedsAndActions
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportAssistanceNeedsAndActions />
+                      </EmployeeRoute>
                     )}
-                    title={i18n.titles.reports}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/occupancies"
-                    component={ensureAuthenticated(ReportOccupancies)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportOccupancies />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/invoices"
-                    component={ensureAuthenticated(ReportInvoices)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportInvoices />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/starting-placements"
-                    component={ensureAuthenticated(ReportStartingPlacements)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportStartingPlacements />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/ended-placements"
-                    component={ensureAuthenticated(ReportEndedPlacements)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportEndedPlacements />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/duplicate-people"
-                    component={ensureAuthenticated(ReportDuplicatePeople)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportDuplicatePeople />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/presences"
-                    component={ensureAuthenticated(ReportPresences)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportPresences />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/service-needs"
-                    component={ensureAuthenticated(ReportServiceNeeds)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportServiceNeeds />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/sextet"
-                    component={ensureAuthenticated(ReportSextet)}
+                    render={() => (
+                      <EmployeeRoute>
+                        <ReportSextet />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/voucher-service-providers"
-                    component={ensureAuthenticated(VoucherServiceProviders)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <VoucherServiceProviders />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/voucher-service-providers/:unitId"
-                    component={ensureAuthenticated(VoucherServiceProviderUnit)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <VoucherServiceProviderUnit />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/varda-errors"
-                    component={ensureAuthenticated(VardaErrors)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <VardaErrors />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
-                    exact
-                    path="/messages"
-                    component={ensureAuthenticated(MessagesPage)}
-                    title={i18n.titles.messages}
-                  />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/placement-sketching"
-                    component={ensureAuthenticated(PlacementSketching)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <PlacementSketching />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/reports/raw"
-                    component={ensureAuthenticated(ReportRaw)}
-                    title={i18n.titles.reports}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ReportRaw />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
+                    exact
+                    path="/messages"
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.messages}>
+                        <MessagesPage />
+                      </EmployeeRoute>
+                    )}
+                  />
+                  <Route
                     exact
                     path="/personal-mobile-devices"
-                    component={ensureAuthenticated(PersonalMobileDevicesPage)}
-                    title={i18n.titles.personalMobileDevices}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.personalMobileDevices}>
+                        <PersonalMobileDevicesPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/pin-code"
-                    component={ensureAuthenticated(EmployeePinCodePage)}
-                    title={i18n.titles.employeePinCode}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.employeePinCode}>
+                        <EmployeePinCodePage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/employees"
-                    component={ensureAuthenticated(EmployeesPage)}
-                    title={i18n.employees.title}
+                    render={() => (
+                      <EmployeeRoute title={i18n.employees.title}>
+                        <EmployeesPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/employees/:id"
-                    component={ensureAuthenticated(EmployeePage)}
-                    title={i18n.employees.title}
+                    render={() => (
+                      <EmployeeRoute title={i18n.employees.title}>
+                        <EmployeePage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/welcome"
-                    component={ensureAuthenticated(WelcomePage)}
-                    title={i18n.titles.welcomePage}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.welcomePage}>
+                        <WelcomePage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/vasu/:id"
-                    component={ensureAuthenticated(VasuPage)}
-                    title={i18n.titles.vasuPage}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.vasuPage}>
+                        <VasuPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/vasu/:id/edit"
-                    component={ensureAuthenticated(VasuEditPage)}
-                    title={i18n.titles.vasuPage}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.vasuPage}>
+                        <VasuEditPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/vasu-templates"
-                    component={ensureAuthenticated(VasuTemplatesPage)}
-                    title={i18n.titles.vasuTemplates}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.vasuTemplates}>
+                        <VasuTemplatesPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/vasu-templates/:id"
-                    component={ensureAuthenticated(VasuTemplateEditor)}
-                    title={i18n.titles.vasuTemplates}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.vasuTemplates}>
+                        <VasuTemplateEditor />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/holiday-periods"
-                    component={ensureAuthenticated(HolidayPeriodsPage)}
-                    title={i18n.titles.holidayPeriods}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.holidayPeriods}>
+                        <HolidayPeriodsPage />
+                      </EmployeeRoute>
+                    )}
                   />
-                  <RouteWithTitle
+                  <Route
                     exact
                     path="/holiday-periods/:id"
-                    component={ensureAuthenticated(HolidayPeriodEditor)}
-                    title={i18n.titles.holidayPeriods}
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.holidayPeriods}>
+                        <HolidayPeriodEditor />
+                      </EmployeeRoute>
+                    )}
                   />
-                  {redirectRoutes([
-                    {
-                      from: '/fee-decisions',
-                      to: () => `/finance/fee-decisions`
-                    },
-                    {
-                      from: '/fee-decisions/:id',
-                      to: ({ id }) => `/finance/fee-decisions/${id}`
-                    },
-                    {
-                      from: '/invoices',
-                      to: () => `/finance/invoices`
-                    },
-                    {
-                      from: '/invoices/:id',
-                      to: ({ id }) => `/finance/invoices/${id}`
-                    }
-                  ])}
-                  <Route exact path="/" component={RedirectToMainPage} />
+                  <Route
+                    exact
+                    path="/fee-decisions"
+                    render={() => <Redirect to="/finance/fee-decisions" />}
+                  />
+                  <Route
+                    exact
+                    path="/fee-decisions/:id"
+                    render={() => (
+                      <RedirectByParams
+                        to={(params: { id: string }) =>
+                          `/finance/fee-decisions/${params.id}`
+                        }
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/invoices"
+                    render={() => <Redirect to="/finance/invoices" />}
+                  />
+                  <Route
+                    exact
+                    path="/invoices/:id"
+                    render={() => (
+                      <RedirectByParams
+                        to={(params: { id: string }) =>
+                          `/finance/invoices/${params.id}`
+                        }
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/"
+                    render={() => (
+                      <EmployeeRoute requireAuth={false}>
+                        <RedirectToMainPage />
+                      </EmployeeRoute>
+                    )}
+                  />
                 </Switch>
                 <Footer />
                 <ErrorMessage />
@@ -515,22 +722,10 @@ function RedirectToMainPage() {
   }
 }
 
-function redirectRoutes(
-  routes: Array<{
-    from: string
-    to: (params: { [k: string]: string }) => string
-  }>
-) {
-  return routes.map(({ from, to }) => (
-    <Route key={from} exact path={from} component={redirectTo(to)} />
-  ))
+function RedirectByParams<T>({ to }: { to: (params: T) => string }) {
+  const params = useParams<T>()
+  return <Redirect to={to(params)} />
 }
-
-const redirectTo = (urlMapper: (params: { [k: string]: string }) => string) =>
-  function RedirectTo() {
-    const routeParams = useParams()
-    return <Redirect to={urlMapper(routeParams)} />
-  }
 
 function useAuthStatus(): AuthStatus<User> | undefined {
   const [authStatus, setAuthStatus] = useState<AuthStatus<User>>()

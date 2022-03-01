@@ -4,8 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext } from 'react'
-import { RouteComponentProps } from 'react-router'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
@@ -34,10 +33,9 @@ import { OverlayContext } from '../overlay/state'
 
 import { getChildIncomeStatement } from './api'
 
-export default React.memo(function ChildIncomeStatementView({
-  match
-}: RouteComponentProps<{ childId: UUID; incomeStatementId: UUID }>) {
-  const { childId, incomeStatementId } = match.params
+export default React.memo(function ChildIncomeStatementView() {
+  const { childId, incomeStatementId } =
+    useParams<{ childId: UUID; incomeStatementId: UUID }>()
   const t = useTranslation()
   const history = useHistory()
   const [result] = useApiState(

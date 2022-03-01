@@ -34,7 +34,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function ChildrenInDifferentAddress() {
+export default React.memo(function ChildrenInDifferentAddress() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<
     Result<ChildrenInDifferentAddressReportRow[]>
@@ -165,6 +165,4 @@ function ChildrenInDifferentAddress() {
       </ContentArea>
     </Container>
   )
-}
-
-export default ChildrenInDifferentAddress
+})

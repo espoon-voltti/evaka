@@ -42,7 +42,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function MissingHeadOfFamily() {
+export default React.memo(function MissingHeadOfFamily() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<MissingHeadOfFamilyReportRow[]>>(
     Loading.of()
@@ -184,6 +184,4 @@ function MissingHeadOfFamily() {
       </ContentArea>
     </Container>
   )
-}
-
-export default MissingHeadOfFamily
+})

@@ -39,7 +39,7 @@ const PanelContainer = styled.div`
   display: flex;
 `
 
-export default function MessagesPage() {
+export default React.memo(function MessagesPage() {
   const {
     accounts,
     selectedDraft,
@@ -178,4 +178,4 @@ export default function MessagesPage() {
       </PanelContainer>
     </Container>
   )
-}
+})

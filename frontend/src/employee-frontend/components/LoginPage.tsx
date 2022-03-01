@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Redirect, RouteComponentProps } from 'react-router-dom'
+import { Redirect, useLocation } from 'react-router-dom'
 
 import { UserContext } from '../state/user'
 
 import Login from './login-page/Login'
 
-function LoginPage({ location }: RouteComponentProps) {
+export default React.memo(function LoginPage() {
+  const location = useLocation()
   const { loggedIn } = useContext(UserContext)
 
   const queryParams = new URLSearchParams(location.search)
@@ -21,6 +22,4 @@ function LoginPage({ location }: RouteComponentProps) {
   }
 
   return <Login error={error || loginError} />
-}
-
-export default LoginPage
+})

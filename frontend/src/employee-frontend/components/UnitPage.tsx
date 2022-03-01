@@ -33,7 +33,6 @@ import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { UnitContext, UnitContextProvider } from '../state/unit'
 
-import { RouteWithTitle } from './RouteWithTitle'
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
 
@@ -157,15 +156,15 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
       <Gap size="s" />
       <Container>
         <Switch>
-          <RouteWithTitle
+          <Route
             exact
             path="/units/:id/unit-info"
-            component={TabUnitInformation}
+            render={() => <TabUnitInformation />}
           />
-          <RouteWithTitle
+          <Route
             exact
             path="/units/:id/groups"
-            component={() => (
+            render={() => (
               <TabGroups
                 reloadUnitData={reloadUnitData}
                 openGroups={openGroups}
@@ -173,22 +172,22 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               />
             )}
           />
-          <RouteWithTitle
+          <Route
             exact
             path="/units/:id/calendar"
-            component={TabCalendar}
+            render={() => <TabCalendar />}
           />
-          <RouteWithTitle
+          <Route
             exact
             path="/units/:id/application-process"
-            component={() => (
+            render={() => (
               <TabApplicationProcess
                 isLoading={isLoading(unitData)}
                 reloadUnitData={reloadUnitData}
               />
             )}
           />
-          <Route path="/" component={RedirectToUnitInfo} />
+          <Route path="/" render={() => <RedirectToUnitInfo />} />
         </Switch>
       </Container>
     </>

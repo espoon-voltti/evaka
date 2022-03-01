@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { RouteComponentProps } from 'react-router'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
@@ -57,13 +57,8 @@ const FlexRowRightAlign = styled(FlexRow)`
   justify-content: flex-end;
 `
 
-type Props = RouteComponentProps<{ unitId: UUID; groupId: UUID }>
-
-function GroupCaretakers({
-  match: {
-    params: { unitId, groupId }
-  }
-}: Props) {
+export default React.memo(function GroupCaretakers() {
+  const { unitId, groupId } = useParams<{ unitId: UUID; groupId: UUID }>()
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [caretakers, setCaretakers] = useState<Result<CaretakersResponse>>(
@@ -190,6 +185,4 @@ function GroupCaretakers({
       </ContentArea>
     </Container>
   )
-}
-
-export default GroupCaretakers
+})

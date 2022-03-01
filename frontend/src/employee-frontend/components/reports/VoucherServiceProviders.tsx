@@ -65,7 +65,7 @@ function getFilename(year: number, month: number, areaName: string) {
   return `${time}-${areaName}.csv`.replace(/ /g, '_')
 }
 
-function VoucherServiceProviders() {
+export default React.memo(function VoucherServiceProviders() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
@@ -294,6 +294,4 @@ function VoucherServiceProviders() {
       </ContentArea>
     </Container>
   )
-}
-
-export default VoucherServiceProviders
+})

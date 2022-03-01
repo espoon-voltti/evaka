@@ -42,7 +42,7 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function MissingServiceNeed() {
+export default React.memo(function MissingServiceNeed() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<MissingServiceNeedReportRow[]>>(
     Loading.of()
@@ -184,6 +184,4 @@ function MissingServiceNeed() {
       </ContentArea>
     </Container>
   )
-}
-
-export default MissingServiceNeed
+})

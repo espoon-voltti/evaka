@@ -20,7 +20,7 @@ import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow } from './common'
 
-function Presences() {
+export default React.memo(function Presences() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<PresenceReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
@@ -105,6 +105,4 @@ function Presences() {
       </ContentArea>
     </Container>
   )
-}
-
-export default Presences
+})

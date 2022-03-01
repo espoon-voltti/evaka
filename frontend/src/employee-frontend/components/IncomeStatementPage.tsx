@@ -4,7 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useState } from 'react'
-import { RouteComponentProps, useHistory } from 'react-router'
+import { useHistory } from 'react-router'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Result } from 'lib-common/api'
@@ -48,10 +49,9 @@ import { Translations, useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
 
-export default React.memo(function IncomeStatementPage({
-  match
-}: RouteComponentProps<{ personId: UUID; incomeStatementId: UUID }>) {
-  const { personId, incomeStatementId } = match.params
+export default React.memo(function IncomeStatementPage() {
+  const { personId, incomeStatementId } =
+    useParams<{ personId: UUID; incomeStatementId: UUID }>()
   const { i18n } = useTranslation()
   const history = useHistory()
 

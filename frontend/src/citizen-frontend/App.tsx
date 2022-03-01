@@ -4,7 +4,7 @@
 
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext } from 'react'
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
+import { Route, BrowserRouter, Redirect, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
 import ErrorPage from 'lib-components/molecules/ErrorPage'
@@ -14,12 +14,12 @@ import { theme } from 'lib-customizations/common'
 
 import CitizenReloadNotification from './CitizenReloadNotification'
 import LoginPage from './LoginPage'
+import RequireAuth from './RequireAuth'
 import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import ApplyingRouter from './applying/ApplyingRouter'
 import { UnwrapResult } from './async-rendering'
-import requireAuth from './auth/requireAuth'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildPage from './children/ChildPage'
@@ -61,91 +61,155 @@ export default function App() {
                       <Header />
                       <Main>
                         <Switch>
-                          <Route path="/login" component={LoginPage} />
-                          <Route path="/map" component={MapView} />
-                          <Route path="/applying" component={ApplyingRouter} />
+                          <Route path="/login" render={() => <LoginPage />} />
+                          <Route path="/map" render={() => <MapView />} />
+                          <Route
+                            path="/applying"
+                            render={() => <ApplyingRouter />}
+                          />
                           <Route
                             exact
                             path="/applications/new/:childId"
-                            component={requireAuth(ApplicationCreation)}
+                            render={() => (
+                              <RequireAuth>
+                                <ApplicationCreation />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/applications/:applicationId"
-                            component={requireAuth(ApplicationReadView)}
+                            render={() => (
+                              <RequireAuth>
+                                <ApplicationReadView />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/personal-details"
-                            component={requireAuth(PersonalDetails, false)}
+                            render={() => (
+                              <RequireAuth strength="WEAK">
+                                <PersonalDetails />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/income"
-                            component={requireAuth(IncomeStatements)}
+                            render={() => (
+                              <RequireAuth>
+                                <IncomeStatements />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/income/:incomeStatementId/edit"
-                            component={requireAuth(IncomeStatementEditor)}
+                            render={() => (
+                              <RequireAuth>
+                                <IncomeStatementEditor />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/income/:incomeStatementId"
-                            component={requireAuth(IncomeStatementView)}
+                            render={() => (
+                              <RequireAuth>
+                                <IncomeStatementView />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/child-income/:childId/:incomeStatementId/edit"
-                            component={requireAuth(ChildIncomeStatementEditor)}
+                            render={() => (
+                              <RequireAuth>
+                                <ChildIncomeStatementEditor />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/child-income/:childId/:incomeStatementId"
-                            component={requireAuth(ChildIncomeStatementView)}
+                            render={() => (
+                              <RequireAuth>
+                                <ChildIncomeStatementView />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/applications/:applicationId/edit"
-                            component={requireAuth(ApplicationEditor)}
+                            render={() => (
+                              <RequireAuth>
+                                <ApplicationEditor />
+                              </RequireAuth>
+                            )}
                           />
                           {featureFlags.experimental?.placementTermination && (
                             <Route
                               exact
                               path="/children/:childId"
-                              component={requireAuth(ChildPage)}
+                              render={() => (
+                                <RequireAuth>
+                                  <ChildPage />
+                                </RequireAuth>
+                              )}
                             />
                           )}
                           {featureFlags.experimental?.placementTermination && (
                             <Route
                               exact
                               path="/children"
-                              component={requireAuth(ChildrenPage)}
+                              render={() => (
+                                <RequireAuth>
+                                  <ChildrenPage />
+                                </RequireAuth>
+                              )}
                             />
                           )}
                           <Route
                             exact
                             path="/decisions/by-application/:applicationId"
-                            component={requireAuth(DecisionResponseList)}
+                            render={() => (
+                              <RequireAuth>
+                                <DecisionResponseList />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/messages"
-                            component={requireAuth(MessagesPage, false)}
+                            render={() => (
+                              <RequireAuth strength="WEAK">
+                                <MessagesPage />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/calendar"
-                            component={requireAuth(CalendarPage, false)}
+                            render={() => (
+                              <RequireAuth strength="WEAK">
+                                <CalendarPage />
+                              </RequireAuth>
+                            )}
                           />
                           <Route
                             exact
                             path="/pedagogical-documents"
-                            component={requireAuth(PedagogicalDocuments)}
+                            render={() => (
+                              <RequireAuth>
+                                <PedagogicalDocuments />
+                              </RequireAuth>
+                            )}
                           />
-                          <Route path="/">
-                            <HandleRedirection />
-                          </Route>
+                          <Route
+                            path="/"
+                            render={() => <HandleRedirection />}
+                          />
                         </Switch>
                       </Main>
                       <GlobalInfoDialog />

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { RouteComponentProps } from 'react-router'
+import { useHistory, useParams } from 'react-router-dom'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
@@ -60,16 +60,13 @@ async function initializeEditorState(
   )
 }
 
-export default React.memo(function ChildIncomeStatementEditor({
-  history,
-  match
-}: RouteComponentProps<{ incomeStatementId: string; childId: string }>) {
+export default React.memo(function ChildIncomeStatementEditor() {
+  const params = useParams<{ incomeStatementId: string; childId: string }>()
+  const history = useHistory()
   const incomeStatementId =
-    match.params.incomeStatementId === 'new'
-      ? undefined
-      : match.params.incomeStatementId
+    params.incomeStatementId === 'new' ? undefined : params.incomeStatementId
 
-  const childId = match.params.childId
+  const childId = params.childId
 
   const [state, setState] = useState<Result<EditorState>>(Loading.of())
 

@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
-import { RouteComponentProps } from 'react-router'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 
 import { Success } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -15,11 +14,9 @@ import { renderResult } from '../async-rendering'
 import HolidayPeriodForm from './HolidayPeriodForm'
 import { getHolidayPeriod } from './api'
 
-export default React.memo(function HolidayPeriodEditor({
-  match
-}: RouteComponentProps<{ id: string }>) {
-  const holidayPeriodId =
-    match.params.id === 'new' ? undefined : match.params.id
+export default React.memo(function HolidayPeriodEditor() {
+  const { id } = useParams<{ id: string }>()
+  const holidayPeriodId = id === 'new' ? undefined : id
 
   const [holidayPeriod] = useApiState(
     () =>

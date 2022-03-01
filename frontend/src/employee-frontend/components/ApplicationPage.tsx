@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { RouteComponentProps } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
@@ -47,8 +47,8 @@ const NotesArea = styled(ContentArea)`
   padding: 0;
 `
 
-function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
-  const applicationId = match.params.id
+export default React.memo(function ApplicationPage() {
+  const { id: applicationId } = useParams<{ id: UUID }>()
 
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
@@ -79,12 +79,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
           LocalDate.today()
       ).then(setUnits)
     }
-  }, [
-    editing,
-    editedApplication?.type,
-    editedApplication?.form.preferences.preferredStartDate,
-    editedApplication?.form.preferences.preparatory
-  ])
+  }, [editing, editedApplication?.type, editedApplication?.form.preferences.preferredStartDate, editedApplication?.form.preferences.preparatory])
 
   const [terms, setTerms] = useState<Term[]>()
   useEffect(() => {
@@ -174,11 +169,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     } else {
       setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }
-  }, [
-    setServiceNeedOptions,
-    loadServiceNeedOptions,
-    shouldLoadServiceNeedOptions
-  ])
+  }, [setServiceNeedOptions, loadServiceNeedOptions, shouldLoadServiceNeedOptions])
 
   return (
     <>
@@ -242,7 +233,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
       </UnwrapResult>
     </>
   )
-}
+})
 
 interface Term {
   start: LocalDate
@@ -337,5 +328,3 @@ function validateApplication(
 
   return errors
 }
-
-export default ApplicationPage

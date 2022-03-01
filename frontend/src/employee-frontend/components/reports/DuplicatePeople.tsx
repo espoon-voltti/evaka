@@ -52,7 +52,7 @@ const isChild = (dateOfBirth: LocalDate) => {
   return age < CHILD_AGE
 }
 
-function DuplicatePeople() {
+export default React.memo(function DuplicatePeople() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<DuplicatePeopleReportRow[]>>(
     Loading.of()
@@ -240,6 +240,4 @@ function DuplicatePeople() {
       </ContentArea>
     </Container>
   )
-}
-
-export default DuplicatePeople
+})

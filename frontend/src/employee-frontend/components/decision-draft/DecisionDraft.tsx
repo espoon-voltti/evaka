@@ -13,7 +13,8 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { RouteComponentProps, useHistory } from 'react-router'
+import { useHistory } from 'react-router'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
@@ -155,10 +156,8 @@ function redirectToMainPage(history: History) {
   history.push('/applications')
 }
 
-const Decision = React.memo(function Decision({
-  match
-}: RouteComponentProps<{ id: UUID }>) {
-  const { id: applicationId } = match.params
+export default React.memo(function Decision() {
+  const { id: applicationId } = useParams<{ id: UUID }>()
   const { i18n } = useTranslation()
   const history = useHistory()
   const [decisionDraftGroup, setDecisionDraftGroup] = useState<
@@ -557,5 +556,3 @@ const decisionTypeForLabel = (type: DecisionType, decisions: DecisionDraft[]) =>
   decisions.some((d) => d.type === 'PREPARATORY_EDUCATION')
     ? 'PREPARATORY_DAYCARE'
     : type
-
-export default Decision

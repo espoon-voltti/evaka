@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { RouteComponentProps } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -25,10 +25,8 @@ const FooterContainer = styled.div`
   padding: ${defaultMargins.s};
 `
 
-export default React.memo(function VasuPage({
-  match
-}: RouteComponentProps<{ id: UUID }>) {
-  const { id } = match.params
+export default React.memo(function VasuPage() {
+  const { id } = useParams<{ id: UUID }>()
 
   const { vasu, content, translations } = useVasu(id)
 
