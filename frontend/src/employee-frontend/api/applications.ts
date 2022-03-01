@@ -15,6 +15,7 @@ import {
 } from 'lib-common/api-types/units/terms'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  ApplicationNoteResponse,
   ApplicationSummary,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
@@ -29,7 +30,6 @@ import { UUID } from 'lib-common/types'
 
 import { SearchOrder } from '../types'
 import {
-  ApplicationNote,
   ApplicationResponse,
   ApplicationSearchParams,
   SortByApplications
@@ -62,7 +62,8 @@ export async function getApplication(
         ...attachment,
         updated: new Date(attachment.updated),
         receivedAt: new Date(attachment.receivedAt)
-      }))
+      })),
+      permittedActions: new Set(data.permittedActions)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -136,6 +137,7 @@ export async function sendApplication(applicationId: UUID): Promise<void> {
     `/v2/applications/${applicationId}/actions/send-application`
   )
 }
+
 export async function moveToWaitingPlacement(
   applicationId: UUID
 ): Promise<void> {
@@ -143,25 +145,31 @@ export async function moveToWaitingPlacement(
     `/v2/applications/${applicationId}/actions/move-to-waiting-placement`
   )
 }
+
 export async function returnToSent(applicationId: UUID): Promise<void> {
   return client.post(`/v2/applications/${applicationId}/actions/return-to-sent`)
 }
+
 export async function cancelApplication(applicationId: UUID): Promise<void> {
   return client.post(
     `/v2/applications/${applicationId}/actions/cancel-application`
   )
 }
+
 export async function setVerified(applicationId: UUID): Promise<void> {
   return client.post(`/v2/applications/${applicationId}/actions/set-verified`)
 }
+
 export async function setUnverified(applicationId: UUID): Promise<void> {
   return client.post(`/v2/applications/${applicationId}/actions/set-unverified`)
 }
+
 export async function cancelPlacementPlan(applicationId: UUID): Promise<void> {
   return client.post(
     `/v2/applications/${applicationId}/actions/cancel-placement-plan`
   )
 }
+
 export async function sendDecisionsWithoutProposal(
   applicationId: UUID
 ): Promise<void> {
@@ -169,6 +177,7 @@ export async function sendDecisionsWithoutProposal(
     `/v2/applications/${applicationId}/actions/send-decisions-without-proposal`
   )
 }
+
 export async function sendPlacementProposal(
   applicationId: UUID
 ): Promise<void> {
@@ -176,6 +185,7 @@ export async function sendPlacementProposal(
     `/v2/applications/${applicationId}/actions/send-placement-proposal`
   )
 }
+
 export async function withdrawPlacementProposal(
   applicationId: UUID
 ): Promise<void> {
@@ -183,6 +193,7 @@ export async function withdrawPlacementProposal(
     `/v2/applications/${applicationId}/actions/withdraw-placement-proposal`
   )
 }
+
 export async function respondToPlacementProposal(
   applicationId: UUID,
   status: PlacementPlanConfirmationStatus,
@@ -198,6 +209,7 @@ export async function respondToPlacementProposal(
     }
   )
 }
+
 export async function confirmDecisionMailed(
   applicationId: UUID
 ): Promise<void> {
@@ -245,9 +257,11 @@ export async function createPlacementPlan(
     placementPlan
   )
 }
+
 export async function acceptPlacementProposal(unitId: UUID): Promise<void> {
   return client.post(`/v2/applications/placement-proposals/${unitId}/accept`)
 }
+
 export async function acceptDecision(
   applicationId: UUID,
   decisionId: UUID,
@@ -277,11 +291,13 @@ export async function batchMoveToWaitingPlacement(
     { applicationIds }
   )
 }
+
 export async function batchReturnToSent(applicationIds: UUID[]): Promise<void> {
   return client.post('/v2/applications/batch/actions/return-to-sent', {
     applicationIds
   })
 }
+
 export async function batchCancelPlacementPlan(
   applicationIds: UUID[]
 ): Promise<void> {
@@ -289,6 +305,7 @@ export async function batchCancelPlacementPlan(
     applicationIds
   })
 }
+
 export async function batchSendDecisionsWithoutProposal(
   applicationIds: UUID[]
 ): Promise<void> {
@@ -297,6 +314,7 @@ export async function batchSendDecisionsWithoutProposal(
     { applicationIds }
   )
 }
+
 export async function batchSendPlacementProposal(
   applicationIds: UUID[]
 ): Promise<void> {
@@ -304,6 +322,7 @@ export async function batchSendPlacementProposal(
     applicationIds
   })
 }
+
 export async function batchWithdrawPlacementProposal(
   applicationIds: UUID[]
 ): Promise<void> {
@@ -312,6 +331,7 @@ export async function batchWithdrawPlacementProposal(
     { applicationIds }
   )
 }
+
 export async function batchConfirmDecisionMailed(
   applicationIds: UUID[]
 ): Promise<void> {
@@ -322,14 +342,19 @@ export async function batchConfirmDecisionMailed(
 
 export async function getApplicationNotes(
   applicationId: UUID
-): Promise<Result<ApplicationNote[]>> {
+): Promise<Result<ApplicationNoteResponse[]>> {
   return client
-    .get<JsonOf<ApplicationNote[]>>(`/note/application/${applicationId}`)
+    .get<JsonOf<ApplicationNoteResponse[]>>(
+      `/note/application/${applicationId}`
+    )
     .then((res) =>
-      res.data.map((note) => ({
-        ...note,
-        created: new Date(note.created),
-        updated: new Date(note.updated)
+      res.data.map(({ note, permittedActions }) => ({
+        note: {
+          ...note,
+          created: new Date(note.created),
+          updated: new Date(note.updated)
+        },
+        permittedActions
       }))
     )
     .then((v) => Success.of(v))

@@ -33,12 +33,10 @@ import ApplicationNotes from '../components/application-page/ApplicationNotes'
 import ApplicationReadView from '../components/application-page/ApplicationReadView'
 import { Translations, useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
-import { UserContext } from '../state/user'
 import { ApplicationResponse } from '../types/application'
-import { hasRole, RequireRole } from '../utils/roles'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
-import { renderResult } from './async-rendering'
+import { renderResult, UnwrapResult } from './async-rendering'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -66,12 +64,6 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     Record<string, string>
   >({})
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
-
-  const { roles } = useContext(UserContext)
-  const enableApplicationActions =
-    hasRole(roles, 'SERVICE_WORKER') ||
-    hasRole(roles, 'FINANCE_ADMIN') ||
-    hasRole(roles, 'ADMIN')
 
   useEffect(() => {
     if (editing && editedApplication?.type) {
@@ -192,12 +184,12 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     <>
       <Container>
         <ReturnButton label={i18n.common.goBack} data-qa="close-application" />
-        <FixedSpaceRow>
-          <ApplicationArea opaque>
-            {renderResult(
-              combine(application, serviceNeedOptions),
-              ([applicationData, serviceNeedOptions]) =>
-                editing ? (
+        {renderResult(
+          combine(application, serviceNeedOptions),
+          ([applicationData, serviceNeedOptions]) => (
+            <FixedSpaceRow>
+              <ApplicationArea opaque>
+                {editing ? (
                   editedApplication ? (
                     <ApplicationEditView
                       application={editedApplication}
@@ -213,31 +205,41 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
                     application={applicationData}
                     reloadApplication={reloadApplication}
                   />
-                )
-            )}
-          </ApplicationArea>
-          <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'SPECIAL_EDUCATION_TEACHER']}
-          >
-            <NotesArea opaque={false}>
-              <ApplicationNotes applicationId={applicationId} />
-            </NotesArea>
-          </RequireRole>
-        </FixedSpaceRow>
+                )}
+              </ApplicationArea>
+              {applicationData.permittedActions.has('READ_NOTES') && (
+                <NotesArea opaque={false}>
+                  <ApplicationNotes
+                    applicationId={applicationId}
+                    allowCreate={applicationData.permittedActions.has(
+                      'CREATE_NOTE'
+                    )}
+                  />
+                </NotesArea>
+              )}
+            </FixedSpaceRow>
+          )
+        )}
       </Container>
 
-      {application.isSuccess &&
-      enableApplicationActions &&
-      editedApplication ? (
-        <ApplicationActionsBar
-          applicationStatus={application.value.application.status}
-          editing={editing}
-          setEditing={setEditing}
-          editedApplication={editedApplication}
-          reloadApplication={reloadApplication}
-          errors={Object.keys(validationErrors).length > 0}
-        />
-      ) : null}
+      <UnwrapResult
+        result={application}
+        loading={() => null}
+        failure={() => null}
+      >
+        {(application) =>
+          application.permittedActions.has('UPDATE') && editedApplication ? (
+            <ApplicationActionsBar
+              applicationStatus={application.application.status}
+              editing={editing}
+              setEditing={setEditing}
+              editedApplication={editedApplication}
+              reloadApplication={reloadApplication}
+              errors={Object.keys(validationErrors).length > 0}
+            />
+          ) : null
+        }
+      </UnwrapResult>
     </>
   )
 }

@@ -6,8 +6,8 @@ import {
   ApplicationAttachment,
   ApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
+import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
 
 import { VoucherApplicationFilter } from '../state/application-ui'
 
@@ -18,6 +18,7 @@ export interface ApplicationResponse {
   decisions: Decision[]
   guardians: PersonJSON[]
   attachments: ApplicationAttachment[]
+  permittedActions: Set<Action.Application>
 }
 
 export type SortByApplications =
@@ -53,15 +54,3 @@ export type ApplicationSummaryStatus =
   | 'REJECTED'
   | 'ACTIVE'
   | 'CANCELLED'
-
-export interface ApplicationNote {
-  id: UUID
-  applicationId: UUID
-  text: string
-  created: Date
-  createdBy: UUID
-  createdByName: string
-  updated: Date
-  updatedBy: UUID
-  updatedByName: string
-}

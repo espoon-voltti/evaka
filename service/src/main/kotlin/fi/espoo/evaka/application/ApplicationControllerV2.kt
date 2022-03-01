@@ -285,11 +285,14 @@ class ApplicationControllerV2(
                     else -> listOf()
                 }
 
+                val permittedActions = accessControl.getPermittedApplicationActions(user, listOf(applicationId))
+
                 ApplicationResponse(
                     application = application.copy(attachments = attachments),
                     decisions = decisions,
                     guardians = guardians,
-                    attachments = attachments
+                    attachments = attachments,
+                    permittedActions = permittedActions[applicationId] ?: emptySet()
                 )
             }
         }
@@ -565,7 +568,8 @@ data class ApplicationResponse(
     val application: ApplicationDetails,
     val decisions: List<Decision>,
     val guardians: List<PersonJSON>,
-    val attachments: List<ApplicationAttachment>
+    val attachments: List<ApplicationAttachment>,
+    val permittedActions: Set<Action.Application>,
 )
 
 data class SimpleBatchRequest(

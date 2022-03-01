@@ -25,8 +25,6 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -45,6 +43,7 @@ import { ChildContext, ChildState } from '../../state/child'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { NullableValues } from '../../types'
+import { renderResult } from '../async-rendering'
 
 const weekdays = [
   'monday',
@@ -394,9 +393,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
         {i18n.childInformation.dailyServiceTimes.info2}
       </P>
 
-      {apiData.isLoading && <SpinnerSegment />}
-      {apiData.isFailure && <ErrorSegment title={i18n.common.loadingFailed} />}
-      {apiData.isSuccess && (
+      {renderResult(apiData, (apiData) => (
         <>
           {!formData && (
             <>
@@ -415,13 +412,13 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                 </>
               )}
 
-              {apiData.value === null ? (
+              {apiData === null ? (
                 <FixedWidthLabel data-qa="times-type">
                   {i18n.childInformation.dailyServiceTimes.types.notSet}
                 </FixedWidthLabel>
               ) : (
                 <>
-                  {isRegular(apiData.value) && (
+                  {isRegular(apiData) && (
                     <FixedSpaceRow>
                       <FixedWidthLabel data-qa="times-type">
                         {i18n.childInformation.dailyServiceTimes.types.regular}
@@ -430,12 +427,11 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                         {i18n.childInformation.dailyServiceTimes.weekdays.monday.toLowerCase()}
                         -
                         {i18n.childInformation.dailyServiceTimes.weekdays.friday.toLowerCase()}{' '}
-                        {apiData.value.regularTimes.start}–
-                        {apiData.value.regularTimes.end}
+                        {apiData.regularTimes.start}–{apiData.regularTimes.end}
                       </div>
                     </FixedSpaceRow>
                   )}
-                  {isIrregular(apiData.value) && (
+                  {isIrregular(apiData) && (
                     <FixedSpaceRow>
                       <FixedWidthLabel data-qa="times-type">
                         {
@@ -446,14 +442,12 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                       <div data-qa="times">
                         {weekdays
                           .map((wd) =>
-                            apiData.value &&
-                            isIrregular(apiData.value) &&
-                            apiData.value[wd]
+                            apiData && isIrregular(apiData) && apiData[wd]
                               ? `${i18n.childInformation.dailyServiceTimes.weekdays[
                                   wd
-                                ].toLowerCase()} ${
-                                  apiData.value[wd]?.start ?? ''
-                                }-${apiData.value[wd]?.end ?? ''}`
+                                ].toLowerCase()} ${apiData[wd]?.start ?? ''}-${
+                                  apiData[wd]?.end ?? ''
+                                }`
                               : null
                           )
                           .filter((s) => s !== null)
@@ -461,7 +455,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                       </div>
                     </FixedSpaceRow>
                   )}
-                  {isVariableTime(apiData.value) && (
+                  {isVariableTime(apiData) && (
                     <FixedWidthLabel data-qa="times-type">
                       {
                         i18n.childInformation.dailyServiceTimes.types
@@ -590,7 +584,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
             </>
           )}
         </>
-      )}
+      ))}
     </CollapsibleContentArea>
   )
 })

@@ -95,6 +95,10 @@ export type Application =
   | 'VERIFY'
   | 'WITHDRAW_PLACEMENT_PROPOSAL'
 
+export type ApplicationNote =
+  | 'DELETE'
+  | 'UPDATE'
+
 export type AssistanceAction =
   | 'DELETE'
   | 'READ_PRE_PRESCHOOL_ASSISTANCE_ACTION'
@@ -151,7 +155,8 @@ export type Child =
   | 'UPDATE_ADDITIONAL_INFO'
   | 'UPDATE_CHILD_RECIPIENT'
   | 'UPDATE_DAILY_SERVICE_TIMES'
-  | 'UPDATE_FAMILY_CONTACT'
+  | 'UPDATE_FAMILY_CONTACT_DETAILS'
+  | 'UPDATE_FAMILY_CONTACT_PRIORITY'
   | 'UPLOAD_IMAGE'
 
 export type ChildDailyNote =

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.application.isOwnApplication
-import fi.espoo.evaka.application.notes.getApplicationNoteCreatedBy
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.assistanceaction.getAssistanceActionById
 import fi.espoo.evaka.assistanceneed.getAssistanceNeedById
@@ -363,6 +362,18 @@ WHERE employee_id = :userId
             createUnits = hasPermissionFor(user, Action.Global.CREATE_UNIT),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
             personalMobileDevice = user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR),
+
+            // Everyone else except FINANCE_ADMIN
+            pinCode = user.hasOneOfRoles(
+                UserRole.ADMIN,
+                UserRole.REPORT_VIEWER,
+                UserRole.DIRECTOR,
+                UserRole.SERVICE_WORKER,
+                UserRole.UNIT_SUPERVISOR,
+                UserRole.STAFF,
+                UserRole.SPECIAL_EDUCATION_TEACHER,
+                UserRole.GROUP_STAFF,
+            )
         )
 
     private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
@@ -416,7 +427,6 @@ WHERE employee_id = :userId
     fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Application -> ids.all { id -> hasPermissionForInternal(user, action, id as ApplicationId) }
-            is Action.ApplicationNote -> ids.all { id -> hasPermissionForInternal(user, action, id as ApplicationNoteId) }
             is Action.AssistanceAction -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceActionId) }
             is Action.AssistanceNeed -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceNeedId) }
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
@@ -463,16 +473,19 @@ WHERE employee_id = :userId
             else -> false
         }
 
-    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.ApplicationNote, id: ApplicationNoteId) =
-        user is AuthenticatedUser.Employee && when (action) {
-            Action.ApplicationNote.UPDATE,
-            Action.ApplicationNote.DELETE ->
-                @Suppress("DEPRECATION")
-                user.hasOneOfRoles(
-                    UserRole.ADMIN,
-                    UserRole.SERVICE_WORKER
-                ) || Database(jdbi).connect { db -> db.read { it.getApplicationNoteCreatedBy(id) == user.evakaUserId } }
-        }
+    fun getPermittedApplicationActions(
+        user: AuthenticatedUser,
+        ids: Collection<ApplicationId>
+    ): Map<ApplicationId, Set<Action.Application>> = this.application.getPermittedActions(user, ids)
+
+    fun getPermittedApplicationNoteActions(
+        user: AuthenticatedUser,
+        ids: Collection<ApplicationNoteId>
+    ): Map<ApplicationNoteId, Set<Action.ApplicationNote>> = ids.associateWith { id ->
+        Action.ApplicationNote.values()
+            .filter { action -> hasPermissionFor(user, action, id) }
+            .toSet()
+    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
         assertPermission(
@@ -913,6 +926,7 @@ WHERE employee_id = :userId
             is AuthenticatedUser.Employee -> user.globalRoles
             else -> user.roles
         }
+
         @Suppress("DEPRECATION")
         val roles = acl.getRolesForVasuDocument(user, id).roles
         val hasPermissionThroughRole = globalRoles.any { it == UserRole.ADMIN } ||

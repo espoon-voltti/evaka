@@ -10,10 +10,14 @@ import fi.espoo.evaka.pis.FamilyContactRole.LOCAL_GUARDIAN
 import fi.espoo.evaka.pis.FamilyContactRole.REMOTE_GUARDIAN
 import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.pis.service.FamilyOverviewService
+import fi.espoo.evaka.pis.service.PersonPatch
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -25,11 +29,13 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/family")
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
+    private val personService: PersonService,
     private val accessControl: AccessControl
 ) {
     @GetMapping("/by-adult/{id}")
@@ -67,24 +73,74 @@ class FamilyController(
     }
 
     @PostMapping("/contacts")
-    fun updateFamilyContactPriority(
+    fun updateFamilyContactDetails(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: FamilyContactUpdate
     ) {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT, body.childId)
-        db.connect { dbc -> dbc.transaction { it.updateFamilyContact(body.childId, body.contactPersonId, body.priority) } }
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT_DETAILS, body.childId)
+        db.connect { dbc ->
+            dbc.transaction {
+                if (!it.isFamilyContactForChild(evakaClock.today(), body.childId, body.contactPersonId)) {
+                    throw BadRequest("Invalid child or contact person")
+                }
+                personService.patchUserDetails(
+                    it, body.contactPersonId,
+                    PersonPatch(
+                        email = body.email,
+                        phone = body.phone,
+                        backupPhone = body.backupPhone,
+                    )
+                )
+            }
+        }
+    }
+
+    @PostMapping("/contacts/priority")
+    fun updateFamilyContactPriority(
+        db: Database,
+        user: AuthenticatedUser,
+        evakaClock: EvakaClock,
+        @RequestBody body: FamilyContactPriorityUpdate
+    ) {
+        Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY, body.childId)
+        db.connect { dbc ->
+            dbc.transaction {
+                if (!it.isFamilyContactForChild(evakaClock.today(), body.childId, body.contactPersonId)) {
+                    throw BadRequest("Invalid child or contact person")
+                }
+                it.updateFamilyContactPriority(
+                    body.childId,
+                    body.contactPersonId,
+                    body.priority
+                )
+            }
+        }
     }
 }
 
 data class FamilyContactUpdate(
     val childId: ChildId,
     val contactPersonId: PersonId,
+    val email: String?,
+    val phone: String?,
+    val backupPhone: String?,
+)
+
+data class FamilyContactPriorityUpdate(
+    val childId: ChildId,
+    val contactPersonId: PersonId,
     val priority: Int?
 )
 
-private fun Database.Transaction.updateFamilyContact(childId: ChildId, contactPersonId: PersonId, priority: Int?) {
+private fun Database.Transaction.updateFamilyContactPriority(
+    childId: ChildId,
+    contactPersonId: PersonId,
+    priority: Int?
+) {
     this.execute("SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED")
 
     this.createUpdate(
@@ -113,6 +169,39 @@ INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (:chil
         .bind("contactPersonId", contactPersonId)
         .bind("priority", priority)
         .execute()
+}
+
+fun Database.Read.isFamilyContactForChild(today: LocalDate, childId: ChildId, personId: PersonId): Boolean {
+    return createQuery(
+        """
+SELECT EXISTS (
+    -- is a guardian
+    SELECT 1 FROM guardian
+    WHERE child_id = :childId AND guardian_id = :personId
+) OR EXISTS (
+    -- is either a head of child or their partner
+    SELECT 1 FROM fridge_child fc
+    WHERE 
+        fc.child_id = :childId
+        AND daterange(fc.start_date, fc.end_date, '[]') @> :today 
+        AND (
+            fc.head_of_child = :personId 
+            OR EXISTS (
+                SELECT 1 FROM fridge_partner_view fp
+                WHERE 
+                    fp.person_id = fc.head_of_child 
+                    AND fp.partner_person_id = :personId 
+                    AND daterange(fp.start_date, fp.end_date, '[]') @> :today
+            )
+        )
+)
+"""
+    )
+        .bind("today", today)
+        .bind("childId", childId)
+        .bind("personId", personId)
+        .mapTo<Boolean>()
+        .one()
 }
 
 fun Database.Read.fetchFamilyContacts(childId: ChildId): List<FamilyContact> {

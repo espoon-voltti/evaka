@@ -56,6 +56,7 @@ export interface EmployeeFeatures {
   messages: boolean
   personSearch: boolean
   personalMobileDevice: boolean
+  pinCode: boolean
   reports: boolean
   settings: boolean
   unitFeatures: boolean
