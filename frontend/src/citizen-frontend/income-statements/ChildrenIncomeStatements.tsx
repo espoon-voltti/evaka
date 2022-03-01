@@ -68,7 +68,7 @@ const ChildIncomeStatementsTable = React.memo(
     )
 
     return (
-      <>
+      <div key={child.id}>
         {renderResult(incomeStatements, ({ data, pages }) =>
           data.length > 0 ? (
             <>
@@ -131,6 +131,7 @@ const ChildIncomeStatementsTable = React.memo(
                 currentPage={page}
                 setPage={setPage}
                 label={t.common.page}
+                hideIfOnlyOnePage={true}
               />
             </>
           ) : (
@@ -140,7 +141,7 @@ const ChildIncomeStatementsTable = React.memo(
             />
           )
         )}
-      </>
+      </div>
     )
   }
 )

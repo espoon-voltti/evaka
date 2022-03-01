@@ -188,6 +188,7 @@ export default React.memo(function IncomeStatements() {
                 currentPage={page}
                 setPage={setPage}
                 label={t.common.page}
+                hideIfOnlyOnePage={true}
               />
             </>
           ))}
