@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.StaticPermittedRoleActions
+import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -29,7 +30,7 @@ class HolidayPeriodAclIntegrationTest : PureJdbiTest() {
 
     @BeforeAll
     fun before() {
-        accessControl = AccessControl(StaticPermittedRoleActions(), AccessControlList(jdbi), jdbi)
+        accessControl = AccessControl(StaticPermittedRoleActions(), DefaultActionRuleMapping(), AccessControlList(jdbi), jdbi)
     }
 
     private val holidayPeriodActions = listOf(

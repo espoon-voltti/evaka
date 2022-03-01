@@ -58,6 +58,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
 import fi.espoo.evaka.vasu.getVasuFollowupEntries
@@ -70,6 +71,7 @@ import java.util.UUID
 
 class AccessControl(
     private val permittedRoleActions: PermittedRoleActions,
+    private val actionRuleMapping: ActionRuleMapping,
     private val acl: AccessControlList,
     private val jdbi: Jdbi
 ) {
@@ -396,35 +398,38 @@ WHERE employee_id = :userId
         }
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Global) {
-        assertPermissionUsingAllRoles(user, action, permittedRoleActions::globalActions)
-    }
-
-    fun hasPermissionFor(user: AuthenticatedUser, action: Action.Global): Boolean {
-        return hasPermissionUsingAllRoles(user, action, permittedRoleActions::globalActions)
-    }
-
-    fun getPermittedRoles(action: Action.Global): Set<UserRole> {
-        return UserRole.values()
-            .filter { permittedRoleActions.globalActions(it).contains(action) }
-            .toSet()
-            .plus(UserRole.ADMIN)
+    fun requirePermissionFor(user: AuthenticatedUser, action: Action.StaticAction) = checkPermissionFor(user, action).assert()
+    fun hasPermissionFor(user: AuthenticatedUser, action: Action.StaticAction): Boolean = checkPermissionFor(user, action).isPermitted()
+    private fun checkPermissionFor(user: AuthenticatedUser, action: Action.StaticAction): AccessControlDecision {
+        if (user.isAdmin) {
+            return AccessControlDecision.PermittedToAdmin
+        }
+        for (rule in actionRuleMapping.rulesOf(action)) {
+            if (rule.isPermitted(user)) {
+                return AccessControlDecision.Permitted(rule)
+            }
+        }
+        return AccessControlDecision.None
     }
 
     fun getPermittedGlobalActions(user: AuthenticatedUser): Set<Action.Global> {
+        if (user.isAdmin) {
+            return EnumSet.allOf(Action.Global::class.java)
+        }
+
         return Action.Global.values()
-            .filter { action -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::globalActions) }
-            .toSet()
+            .filter { action -> checkPermissionFor(user, action).isPermitted() }
+            .toEnumSet()
     }
 
-    fun <A : Action.ScopedAction<I>, I> requirePermissionFor(user: AuthenticatedUser, action: A, vararg ids: I) {
+    fun <I> requirePermissionFor(user: AuthenticatedUser, action: Action.LegacyScopedAction<I>, vararg ids: I) {
         if (!hasPermissionFor(user, action, *ids)) {
             throw Forbidden()
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <A : Action.ScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
+    fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Application -> ids.all { id -> hasPermissionForInternal(user, action, id as ApplicationId) }
             is Action.AssistanceAction -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceActionId) }
@@ -949,7 +954,7 @@ WHERE employee_id = :userId
     private inline fun <reified A, reified I> ActionConfig<A>.getPermittedActions(
         user: AuthenticatedUser,
         ids: Collection<I>
-    ): Map<I, Set<A>> where A : Action.ScopedAction<I>, A : Enum<A> {
+    ): Map<I, Set<A>> where A : Action.LegacyScopedAction<I>, A : Enum<A> {
         val globalActions = enumValues<A>().asSequence()
             .filter { action -> hasPermissionThroughGlobalRole(user, action) }.toEnumSet()
 
@@ -977,7 +982,7 @@ WHERE employee_id = :userId
     private inline fun <reified A, reified I> ActionConfig<A>.hasPermissionThroughGlobalRole(
         user: AuthenticatedUser,
         action: A
-    ): Boolean where A : Action.ScopedAction<I>, A : Enum<A> {
+    ): Boolean where A : Action.LegacyScopedAction<I>, A : Enum<A> {
         val globalRoles = when (user) {
             is AuthenticatedUser.Employee -> user.globalRoles
             else -> user.roles
@@ -989,7 +994,7 @@ WHERE employee_id = :userId
         user: AuthenticatedUser,
         action: A,
         vararg ids: I
-    ): Boolean where A : Action.ScopedAction<I>, A : Enum<A> {
+    ): Boolean where A : Action.LegacyScopedAction<I>, A : Enum<A> {
         if (hasPermissionThroughGlobalRole(user, action)) return true
         return Database(jdbi).connect { db ->
             db.read { tx ->
@@ -999,7 +1004,7 @@ WHERE employee_id = :userId
         }
     }
 
-    private inline fun <reified A : Action.ScopedAction<I>, reified I> ActionConfig<A>.getRolesForAll(
+    private inline fun <reified A : Action.LegacyScopedAction<I>, reified I> ActionConfig<A>.getRolesForAll(
         tx: Database.Read,
         user: AuthenticatedUser,
         vararg ids: I
@@ -1069,16 +1074,6 @@ WHERE employee_id = :userId
         )
         else if (user is AuthenticatedUser.Citizen) hasPermissionThroughRoles(user.roles, action, mapping)
         else false
-
-    private inline fun <reified A> assertPermissionUsingAllRoles(
-        user: AuthenticatedUser,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ) where A : Action, A : Enum<A> {
-        if (!hasPermissionUsingAllRoles(user, action, mapping)) {
-            throw Forbidden()
-        }
-    }
 
     enum class PinError {
         PIN_LOCKED,

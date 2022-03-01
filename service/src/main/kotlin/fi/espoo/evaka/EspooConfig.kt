@@ -21,6 +21,8 @@ import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.PermittedRoleActions
 import fi.espoo.evaka.shared.security.StaticPermittedRoleActions
+import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
+import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.jdbi.v3.core.Jdbi
@@ -88,6 +90,9 @@ class EspooConfig {
 
     @Bean
     fun permittedRoleActions(): PermittedRoleActions = StaticPermittedRoleActions()
+
+    @Bean
+    fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
 }
 
 data class EspooEnv(val invoiceIntegrationEnabled: Boolean) {

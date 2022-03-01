@@ -13,7 +13,6 @@ import java.util.EnumSet
  * Role → action mapping
  */
 interface PermittedRoleActions {
-    fun globalActions(role: UserRole): Set<Action.Global>
     fun applicationActions(role: UserRole): Set<Action.Application>
     fun applicationNoteActions(role: UserRole): Set<Action.ApplicationNote>
     fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction>
@@ -57,7 +56,6 @@ interface PermittedRoleActions {
  * Uses system defaults, unless some mappings are overridden using constructor parameters
  */
 class StaticPermittedRoleActions(
-    val global: ActionsByRole<Action.Global> = getDefaults(),
     val application: ActionsByRole<Action.Application> = getDefaults(),
     val applicationNote: ActionsByRole<Action.ApplicationNote> = getDefaults(),
     val assistanceAction: ActionsByRole<Action.AssistanceAction> = getDefaults(),
@@ -94,7 +92,6 @@ class StaticPermittedRoleActions(
     val vasuTemplate: ActionsByRole<Action.VasuTemplate> = getDefaults(),
     val voucherValueDecision: ActionsByRole<Action.VoucherValueDecision> = getDefaults(),
 ) : PermittedRoleActions {
-    override fun globalActions(role: UserRole): Set<Action.Global> = global[role] ?: emptySet()
     override fun applicationActions(role: UserRole): Set<Action.Application> = application[role] ?: emptySet()
     override fun applicationNoteActions(role: UserRole): Set<Action.ApplicationNote> = applicationNote[role] ?: emptySet()
     override fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction> = assistanceAction[role] ?: emptySet()
@@ -147,5 +144,5 @@ private inline fun <reified A> RolesByAction<A>.invert(): ActionsByRole<A> where
     return result
 }
 
-private inline fun <reified A> getDefaults() where A : Action, A : Enum<A> =
+private inline fun <reified A> getDefaults() where A : Action.LegacyAction, A : Enum<A> =
     enumValues<A>().associateWith { it.defaultRoles() }.invert()

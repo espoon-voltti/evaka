@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.StaticPermittedRoleActions
+import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -93,7 +94,7 @@ class AclIntegrationTest : PureJdbiTest() {
             mobileId = it.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
-        accessControl = AccessControl(StaticPermittedRoleActions(), acl, jdbi)
+        accessControl = AccessControl(StaticPermittedRoleActions(), DefaultActionRuleMapping(), acl, jdbi)
     }
 
     @BeforeEach
