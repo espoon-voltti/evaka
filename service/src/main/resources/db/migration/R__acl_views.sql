@@ -63,6 +63,7 @@ CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
         employee_id, child_id,
         (CASE
             WHEN role = 'UNIT_SUPERVISOR' THEN 'UNIT_SUPERVISOR'
+            WHEN role = 'MOBILE' THEN 'MOBILE'
             ELSE 'STAFF'
         END)::user_role
     FROM backup_care bc
