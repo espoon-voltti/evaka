@@ -52,8 +52,10 @@ import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInAnyUnit
+import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementUnit
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
+import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
@@ -62,6 +64,9 @@ import java.util.EnumSet
 sealed interface Action {
     sealed interface StaticAction : Action {
         val defaultRules: Array<out StaticActionRule>
+    }
+    sealed interface ScopedAction<T> : Action {
+        val defaultRules: Array<out ScopedActionRule<in T>>
     }
 
     sealed interface LegacyAction : Action {
@@ -236,13 +241,11 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class BackupCare(private val roles: EnumSet<UserRole>) : LegacyScopedAction<BackupCareId> {
-        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR),
-        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR);
+    enum class BackupCare(override vararg val defaultRules: ScopedActionRule<in BackupCareId>) : ScopedAction<BackupCareId> {
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).backupCare),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).backupCare);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class BackupPickup(private val roles: EnumSet<UserRole>) : LegacyScopedAction<BackupPickupId> {
         UPDATE(UNIT_SUPERVISOR, STAFF),

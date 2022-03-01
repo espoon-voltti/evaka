@@ -128,7 +128,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     missingGroupPlacements = missingGroupPlacements,
                     recentlyTerminatedPlacements = recentlyTerminatedPlacements,
                     caretakers = caretakers,
-                    permittedBackupCareActions = accessControl.getPermittedBackupCareActions(user, backupCareIds),
+                    permittedBackupCareActions = accessControl.getPermittedActions(tx, user, backupCareIds),
                     permittedPlacementActions = accessControl.getPermittedPlacementActions(user, placementIds),
                     permittedGroupPlacementActions = accessControl.getPermittedGroupPlacementActions(
                         user,

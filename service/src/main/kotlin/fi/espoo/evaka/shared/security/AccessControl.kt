@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
@@ -59,6 +58,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
+import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
+import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
 import fi.espoo.evaka.vasu.getVasuFollowupEntries
@@ -122,16 +123,6 @@ WHERE acl.employee_id = :userId
         permittedRoleActions::assistanceNeedActions
     )
 
-    private val backupCare = ActionConfig(
-        """
-SELECT bc.id, role
-FROM child_acl_view acl
-JOIN backup_care bc ON acl.child_id = bc.child_id
-WHERE acl.employee_id = :userId
-        """.trimIndent(),
-        "bc.id",
-        permittedRoleActions::backupCareActions
-    )
     private val backupPickup = ActionConfig(
         """
 SELECT bp.id, role
@@ -422,6 +413,117 @@ WHERE employee_id = :userId
             .toEnumSet()
     }
 
+    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T) = Database(jdbi).connect { dbc ->
+        checkPermissionFor(dbc, user, action, targets.asIterable()).values.forEach { it.assert() }
+    }
+
+    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T): Boolean = Database(jdbi).connect { dbc ->
+        checkPermissionFor(dbc, user, action, targets.asIterable()).values.all { it.isPermitted() }
+    }
+
+    private fun <T> checkPermissionFor(
+        dbc: Database.Connection,
+        user: AuthenticatedUser,
+        action: Action.ScopedAction<T>,
+        targets: Iterable<T>
+    ): Map<T, AccessControlDecision> {
+        if (user.isAdmin) {
+            return targets.associateWith { AccessControlDecision.PermittedToAdmin }
+        }
+        val decisions = Decisions(targets.toSet())
+        val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
+        while (rules.hasNext() && decisions.undecided.isNotEmpty()) {
+            when (val rule = rules.next()) {
+                is StaticActionRule -> if (rule.isPermitted(user)) {
+                    decisions.decideAll(AccessControlDecision.Permitted(rule))
+                }
+                is DatabaseActionRule<in T, *> -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val query = rule.query as DatabaseActionRule.Query<T, Any?>
+                    dbc.read { tx -> query.execute(tx, user, decisions.undecided) }
+                        .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
+                }
+            }
+        }
+        return decisions.finish()
+    }
+
+    inline fun <T, reified A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        targets: Iterable<T>
+    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, A::class.java, targets)
+
+    fun <T, A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        actionClass: Class<A>,
+        targets: Iterable<T>
+    ): Map<T, Set<A>> where A : Action.ScopedAction<T>, A : Enum<A> {
+        val allActions: Set<A> = EnumSet.allOf(actionClass)
+        if (user.isAdmin) {
+            return targets.associateWith { allActions }
+        }
+        val undecidedActions = EnumSet.allOf(actionClass)
+        val permittedActions = EnumSet.noneOf(actionClass)
+        for (action in allActions) {
+            val staticRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? StaticActionRule }
+            if (staticRules.any { it.isPermitted(user) }) {
+                permittedActions += action
+                undecidedActions -= action
+            }
+        }
+
+        val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
+            .flatMap { action ->
+                actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
+            }
+            .distinctBy { it.params.javaClass }
+            .iterator()
+
+        val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
+
+        while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
+            val ruleType = databaseRuleTypes.next()
+            @Suppress("UNCHECKED_CAST")
+            val deferred = ruleType.query.execute(tx, user, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
+
+            for (action in EnumSet.copyOf(undecidedActions)) {
+                val compatibleRules = actionRuleMapping.rulesOf(action)
+                    .mapNotNull { it as? DatabaseActionRule<in T, *> }
+                    .filter { it.params.javaClass == ruleType.params.javaClass }
+                for (rule in compatibleRules) {
+                    for (target in targets) {
+                        if (deferred[target]?.evaluate(rule.params)?.isPermitted() == true) {
+                            result[target]?.add(action)
+                        }
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    private class Decisions<T>(targets: Iterable<T>) {
+        private val result = mutableMapOf<T, AccessControlDecision>()
+        var undecided: Set<T> = targets.toSet()
+            private set
+
+        fun decideAll(decision: AccessControlDecision) {
+            if (decision != AccessControlDecision.None) {
+                result += undecided.associateWith { decision }
+                undecided = emptySet()
+            }
+        }
+        fun decide(target: T, decision: AccessControlDecision) {
+            if (decision != AccessControlDecision.None) {
+                result[target] = decision
+                undecided = undecided - target
+            }
+        }
+        fun finish(): Map<T, AccessControlDecision> = result + undecided.associateWith { AccessControlDecision.None }
+    }
+
     fun <I> requirePermissionFor(user: AuthenticatedUser, action: Action.LegacyScopedAction<I>, vararg ids: I) {
         if (!hasPermissionFor(user, action, *ids)) {
             throw Forbidden()
@@ -435,7 +537,6 @@ WHERE employee_id = :userId
             is Action.AssistanceAction -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceActionId) }
             is Action.AssistanceNeed -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceNeedId) }
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            is Action.BackupCare -> this.backupCare.hasPermission(user, action, *ids as Array<BackupCareId>)
             is Action.BackupPickup -> this.backupPickup.hasPermission(user, action, *ids as Array<BackupPickupId>)
             is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, *ids as Array<ChildDailyNoteId>)
             is Action.ChildImage -> ids.all { id -> hasPermissionForInternal(user, action, id as ChildImageId) }
@@ -687,11 +788,6 @@ WHERE employee_id = :userId
         user: AuthenticatedUser,
         ids: Collection<AssistanceNeedId>
     ): Map<AssistanceNeedId, Set<Action.AssistanceNeed>> = this.assistanceNeed.getPermittedActions(user, ids)
-
-    fun getPermittedBackupCareActions(
-        user: AuthenticatedUser,
-        ids: Collection<BackupCareId>
-    ): Map<BackupCareId, Set<Action.BackupCare>> = this.backupCare.getPermittedActions(user, ids)
 
     private fun requirePinLogin(user: AuthenticatedUser) {
         if (user is AuthenticatedUser.MobileDevice && user.employeeId == null) throw Forbidden(
