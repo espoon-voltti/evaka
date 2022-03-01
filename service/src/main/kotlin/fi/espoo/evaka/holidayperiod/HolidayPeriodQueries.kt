@@ -41,12 +41,12 @@ fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
         .mapTo<HolidayPeriod>()
         .firstOrNull()
 
-fun Database.Read.getActiveFreeHolidayPeriod(date: LocalDate): HolidayPeriod? =
+fun Database.Read.getActiveHolidayPeriod(date: LocalDate): HolidayPeriod? =
     this.createQuery(
         """
 $holidayPeriodSelect
 WHERE show_reservation_banner_from <= :date
-    AND free_period_deadline >= :date
+    AND (reservation_deadline >= :date OR free_period_deadline >= :date)
 ORDER BY period
         """.trimIndent()
     )

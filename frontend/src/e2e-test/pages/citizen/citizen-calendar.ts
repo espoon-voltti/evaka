@@ -263,7 +263,11 @@ class HolidayModal {
   constructor(private readonly page: Page) {}
 
   #childHolidaySelect = (childId: string) =>
-    new Select(this.page.findByDataQa(`holiday-period-select-${childId}`))
+    new Select(
+      this.page
+        .findByDataQa(`holiday-section-${childId}`)
+        .findByDataQa('free-period-select')
+    )
   #modalSendButton = this.page.findByDataQa('modal-okBtn')
 
   async markHoliday(child: { id: string }, option: string) {

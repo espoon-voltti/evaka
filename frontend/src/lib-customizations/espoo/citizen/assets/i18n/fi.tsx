@@ -252,7 +252,9 @@ export default {
     holidayModal: {
       title: 'Ilmoita loma',
       additionalInformation: 'Lisätietoja',
-      holidayFor: 'Loman ajankohta:'
+      holidayFor: 'Loman ajankohta:',
+      childOnHoliday: 'Lapsi on lomalla',
+      addTimePeriod: 'Lisää ajankohta'
     }
   },
   messages: {

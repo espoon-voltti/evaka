@@ -254,7 +254,9 @@ const en: Translations = {
     holidayModal: {
       title: 'Report holiday',
       additionalInformation: 'Read more',
-      holidayFor: 'Holiday for:'
+      holidayFor: 'Holiday for:',
+      childOnHoliday: 'Child is on holiday',
+      addTimePeriod: 'Add holiday'
     }
   },
   messages: {
