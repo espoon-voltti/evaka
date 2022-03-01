@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -75,27 +75,34 @@ GROUP BY application.guardian_id
                 .mapTo<GuardianDecisions>()
                 .list()
 
-            var createdJobCount = 0
-            pendingGuardianDecisions.forEach { pendingDecision ->
-                tx.getPersonById(pendingDecision.guardianId)?.let { guardian ->
-                    if (!guardian.email.isNullOrBlank()) {
-                        asyncJobRunner.plan(
-                            tx,
-                            payloads = listOf(
-                                AsyncJob.SendPendingDecisionEmail(
-                                    guardianId = pendingDecision.guardianId,
-                                    email = guardian.email,
-                                    language = guardian.language,
-                                    decisionIds = pendingDecision.decisionIds
-                                )
-                            ),
-                            runAt = HelsinkiDateTime.now(),
-                            retryCount = 3,
-                            retryInterval = Duration.ofHours(1)
-                        )
-                        createdJobCount++
-                    } else {
-                        logger.warn("Could not send pending decision email to guardian ${guardian.id}: invalid email")
+            val createdJobCount = pendingGuardianDecisions.fold(0) { count, pendingDecision ->
+                tx.getPersonById(pendingDecision.guardianId).let { guardian ->
+                    when {
+                        guardian == null -> {
+                            logger.warn("Could not send pending decision email to guardian ${pendingDecision.guardianId}: guardian not found")
+                            count
+                        }
+                        guardian.email.isNullOrBlank() -> {
+                            logger.warn("Could not send pending decision email to guardian ${guardian.id}: invalid email")
+                            count
+                        }
+                        else -> {
+                            asyncJobRunner.plan(
+                                tx,
+                                payloads = listOf(
+                                    AsyncJob.SendPendingDecisionEmail(
+                                        guardianId = pendingDecision.guardianId,
+                                        email = guardian.email,
+                                        language = guardian.language,
+                                        decisionIds = pendingDecision.decisionIds
+                                    )
+                                ),
+                                runAt = HelsinkiDateTime.now(),
+                                retryCount = 3,
+                                retryInterval = Duration.ofHours(1)
+                            )
+                            count + 1
+                        }
                     }
                 }
             }
