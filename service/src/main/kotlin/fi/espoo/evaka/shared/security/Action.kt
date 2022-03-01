@@ -56,6 +56,7 @@ import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementUnit
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsCitizensOwn
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
+import fi.espoo.evaka.shared.security.actionrule.IsNotPrePreschool
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.toEnumSet
@@ -201,14 +202,12 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class AssistanceAction(private val roles: EnumSet<UserRole>) : LegacyScopedAction<AssistanceActionId> {
-        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        READ_PRE_PRESCHOOL_ASSISTANCE_ACTION(SPECIAL_EDUCATION_TEACHER);
+    enum class AssistanceAction(override vararg val defaultRules: ScopedActionRule<in AssistanceActionId>) : ScopedAction<AssistanceActionId> {
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceAction),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceAction),
+        READ_PRE_PRESCHOOL_ASSISTANCE_ACTION(HasRoleInChildPlacementUnit(SPECIAL_EDUCATION_TEACHER).assistanceAction, IsNotPrePreschool.assistanceAction);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class AssistanceNeed(private val roles: EnumSet<UserRole>) : LegacyScopedAction<AssistanceNeedId> {
         UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),

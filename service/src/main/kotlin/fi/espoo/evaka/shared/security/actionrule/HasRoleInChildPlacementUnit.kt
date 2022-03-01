@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
@@ -57,6 +58,23 @@ LEFT JOIN placement_plan pp ON pp.application_id = av.id
 JOIN daycare_acl_view acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
 WHERE employee_id = :userId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
 AND av.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val assistanceAction = DatabaseActionRule(
+        this,
+        Query<AssistanceActionId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT ac.id, role
+FROM child_acl_view acl
+JOIN assistance_action ac ON acl.child_id = ac.child_id
+WHERE acl.employee_id = :userId
+AND ac.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

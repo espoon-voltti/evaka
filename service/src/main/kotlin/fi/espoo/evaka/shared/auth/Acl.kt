@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -135,24 +134,6 @@ WHERE an.id = :assistanceNeedId AND acl.employee_id = :userId
             }
         }
     )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: AssistanceActionId): AclAppliedRoles =
-        AclAppliedRoles(
-            (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-                db.read {
-                    it.createQuery(
-                        // language=SQL
-                        """
-SELECT role
-FROM child_acl_view acl
-JOIN assistance_action ac ON acl.child_id = ac.child_id
-WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
-                        """.trimIndent()
-                    ).bind("assistanceActionId", assistanceActionId).bind("userId", user.id).mapTo<UserRole>().toSet()
-                }
-            }
-        )
 
     @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForPedagogicalDocument(user: AuthenticatedUser, documentId: PedagogicalDocumentId): AclAppliedRoles = AclAppliedRoles(

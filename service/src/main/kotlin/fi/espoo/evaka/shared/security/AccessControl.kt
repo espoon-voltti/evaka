@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.assistanceaction.getAssistanceActionById
 import fi.espoo.evaka.assistanceneed.getAssistanceNeedById
 import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
@@ -22,7 +21,6 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
-import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupPickupId
@@ -85,17 +83,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "attachment.id",
         permittedRoleActions::attachmentActions,
-    )
-
-    private val assistanceAction = ActionConfig(
-        """
-SELECT ac.id, role
-FROM child_acl_view acl
-JOIN assistance_action ac ON acl.child_id = ac.child_id
-WHERE acl.employee_id = :userId
-        """.trimIndent(),
-        "ac.id",
-        permittedRoleActions::assistanceActionActions
     )
 
     private val assistanceNeed = ActionConfig(
@@ -519,7 +506,6 @@ WHERE employee_id = :userId
     @Suppress("UNCHECKED_CAST")
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
-            is Action.AssistanceAction -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceActionId) }
             is Action.AssistanceNeed -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceNeedId) }
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
             is Action.BackupPickup -> this.backupPickup.hasPermission(user, action, *ids as Array<BackupPickupId>)
@@ -550,15 +536,6 @@ WHERE employee_id = :userId
             else -> error("Unsupported action type")
         }.exhaust()
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
-        assertPermission(
-            user = user,
-            getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForAssistanceAction(user, id).roles },
-            action = action,
-            mapping = permittedRoleActions::assistanceActionActions
-        )
-    }
-
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceNeed, id: AssistanceNeedId) {
         assertPermission(
             user = user,
@@ -567,36 +544,6 @@ WHERE employee_id = :userId
             mapping = permittedRoleActions::assistanceNeedActions
         )
     }
-
-    private fun hasPermissionForInternal(
-        user: AuthenticatedUser,
-        action: Action.AssistanceAction,
-        id: AssistanceActionId
-    ) =
-        when (user) {
-            is AuthenticatedUser.Employee -> when (action) {
-                Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION ->
-                    // If child is or has been in preschool, do not show pre preschool daycare assistance actions for non admin or SEO
-                    if (this.assistanceAction.hasPermission(user, action, id)) true
-                    else {
-                        Database(jdbi).connect { db ->
-                            db.read {
-                                it.getAssistanceActionById(id).let { assistanceAction ->
-                                    val preschoolPlacements = it.getPlacementsForChild(assistanceAction.childId).filter {
-                                        (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
-                                    }
-                                    preschoolPlacements.isEmpty() ||
-                                        preschoolPlacements.any { placement ->
-                                            placement.startDate.isBefore(assistanceAction.startDate) || placement.startDate.equals(assistanceAction.startDate)
-                                        }
-                                }
-                            }
-                        }
-                    }
-                else -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::assistanceActionActions)
-            }
-            else -> hasPermissionUsingAllRoles(user, action, permittedRoleActions::assistanceActionActions)
-        }
 
     private fun hasPermissionForInternal(
         user: AuthenticatedUser,
@@ -735,11 +682,6 @@ WHERE employee_id = :userId
             }
             AuthenticatedUser.SystemInternalUser -> false
         }
-
-    fun getPermittedAssistanceActionActions(
-        user: AuthenticatedUser,
-        ids: Collection<AssistanceActionId>
-    ): Map<AssistanceActionId, Set<Action.AssistanceAction>> = this.assistanceAction.getPermittedActions(user, ids)
 
     fun getPermittedAssistanceNeedActions(
         user: AuthenticatedUser,

@@ -13,7 +13,6 @@ import java.util.EnumSet
  * Role → action mapping
  */
 interface PermittedRoleActions {
-    fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction>
     fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed>
     fun attachmentActions(role: UserRole): Set<Action.Attachment>
     fun backupPickupActions(role: UserRole): Set<Action.BackupPickup>
@@ -53,7 +52,6 @@ interface PermittedRoleActions {
  * Uses system defaults, unless some mappings are overridden using constructor parameters
  */
 class StaticPermittedRoleActions(
-    val assistanceAction: ActionsByRole<Action.AssistanceAction> = getDefaults(),
     val assistanceNeed: ActionsByRole<Action.AssistanceNeed> = getDefaults(),
     val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
     val backupPickup: ActionsByRole<Action.BackupPickup> = getDefaults(),
@@ -86,7 +84,6 @@ class StaticPermittedRoleActions(
     val vasuTemplate: ActionsByRole<Action.VasuTemplate> = getDefaults(),
     val voucherValueDecision: ActionsByRole<Action.VoucherValueDecision> = getDefaults(),
 ) : PermittedRoleActions {
-    override fun assistanceActionActions(role: UserRole): Set<Action.AssistanceAction> = assistanceAction[role] ?: emptySet()
     override fun assistanceNeedActions(role: UserRole): Set<Action.AssistanceNeed> = assistanceNeed[role] ?: emptySet()
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun backupPickupActions(role: UserRole): Set<Action.BackupPickup> = backupPickup[role] ?: emptySet()
