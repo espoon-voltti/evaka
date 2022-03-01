@@ -91,15 +91,6 @@ WHERE acl.employee_id = :userId
         "bp.id",
         permittedRoleActions::backupPickupActions
     )
-    private val child = ActionConfig(
-        """
-SELECT child_id AS id, role
-FROM child_acl_view
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "child_id",
-        permittedRoleActions::childActions
-    )
     private val childDailyNote = ActionConfig(
         """
 SELECT cdn.id, role
@@ -627,42 +618,6 @@ WHERE employee_id = :userId
             }
             AuthenticatedUser.SystemInternalUser -> false
         }
-
-    private fun requirePinLogin(user: AuthenticatedUser) {
-        if (user is AuthenticatedUser.MobileDevice && user.employeeId == null) throw Forbidden(
-            "PIN login required",
-            "PIN_LOGIN_REQUIRED"
-        )
-    }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Child, id: ChildId) {
-        when (user) {
-            is AuthenticatedUser.Employee,
-            is AuthenticatedUser.MobileDevice -> {
-                when (action) {
-                    Action.Child.READ_SENSITIVE_INFO -> requirePinLogin(user)
-                    else -> Unit
-                }
-                assertPermission(
-                    user = user,
-                    getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForChild(user, id).roles },
-                    action = action,
-                    mapping = permittedRoleActions::childActions
-                )
-            }
-            is AuthenticatedUser.Citizen -> {
-                when (action) {
-                    Action.Child.READ,
-                    Action.Child.READ_PLACEMENT -> requireGuardian(user, setOf(id))
-                    else -> throw Forbidden()
-                }
-            }
-            else -> throw Forbidden()
-        }
-    }
-
-    fun getPermittedChildActions(user: AuthenticatedUser, ids: Collection<ChildId>): Map<ChildId, Set<Action.Child>> =
-        this.child.getPermittedActions(user, ids)
 
     fun getPermittedPersonActions(
         user: AuthenticatedUser,

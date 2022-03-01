@@ -37,6 +37,10 @@ enum class UserRole {
         SPECIAL_EDUCATION_TEACHER -> true
         else -> false
     }
+    fun isGroupScopedRole(): Boolean = when (this) {
+        GROUP_STAFF -> true
+        else -> false
+    }
 
     companion object {
         val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE, GROUP_STAFF)

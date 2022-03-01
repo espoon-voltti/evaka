@@ -8,8 +8,11 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -110,6 +113,22 @@ FROM child_acl_view acl
 JOIN backup_care bc ON acl.child_id = bc.child_id
 WHERE acl.employee_id = :userId
 AND bc.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val child = DatabaseActionRule(
+        this,
+        Query<ChildId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT child_id AS id, role
+FROM child_acl_view
+WHERE employee_id = :userId
+AND child_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)
