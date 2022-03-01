@@ -65,9 +65,8 @@ describe('Income statements', () => {
 
     let incomeStatementsPage = await navigateToIncomeStatements()
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 2)
-    const personProfilePage = await incomeStatementsPage.openNthIncomeStatement(
-      1
-    )
+    const personProfilePage =
+      await incomeStatementsPage.openNthIncomeStatementForGuardian(1)
 
     const incomesSection = await personProfilePage.openCollapsible('incomes')
     await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(0))
@@ -103,7 +102,7 @@ describe('Income statements', () => {
     await insertIncomeStatements(enduserChildFixtureJari.id, [
       {
         type: 'CHILD_INCOME',
-        otherInfo: 'Test other info',
+        otherInfo: 'Test info',
         startDate: LocalDate.today(),
         endDate: LocalDate.today(),
         attachmentIds: []
@@ -117,5 +116,12 @@ describe('Income statements', () => {
       `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`,
       'lapsen tulotiedot'
     )
+
+    const profilePage =
+      await incomeStatementsPage.openNthIncomeStatementForChild(0)
+    const incomeSection = await profilePage.openCollapsible('income')
+    await incomeSection.assertIncomeStatementRowCount(1)
+    const incomeStatementPage = await incomeSection.openIncomeStatement(0)
+    await incomeStatementPage.assertChildIncomeStatement('Test info', 0)
   })
 })

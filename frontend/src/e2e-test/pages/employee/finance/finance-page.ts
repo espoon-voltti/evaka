@@ -15,6 +15,7 @@ import {
   Select,
   TextInput
 } from '../../../utils/page'
+import ChildInformationPage from '../child-information'
 import GuardianInformationPage from '../guardian-information'
 
 export class FinancePage {
@@ -382,9 +383,16 @@ export class IncomeStatementsPage {
     return this.#incomeStatementRows.count()
   }
 
-  async openNthIncomeStatement(nth: number) {
+  async openNthIncomeStatementForGuardian(nth: number) {
     await this.#incomeStatementRows.nth(nth).find('a').click()
     const page = new GuardianInformationPage(this.page)
+    await page.waitUntilLoaded()
+    return page
+  }
+
+  async openNthIncomeStatementForChild(nth: number) {
+    await this.#incomeStatementRows.nth(nth).find('a').click()
+    const page = new ChildInformationPage(this.page)
     await page.waitUntilLoaded()
     return page
   }
