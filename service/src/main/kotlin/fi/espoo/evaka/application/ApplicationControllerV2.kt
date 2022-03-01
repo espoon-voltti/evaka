@@ -286,7 +286,7 @@ class ApplicationControllerV2(
                     else -> listOf()
                 }
 
-                val permittedActions = accessControl.getPermittedApplicationActions(user, listOf(applicationId))
+                val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, listOf(applicationId))
 
                 ApplicationResponse(
                     application = application.copy(attachments = attachments),

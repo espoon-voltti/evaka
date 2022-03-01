@@ -54,6 +54,7 @@ import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInAnyUnit
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementUnit
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
+import fi.espoo.evaka.shared.security.actionrule.IsCitizensOwn
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
@@ -160,42 +161,39 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
 
-    enum class Application(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ApplicationId> {
-        READ_WITH_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        READ_WITHOUT_ASSISTANCE_NEED(SERVICE_WORKER, UNIT_SUPERVISOR),
-        UPDATE(SERVICE_WORKER),
+    enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
+        READ_WITH_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).application),
+        READ_WITHOUT_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).application),
+        UPDATE(HasGlobalRole(SERVICE_WORKER)),
 
-        SEND(SERVICE_WORKER),
-        CANCEL(SERVICE_WORKER),
+        SEND(HasGlobalRole(SERVICE_WORKER)),
+        CANCEL(HasGlobalRole(SERVICE_WORKER)),
 
-        MOVE_TO_WAITING_PLACEMENT(SERVICE_WORKER),
-        RETURN_TO_SENT(SERVICE_WORKER),
-        VERIFY(SERVICE_WORKER),
+        MOVE_TO_WAITING_PLACEMENT(HasGlobalRole(SERVICE_WORKER)),
+        RETURN_TO_SENT(HasGlobalRole(SERVICE_WORKER)),
+        VERIFY(HasGlobalRole(SERVICE_WORKER)),
 
-        READ_PLACEMENT_PLAN_DRAFT(SERVICE_WORKER),
-        CREATE_PLACEMENT_PLAN(SERVICE_WORKER),
-        CANCEL_PLACEMENT_PLAN(SERVICE_WORKER),
+        READ_PLACEMENT_PLAN_DRAFT(HasGlobalRole(SERVICE_WORKER)),
+        CREATE_PLACEMENT_PLAN(HasGlobalRole(SERVICE_WORKER)),
+        CANCEL_PLACEMENT_PLAN(HasGlobalRole(SERVICE_WORKER)),
 
-        READ_DECISION_DRAFT(SERVICE_WORKER),
-        UPDATE_DECISION_DRAFT(SERVICE_WORKER),
-        SEND_DECISIONS_WITHOUT_PROPOSAL(SERVICE_WORKER),
-        SEND_PLACEMENT_PROPOSAL(SERVICE_WORKER),
-        WITHDRAW_PLACEMENT_PROPOSAL(SERVICE_WORKER),
-        RESPOND_TO_PLACEMENT_PROPOSAL(SERVICE_WORKER, UNIT_SUPERVISOR),
+        READ_DECISION_DRAFT(HasGlobalRole(SERVICE_WORKER)),
+        UPDATE_DECISION_DRAFT(HasGlobalRole(SERVICE_WORKER)),
+        SEND_DECISIONS_WITHOUT_PROPOSAL(HasGlobalRole(SERVICE_WORKER)),
+        SEND_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER)),
+        WITHDRAW_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER)),
+        RESPOND_TO_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).application),
 
-        CONFIRM_DECISIONS_MAILED(SERVICE_WORKER),
-        ACCEPT_DECISION(SERVICE_WORKER, UNIT_SUPERVISOR),
-        REJECT_DECISION(SERVICE_WORKER, UNIT_SUPERVISOR),
+        CONFIRM_DECISIONS_MAILED(HasGlobalRole(SERVICE_WORKER)),
+        ACCEPT_DECISION(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).application),
+        REJECT_DECISION(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).application),
 
-        READ_NOTES(SERVICE_WORKER),
-        CREATE_NOTE(SERVICE_WORKER),
+        READ_NOTES(HasGlobalRole(SERVICE_WORKER)),
+        CREATE_NOTE(HasGlobalRole(SERVICE_WORKER)),
 
-        UPLOAD_ATTACHMENT(SERVICE_WORKER)
-        ;
+        UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), IsCitizensOwn(allowWeakLogin = false).application);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class ApplicationNote(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ApplicationNoteId> {
         UPDATE(SERVICE_WORKER),

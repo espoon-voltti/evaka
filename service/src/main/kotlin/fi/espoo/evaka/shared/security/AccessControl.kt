@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.security
 
-import fi.espoo.evaka.application.isOwnApplication
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.assistanceaction.getAssistanceActionById
 import fi.espoo.evaka.assistanceneed.getAssistanceNeedById
@@ -23,7 +22,6 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
@@ -76,17 +74,6 @@ class AccessControl(
     private val acl: AccessControlList,
     private val jdbi: Jdbi
 ) {
-    private val application = ActionConfig(
-        """
-SELECT av.id, role
-FROM application_view av
-LEFT JOIN placement_plan pp ON pp.application_id = av.id
-JOIN daycare_acl_view acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
-WHERE employee_id = :userId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
-        """.trimIndent(),
-        "av.id",
-        permittedRoleActions::applicationActions,
-    )
     private val applicationAttachment = ActionConfig(
         """
 SELECT attachment.id, role
@@ -533,7 +520,6 @@ WHERE employee_id = :userId
     @Suppress("UNCHECKED_CAST")
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
-            is Action.Application -> ids.all { id -> hasPermissionForInternal(user, action, id as ApplicationId) }
             is Action.AssistanceAction -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceActionId) }
             is Action.AssistanceNeed -> ids.all { id -> hasPermissionForInternal(user, action, id as AssistanceNeedId) }
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
@@ -564,25 +550,6 @@ WHERE employee_id = :userId
             is Action.VoucherValueDecision -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::voucherValueDecisionActions)
             else -> error("Unsupported action type")
         }.exhaust()
-
-    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.Application, vararg ids: ApplicationId) =
-        when (user) {
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.Application.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db ->
-                    db.read { tx ->
-                        ids.all { tx.isOwnApplication(user, it) }
-                    }
-                }
-                else -> false
-            }
-            is AuthenticatedUser.Employee -> this.application.hasPermission(user, action, *ids)
-            else -> false
-        }
-
-    fun getPermittedApplicationActions(
-        user: AuthenticatedUser,
-        ids: Collection<ApplicationId>
-    ): Map<ApplicationId, Set<Action.Application>> = this.application.getPermittedActions(user, ids)
 
     fun getPermittedApplicationNoteActions(
         user: AuthenticatedUser,
