@@ -11,7 +11,7 @@ import { fasInfo, faTimes } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
 import IconButton from '../atoms/buttons/IconButton'
-import { tabletMin } from '../breakpoints'
+import { desktopMin } from '../breakpoints'
 import { defaultMargins, SpacingSize } from '../white-space'
 
 const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
@@ -33,7 +33,7 @@ const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
       ? `margin: ${defaultMargins.s} 0px;`
       : `margin: ${defaultMargins.s} -${defaultMargins.s} ${defaultMargins.xs};`}
 
-  @media (min-width: ${tabletMin}) {
+  @media (min-width: ${desktopMin}) {
     animation-name: open;
     animation-duration: 0.2s;
     animation-timing-function: ease-out;
