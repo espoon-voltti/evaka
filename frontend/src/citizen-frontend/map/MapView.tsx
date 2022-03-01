@@ -4,6 +4,7 @@
 
 import _ from 'lodash'
 import React, { ReactNode, useMemo, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result, Success } from 'lib-common/api'
@@ -88,6 +89,7 @@ async function fetchUnitsWithDistances(
 }
 
 export default React.memo(function MapView() {
+  const history = useHistory()
   const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
   const user = useUser()
@@ -124,6 +126,11 @@ export default React.memo(function MapView() {
     [filteredUnits, selectedAddress, unitsWithDistances]
   )
 
+  const navigateBack = useMemo(
+    () => (user ? undefined : () => history.push('/login')),
+    [history, user]
+  )
+
   return (
     <MapFullscreenContainer loggedIn={!!user}>
       <FlexContainer
@@ -153,6 +160,7 @@ export default React.memo(function MapView() {
               selectedAddress={selectedAddress}
               setSelectedAddress={setSelectedAddress}
               setSelectedUnit={setSelectedUnit}
+              navigateBack={navigateBack}
             />
             <Gap size="xs" />
 

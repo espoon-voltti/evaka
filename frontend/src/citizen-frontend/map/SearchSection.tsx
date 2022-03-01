@@ -22,6 +22,7 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faAngleDown, faAngleUp } from 'lib-icons'
+import { faArrowLeft } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 import SearchInput from '../map/SearchInput'
@@ -41,6 +42,7 @@ interface Props {
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
   setSelectedUnit: (u: PublicUnit | null) => void
+  navigateBack?: () => void
 }
 
 export default React.memo(function SearchSection({
@@ -55,7 +57,8 @@ export default React.memo(function SearchSection({
   setShiftCare,
   selectedAddress,
   setSelectedAddress,
-  setSelectedUnit
+  setSelectedUnit,
+  navigateBack
 }: Props) {
   const t = useTranslation()
 
@@ -63,6 +66,14 @@ export default React.memo(function SearchSection({
 
   return (
     <Wrapper opaque>
+      {navigateBack && (
+        <InlineButton
+          text={t.common.return}
+          icon={faArrowLeft}
+          onClick={navigateBack}
+        />
+      )}
+      <Gap size="s" />
       <H1 noMargin>{t.map.title}</H1>
       <P data-qa="map-main-info">
         {t.map.mainInfo}
