@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
@@ -82,7 +83,24 @@ AND ac.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val backupCare = ScopedActionRuleConfig(
+    val assistanceNeed = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT an.id, role
+FROM child_acl_view acl
+JOIN assistance_need an ON acl.child_id = an.child_id
+WHERE acl.employee_id = :userId
+AND an.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val backupCare = DatabaseActionRule(
         this,
         Query<BackupCareId> { tx, employeeId, ids ->
             tx.createQuery(

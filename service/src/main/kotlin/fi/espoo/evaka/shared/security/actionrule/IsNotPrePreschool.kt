@@ -5,9 +5,11 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.assistanceaction.getAssistanceActionById
+import fi.espoo.evaka.assistanceneed.getAssistanceNeedById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -43,6 +45,12 @@ object IsNotPrePreschool {
         this,
         Query<AssistanceActionId> { tx, id ->
             tx.getAssistanceActionById(id).let { Pair(it.childId, it.startDate) }
+        }
+    )
+    val assistanceNeed = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedId> { tx, id ->
+            tx.getAssistanceNeedById(id).let { Pair(it.childId, it.startDate) }
         }
     )
 }

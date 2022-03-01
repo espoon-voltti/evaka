@@ -56,7 +56,9 @@ class AssistanceNeedController(
                 accessControl.hasPermissionFor(user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, assistanceNeed.id)
             }
             val assistanceNeedIds = assistanceNeeds.map { it.id }
-            val permittedActions = accessControl.getPermittedAssistanceNeedActions(user, assistanceNeedIds)
+            val permittedActions = dbc.read { tx ->
+                accessControl.getPermittedActions<AssistanceNeedId, Action.AssistanceNeed>(tx, user, assistanceNeedIds)
+            }
             assistanceNeeds.map { AssistanceNeedResponse(it, permittedActions[it.id] ?: emptySet()) }
         }
     }

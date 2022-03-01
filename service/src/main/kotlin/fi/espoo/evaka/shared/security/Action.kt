@@ -209,14 +209,12 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class AssistanceNeed(private val roles: EnumSet<UserRole>) : LegacyScopedAction<AssistanceNeedId> {
-        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
-        READ_PRE_PRESCHOOL_ASSISTANCE_NEED(SPECIAL_EDUCATION_TEACHER);
+    enum class AssistanceNeed(override vararg val defaultRules: ScopedActionRule<in AssistanceNeedId>) : ScopedAction<AssistanceNeedId> {
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceNeed),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceNeed),
+        READ_PRE_PRESCHOOL_ASSISTANCE_NEED(HasRoleInChildPlacementUnit(SPECIAL_EDUCATION_TEACHER).assistanceNeed, IsNotPrePreschool.assistanceNeed);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Attachment(private val roles: EnumSet<UserRole>) : LegacyScopedAction<AttachmentId> {
         READ_APPLICATION_ATTACHMENT(SERVICE_WORKER, UNIT_SUPERVISOR),
