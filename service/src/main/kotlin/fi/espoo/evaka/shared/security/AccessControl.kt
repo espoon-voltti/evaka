@@ -713,8 +713,7 @@ WHERE employee_id = :userId
             is AuthenticatedUser.Citizen -> {
                 when (action) {
                     Action.Child.READ,
-                    Action.Child.READ_PLACEMENT,
-                    Action.Child.TERMINATE_PLACEMENT -> requireGuardian(user, setOf(id))
+                    Action.Child.READ_PLACEMENT -> requireGuardian(user, setOf(id))
                     else -> throw Forbidden()
                 }
             }
