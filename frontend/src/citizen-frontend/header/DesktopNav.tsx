@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useState } from 'react'
-import { NavLink, useHistory } from 'react-router-dom'
+import { Link, NavLink, useHistory } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { formatPreferredName } from 'lib-common/names'
@@ -30,7 +30,7 @@ import { AuthContext, User } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
-import { getLogoutUri, getWeakLoginUri } from './const'
+import { getLogoutUri } from './const'
 
 interface Props {
   unreadMessagesCount: number
@@ -99,7 +99,7 @@ export default React.memo(function DesktopNav({
             {user ? (
               <UserMenu user={user} />
             ) : (
-              <Login href={getWeakLoginUri()} data-qa="login-btn">
+              <Login to="/login" data-qa="login-btn">
                 <Icon icon={faSignIn} />
                 <Gap size="xs" horizontal />
                 {t.header.login}
@@ -153,7 +153,7 @@ const StyledNavLink = styled(NavLink)`
   }
 `
 
-const Login = styled.a`
+const Login = styled(Link)`
   display: flex;
   flex-direction: row;
   justify-content: center;

@@ -10,8 +10,8 @@ import React, {
   useContext,
   useState
 } from 'react'
-import { NavLink } from 'react-router-dom'
-import styled from 'styled-components'
+import { Link, NavLink } from 'react-router-dom'
+import styled, { css } from 'styled-components'
 
 import { formatPreferredName } from 'lib-common/names'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -38,7 +38,7 @@ import { langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
 import { CircledChar } from './DesktopNav'
-import { getLogoutUri, getWeakLoginUri } from './const'
+import { getLogoutUri } from './const'
 
 type Props = {
   showMenu: boolean
@@ -100,21 +100,17 @@ export default React.memo(function MobileNav({
                   {user && <UserNameSubMenu user={user} close={close} />}
                   <Gap size="L" />
                   {user ? (
-                    <a href={getLogoutUri(user)} data-qa="logout-btn">
-                      <LogInLogOutButton>
-                        <FontAwesomeIcon icon={faSignOut} size="lg" />
-                        <Gap size="xs" horizontal />
-                        {t.header.logout}
-                      </LogInLogOutButton>
-                    </a>
+                    <Logout href={getLogoutUri(user)} data-qa="logout-btn">
+                      <FontAwesomeIcon icon={faSignOut} size="lg" />
+                      <Gap size="xs" horizontal />
+                      {t.header.logout}
+                    </Logout>
                   ) : (
-                    <a href={getWeakLoginUri()} data-qa="login-btn">
-                      <LogInLogOutButton>
-                        <FontAwesomeIcon icon={faSignIn} size="lg" />
-                        <Gap size="xs" horizontal />
-                        {t.header.login}
-                      </LogInLogOutButton>
-                    </a>
+                    <Login to="/login" onClick={close} data-qa="login-btn">
+                      <FontAwesomeIcon icon={faSignIn} size="lg" />
+                      <Gap size="xs" horizontal />
+                      {t.header.login}
+                    </Login>
                   )}
                 </UserContainer>
               </MenuContainer>
@@ -323,7 +319,10 @@ const UserContainer = styled.div`
   flex-direction: column;
 `
 
-const LogInLogOutButton = styled.button`
+const loginLogoutLinkStyles = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: ${colors.main.m1};
   color: ${colors.grayscale.g0};
   border: none;
@@ -331,8 +330,17 @@ const LogInLogOutButton = styled.button`
   font-size: 1em;
   font-weight: ${fontWeights.semibold};
   text-transform: uppercase;
+  text-decoration: none;
   padding: ${defaultMargins.s};
   width: 100%;
+`
+
+const Login = styled(Link)`
+  ${loginLogoutLinkStyles};
+`
+
+const Logout = styled.a`
+  ${loginLogoutLinkStyles};
 `
 
 const UserNameSubMenu = React.memo(function UserNameSubMenu({
