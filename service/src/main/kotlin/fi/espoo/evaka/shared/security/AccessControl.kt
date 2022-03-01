@@ -22,7 +22,6 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
-import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
@@ -550,15 +549,6 @@ WHERE employee_id = :userId
             is Action.VoucherValueDecision -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::voucherValueDecisionActions)
             else -> error("Unsupported action type")
         }.exhaust()
-
-    fun getPermittedApplicationNoteActions(
-        user: AuthenticatedUser,
-        ids: Collection<ApplicationNoteId>
-    ): Map<ApplicationNoteId, Set<Action.ApplicationNote>> = ids.associateWith { id ->
-        Action.ApplicationNote.values()
-            .filter { action -> hasPermissionFor(user, action, id) }
-            .toSet()
-    }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.AssistanceAction, id: AssistanceActionId) {
         assertPermission(
