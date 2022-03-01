@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { absenceColors, absenceIcons } from 'lib-customizations/common'
@@ -53,18 +54,25 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
   return (
     <>
       {absenceTypes.map((t) => (
-        <AbsenceLegendRow key={t}>
-          {icons ? (
-            <RoundIcon
-              size="m"
-              color={absenceColors[t]}
-              content={absenceIcons[t]}
-            />
-          ) : (
-            <AbsenceLegendSquare color={absenceColors[t]} />
-          )}
-          <LabelLike>{i18n.absences.absenceTypes[t]}</LabelLike>
-        </AbsenceLegendRow>
+        <ExpandingInfo
+          key={t}
+          info={i18n.absences.absenceTypeInfo[t]}
+          ariaLabel={i18n.common.openExpandingInfo}
+        >
+          <AbsenceLegendRow>
+            {icons ? (
+              <RoundIcon
+                size="m"
+                color={absenceColors[t]}
+                content={absenceIcons[t]}
+              />
+            ) : (
+              <AbsenceLegendSquare color={absenceColors[t]} />
+            )}
+
+            <LabelLike>{i18n.absences.absenceTypes[t]}</LabelLike>
+          </AbsenceLegendRow>
+        </ExpandingInfo>
       ))}
     </>
   )

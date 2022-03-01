@@ -359,10 +359,6 @@ const AbsencesPage = styled.div`
       border-top-color: ${absenceColors.TEMPORARY_RELOCATION};
     }
 
-    &-TEMPORARY_VISITOR {
-      border-top-color: ${absenceColors.TEMPORARY_VISITOR};
-    }
-
     &-PARENTLEAVE {
       border-top-color: ${absenceColors.PARENTLEAVE};
     }
@@ -405,10 +401,6 @@ const AbsencesPage = styled.div`
 
     &-TEMPORARY_RELOCATION {
       border-bottom-color: ${absenceColors.TEMPORARY_RELOCATION};
-    }
-
-    &-TEMPORARY_VISITOR {
-      border-bottom-color: ${absenceColors.TEMPORARY_VISITOR};
     }
 
     &-PARENTLEAVE {
