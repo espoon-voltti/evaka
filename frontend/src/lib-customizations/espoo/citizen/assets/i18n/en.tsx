@@ -9,6 +9,7 @@ import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
+import colors from 'lib-customizations/common'
 
 const yes = 'Yes'
 const no = 'No'
@@ -113,11 +114,24 @@ const en: Translations = {
   },
   footer: {
     cityLabel: '© City of Espoo',
-    privacyPolicy: 'Privacy Notices',
-    privacyPolicyLink: 'https://www.espoo.fi/en/city-espoo/data-protection',
-    sendFeedback: 'Give feedback',
-    sendFeedbackLink:
-      'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+    privacyPolicyLink: (
+      <a
+        href="https://www.espoo.fi/en/city-espoo/data-protection"
+        data-qa="footer-policy-link"
+        style={{ color: colors.main.m2 }}
+      >
+        Privacy Notices
+      </a>
+    ),
+    sendFeedbackLink: (
+      <a
+        href="https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
+        data-qa="footer-feedback-link"
+        style={{ color: colors.main.m2 }}
+      >
+        Give feedback
+      </a>
+    )
   },
   loginPage: {
     title: 'City of Espoo early childhood education',

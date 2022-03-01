@@ -11,18 +11,20 @@ type ExternalLinkProps = {
   text: string | JSX.Element
   href: string
   newTab?: boolean
+  'data-qa'?: string
 }
 
 export default React.memo(function ExternalLink({
   text,
   href,
-  newTab
+  newTab,
+  'data-qa': dataQa
 }: ExternalLinkProps) {
   const targetProps = newTab
     ? { target: '_blank', rel: 'noreferrer' }
     : undefined
   return (
-    <a href={href} {...targetProps}>
+    <a href={href} data-qa={dataQa} {...targetProps}>
       {text} <FontAwesomeIcon icon={faExternalLink} />
     </a>
   )

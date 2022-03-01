@@ -9,6 +9,7 @@ import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
+import colors from 'lib-customizations/common'
 
 const yes = 'Ja'
 const no = 'Nej'
@@ -113,11 +114,24 @@ const sv: Translations = {
   },
   footer: {
     cityLabel: '© Esbo stad',
-    privacyPolicy: 'Dataskyddsbeskrivningar',
-    privacyPolicyLink: 'https://www.esbo.fi/esbo-stad/dataskydd',
-    sendFeedback: 'Skicka feedback',
-    sendFeedbackLink:
-      'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+    privacyPolicyLink: (
+      <a
+        href="https://www.esbo.fi/esbo-stad/dataskydd"
+        data-qa="footer-policy-link"
+        style={{ color: colors.main.m2 }}
+      >
+        Dataskyddsbeskrivningar
+      </a>
+    ),
+    sendFeedbackLink: (
+      <a
+        href="https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
+        data-qa="footer-feedback-link"
+        style={{ color: colors.main.m2 }}
+      >
+        Skicka feedback
+      </a>
+    )
   },
   loginPage: {
     title: 'Esbo stads småbarnspedagogik',
