@@ -8,7 +8,6 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
-import fi.espoo.evaka.childimages.hasPermissionForChildImage
 import fi.espoo.evaka.incomestatement.isChildIncomeStatement
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
@@ -22,7 +21,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -100,16 +98,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "cdn.id",
         permittedRoleActions::childDailyNoteActions
-    )
-    private val childImage = ActionConfig(
-        """
-SELECT img.id, role
-FROM child_acl_view
-JOIN child_images img ON child_acl_view.child_id = img.child_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "img.id",
-        permittedRoleActions::childImageActions
     )
     private val childStickyNote = ActionConfig(
         """
@@ -485,7 +473,6 @@ WHERE employee_id = :userId
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
             is Action.BackupPickup -> this.backupPickup.hasPermission(user, action, *ids as Array<BackupPickupId>)
             is Action.ChildDailyNote -> this.childDailyNote.hasPermission(user, action, *ids as Array<ChildDailyNoteId>)
-            is Action.ChildImage -> ids.all { id -> hasPermissionForInternal(user, action, id as ChildImageId) }
             is Action.ChildStickyNote -> this.childStickyNote.hasPermission(user, action, *ids as Array<ChildStickyNoteId>)
             is Action.Decision -> this.decision.hasPermission(user, action, *ids as Array<DecisionId>)
             is Action.FeeAlteration -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeAlterationActions)
@@ -603,19 +590,6 @@ WHERE employee_id = :userId
                     this.pedagogicalAttachment.hasPermission(user, action, id)
             }
             is AuthenticatedUser.MobileDevice -> false
-            AuthenticatedUser.SystemInternalUser -> false
-        }
-
-    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.ChildImage, id: ChildImageId): Boolean =
-        when (user) {
-            is AuthenticatedUser.WeakCitizen -> false
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.ChildImage.DOWNLOAD -> Database(jdbi).connect { db -> db.read { it.hasPermissionForChildImage(user, id) } }
-            }
-            is AuthenticatedUser.MobileDevice,
-            is AuthenticatedUser.Employee -> when (action) {
-                Action.ChildImage.DOWNLOAD -> this.childImage.hasPermission(user, action, id)
-            }
             AuthenticatedUser.SystemInternalUser -> false
         }
 

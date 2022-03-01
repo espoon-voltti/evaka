@@ -49,4 +49,23 @@ AND child_id = ANY(:ids)
                 .toSet()
         }
     )
+    val childImage = DatabaseActionRule(
+        this,
+        Query<ChildImageId> { tx, mobileId, ids ->
+            tx.createQuery(
+                """
+SELECT img.id
+FROM child_acl_view
+JOIN child_images img ON child_acl_view.child_id = img.child_id
+WHERE employee_id = :userId
+AND role = 'MOBILE'
+AND img.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", mobileId)
+                .mapTo<ChildImageId>()
+                .toSet()
+        }
+    )
 }

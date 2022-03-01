@@ -136,4 +136,21 @@ AND child_id = ANY(:ids)
                 .mapTo()
         }
     )
+    val childImage = DatabaseActionRule(
+        this,
+        Query<ChildImageId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT img.id, role
+FROM child_acl_view
+JOIN child_images img ON child_acl_view.child_id = img.child_id
+WHERE employee_id = :userId
+AND img.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
 }

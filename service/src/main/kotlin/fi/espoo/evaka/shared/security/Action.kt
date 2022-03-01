@@ -328,12 +328,14 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class ChildImage(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ChildImageId> {
-        DOWNLOAD(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF, MOBILE);
+    enum class ChildImage(override vararg val defaultRules: ScopedActionRule<ChildImageId>) : ScopedAction<ChildImageId> {
+        DOWNLOAD(
+            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).childImage,
+            IsMobileInChildPlacementUnit(requirePinLogin = false).childImage,
+            IsChildGuardian(allowWeakLogin = false).childImage
+        );
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class ChildStickyNote(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ChildStickyNoteId> {
         UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),

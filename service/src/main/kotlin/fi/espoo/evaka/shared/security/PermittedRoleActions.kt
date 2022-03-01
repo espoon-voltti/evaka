@@ -16,7 +16,6 @@ interface PermittedRoleActions {
     fun attachmentActions(role: UserRole): Set<Action.Attachment>
     fun backupPickupActions(role: UserRole): Set<Action.BackupPickup>
     fun childDailyNoteActions(role: UserRole): Set<Action.ChildDailyNote>
-    fun childImageActions(role: UserRole): Set<Action.ChildImage>
     fun childStickyNoteActions(role: UserRole): Set<Action.ChildStickyNote>
     fun decisionActions(role: UserRole): Set<Action.Decision>
     fun feeAlterationActions(role: UserRole): Set<Action.FeeAlteration>
@@ -53,7 +52,6 @@ class StaticPermittedRoleActions(
     val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
     val backupPickup: ActionsByRole<Action.BackupPickup> = getDefaults(),
     val childDailyNote: ActionsByRole<Action.ChildDailyNote> = getDefaults(),
-    val childImage: ActionsByRole<Action.ChildImage> = getDefaults(),
     val childStickyNote: ActionsByRole<Action.ChildStickyNote> = getDefaults(),
     val decision: ActionsByRole<Action.Decision> = getDefaults(),
     val feeAlteration: ActionsByRole<Action.FeeAlteration> = getDefaults(),
@@ -83,7 +81,6 @@ class StaticPermittedRoleActions(
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun backupPickupActions(role: UserRole): Set<Action.BackupPickup> = backupPickup[role] ?: emptySet()
     override fun childDailyNoteActions(role: UserRole): Set<Action.ChildDailyNote> = childDailyNote[role] ?: emptySet()
-    override fun childImageActions(role: UserRole): Set<Action.ChildImage> = childImage[role] ?: emptySet()
     override fun childStickyNoteActions(role: UserRole): Set<Action.ChildStickyNote> = childStickyNote[role] ?: emptySet()
     override fun decisionActions(role: UserRole): Set<Action.Decision> = decision[role] ?: emptySet()
     override fun feeAlterationActions(role: UserRole): Set<Action.FeeAlteration> = feeAlteration[role] ?: emptySet()
