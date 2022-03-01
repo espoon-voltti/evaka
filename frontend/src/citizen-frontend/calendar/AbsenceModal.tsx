@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -79,6 +79,11 @@ export default React.memo(function AbsenceModal({
   const [showAllErrors, setShowAllErrors] = useState(false)
   const [request, errors] = validateForm(form)
 
+  const childrenInShiftCare = useMemo(
+    () => availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit),
+    [availableChildren]
+  )
+
   return (
     <AsyncFormModal
       mobileFullScreen
@@ -152,18 +157,33 @@ export default React.memo(function AbsenceModal({
       <Label>{i18n.calendar.absenceModal.absenceType}</Label>
       <Gap size="s" />
       <FixedSpaceFlexWrap verticalSpacing="xs">
-        {(['SICKLEAVE', 'OTHER_ABSENCE', 'PLANNED_ABSENCE'] as const).map(
-          (type) => (
-            <ChoiceChip
-              key={type}
-              text={i18n.calendar.absenceModal.absenceTypes[type]}
-              selected={form.absenceType === type}
-              onChange={(selected) =>
-                updateForm({ absenceType: selected ? type : undefined })
-              }
-              data-qa={`absence-${type}`}
-            />
-          )
+        <ChoiceChip
+          text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
+          selected={form.absenceType === 'SICKLEAVE'}
+          onChange={(selected) =>
+            updateForm({ absenceType: selected ? 'SICKLEAVE' : undefined })
+          }
+          data-qa="absence-SICKLEAVE"
+        />
+        <ChoiceChip
+          text={i18n.calendar.absenceModal.absenceTypes.OTHER_ABSENCE}
+          selected={form.absenceType === 'OTHER_ABSENCE'}
+          onChange={(selected) =>
+            updateForm({ absenceType: selected ? 'OTHER_ABSENCE' : undefined })
+          }
+          data-qa="absence-OTHER_ABSENCE"
+        />
+        {childrenInShiftCare && (
+          <ChoiceChip
+            text={i18n.calendar.absenceModal.absenceTypes.PLANNED_ABSENCE}
+            selected={form.absenceType === 'PLANNED_ABSENCE'}
+            onChange={(selected) =>
+              updateForm({
+                absenceType: selected ? 'PLANNED_ABSENCE' : undefined
+              })
+            }
+            data-qa="absence-PLANNED_ABSENCE"
+          />
         )}
       </FixedSpaceFlexWrap>
       {showAllErrors && !form.absenceType ? (
