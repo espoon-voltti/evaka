@@ -122,9 +122,12 @@ export default React.memo(function ChildDailyNoteForm({
     const promise = note
       ? putChildDailyNote(note.id, body)
       : postChildDailyNote(childId, body)
-    return promise
-      .then((res) => res.map(() => onSuccess()))
-      .finally(() => setSubmitting(false))
+    return promise.then((res) => {
+      setSubmitting(false)
+      if (res.isSuccess) {
+        onSuccess()
+      }
+    })
   }, [childId, form, note, onSuccess])
 
   const [deleting, setDeleting] = useState(false)
@@ -133,9 +136,12 @@ export default React.memo(function ChildDailyNoteForm({
       return Promise.reject()
     }
     setDeleting(true)
-    return deleteChildDailyNote(note.id)
-      .then((res) => res.map(() => onRemove()))
-      .finally(() => setDeleting(false))
+    return deleteChildDailyNote(note.id).then((res) => {
+      setDeleting(false)
+      if (res.isSuccess) {
+        onRemove()
+      }
+    })
   }, [note, onRemove])
 
   return (
