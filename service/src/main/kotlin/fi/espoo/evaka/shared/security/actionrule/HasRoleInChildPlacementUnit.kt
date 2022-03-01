@@ -153,4 +153,21 @@ AND img.id = ANY(:ids)
                 .mapTo()
         }
     )
+    val placement = DatabaseActionRule(
+        this,
+        Query<PlacementId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT placement.id, role
+FROM placement
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+AND placement.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
 }

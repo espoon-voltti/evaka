@@ -36,7 +36,6 @@ import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -208,16 +207,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "person_id",
         permittedRoleActions::personActions
-    )
-    private val placement = ActionConfig(
-        """
-SELECT placement.id, role
-FROM placement
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "placement.id",
-        permittedRoleActions::placementActions
     )
     private val serviceNeed = ActionConfig(
         """
@@ -489,7 +478,6 @@ WHERE employee_id = :userId
             is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
             is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
-            is Action.Placement -> this.placement.hasPermission(user, action, *ids as Array<PlacementId>)
             is Action.ServiceNeed -> this.serviceNeed.hasPermission(user, action, *ids as Array<ServiceNeedId>)
             is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
             is Action.VasuDocument -> this.vasuDocument.hasPermission(user, action, *ids as Array<VasuDocumentId>)
@@ -681,28 +669,6 @@ WHERE employee_id = :userId
         else -> this.person.hasPermission(user, action, id)
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.Placement, id: PlacementId) =
-        when (user) {
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.Placement.TERMINATE -> {
-                    Database(jdbi).connect {
-                        val childId = it.read { tx ->
-                            tx.createQuery("SELECT child_id FROM placement WHERE id = :id")
-                                .bind("id", id)
-                                .mapTo<ChildId>()
-                                .one()
-                        }
-                        requireGuardian(user, setOf(childId))
-                    }
-                }
-                else -> throw Forbidden()
-            }
-            is AuthenticatedUser.Employee -> if (!hasPermissionFor(user, action, id)) {
-                throw Forbidden()
-            } else Unit
-            else -> throw Forbidden()
-        }
-
     fun requirePermissionFor(
         user: AuthenticatedUser,
         action: Action.IncomeStatement,
@@ -746,11 +712,6 @@ WHERE employee_id = :userId
             else -> throw Forbidden()
         }
     }
-
-    fun getPermittedPlacementActions(
-        user: AuthenticatedUser,
-        ids: Collection<PlacementId>
-    ): Map<PlacementId, Set<Action.Placement>> = this.placement.getPermittedActions(user, ids)
 
     fun getPermittedUnitActions(
         user: AuthenticatedUser,

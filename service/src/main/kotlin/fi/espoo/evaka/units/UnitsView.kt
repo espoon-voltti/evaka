@@ -129,7 +129,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     recentlyTerminatedPlacements = recentlyTerminatedPlacements,
                     caretakers = caretakers,
                     permittedBackupCareActions = accessControl.getPermittedActions(tx, user, backupCareIds),
-                    permittedPlacementActions = accessControl.getPermittedPlacementActions(user, placementIds),
+                    permittedPlacementActions = accessControl.getPermittedActions(tx, user, placementIds),
                     permittedGroupPlacementActions = accessControl.getPermittedGroupPlacementActions(
                         user,
                         placements.flatMap { placement ->

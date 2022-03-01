@@ -549,19 +549,17 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Placement(private val roles: EnumSet<UserRole>) : LegacyScopedAction<PlacementId> {
-        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR),
-        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR),
+    enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
 
-        CREATE_GROUP_PLACEMENT(UNIT_SUPERVISOR),
+        CREATE_GROUP_PLACEMENT(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
 
-        CREATE_SERVICE_NEED(UNIT_SUPERVISOR),
+        CREATE_SERVICE_NEED(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
 
-        TERMINATE();
+        TERMINATE(IsChildGuardian(allowWeakLogin = false).placement);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class ServiceNeed(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ServiceNeedId> {
         UPDATE(UNIT_SUPERVISOR),
