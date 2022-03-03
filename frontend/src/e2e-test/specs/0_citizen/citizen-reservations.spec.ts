@@ -71,9 +71,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       reservation.endTime
     )
 
-    await calendarPage.assertReservations(firstReservationDay, false, [
-      reservation
-    ])
+    await calendarPage.assertReservations(firstReservationDay, [reservation])
   })
 
   test('Citizen creates a repeating weekly reservation for all children', async () => {
@@ -97,7 +95,6 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       await promise
       await calendarPage.assertReservations(
         firstReservationDay.addDays(index),
-        false,
         [reservations[index]]
       )
     }, Promise.resolve())
@@ -122,9 +119,11 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       'SICKLEAVE'
     )
 
-    await calendarPage.assertReservations(firstReservationDay, true, [
-      reservation
-    ])
+    await calendarPage.assertReservations(
+      firstReservationDay,
+      [reservation],
+      true
+    )
   })
 
   test('Citizen creates a repeating reservation and then overwrites it', async () => {
@@ -138,7 +137,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       initialReservation.endTime
     )
 
-    await calendarPage.assertReservations(firstReservationDay, false, [
+    await calendarPage.assertReservations(firstReservationDay, [
       initialReservation
     ])
 
@@ -151,9 +150,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       newReservation.endTime
     )
 
-    await calendarPage.assertReservations(firstReservationDay, false, [
-      newReservation
-    ])
+    await calendarPage.assertReservations(firstReservationDay, [newReservation])
   })
 
   test('Citizen creates a reservation from day view', async () => {

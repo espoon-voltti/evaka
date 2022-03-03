@@ -222,6 +222,7 @@ const sv: Translations = {
     title: 'Kalender',
     holiday: 'Helgdag',
     absent: 'Frånvarande',
+    absentFree: 'Gratis frånvaro',
     absences: {
       SICKLEAVE: 'Sjukskriven'
     },

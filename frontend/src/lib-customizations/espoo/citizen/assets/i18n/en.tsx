@@ -222,6 +222,7 @@ const en: Translations = {
     title: 'Calendar',
     holiday: 'Holiday',
     absent: 'Absent',
+    absentFree: 'Free absence',
     absences: {
       SICKLEAVE: 'Sickness absence'
     },
