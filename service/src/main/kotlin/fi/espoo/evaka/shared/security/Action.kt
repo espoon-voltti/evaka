@@ -335,13 +335,11 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class ChildStickyNote(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ChildStickyNoteId> {
-        UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
-        DELETE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE);
+    enum class ChildStickyNote(override vararg val defaultRules: ScopedActionRule<in ChildStickyNoteId>) : ScopedAction<ChildStickyNoteId> {
+        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).childStickyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote),
+        DELETE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).childStickyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Decision(private val roles: EnumSet<UserRole>) : LegacyScopedAction<DecisionId> {
         DOWNLOAD_PDF(SERVICE_WORKER, UNIT_SUPERVISOR)

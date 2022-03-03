@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -170,6 +171,23 @@ FROM child_acl_view
 JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
 WHERE employee_id = :userId
 AND cdn.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val childStickyNote = DatabaseActionRule(
+        this,
+        Query<ChildStickyNoteId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT csn.id, role
+FROM child_acl_view
+JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
+WHERE employee_id = :userId
+AND csn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

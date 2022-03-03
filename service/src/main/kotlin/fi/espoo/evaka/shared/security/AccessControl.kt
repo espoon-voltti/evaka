@@ -18,7 +18,6 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -72,16 +71,6 @@ WHERE employee_id = :userId
         permittedRoleActions::attachmentActions,
     )
 
-    private val childStickyNote = ActionConfig(
-        """
-SELECT csn.id, role
-FROM child_acl_view
-JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "csn.id",
-        permittedRoleActions::childStickyNoteActions
-    )
     private val decision = ActionConfig(
         """
 SELECT decision.id, role
@@ -414,7 +403,6 @@ WHERE employee_id = :userId
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            is Action.ChildStickyNote -> this.childStickyNote.hasPermission(user, action, *ids as Array<ChildStickyNoteId>)
             is Action.Decision -> this.decision.hasPermission(user, action, *ids as Array<DecisionId>)
             is Action.FeeAlteration -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeAlterationActions)
             is Action.FeeDecision -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeDecisionActions)

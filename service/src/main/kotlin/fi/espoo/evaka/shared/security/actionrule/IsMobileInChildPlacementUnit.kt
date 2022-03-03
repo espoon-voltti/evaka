@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
@@ -63,6 +64,24 @@ JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
 WHERE employee_id = :userId
 AND role = 'MOBILE'
 AND cdn.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", mobileId)
+                .mapTo()
+        }
+    )
+    val childStickyNote = DatabaseActionRule(
+        this,
+        Query<ChildStickyNoteId> { tx, mobileId, ids ->
+            tx.createQuery(
+                """
+SELECT csn.id
+FROM child_acl_view
+JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
+WHERE employee_id = :userId
+AND role = 'MOBILE'
+AND csn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("ids", ids.toTypedArray())
