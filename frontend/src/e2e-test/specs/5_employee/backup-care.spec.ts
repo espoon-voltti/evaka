@@ -59,14 +59,14 @@ describe('Employee - Backup care', () => {
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
       childName: `${childFixture.lastName} ${childFixture.firstName}`,
       dateOfBirth: LocalDate.parseIso(childFixture.dateOfBirth).format(),
-      placementDuration: '01.02.2022 - 03.02.2022',
-      groupMissingDuration: '01.02.2022 - 03.02.2022'
+      placementDuration: '01.02.2023 - 03.02.2023',
+      groupMissingDuration: '01.02.2023 - 03.02.2023'
     })
   })
 
   test('backup care child can be placed into a group and removed from it', async () => {
     await groupsPage.selectPeriod('1 year')
-    await groupsPage.setFilterStartDate('01.01.2022')
+    await groupsPage.setFilterStartDate('01.01.2023')
 
     // open the group placement modal and submit it with default values
     await groupsPage.missingPlacementsSection.createGroupPlacementForChild(0)
@@ -82,7 +82,7 @@ describe('Employee - Backup care', () => {
     const childRow = group.childRow(childFixture.id)
     await childRow.assertFields({
       childName: `${childFixture.lastName} ${childFixture.firstName}`,
-      placementDuration: '01.02.2022- 03.02.2022'
+      placementDuration: '01.02.2023- 03.02.2023'
     })
 
     // after removing the child is again visible at missing groups and no longer at the group
@@ -92,8 +92,8 @@ describe('Employee - Backup care', () => {
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
       childName: `${childFixture.lastName} ${childFixture.firstName}`,
       dateOfBirth: LocalDate.parseIso(childFixture.dateOfBirth).format(),
-      placementDuration: '01.02.2022 - 03.02.2022',
-      groupMissingDuration: '01.02.2022 - 03.02.2022'
+      placementDuration: '01.02.2023 - 03.02.2023',
+      groupMissingDuration: '01.02.2023 - 03.02.2023'
     })
 
     group = await groupsPage.openGroupCollapsible(daycareGroupFixture.id)
