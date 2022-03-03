@@ -241,13 +241,11 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class BackupPickup(private val roles: EnumSet<UserRole>) : LegacyScopedAction<BackupPickupId> {
-        UPDATE(UNIT_SUPERVISOR, STAFF),
-        DELETE(UNIT_SUPERVISOR, STAFF);
+    enum class BackupPickup(override vararg val defaultRules: ScopedActionRule<in BackupPickupId>) : ScopedAction<BackupPickupId> {
+        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF).backupPickup),
+        DELETE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF).backupPickup);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
         READ(

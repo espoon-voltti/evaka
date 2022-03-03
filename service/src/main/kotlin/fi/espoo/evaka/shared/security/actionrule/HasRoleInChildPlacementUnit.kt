@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.EmployeeId
@@ -118,6 +119,23 @@ FROM child_acl_view acl
 JOIN backup_care bc ON acl.child_id = bc.child_id
 WHERE acl.employee_id = :userId
 AND bc.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val backupPickup = DatabaseActionRule(
+        this,
+        Query<BackupPickupId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT bp.id, role
+FROM child_acl_view acl
+JOIN backup_pickup bp ON acl.child_id = bp.child_id
+WHERE acl.employee_id = :userId
+AND bp.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)
