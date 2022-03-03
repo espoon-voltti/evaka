@@ -258,6 +258,7 @@ sealed interface Action {
         READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child),
         READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
         DELETE_ABSENCE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF).child),
+        DELETE_ABSENCE_RANGE(IsMobileInChildPlacementUnit(requirePinLogin = false).child),
 
         READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
         UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),

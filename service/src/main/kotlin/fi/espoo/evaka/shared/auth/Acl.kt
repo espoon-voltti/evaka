@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -96,22 +95,6 @@ FROM daycare_group_acl_view
 WHERE employee_id = :userId AND daycare_group_id = :groupId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("groupId", groupId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForChild(user: AuthenticatedUser, childId: ChildId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM child_acl_view
-WHERE employee_id = :userId AND child_id = :childId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("childId", childId).mapTo<UserRole>().toSet()
             }
         }
     )
