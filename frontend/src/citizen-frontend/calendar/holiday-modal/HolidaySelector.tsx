@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -14,42 +15,46 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label } from 'lib-components/typography'
-import { faTrash } from 'lib-icons'
+import colors from 'lib-customizations/common'
+import { fasExclamationTriangle, faTrash } from 'lib-icons'
 
 import { useLang, useTranslation } from '../../localization'
 
+export type HolidayErrorKey = HolidayRowState['key'] | 'overlaps'
 type ArbitraryId = string
 
 export interface HolidayRowState {
   key: ArbitraryId
   start: string
   end: string
-  parsedStart: LocalDate | null
-  parsedEnd: LocalDate | null
-  errorKey: string | undefined
 }
 
 interface Props {
   period: FiniteDateRange
+  selectedFreePeriod: FiniteDateRange | null
   rows: HolidayRowState[]
   updateHoliday: (row: HolidayRowState) => void
   addRow: () => void
   removeRow: (key: ArbitraryId) => void
+  errors: HolidayErrorKey[]
 }
 
 export const HolidaySelector = React.memo(function HolidaySelector({
   period,
+  selectedFreePeriod,
   rows,
   updateHoliday,
   removeRow,
-  addRow
+  addRow,
+  errors
 }: Props) {
   const [lang] = useLang()
   const i18n = useTranslation()
 
   const isValidDate = useCallback(
-    (date: LocalDate) => period.includes(date),
-    [period]
+    (date: LocalDate) =>
+      period.includes(date) && !selectedFreePeriod?.includes(date),
+    [selectedFreePeriod, period]
   )
 
   return (
@@ -64,15 +69,7 @@ export const HolidaySelector = React.memo(function HolidaySelector({
               isValidDate={isValidDate}
               initialMonth={period.start}
               locale={lang}
-              hideErrorsBeforeTouched
-              onChange={(start: string) =>
-                updateHoliday({
-                  ...row,
-                  start,
-                  parsedStart: LocalDate.parseFiOrNull(start),
-                  errorKey: undefined
-                })
-              }
+              onChange={(start: string) => updateHoliday({ ...row, start })}
             />
             <span> – </span>
             <DatePicker
@@ -80,18 +77,17 @@ export const HolidaySelector = React.memo(function HolidaySelector({
               isValidDate={isValidDate}
               initialMonth={period.start}
               locale={lang}
-              hideErrorsBeforeTouched
-              onChange={(end: string) =>
-                updateHoliday({
-                  ...row,
-                  end,
-                  parsedEnd: LocalDate.parseFiOrNull(end),
-                  errorKey: undefined
-                })
-              }
+              onChange={(end: string) => updateHoliday({ ...row, end })}
             />
             {index > 0 && (
               <IconButton icon={faTrash} onClick={() => removeRow(row.key)} />
+            )}
+            {errors.find((e) => e === row.key) && (
+              <FontAwesomeIcon
+                icon={fasExclamationTriangle}
+                size="1x"
+                color={colors.status.warning}
+              />
             )}
           </FixedSpaceRow>
         ))}

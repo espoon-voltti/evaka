@@ -55,6 +55,8 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 // TODO handle reservable days
                 // TODO handle deadlines
                 val holidayPeriod = tx.getActiveHolidayPeriod(evakaClock.today()) ?: throw BadRequest("No active holiday period")
+
+                // TODO use previous FREE_ABSENCES after deadline, do not modify
                 val freePeriods = body.childHolidays.entries
                     .mapNotNull { (childId, selections) -> if (selections.freePeriod != null) childId to selections.freePeriod else null }
                     .onEach { (_, freePeriod) ->

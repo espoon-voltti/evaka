@@ -50,7 +50,7 @@ const Page = React.memo(function CalendarPage() {
   const location = useLocation()
   const user = useUser()
 
-  const { holidayPeriods } = useHolidayPeriods()
+  const { holidayPeriods, activePeriod } = useHolidayPeriods()
 
   const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
   const [openModal, setOpenModal] = useState<
@@ -120,6 +120,8 @@ const Page = React.memo(function CalendarPage() {
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
+  const activeHolidayPeriod = activePeriod.getOrElse(undefined)
+
   return renderResult(data, (response) => (
     <>
       <HolidayPeriodBanner />
@@ -183,11 +185,12 @@ const Page = React.memo(function CalendarPage() {
           availableChildren={response.children}
         />
       )}
-      {openModal?.type === 'holidays' && (
+      {openModal?.type === 'holidays' && activeHolidayPeriod && (
         <HolidayModal
           close={closeModal}
           reload={loadDefaultRange}
           availableChildren={response.children}
+          activePeriod={activeHolidayPeriod}
         />
       )}
     </>

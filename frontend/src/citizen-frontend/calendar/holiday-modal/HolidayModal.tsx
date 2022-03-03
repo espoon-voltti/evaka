@@ -2,42 +2,46 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { v4 as uuid } from 'uuid'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { postHolidayAbsences } from 'citizen-frontend/holiday-periods/api'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
-import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { HolidayAbsenceRequest } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  HolidayAbsenceRequest,
+  HolidayPeriod
+} from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
+import { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
-import { useHolidayPeriods } from '../../holiday-periods/state'
+import { postHolidayAbsences } from '../../holiday-periods/api'
 
 import { FreeHolidaySelector } from './FreeHolidaySelector'
-import { HolidayRowState, HolidaySelector } from './HolidaySelector'
+import {
+  HolidayErrorKey,
+  HolidayRowState,
+  HolidaySelector
+} from './HolidaySelector'
 
 const emptyHolidayRow = (): HolidayRowState => ({
-  end: '',
-  errorKey: undefined,
   key: uuid(),
-  parsedEnd: null,
-  parsedStart: null,
-  start: ''
+  start: '',
+  end: ''
 })
 
-type SelectedHolidays = {
+interface SelectedHolidays {
   selectedFreePeriod: FiniteDateRange | null
   otherHolidays: HolidayRowState[]
 }
-type HolidayForm = {
+
+interface HolidayForm {
   childHolidays: Record<string, SelectedHolidays>
 }
 
@@ -54,27 +58,28 @@ const initializeForm = (children: ReservationChild[]): HolidayForm => ({
   )
 })
 
-type HolidayModalProps = {
+interface Props {
   close: () => void
   reload: () => void
   availableChildren: ReservationChild[]
+  activePeriod: HolidayPeriod
 }
 
 export const HolidayModal = React.memo(function HolidayModal({
   close,
   reload,
-  availableChildren
-}: HolidayModalProps) {
+  availableChildren,
+  activePeriod
+}: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
-  const { activePeriod } = useHolidayPeriods()
 
   const [form, setForm] = useState<HolidayForm>(() =>
     initializeForm(availableChildren)
   )
 
-  const selectFreePeriod = useMemo(
-    () => (childId: string) => (selectedFreePeriod: FiniteDateRange | null) =>
+  const selectFreePeriod = useCallback(
+    (childId: string) => (selectedFreePeriod: FiniteDateRange | null) =>
       setForm((prev) => ({
         childHolidays: {
           ...prev.childHolidays,
@@ -84,8 +89,8 @@ export const HolidayModal = React.memo(function HolidayModal({
     [setForm]
   )
 
-  const updateHolidayRow = useMemo(
-    () => (childId: string) => (holiday: HolidayRowState) =>
+  const updateHolidayRow = useCallback(
+    (childId: string) => (holiday: HolidayRowState) =>
       setForm((prev) => ({
         childHolidays: {
           ...prev.childHolidays,
@@ -100,8 +105,8 @@ export const HolidayModal = React.memo(function HolidayModal({
     [setForm]
   )
 
-  const addHolidayRow = useMemo(
-    () => (childId: string) => () =>
+  const addHolidayRow = useCallback(
+    (childId: string) => () =>
       setForm((prev) => ({
         childHolidays: {
           ...prev.childHolidays,
@@ -117,8 +122,8 @@ export const HolidayModal = React.memo(function HolidayModal({
     []
   )
 
-  const removeHolidayRow = useMemo(
-    () => (childId: string) => (key: string) =>
+  const removeHolidayRow = useCallback(
+    (childId: string) => (key: string) =>
       setForm((prev) => ({
         childHolidays: {
           ...prev.childHolidays,
@@ -133,59 +138,140 @@ export const HolidayModal = React.memo(function HolidayModal({
     []
   )
 
+  type ErrorsByChild = Record<UUID, HolidayErrorKey[]>
+  type ValidatedData = {
+    holidays: HolidayAbsenceRequest['childHolidays']
+    errors: ErrorsByChild
+    valid: boolean
+  }
+  type EmptyRow = HolidayRowState & { state: 'empty' }
+  type InvalidRow = HolidayRowState & { state: 'invalid' }
+  type ParsedRow = HolidayRowState & { state: 'parsed'; range: FiniteDateRange }
+  type Row = EmptyRow | InvalidRow | ParsedRow
+  const validatedForm = useMemo(
+    () =>
+      Object.entries(form.childHolidays).reduce<ValidatedData>(
+        (acc, [childId, { otherHolidays, selectedFreePeriod }]) => {
+          const parsedRows = otherHolidays.map<Row>((row) => {
+            if (!row.end.trim() && !row.start.trim()) {
+              return { ...row, state: 'empty' }
+            }
+            const parsedStart = LocalDate.parseFiOrNull(row.start)
+            const parsedEnd = LocalDate.parseFiOrNull(row.end)
+            const valid =
+              parsedStart && parsedEnd && parsedStart.isEqualOrBefore(parsedEnd)
+            return valid
+              ? {
+                  ...row,
+                  state: 'parsed',
+                  range: new FiniteDateRange(parsedStart, parsedEnd)
+                }
+              : { ...row, state: 'invalid' }
+          })
+
+          const errors = parsedRows.flatMap((r) => {
+            switch (r.state) {
+              case 'empty':
+                return []
+              case 'invalid':
+                return [r.key]
+              case 'parsed':
+                return selectedFreePeriod?.overlaps(r.range) ||
+                  parsedRows.find(
+                    (r2) =>
+                      r2.state === 'parsed' &&
+                      r.key !== r2.key &&
+                      r.range.overlaps(r2.range)
+                  )
+                  ? [r.key]
+                  : []
+            }
+          })
+          return {
+            errors: {
+              ...acc.errors,
+              [childId]: errors
+            },
+            holidays: {
+              ...acc.holidays,
+              [childId]: {
+                holidays: parsedRows.flatMap((r) =>
+                  r.state === 'parsed' ? [r.range] : []
+                ),
+                freePeriod: selectedFreePeriod
+              }
+            },
+            valid: acc.valid ? errors.length === 0 : false
+          }
+        },
+        { holidays: {}, errors: {}, valid: true }
+      ),
+    [form]
+  )
+
+  const onSubmit = useCallback(
+    () =>
+      validatedForm.valid
+        ? postHolidayAbsences({ childHolidays: validatedForm.holidays })
+        : Promise.reject(),
+    [validatedForm]
+  )
+  const closeAndReload = useCallback(() => {
+    close()
+    reload()
+  }, [close, reload])
+
   return (
     <AsyncFormModal
       mobileFullScreen
       title={i18n.calendar.holidayModal.title}
-      resolveAction={(_cancel) => postHolidays(form)}
-      onSuccess={() => {
-        close()
-        reload()
-      }}
+      resolveDisabled={!validatedForm.valid}
+      resolveAction={onSubmit}
+      onSuccess={closeAndReload}
       resolveLabel={i18n.common.confirm}
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
     >
-      {renderResult(activePeriod, (holidayPeriod) =>
-        holidayPeriod ? (
-          <FixedSpaceColumn>
-            <HolidaySection>
-              <div>{holidayPeriod.description[lang]}</div>
-              <ExternalLink
-                text={i18n.calendar.holidayModal.additionalInformation}
-                href={holidayPeriod.descriptionLink[lang]}
-                newTab
+      <FixedSpaceColumn>
+        <HolidaySection>
+          <div>{activePeriod.description[lang]}</div>
+          <ExternalLink
+            text={i18n.calendar.holidayModal.additionalInformation}
+            href={activePeriod.descriptionLink[lang]}
+            newTab
+          />
+        </HolidaySection>
+        {availableChildren.map((child) => (
+          <HolidaySection
+            key={child.id}
+            data-qa={`holiday-section-${child.id}`}
+          >
+            <H2>
+              {i18n.calendar.holidayModal.holidayFor}{' '}
+              {formatPreferredName(child)}
+            </H2>
+            {activePeriod.freePeriod && (
+              <FreeHolidaySelector
+                freeAbsencePeriod={activePeriod.freePeriod}
+                value={form.childHolidays[child.id].selectedFreePeriod}
+                onSelectPeriod={selectFreePeriod(child.id)}
               />
-            </HolidaySection>
-            {availableChildren.map((child) => (
-              <HolidaySection
-                key={child.id}
-                data-qa={`holiday-section-${child.id}`}
-              >
-                <H2>
-                  {i18n.calendar.holidayModal.holidayFor}{' '}
-                  {formatPreferredName(child)}
-                </H2>
-                {holidayPeriod.freePeriod && (
-                  <FreeHolidaySelector
-                    freeAbsencePeriod={holidayPeriod.freePeriod}
-                    value={form.childHolidays[child.id].selectedFreePeriod}
-                    onSelectPeriod={selectFreePeriod(child.id)}
-                  />
-                )}
+            )}
 
-                <HolidaySelector
-                  period={holidayPeriod.period}
-                  rows={form.childHolidays[child.id].otherHolidays}
-                  updateHoliday={updateHolidayRow(child.id)}
-                  addRow={addHolidayRow(child.id)}
-                  removeRow={removeHolidayRow(child.id)}
-                />
-              </HolidaySection>
-            ))}
-          </FixedSpaceColumn>
-        ) : null
-      )}
+            <HolidaySelector
+              period={activePeriod.period}
+              selectedFreePeriod={
+                form.childHolidays[child.id].selectedFreePeriod
+              }
+              rows={form.childHolidays[child.id].otherHolidays}
+              errors={validatedForm.errors[child.id]}
+              updateHoliday={updateHolidayRow(child.id)}
+              addRow={addHolidayRow(child.id)}
+              removeRow={removeHolidayRow(child.id)}
+            />
+          </HolidaySection>
+        ))}
+      </FixedSpaceColumn>
     </AsyncFormModal>
   )
 })
@@ -193,28 +279,5 @@ export const HolidayModal = React.memo(function HolidayModal({
 const HolidaySection = styled.div`
   background: white;
 `
-
-const postHolidays = ({
-  childHolidays
-}: HolidayForm): Promise<Result<void>> => {
-  return postHolidayAbsences({
-    childHolidays: Object.entries(childHolidays).reduce<
-      HolidayAbsenceRequest['childHolidays']
-    >(
-      (acc, [childId, { otherHolidays, selectedFreePeriod }]) => ({
-        ...acc,
-        [childId]: {
-          holidays: otherHolidays.flatMap(({ parsedEnd, parsedStart }) =>
-            parsedStart && parsedEnd && parsedStart.isEqualOrBefore(parsedEnd)
-              ? [new FiniteDateRange(parsedStart, parsedEnd)]
-              : []
-          ),
-          freePeriod: selectedFreePeriod
-        }
-      }),
-      {}
-    )
-  })
-}
 
 export default HolidayModal
