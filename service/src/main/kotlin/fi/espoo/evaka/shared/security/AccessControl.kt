@@ -347,7 +347,7 @@ WHERE employee_id = :userId
         checkPermissionFor(dbc, user, action, targets.asIterable()).values.all { it.isPermitted() }
     }
 
-    private fun <T> checkPermissionFor(
+    fun <T> checkPermissionFor(
         dbc: Database.Connection,
         user: AuthenticatedUser,
         action: Action.ScopedAction<T>,

@@ -5,6 +5,8 @@
 package fi.espoo.evaka.assistanceneed
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -52,8 +54,19 @@ class AssistanceNeedController(
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
-            val assistanceNeeds = assistanceNeedService.getAssistanceNeedsByChildId(dbc, childId).filter { assistanceNeed ->
-                accessControl.hasPermissionFor(user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, assistanceNeed.id)
+            val preschoolPlacements = dbc.read { tx ->
+                tx.getPlacementsForChild(childId).filter {
+                    (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
+                }
+            }
+            val assistanceNeeds = assistanceNeedService.getAssistanceNeedsByChildId(dbc, childId).let { allAssistanceNeeds ->
+                val prePreschool = allAssistanceNeeds.filterNot {
+                    preschoolPlacements.isEmpty() || preschoolPlacements.any { placement ->
+                        placement.startDate.isBefore(it.startDate) || placement.startDate == it.startDate
+                    }
+                }
+                val decisions = accessControl.checkPermissionFor(dbc, user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, prePreschool.map { it.id })
+                allAssistanceNeeds.filter { decisions[it.id]?.isPermitted() ?: true }
             }
             val assistanceNeedIds = assistanceNeeds.map { it.id }
             val permittedActions = dbc.read { tx ->
