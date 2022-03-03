@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -194,17 +193,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "person_id",
         permittedRoleActions::personActions
-    )
-    private val serviceNeed = ActionConfig(
-        """
-SELECT service_need.id, role
-FROM service_need
-JOIN placement ON placement.id = service_need.placement_id
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "service_need.id",
-        permittedRoleActions::serviceNeedActions
     )
     private val vasuDocument = ActionConfig(
         """
@@ -464,7 +452,6 @@ WHERE employee_id = :userId
             is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
             is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
-            is Action.ServiceNeed -> this.serviceNeed.hasPermission(user, action, *ids as Array<ServiceNeedId>)
             is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
             is Action.VasuDocument -> this.vasuDocument.hasPermission(user, action, *ids as Array<VasuDocumentId>)
             is Action.VasuTemplate -> hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::vasuTemplateActions)
