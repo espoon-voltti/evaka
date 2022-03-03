@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -48,8 +49,25 @@ AND child_id = ANY(:ids)
             )
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
-                .mapTo<ChildId>()
-                .toSet()
+                .mapTo()
+        }
+    )
+    val childDailyNote = DatabaseActionRule(
+        this,
+        Query<ChildDailyNoteId> { tx, mobileId, ids ->
+            tx.createQuery(
+                """
+SELECT cdn.id
+FROM child_acl_view
+JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
+WHERE employee_id = :userId
+AND role = 'MOBILE'
+AND cdn.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", mobileId)
+                .mapTo()
         }
     )
     val childImage = DatabaseActionRule(
@@ -67,8 +85,7 @@ AND img.id = ANY(:ids)
             )
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
-                .mapTo<ChildImageId>()
-                .toSet()
+                .mapTo()
         }
     )
 }

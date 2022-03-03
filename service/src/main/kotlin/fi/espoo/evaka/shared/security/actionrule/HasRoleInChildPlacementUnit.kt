@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.EmployeeId
@@ -152,6 +153,23 @@ SELECT child_id AS id, role
 FROM child_acl_view
 WHERE employee_id = :userId
 AND child_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val childDailyNote = DatabaseActionRule(
+        this,
+        Query<ChildDailyNoteId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT cdn.id, role
+FROM child_acl_view
+JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
+WHERE employee_id = :userId
+AND cdn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)
