@@ -50,7 +50,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `holiday absences cannot be saved when no holiday period is active`() {
-        reportHolidays(
+        reportFreePeriods(
             freeAbsence(
                 LocalDate.of(2025, 1, 1),
                 LocalDate.of(2025, 1, 5)
@@ -62,7 +62,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     @Test
     fun `free absences cannot be saved outside of a free period`() {
         createHolidayPeriod(summerPeriodWithFreePeriod)
-        reportHolidays(
+        reportFreePeriods(
             freeAbsence(
                 LocalDate.of(2025, 1, 1),
                 LocalDate.of(2025, 1, 5)
@@ -75,7 +75,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     fun `free absences cannot be saved after the deadline`() {
         createHolidayPeriod(summerPeriodWithFreePeriod)
         val firstOption = summerPeriodWithFreePeriod.freePeriod!!.periodOptions[0]
-        reportHolidays(
+        reportFreePeriods(
             freeAbsence(firstOption.start, firstOption.end),
             400,
             summerPeriodWithFreePeriod.freePeriod!!.deadline.plusDays(1)
@@ -86,45 +86,18 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     fun `can save free absence in a free period before the deadline`() {
         createHolidayPeriod(summerPeriodWithFreePeriod)
         val firstOption = summerPeriodWithFreePeriod.freePeriod!!.periodOptions[0]
-        reportHolidays(freeAbsence(firstOption.start, firstOption.end), 200)
-    }
+        reportFreePeriods(freeAbsence(firstOption.start, firstOption.end), 200)
 
-    @Test
-    fun `can save regular holidays and free absences in the same request`() {
-        createHolidayPeriod(summerPeriodWithFreePeriod)
-        val freePeriod = summerPeriodWithFreePeriod.freePeriod!!.periodOptions[0]
-        val firstRegularHoliday = FiniteDateRange(summerPeriod.period.start, summerPeriod.period.start.plusDays(5))
-        val secondRegularHoliday = FiniteDateRange(freePeriod.end.plusDays(1), summerPeriod.period.end)
-
-        reportHolidays(
-            HolidayAbsenceRequest(
-                mapOf(
-                    child.id to ChildHolidays(
-                        holidays = listOf(
-                            firstRegularHoliday,
-                            secondRegularHoliday,
-                        ),
-                        freePeriod = FiniteDateRange(freePeriod.start, freePeriod.end)
-                    )
-                )
-            ),
-            200
-        )
-
-        val expected =
-            firstRegularHoliday.dates().map { Absence(child.id, it, AbsenceType.OTHER_ABSENCE) } +
-                freePeriod.dates().map { Absence(child.id, it, AbsenceType.FREE_ABSENCE) } +
-                secondRegularHoliday.dates().map { Absence(child.id, it, AbsenceType.OTHER_ABSENCE) }
-
+        val expected = firstOption.dates().map { Absence(child.id, it, AbsenceType.FREE_ABSENCE) }
         assertEquals(expected.toList(), db.read { it.getAllAbsences() })
     }
 
-    private fun reportHolidays(
-        body: HolidayAbsenceRequest,
+    private fun reportFreePeriods(
+        body: FreePeriodsBody,
         expectedStatus: Int = 200,
         mockedDay: LocalDate = mockToday
     ) {
-        http.post("/citizen/holiday-period/holidays")
+        http.post("/citizen/holiday-period/holidays/free-period")
             .jsonBody(jsonMapper.writeValueAsString(body))
             .asUser(authenticatedParent)
             .withMockedTime(HelsinkiDateTime.of(mockedDay, LocalTime.of(0, 0)))
@@ -133,7 +106,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     private fun freeAbsence(start: LocalDate, end: LocalDate) =
-        HolidayAbsenceRequest(mapOf(child.id to ChildHolidays(listOf(), FiniteDateRange(start, end))))
+        FreePeriodsBody(mapOf(child.id to FiniteDateRange(start, end)))
 
     private fun createHolidayPeriod(period: HolidayPeriodBody) = db.transaction { it.createHolidayPeriod(period) }
 

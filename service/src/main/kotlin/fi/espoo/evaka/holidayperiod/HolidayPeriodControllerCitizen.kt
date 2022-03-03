@@ -7,7 +7,8 @@ package fi.espoo.evaka.holidayperiod
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.reservations.AbsenceInsert
-import fi.espoo.evaka.reservations.clearAbsencesWithinPeriod
+import fi.espoo.evaka.reservations.clearFreeAbsencesWithinPeriod
+import fi.espoo.evaka.reservations.clearOldAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.ChildId
@@ -38,67 +39,45 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
     }
 
-    @PostMapping("/holidays")
-    fun postHolidays(
+    @PostMapping("/holidays/free-period")
+    fun saveFreeHolidayPeriod(
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @RequestBody body: HolidayAbsenceRequest
+        @RequestBody body: FreePeriodsBody
     ) {
-        val childIds = body.childHolidays.keys
+        val childIds = body.freePeriods.keys
         Audit.HolidayAbsenceCreate.log(targetId = childIds.toSet().joinToString())
         accessControl.requirePermissionFor(user, Action.Global.CREATE_HOLIDAY_ABSENCE)
         accessControl.requireGuardian(user, childIds)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                // TODO handle reservable days
-                // TODO handle deadlines
+                // TODO replace with questionnaire
                 val holidayPeriod = tx.getActiveHolidayPeriod(evakaClock.today()) ?: throw BadRequest("No active holiday period")
-
-                // TODO use previous FREE_ABSENCES after deadline, do not modify
-                val freePeriods = body.childHolidays.entries
-                    .mapNotNull { (childId, selections) -> if (selections.freePeriod != null) childId to selections.freePeriod else null }
+                val freePeriodInserts = body.freePeriods.entries
+                    .mapNotNull { (childId, freePeriod) -> if (freePeriod != null) AbsenceInsert(childId, freePeriod, AbsenceType.FREE_ABSENCE) else null }
                     .onEach { (_, freePeriod) ->
                         if (holidayPeriod.freePeriod == null || !holidayPeriod.freePeriod.periodOptions.contains(freePeriod)) {
                             throw BadRequest("Free holiday period not found")
                         }
                     }
 
-                val otherHolidays = body.childHolidays.entries
-                    .map { (childId, selections) ->
-                        if (selections.holidays.any { !holidayPeriod.period.contains(it) }) {
-                            throw BadRequest("Holiday period does not contain selected holiday", "OUT_OF_HOLIDAY_PERIOD")
-                        }
-                        val allPeriods = (selections.holidays + selections.freePeriod).filterNotNull().toSet()
-                        if (selections.holidays.any { holiday -> allPeriods.any { it != holiday && it.overlaps(holiday) } }) {
-                            throw BadRequest("Overlapping holidays", "HOLIDAYS_OVERLAP")
-                        }
-                        childId to selections.holidays
-                    }
-
-                val absenceInserts = freePeriods.map { (childId, dateRange) ->
-                    AbsenceInsert(childId, dateRange, AbsenceType.FREE_ABSENCE)
-                } + otherHolidays.flatMap { (childId, dateRanges) ->
-                    dateRanges.map { AbsenceInsert(childId, it, AbsenceType.OTHER_ABSENCE) }
+                freePeriodInserts.flatMap { absence -> absence.dateRange.dates().map { absence.childId to it } }.let {
+                    // clear reservations on new free period
+                    tx.clearOldReservations(it)
+                    // clear absences on new free period
+                    tx.clearOldAbsences(it)
                 }
+                // clear all old free absences within holiday period
+                tx.clearFreeAbsencesWithinPeriod(holidayPeriod.period, childIds)
 
-                // clear reservations only from days with absences
-                tx.clearOldReservations(absenceInserts.flatMap { absence -> absence.dateRange.dates().map { absence.childId to it } })
-                // clear all absences within holiday period
-                tx.clearAbsencesWithinPeriod(holidayPeriod.period, childIds)
-
-                tx.insertAbsences(PersonId(user.id), absenceInserts)
+                tx.insertAbsences(PersonId(user.id), freePeriodInserts)
             }
         }
     }
 }
 
-data class ChildHolidays(
-    val holidays: List<FiniteDateRange>,
-    val freePeriod: FiniteDateRange? = null
-)
-
-data class HolidayAbsenceRequest(
-    val childHolidays: Map<ChildId, ChildHolidays>
+data class FreePeriodsBody(
+    val freePeriods: Map<ChildId, FiniteDateRange?>
 )

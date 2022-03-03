@@ -34,7 +34,7 @@ import DayView from './DayView'
 import HolidayPeriodBanner from './HolidayPeriodBanner'
 import ReservationModal from './ReservationModal'
 import { getReservations } from './api'
-import HolidayModal from './holiday-modal/HolidayModal'
+import FreePeriodSelectionModal from './holiday-modal/FreePeriodSelectionModal'
 
 async function getReservationsDefaultRange(): Promise<
   Result<ReservationsResponse>
@@ -185,8 +185,8 @@ const Page = React.memo(function CalendarPage() {
           availableChildren={response.children}
         />
       )}
-      {openModal?.type === 'holidays' && activeHolidayPeriod && (
-        <HolidayModal
+      {openModal?.type === 'holidays' && activeHolidayPeriod?.freePeriod && (
+        <FreePeriodSelectionModal
           close={closeModal}
           reload={loadDefaultRange}
           availableChildren={response.children}

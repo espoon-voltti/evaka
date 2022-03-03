@@ -52,12 +52,13 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
     batch.execute()
 }
 
-fun Database.Transaction.clearAbsencesWithinPeriod(period: FiniteDateRange, childIds: Set<ChildId>) {
+fun Database.Transaction.clearFreeAbsencesWithinPeriod(period: FiniteDateRange, childIds: Set<ChildId>) {
     this.createUpdate(
-        "DELETE FROM absence WHERE child_id = ANY(:childIds) AND :period @> date"
+        "DELETE FROM absence WHERE child_id = ANY(:childIds) AND :period @> date AND absence_type = :absenceType"
     )
         .bind("childIds", childIds.toTypedArray())
         .bind("period", period)
+        .bind("absenceType", AbsenceType.FREE_ABSENCE)
         .execute()
 }
 

@@ -6,7 +6,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { deserializeHolidayPeriod } from 'lib-common/api-types/holiday-period'
 import {
   HolidayPeriod,
-  HolidayAbsenceRequest
+  FreePeriodsBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import { JsonOf } from 'lib-common/json'
 
@@ -19,11 +19,11 @@ export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export async function postHolidayAbsences(
-  request: HolidayAbsenceRequest
+export async function postFreePeriods(
+  request: FreePeriodsBody
 ): Promise<Result<void>> {
   return client
-    .post('/citizen/holiday-period/holidays', request)
+    .post('/citizen/holiday-period/holidays/free-period', request)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
