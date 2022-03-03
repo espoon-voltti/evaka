@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -79,22 +78,6 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
                 ).bind("userId", user.id).bind("applicationId", applicationId)
                     .mapTo<UserRole>()
                     .toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForUnitGroup(user: AuthenticatedUser, groupId: GroupId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM daycare_group_acl_view
-WHERE employee_id = :userId AND daycare_group_id = :groupId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("groupId", groupId).mapTo<UserRole>().toSet()
             }
         }
     )

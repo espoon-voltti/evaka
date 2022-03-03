@@ -17,8 +17,7 @@ import fi.espoo.evaka.shared.utils.toEnumSet
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
-private typealias GetRolesInPlacementGroup<T> = (tx: Database.Read, employeeId: EmployeeId, targets: Set<T>) -> Iterable<GroupRole>
-private data class GroupRole(val id: Id<*>, val role: UserRole)
+private typealias GetRolesInPlacementGroup<T> = (tx: Database.Read, employeeId: EmployeeId, targets: Set<T>) -> Iterable<IdAndRole>
 
 data class HasRoleInChildPlacementGroup(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasRoleInChildPlacementGroup> {
     init {

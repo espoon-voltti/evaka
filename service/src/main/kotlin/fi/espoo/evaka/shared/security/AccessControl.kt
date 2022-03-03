@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -103,15 +102,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "decision.id",
         permittedRoleActions::decisionActions
-    )
-    private val group = ActionConfig(
-        """
-SELECT daycare_group_id AS id, role
-FROM daycare_group_acl_view
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "daycare_group_id",
-        permittedRoleActions::groupActions
     )
     private val groupNote = ActionConfig(
         """
@@ -443,7 +433,6 @@ WHERE employee_id = :userId
             is Action.FeeThresholds -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeThresholdsActions)
             is Action.GroupNote -> this.groupNote.hasPermission(user, action, *ids as Array<GroupNoteId>)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, *ids as Array<GroupPlacementId>)
-            is Action.Group -> this.group.hasPermission(user, action, *ids as Array<GroupId>)
             is Action.Income -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::incomeActions)
             is Action.Invoice -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::invoiceActions)
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
@@ -562,11 +551,6 @@ WHERE employee_id = :userId
             .filter { action -> hasPermissionForInternal(user, action, personId) }
             .toSet()
     }
-
-    fun getPermittedGroupActions(
-        user: AuthenticatedUser,
-        ids: Collection<GroupId>
-    ): Map<GroupId, Set<Action.Group>> = this.group.getPermittedActions(user, ids)
 
     fun getPermittedGroupPlacementActions(
         user: AuthenticatedUser,

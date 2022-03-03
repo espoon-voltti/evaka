@@ -54,11 +54,13 @@ import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInAnyUnit
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementGroup
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementUnit
+import fi.espoo.evaka.shared.security.actionrule.HasRoleInGroupUnit
 import fi.espoo.evaka.shared.security.actionrule.IsChildGuardian
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsCitizensOwn
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.IsMobileInChildPlacementUnit
+import fi.espoo.evaka.shared.security.actionrule.IsMobileInGroupUnit
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.toEnumSet
@@ -377,29 +379,31 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Group(private val roles: EnumSet<UserRole>) : LegacyScopedAction<GroupId> {
-        UPDATE(UNIT_SUPERVISOR),
-        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR),
+    enum class Group(override vararg val defaultRules: ScopedActionRule<in GroupId>) : ScopedAction<GroupId> {
+        UPDATE(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
 
-        CREATE_ABSENCES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        READ_ABSENCES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        DELETE_ABSENCES(UNIT_SUPERVISOR, STAFF),
+        CREATE_ABSENCES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
+        READ_ABSENCES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
+        DELETE_ABSENCES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF).group),
 
-        READ_STAFF_ATTENDANCES(FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, MOBILE, SPECIAL_EDUCATION_TEACHER),
-        UPDATE_STAFF_ATTENDANCES(UNIT_SUPERVISOR, STAFF, MOBILE),
+        READ_STAFF_ATTENDANCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInGroupUnit(requirePinLogin = false).group),
+        UPDATE_STAFF_ATTENDANCES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF).group, IsMobileInGroupUnit(requirePinLogin = false).group),
 
-        READ_CARETAKERS(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        CREATE_CARETAKERS(UNIT_SUPERVISOR),
-        UPDATE_CARETAKERS(UNIT_SUPERVISOR),
-        DELETE_CARETAKERS(UNIT_SUPERVISOR),
+        READ_CARETAKERS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
+        CREATE_CARETAKERS(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
+        UPDATE_CARETAKERS(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
+        DELETE_CARETAKERS(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
 
-        CREATE_NOTE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
-        READ_NOTES(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE)
-        ;
+        CREATE_NOTE(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInGroupUnit(requirePinLogin = false).group),
+        READ_NOTES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInGroupUnit(requirePinLogin = false).group),
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
+        MARK_DEPARTURE(IsMobileInGroupUnit(requirePinLogin = false).group),
+        MARK_EXTERNAL_DEPARTURE(IsMobileInGroupUnit(requirePinLogin = false).group),
+        MARK_ARRIVAL(IsMobileInGroupUnit(requirePinLogin = false).group),
+        MARK_EXTERNAL_ARRIVAL(IsMobileInGroupUnit(requirePinLogin = false).group);
+
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class GroupNote(private val roles: EnumSet<UserRole>) : LegacyScopedAction<GroupNoteId> {
         UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),

@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
@@ -66,3 +68,5 @@ data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>)
 interface ActionRuleParams<This> {
     fun merge(other: This): This
 }
+
+internal data class IdAndRole(val id: Id<*>, val role: UserRole)
