@@ -943,8 +943,8 @@ export function createBackupCareFixture(
     childId,
     unitId: unitId,
     period: {
-      start: '2022-02-01',
-      end: '2022-02-03'
+      start: '2023-02-01',
+      end: '2023-02-03'
     }
   }
 }
