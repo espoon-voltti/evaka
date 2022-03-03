@@ -16,6 +16,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faEuroSign } from 'lib-icons'
 
+import { getChildPlacementPeriods } from '../../api/child/placements'
 import {
   createIncome,
   deleteIncome,
@@ -121,6 +122,10 @@ export const Incomes = React.memo(function Incomes({
     () => getIncomes(personId),
     [personId]
   )
+  const [childPlacementPeriods] = useApiState(
+    () => getChildPlacementPeriods(personId),
+    [personId]
+  )
 
   const [openIncomeRows, setOpenIncomeRows] = useState<IncomeId[]>([])
   const toggleIncomeRow = useCallback((id: IncomeId) => {
@@ -141,12 +146,13 @@ export const Incomes = React.memo(function Incomes({
   useEffect(reloadIncomes, [reloadIncomes])
 
   useEffect(() => {
-    if (incomes.isSuccess) {
+    if (incomes.isSuccess && childPlacementPeriods.isSuccess) {
       const missingIncomePeriodsString = getMissingIncomePeriodsString(
         incomes.value,
+        childPlacementPeriods.value,
         i18n.common.and.toLowerCase()
       )
-      if (missingIncomePeriodsString.length) {
+      if (missingIncomePeriodsString) {
         setErrorMessage({
           type: 'warning',
           title:
@@ -158,7 +164,7 @@ export const Incomes = React.memo(function Incomes({
         })
       }
     }
-  }, [i18n, incomes, setErrorMessage])
+  }, [i18n, incomes, childPlacementPeriods, setErrorMessage])
 
   const incomeTypeOptions = useIncomeTypeOptions()
 

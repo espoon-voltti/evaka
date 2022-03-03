@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DaycarePlacementWithDetails,
   PlacementType
@@ -110,5 +111,25 @@ export async function deletePlacement(
   return client
     .delete(`/placements/${placementId}`)
     .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getChildPlacementPeriods(
+  adultId: UUID
+): Promise<Result<FiniteDateRange[]>> {
+  return client
+    .get<JsonOf<FiniteDateRange[]>>(
+      `/placements/child-placement-periods/${adultId}`
+    )
+    .then(({ data }) =>
+      data.map(
+        ({ start, end }) =>
+          new FiniteDateRange(
+            LocalDate.parseIso(start),
+            LocalDate.parseIso(end)
+          )
+      )
+    )
+    .then((periods) => Success.of(periods))
     .catch((e) => Failure.fromError(e))
 }

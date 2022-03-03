@@ -42,6 +42,7 @@ import {
   DevVardaServiceNeed,
   EmployeeDetail,
   EmployeePin,
+  FridgeChild,
   PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
@@ -66,6 +67,7 @@ import {
   insertEmployeeFixture,
   insertEmployeePins,
   insertFeeThresholds,
+  insertFridgeChildren,
   insertGuardianFixtures,
   insertHolidayPeriod,
   insertIncome,
@@ -1346,6 +1348,16 @@ export class Fixture {
       guardianId: guardian.data.id
     })
   }
+
+  static fridgeChild() {
+    return new FridgeChildBuilder({
+      id: uuidv4(),
+      headOfChild: 'not set',
+      childId: 'not set',
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 12, 31)
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1744,5 +1756,16 @@ export class GuardianBuilder extends FixtureBuilder<{
 
   copy() {
     return new GuardianBuilder({ ...this.data })
+  }
+}
+
+export class FridgeChildBuilder extends FixtureBuilder<FridgeChild> {
+  async save() {
+    await insertFridgeChildren([this.data])
+    return this
+  }
+
+  copy() {
+    return new FridgeChildBuilder({ ...this.data })
   }
 }

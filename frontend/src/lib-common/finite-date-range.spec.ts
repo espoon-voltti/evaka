@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from './finite-date-range'
+import FiniteDateRange, { mergeDateRanges } from './finite-date-range'
 import LocalDate from './local-date'
 
 describe('FiniteDateRange', () => {
@@ -206,5 +206,48 @@ describe('FiniteDateRange', () => {
     it('should not include when date is after', () => {
       expect(range(7, 15).includes(localDate(24))).toEqual(false)
     })
+  })
+})
+
+describe('mergeDateRanges', () => {
+  it('should merge ordered adjacent ranges', () => {
+    const ranges = [
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)),
+      new FiniteDateRange(LocalDate.of(2020, 1, 3), LocalDate.of(2020, 1, 4))
+    ]
+    expect(mergeDateRanges(ranges)).toEqual([
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 4))
+    ])
+  })
+
+  it('should merge unordered adjacent ranges', () => {
+    const ranges = [
+      new FiniteDateRange(LocalDate.of(2020, 1, 3), LocalDate.of(2020, 1, 4)),
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2))
+    ]
+    expect(mergeDateRanges(ranges)).toEqual([
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 4))
+    ])
+  })
+
+  it('should not merge ranges with a gap between them', () => {
+    const ranges = [
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)),
+      new FiniteDateRange(LocalDate.of(2020, 1, 4), LocalDate.of(2020, 1, 5))
+    ]
+    expect(mergeDateRanges(ranges)).toEqual([
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)),
+      new FiniteDateRange(LocalDate.of(2020, 1, 4), LocalDate.of(2020, 1, 5))
+    ])
+  })
+
+  it('should merge ranges with overlap', () => {
+    const ranges = [
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 3)),
+      new FiniteDateRange(LocalDate.of(2020, 1, 3), LocalDate.of(2020, 1, 4))
+    ]
+    expect(mergeDateRanges(ranges)).toEqual([
+      new FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 4))
+    ])
   })
 })
