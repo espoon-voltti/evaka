@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -70,16 +69,6 @@ WHERE employee_id = :userId
         permittedRoleActions::attachmentActions,
     )
 
-    private val groupNote = ActionConfig(
-        """
-SELECT gn.id, role
-FROM daycare_group_acl_view
-JOIN group_note gn ON gn.group_id = daycare_group_acl_view.daycare_group_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "gn.id",
-        permittedRoleActions::groupNoteActions
-    )
     private val groupPlacement = ActionConfig(
         """
 SELECT daycare_group_placement.id, role
@@ -395,7 +384,6 @@ WHERE employee_id = :userId
             is Action.FeeAlteration -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeAlterationActions)
             is Action.FeeDecision -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeDecisionActions)
             is Action.FeeThresholds -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::feeThresholdsActions)
-            is Action.GroupNote -> this.groupNote.hasPermission(user, action, *ids as Array<GroupNoteId>)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, *ids as Array<GroupPlacementId>)
             is Action.Income -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::incomeActions)
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }

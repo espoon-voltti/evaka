@@ -398,13 +398,11 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class GroupNote(private val roles: EnumSet<UserRole>) : LegacyScopedAction<GroupNoteId> {
-        UPDATE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE),
-        DELETE(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE);
+    enum class GroupNote(override vararg val defaultRules: ScopedActionRule<in GroupNoteId>) : ScopedAction<GroupNoteId> {
+        UPDATE(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).groupNote, IsMobileInGroupUnit(requirePinLogin = false).groupNote),
+        DELETE(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).groupNote, IsMobileInGroupUnit(requirePinLogin = false).groupNote);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class GroupPlacement(private val roles: EnumSet<UserRole>) : LegacyScopedAction<GroupPlacementId> {
         UPDATE(UNIT_SUPERVISOR),

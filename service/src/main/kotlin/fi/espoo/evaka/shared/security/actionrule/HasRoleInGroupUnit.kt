@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -57,6 +58,23 @@ SELECT daycare_group_id AS id, role
 FROM daycare_group_acl_view
 WHERE employee_id = :userId
 AND daycare_group_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val groupNote = DatabaseActionRule(
+        this,
+        Query<GroupNoteId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT gn.id, role
+FROM daycare_group_acl_view
+JOIN group_note gn ON gn.group_id = daycare_group_acl_view.daycare_group_id
+WHERE employee_id = :userId
+AND gn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)
