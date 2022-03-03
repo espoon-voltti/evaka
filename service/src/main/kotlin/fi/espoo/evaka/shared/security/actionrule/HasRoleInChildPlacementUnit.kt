@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -205,6 +206,23 @@ FROM child_acl_view
 JOIN child_images img ON child_acl_view.child_id = img.child_id
 WHERE employee_id = :userId
 AND img.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val decision = DatabaseActionRule(
+        this,
+        Query<DecisionId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT decision.id, role
+FROM decision
+JOIN daycare_acl_view ON decision.unit_id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+AND decision.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

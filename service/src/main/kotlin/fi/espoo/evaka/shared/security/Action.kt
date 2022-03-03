@@ -341,13 +341,10 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Decision(private val roles: EnumSet<UserRole>) : LegacyScopedAction<DecisionId> {
-        DOWNLOAD_PDF(SERVICE_WORKER, UNIT_SUPERVISOR)
-        ;
+    enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) : ScopedAction<DecisionId> {
+        DOWNLOAD_PDF(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).decision);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class FeeAlteration(private val roles: EnumSet<UserRole>) : LegacyScopedAction<FeeAlterationId> {
         UPDATE(FINANCE_ADMIN),
