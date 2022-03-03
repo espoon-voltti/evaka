@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -62,6 +63,23 @@ JOIN person child ON img.child_id = child.id
 JOIN guardian ON child.id = guardian.child_id
 WHERE img.id = ANY(:ids)
 AND guardian_id = :guardianId
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("guardianId", guardianId)
+                .mapTo()
+        }
+    )
+    val pedagogicalDocument = DatabaseActionRule(
+        this,
+        Query<PedagogicalDocumentId> { tx, guardianId, ids ->
+            tx.createQuery(
+                """
+SELECT pd.id
+FROM pedagogical_document pd
+JOIN guardian g ON pd.child_id = g.child_id
+WHERE pd.id = ANY(:ids)
+AND g.guardian_id = :guardianId
                 """.trimIndent()
             )
                 .bind("ids", ids.toTypedArray())

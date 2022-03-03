@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -57,6 +58,23 @@ data class HasRoleInChildPlacementGroup(val oneOf: EnumSet<UserRole>) : ActionRu
     FROM child_acl_view
     WHERE employee_id = :userId
     AND child_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val pedagogicalDocument = DatabaseActionRule(
+        this,
+        Query<PedagogicalDocumentId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT pd.id, role
+FROM pedagogical_document pd
+JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+AND pd.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -150,6 +151,23 @@ FROM child_acl_view
 JOIN child_images img ON child_acl_view.child_id = img.child_id
 WHERE employee_id = :userId
 AND img.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val pedagogicalDocument = DatabaseActionRule(
+        this,
+        Query<PedagogicalDocumentId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT pd.id, role
+FROM pedagogical_document pd
+JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+AND pd.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

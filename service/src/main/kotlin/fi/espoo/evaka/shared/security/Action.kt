@@ -511,15 +511,26 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class PedagogicalDocument(private val roles: EnumSet<UserRole>) : LegacyScopedAction<PedagogicalDocumentId> {
-        CREATE_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        DELETE(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        READ(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        UPDATE(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER);
+    enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
+        CREATE_ATTACHMENT(
+            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasRoleInChildPlacementGroup(GROUP_STAFF).pedagogicalDocument
+        ),
+        DELETE(
+            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasRoleInChildPlacementGroup(GROUP_STAFF).pedagogicalDocument
+        ),
+        READ(
+            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasRoleInChildPlacementGroup(GROUP_STAFF).pedagogicalDocument,
+            IsChildGuardian(allowWeakLogin = false).pedagogicalDocument
+        ),
+        UPDATE(
+            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasRoleInChildPlacementGroup(GROUP_STAFF).pedagogicalDocument
+        );
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Person(private val roles: EnumSet<UserRole>) : LegacyScopedAction<PersonId> {
         ADD_SSN(SERVICE_WORKER, FINANCE_ADMIN),

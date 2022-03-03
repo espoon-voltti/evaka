@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -113,26 +112,6 @@ FROM child_acl_view
 WHERE employee_id = :userId AND child_id = :childId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("childId", childId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForPedagogicalDocument(user: AuthenticatedUser, documentId: PedagogicalDocumentId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM pedagogical_document pd
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
-WHERE child_acl_view.employee_id = :userId AND pd.id = :documentId
-                    """.trimIndent()
-                )
-                    .bind("userId", user.id)
-                    .bind("documentId", documentId)
-                    .mapTo<UserRole>().toSet()
             }
         }
     )

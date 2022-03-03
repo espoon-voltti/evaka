@@ -32,7 +32,6 @@ interface PermittedRoleActions {
     fun pairingActions(role: UserRole): Set<Action.Pairing>
     fun parentshipActions(role: UserRole): Set<Action.Parentship>
     fun partnershipActions(role: UserRole): Set<Action.Partnership>
-    fun pedagogicalDocumentActions(role: UserRole): Set<Action.PedagogicalDocument>
     fun personActions(role: UserRole): Set<Action.Person>
     fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed>
     fun unitActions(role: UserRole): Set<Action.Unit>
@@ -67,7 +66,6 @@ class StaticPermittedRoleActions(
     val pairing: ActionsByRole<Action.Pairing> = getDefaults(),
     val parentship: ActionsByRole<Action.Parentship> = getDefaults(),
     val partnership: ActionsByRole<Action.Partnership> = getDefaults(),
-    val pedagogicalDocument: ActionsByRole<Action.PedagogicalDocument> = getDefaults(),
     val person: ActionsByRole<Action.Person> = getDefaults(),
     val serviceNeed: ActionsByRole<Action.ServiceNeed> = getDefaults(),
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
@@ -95,7 +93,6 @@ class StaticPermittedRoleActions(
     override fun pairingActions(role: UserRole): Set<Action.Pairing> = pairing[role] ?: emptySet()
     override fun parentshipActions(role: UserRole): Set<Action.Parentship> = parentship[role] ?: emptySet()
     override fun partnershipActions(role: UserRole): Set<Action.Partnership> = partnership[role] ?: emptySet()
-    override fun pedagogicalDocumentActions(role: UserRole): Set<Action.PedagogicalDocument> = pedagogicalDocument[role] ?: emptySet()
     override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()
     override fun serviceNeedActions(role: UserRole): Set<Action.ServiceNeed> = serviceNeed[role] ?: emptySet()
     override fun unitActions(role: UserRole): Set<Action.Unit> = unit[role] ?: emptySet()

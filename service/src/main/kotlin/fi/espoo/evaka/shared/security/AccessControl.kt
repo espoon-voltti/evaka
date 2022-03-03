@@ -13,7 +13,6 @@ import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageDraft
 import fi.espoo.evaka.messaging.hasPermissionForMessageDraft
-import fi.espoo.evaka.pedagogicaldocument.citizenHasPermissionForPedagogicalDocument
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
@@ -34,7 +33,6 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
-import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
@@ -590,38 +588,6 @@ WHERE employee_id = :userId
             .toSet()
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.PedagogicalDocument, id: PedagogicalDocumentId) {
-        when (user) {
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.PedagogicalDocument.READ -> {
-                    val hasPermission = Database(jdbi).connect { db ->
-                        db.read {
-                            it.citizenHasPermissionForPedagogicalDocument(
-                                user,
-                                id
-                            )
-                        }
-                    }
-                    if (!hasPermission) throw Forbidden()
-                }
-                else -> throw Forbidden()
-            }
-            is AuthenticatedUser.Employee -> when (action) {
-                Action.PedagogicalDocument.CREATE_ATTACHMENT,
-                Action.PedagogicalDocument.DELETE,
-                Action.PedagogicalDocument.READ,
-                Action.PedagogicalDocument.UPDATE ->
-                    assertPermission(
-                        user = user,
-                        getAclRoles = { @Suppress("DEPRECATION") acl.getRolesForPedagogicalDocument(user, id).roles },
-                        action = action,
-                        mapping = permittedRoleActions::pedagogicalDocumentActions
-                    )
-            }
-            else -> throw Forbidden()
-        }
-    }
-
     fun getPermittedGroupActions(
         user: AuthenticatedUser,
         ids: Collection<GroupId>
@@ -847,29 +813,6 @@ WHERE employee_id = :userId
                 acc
             }
         else -> ids.associate { (it to enumSetOf(*user.roles.toTypedArray())) }
-    }
-
-    private inline fun <reified A> assertPermission(
-        user: AuthenticatedUser,
-        getAclRoles: () -> Set<UserRole>,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ) where A : Action, A : Enum<A> {
-        val globalRoles = when (user) {
-            is AuthenticatedUser.Employee -> user.globalRoles
-            else -> user.roles
-        }
-        if (globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) })
-            return
-
-        if (UserRole.SCOPED_ROLES.any { mapping(it).contains(action) }) {
-            // the outer if-clause avoids unnecessary db query if no scoped role gives permission anyway
-            if (getAclRoles().any { mapping(it).contains(action) }) {
-                return
-            }
-        }
-
-        throw Forbidden()
     }
 
     private inline fun <reified A> hasPermissionThroughRoles(

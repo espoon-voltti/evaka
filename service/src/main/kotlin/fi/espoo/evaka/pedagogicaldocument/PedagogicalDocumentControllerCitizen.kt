@@ -130,22 +130,6 @@ private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): In
         .mapTo<Int>()
         .first()
 
-fun Database.Read.citizenHasPermissionForPedagogicalDocument(user: AuthenticatedUser, documentId: PedagogicalDocumentId): Boolean =
-    this.createQuery(
-        """
-            SELECT EXISTS (
-                SELECT 1 FROM pedagogical_document pd
-                JOIN guardian g ON pd.child_id = g.child_id
-                WHERE pd.id = :documentId
-                AND g.guardian_id = :userId
-            )
-        """.trimIndent()
-    )
-        .bind("documentId", documentId)
-        .bind("userId", user.id)
-        .mapTo<Boolean>()
-        .first()
-
 data class PedagogicalDocumentCitizen(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
