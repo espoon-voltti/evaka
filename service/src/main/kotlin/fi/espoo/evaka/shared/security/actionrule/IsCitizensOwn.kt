@@ -14,7 +14,9 @@ import org.jdbi.v3.core.kotlin.mapTo
 
 private typealias FilterByOwnership<T> = (tx: Database.Read, citizenId: PersonId, targets: Set<T>) -> Iterable<T>
 
-data class IsCitizensOwn(val allowWeakLogin: Boolean) {
+data class IsCitizensOwn(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizensOwn> {
+    override fun merge(other: IsCitizensOwn): IsCitizensOwn = IsCitizensOwn(this.allowWeakLogin || other.allowWeakLogin)
+
     private data class Query<I>(private val filterByOwnership: FilterByOwnership<I>) : DatabaseActionRule.Query<I, IsCitizensOwn> {
         override fun execute(
             tx: Database.Read,

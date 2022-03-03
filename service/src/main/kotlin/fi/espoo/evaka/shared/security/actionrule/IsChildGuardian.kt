@@ -16,7 +16,9 @@ import org.jdbi.v3.core.kotlin.mapTo
 
 private typealias FilterByGuardian<T> = (tx: Database.Read, personId: PersonId, targets: Set<T>) -> Iterable<T>
 
-data class IsChildGuardian(val allowWeakLogin: Boolean) {
+data class IsChildGuardian(val allowWeakLogin: Boolean) : ActionRuleParams<IsChildGuardian> {
+    override fun merge(other: IsChildGuardian): IsChildGuardian = IsChildGuardian(this.allowWeakLogin || other.allowWeakLogin)
+
     private data class Query<T>(private val filterByGuardian: FilterByGuardian<T>) : DatabaseActionRule.Query<T, IsChildGuardian> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsChildGuardian>> = when (user) {
             is AuthenticatedUser.Citizen -> user.authLevel

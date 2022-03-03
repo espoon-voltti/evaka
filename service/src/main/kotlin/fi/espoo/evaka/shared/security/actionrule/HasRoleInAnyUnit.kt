@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
-data class HasRoleInAnyUnit(val oneOf: EnumSet<UserRole>) : StaticActionRule {
+data class HasRoleInAnyUnit(val oneOf: EnumSet<UserRole>) : StaticActionRule, ActionRuleParams<HasRoleInAnyUnit> {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
@@ -17,4 +17,8 @@ data class HasRoleInAnyUnit(val oneOf: EnumSet<UserRole>) : StaticActionRule {
 
     override fun isPermitted(user: AuthenticatedUser): Boolean =
         user is AuthenticatedUser.Employee && user.allScopedRoles.any { this.oneOf.contains(it) }
+
+    override fun merge(other: HasRoleInAnyUnit): HasRoleInAnyUnit = HasRoleInAnyUnit(
+        (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
+    )
 }

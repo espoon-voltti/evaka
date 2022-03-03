@@ -15,7 +15,10 @@ import org.jdbi.v3.core.kotlin.mapTo
 
 private typealias FilterByMobile<T> = (tx: Database.Read, mobileId: MobileDeviceId, targets: Set<T>) -> Iterable<T>
 
-data class IsMobileInChildPlacementUnit(val requirePinLogin: Boolean) {
+data class IsMobileInChildPlacementUnit(val requirePinLogin: Boolean) : ActionRuleParams<IsMobileInChildPlacementUnit> {
+    override fun merge(other: IsMobileInChildPlacementUnit): IsMobileInChildPlacementUnit =
+        IsMobileInChildPlacementUnit(this.requirePinLogin && other.requirePinLogin)
+
     private data class Query<T>(private val filterByMobile: FilterByMobile<T>) : DatabaseActionRule.Query<T, IsMobileInChildPlacementUnit> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobileInChildPlacementUnit>> = when (user) {
             is AuthenticatedUser.MobileDevice -> filterByMobile(tx, MobileDeviceId(user.id), targets).associateWith { Deferred(user.authLevel) }

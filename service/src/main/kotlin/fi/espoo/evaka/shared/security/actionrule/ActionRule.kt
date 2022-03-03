@@ -62,3 +62,7 @@ data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>)
         fun evaluate(params: P): AccessControlDecision
     }
 }
+
+interface ActionRuleParams<This> {
+    fun merge(other: This): This
+}

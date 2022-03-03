@@ -19,11 +19,15 @@ import java.util.EnumSet
 private typealias GetRolesInPlacementGroup<T> = (tx: Database.Read, employeeId: EmployeeId, targets: Set<T>) -> Iterable<GroupRole>
 private data class GroupRole(val id: Id<*>, val role: UserRole)
 
-data class HasRoleInChildPlacementGroup(val oneOf: EnumSet<UserRole>) {
+data class HasRoleInChildPlacementGroup(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasRoleInChildPlacementGroup> {
     init {
         oneOf.forEach { check(it.isGroupScopedRole()) { "Expected a group-scoped role, got $it" } }
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
+
+    override fun merge(other: HasRoleInChildPlacementGroup): HasRoleInChildPlacementGroup = HasRoleInChildPlacementGroup(
+        (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
+    )
 
     private data class Query<T : Id<*>>(private val getRolesInPlacementGroup: GetRolesInPlacementGroup<T>) : DatabaseActionRule.Query<T, HasRoleInChildPlacementGroup> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasRoleInChildPlacementGroup>> = when (user) {

@@ -6,10 +6,12 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 
-data class IsCitizen(val allowWeakLogin: Boolean) : StaticActionRule {
+data class IsCitizen(val allowWeakLogin: Boolean) : StaticActionRule, ActionRuleParams<IsCitizen> {
     override fun isPermitted(user: AuthenticatedUser): Boolean = when (user) {
         is AuthenticatedUser.Citizen -> true
         is AuthenticatedUser.WeakCitizen -> allowWeakLogin
         else -> false
     }
+
+    override fun merge(other: IsCitizen): IsCitizen = IsCitizen(this.allowWeakLogin || other.allowWeakLogin)
 }

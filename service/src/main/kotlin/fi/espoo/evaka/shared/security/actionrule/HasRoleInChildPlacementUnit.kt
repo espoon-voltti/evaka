@@ -25,11 +25,15 @@ import java.util.EnumSet
 private typealias GetRolesInPlacementUnit<T> = (tx: Database.Read, employeeId: EmployeeId, targets: Set<T>) -> Iterable<UnitRole>
 private data class UnitRole(val id: Id<*>, val role: UserRole)
 
-data class HasRoleInChildPlacementUnit(val oneOf: EnumSet<UserRole>) {
+data class HasRoleInChildPlacementUnit(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasRoleInChildPlacementUnit> {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
+
+    override fun merge(other: HasRoleInChildPlacementUnit): HasRoleInChildPlacementUnit = HasRoleInChildPlacementUnit(
+        (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
+    )
 
     private data class Query<T : Id<*>>(private val getRolesInPlacementUnit: GetRolesInPlacementUnit<T>) :
         DatabaseActionRule.Query<T, HasRoleInChildPlacementUnit> {
