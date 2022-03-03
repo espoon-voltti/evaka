@@ -450,16 +450,14 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class Invoice(private val roles: EnumSet<UserRole>) : LegacyScopedAction<InvoiceId> {
-        READ(FINANCE_ADMIN),
-        UPDATE(FINANCE_ADMIN),
-        SEND(FINANCE_ADMIN),
-        DELETE(FINANCE_ADMIN),
+    enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) : ScopedAction<InvoiceId> {
+        READ(HasGlobalRole(FINANCE_ADMIN)),
+        UPDATE(HasGlobalRole(FINANCE_ADMIN)),
+        SEND(HasGlobalRole(FINANCE_ADMIN)),
+        DELETE(HasGlobalRole(FINANCE_ADMIN)),
         ;
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class MessageContent(private val roles: EnumSet<UserRole>) : LegacyScopedAction<MessageContentId> {
         ;

@@ -434,7 +434,6 @@ WHERE employee_id = :userId
             is Action.GroupNote -> this.groupNote.hasPermission(user, action, *ids as Array<GroupNoteId>)
             is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, *ids as Array<GroupPlacementId>)
             is Action.Income -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::incomeActions)
-            is Action.Invoice -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::invoiceActions)
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
             is Action.MobileDevice -> this.mobileDevice.hasPermission(user, action, *ids as Array<MobileDeviceId>)
             is Action.Pairing -> this.pairing.hasPermission(user, action, *ids as Array<PairingId>)
