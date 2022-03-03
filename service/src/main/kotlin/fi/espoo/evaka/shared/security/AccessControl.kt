@@ -222,20 +222,6 @@ WHERE employee_id = :userId
             .hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 
-    fun requireGuardian(user: AuthenticatedUser, childIds: Set<ChildId>) {
-        val dependants = Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    "SELECT child_id FROM guardian g WHERE g.guardian_id = :userId"
-                ).bind("userId", user.id).mapTo<ChildId>().list()
-            }
-        }
-
-        if (childIds.any { !dependants.contains(it) }) {
-            throw Forbidden("Not a guardian of a child")
-        }
-    }
-
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.StaticAction) = checkPermissionFor(user, action).assert()
     fun hasPermissionFor(user: AuthenticatedUser, action: Action.StaticAction): Boolean = checkPermissionFor(user, action).isPermitted()
     private fun checkPermissionFor(user: AuthenticatedUser, action: Action.StaticAction): AccessControlDecision {
@@ -260,14 +246,24 @@ WHERE employee_id = :userId
             .toEnumSet()
     }
 
-    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T) = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action, targets.asIterable()).values.forEach { it.assert() }
+    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T) =
+        requirePermissionFor(user, action, targets.asIterable())
+    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>) = Database(jdbi).connect { dbc ->
+        checkPermissionFor(dbc, user, action, targets).values.forEach { it.assert() }
     }
 
-    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T): Boolean = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action, targets.asIterable()).values.all { it.isPermitted() }
+    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T): Boolean =
+        hasPermissionFor(user, action, targets.asIterable())
+    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>): Boolean = Database(jdbi).connect { dbc ->
+        checkPermissionFor(dbc, user, action, targets).values.all { it.isPermitted() }
     }
 
+    fun <T> checkPermissionFor(
+        dbc: Database.Connection,
+        user: AuthenticatedUser,
+        action: Action.ScopedAction<T>,
+        vararg targets: T
+    ): Map<T, AccessControlDecision> = checkPermissionFor(dbc, user, action, targets.asIterable())
     fun <T> checkPermissionFor(
         dbc: Database.Connection,
         user: AuthenticatedUser,

@@ -160,8 +160,7 @@ sealed interface Action {
         READ_HOLIDAY_PERIOD,
         READ_HOLIDAY_PERIODS(IsCitizen(allowWeakLogin = true)),
         DELETE_HOLIDAY_PERIOD,
-        UPDATE_HOLIDAY_PERIOD,
-        CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = false));
+        UPDATE_HOLIDAY_PERIOD;
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -256,11 +255,14 @@ sealed interface Action {
             IsChildGuardian(allowWeakLogin = false).child
         ),
 
-        CREATE_ABSENCE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
+        CREATE_ABSENCE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, IsChildGuardian(allowWeakLogin = true).child),
         READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child),
         READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
         DELETE_ABSENCE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF).child),
         DELETE_ABSENCE_RANGE(IsMobileInChildPlacementUnit(requirePinLogin = false).child),
+
+        CREATE_HOLIDAY_ABSENCE(IsChildGuardian(allowWeakLogin = false).child),
+        CREATE_RESERVATION(IsChildGuardian(allowWeakLogin = true).child),
 
         READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
         UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
