@@ -82,7 +82,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'dependants', open: false },
     { component: 'applications', open: false },
     { component: 'decisions', open: false },
-    { component: 'income', open: true },
+    { component: 'income', open: false },
     { component: 'fee-decisions', open: false },
     { component: 'invoices', open: false },
     { component: 'voucherValueDecisions', open: false }

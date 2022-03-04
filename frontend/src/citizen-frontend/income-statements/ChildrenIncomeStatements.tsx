@@ -131,6 +131,7 @@ const ChildIncomeStatementsTable = React.memo(
                 currentPage={page}
                 setPage={setPage}
                 label={t.common.page}
+                hideIfOnlyOnePage={true}
               />
             </>
           ) : (
