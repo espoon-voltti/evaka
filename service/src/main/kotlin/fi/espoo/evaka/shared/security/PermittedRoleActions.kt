@@ -14,7 +14,6 @@ import java.util.EnumSet
  */
 interface PermittedRoleActions {
     fun attachmentActions(role: UserRole): Set<Action.Attachment>
-    fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement>
     fun incomeActions(role: UserRole): Set<Action.Income>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
     fun messageDraftActions(role: UserRole): Set<Action.MessageDraft>
@@ -37,7 +36,6 @@ interface PermittedRoleActions {
  */
 class StaticPermittedRoleActions(
     val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
-    val groupPlacement: ActionsByRole<Action.GroupPlacement> = getDefaults(),
     val income: ActionsByRole<Action.Income> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
     val messageDraft: ActionsByRole<Action.MessageDraft> = getDefaults(),
@@ -53,7 +51,6 @@ class StaticPermittedRoleActions(
     val voucherValueDecision: ActionsByRole<Action.VoucherValueDecision> = getDefaults(),
 ) : PermittedRoleActions {
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
-    override fun groupPlacementActions(role: UserRole): Set<Action.GroupPlacement> = groupPlacement[role] ?: emptySet()
     override fun incomeActions(role: UserRole): Set<Action.Income> = income[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
     override fun messageDraftActions(role: UserRole): Set<Action.MessageDraft> = messageDraft[role] ?: emptySet()

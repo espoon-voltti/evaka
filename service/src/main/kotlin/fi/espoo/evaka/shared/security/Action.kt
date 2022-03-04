@@ -397,13 +397,11 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class GroupPlacement(private val roles: EnumSet<UserRole>) : LegacyScopedAction<GroupPlacementId> {
-        UPDATE(UNIT_SUPERVISOR),
-        DELETE(UNIT_SUPERVISOR);
+    enum class GroupPlacement(override vararg val defaultRules: ScopedActionRule<in GroupPlacementId>) : ScopedAction<GroupPlacementId> {
+        UPDATE(HasRoleInGroupUnit(UNIT_SUPERVISOR).groupPlacement),
+        DELETE(HasRoleInGroupUnit(UNIT_SUPERVISOR).groupPlacement);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Income(private val roles: EnumSet<UserRole>) : LegacyScopedAction<IncomeId> {
         UPDATE(FINANCE_ADMIN),

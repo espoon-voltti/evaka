@@ -130,7 +130,8 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     caretakers = caretakers,
                     permittedBackupCareActions = accessControl.getPermittedActions(tx, user, backupCareIds),
                     permittedPlacementActions = accessControl.getPermittedActions(tx, user, placementIds),
-                    permittedGroupPlacementActions = accessControl.getPermittedGroupPlacementActions(
+                    permittedGroupPlacementActions = accessControl.getPermittedActions(
+                        tx,
                         user,
                         placements.flatMap { placement ->
                             placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }

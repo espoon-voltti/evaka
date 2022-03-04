@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -69,17 +68,6 @@ WHERE employee_id = :userId
         permittedRoleActions::attachmentActions,
     )
 
-    private val groupPlacement = ActionConfig(
-        """
-SELECT daycare_group_placement.id, role
-FROM placement
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
-JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "daycare_group_placement.id",
-        permittedRoleActions::groupPlacementActions
-    )
     private val mobileDevice = ActionConfig(
         """
 SELECT d.id, role
@@ -377,7 +365,6 @@ WHERE employee_id = :userId
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            is Action.GroupPlacement -> this.groupPlacement.hasPermission(user, action, *ids as Array<GroupPlacementId>)
             is Action.Income -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::incomeActions)
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
             is Action.MobileDevice -> this.mobileDevice.hasPermission(user, action, *ids as Array<MobileDeviceId>)
@@ -495,11 +482,6 @@ WHERE employee_id = :userId
             .filter { action -> hasPermissionForInternal(user, action, personId) }
             .toSet()
     }
-
-    fun getPermittedGroupPlacementActions(
-        user: AuthenticatedUser,
-        ids: Collection<GroupPlacementId>
-    ): Map<GroupPlacementId, Set<Action.GroupPlacement>> = this.groupPlacement.getPermittedActions(user, ids)
 
     private fun hasPermissionForInternal(
         user: AuthenticatedUser,
