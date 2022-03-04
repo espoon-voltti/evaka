@@ -770,6 +770,48 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
+    // TODO
+    @Test
+    fun `Child income affects only that childs fees`() {
+        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+
+        // Adult minimal income
+        insertIncome(testAdult_1.id, 310200, placementPeriod)
+
+        // Unlike other income, child income should affect only that child's fees
+        insertIncome(testChild_1.id, 600000, placementPeriod)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, placementPeriod.start) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        decisions.first().let { decision ->
+            assertEquals(28900, decision.totalFee)
+            assertEquals(2, decision.children.size)
+            decision.children.first().let { child ->
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(28900, child.finalFee)
+            }
+            decision.children.last().let { child ->
+                assertEquals(testChild_2.id, child.child.id)
+                assertEquals(4200, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(50, child.siblingDiscount)
+                assertEquals(0, child.fee)
+                assertEquals(0, child.finalFee)
+            }
+        }
+    }
+
     @Test
     fun `children over 18 years old are not included in families when determining base fee`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))

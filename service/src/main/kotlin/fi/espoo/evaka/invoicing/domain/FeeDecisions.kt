@@ -75,6 +75,7 @@ data class FeeDecision(
     override fun withChildren(children: List<FeeDecisionChild>) = this.copy(children = children)
 }
 
+// TODO lapsen tulotiedot tänne & tauluun column
 data class FeeDecisionChild(
     @Nested("child")
     val child: ChildWithDateOfBirth,
