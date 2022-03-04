@@ -403,13 +403,11 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Income(private val roles: EnumSet<UserRole>) : LegacyScopedAction<IncomeId> {
-        UPDATE(FINANCE_ADMIN),
-        DELETE(FINANCE_ADMIN);
+    enum class Income(override vararg val defaultRules: ScopedActionRule<in IncomeId>) : ScopedAction<IncomeId> {
+        UPDATE(HasGlobalRole(FINANCE_ADMIN)),
+        DELETE(HasGlobalRole(FINANCE_ADMIN));
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class IncomeStatement(private val roles: EnumSet<UserRole>) : LegacyScopedAction<IncomeStatementId> {
         UPDATE_HANDLED(FINANCE_ADMIN),

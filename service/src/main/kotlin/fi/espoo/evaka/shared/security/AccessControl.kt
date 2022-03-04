@@ -365,7 +365,6 @@ WHERE employee_id = :userId
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            is Action.Income -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::incomeActions)
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
             is Action.MobileDevice -> this.mobileDevice.hasPermission(user, action, *ids as Array<MobileDeviceId>)
             is Action.Pairing -> this.pairing.hasPermission(user, action, *ids as Array<PairingId>)
