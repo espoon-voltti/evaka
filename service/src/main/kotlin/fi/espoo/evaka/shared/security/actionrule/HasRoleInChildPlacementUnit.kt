@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -225,6 +226,24 @@ FROM fridge_child
 JOIN person_acl_view ON fridge_child.head_of_child = person_acl_view.person_id OR fridge_child.child_id = person_acl_view.person_id
 WHERE employee_id = :userId
 AND fridge_child.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val partnership = DatabaseActionRule(
+        this,
+        Query<PartnershipId> { tx, employeeId, ids ->
+            tx.createQuery(
+
+                """
+SELECT fridge_partner.partnership_id AS id, role
+FROM fridge_partner
+JOIN person_acl_view ON fridge_partner.person_id = person_acl_view.person_id
+WHERE employee_id = :userId
+AND partnership_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

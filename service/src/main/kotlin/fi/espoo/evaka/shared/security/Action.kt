@@ -476,15 +476,13 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Partnership(private val roles: EnumSet<UserRole>) : LegacyScopedAction<PartnershipId> {
-        DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        READ(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        RETRY(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN);
+    enum class Partnership(override vararg val defaultRules: ScopedActionRule<in PartnershipId>) : ScopedAction<PartnershipId> {
+        DELETE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership),
+        RETRY(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership),
+        UPDATE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
         CREATE_ATTACHMENT(

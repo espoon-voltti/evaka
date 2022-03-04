@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -61,16 +60,6 @@ WHERE employee_id = :userId
         permittedRoleActions::attachmentActions,
     )
 
-    private val partnership = ActionConfig(
-        """
-SELECT fridge_partner.partnership_id AS id, role
-FROM fridge_partner
-JOIN person_acl_view ON fridge_partner.person_id = person_acl_view.person_id
-WHERE employee_id = :userId
-""",
-        "fridge_partner.partnership_id",
-        permittedRoleActions::partnershipActions
-    )
     private val pedagogicalAttachment = ActionConfig(
         """
 SELECT attachment.id, role
@@ -305,7 +294,6 @@ WHERE employee_id = :userId
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
             else -> error("Unsupported action type")
         }.exhaust()
 
