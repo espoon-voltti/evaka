@@ -460,13 +460,10 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Pairing(private val roles: EnumSet<UserRole>) : LegacyScopedAction<PairingId> {
-        POST_RESPONSE(UNIT_SUPERVISOR)
-        ;
+    enum class Pairing(override vararg val defaultRules: ScopedActionRule<in PairingId>) : ScopedAction<PairingId> {
+        POST_RESPONSE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).pairing);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Parentship(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ParentshipId> {
         DELETE(FINANCE_ADMIN),

@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -112,6 +113,23 @@ FROM daycare_acl_view dav
 JOIN mobile_device d ON dav.daycare_id = d.unit_id OR dav.employee_id = d.employee_id
 WHERE dav.employee_id = :userId
 AND d.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val pairing = DatabaseActionRule(
+        this,
+        Query<PairingId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT p.id, role
+FROM daycare_acl_view dav
+JOIN pairing p ON dav.daycare_id = p.unit_id OR dav.employee_id = p.employee_id
+WHERE dav.employee_id = :userId
+AND p.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

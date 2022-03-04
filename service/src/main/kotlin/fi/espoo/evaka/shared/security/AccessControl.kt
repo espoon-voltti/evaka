@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
-import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
@@ -67,16 +66,6 @@ WHERE employee_id = :userId
         permittedRoleActions::attachmentActions,
     )
 
-    private val pairing = ActionConfig(
-        """
-SELECT p.id, role
-FROM daycare_acl_view dav
-JOIN pairing p ON dav.daycare_id = p.unit_id OR dav.employee_id = p.employee_id
-WHERE dav.employee_id = :userId
-        """.trimIndent(),
-        "p.id",
-        permittedRoleActions::pairingActions
-    )
     private val parentship = ActionConfig(
         """
 SELECT fridge_child.id, role
@@ -355,7 +344,6 @@ WHERE employee_id = :userId
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
-            is Action.Pairing -> this.pairing.hasPermission(user, action, *ids as Array<PairingId>)
             is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
             is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
