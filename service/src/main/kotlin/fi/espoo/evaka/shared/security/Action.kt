@@ -46,7 +46,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
-import fi.espoo.evaka.shared.auth.UserRole.MOBILE
 import fi.espoo.evaka.shared.auth.UserRole.REPORT_VIEWER
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
@@ -563,57 +562,55 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Unit(private val roles: EnumSet<UserRole>) : LegacyScopedAction<DaycareId> {
-        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        READ_BASIC(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        READ_DETAILED(SERVICE_WORKER, UNIT_SUPERVISOR),
-        READ_GROUPS(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        READ_CHILD_CAPACITY_FACTORS(SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+    enum class Unit(override vararg val defaultRules: ScopedActionRule<in DaycareId>) : ScopedAction<DaycareId> {
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).unit),
+        READ_BASIC(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).unit),
+        READ_DETAILED(HasGlobalRole(SERVICE_WORKER), HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        READ_GROUPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).unit),
+        READ_CHILD_CAPACITY_FACTORS(HasGlobalRole(SERVICE_WORKER), HasRoleInRelatedUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).unit),
         UPDATE,
 
-        READ_STAFF_ATTENDANCES(MOBILE),
+        READ_STAFF_ATTENDANCES(IsMobileInRelatedUnit(requirePinLogin = false).unit),
 
-        READ_OCCUPANCIES(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, MOBILE),
+        READ_OCCUPANCIES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit, IsMobileInRelatedUnit(requirePinLogin = false).unit),
 
-        READ_ATTENDANCE_RESERVATIONS(UNIT_SUPERVISOR, STAFF),
+        READ_ATTENDANCE_RESERVATIONS(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF).unit),
 
-        READ_BACKUP_CARE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF),
+        READ_BACKUP_CARE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF).unit),
 
-        CREATE_PLACEMENT(SERVICE_WORKER, UNIT_SUPERVISOR),
-        READ_PLACEMENT(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF),
+        CREATE_PLACEMENT(HasGlobalRole(SERVICE_WORKER), HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        READ_PLACEMENT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).unit),
 
-        READ_PLACEMENT_PLAN(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR),
+        READ_PLACEMENT_PLAN(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
 
-        ACCEPT_PLACEMENT_PROPOSAL(SERVICE_WORKER, UNIT_SUPERVISOR),
+        ACCEPT_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER), HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
 
-        CREATE_GROUP(UNIT_SUPERVISOR),
+        CREATE_GROUP(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
 
-        READ_MOBILE_STATS(MOBILE),
-        READ_MOBILE_INFO(MOBILE),
+        READ_MOBILE_STATS(IsMobileInRelatedUnit(requirePinLogin = false).unit),
+        READ_MOBILE_INFO(IsMobileInRelatedUnit(requirePinLogin = false).unit),
 
-        READ_MOBILE_DEVICES(UNIT_SUPERVISOR),
-        CREATE_MOBILE_DEVICE_PAIRING(UNIT_SUPERVISOR),
+        READ_MOBILE_DEVICES(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        CREATE_MOBILE_DEVICE_PAIRING(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
 
-        READ_ACL(UNIT_SUPERVISOR),
-        INSERT_ACL_UNIT_SUPERVISOR(),
-        DELETE_ACL_UNIT_SUPERVISOR(),
-        INSERT_ACL_SPECIAL_EDUCATION_TEACHER(),
-        DELETE_ACL_SPECIAL_EDUCATION_TEACHER(),
-        INSERT_ACL_STAFF(UNIT_SUPERVISOR),
-        DELETE_ACL_STAFF(UNIT_SUPERVISOR),
-        UPDATE_STAFF_GROUP_ACL(UNIT_SUPERVISOR),
+        READ_ACL(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        INSERT_ACL_UNIT_SUPERVISOR,
+        DELETE_ACL_UNIT_SUPERVISOR,
+        INSERT_ACL_SPECIAL_EDUCATION_TEACHER,
+        DELETE_ACL_SPECIAL_EDUCATION_TEACHER,
+        INSERT_ACL_STAFF(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        DELETE_ACL_STAFF(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        UPDATE_STAFF_GROUP_ACL(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
 
-        READ_FAMILY_CONTACT_REPORT(UNIT_SUPERVISOR),
-        READ_SERVICE_VOUCHER_VALUES_REPORT(FINANCE_ADMIN, UNIT_SUPERVISOR),
+        READ_FAMILY_CONTACT_REPORT(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        READ_SERVICE_VOUCHER_VALUES_REPORT(HasGlobalRole(FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
 
-        UPDATE_FEATURES(),
+        UPDATE_FEATURES,
 
-        READ_TERMINATED_PLACEMENTS(UNIT_SUPERVISOR),
-        READ_MISSING_GROUP_PLACEMENTS(SERVICE_WORKER, UNIT_SUPERVISOR);
+        READ_TERMINATED_PLACEMENTS(HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit),
+        READ_MISSING_GROUP_PLACEMENTS(HasGlobalRole(SERVICE_WORKER), HasRoleInRelatedUnit(UNIT_SUPERVISOR).unit);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) : ScopedAction<VasuDocumentId> {
         READ(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasRoleInChildPlacementGroup(GROUP_STAFF).vasuDocument),

@@ -17,7 +17,6 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.ParentshipId
@@ -103,15 +102,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "person_id",
         permittedRoleActions::personActions
-    )
-    private val unit = ActionConfig(
-        """
-SELECT daycare_id AS id, role
-FROM daycare_acl_view
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "daycare_id",
-        permittedRoleActions::unitActions
     )
 
     fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
@@ -334,7 +324,6 @@ WHERE employee_id = :userId
             is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
             is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
-            is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
             else -> error("Unsupported action type")
         }.exhaust()
 
@@ -503,11 +492,6 @@ WHERE employee_id = :userId
         }
     }
 
-    fun getPermittedUnitActions(
-        user: AuthenticatedUser,
-        ids: Collection<DaycareId>
-    ): Map<DaycareId, Set<Action.Unit>> = this.unit.getPermittedActions(user, ids)
-
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
         if (action != Action.VasuDocumentFollowup.UPDATE) {
             throw Forbidden()
@@ -564,34 +548,6 @@ WHERE employee_id = :userId
                 setOf()
             }
         }
-    }
-
-    private inline fun <reified A, reified I> ActionConfig<A>.getPermittedActions(
-        user: AuthenticatedUser,
-        ids: Collection<I>
-    ): Map<I, Set<A>> where A : Action.LegacyScopedAction<I>, A : Enum<A> {
-        val globalActions = enumValues<A>().asSequence()
-            .filter { action -> hasPermissionThroughGlobalRole(user, action) }.toEnumSet()
-
-        val result = ids.associateTo(linkedMapOf()) { (it to enumSetOf(*globalActions.toTypedArray())) }
-        if (user is AuthenticatedUser.Employee) {
-            val scopedActions = EnumSet.allOf(A::class.java).also { it -= globalActions }
-            if (scopedActions.isNotEmpty()) {
-                Database(jdbi).connect { db ->
-                    db.read { tx ->
-                        for ((id, roles) in this.getRolesForAll(tx, user, *ids.toTypedArray())) {
-                            val permittedActions = result[id]!!
-                            for (action in scopedActions) {
-                                if (roles.any { mapping(it).contains(action) }) {
-                                    permittedActions += action
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return result
     }
 
     private inline fun <reified A, reified I> ActionConfig<A>.hasPermissionThroughGlobalRole(
