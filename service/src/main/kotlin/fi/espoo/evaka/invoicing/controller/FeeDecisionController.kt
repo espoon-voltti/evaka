@@ -115,7 +115,7 @@ class FeeDecisionController(
         @RequestBody feeDecisionIds: List<FeeDecisionId>
     ) {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val confirmedDecisions = service.confirmDrafts(
@@ -132,7 +132,7 @@ class FeeDecisionController(
     @PostMapping("/mark-sent")
     fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, *feeDecisionIds.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
     }
 

@@ -103,7 +103,7 @@ class DaycareController(
                         groups.map {
                             DaycareGroupResponse(id = it.id, name = it.name, permittedActions = permittedActions[it.id]!!)
                         },
-                        accessControl.getPermittedActions<DaycareId, Action.Unit>(tx, user, listOf(daycareId)).values.first()
+                        accessControl.getPermittedActions(tx, user, daycareId)
                     )
                 }
             }

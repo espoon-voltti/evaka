@@ -47,7 +47,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
         @RequestParam useRealtimeStaffAttendance: Boolean
     ): List<UnitStats> {
         Audit.UnitRead.log(targetId = unitIds)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_STATS, *unitIds.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_STATS, unitIds)
         return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today(), useRealtimeStaffAttendance) } }
     }
 }

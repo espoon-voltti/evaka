@@ -293,14 +293,14 @@ class ApplicationControllerV2(
                         listOf()
                     }
 
-                val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, listOf(applicationId))
+                val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, applicationId)
 
                 ApplicationResponse(
                     application = application.copy(attachments = attachments),
                     decisions = decisions,
                     guardians = guardians,
                     attachments = attachments,
-                    permittedActions = permittedActions[applicationId] ?: emptySet()
+                    permittedActions = permittedActions
                 )
             }
         }

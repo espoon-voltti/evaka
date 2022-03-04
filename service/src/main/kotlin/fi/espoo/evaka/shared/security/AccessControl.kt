@@ -190,14 +190,14 @@ WHERE employee_id = :userId
             .toEnumSet()
     }
 
-    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T) =
-        requirePermissionFor(user, action, targets.asIterable())
+    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T) =
+        requirePermissionFor(user, action, listOf(target))
     fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>) = Database(jdbi).connect { dbc ->
         checkPermissionFor(dbc, user, action, targets).values.forEach { it.assert() }
     }
 
-    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T): Boolean =
-        hasPermissionFor(user, action, targets.asIterable())
+    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T): Boolean =
+        hasPermissionFor(user, action, listOf(target))
     fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>): Boolean = Database(jdbi).connect { dbc ->
         checkPermissionFor(dbc, user, action, targets).values.all { it.isPermitted() }
     }
@@ -206,8 +206,8 @@ WHERE employee_id = :userId
         dbc: Database.Connection,
         user: AuthenticatedUser,
         action: Action.ScopedAction<T>,
-        vararg targets: T
-    ): Map<T, AccessControlDecision> = checkPermissionFor(dbc, user, action, targets.asIterable())
+        target: T
+    ): AccessControlDecision = checkPermissionFor(dbc, user, action, listOf(target)).values.first()
     fun <T> checkPermissionFor(
         dbc: Database.Connection,
         user: AuthenticatedUser,
@@ -235,6 +235,11 @@ WHERE employee_id = :userId
         return decisions.finish()
     }
 
+    inline fun <T, reified A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        target: T
+    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, A::class.java, listOf(target)).values.first()
     inline fun <T, reified A> getPermittedActions(
         tx: Database.Read,
         user: AuthenticatedUser,

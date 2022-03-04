@@ -131,7 +131,7 @@ class VoucherValueDecisionController(
         @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *decisionIds.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, decisionIds)
         db.connect { dbc ->
             dbc.transaction {
                 sendVoucherValueDecisions(
@@ -154,7 +154,7 @@ class VoucherValueDecisionController(
         @RequestBody ids: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, *ids.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, ids)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decisions = tx.getValueDecisionsByIds(ids)
