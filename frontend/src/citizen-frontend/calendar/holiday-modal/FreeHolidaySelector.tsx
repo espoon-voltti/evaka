@@ -50,7 +50,9 @@ export const FreeHolidaySelector = React.memo(function FreeHolidaySelector({
       <Select
         items={options}
         selectedItem={
-          options.find(({ period }) => period == value) ?? emptySelection
+          options.find(({ period }) =>
+            value === null ? period === null : period?.isEqual(value)
+          ) ?? emptySelection
         }
         onChange={(item) => onSelectPeriod(item?.period ?? null)}
         getItemValue={({ name }) => name}
