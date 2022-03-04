@@ -161,7 +161,15 @@ class ApplicationControllerV2(
                     hideFromGuardian = body.hideFromGuardian,
                     sentDate = body.sentDate
                 )
-                applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), id, body.type, guardian, child)
+                applicationStateService.initializeApplicationForm(
+                    tx,
+                    user,
+                    evakaClock.today(),
+                    id,
+                    body.type,
+                    guardian,
+                    child
+                )
                 id
             }
         }
@@ -182,18 +190,19 @@ class ApplicationControllerV2(
         // TODO: convert to new action model
         val authorizedUnitsForApplicationsWithAssistanceNeed = acl.getAuthorizedUnits(
             user = user,
-            roles = setOf(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+            roles = setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
         )
         val authorizedUnitsForApplicationsWithoutAssistanceNeed = acl.getAuthorizedUnits(
             user = user,
-            roles = setOf(UserRole.UNIT_SUPERVISOR)
+            roles = setOf(UserRole.SERVICE_WORKER)
         )
 
         if (authorizedUnitsForApplicationsWithAssistanceNeed.isEmpty() && authorizedUnitsForApplicationsWithoutAssistanceNeed.isEmpty()) {
             throw Forbidden("application search not allowed for any unit")
         }
 
-        val canReadServiceWorkerNotes = accessControl.hasPermissionFor(user, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
+        val canReadServiceWorkerNotes =
+            accessControl.hasPermissionFor(user, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -211,7 +220,8 @@ class ApplicationControllerV2(
                         ?: listOf(),
                     statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
                     dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
-                    distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
+                    distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) }
+                        ?: listOf(),
                     periodStart = body.periodStart,
                     periodEnd = body.periodEnd,
                     searchTerms = body.searchTerms ?: "",
@@ -263,28 +273,25 @@ class ApplicationControllerV2(
                 val application = tx.fetchApplicationDetails(applicationId)
                     ?: throw NotFound("Application $applicationId was not found")
 
-                accessControl.requirePermissionFor(
-                    user = user,
-                    action = if (application.form.child.assistanceNeeded) Action.Application.READ_WITH_ASSISTANCE_NEED else Action.Application.READ_WITHOUT_ASSISTANCE_NEED,
-                    applicationId
-                )
+                val action = when {
+                    application.form.child.assistanceNeeded ->
+                        Action.Application.READ_IF_HAS_ASSISTANCE_NEED
+                    else ->
+                        Action.Application.READ
+                }
+                accessControl.requirePermissionFor(user, action, applicationId)
 
                 val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
                 val guardians =
-                    personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
+                    personService.getGuardians(tx, user, application.childId)
+                        .map { personDTO -> PersonJSON.from(personDTO) }
 
-                // todo: can this be refactored under Action model?
-                @Suppress("DEPRECATION")
-                val roles = acl.getRolesForApplication(user, applicationId)
-
-                @Suppress("DEPRECATION")
-                val attachments: List<ApplicationAttachment> = when {
-                    roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
+                val attachments =
+                    if (accessControl.hasPermissionFor(user, Action.Application.READ_ATTACHMENTS, applicationId)) {
                         tx.getApplicationAttachments(applicationId)
-                    roles.hasOneOfRoles(UserRole.UNIT_SUPERVISOR) ->
-                        tx.getApplicationAttachmentsForUnitSupervisor(applicationId)
-                    else -> listOf()
-                }
+                    } else {
+                        listOf()
+                    }
 
                 val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, listOf(applicationId))
 
@@ -329,7 +336,16 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: ApplicationId
     ) {
-        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland()) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.sendApplication(
+                    it,
+                    user,
+                    applicationId,
+                    currentDateInFinland()
+                )
+            }
+        }
     }
 
     @GetMapping("/{applicationId}/placement-draft")
@@ -423,7 +439,15 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable(value = "unitId") unitId: DaycareId
     ) {
-        db.connect { dbc -> dbc.transaction { applicationStateService.confirmPlacementProposalChanges(it, user, unitId) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.confirmPlacementProposalChanges(
+                    it,
+                    user,
+                    unitId
+                )
+            }
+        }
     }
 
     @PostMapping("/batch/actions/{action}")
@@ -461,7 +485,16 @@ class ApplicationControllerV2(
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
-        db.connect { dbc -> dbc.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.createPlacementPlan(
+                    it,
+                    user,
+                    applicationId,
+                    body
+                )
+            }
+        }
     }
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")
@@ -494,7 +527,13 @@ class ApplicationControllerV2(
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.acceptDecision(it, user, applicationId, body.decisionId, body.requestedStartDate)
+                applicationStateService.acceptDecision(
+                    it,
+                    user,
+                    applicationId,
+                    body.decisionId,
+                    body.requestedStartDate
+                )
             }
         }
     }
@@ -506,7 +545,16 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ) {
-        db.connect { dbc -> dbc.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.rejectDecision(
+                    it,
+                    user,
+                    applicationId,
+                    body.decisionId
+                )
+            }
+        }
     }
 
     @PostMapping("/{applicationId}/actions/{action}")

@@ -140,9 +140,7 @@ describe('Application details', () => {
   })
 
   test('Decision is not sent automatically to the other guardian if the first guardian has restricted details enabled', async () => {
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.daycareFixture.id
-    ).save()
+    const serviceWorker = await Fixture.employeeServiceWorker().save()
 
     await execSimpleApplicationAction(
       restrictedDetailsGuardianApplication.id,
@@ -164,7 +162,7 @@ describe('Application details', () => {
       'send-decisions-without-proposal'
     )
 
-    await employeeLogin(page, unitSupervisor.data)
+    await employeeLogin(page, serviceWorker.data)
     await applicationReadView.navigateToApplication(
       restrictedDetailsGuardianApplication.id
     )

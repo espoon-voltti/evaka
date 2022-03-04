@@ -9,7 +9,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.attachment.AttachmentType
-import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
@@ -18,6 +17,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
@@ -35,8 +34,6 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testRoundTheClockDaycare
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -56,9 +53,8 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
     private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw)
-    private val testDaycareSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id.raw, setOf())
-    private val testRoundTheClockDaycareSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
-    private val testRoundTheClockDaycareSupervisor = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
+    private val testSpecialEducationTeacherId = EmployeeId(UUID.randomUUID())
+    private val testSpecialEducationTeacher = AuthenticatedUser.Employee(testSpecialEducationTeacherId.raw, setOf())
 
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
 
@@ -67,17 +63,6 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
-            tx.insertTestEmployee(
-                DevEmployee(
-                    id = EmployeeId(testRoundTheClockDaycareSupervisor.id),
-                    externalId = testRoundTheClockDaycareSupervisorExternalId
-                )
-            )
-            tx.updateDaycareAcl(
-                testRoundTheClockDaycare.id,
-                testRoundTheClockDaycareSupervisorExternalId,
-                UserRole.UNIT_SUPERVISOR
-            )
         }
     }
 
@@ -208,8 +193,16 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     fun `old drafts are removed`() {
         val (old, id1, id2) = db.transaction { tx ->
             listOf(
-                tx.insertTestApplication(childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
-                tx.insertTestApplication(childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
+                tx.insertTestApplication(
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    status = ApplicationStatus.CREATED
+                ),
+                tx.insertTestApplication(
+                    childId = testChild_2.id,
+                    guardianId = testAdult_1.id,
+                    status = ApplicationStatus.CREATED
+                ),
                 tx.insertTestApplication(childId = testChild_3.id, guardianId = testAdult_1.id)
             )
         }
@@ -243,40 +236,25 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     }
 
     @Test
-    fun `application attachments when placed into a regular unit`() {
+    fun `application attachments`() {
+        db.transaction { tx ->
+            tx.insertTestEmployee(DevEmployee(testSpecialEducationTeacherId))
+            tx.insertDaycareAclRow(testDaycare.id, testSpecialEducationTeacherId, UserRole.SPECIAL_EDUCATION_TEACHER)
+        }
+
         val applicationId = createPlacementProposalWithAttachments(testDaycare.id)
 
+        // Service workers sees attachments
         val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
             .asUser(serviceWorker)
             .responseObject<ApplicationResponse>(jsonMapper)
         assertEquals(2, serviceWorkerResult.get().attachments.size)
 
-        val (_, _, unitSupervisorResult) = http.get("/v2/applications/$applicationId")
-            .asUser(testDaycareSupervisor)
+        // Special education teacher sees the application (because it has an assistance need) but doesn't see the attachments
+        val (_, _, specialEducationTeacherResult) = http.get("/v2/applications/$applicationId")
+            .asUser(testSpecialEducationTeacher)
             .responseObject<ApplicationResponse>(jsonMapper)
-        assertEquals(0, unitSupervisorResult.get().attachments.size)
-    }
-
-    @Test
-    fun `application attachments when placed into a round the clock unit`() {
-        val applicationId = createPlacementProposalWithAttachments(testRoundTheClockDaycare.id)
-
-        val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
-            .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(jsonMapper)
-        assertEquals(2, serviceWorkerResult.get().attachments.size)
-
-        val (_, _, unitSupervisorResult) = http.get("/v2/applications/$applicationId")
-            .asUser(testRoundTheClockDaycareSupervisor)
-            .responseObject<ApplicationResponse>(jsonMapper)
-        assertEquals(1, unitSupervisorResult.get().attachments.size)
-        assertEquals(AttachmentType.EXTENDED_CARE, unitSupervisorResult.get().attachments.first().type)
-
-        val attachment = unitSupervisorResult.get().attachments.first()
-        val (_, res, _) = http.get("/attachments/${attachment.id}/download")
-            .asUser(testRoundTheClockDaycareSupervisor)
-            .response()
-        assertEquals(200, res.statusCode)
+        assertEquals(0, specialEducationTeacherResult.get().attachments.size)
     }
 
     @Test
