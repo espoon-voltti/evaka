@@ -6,7 +6,6 @@ package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 
@@ -26,20 +25,4 @@ fun Database.Transaction.deleteChildImage(childId: ChildId): ChildImageId? {
         .bind("childId", childId)
         .mapTo<ChildImageId>()
         .firstOrNull()
-}
-
-fun Database.Read.hasPermissionForChildImage(user: AuthenticatedUser.Citizen, id: ChildImageId): Boolean {
-    return createQuery(
-        """
-SELECT EXISTS(
-    SELECT 1
-    FROM child_images img
-    JOIN person child ON img.child_id = child.id
-    JOIN guardian g ON child.id = g.child_id AND g.guardian_id = :guardianId
-    WHERE
-        img.id = :imageId
-)
-
-        """.trimIndent()
-    ).bind("guardianId", user.id).bind("imageId", id).mapTo<Boolean>().one()
 }
