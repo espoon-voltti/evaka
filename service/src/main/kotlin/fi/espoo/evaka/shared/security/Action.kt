@@ -605,20 +605,17 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class VasuDocument(private val roles: EnumSet<UserRole>) : LegacyScopedAction<VasuDocumentId> {
-        READ(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        UPDATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        EVENT_PUBLISHED(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        EVENT_MOVED_TO_READY(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        EVENT_RETURNED_TO_READY(UNIT_SUPERVISOR),
-        EVENT_MOVED_TO_REVIEWED(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        EVENT_RETURNED_TO_REVIEWED(),
-        EVENT_MOVED_TO_CLOSED(),
-        ;
+    enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) : ScopedAction<VasuDocumentId> {
+        READ(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasRoleInChildPlacementGroup(GROUP_STAFF).vasuDocument),
+        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasRoleInChildPlacementGroup(GROUP_STAFF).vasuDocument),
+        EVENT_PUBLISHED(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasRoleInChildPlacementGroup(GROUP_STAFF).vasuDocument),
+        EVENT_MOVED_TO_READY(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasRoleInChildPlacementGroup(GROUP_STAFF).vasuDocument),
+        EVENT_RETURNED_TO_READY(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).vasuDocument),
+        EVENT_MOVED_TO_REVIEWED(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasRoleInChildPlacementGroup(GROUP_STAFF).vasuDocument),
+        EVENT_RETURNED_TO_REVIEWED,
+        EVENT_MOVED_TO_CLOSED;
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
 
     enum class VasuDocumentFollowup(private val roles: EnumSet<UserRole>) : LegacyAction {

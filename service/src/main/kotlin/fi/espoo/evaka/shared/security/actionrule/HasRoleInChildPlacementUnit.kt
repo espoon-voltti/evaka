@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -274,6 +275,23 @@ FROM service_need
 JOIN placement ON placement.id = service_need.placement_id
 JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
 AND service_need.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val vasuDocument = DatabaseActionRule(
+        this,
+        Query<VasuDocumentId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT curriculum_document.id AS id, role
+FROM curriculum_document
+JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+AND curriculum_document.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

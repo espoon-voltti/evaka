@@ -20,7 +20,6 @@ interface PermittedRoleActions {
     fun partnershipActions(role: UserRole): Set<Action.Partnership>
     fun personActions(role: UserRole): Set<Action.Person>
     fun unitActions(role: UserRole): Set<Action.Unit>
-    fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument>
     fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup>
 }
 
@@ -37,7 +36,6 @@ class StaticPermittedRoleActions(
     val partnership: ActionsByRole<Action.Partnership> = getDefaults(),
     val person: ActionsByRole<Action.Person> = getDefaults(),
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
-    val vasuDocument: ActionsByRole<Action.VasuDocument> = getDefaults(),
     val vasuDocumentFollowup: ActionsByRole<Action.VasuDocumentFollowup> = getDefaults(),
 ) : PermittedRoleActions {
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
@@ -47,7 +45,6 @@ class StaticPermittedRoleActions(
     override fun partnershipActions(role: UserRole): Set<Action.Partnership> = partnership[role] ?: emptySet()
     override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()
     override fun unitActions(role: UserRole): Set<Action.Unit> = unit[role] ?: emptySet()
-    override fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument> = vasuDocument[role] ?: emptySet()
     override fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup> = vasuDocumentFollowup[role] ?: emptySet()
 }
 

@@ -106,16 +106,6 @@ WHERE employee_id = :userId
         "person_id",
         permittedRoleActions::personActions
     )
-    private val vasuDocument = ActionConfig(
-        """
-SELECT curriculum_document.id AS id, role
-FROM curriculum_document
-JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "curriculum_document.id",
-        permittedRoleActions::vasuDocumentActions
-    )
     private val unit = ActionConfig(
         """
 SELECT daycare_id AS id, role
@@ -348,7 +338,6 @@ WHERE employee_id = :userId
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
             is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
             is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
-            is Action.VasuDocument -> this.vasuDocument.hasPermission(user, action, *ids as Array<VasuDocumentId>)
             else -> error("Unsupported action type")
         }.exhaust()
 
