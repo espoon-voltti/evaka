@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
-import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
@@ -68,16 +67,6 @@ WHERE employee_id = :userId
         permittedRoleActions::attachmentActions,
     )
 
-    private val mobileDevice = ActionConfig(
-        """
-SELECT d.id, role
-FROM daycare_acl_view dav
-JOIN mobile_device d ON dav.daycare_id = d.unit_id OR dav.employee_id = d.employee_id
-WHERE dav.employee_id = :userId
-        """.trimIndent(),
-        "d.id",
-        permittedRoleActions::mobileDeviceActions
-    )
     private val pairing = ActionConfig(
         """
 SELECT p.id, role
@@ -366,7 +355,6 @@ WHERE employee_id = :userId
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
             is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
-            is Action.MobileDevice -> this.mobileDevice.hasPermission(user, action, *ids as Array<MobileDeviceId>)
             is Action.Pairing -> this.pairing.hasPermission(user, action, *ids as Array<PairingId>)
             is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
