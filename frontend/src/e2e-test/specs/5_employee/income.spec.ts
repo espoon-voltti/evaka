@@ -2,11 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { resetDatabase } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
 import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
@@ -19,14 +23,32 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let personId: UUID
 let incomesSection: IncomeSection
+let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
   await resetDatabase()
 
-  const fixtures = await initializeAreaAndPersonData()
+  fixtures = await initializeAreaAndPersonData()
   personId = fixtures.enduserGuardianFixture.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+
+  await Fixture.fridgeChild()
+    .with({
+      headOfChild: fixtures.enduserGuardianFixture.id,
+      childId: fixtures.enduserChildFixtureJari.id,
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 12, 31)
+    })
+    .save()
+  await Fixture.placement()
+    .with({
+      childId: fixtures.enduserChildFixtureJari.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: '2020-01-01',
+      endDate: '2020-03-31'
+    })
+    .save()
 
   page = await Page.open()
   await employeeLogin(page, financeAdmin.data)

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { sortBy } from 'lodash'
+
 import { DateFormat } from './date'
 import DateRange from './date-range'
 import { JsonOf } from './json'
@@ -167,4 +169,28 @@ export default class FiniteDateRange {
       LocalDate.parseIso(json.end)
     )
   }
+}
+
+export function mergeDateRanges(ranges: FiniteDateRange[]): FiniteDateRange[] {
+  const sorted = sortBy(ranges, ({ start }) => start.formatIso())
+  const first = sorted[0]
+  if (!first) {
+    return []
+  }
+
+  const merged = [first]
+  for (let i = 1; i < sorted.length; i++) {
+    const previous = merged[merged.length - 1]
+    const current = sorted[i]
+    if (previous.end.addDays(1).isEqualOrAfter(current.start)) {
+      merged[merged.length - 1] = new FiniteDateRange(
+        previous.start,
+        current.end
+      )
+    } else {
+      merged[merged.length] = current
+    }
+  }
+
+  return merged
 }

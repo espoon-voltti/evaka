@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -21,6 +22,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -237,6 +239,42 @@ class PlacementController(
         db.connect { dbc ->
             dbc.transaction {
                 it.transferGroup(groupPlacementId, body.groupId, body.startDate)
+            }
+        }
+    }
+
+    @GetMapping("/placements/child-placement-periods/{adultId}")
+    fun getChildPlacementPeriods(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable adultId: PersonId
+    ): List<FiniteDateRange> {
+        Audit.PlacementChildPlacementPeriodsRead.log(targetId = adultId)
+        accessControl.requirePermissionFor(user, Action.Person.READ_CHILD_PLACEMENT_PERIODS, adultId)
+
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.createQuery(
+                    """
+WITH all_fridge_children AS (
+    SELECT child_id, start_date, end_date
+    FROM fridge_child WHERE head_of_child = :adultId
+
+    UNION ALL
+
+    SELECT fc.child_id, greatest(fc.start_date, fp2.start_date) AS start_date, least(fc.end_date, coalesce(fp2.end_date, fc.end_date)) AS end_date
+    FROM fridge_partner fp1
+    JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx != fp1.indx AND fp1.person_id = :adultId
+    JOIN fridge_child fc ON fc.head_of_child = fp2.person_id
+)
+SELECT greatest(p.start_date, fc.start_date) AS start, least(p.end_date, fc.end_date) AS end
+FROM placement p
+JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
+"""
+                )
+                    .bind("adultId", adultId)
+                    .map { rv -> FiniteDateRange(rv.mapColumn("start"), rv.mapColumn("end")) }
+                    .toList()
             }
         }
     }
