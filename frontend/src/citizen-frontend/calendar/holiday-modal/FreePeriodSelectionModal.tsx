@@ -8,7 +8,10 @@ import styled from 'styled-components'
 import { postFreePeriods } from 'citizen-frontend/holiday-periods/api'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  FreePeriodsBody,
+  HolidayPeriod
+} from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -18,16 +21,10 @@ import { H2 } from 'lib-components/typography'
 
 import { FreeHolidaySelector } from './FreeHolidaySelector'
 
-interface FreePeriodForm {
-  freePeriods: Record<string, FiniteDateRange | null>
-}
+type FreePeriods = FreePeriodsBody['freePeriods']
 
-const initializeForm = (children: ReservationChild[]): FreePeriodForm => ({
-  freePeriods: children.reduce(
-    (acc, child) => ({ ...acc, [child.id]: null }),
-    {}
-  )
-})
+const initializeForm = (children: ReservationChild[]): FreePeriods =>
+  children.reduce((acc, child) => ({ ...acc, [child.id]: null }), {})
 
 interface Props {
   close: () => void
@@ -45,20 +42,20 @@ export default React.memo(function FreePeriodSelectionModal({
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const [form, setForm] = useState<FreePeriodForm>(() =>
+  const [form, setForm] = useState<FreePeriods>(() =>
     initializeForm(availableChildren)
   )
 
   const selectFreePeriod = useCallback(
     (childId: string) => (selectedFreePeriod: FiniteDateRange | null) =>
-      setForm((prev) => ({
-        ...prev,
-        freePeriods: { ...prev.freePeriods, [childId]: selectedFreePeriod }
-      })),
+      setForm((prev) => ({ ...prev, [childId]: selectedFreePeriod })),
     [setForm]
   )
 
-  const onSubmit = useCallback(() => postFreePeriods(form), [form])
+  const onSubmit = useCallback(
+    () => postFreePeriods({ freePeriods: form }),
+    [form]
+  )
   const closeAndReload = useCallback(() => {
     close()
     reload()
@@ -94,7 +91,7 @@ export default React.memo(function FreePeriodSelectionModal({
             {activePeriod.freePeriod && (
               <FreeHolidaySelector
                 freeAbsencePeriod={activePeriod.freePeriod}
-                value={form.freePeriods[child.id]}
+                value={form[child.id]}
                 onSelectPeriod={selectFreePeriod(child.id)}
               />
             )}
