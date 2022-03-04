@@ -11,21 +11,21 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 
-fun Database.Read.hasPermissionForMessageDraft(user: AuthenticatedUser.Employee, draftId: MessageDraftId): Boolean =
+fun Database.Read.filterPermittedMessageDrafts(user: AuthenticatedUser.Employee, ids: Collection<MessageDraftId>): Set<MessageDraftId> =
     this.createQuery(
         """
-SELECT 1 
+SELECT draft.id
 FROM message_draft draft
 JOIN message_account_access_view access ON access.account_id = draft.account_id
 WHERE
-    draft.id = :draftId AND
+    draft.id = ANY(:ids) AND
     access.employee_id = :employeeId
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("draftId", draftId)
-        .mapTo<Int>()
-        .any()
+        .bind("ids", ids.toTypedArray())
+        .mapTo<MessageDraftId>()
+        .toSet()
 
 private fun Database.Read.hasCitizenPermissionForAttachmentThroughMessageContent(
     personId: PersonId,

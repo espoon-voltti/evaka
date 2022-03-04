@@ -50,6 +50,7 @@ import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.security.actionrule.HasAccessToRelatedMessageAccount
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInAnyUnit
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementGroup
@@ -447,13 +448,10 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
         override fun defaultRoles(): Set<UserRole> = roles
     }
-    enum class MessageDraft(private val roles: EnumSet<UserRole>) : LegacyScopedAction<MessageDraftId> {
-        UPLOAD_ATTACHMENT,
-        ;
+    enum class MessageDraft(override vararg val defaultRules: ScopedActionRule<in MessageDraftId>) : ScopedAction<MessageDraftId> {
+        UPLOAD_ATTACHMENT(HasAccessToRelatedMessageAccount.messageDraft);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class MobileDevice(override vararg val defaultRules: ScopedActionRule<in MobileDeviceId>) : ScopedAction<MobileDeviceId> {
         UPDATE_NAME(HasRoleInRelatedUnit(UNIT_SUPERVISOR).mobileDevice, IsEmployeesOwn.mobileDevice),

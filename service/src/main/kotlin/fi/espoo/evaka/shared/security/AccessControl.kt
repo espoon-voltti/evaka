@@ -12,7 +12,6 @@ import fi.espoo.evaka.incomestatement.isChildIncomeStatement
 import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageDraft
-import fi.espoo.evaka.messaging.hasPermissionForMessageDraft
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
@@ -21,7 +20,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
@@ -333,7 +331,6 @@ WHERE employee_id = :userId
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            is Action.MessageDraft -> ids.all { id -> hasPermissionForInternal(user, action, id as MessageDraftId) }
             is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
             is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
@@ -444,26 +441,6 @@ WHERE employee_id = :userId
             .filter { action -> hasPermissionForInternal(user, action, personId) }
             .toSet()
     }
-
-    private fun hasPermissionForInternal(
-        user: AuthenticatedUser,
-        action: Action.MessageDraft,
-        id: MessageDraftId
-    ): Boolean =
-        when (user) {
-            is AuthenticatedUser.Citizen -> false // drafts are employee-only
-            is AuthenticatedUser.Employee -> when (action) {
-                Action.MessageDraft.UPLOAD_ATTACHMENT -> Database(jdbi).connect { db ->
-                    db.read {
-                        it.hasPermissionForMessageDraft(
-                            user,
-                            id
-                        )
-                    }
-                }
-            }
-            else -> false
-        }
 
     private fun hasPermissionForInternal(
         user: AuthenticatedUser,

@@ -15,7 +15,6 @@ import java.util.EnumSet
 interface PermittedRoleActions {
     fun attachmentActions(role: UserRole): Set<Action.Attachment>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
-    fun messageDraftActions(role: UserRole): Set<Action.MessageDraft>
     fun parentshipActions(role: UserRole): Set<Action.Parentship>
     fun partnershipActions(role: UserRole): Set<Action.Partnership>
     fun personActions(role: UserRole): Set<Action.Person>
@@ -31,7 +30,6 @@ interface PermittedRoleActions {
 class StaticPermittedRoleActions(
     val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
-    val messageDraft: ActionsByRole<Action.MessageDraft> = getDefaults(),
     val parentship: ActionsByRole<Action.Parentship> = getDefaults(),
     val partnership: ActionsByRole<Action.Partnership> = getDefaults(),
     val person: ActionsByRole<Action.Person> = getDefaults(),
@@ -40,7 +38,6 @@ class StaticPermittedRoleActions(
 ) : PermittedRoleActions {
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
-    override fun messageDraftActions(role: UserRole): Set<Action.MessageDraft> = messageDraft[role] ?: emptySet()
     override fun parentshipActions(role: UserRole): Set<Action.Parentship> = parentship[role] ?: emptySet()
     override fun partnershipActions(role: UserRole): Set<Action.Partnership> = partnership[role] ?: emptySet()
     override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()
