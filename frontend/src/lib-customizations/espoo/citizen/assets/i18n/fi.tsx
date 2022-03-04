@@ -220,6 +220,7 @@ export default {
     title: 'Kalenteri',
     holiday: 'Pyhäpäivä',
     absent: 'Poissa',
+    absentFree: 'Maksuton poissaolo',
     absences: {
       SICKLEAVE: 'Sairauspoissaolo'
     },

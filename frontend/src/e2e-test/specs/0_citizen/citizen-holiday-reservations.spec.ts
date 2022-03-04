@@ -123,7 +123,12 @@ describe('Holiday periods', () => {
       const holidayModal = await calendar.openHolidayModal()
       await holidayModal.markHoliday(child, '26.12.2035 - 01.01.2036')
 
-      await calendar.assertReservations(LocalDate.of(2035, 12, 26), true, [])
+      await calendar.assertReservations(
+        LocalDate.of(2035, 12, 26),
+        [],
+        false,
+        true
+      )
     })
   })
 })

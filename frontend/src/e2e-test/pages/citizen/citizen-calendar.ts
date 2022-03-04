@@ -69,13 +69,15 @@ export default class CitizenCalendarPage {
 
   async assertReservations(
     date: LocalDate,
-    absence: boolean,
-    reservations: { startTime: string; endTime: string }[]
+    reservations: { startTime: string; endTime: string }[],
+    absence = false,
+    freeAbsence = false
   ) {
     await waitUntilEqual(
       () => this.#dayCell(date).findByDataQa('reservations').innerText,
       [
         ...(absence ? ['Poissa'] : []),
+        ...(freeAbsence ? ['Maksuton poissaolo'] : []),
         ...reservations.map(
           ({ startTime, endTime }) => `${startTime} – ${endTime}`
         )

@@ -59,26 +59,26 @@ const uniqueReservations = (
   i18n: Translations,
   data: ChildDailyData[]
 ): string[] => {
-  const uniqueReservationTimes: string[] = data
-    .flatMap(({ absence, reservations }) =>
-      absence === null
-        ? reservations.map(
-            ({ startTime, endTime }) => `${startTime} – ${endTime}`
-          )
-        : []
+  const reservationTimes = [
+    ...new Set(
+      data.flatMap(({ absence, reservations }) =>
+        absence === null
+          ? reservations.map((r) => `${r.startTime} – ${r.endTime}`)
+          : []
+      )
     )
-    .filter((reservation): reservation is string => reservation !== undefined)
-    .reduce<string[]>(
-      (uniq, reservation) =>
-        uniq.some((res) => res === reservation) ? uniq : [...uniq, reservation],
-      []
-    )
-    .sort()
+  ].sort()
 
-  const someoneIsAbsent = data.some(({ absence }) => absence !== null)
+  const someoneIsAbsent = data.some(
+    ({ absence }) => absence && absence !== 'FREE_ABSENCE'
+  )
+  const someoneIsOnFreeAbsence = data.some(
+    ({ absence }) => absence === 'FREE_ABSENCE'
+  )
 
   return [
     ...(someoneIsAbsent ? [i18n.calendar.absent] : []),
-    ...uniqueReservationTimes
+    ...(someoneIsOnFreeAbsence ? [i18n.calendar.absentFree] : []),
+    ...reservationTimes
   ]
 }
