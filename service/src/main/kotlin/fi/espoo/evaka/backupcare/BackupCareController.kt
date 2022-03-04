@@ -38,10 +38,10 @@ class BackupCareController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_CARE, childId)
         return ChildBackupCaresResponse(
             db.connect { dbc ->
-                dbc.read {
-                    val backupCares = it.getBackupCaresForChild(childId)
+                dbc.read { tx ->
+                    val backupCares = tx.getBackupCaresForChild(childId)
                     val backupCareIds = backupCares.map { bc -> bc.id }
-                    val permittedActions = accessControl.getPermittedBackupCareActions(user, backupCareIds)
+                    val permittedActions = accessControl.getPermittedActions<BackupCareId, Action.BackupCare>(tx, user, backupCareIds)
                     backupCares.map { bc -> ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet()) }
                 }
             }

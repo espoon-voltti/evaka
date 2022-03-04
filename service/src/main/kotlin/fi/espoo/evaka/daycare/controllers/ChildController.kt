@@ -31,22 +31,26 @@ class ChildController(private val accessControl: AccessControl) {
     fun getChild(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ, childId)
-        val child = db.connect { dbc -> dbc.read { it.getPersonById(childId) } }
-            ?.hideNonPermittedPersonData(
-                includeInvoiceAddress = accessControl.hasPermissionFor(
-                    user,
-                    Action.Person.READ_INVOICE_ADDRESS,
-                    childId
-                ),
-                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, childId)
-            )
-            ?: throw NotFound("Child $childId not found")
-        return ChildResponse(
-            person = PersonJSON.from(child),
-            permittedActions = accessControl.getPermittedChildActions(user, listOf(childId)).values.first(),
-            permittedPersonActions = accessControl.getPermittedPersonActions(user, listOf(childId))
-                .values.first()
-        )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val child = tx.getPersonById(childId)
+                    ?.hideNonPermittedPersonData(
+                        includeInvoiceAddress = accessControl.hasPermissionFor(
+                            user,
+                            Action.Person.READ_INVOICE_ADDRESS,
+                            childId
+                        ),
+                        includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, childId)
+                    )
+                    ?: throw NotFound("Child $childId not found")
+                ChildResponse(
+                    person = PersonJSON.from(child),
+                    permittedActions = accessControl.getPermittedActions<ChildId, Action.Child>(tx, user, listOf(childId)).values.first(),
+                    permittedPersonActions = accessControl.getPermittedPersonActions(user, listOf(childId))
+                        .values.first()
+                )
+            }
+        }
     }
 
     @GetMapping("/children/{childId}/additional-information")

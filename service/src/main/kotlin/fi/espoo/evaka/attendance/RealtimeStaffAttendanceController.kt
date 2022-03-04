@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -72,9 +73,7 @@ class RealtimeStaffAttendanceController(
     ) {
         Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
 
-        // todo: convert to action auth
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
+        ac.requirePermissionFor(user, Action.Group.MARK_ARRIVAL, body.groupId)
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
 
@@ -115,12 +114,9 @@ class RealtimeStaffAttendanceController(
         val departedTimeOrDefault = if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
 
         db.connect { dbc ->
-            // todo: convert to action auth
-            @Suppress("DEPRECATION")
             val attendance = dbc.read { it.getStaffAttendance(attendanceId) }
                 ?: throw NotFound("attendance not found")
-            @Suppress("DEPRECATION")
-            acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
+            ac.requirePermissionFor(user, Action.Group.MARK_DEPARTURE, attendance.groupId)
             ac.verifyPinCode(attendance.employeeId, body.pinCode)
 
             dbc.transaction {
@@ -144,9 +140,7 @@ class RealtimeStaffAttendanceController(
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
         Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
-        // todo: convert to action auth
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnitGroup(user, body.groupId).requireOneOfRoles(UserRole.MOBILE)
+        ac.requirePermissionFor(user, Action.Group.MARK_EXTERNAL_ARRIVAL, body.groupId)
 
         val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.arrived)
         val nowHDT = HelsinkiDateTime.now()
@@ -180,8 +174,7 @@ class RealtimeStaffAttendanceController(
             // todo: convert to action auth
             val attendance = dbc.read { it.getExternalStaffAttendance(body.attendanceId) }
                 ?: throw NotFound("attendance not found")
-            @Suppress("DEPRECATION")
-            acl.getRolesForUnitGroup(user, attendance.groupId).requireOneOfRoles(UserRole.MOBILE)
+            ac.requirePermissionFor(user, Action.Group.MARK_EXTERNAL_DEPARTURE, attendance.groupId)
 
             val departedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
             val nowHDT = HelsinkiDateTime.now()

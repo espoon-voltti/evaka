@@ -5,12 +5,7 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AssistanceActionId
-import fi.espoo.evaka.shared.AssistanceNeedId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -83,93 +78,6 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
                 ).bind("userId", user.id).bind("applicationId", applicationId)
                     .mapTo<UserRole>()
                     .toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForUnitGroup(user: AuthenticatedUser, groupId: GroupId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM daycare_group_acl_view
-WHERE employee_id = :userId AND daycare_group_id = :groupId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("groupId", groupId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForChild(user: AuthenticatedUser, childId: ChildId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM child_acl_view
-WHERE employee_id = :userId AND child_id = :childId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("childId", childId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForAssistanceNeed(user: AuthenticatedUser, assistanceNeedId: AssistanceNeedId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM child_acl_view acl
-JOIN assistance_need an ON acl.child_id = an.child_id
-WHERE an.id = :assistanceNeedId AND acl.employee_id = :userId
-                    """.trimIndent()
-                ).bind("assistanceNeedId", assistanceNeedId).bind("userId", user.id).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: AssistanceActionId): AclAppliedRoles =
-        AclAppliedRoles(
-            (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-                db.read {
-                    it.createQuery(
-                        // language=SQL
-                        """
-SELECT role
-FROM child_acl_view acl
-JOIN assistance_action ac ON acl.child_id = ac.child_id
-WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
-                        """.trimIndent()
-                    ).bind("assistanceActionId", assistanceActionId).bind("userId", user.id).mapTo<UserRole>().toSet()
-                }
-            }
-        )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForPedagogicalDocument(user: AuthenticatedUser, documentId: PedagogicalDocumentId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM pedagogical_document pd
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
-WHERE child_acl_view.employee_id = :userId AND pd.id = :documentId
-                    """.trimIndent()
-                )
-                    .bind("userId", user.id)
-                    .bind("documentId", documentId)
-                    .mapTo<UserRole>().toSet()
             }
         }
     )

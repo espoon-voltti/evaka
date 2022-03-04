@@ -5,6 +5,8 @@
 package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -52,11 +54,24 @@ class AssistanceActionController(
         Audit.ChildAssistanceActionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_ACTION, childId)
         return db.connect { dbc ->
-            val assistanceActions = assistanceActionService.getAssistanceActionsByChildId(dbc, childId).filter {
-                accessControl.hasPermissionFor(user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, it.id)
+            val preschoolPlacements = dbc.read { tx ->
+                tx.getPlacementsForChild(childId).filter {
+                    (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
+                }
+            }
+            val assistanceActions = assistanceActionService.getAssistanceActionsByChildId(dbc, childId).let { allAssistanceActions ->
+                val prePreschool = allAssistanceActions.filterNot {
+                    preschoolPlacements.isEmpty() || preschoolPlacements.any { placement ->
+                        placement.startDate.isBefore(it.startDate) || placement.startDate == it.startDate
+                    }
+                }
+                val decisions = accessControl.checkPermissionFor(dbc, user, Action.AssistanceAction.READ_PRE_PRESCHOOL_ASSISTANCE_ACTION, prePreschool.map { it.id })
+                allAssistanceActions.filter { decisions[it.id]?.isPermitted() ?: true }
             }
             val assistanceActionIds = assistanceActions.map { it.id }
-            val permittedActions = accessControl.getPermittedAssistanceActionActions(user, assistanceActionIds)
+            val permittedActions = dbc.read { tx ->
+                accessControl.getPermittedActions<AssistanceActionId, Action.AssistanceAction>(tx, user, assistanceActionIds)
+            }
             assistanceActions.map { AssistanceActionResponse(it, permittedActions[it.id] ?: emptySet()) }
         }
     }

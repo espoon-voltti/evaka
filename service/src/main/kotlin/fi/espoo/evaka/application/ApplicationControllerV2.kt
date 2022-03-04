@@ -179,13 +179,14 @@ class ApplicationControllerV2(
         val maxPageSize = 5000
         if (body.pageSize != null && body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
 
+        // TODO: convert to new action model
         val authorizedUnitsForApplicationsWithAssistanceNeed = acl.getAuthorizedUnits(
             user = user,
-            roles = accessControl.getPermittedRoles(Action.Global.SEARCH_APPLICATION_WITH_ASSISTANCE_NEED)
+            roles = setOf(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         )
         val authorizedUnitsForApplicationsWithoutAssistanceNeed = acl.getAuthorizedUnits(
             user = user,
-            roles = accessControl.getPermittedRoles(Action.Global.SEARCH_APPLICATION_WITHOUT_ASSISTANCE_NEED)
+            roles = setOf(UserRole.UNIT_SUPERVISOR)
         )
 
         if (authorizedUnitsForApplicationsWithAssistanceNeed.isEmpty() && authorizedUnitsForApplicationsWithoutAssistanceNeed.isEmpty()) {
@@ -285,7 +286,7 @@ class ApplicationControllerV2(
                     else -> listOf()
                 }
 
-                val permittedActions = accessControl.getPermittedApplicationActions(user, listOf(applicationId))
+                val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, listOf(applicationId))
 
                 ApplicationResponse(
                     application = application.copy(attachments = attachments),

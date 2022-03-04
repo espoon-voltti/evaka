@@ -23,6 +23,25 @@ enum class UserRole {
 
     GROUP_STAFF;
 
+    fun isGlobalRole(): Boolean = when (this) {
+        ADMIN -> true
+        REPORT_VIEWER -> true
+        DIRECTOR -> true
+        FINANCE_ADMIN -> true
+        SERVICE_WORKER -> true
+        else -> false
+    }
+    fun isUnitScopedRole(): Boolean = when (this) {
+        UNIT_SUPERVISOR -> true
+        STAFF -> true
+        SPECIAL_EDUCATION_TEACHER -> true
+        else -> false
+    }
+    fun isGroupScopedRole(): Boolean = when (this) {
+        GROUP_STAFF -> true
+        else -> false
+    }
+
     companion object {
         val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE, GROUP_STAFF)
     }

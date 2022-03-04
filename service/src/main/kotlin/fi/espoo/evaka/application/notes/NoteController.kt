@@ -35,19 +35,18 @@ class NoteController(private val accessControl: AccessControl) {
         Audit.NoteRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, Action.Application.READ_NOTES, applicationId)
 
-        val notes = db.connect { dbc ->
-            dbc.read {
-                it.getApplicationNotes(applicationId)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val notes = tx.getApplicationNotes(applicationId)
+                val permittedActions = accessControl.getPermittedActions<ApplicationNoteId, Action.ApplicationNote>(tx, user, notes.map { it.id })
+
+                notes.map {
+                    ApplicationNoteResponse(
+                        note = it,
+                        permittedActions = permittedActions[it.id] ?: setOf()
+                    )
+                }
             }
-        }
-
-        val permittedActions = accessControl.getPermittedApplicationNoteActions(user, notes.map { it.id })
-
-        return notes.map {
-            ApplicationNoteResponse(
-                note = it,
-                permittedActions = permittedActions[it.id] ?: setOf()
-            )
         }
     }
 

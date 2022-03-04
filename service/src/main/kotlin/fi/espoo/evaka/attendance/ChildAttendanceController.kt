@@ -29,6 +29,8 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -57,6 +59,7 @@ val fiveYearOldFreeLimit: Duration = Duration.ofHours(4) + Duration.ofMinutes(15
 @RestController
 @RequestMapping("/attendances")
 class ChildAttendanceController(
+    private val accessControl: AccessControl,
     private val acl: AccessControlList
 ) {
     val authorizedRoles = arrayOf(
@@ -387,8 +390,7 @@ class ChildAttendanceController(
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
         Audit.AbsenceDeleteRange.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE_RANGE, childId)
         return db.connect { dbc -> dbc.transaction { tx -> tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)) } }
     }
 }

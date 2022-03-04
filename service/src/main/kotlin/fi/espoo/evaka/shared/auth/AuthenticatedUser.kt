@@ -29,6 +29,8 @@ sealed class AuthenticatedUser : RoleContainer {
         get() = Hashing.sha256().hashString(id.toString(), Charsets.UTF_8)
 
     data class Citizen(override val id: UUID) : AuthenticatedUser() {
+        val authLevel: CitizenAuthLevel
+            get() = CitizenAuthLevel.STRONG
         override val evakaUserId: EvakaUserId
             get() = EvakaUserId(id)
         override val roles: Set<UserRole> = setOf(UserRole.END_USER)
@@ -37,6 +39,8 @@ sealed class AuthenticatedUser : RoleContainer {
     }
 
     data class WeakCitizen(override val id: UUID) : AuthenticatedUser() {
+        val authLevel: CitizenAuthLevel
+            get() = CitizenAuthLevel.WEAK
         override val evakaUserId: EvakaUserId
             get() = EvakaUserId(id)
         override val roles: Set<UserRole> = setOf(UserRole.CITIZEN_WEAK)
@@ -55,6 +59,8 @@ sealed class AuthenticatedUser : RoleContainer {
     }
 
     data class MobileDevice(override val id: UUID, val employeeId: EmployeeId? = null) : AuthenticatedUser() {
+        val authLevel: MobileAuthLevel
+            get() = if (employeeId != null) MobileAuthLevel.PIN_LOGIN else MobileAuthLevel.DEFAULT
         override val evakaUserId: EvakaUserId
             get() = EvakaUserId(id)
         override val roles: Set<UserRole> = emptySet()
@@ -71,6 +77,9 @@ sealed class AuthenticatedUser : RoleContainer {
         override fun toString(): String = "SystemInternalUser"
     }
 }
+
+enum class CitizenAuthLevel { WEAK, STRONG }
+enum class MobileAuthLevel { DEFAULT, PIN_LOGIN }
 
 /**
  * Low-level AuthenticatedUser type "tag" used in serialized representations (JWT, JSON).

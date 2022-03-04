@@ -54,9 +54,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.CREATE_ABSENCES, groupId)
-        absences.map { it.childId }.distinct().forEach {
-            accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, it)
-        }
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, absences.map { it.childId })
 
         db.connect { dbc -> dbc.transaction { it.upsertAbsences(absences, user.evakaUserId) } }
     }
@@ -70,9 +68,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.DELETE_ABSENCES, groupId)
-        deletions.forEach {
-            accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, it.childId)
-        }
+        accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, deletions.map { it.childId })
 
         db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
     }

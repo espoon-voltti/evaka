@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -82,9 +83,7 @@ class ReservationControllerCitizen(
         @RequestBody body: List<DailyReservationRequest>
     ) {
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
-        accessControl.requireGuardian(user, body.map { it.childId }.toSet())
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_RESERVATION, body.map { it.childId })
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -103,9 +102,7 @@ class ReservationControllerCitizen(
         @RequestBody body: AbsenceRequest
     ) {
         Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
-        accessControl.requireGuardian(user, body.childIds)
+        accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, body.childIds)
 
         if (body.dateRange.start.isBefore(evakaClock.today()))
             throw BadRequest("Cannot mark absences for past days")
