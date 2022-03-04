@@ -17,7 +17,6 @@ interface PermittedRoleActions {
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
     fun parentshipActions(role: UserRole): Set<Action.Parentship>
     fun partnershipActions(role: UserRole): Set<Action.Partnership>
-    fun personActions(role: UserRole): Set<Action.Person>
     fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup>
 }
 
@@ -31,14 +30,12 @@ class StaticPermittedRoleActions(
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
     val parentship: ActionsByRole<Action.Parentship> = getDefaults(),
     val partnership: ActionsByRole<Action.Partnership> = getDefaults(),
-    val person: ActionsByRole<Action.Person> = getDefaults(),
     val vasuDocumentFollowup: ActionsByRole<Action.VasuDocumentFollowup> = getDefaults(),
 ) : PermittedRoleActions {
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
     override fun parentshipActions(role: UserRole): Set<Action.Parentship> = parentship[role] ?: emptySet()
     override fun partnershipActions(role: UserRole): Set<Action.Partnership> = partnership[role] ?: emptySet()
-    override fun personActions(role: UserRole): Set<Action.Person> = person[role] ?: emptySet()
     override fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup> = vasuDocumentFollowup[role] ?: emptySet()
 }
 

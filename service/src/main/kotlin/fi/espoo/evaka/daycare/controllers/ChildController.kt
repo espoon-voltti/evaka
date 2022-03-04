@@ -46,8 +46,7 @@ class ChildController(private val accessControl: AccessControl) {
                 ChildResponse(
                     person = PersonJSON.from(child),
                     permittedActions = accessControl.getPermittedActions(tx, user, childId),
-                    permittedPersonActions = accessControl.getPermittedPersonActions(user, listOf(childId))
-                        .values.first()
+                    permittedPersonActions = accessControl.getPermittedActions(tx, user, childId)
                 )
             }
         }

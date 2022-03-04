@@ -64,6 +64,7 @@ import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.IsMobileInChildPlacementUnit
 import fi.espoo.evaka.shared.security.actionrule.IsMobileInRelatedUnit
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
+import fi.espoo.evaka.shared.security.actionrule.SsnAddingEnabledAndHasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
@@ -508,33 +509,31 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Person(private val roles: EnumSet<UserRole>) : LegacyScopedAction<PersonId> {
-        ADD_SSN(SERVICE_WORKER, FINANCE_ADMIN),
-        CREATE_INCOME(FINANCE_ADMIN),
-        CREATE_PARENTSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        CREATE_PARTNERSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        DISABLE_SSN(),
-        GENERATE_RETROACTIVE_FEE_DECISIONS(FINANCE_ADMIN),
-        GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
-        READ_CHILD_PLACEMENT_PERIODS(FINANCE_ADMIN),
-        READ_FAMILY_OVERVIEW(FINANCE_ADMIN, UNIT_SUPERVISOR),
-        READ_FEE_DECISIONS(FINANCE_ADMIN),
-        READ_INCOME(FINANCE_ADMIN),
-        READ_INCOME_STATEMENTS(FINANCE_ADMIN),
-        READ_INVOICES(FINANCE_ADMIN),
-        READ_INVOICE_ADDRESS(FINANCE_ADMIN),
-        READ_OPH_OID(DIRECTOR, UNIT_SUPERVISOR),
-        READ_PARENTSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        READ_PARTNERSHIPS(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        READ(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER),
-        READ_VOUCHER_VALUE_DECISIONS(FINANCE_ADMIN),
-        UPDATE(FINANCE_ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR),
-        UPDATE_INVOICE_ADDRESS(FINANCE_ADMIN),
+    enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
+        ADD_SSN(SsnAddingEnabledAndHasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN).person),
+        CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
+        CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        DISABLE_SSN,
+        GENERATE_RETROACTIVE_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
+        GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_FAMILY_OVERVIEW(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        READ_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_INCOME(HasGlobalRole(FINANCE_ADMIN)),
+        READ_INCOME_STATEMENTS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_INVOICES(HasGlobalRole(FINANCE_ADMIN)),
+        READ_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_OPH_OID(HasGlobalRole(DIRECTOR), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        READ_PARENTSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        READ_PARTNERSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).person),
+        READ_VOUCHER_VALUE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
+        UPDATE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        UPDATE_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
         UPDATE_OPH_OID;
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
         UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),

@@ -39,7 +39,6 @@ import fi.espoo.evaka.vasu.getVasuFollowupEntries
 import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 import java.util.UUID
 
@@ -93,15 +92,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "attachment.id",
         permittedRoleActions::attachmentActions,
-    )
-    private val person = ActionConfig(
-        """
-SELECT person_id AS id, role
-FROM person_acl_view
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "person_id",
-        permittedRoleActions::personActions
     )
 
     fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
@@ -328,7 +318,6 @@ WHERE employee_id = :userId
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
             is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
             is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
-            is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
             else -> error("Unsupported action type")
         }.exhaust()
 
@@ -426,32 +415,6 @@ WHERE employee_id = :userId
             is AuthenticatedUser.MobileDevice -> false
             AuthenticatedUser.SystemInternalUser -> false
         }
-
-    fun getPermittedPersonActions(
-        user: AuthenticatedUser,
-        ids: Collection<PersonId>
-    ): Map<PersonId, Set<Action.Person>> = ids.associateWith { personId ->
-        Action.Person.values()
-            .filter { action -> hasPermissionForInternal(user, action, personId) }
-            .toSet()
-    }
-
-    private fun hasPermissionForInternal(
-        user: AuthenticatedUser,
-        action: Action.Person,
-        id: PersonId
-    ): Boolean = when (action) {
-        Action.Person.ADD_SSN -> Database(jdbi).connect {
-            val ssnAddingDisabled = it.read { tx ->
-                tx.createQuery("SELECT ssn_adding_disabled FROM person WHERE id = :id")
-                    .bind("id", id)
-                    .mapTo<Boolean>()
-                    .one()
-            }
-            if (ssnAddingDisabled) user.isAdmin else this.person.hasPermission(user, action, id)
-        }
-        else -> this.person.hasPermission(user, action, id)
-    }
 
     fun requirePermissionFor(
         user: AuthenticatedUser,

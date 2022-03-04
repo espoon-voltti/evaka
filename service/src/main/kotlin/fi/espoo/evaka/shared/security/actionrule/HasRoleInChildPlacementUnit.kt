@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -222,6 +223,22 @@ FROM pedagogical_document pd
 JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
 WHERE employee_id = :userId
 AND pd.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val person = DatabaseActionRule(
+        this,
+        Query<PersonId> { tx, employeeId, ids ->
+            tx.createQuery(
+                """
+SELECT person_id AS id, role
+FROM person_acl_view
+WHERE employee_id = :userId
+AND person_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

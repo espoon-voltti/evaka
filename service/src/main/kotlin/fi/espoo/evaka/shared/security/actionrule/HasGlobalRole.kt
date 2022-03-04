@@ -11,7 +11,7 @@ import java.util.EnumSet
 
 data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, ActionRuleParams<HasGlobalRole> {
     init {
-        assert(oneOf.all { it.isGlobalRole() })
+        oneOf.forEach { check(it.isGlobalRole()) { "Expected a global role, got $it" } }
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
