@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.InvoiceId
-import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
@@ -450,13 +449,6 @@ sealed interface Action {
         ;
 
         override fun toString(): String = "${javaClass.name}.$name"
-    }
-    enum class MessageContent(private val roles: EnumSet<UserRole>) : LegacyScopedAction<MessageContentId> {
-        ;
-
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
-        override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class MessageDraft(override vararg val defaultRules: ScopedActionRule<in MessageDraftId>) : ScopedAction<MessageDraftId> {
         UPLOAD_ATTACHMENT(HasAccessToRelatedMessageAccount.messageDraft);
