@@ -141,7 +141,7 @@ class IncomeStatementController(
         @PathVariable guardianId: PersonId
     ): List<ChildBasicInfo> {
         Audit.IncomeStatementsOfChild.log()
-        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS)
+        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, guardianId)
         return db.connect { dbc ->
             dbc.read {
                 it.getIncomeStatementChildrenByGuardian(guardianId)
