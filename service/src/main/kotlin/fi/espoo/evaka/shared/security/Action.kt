@@ -58,6 +58,7 @@ import fi.espoo.evaka.shared.security.actionrule.HasRoleInRelatedUnit
 import fi.espoo.evaka.shared.security.actionrule.IsChildGuardian
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsCitizensOwn
+import fi.espoo.evaka.shared.security.actionrule.IsEmployeesOwn
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.IsMobileInChildPlacementUnit
 import fi.espoo.evaka.shared.security.actionrule.IsMobileInRelatedUnit
@@ -455,13 +456,13 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class MobileDevice(override vararg val defaultRules: ScopedActionRule<in MobileDeviceId>) : ScopedAction<MobileDeviceId> {
-        UPDATE_NAME(HasRoleInRelatedUnit(UNIT_SUPERVISOR).mobileDevice),
-        DELETE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).mobileDevice);
+        UPDATE_NAME(HasRoleInRelatedUnit(UNIT_SUPERVISOR).mobileDevice, IsEmployeesOwn.mobileDevice),
+        DELETE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).mobileDevice, IsEmployeesOwn.mobileDevice);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Pairing(override vararg val defaultRules: ScopedActionRule<in PairingId>) : ScopedAction<PairingId> {
-        POST_RESPONSE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).pairing);
+        POST_RESPONSE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).pairing, IsEmployeesOwn.pairing);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

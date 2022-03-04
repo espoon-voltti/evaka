@@ -109,9 +109,9 @@ AND daycare_group_placement.id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT d.id, role
-FROM daycare_acl_view dav
-JOIN mobile_device d ON dav.daycare_id = d.unit_id OR dav.employee_id = d.employee_id
-WHERE dav.employee_id = :userId
+FROM daycare_acl acl
+JOIN mobile_device d ON acl.daycare_id = d.unit_id
+WHERE acl.employee_id = :userId
 AND d.id = ANY(:ids)
                 """.trimIndent()
             )
@@ -126,9 +126,9 @@ AND d.id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT p.id, role
-FROM daycare_acl_view dav
-JOIN pairing p ON dav.daycare_id = p.unit_id OR dav.employee_id = p.employee_id
-WHERE dav.employee_id = :userId
+FROM daycare_acl acl
+JOIN pairing p ON acl.daycare_id = p.unit_id
+WHERE acl.employee_id = :userId
 AND p.id = ANY(:ids)
                 """.trimIndent()
             )
