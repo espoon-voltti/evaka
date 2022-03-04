@@ -4,15 +4,16 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControlDecision
+import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.jdbi.v3.core.kotlin.mapTo
 
-private typealias FilterByEmployeeOwnership<T> = (tx: Database.Read, employeeId: EmployeeId, targets: Set<T>) -> Iterable<T>
+private typealias FilterByEmployeeOwnership<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<T>
 
 object IsEmployeesOwn : ActionRuleParams<IsEmployeesOwn> {
     override fun merge(other: IsEmployeesOwn): IsEmployeesOwn = IsEmployeesOwn
@@ -23,7 +24,7 @@ object IsEmployeesOwn : ActionRuleParams<IsEmployeesOwn> {
             user: AuthenticatedUser,
             targets: Set<I>
         ): Map<I, DatabaseActionRule.Deferred<IsEmployeesOwn>> = when (user) {
-            is AuthenticatedUser.Employee -> filter(tx, EmployeeId(user.id), targets).associateWith { Deferred }
+            is AuthenticatedUser.Employee -> filter(tx, user, targets).associateWith { Deferred }
             else -> emptyMap()
         }
     }
@@ -32,7 +33,7 @@ object IsEmployeesOwn : ActionRuleParams<IsEmployeesOwn> {
     }
     val mobileDevice = DatabaseActionRule(
         this,
-        Query<MobileDeviceId> { tx, employeeId, ids ->
+        Query<MobileDeviceId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT id
@@ -41,14 +42,14 @@ WHERE employee_id = :userId
 AND id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
     val pairing = DatabaseActionRule(
         this,
-        Query<PairingId> { tx, employeeId, ids ->
+        Query<PairingId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT id
@@ -57,9 +58,16 @@ WHERE employee_id = :userId
 AND id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
+        }
+    )
+    val vasuDocumentFollowupEntry = DatabaseActionRule(
+        this,
+        Query<VasuDocumentFollowupEntryId> { tx, user, ids ->
+            // TODO: replace naive loop with a batch operation
+            ids.filter { id -> tx.getVasuFollowupEntry(id).authorId == user.id }
         }
     )
 }

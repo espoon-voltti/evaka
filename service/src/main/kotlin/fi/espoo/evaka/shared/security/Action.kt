@@ -38,6 +38,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -612,13 +613,14 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
 
-    enum class VasuDocumentFollowup(private val roles: EnumSet<UserRole>) : LegacyAction {
-        UPDATE(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, GROUP_STAFF),
-        ;
+    enum class VasuDocumentFollowup(override vararg val defaultRules: ScopedActionRule<in VasuDocumentFollowupEntryId>) : ScopedAction<VasuDocumentFollowupEntryId> {
+        UPDATE(
+            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocumentFollowupEntry,
+            HasRoleInChildPlacementGroup(GROUP_STAFF).vasuDocumentFollowupEntry,
+            IsEmployeesOwn.vasuDocumentFollowupEntry
+        );
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
 
     enum class VasuTemplate(override vararg val defaultRules: ScopedActionRule<in VasuTemplateId>) : ScopedAction<VasuTemplateId> {

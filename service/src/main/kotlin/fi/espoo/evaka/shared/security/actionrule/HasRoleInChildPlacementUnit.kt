@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -333,6 +334,19 @@ AND curriculum_document.id = ANY(:ids)
                 .bind("userId", employeeId)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
+        }
+    )
+    val vasuDocumentFollowupEntry = DatabaseActionRule(
+        this,
+        object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasRoleInChildPlacementUnit> {
+            override fun execute(
+                tx: Database.Read,
+                user: AuthenticatedUser,
+                targets: Set<VasuDocumentFollowupEntryId>
+            ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasRoleInChildPlacementUnit>> {
+                val vasuDocuments = vasuDocument.query.execute(tx, user, targets.map { it.first }.toSet())
+                return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
+            }
         }
     )
 }

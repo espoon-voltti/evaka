@@ -20,8 +20,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
-import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -33,8 +31,6 @@ import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
-import fi.espoo.evaka.vasu.getVasuFollowupEntries
-import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
 import java.util.EnumSet
@@ -433,64 +429,6 @@ WHERE employee_id = :userId
                 if (!hasPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)) throw Forbidden()
             }
             else -> throw Forbidden()
-        }
-    }
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
-        if (action != Action.VasuDocumentFollowup.UPDATE) {
-            throw Forbidden()
-        }
-        val mapping = permittedRoleActions::vasuDocumentFollowupActions
-
-        val globalRoles = when (user) {
-            is AuthenticatedUser.Employee -> user.globalRoles
-            else -> user.roles
-        }
-        if (globalRoles.any { it == UserRole.ADMIN }) {
-            return
-        }
-
-        val roles = @Suppress("DEPRECATION") acl.getRolesForVasuDocument(user, id.first).roles
-        if (roles.any { mapping(it).contains(action) }) {
-            return
-        }
-
-        Database(jdbi).connect { db ->
-            db.read { tx ->
-                val entry = tx.getVasuFollowupEntry(id)
-                if (entry.authorId != user.id) {
-                    throw Forbidden()
-                }
-            }
-        }
-    }
-
-    fun getPermittedVasuFollowupActions(user: AuthenticatedUser, id: VasuDocumentId): Map<UUID, Set<Action.VasuDocumentFollowup>> {
-        val action = Action.VasuDocumentFollowup.UPDATE
-        val mapping = permittedRoleActions::vasuDocumentFollowupActions
-
-        val globalRoles = when (user) {
-            is AuthenticatedUser.Employee -> user.globalRoles
-            else -> user.roles
-        }
-
-        @Suppress("DEPRECATION")
-        val roles = acl.getRolesForVasuDocument(user, id).roles
-        val hasPermissionThroughRole = globalRoles.any { it == UserRole.ADMIN } ||
-            roles.any { mapping(it).contains(action) }
-
-        val entries = Database(jdbi).connect { db ->
-            db.read { tx ->
-                tx.getVasuFollowupEntries(id)
-            }
-        }
-
-        return entries.associate { entry ->
-            entry.id to if (hasPermissionThroughRole || entry.authorId == user.id) {
-                setOf(Action.VasuDocumentFollowup.UPDATE)
-            } else {
-                setOf()
-            }
         }
     }
 

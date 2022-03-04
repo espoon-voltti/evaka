@@ -101,12 +101,22 @@ class VasuController(
         Audit.VasuDocumentRead.log(id)
         accessControl.requirePermissionFor(user, Action.VasuDocument.READ, id)
 
-        val doc = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.read { tx ->
-                tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
+                val doc = tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
+                val entryIds = doc.content.followupEntries().map { doc.id to it.id }.toList()
+                val permittedActions =
+                    accessControl.getPermittedActions<VasuDocumentFollowupEntryId, Action.VasuDocumentFollowup>(
+                        tx,
+                        user,
+                        entryIds
+                    )
+                GetVasuDocumentResponse(
+                    doc,
+                    permittedActions.mapKeys { it.key.second }
+                )
             }
         }
-        return GetVasuDocumentResponse(doc, accessControl.getPermittedVasuFollowupActions(user, id))
     }
 
     data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
