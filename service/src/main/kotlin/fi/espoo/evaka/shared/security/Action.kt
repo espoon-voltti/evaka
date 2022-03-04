@@ -54,13 +54,13 @@ import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInAnyUnit
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementGroup
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementUnit
-import fi.espoo.evaka.shared.security.actionrule.HasRoleInGroupUnit
+import fi.espoo.evaka.shared.security.actionrule.HasRoleInRelatedUnit
 import fi.espoo.evaka.shared.security.actionrule.IsChildGuardian
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsCitizensOwn
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.IsMobileInChildPlacementUnit
-import fi.espoo.evaka.shared.security.actionrule.IsMobileInGroupUnit
+import fi.espoo.evaka.shared.security.actionrule.IsMobileInRelatedUnit
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.toEnumSet
@@ -366,40 +366,40 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Group(override vararg val defaultRules: ScopedActionRule<in GroupId>) : ScopedAction<GroupId> {
-        UPDATE(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
-        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
+        UPDATE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).group),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInRelatedUnit(UNIT_SUPERVISOR).group),
 
-        CREATE_ABSENCES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
-        READ_ABSENCES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
-        DELETE_ABSENCES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF).group),
+        CREATE_ABSENCES(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
+        READ_ABSENCES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
+        DELETE_ABSENCES(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF).group),
 
-        READ_STAFF_ATTENDANCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInGroupUnit(requirePinLogin = false).group),
-        UPDATE_STAFF_ATTENDANCES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF).group, IsMobileInGroupUnit(requirePinLogin = false).group),
+        READ_STAFF_ATTENDANCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInRelatedUnit(requirePinLogin = false).group),
+        UPDATE_STAFF_ATTENDANCES(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF).group, IsMobileInRelatedUnit(requirePinLogin = false).group),
 
-        READ_CARETAKERS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
-        CREATE_CARETAKERS(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
-        UPDATE_CARETAKERS(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
-        DELETE_CARETAKERS(HasRoleInGroupUnit(UNIT_SUPERVISOR).group),
+        READ_CARETAKERS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group),
+        CREATE_CARETAKERS(HasRoleInRelatedUnit(UNIT_SUPERVISOR).group),
+        UPDATE_CARETAKERS(HasRoleInRelatedUnit(UNIT_SUPERVISOR).group),
+        DELETE_CARETAKERS(HasRoleInRelatedUnit(UNIT_SUPERVISOR).group),
 
-        CREATE_NOTE(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInGroupUnit(requirePinLogin = false).group),
-        READ_NOTES(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInGroupUnit(requirePinLogin = false).group),
+        CREATE_NOTE(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInRelatedUnit(requirePinLogin = false).group),
+        READ_NOTES(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).group, IsMobileInRelatedUnit(requirePinLogin = false).group),
 
-        MARK_DEPARTURE(IsMobileInGroupUnit(requirePinLogin = false).group),
-        MARK_EXTERNAL_DEPARTURE(IsMobileInGroupUnit(requirePinLogin = false).group),
-        MARK_ARRIVAL(IsMobileInGroupUnit(requirePinLogin = false).group),
-        MARK_EXTERNAL_ARRIVAL(IsMobileInGroupUnit(requirePinLogin = false).group);
+        MARK_DEPARTURE(IsMobileInRelatedUnit(requirePinLogin = false).group),
+        MARK_EXTERNAL_DEPARTURE(IsMobileInRelatedUnit(requirePinLogin = false).group),
+        MARK_ARRIVAL(IsMobileInRelatedUnit(requirePinLogin = false).group),
+        MARK_EXTERNAL_ARRIVAL(IsMobileInRelatedUnit(requirePinLogin = false).group);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class GroupNote(override vararg val defaultRules: ScopedActionRule<in GroupNoteId>) : ScopedAction<GroupNoteId> {
-        UPDATE(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).groupNote, IsMobileInGroupUnit(requirePinLogin = false).groupNote),
-        DELETE(HasRoleInGroupUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).groupNote, IsMobileInGroupUnit(requirePinLogin = false).groupNote);
+        UPDATE(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).groupNote, IsMobileInRelatedUnit(requirePinLogin = false).groupNote),
+        DELETE(HasRoleInRelatedUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).groupNote, IsMobileInRelatedUnit(requirePinLogin = false).groupNote);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class GroupPlacement(override vararg val defaultRules: ScopedActionRule<in GroupPlacementId>) : ScopedAction<GroupPlacementId> {
-        UPDATE(HasRoleInGroupUnit(UNIT_SUPERVISOR).groupPlacement),
-        DELETE(HasRoleInGroupUnit(UNIT_SUPERVISOR).groupPlacement);
+        UPDATE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).groupPlacement),
+        DELETE(HasRoleInRelatedUnit(UNIT_SUPERVISOR).groupPlacement);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

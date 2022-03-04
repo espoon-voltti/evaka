@@ -13,20 +13,20 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import org.jdbi.v3.core.kotlin.mapTo
 
-private typealias FilterGroupByMobile<T> = (tx: Database.Read, mobileId: MobileDeviceId, targets: Set<T>) -> Iterable<T>
+private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, targets: Set<T>) -> Iterable<T>
 
-data class IsMobileInGroupUnit(val requirePinLogin: Boolean) : ActionRuleParams<IsMobileInGroupUnit> {
-    override fun merge(other: IsMobileInGroupUnit): IsMobileInGroupUnit =
-        IsMobileInGroupUnit(this.requirePinLogin && other.requirePinLogin)
+data class IsMobileInRelatedUnit(val requirePinLogin: Boolean) : ActionRuleParams<IsMobileInRelatedUnit> {
+    override fun merge(other: IsMobileInRelatedUnit): IsMobileInRelatedUnit =
+        IsMobileInRelatedUnit(this.requirePinLogin && other.requirePinLogin)
 
-    private data class Query<T>(private val filter: FilterGroupByMobile<T>) : DatabaseActionRule.Query<T, IsMobileInGroupUnit> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobileInGroupUnit>> = when (user) {
+    private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobileInRelatedUnit> {
+        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobileInRelatedUnit>> = when (user) {
             is AuthenticatedUser.MobileDevice -> filter(tx, MobileDeviceId(user.id), targets).associateWith { Deferred(user.authLevel) }
             else -> emptyMap()
         }
     }
-    private data class Deferred(private val authLevel: MobileAuthLevel) : DatabaseActionRule.Deferred<IsMobileInGroupUnit> {
-        override fun evaluate(params: IsMobileInGroupUnit): AccessControlDecision =
+    private data class Deferred(private val authLevel: MobileAuthLevel) : DatabaseActionRule.Deferred<IsMobileInRelatedUnit> {
+        override fun evaluate(params: IsMobileInRelatedUnit): AccessControlDecision =
             if (params.requirePinLogin && authLevel != MobileAuthLevel.PIN_LOGIN) {
                 AccessControlDecision.Denied(params, "PIN login required", "PIN_LOGIN_REQUIRED")
             } else {
