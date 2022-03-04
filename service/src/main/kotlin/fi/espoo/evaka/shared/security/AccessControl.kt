@@ -373,7 +373,6 @@ WHERE employee_id = :userId
             is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
             is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
             is Action.VasuDocument -> this.vasuDocument.hasPermission(user, action, *ids as Array<VasuDocumentId>)
-            is Action.VasuTemplate -> hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::vasuTemplateActions)
             else -> error("Unsupported action type")
         }.exhaust()
 

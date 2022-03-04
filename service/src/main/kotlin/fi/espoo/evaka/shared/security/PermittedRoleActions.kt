@@ -24,7 +24,6 @@ interface PermittedRoleActions {
     fun unitActions(role: UserRole): Set<Action.Unit>
     fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument>
     fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup>
-    fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate>
 }
 
 /**
@@ -44,7 +43,6 @@ class StaticPermittedRoleActions(
     val unit: ActionsByRole<Action.Unit> = getDefaults(),
     val vasuDocument: ActionsByRole<Action.VasuDocument> = getDefaults(),
     val vasuDocumentFollowup: ActionsByRole<Action.VasuDocumentFollowup> = getDefaults(),
-    val vasuTemplate: ActionsByRole<Action.VasuTemplate> = getDefaults(),
 ) : PermittedRoleActions {
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
@@ -57,7 +55,6 @@ class StaticPermittedRoleActions(
     override fun unitActions(role: UserRole): Set<Action.Unit> = unit[role] ?: emptySet()
     override fun vasuDocumentActions(role: UserRole): Set<Action.VasuDocument> = vasuDocument[role] ?: emptySet()
     override fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup> = vasuDocumentFollowup[role] ?: emptySet()
-    override fun vasuTemplateActions(role: UserRole): Set<Action.VasuTemplate> = vasuTemplate[role] ?: emptySet()
 }
 
 typealias ActionsByRole<A> = Map<UserRole, Set<A>>

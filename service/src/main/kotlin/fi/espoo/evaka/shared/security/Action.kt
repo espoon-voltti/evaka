@@ -635,15 +635,13 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
 
-    enum class VasuTemplate(private val roles: EnumSet<UserRole>) : LegacyScopedAction<VasuTemplateId> {
-        READ(),
-        COPY(),
-        UPDATE(),
-        DELETE();
+    enum class VasuTemplate(override vararg val defaultRules: ScopedActionRule<in VasuTemplateId>) : ScopedAction<VasuTemplateId> {
+        READ,
+        COPY,
+        UPDATE,
+        DELETE;
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
 
     enum class VoucherValueDecision(override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>) : ScopedAction<VoucherValueDecisionId> {
