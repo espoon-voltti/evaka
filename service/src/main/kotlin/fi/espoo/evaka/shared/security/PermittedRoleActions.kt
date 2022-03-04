@@ -15,7 +15,6 @@ import java.util.EnumSet
 interface PermittedRoleActions {
     fun attachmentActions(role: UserRole): Set<Action.Attachment>
     fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
-    fun parentshipActions(role: UserRole): Set<Action.Parentship>
     fun partnershipActions(role: UserRole): Set<Action.Partnership>
     fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup>
 }
@@ -28,13 +27,11 @@ interface PermittedRoleActions {
 class StaticPermittedRoleActions(
     val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
     val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
-    val parentship: ActionsByRole<Action.Parentship> = getDefaults(),
     val partnership: ActionsByRole<Action.Partnership> = getDefaults(),
     val vasuDocumentFollowup: ActionsByRole<Action.VasuDocumentFollowup> = getDefaults(),
 ) : PermittedRoleActions {
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
     override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
-    override fun parentshipActions(role: UserRole): Set<Action.Parentship> = parentship[role] ?: emptySet()
     override fun partnershipActions(role: UserRole): Set<Action.Partnership> = partnership[role] ?: emptySet()
     override fun vasuDocumentFollowupActions(role: UserRole): Set<Action.VasuDocumentFollowup> = vasuDocumentFollowup[role] ?: emptySet()
 }

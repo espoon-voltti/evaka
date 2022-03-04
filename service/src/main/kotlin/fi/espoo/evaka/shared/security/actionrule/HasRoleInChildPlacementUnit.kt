@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -206,6 +207,24 @@ FROM decision
 JOIN daycare_acl_view ON decision.unit_id = daycare_acl_view.daycare_id
 WHERE employee_id = :userId
 AND decision.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", employeeId)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val parentship = DatabaseActionRule(
+        this,
+        Query<ParentshipId> { tx, employeeId, ids ->
+            tx.createQuery(
+
+                """
+SELECT fridge_child.id, role
+FROM fridge_child
+JOIN person_acl_view ON fridge_child.head_of_child = person_acl_view.person_id OR fridge_child.child_id = person_acl_view.person_id
+WHERE employee_id = :userId
+AND fridge_child.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", employeeId)

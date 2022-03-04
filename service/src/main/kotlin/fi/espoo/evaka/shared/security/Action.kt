@@ -467,16 +467,14 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Parentship(private val roles: EnumSet<UserRole>) : LegacyScopedAction<ParentshipId> {
-        DELETE(FINANCE_ADMIN),
-        DELETE_CONFLICTED_PARENTSHIP(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        READ(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        RETRY(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
-        UPDATE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN);
+    enum class Parentship(override vararg val defaultRules: ScopedActionRule<in ParentshipId>) : ScopedAction<ParentshipId> {
+        DELETE(HasGlobalRole(FINANCE_ADMIN)),
+        DELETE_CONFLICTED_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship),
+        RETRY(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship),
+        UPDATE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship);
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Partnership(private val roles: EnumSet<UserRole>) : LegacyScopedAction<PartnershipId> {
         DELETE(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN),
