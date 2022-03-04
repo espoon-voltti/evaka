@@ -374,7 +374,6 @@ WHERE employee_id = :userId
             is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
             is Action.VasuDocument -> this.vasuDocument.hasPermission(user, action, *ids as Array<VasuDocumentId>)
             is Action.VasuTemplate -> hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::vasuTemplateActions)
-            is Action.VoucherValueDecision -> hasPermissionUsingGlobalRoles(user, action, mapping = permittedRoleActions::voucherValueDecisionActions)
             else -> error("Unsupported action type")
         }.exhaust()
 

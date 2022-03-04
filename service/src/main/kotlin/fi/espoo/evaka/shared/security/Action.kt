@@ -646,13 +646,10 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
 
-    enum class VoucherValueDecision(private val roles: EnumSet<UserRole>) : LegacyScopedAction<VoucherValueDecisionId> {
-        READ(FINANCE_ADMIN),
-        UPDATE(FINANCE_ADMIN)
-        ;
+    enum class VoucherValueDecision(override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>) : ScopedAction<VoucherValueDecisionId> {
+        READ(HasGlobalRole(FINANCE_ADMIN)),
+        UPDATE(HasGlobalRole(FINANCE_ADMIN));
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
 }
