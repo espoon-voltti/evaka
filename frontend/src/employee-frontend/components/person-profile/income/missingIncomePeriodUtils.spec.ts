@@ -80,4 +80,43 @@ describe('getMissingIncomePeriodsString', () => {
       getMissingIncomePeriodsString(incomeDates, placementRanges, '&')
     ).toEqual('')
   })
+
+  it('Produces nothing when there is no gap between two incomes', () => {
+    const incomeDates = [
+      {
+        validFrom: LocalDate.of(2022, 1, 1),
+        validTo: LocalDate.of(2022, 1, 31)
+      },
+      {
+        validFrom: LocalDate.of(2022, 2, 1),
+        validTo: LocalDate.of(2022, 9, 22)
+      }
+    ]
+    const placementRanges = [
+      new FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 20)),
+      new FiniteDateRange(LocalDate.of(2022, 3, 10), LocalDate.of(2022, 3, 31))
+    ]
+    expect(
+      getMissingIncomePeriodsString(incomeDates, placementRanges, '&')
+    ).toEqual('')
+  })
+
+  it('Produces something when there is one day between two incomes', () => {
+    const incomeDates = [
+      {
+        validFrom: LocalDate.of(2022, 1, 1),
+        validTo: LocalDate.of(2022, 1, 31)
+      },
+      {
+        validFrom: LocalDate.of(2022, 2, 2),
+        validTo: LocalDate.of(2022, 9, 22)
+      }
+    ]
+    const placementRanges = [
+      new FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 3, 31))
+    ]
+    expect(
+      getMissingIncomePeriodsString(incomeDates, placementRanges, '&')
+    ).toEqual('01.02.2022')
+  })
 })

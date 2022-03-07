@@ -13,11 +13,10 @@ const getDateRangeBetweenIncomes = (
   firstIncome: IncomeDates,
   laterIncome: IncomeDates
 ): FiniteDateRange | undefined => {
-  if (firstIncome.validTo?.isBefore(laterIncome.validFrom)) {
-    return new FiniteDateRange(
-      firstIncome.validTo.addDays(1),
-      laterIncome.validFrom.subDays(1)
-    )
+  const start = firstIncome.validTo?.addDays(1)
+  const end = laterIncome.validFrom.subDays(1)
+  if (start?.isBefore(laterIncome.validFrom)) {
+    return new FiniteDateRange(start, end)
   }
   return undefined
 }
