@@ -16,7 +16,10 @@ import {
   DecisionStatus,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
-import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  FixedPeriodQuestionnaireBody,
+  HolidayPeriodBody
+} from 'lib-common/generated/api-types/holidayperiod'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   Coordinate,
@@ -251,6 +254,10 @@ export interface PlacementPlan {
 }
 
 export type DevHolidayPeriod = HolidayPeriodBody & {
+  id: UUID
+}
+
+export type DevFixedPeriodQuestionnaire = FixedPeriodQuestionnaireBody & {
   id: UUID
 }
 

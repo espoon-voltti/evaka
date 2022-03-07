@@ -7,7 +7,5 @@ import LocalDate from 'lib-common/local-date'
 
 export function isHolidayFormCurrentlyActive() {
   const today = LocalDate.today()
-  return (p: HolidayPeriod) =>
-    p.showReservationBannerFrom.isEqualOrBefore(today) &&
-    p.reservationDeadline.isEqualOrAfter(today)
+  return (p: HolidayPeriod) => p.period.includes(today)
 }

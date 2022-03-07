@@ -64,8 +64,8 @@ const HolidayPeriodBanner = React.memo(function HolidayPeriodBanner({
 
 export default React.memo(function BannerWrapper() {
   const user = useUser()
-  const { activePeriod } = useHolidayPeriods()
-  const status = useDataStatus(activePeriod)
+  const { activeFixedPeriodQuestionnaire } = useHolidayPeriods()
+  const status = useDataStatus(activeFixedPeriodQuestionnaire)
 
   if (!user) {
     return null
@@ -77,7 +77,7 @@ export default React.memo(function BannerWrapper() {
       data-status={status}
     >
       <UnwrapResult
-        result={activePeriod}
+        result={activeFixedPeriodQuestionnaire}
         loading={() => null}
         failure={() => null}
       >
@@ -85,7 +85,7 @@ export default React.memo(function BannerWrapper() {
           return activePeriod ? (
             <HolidayPeriodBanner
               period={activePeriod.period}
-              reservationDeadline={activePeriod.reservationDeadline}
+              reservationDeadline={activePeriod.active.end}
             />
           ) : null
         }}

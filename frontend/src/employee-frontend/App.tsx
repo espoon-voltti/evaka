@@ -53,6 +53,7 @@ import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisio
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import HolidayPeriodEditor from './components/holiday-periods/HolidayPeriodEditor'
 import HolidayPeriodsPage from './components/holiday-periods/HolidayPeriodsPage'
+import QuestionnaireEditor from './components/holiday-periods/QuestionnaireEditor'
 import InvoicePage from './components/invoice/InvoicePage'
 import MessagesPage from './components/messages/MessagesPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
@@ -637,6 +638,15 @@ export default function App() {
                     render={() => (
                       <EmployeeRoute title={i18n.titles.holidayPeriods}>
                         <HolidayPeriodEditor />
+                      </EmployeeRoute>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/holiday-periods/questionnaire/:id"
+                    render={() => (
+                      <EmployeeRoute title={i18n.titles.holidayQuestionnaire}>
+                        <QuestionnaireEditor />
                       </EmployeeRoute>
                     )}
                   />

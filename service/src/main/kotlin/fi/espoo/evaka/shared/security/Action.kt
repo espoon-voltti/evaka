@@ -162,7 +162,15 @@ sealed interface Action {
         READ_HOLIDAY_PERIOD,
         READ_HOLIDAY_PERIODS(IsCitizen(allowWeakLogin = true)),
         DELETE_HOLIDAY_PERIOD,
-        UPDATE_HOLIDAY_PERIOD;
+        UPDATE_HOLIDAY_PERIOD,
+
+        READ_HOLIDAY_QUESTIONNAIRE,
+        READ_HOLIDAY_QUESTIONNAIRES,
+        READ_ACTIVE_HOLIDAY_QUESTIONNAIRES(IsCitizen(allowWeakLogin = true)),
+        CREATE_HOLIDAY_QUESTIONNAIRE,
+        DELETE_HOLIDAY_QUESTIONNAIRE,
+        UPDATE_HOLIDAY_QUESTIONNAIRE,
+        ;
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

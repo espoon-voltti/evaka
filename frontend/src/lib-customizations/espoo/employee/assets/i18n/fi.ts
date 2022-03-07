@@ -15,8 +15,9 @@ export const fi = {
     feeDecisions: 'Maksupäätökset',
     feeDecision: 'Maksupäätös',
     feeDecisionDraft: 'Maksupäätösluonnos',
-    holidayPeriod: 'Loma-aikakysely',
-    holidayPeriods: 'Loma-aikakyselyt',
+    holidayPeriod: 'Loma-aika',
+    holidayPeriods: 'Loma-ajat',
+    holidayQuestionnaire: 'Loma-aikakysely',
     incomeStatements: 'Tuloselvitykset',
     valueDecisions: 'Arvopäätökset',
     valueDecision: 'Arvopäätös',
@@ -3045,19 +3046,26 @@ export const fi = {
     confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',
     createTitle: 'Luo uusi loma-aika',
     editTitle: 'Muokkaa loma-aikaa',
-    description: 'Loma-ajan selite kuntalaiselle',
-    descriptionLink: 'Lisätietolinkki',
     period: 'Aikaväli',
-    showReservationBannerFrom: 'Näytetään alkaen',
-    reservationDeadline: 'Varaukset viimeistään',
-    freePeriodQuestionLabel: 'Ilmaisen kauden kysymys',
-    freePeriodQuestionLabelPlaceholder:
-      'Esim. Ovatko lapsenne 30.5.–31.8. välillä poissa yhtenäisesti 8 viikkoa?',
-    freePeriodOptionLabel: 'Ilmaisen kauden valinnan kysymys',
-    freePeriodOptionLabelPlaceholder:
+    reservationDeadline: 'Varausten takaraja'
+  },
+  holidayQuestionnaires: {
+    holidayPeriod: 'Loma-aika',
+    confirmDelete: 'Haluatko varmasti poistaa kyselyn?',
+    types: {
+      FIXED_PERIOD: 'Kiinteä kausi'
+    },
+    questionnaires: 'Poissaolokyselyt',
+    absenceType: 'Poissaolon tyyppi',
+    title: 'Otsikko',
+    description: 'Kyselyn selite kuntalaiselle',
+    descriptionLink: 'Lisätietolinkki',
+    active: 'Voimassa',
+    fixedPeriodOptionLabel: 'Kauden valinnan kysymys',
+    fixedPeriodOptionLabelPlaceholder:
       'Esim. Lapset ovat 8 viikkoa poissa aikavälillä',
-    freePeriodOptions: 'Ilmaisien kausien vaihtoehdot',
-    freePeriodOptionsPlaceholder:
+    fixedPeriodOptions: 'Kausien vaihtoehdot',
+    fixedPeriodOptionsPlaceholder:
       '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, pilkuilla tai rivinvaihdoilla erotettuna'
   }
 }

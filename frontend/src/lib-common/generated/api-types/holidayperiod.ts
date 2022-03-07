@@ -7,47 +7,79 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { AbsenceType } from './daycare'
 import { Translatable } from './shared'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.FreeAbsencePeriod
+* Generated from fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaire
 */
-export interface FreeAbsencePeriod {
-  deadline: LocalDate
+export interface FixedPeriodQuestionnaire {
+  absenceType: AbsenceType
+  active: FiniteDateRange
+  conditions: QuestionnaireConditions
+  description: Translatable
+  descriptionLink: Translatable
+  holidayPeriodId: UUID
+  id: UUID
+  period: FiniteDateRange
   periodOptionLabel: Translatable
   periodOptions: FiniteDateRange[]
-  questionLabel: Translatable
+  requiresStrongAuth: boolean
+  title: Translatable
+  type: QuestionnaireType
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.FreePeriodsBody
+* Generated from fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
 */
-export interface FreePeriodsBody {
-  freePeriods: Record<string, FiniteDateRange | null>
+export interface FixedPeriodQuestionnaireBody {
+  absenceType: AbsenceType
+  active: FiniteDateRange
+  conditions: QuestionnaireConditions
+  description: Translatable
+  descriptionLink: Translatable
+  holidayPeriodId: UUID
+  periodOptionLabel: Translatable
+  periodOptions: FiniteDateRange[]
+  requiresStrongAuth: boolean
+  title: Translatable
+}
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.FixedPeriodsBody
+*/
+export interface FixedPeriodsBody {
+  fixedPeriods: Record<string, FiniteDateRange | null>
 }
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriod
 */
 export interface HolidayPeriod {
-  description: Translatable
-  descriptionLink: Translatable
-  freePeriod: FreeAbsencePeriod | null
   id: UUID
   period: FiniteDateRange
-  reservationDeadline: LocalDate
-  showReservationBannerFrom: LocalDate
+  reservationDeadline: LocalDate | null
 }
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodBody
 */
 export interface HolidayPeriodBody {
-  description: Translatable
-  descriptionLink: Translatable
-  freePeriod: FreeAbsencePeriod | null
   period: FiniteDateRange
-  reservationDeadline: LocalDate
-  showReservationBannerFrom: LocalDate
+  reservationDeadline: LocalDate | null
 }
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.QuestionnaireConditions
+*/
+export interface QuestionnaireConditions {
+  continuousPlacement: FiniteDateRange | null
+}
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.QuestionnaireType
+*/
+export type QuestionnaireType = 
+  | 'FIXED_PERIOD'
+  | 'OPEN_RANGES'

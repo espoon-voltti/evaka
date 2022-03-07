@@ -12,6 +12,8 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.HolidayPeriodId
+import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
@@ -27,10 +29,26 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 
 class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
-    private val mockToday: LocalDate = summerPeriodWithFreePeriod.freePeriod!!.deadline.minusWeeks(2)
+    private final val freePeriodQuestionnaire = FixedPeriodQuestionnaireBody(
+        active = FiniteDateRange(LocalDate.of(2021, 4, 1), LocalDate.of(2021, 5, 31)),
+        periodOptions = listOf(
+            FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 7)),
+            FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14)),
+        ),
+        periodOptionLabel = emptyTranslatable,
+        description = emptyTranslatable,
+        descriptionLink = emptyTranslatable,
+        conditions = QuestionnaireConditions(),
+        title = emptyTranslatable,
+        holidayPeriodId = HolidayPeriodId(UUID.randomUUID()),
+        absenceType = AbsenceType.FREE_ABSENCE,
+        requiresStrongAuth = false
+    )
+    private val mockToday: LocalDate = freePeriodQuestionnaire.active.end.minusWeeks(1)
 
     private final val child = testChild_1
     private final val parent = testAdult_1
@@ -44,25 +62,21 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
 
             tx.insertGuardian(parent.id, child.id)
 
-            tx.insertPlacement(PlacementType.DAYCARE, child.id, testDaycare.id, mockToday.minusYears(2), mockToday.plusYears(1))
+            tx.insertPlacement(
+                PlacementType.DAYCARE,
+                child.id,
+                testDaycare.id,
+                mockToday.minusYears(2),
+                mockToday.plusYears(1)
+            )
         }
     }
 
     @Test
-    fun `holiday absences cannot be saved when no holiday period is active`() {
-        reportFreePeriods(
-            freeAbsence(
-                LocalDate.of(2025, 1, 1),
-                LocalDate.of(2025, 1, 5)
-            ),
-            400
-        )
-    }
-
-    @Test
     fun `free absences cannot be saved outside of a free period`() {
-        createHolidayPeriod(summerPeriodWithFreePeriod)
+        val id = createFixedPeriodQuestionnaire(freePeriodQuestionnaire.copy(holidayPeriodId = createHolidayPeriod(summerPeriod).id))
         reportFreePeriods(
+            id,
             freeAbsence(
                 LocalDate.of(2025, 1, 1),
                 LocalDate.of(2025, 1, 5)
@@ -73,31 +87,42 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `free absences cannot be saved after the deadline`() {
-        createHolidayPeriod(summerPeriodWithFreePeriod)
-        val firstOption = summerPeriodWithFreePeriod.freePeriod!!.periodOptions[0]
+        val id = createFixedPeriodQuestionnaire(freePeriodQuestionnaire.copy(holidayPeriodId = createHolidayPeriod(summerPeriod).id))
+        val firstOption = freePeriodQuestionnaire.periodOptions.first()
         reportFreePeriods(
+            id,
             freeAbsence(firstOption.start, firstOption.end),
             400,
-            summerPeriodWithFreePeriod.freePeriod!!.deadline.plusDays(1)
+            freePeriodQuestionnaire.active.end.plusDays(1)
         )
     }
 
     @Test
-    fun `can save free absence in a free period before the deadline`() {
-        createHolidayPeriod(summerPeriodWithFreePeriod)
-        val firstOption = summerPeriodWithFreePeriod.freePeriod!!.periodOptions[0]
-        reportFreePeriods(freeAbsence(firstOption.start, firstOption.end), 200)
+    fun `can save free absences in before the questionnaire deadline`() {
+        val id = createFixedPeriodQuestionnaire(freePeriodQuestionnaire.copy(holidayPeriodId = createHolidayPeriod(summerPeriod).id))
+        val firstOption = freePeriodQuestionnaire.periodOptions[0]
+        reportFreePeriods(id, freeAbsence(firstOption.start, firstOption.end))
 
-        val expected = firstOption.dates().map { Absence(child.id, it, AbsenceType.FREE_ABSENCE) }
-        assertEquals(expected.toList(), db.read { it.getAllAbsences() })
+        assertEquals(
+            firstOption.dates().map { Absence(child.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
+            db.read { it.getAllAbsences() }
+        )
+
+        val secondOption = freePeriodQuestionnaire.periodOptions[1]
+        reportFreePeriods(id, freeAbsence(secondOption.start, secondOption.end))
+        assertEquals(
+            secondOption.dates().map { Absence(child.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
+            db.read { it.getAllAbsences() }
+        )
     }
 
     private fun reportFreePeriods(
-        body: FreePeriodsBody,
+        id: HolidayQuestionnaireId,
+        body: FixedPeriodsBody,
         expectedStatus: Int = 200,
         mockedDay: LocalDate = mockToday
     ) {
-        http.post("/citizen/holiday-period/holidays/free-period")
+        http.post("/citizen/holiday-period/questionnaire/fixed-period/$id")
             .jsonBody(jsonMapper.writeValueAsString(body))
             .asUser(authenticatedParent)
             .withMockedTime(HelsinkiDateTime.of(mockedDay, LocalTime.of(0, 0)))
@@ -106,11 +131,14 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     private fun freeAbsence(start: LocalDate, end: LocalDate) =
-        FreePeriodsBody(mapOf(child.id to FiniteDateRange(start, end)))
+        FixedPeriodsBody(mapOf(child.id to FiniteDateRange(start, end)))
 
     private fun createHolidayPeriod(period: HolidayPeriodBody) = db.transaction { it.createHolidayPeriod(period) }
+    private fun createFixedPeriodQuestionnaire(body: FixedPeriodQuestionnaireBody) =
+        db.transaction { it.createFixedPeriodQuestionnaire(body) }
 
     private data class Absence(val childId: ChildId, val date: LocalDate, val type: AbsenceType)
+
     private fun Database.Read.getAllAbsences(): List<Absence> =
         createQuery("SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date")
             .mapTo<Absence>()

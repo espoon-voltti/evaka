@@ -5,11 +5,8 @@
 import React, { useMemo } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { FreeAbsencePeriod } from 'lib-common/generated/api-types/holidayperiod'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { Label } from 'lib-components/typography'
-
-import { useLang } from '../../localization'
 
 interface HolidayOption {
   name: string
@@ -21,43 +18,43 @@ const emptySelection = {
 } as const
 
 interface Props {
-  freeAbsencePeriod: FreeAbsencePeriod
+  label: string
+  options: FiniteDateRange[]
   value: FiniteDateRange | null
   onSelectPeriod: (selection: FiniteDateRange | null) => void
 }
 
-export const FreeHolidaySelector = React.memo(function FreeHolidaySelector({
-  freeAbsencePeriod,
+export const PeriodSelector = React.memo(function PeriodSelector({
+  label,
+  options,
   value,
   onSelectPeriod
 }: Props) {
-  const [lang] = useLang()
-
-  const options = useMemo<HolidayOption[]>(
+  const items = useMemo<HolidayOption[]>(
     () => [
       emptySelection,
-      ...freeAbsencePeriod.periodOptions.map((period) => ({
+      ...options.map((period) => ({
         name: period.format(),
         period
       }))
     ],
-    [freeAbsencePeriod]
+    [options]
   )
 
   return (
     <div>
-      <Label>{freeAbsencePeriod.periodOptionLabel[lang]}</Label>
+      <Label>{label}</Label>
       <Select
-        items={options}
+        items={items}
         selectedItem={
-          options.find(({ period }) =>
+          items.find(({ period }) =>
             value === null ? period === null : period?.isEqual(value)
           ) ?? emptySelection
         }
         onChange={(item) => onSelectPeriod(item?.period ?? null)}
         getItemValue={({ name }) => name}
         getItemLabel={({ name }) => name}
-        data-qa="free-period-select"
+        data-qa="period-select"
       />
     </div>
   )
