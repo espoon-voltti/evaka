@@ -789,7 +789,8 @@ export const feeDecisionsFixture = (
       fee: 28900,
       siblingDiscount: 0.0,
       feeAlterations: [],
-      finalFee: 28900
+      finalFee: 28900,
+      childIncome: null
     }
   ],
   totalFee: 28900,

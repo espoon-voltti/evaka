@@ -201,7 +201,8 @@ private fun generateFeeDecisions(
                             price.siblingDiscountPercent(index + 1),
                             feeBeforeAlterations,
                             feeAlterationsWithEffects,
-                            finalFee
+                            finalFee,
+                            childPeriodIncome.get(child.id)
                         )
                     }
                     .filterNotNull()

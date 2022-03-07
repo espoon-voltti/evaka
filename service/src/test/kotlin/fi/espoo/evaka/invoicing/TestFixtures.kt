@@ -122,7 +122,8 @@ val testDecisionChild1 =
         feeAlterations = listOf(
             FeeAlterationWithEffect(FeeAlteration.Type.RELIEF, 50, false, -10800)
         ),
-        finalFee = 28900
+        finalFee = 28900,
+        childIncome = null
     )
 val testDecisionChild2 =
     FeeDecisionChild(
@@ -135,7 +136,8 @@ val testDecisionChild2 =
         feeAlterations = listOf(
             FeeAlterationWithEffect(FeeAlteration.Type.RELIEF, 50, false, -10800)
         ),
-        finalFee = 28900
+        finalFee = 28900,
+        childIncome = null
     )
 
 val testDecision1 = FeeDecision(
@@ -200,7 +202,8 @@ fun createFeeDecisionChildFixture(
     siblingDiscount = siblingDiscount,
     fee = fee,
     feeAlterations = feeAlterations,
-    finalFee = fee + feeAlterations.sumOf { it.effect }
+    finalFee = fee + feeAlterations.sumOf { it.effect },
+    childIncome = null
 )
 
 fun createFeeDecisionFixture(

@@ -75,7 +75,6 @@ data class FeeDecision(
     override fun withChildren(children: List<FeeDecisionChild>) = this.copy(children = children)
 }
 
-// TODO lapsen tulotiedot tänne & tauluun column
 data class FeeDecisionChild(
     @Nested("child")
     val child: ChildWithDateOfBirth,
@@ -88,7 +87,9 @@ data class FeeDecisionChild(
     val fee: Int,
     @Json
     val feeAlterations: List<FeeAlterationWithEffect>,
-    val finalFee: Int
+    val finalFee: Int,
+    @Json
+    val childIncome: DecisionIncome?,
 )
 
 data class FeeDecisionPlacement(
@@ -208,7 +209,8 @@ data class FeeDecisionChildDetailed(
     val siblingDiscount: Int,
     val fee: Int,
     val feeAlterations: List<FeeAlterationWithEffect>,
-    val finalFee: Int
+    val finalFee: Int,
+    val childIncome: DecisionIncome?
 )
 
 data class FeeDecisionSummary(

@@ -199,7 +199,9 @@ class PDFService(
             val feeAlterations: List<FeeAlterationPdfPart>,
             val finalFeeFormatted: String,
             val feeFormatted: String,
-            val siblingDiscount: Int
+            val siblingDiscount: Int,
+            val childIncomeTotal: String?,
+            val hasChildIncome: Boolean
         )
 
         val (decision, settings, lang) = data
@@ -216,6 +218,8 @@ class PDFService(
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
         val isReliefDecision = decision.decisionType !== FeeDecisionType.NORMAL
+
+        val hasChildIncome = decision.children.any { it.childIncome != null && it.childIncome.total > 0 }
 
         return mapOf(
             "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
@@ -240,7 +244,9 @@ class PDFService(
                     },
                     formatCents(it.finalFee)!!,
                     formatCents(it.fee)!!,
-                    it.siblingDiscount
+                    it.siblingDiscount,
+                    formatCents(it.childIncome?.total),
+                    it.childIncome != null && it.childIncome.total > 0
                 )
             },
             "sendAddress" to sendAddress,
@@ -266,7 +272,8 @@ class PDFService(
                 decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
                 ),
             "decisionMakerName" to settings[SettingType.DECISION_MAKER_NAME],
-            "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE]
+            "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE],
+            "hasChildIncome" to hasChildIncome
         ).mapValues {
             it.value ?: ""
         }

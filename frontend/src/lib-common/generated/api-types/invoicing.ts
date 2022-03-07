@@ -102,6 +102,7 @@ export interface FeeDecision {
 export interface FeeDecisionChild {
   baseFee: number
   child: ChildWithDateOfBirth
+  childIncome: DecisionIncome | null
   fee: number
   feeAlterations: FeeAlterationWithEffect[]
   finalFee: number
@@ -116,6 +117,7 @@ export interface FeeDecisionChild {
 export interface FeeDecisionChildDetailed {
   baseFee: number
   child: PersonDetailed
+  childIncome: DecisionIncome | null
   fee: number
   feeAlterations: FeeAlterationWithEffect[]
   finalFee: number

@@ -1,0 +1,1 @@
+ALTER TABLE fee_decision_child ADD COLUMN child_income jsonb;
