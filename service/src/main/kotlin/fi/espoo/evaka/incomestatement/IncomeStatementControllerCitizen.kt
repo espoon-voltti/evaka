@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -43,7 +42,7 @@ class IncomeStatementControllerCitizen(
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(user.id)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.READ_ALL_OWN)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_INCOME_STATEMENTS, PersonId(user.id))
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -61,7 +60,7 @@ class IncomeStatementControllerCitizen(
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfChild.log(user.id, childId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.READ_ALL_CHILDS, childId.raw)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_INCOME_STATEMENTS, childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -77,7 +76,7 @@ class IncomeStatementControllerCitizen(
         @PathVariable childId: ChildId
     ): List<LocalDate> {
         Audit.IncomeStatementStartDatesOfChild.log(user.id, childId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.READ_CHILDS_START_DATES, childId.raw)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_INCOME_STATEMENTS, childId)
 
         return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(childId.raw)) } }
     }
@@ -88,7 +87,7 @@ class IncomeStatementControllerCitizen(
         user: AuthenticatedUser.Citizen
     ): List<LocalDate> {
         Audit.IncomeStatementStartDates.log()
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.READ_START_DATES)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_INCOME_STATEMENTS, PersonId(user.id))
         return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(user.id)) } }
     }
 
@@ -99,7 +98,7 @@ class IncomeStatementControllerCitizen(
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         Audit.IncomeStatementReadOfPerson.log(incomeStatementId, user.id)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.READ)
+        accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.READ, incomeStatementId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -117,7 +116,7 @@ class IncomeStatementControllerCitizen(
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
         Audit.IncomeStatementReadOfChild.log(incomeStatementId, user.id)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.READ_CHILDS, incomeStatementId.raw)
+        accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.READ, incomeStatementId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -134,7 +133,7 @@ class IncomeStatementControllerCitizen(
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementCreate.log(user.id)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.CREATE)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.CREATE_INCOME_STATEMENT, PersonId(user.id))
         db.connect { createIncomeStatement(it, PersonId(user.id), PersonId(user.id), body) }
     }
 
@@ -146,7 +145,7 @@ class IncomeStatementControllerCitizen(
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementCreateForChild.log(user.id)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.CREATE_FOR_CHILD, childId.raw)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_INCOME_STATEMENT, childId)
         db.connect { createIncomeStatement(it, PersonId(childId.raw), PersonId(user.id), body) }
     }
 
@@ -158,7 +157,7 @@ class IncomeStatementControllerCitizen(
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementUpdate.log(incomeStatementId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE)
+        accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.UPDATE, incomeStatementId)
 
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.connect { dbc ->
@@ -188,7 +187,7 @@ class IncomeStatementControllerCitizen(
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementUpdateForChild.log(user.id, incomeStatementId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_FOR_CHILD, childId.raw)
+        accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.UPDATE, incomeStatementId)
 
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid child income statement body")
 
@@ -217,8 +216,7 @@ class IncomeStatementControllerCitizen(
         @PathVariable id: IncomeStatementId
     ) {
         Audit.IncomeStatementDelete.log(id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.DELETE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 verifyIncomeStatementModificationsAllowed(tx, PersonId(user.id), id)
@@ -235,7 +233,7 @@ class IncomeStatementControllerCitizen(
         @PathVariable id: IncomeStatementId
     ) {
         Audit.IncomeStatementDeleteOfChild.log(user.id, id)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_FOR_CHILD, childId.raw)
+        accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.DELETE, id)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -248,8 +246,9 @@ class IncomeStatementControllerCitizen(
     @GetMapping("/children")
     fun getIncomeStatementChildren(db: Database, user: AuthenticatedUser.Citizen): List<ChildBasicInfo> {
         Audit.CitizenChildrenRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_OWN_CHILDREN)
-        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(PersonId(user.id)) } }
+        val personId = PersonId(user.id)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILDREN, personId)
+        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }
     }
 
     private fun verifyIncomeStatementModificationsAllowed(

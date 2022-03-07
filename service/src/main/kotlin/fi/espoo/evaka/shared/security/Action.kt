@@ -150,7 +150,6 @@ sealed interface Action {
         READ_INVOICE_CODES(HasGlobalRole(FINANCE_ADMIN)),
 
         READ_UNIT_FEATURES,
-        READ_OWN_CHILDREN(IsCitizen(allowWeakLogin = false).any()),
 
         CREATE_HOLIDAY_PERIOD,
         READ_HOLIDAY_PERIOD,
@@ -182,12 +181,31 @@ sealed interface Action {
             CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
 
-            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild());
+            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+
+            CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class IncomeStatement(override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>) : ScopedAction<IncomeStatementId> {
+            READ(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()),
+            UPDATE(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()),
+            DELETE(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()),
+
+            UPLOAD_ATTACHMENT(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
+            CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
+            READ_CHILDREN(IsCitizen(allowWeakLogin = false).self()),
+            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -432,26 +450,11 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class IncomeStatement(private val roles: EnumSet<UserRole>) : LegacyScopedAction<IncomeStatementId> {
-        UPDATE_HANDLED(FINANCE_ADMIN),
-        UPLOAD_ATTACHMENT(FINANCE_ADMIN),
-        READ,
-        READ_CHILDS,
-        READ_ALL_OWN,
-        READ_ALL_CHILDS,
-        READ_START_DATES,
-        READ_CHILDS_START_DATES,
-        CREATE,
-        CREATE_FOR_CHILD,
-        UPDATE,
-        UPDATE_FOR_CHILD,
-        REMOVE,
-        REMOVE_FOR_CHILD,
-        ;
+    enum class IncomeStatement(override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>) : ScopedAction<IncomeStatementId> {
+        UPDATE_HANDLED(HasGlobalRole(FINANCE_ADMIN)),
+        UPLOAD_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN));
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) : ScopedAction<InvoiceId> {
         READ(HasGlobalRole(FINANCE_ADMIN)),

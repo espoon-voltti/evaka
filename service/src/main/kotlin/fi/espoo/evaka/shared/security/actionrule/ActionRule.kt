@@ -18,10 +18,17 @@ interface StaticActionRule : ScopedActionRule<Any> {
 }
 
 /**
- * A rule that grants permission based on an `AuthenticatedUser` and a "target", which is something
- * that can be used in a database query (e.g. an ID of some sort).
+ * A rule that grants permission based on an `AuthenticatedUser` and a "target", which is some data that can be
+ * used to evaluate permissions by itself or as part of a database query.
  */
 sealed interface ScopedActionRule<T>
+
+/**
+ * A rule that grants permission based on an `AuthenticatedUser` and a "target" T which is some data.
+ */
+interface TargetActionRule<T> : ScopedActionRule<T> {
+    fun evaluate(user: AuthenticatedUser, target: T): AccessControlDecision
+}
 
 /**
  * A rule that grants permission based on an `AuthenticatedUser` and some data that can be fetched using a "target" T.

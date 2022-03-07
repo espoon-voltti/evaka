@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -45,6 +46,18 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
         }
     }
 
+    fun self() = object : TargetActionRule<PersonId> {
+        override fun evaluate(user: AuthenticatedUser, target: PersonId): AccessControlDecision = when (user) {
+            is AuthenticatedUser.Citizen -> if (user.id == target.raw) {
+                AccessControlDecision.Permitted(this@IsCitizen)
+            } else AccessControlDecision.None
+            is AuthenticatedUser.WeakCitizen -> if (user.id == target.raw && allowWeakLogin) {
+                AccessControlDecision.Permitted(this@IsCitizen)
+            } else AccessControlDecision.None
+            else -> AccessControlDecision.None
+        }
+    }
+
     fun guardianOfChild() = DatabaseActionRule(
         this,
         Query<ChildId> { tx, guardianId, ids ->
@@ -77,6 +90,24 @@ AND guardian_id = :guardianId
             )
                 .bind("ids", ids.toTypedArray())
                 .bind("guardianId", guardianId)
+                .mapTo()
+        }
+    )
+
+    fun guardianOfChildOfIncomeStatement() = DatabaseActionRule(
+        this,
+        Query<IncomeStatementId> { tx, citizenId, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM income_statement i
+JOIN guardian g ON i.person_id = g.child_id
+WHERE i.id = ANY(:ids)
+AND g.guardian_id = :userId
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
                 .mapTo()
         }
     )
@@ -125,6 +156,23 @@ AND guardian_id = :guardianId
 SELECT id
 FROM application
 WHERE guardian_id = :userId
+AND id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
+                .mapTo()
+        }
+    )
+
+    fun ownerOfIncomeStatement() = DatabaseActionRule(
+        this,
+        Query<IncomeStatementId> { tx, citizenId, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM income_statement
+WHERE person_id = :userId
 AND id = ANY(:ids)
                 """.trimIndent()
             )

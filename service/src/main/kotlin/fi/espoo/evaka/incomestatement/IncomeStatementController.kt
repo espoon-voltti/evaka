@@ -99,7 +99,7 @@ class IncomeStatementController(
         @RequestBody body: SetIncomeStatementHandledBody
     ) {
         Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId.raw)
+        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateIncomeStatementHandled(

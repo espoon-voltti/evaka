@@ -8,18 +8,12 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
 import fi.espoo.evaka.attachment.isOwnAttachment
 import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
-import fi.espoo.evaka.incomestatement.isChildIncomeStatement
-import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
 import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageDraft
 import fi.espoo.evaka.pis.employeePinIsCorrect
-import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -29,12 +23,12 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
+import fi.espoo.evaka.shared.security.actionrule.TargetActionRule
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
 import java.util.EnumSet
-import java.util.UUID
 
 class AccessControl(
     private val permittedRoleActions: PermittedRoleActions,
@@ -188,6 +182,11 @@ WHERE employee_id = :userId
                 is StaticActionRule -> if (rule.isPermitted(user)) {
                     decisions.decideAll(AccessControlDecision.Permitted(rule))
                 }
+                is TargetActionRule<in T> -> {
+                    for (target in targets) {
+                        decisions.decide(target, rule.evaluate(user, target))
+                    }
+                }
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as DatabaseActionRule.Query<T, Any?>
@@ -230,14 +229,25 @@ WHERE employee_id = :userId
             }
         }
 
+        val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
+
+        for (action in allActions) {
+            val targetRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? TargetActionRule<in T> }
+            for (rule in targetRules) {
+                for (target in targets) {
+                    if (rule.evaluate(user, target).isPermitted()) {
+                        result[target]?.add(action)
+                    }
+                }
+            }
+        }
+
         val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
             .flatMap { action ->
                 actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
             }
             .distinctBy { it.classifier }
             .iterator()
-
-        val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
 
         while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
             val ruleType = databaseRuleTypes.next()
@@ -388,50 +398,6 @@ WHERE employee_id = :userId
             AuthenticatedUser.SystemInternalUser -> false
         }
 
-    fun requirePermissionFor(
-        user: AuthenticatedUser,
-        action: Action.IncomeStatement,
-        id: UUID? = null
-    ) {
-        when (user) {
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.IncomeStatement.READ,
-                Action.IncomeStatement.READ_ALL_OWN,
-                Action.IncomeStatement.READ_START_DATES,
-                Action.IncomeStatement.CREATE,
-                Action.IncomeStatement.UPDATE,
-                Action.IncomeStatement.REMOVE,
-                -> Unit
-
-                Action.IncomeStatement.REMOVE_FOR_CHILD,
-                Action.IncomeStatement.READ_CHILDS_START_DATES,
-                Action.IncomeStatement.READ_ALL_CHILDS,
-                Action.IncomeStatement.CREATE_FOR_CHILD,
-                Action.IncomeStatement.UPDATE_FOR_CHILD -> {
-                    Database(jdbi).connect { db ->
-                        if (!db.read { it.getGuardianChildIds(PersonId(user.id)).contains(ChildId(id!!)) }) throw Forbidden()
-                    }
-                }
-
-                Action.IncomeStatement.READ_CHILDS -> {
-                    Database(jdbi).connect { db ->
-                        if (!db.read { it.isChildIncomeStatement(user, IncomeStatementId(id!!)) }) throw Forbidden()
-                    }
-                }
-
-                Action.IncomeStatement.UPLOAD_ATTACHMENT ->
-                    Database(jdbi).connect { db ->
-                        if (!db.read { it.isOwnIncomeStatement(user, IncomeStatementId(id!!)) || it.isChildIncomeStatement(user, IncomeStatementId(id)) }) throw Forbidden()
-                    }
-                else -> throw Forbidden()
-            }
-            is AuthenticatedUser.Employee -> {
-                if (!hasPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)) throw Forbidden()
-            }
-            else -> throw Forbidden()
-        }
-    }
-
     private inline fun <reified A, reified I> ActionConfig<A>.hasPermissionThroughGlobalRole(
         user: AuthenticatedUser,
         action: A
@@ -490,19 +456,6 @@ WHERE employee_id = :userId
         crossinline mapping: (role: UserRole) -> Set<A>
     ): Boolean where A : Action, A : Enum<A> =
         if (user is AuthenticatedUser.Employee) hasPermissionThroughRoles(user.globalRoles, action, mapping)
-        else false
-
-    private inline fun <reified A> hasPermissionUsingAllRoles(
-        user: AuthenticatedUser,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ): Boolean where A : Action, A : Enum<A> =
-        if (user is AuthenticatedUser.Employee) hasPermissionThroughRoles(
-            user.globalRoles + user.allScopedRoles,
-            action,
-            mapping
-        )
-        else if (user is AuthenticatedUser.Citizen) hasPermissionThroughRoles(user.roles, action, mapping)
         else false
 
     enum class PinError {

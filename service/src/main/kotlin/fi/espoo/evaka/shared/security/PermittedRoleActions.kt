@@ -14,7 +14,6 @@ import java.util.EnumSet
  */
 interface PermittedRoleActions {
     fun attachmentActions(role: UserRole): Set<Action.Attachment>
-    fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement>
 }
 
 /**
@@ -24,10 +23,8 @@ interface PermittedRoleActions {
  */
 class StaticPermittedRoleActions(
     val attachment: ActionsByRole<Action.Attachment> = getDefaults(),
-    val incomeStatement: ActionsByRole<Action.IncomeStatement> = getDefaults(),
 ) : PermittedRoleActions {
     override fun attachmentActions(role: UserRole): Set<Action.Attachment> = attachment[role] ?: emptySet()
-    override fun incomeStatementActions(role: UserRole): Set<Action.IncomeStatement> = incomeStatement[role] ?: emptySet()
 }
 
 typealias ActionsByRole<A> = Map<UserRole, Set<A>>
