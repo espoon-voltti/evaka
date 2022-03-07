@@ -63,6 +63,7 @@ dependencies {
     testImplementation(platform(project(":evaka-bom")))
     runtimeOnly(platform(project(":evaka-bom")))
     integrationTestImplementation(platform(project(":evaka-bom")))
+    ktlint(platform(project(":evaka-bom")))
 
     // Kotlin + core
     api(kotlin("stdlib-jdk8"))
