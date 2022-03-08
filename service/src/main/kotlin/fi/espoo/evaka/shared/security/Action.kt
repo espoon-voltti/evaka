@@ -58,8 +58,6 @@ import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsCitizensOwn
 import fi.espoo.evaka.shared.security.actionrule.IsEmployeesOwn
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
-import fi.espoo.evaka.shared.security.actionrule.IsMobileInChildPlacementUnit
-import fi.espoo.evaka.shared.security.actionrule.IsMobileInRelatedUnit
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.SsnAddingEnabledAndHasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
@@ -116,9 +114,9 @@ sealed interface Action {
         SEARCH_INVOICES(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_DRAFT_INVOICES(HasGlobalRole(FINANCE_ADMIN)),
 
-        READ_ASSISTANCE_ACTION_OPTIONS(HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = false)),
-        READ_ASSISTANCE_BASIS_OPTIONS(HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = false)),
-        READ_SERVICE_NEED_OPTIONS(HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = false)),
+        READ_ASSISTANCE_ACTION_OPTIONS(HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = false).any()),
+        READ_ASSISTANCE_BASIS_OPTIONS(HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = false).any()),
+        READ_SERVICE_NEED_OPTIONS(HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = false).any()),
         READ_USER_MESSAGE_ACCOUNTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit()),
 
         READ_UNITS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit()),
@@ -266,9 +264,9 @@ sealed interface Action {
 
         CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsChildGuardian(allowWeakLogin = true).child()),
         READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()),
-        READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(), IsMobileInChildPlacementUnit(requirePinLogin = false).child()),
+        READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
         DELETE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()),
-        DELETE_ABSENCE_RANGE(IsMobileInChildPlacementUnit(requirePinLogin = false).child()),
+        DELETE_ABSENCE_RANGE(IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
 
         CREATE_HOLIDAY_ABSENCE(IsChildGuardian(allowWeakLogin = false).child()),
         CREATE_RESERVATION(IsChildGuardian(allowWeakLogin = true).child()),
@@ -292,9 +290,9 @@ sealed interface Action {
         CREATE_BACKUP_PICKUP(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         READ_BACKUP_PICKUP(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
 
-        READ_NOTES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobileInChildPlacementUnit(requirePinLogin = false).child()),
-        CREATE_DAILY_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobileInChildPlacementUnit(requirePinLogin = false).child()),
-        CREATE_STICKY_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobileInChildPlacementUnit(requirePinLogin = false).child()),
+        READ_NOTES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
+        CREATE_DAILY_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
+        CREATE_STICKY_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
 
         READ_DAILY_SERVICE_TIMES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
         UPDATE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -324,31 +322,31 @@ sealed interface Action {
         CREATE_PEDAGOGICAL_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild()),
         READ_PEDAGOGICAL_DOCUMENTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild()),
 
-        READ_SENSITIVE_INFO(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobileInChildPlacementUnit(requirePinLogin = true).child(), HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild()),
+        READ_SENSITIVE_INFO(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobile(requirePinLogin = true).inPlacementUnitOfChild(), HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild()),
 
-        UPLOAD_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(), IsMobileInChildPlacementUnit(requirePinLogin = false).child()),
-        DELETE_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(), IsMobileInChildPlacementUnit(requirePinLogin = false).child());
+        UPLOAD_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
+        DELETE_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ChildDailyNote(override vararg val defaultRules: ScopedActionRule<in ChildDailyNoteId>) : ScopedAction<ChildDailyNoteId> {
-        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildDailyNote(), IsMobileInChildPlacementUnit(requirePinLogin = false).childDailyNote()),
-        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildDailyNote(), IsMobileInChildPlacementUnit(requirePinLogin = false).childDailyNote());
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildDailyNote(), IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildDailyNote()),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildDailyNote(), IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildDailyNote());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ChildImage(override vararg val defaultRules: ScopedActionRule<ChildImageId>) : ScopedAction<ChildImageId> {
         DOWNLOAD(
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChildOfChildImage(),
-            IsMobileInChildPlacementUnit(requirePinLogin = false).childImage(),
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildImage(),
             IsChildGuardian(allowWeakLogin = false).childImage()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ChildStickyNote(override vararg val defaultRules: ScopedActionRule<in ChildStickyNoteId>) : ScopedAction<ChildStickyNoteId> {
-        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote(), IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote()),
-        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote(), IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote());
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote(), IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote()),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote(), IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -382,27 +380,27 @@ sealed interface Action {
         READ_ABSENCES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()),
         DELETE_ABSENCES(HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnitOfGroup()),
 
-        READ_STAFF_ATTENDANCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(), IsMobileInRelatedUnit(requirePinLogin = false).group()),
-        UPDATE_STAFF_ATTENDANCES(HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnitOfGroup(), IsMobileInRelatedUnit(requirePinLogin = false).group()),
+        READ_STAFF_ATTENDANCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(), IsMobile(requirePinLogin = false).inUnitOfGroup()),
+        UPDATE_STAFF_ATTENDANCES(HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnitOfGroup(), IsMobile(requirePinLogin = false).inUnitOfGroup()),
 
         READ_CARETAKERS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()),
         CREATE_CARETAKERS(HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
         UPDATE_CARETAKERS(HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
         DELETE_CARETAKERS(HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
 
-        CREATE_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(), IsMobileInRelatedUnit(requirePinLogin = false).group()),
-        READ_NOTES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(), IsMobileInRelatedUnit(requirePinLogin = false).group()),
+        CREATE_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(), IsMobile(requirePinLogin = false).inUnitOfGroup()),
+        READ_NOTES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(), IsMobile(requirePinLogin = false).inUnitOfGroup()),
 
-        MARK_DEPARTURE(IsMobileInRelatedUnit(requirePinLogin = false).group()),
-        MARK_EXTERNAL_DEPARTURE(IsMobileInRelatedUnit(requirePinLogin = false).group()),
-        MARK_ARRIVAL(IsMobileInRelatedUnit(requirePinLogin = false).group()),
-        MARK_EXTERNAL_ARRIVAL(IsMobileInRelatedUnit(requirePinLogin = false).group());
+        MARK_DEPARTURE(IsMobile(requirePinLogin = false).inUnitOfGroup()),
+        MARK_EXTERNAL_DEPARTURE(IsMobile(requirePinLogin = false).inUnitOfGroup()),
+        MARK_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup()),
+        MARK_EXTERNAL_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class GroupNote(override vararg val defaultRules: ScopedActionRule<in GroupNoteId>) : ScopedAction<GroupNoteId> {
-        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroupNote(), IsMobileInRelatedUnit(requirePinLogin = false).groupNote()),
-        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroupNote(), IsMobileInRelatedUnit(requirePinLogin = false).groupNote());
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroupNote(), IsMobile(requirePinLogin = false).inUnitOfGroupNote()),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroupNote(), IsMobile(requirePinLogin = false).inUnitOfGroupNote());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -554,9 +552,9 @@ sealed interface Action {
         READ_CHILD_CAPACITY_FACTORS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit()),
         UPDATE,
 
-        READ_STAFF_ATTENDANCES(IsMobileInRelatedUnit(requirePinLogin = false).unit()),
+        READ_STAFF_ATTENDANCES(IsMobile(requirePinLogin = false).inUnit()),
 
-        READ_OCCUPANCIES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit(), IsMobileInRelatedUnit(requirePinLogin = false).unit()),
+        READ_OCCUPANCIES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit(), IsMobile(requirePinLogin = false).inUnit()),
 
         READ_ATTENDANCE_RESERVATIONS(HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit()),
 
@@ -571,8 +569,8 @@ sealed interface Action {
 
         CREATE_GROUP(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
 
-        READ_MOBILE_STATS(IsMobileInRelatedUnit(requirePinLogin = false).unit()),
-        READ_MOBILE_INFO(IsMobileInRelatedUnit(requirePinLogin = false).unit()),
+        READ_MOBILE_STATS(IsMobile(requirePinLogin = false).inUnit()),
+        READ_MOBILE_INFO(IsMobile(requirePinLogin = false).inUnit()),
 
         READ_MOBILE_DEVICES(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         CREATE_MOBILE_DEVICE_PAIRING(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
