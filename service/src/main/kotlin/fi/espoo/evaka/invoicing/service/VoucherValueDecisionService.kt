@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
+import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
@@ -14,8 +15,8 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
-import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
@@ -35,7 +36,6 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.langWithDefault
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
-import java.time.LocalDate
 
 @Component
 class VoucherValueDecisionService(
@@ -114,7 +114,7 @@ class VoucherValueDecisionService(
         return true
     }
 
-    fun endDecisionsWithEndedPlacements(tx: Database.Transaction, now: LocalDate) {
+    fun endDecisionsWithEndedPlacements(tx: Database.Transaction, now: HelsinkiDateTime) {
         val decisionIds = tx.createQuery(
             """
 SELECT id FROM voucher_value_decision decision
@@ -132,7 +132,7 @@ AND (placements.combined_range IS NULL OR (
     AND placements.combined_range << daterange(:now, null)
 ))
 """
-        ).bind("now", now).mapTo<VoucherValueDecisionId>().toList()
+        ).bind("now", now.toLocalDate()).mapTo<VoucherValueDecisionId>().toList()
 
         tx.lockValueDecisions(decisionIds)
 
@@ -162,13 +162,10 @@ ORDER BY start_date ASC
                     }
 
                 when {
-                    mergedPlacementPeriods.isEmpty() -> {
-                        val annulled = decision.annul()
-                        tx.updateVoucherValueDecisionStatusAndDates(listOf(annulled))
-                    }
+                    mergedPlacementPeriods.isEmpty() -> tx.annulVoucherValueDecisions(listOf(decision.id), now)
                     mergedPlacementPeriods.first().end < decision.validTo -> {
                         val withUpdatedEndDate = decision.copy(validTo = mergedPlacementPeriods.first().end)
-                        tx.updateVoucherValueDecisionStatusAndDates(listOf(withUpdatedEndDate))
+                        tx.updateVoucherValueDecisionEndDates(listOf(withUpdatedEndDate), now)
                     }
                 }
             }

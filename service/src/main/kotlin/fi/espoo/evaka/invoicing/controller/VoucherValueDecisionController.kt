@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
@@ -15,9 +16,10 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
-import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.ANNULLED
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.DRAFT
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.SENT
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
@@ -265,8 +267,10 @@ fun sendVoucherValueDecisions(
 
     if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some children have overlapping value decisions still waiting for sending")
 
-    val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
-    tx.updateVoucherValueDecisionStatusAndDates(updatedConflicts)
+    val (annulled, updatedDates) = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
+        .partition { it.status == ANNULLED }
+    tx.annulVoucherValueDecisions(annulled.map { it.id }, now)
+    tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 
     val validIds = decisions.map { it.id }
     tx.approveValueDecisionDraftsForSending(validIds, EmployeeId(user.id), now)

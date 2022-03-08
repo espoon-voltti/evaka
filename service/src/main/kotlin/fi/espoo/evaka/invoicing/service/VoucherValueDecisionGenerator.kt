@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -37,6 +38,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import org.jdbi.v3.core.kotlin.mapTo
@@ -95,7 +97,8 @@ internal fun Database.Transaction.handleValueDecisionChanges(
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
     deleteValueDecisions(existingDrafts.map { it.id })
-    upsertValueDecisions(updatedDecisions)
+    upsertValueDecisions(updatedDecisions.updatedDrafts)
+    updateVoucherValueDecisionEndDates(updatedDecisions.updatedActiveDecisions, HelsinkiDateTime.now())
 }
 
 private fun generateNewValueDecisions(
