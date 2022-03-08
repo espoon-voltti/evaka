@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -21,22 +20,22 @@ import fi.espoo.evaka.shared.utils.toEnumSet
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
-private typealias GetRolesInRelatedUnit<T> = (tx: Database.Read, employeeId: EmployeeId, targets: Set<T>) -> Iterable<IdAndRole>
+private typealias GetUnitRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<IdAndRole>
 
-data class HasRoleInRelatedUnit(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasRoleInRelatedUnit> {
+data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitRole> {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
-    override fun merge(other: HasRoleInRelatedUnit): HasRoleInRelatedUnit = HasRoleInRelatedUnit(
+    override fun merge(other: HasUnitRole): HasUnitRole = HasUnitRole(
         (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
     )
 
-    private data class Query<T : Id<*>>(private val getRolesInRelatedUnit: GetRolesInRelatedUnit<T>) :
-        DatabaseActionRule.Query<T, HasRoleInRelatedUnit> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasRoleInRelatedUnit>> = when (user) {
-            is AuthenticatedUser.Employee -> getRolesInRelatedUnit(tx, EmployeeId(user.id), targets)
+    private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles<T>) :
+        DatabaseActionRule.Query<T, HasUnitRole> {
+        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (user) {
+            is AuthenticatedUser.Employee -> getUnitRoles(tx, user, targets)
                 .fold(targets.associateTo(linkedMapOf()) { (it to emptyEnumSet<UserRole>()) }) { acc, (target, role) ->
                     acc[target]?.plusAssign(role)
                     acc
@@ -45,17 +44,17 @@ data class HasRoleInRelatedUnit(val oneOf: EnumSet<UserRole>) : ActionRuleParams
             else -> emptyMap()
         }
     }
-    private data class Deferred(private val rolesInUnit: Set<UserRole>) : DatabaseActionRule.Deferred<HasRoleInRelatedUnit> {
-        override fun evaluate(params: HasRoleInRelatedUnit): AccessControlDecision = if (rolesInUnit.any { params.oneOf.contains(it) }) {
+    private data class Deferred(private val rolesInUnit: Set<UserRole>) : DatabaseActionRule.Deferred<HasUnitRole> {
+        override fun evaluate(params: HasUnitRole): AccessControlDecision = if (rolesInUnit.any { params.oneOf.contains(it) }) {
             AccessControlDecision.Permitted(params)
         } else {
             AccessControlDecision.None
         }
     }
 
-    val group = DatabaseActionRule(
+    val inUnitOfGroup = DatabaseActionRule(
         this,
-        Query<GroupId> { tx, employeeId, ids ->
+        Query<GroupId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT daycare_group_id AS id, role
@@ -64,14 +63,14 @@ WHERE employee_id = :userId
 AND daycare_group_id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val groupNote = DatabaseActionRule(
+    val inUnitOfGroupNote = DatabaseActionRule(
         this,
-        Query<GroupNoteId> { tx, employeeId, ids ->
+        Query<GroupNoteId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT gn.id, role
@@ -81,14 +80,14 @@ WHERE employee_id = :userId
 AND gn.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val groupPlacement = DatabaseActionRule(
+    val inUnitOfGroupPlacement = DatabaseActionRule(
         this,
-        Query<GroupPlacementId> { tx, employeeId, ids ->
+        Query<GroupPlacementId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT daycare_group_placement.id, role
@@ -99,14 +98,14 @@ WHERE employee_id = :userId
 AND daycare_group_placement.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val mobileDevice = DatabaseActionRule(
+    val inUnitOfMobileDevice = DatabaseActionRule(
         this,
-        Query<MobileDeviceId> { tx, employeeId, ids ->
+        Query<MobileDeviceId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT d.id, role
@@ -116,14 +115,14 @@ WHERE acl.employee_id = :userId
 AND d.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val pairing = DatabaseActionRule(
+    val inUnitOfPairing = DatabaseActionRule(
         this,
-        Query<PairingId> { tx, employeeId, ids ->
+        Query<PairingId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT p.id, role
@@ -133,14 +132,14 @@ WHERE acl.employee_id = :userId
 AND p.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val unit = DatabaseActionRule(
+    val inUnit = DatabaseActionRule(
         this,
-        Query<DaycareId> { tx, employeeId, ids ->
+        Query<DaycareId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT daycare_id AS id, role
@@ -149,7 +148,7 @@ WHERE employee_id = :userId
 AND daycare_id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
