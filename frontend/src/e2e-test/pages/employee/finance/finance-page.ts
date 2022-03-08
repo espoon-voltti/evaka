@@ -5,7 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
-import { waitUntilEqual } from '../../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   AsyncButton,
   Checkbox,
@@ -106,9 +106,16 @@ export class FeeDecisionDetailsPage {
 
   #partnerName = this.page.find('[data-qa="partner"]')
   #headOfFamily = this.page.find('[data-qa="head-of-family"]')
+  #childIncome = this.page.findAll('[data-qa="child-income"]')
 
   async assertPartnerName(expectedName: string) {
     await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+  }
+
+  async assertChildIncome(nth: number, expectedTotalText: string) {
+    await waitUntilTrue(async () =>
+      (await this.#childIncome.nth(nth).innerText).includes(expectedTotalText)
+    )
   }
 
   async assertPartnerNameNotShown() {

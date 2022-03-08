@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DecisionIncome } from 'lib-common/api-types/income'
+
 import config from '../../config'
 import {
   insertFeeDecisionFixtures,
@@ -13,6 +15,7 @@ import {
   careArea2Fixture,
   daycare2Fixture,
   daycareFixture,
+  DecisionIncomeFixture,
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
   familyWithTwoGuardians,
@@ -48,16 +51,25 @@ beforeEach(async () => {
 const insertFeeDecisionFixtureAndNavigateToIt = async (
   headOfFamily: PersonDetail,
   child: PersonDetail,
-  partner: PersonDetail | null = null
+  partner: PersonDetail | null = null,
+  childIncome: DecisionIncome | null = null
 ) => {
+  const fd = feeDecisionsFixture(
+    'DRAFT',
+    headOfFamily,
+    child,
+    daycareFixture.id,
+    partner
+  )
+
   await insertFeeDecisionFixtures([
-    feeDecisionsFixture(
-      'DRAFT',
-      headOfFamily,
-      child,
-      daycareFixture.id,
-      partner
-    )
+    {
+      ...fd,
+      children: fd.children.map((child) => ({
+        ...child,
+        childIncome
+      }))
+    }
   ])
 
   await new EmployeeNav(page).openTab('finance')
@@ -127,5 +139,24 @@ describe('Fee decisions', () => {
     )
     await feeDecisionsPage.openFirstFeeDecision()
     await new FeeDecisionDetailsPage(page).assertPartnerNameNotShown()
+  })
+
+  test('Child income is shown', async () => {
+    const partner = familyWithTwoGuardians.otherGuardian
+    await insertGuardianFixtures([
+      {
+        guardianId: familyWithTwoGuardians.guardian.id,
+        childId: familyWithTwoGuardians.children[0].id
+      },
+      { guardianId: partner.id, childId: familyWithTwoGuardians.children[0].id }
+    ])
+    await insertFeeDecisionFixtureAndNavigateToIt(
+      familyWithTwoGuardians.guardian,
+      familyWithTwoGuardians.children[0],
+      partner,
+      DecisionIncomeFixture(54321)
+    )
+    await feeDecisionsPage.openFirstFeeDecision()
+    await new FeeDecisionDetailsPage(page).assertChildIncome(0, '543,21 €')
   })
 })

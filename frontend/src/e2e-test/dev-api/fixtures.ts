@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
+import { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -956,6 +957,21 @@ export function createBackupCareFixture(
     }
   }
 }
+
+export const DecisionIncomeFixture = (
+  total: number,
+  validFrom: LocalDate = LocalDate.today(),
+  validTo: LocalDate = LocalDate.today()
+): DecisionIncome => ({
+  data: { MAIN_INCOME: total },
+  effect: 'INCOME',
+  total: total,
+  totalExpenses: 0,
+  totalIncome: total,
+  validFrom,
+  validTo,
+  worksAtECHA: false
+})
 
 export const nullUUID = '00000000-0000-0000-0000-000000000000'
 
