@@ -5,13 +5,30 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
+import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -69,6 +86,291 @@ AND av.id = ANY(:ids)
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfAssistanceAction = DatabaseActionRule(
+        this,
+        Query<AssistanceActionId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT ac.id, role
+FROM child_acl_view acl
+JOIN assistance_action ac ON acl.child_id = ac.child_id
+WHERE acl.employee_id = :userId
+AND ac.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfAssistanceNeed = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT an.id, role
+FROM child_acl_view acl
+JOIN assistance_need an ON acl.child_id = an.child_id
+WHERE acl.employee_id = :userId
+AND an.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfBackupCare = DatabaseActionRule(
+        this,
+        Query<BackupCareId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT bc.id, role
+FROM child_acl_view acl
+JOIN backup_care bc ON acl.child_id = bc.child_id
+WHERE acl.employee_id = :userId
+AND bc.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfBackupPickup = DatabaseActionRule(
+        this,
+        Query<BackupPickupId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT bp.id, role
+FROM child_acl_view acl
+JOIN backup_pickup bp ON acl.child_id = bp.child_id
+WHERE acl.employee_id = :userId
+AND bp.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChild = DatabaseActionRule(
+        this,
+        Query<ChildId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT child_id AS id, role
+FROM child_acl_view
+WHERE employee_id = :userId
+AND child_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfChildDailyNote = DatabaseActionRule(
+        this,
+        Query<ChildDailyNoteId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT cdn.id, role
+FROM child_acl_view
+JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
+WHERE employee_id = :userId
+AND cdn.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfChildStickyNote = DatabaseActionRule(
+        this,
+        Query<ChildStickyNoteId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT csn.id, role
+FROM child_acl_view
+JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
+WHERE employee_id = :userId
+AND csn.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfChildImage = DatabaseActionRule(
+        this,
+        Query<ChildImageId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT img.id, role
+FROM child_acl_view
+JOIN child_images img ON child_acl_view.child_id = img.child_id
+WHERE employee_id = :userId
+AND img.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfDecision = DatabaseActionRule(
+        this,
+        Query<DecisionId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT decision.id, role
+FROM decision
+JOIN daycare_acl_view ON decision.unit_id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+AND decision.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfParentship = DatabaseActionRule(
+        this,
+        Query<ParentshipId> { tx, user, ids ->
+            tx.createQuery(
+
+                """
+SELECT fridge_child.id, role
+FROM fridge_child
+JOIN person_acl_view ON fridge_child.head_of_child = person_acl_view.person_id OR fridge_child.child_id = person_acl_view.person_id
+WHERE employee_id = :userId
+AND fridge_child.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfPartnership = DatabaseActionRule(
+        this,
+        Query<PartnershipId> { tx, user, ids ->
+            tx.createQuery(
+
+                """
+SELECT fridge_partner.partnership_id AS id, role
+FROM fridge_partner
+JOIN person_acl_view ON fridge_partner.person_id = person_acl_view.person_id
+WHERE employee_id = :userId
+AND partnership_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfPedagogicalDocument = DatabaseActionRule(
+        this,
+        Query<PedagogicalDocumentId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT pd.id, role
+FROM pedagogical_document pd
+JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+AND pd.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfPerson = DatabaseActionRule(
+        this,
+        Query<PersonId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT person_id AS id, role
+FROM person_acl_view
+WHERE employee_id = :userId
+AND person_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfPlacement = DatabaseActionRule(
+        this,
+        Query<PlacementId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT placement.id, role
+FROM placement
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+AND placement.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfServiceNeed = DatabaseActionRule(
+        this,
+        Query<ServiceNeedId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT service_need.id, role
+FROM service_need
+JOIN placement ON placement.id = service_need.placement_id
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+AND service_need.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfVasuDocument = DatabaseActionRule(
+        this,
+        Query<VasuDocumentId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT curriculum_document.id AS id, role
+FROM curriculum_document
+JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+AND curriculum_document.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPlacementUnitOfChildOfVasuDocumentFollowupEntry = DatabaseActionRule(
+        this,
+        object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasUnitRole> {
+            override fun execute(
+                tx: Database.Read,
+                user: AuthenticatedUser,
+                targets: Set<VasuDocumentFollowupEntryId>
+            ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasUnitRole>> {
+                val vasuDocuments = inPlacementUnitOfChildOfVasuDocument.query.execute(tx, user, targets.map { it.first }.toSet())
+                return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
+            }
         }
     )
     val inPreferredUnitOfApplication = DatabaseActionRule(

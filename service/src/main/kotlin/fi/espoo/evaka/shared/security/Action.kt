@@ -53,7 +53,6 @@ import fi.espoo.evaka.shared.security.actionrule.HasAccessToRelatedMessageAccoun
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasGroupRole
 import fi.espoo.evaka.shared.security.actionrule.HasRoleInAnyUnit
-import fi.espoo.evaka.shared.security.actionrule.HasRoleInChildPlacementUnit
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.IsChildGuardian
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
@@ -217,16 +216,16 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class AssistanceAction(override vararg val defaultRules: ScopedActionRule<in AssistanceActionId>) : ScopedAction<AssistanceActionId> {
-        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceAction),
-        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceAction),
-        READ_PRE_PRESCHOOL_ASSISTANCE_ACTION(HasRoleInChildPlacementUnit(SPECIAL_EDUCATION_TEACHER).assistanceAction);
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction),
+        READ_PRE_PRESCHOOL_ASSISTANCE_ACTION(HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class AssistanceNeed(override vararg val defaultRules: ScopedActionRule<in AssistanceNeedId>) : ScopedAction<AssistanceNeedId> {
-        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceNeed),
-        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).assistanceNeed),
-        READ_PRE_PRESCHOOL_ASSISTANCE_NEED(HasRoleInChildPlacementUnit(SPECIAL_EDUCATION_TEACHER).assistanceNeed);
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeed),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeed),
+        READ_PRE_PRESCHOOL_ASSISTANCE_NEED(HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeed);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -248,100 +247,100 @@ sealed interface Action {
         override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class BackupCare(override vararg val defaultRules: ScopedActionRule<in BackupCareId>) : ScopedAction<BackupCareId> {
-        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).backupCare),
-        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).backupCare);
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfBackupCare),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfBackupCare);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class BackupPickup(override vararg val defaultRules: ScopedActionRule<in BackupPickupId>) : ScopedAction<BackupPickupId> {
-        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF).backupPickup),
-        DELETE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF).backupPickup);
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
         READ(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child,
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild,
             IsChildGuardian(allowWeakLogin = false).child
         ),
 
-        CREATE_ABSENCE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, IsChildGuardian(allowWeakLogin = true).child),
-        READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child),
-        READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
-        DELETE_ABSENCE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF).child),
+        CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, IsChildGuardian(allowWeakLogin = true).child),
+        READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild),
+        READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
+        DELETE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild),
         DELETE_ABSENCE_RANGE(IsMobileInChildPlacementUnit(requirePinLogin = false).child),
 
         CREATE_HOLIDAY_ABSENCE(IsChildGuardian(allowWeakLogin = false).child),
         CREATE_RESERVATION(IsChildGuardian(allowWeakLogin = true).child),
 
-        READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
-        UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
+        READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
+        UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
 
         READ_APPLICATION(HasGlobalRole(SERVICE_WORKER)),
 
-        CREATE_ASSISTANCE_ACTION(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).child),
-        READ_ASSISTANCE_ACTION(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).child),
+        CREATE_ASSISTANCE_ACTION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
+        READ_ASSISTANCE_ACTION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
 
-        CREATE_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).child),
-        READ_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).child),
+        CREATE_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
+        READ_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
 
-        CREATE_ATTENDANCE_RESERVATION(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).child),
+        CREATE_ATTENDANCE_RESERVATION(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild),
 
-        CREATE_BACKUP_CARE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child),
-        READ_BACKUP_CARE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
+        CREATE_BACKUP_CARE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild),
+        READ_BACKUP_CARE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
 
-        CREATE_BACKUP_PICKUP(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
-        READ_BACKUP_PICKUP(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
+        CREATE_BACKUP_PICKUP(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
+        READ_BACKUP_PICKUP(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
 
-        READ_NOTES(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
-        CREATE_DAILY_NOTE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
-        CREATE_STICKY_NOTE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
+        READ_NOTES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
+        CREATE_DAILY_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
+        CREATE_STICKY_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
 
-        READ_DAILY_SERVICE_TIMES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).child),
-        UPDATE_DAILY_SERVICE_TIMES(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
-        DELETE_DAILY_SERVICE_TIMES(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
+        READ_DAILY_SERVICE_TIMES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild),
+        UPDATE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
+        DELETE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
 
         READ_PLACEMENT(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).child,
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild,
             IsChildGuardian(allowWeakLogin = false).child
         ),
 
-        READ_FAMILY_CONTACTS(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
-        UPDATE_FAMILY_CONTACT_DETAILS(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
-        UPDATE_FAMILY_CONTACT_PRIORITY(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child),
+        READ_FAMILY_CONTACTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
+        UPDATE_FAMILY_CONTACT_DETAILS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
+        UPDATE_FAMILY_CONTACT_PRIORITY(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild),
 
-        READ_GUARDIANS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child),
+        READ_GUARDIANS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild),
 
         CREATE_FEE_ALTERATION(HasGlobalRole(FINANCE_ADMIN)),
         READ_FEE_ALTERATIONS(HasGlobalRole(FINANCE_ADMIN)),
 
-        READ_CHILD_RECIPIENTS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).child),
-        UPDATE_CHILD_RECIPIENT(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).child),
+        READ_CHILD_RECIPIENTS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild),
+        UPDATE_CHILD_RECIPIENT(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild),
 
-        CREATE_VASU_DOCUMENT(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).child, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
-        READ_VASU_DOCUMENT(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).child, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
+        CREATE_VASU_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
+        READ_VASU_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
 
-        CREATE_PEDAGOGICAL_DOCUMENT(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
-        READ_PEDAGOGICAL_DOCUMENTS(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
+        CREATE_PEDAGOGICAL_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
+        READ_PEDAGOGICAL_DOCUMENTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
 
-        READ_SENSITIVE_INFO(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).child, IsMobileInChildPlacementUnit(requirePinLogin = true).child, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
+        READ_SENSITIVE_INFO(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild, IsMobileInChildPlacementUnit(requirePinLogin = true).child, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChild),
 
-        UPLOAD_IMAGE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
-        DELETE_IMAGE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).child, IsMobileInChildPlacementUnit(requirePinLogin = false).child);
+        UPLOAD_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild, IsMobileInChildPlacementUnit(requirePinLogin = false).child),
+        DELETE_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild, IsMobileInChildPlacementUnit(requirePinLogin = false).child);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ChildDailyNote(override vararg val defaultRules: ScopedActionRule<in ChildDailyNoteId>) : ScopedAction<ChildDailyNoteId> {
-        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).childDailyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childDailyNote),
-        DELETE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).childDailyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childDailyNote);
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildDailyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childDailyNote),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildDailyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childDailyNote);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ChildImage(override vararg val defaultRules: ScopedActionRule<ChildImageId>) : ScopedAction<ChildImageId> {
         DOWNLOAD(
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).childImage,
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChildOfChildImage,
             IsMobileInChildPlacementUnit(requirePinLogin = false).childImage,
             IsChildGuardian(allowWeakLogin = false).childImage
         );
@@ -349,13 +348,13 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ChildStickyNote(override vararg val defaultRules: ScopedActionRule<in ChildStickyNoteId>) : ScopedAction<ChildStickyNoteId> {
-        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).childStickyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote),
-        DELETE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).childStickyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote);
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote, IsMobileInChildPlacementUnit(requirePinLogin = false).childStickyNote);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) : ScopedAction<DecisionId> {
-        DOWNLOAD_PDF(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).decision);
+        DOWNLOAD_PDF(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDecision);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -468,37 +467,37 @@ sealed interface Action {
     }
     enum class Parentship(override vararg val defaultRules: ScopedActionRule<in ParentshipId>) : ScopedAction<ParentshipId> {
         DELETE(HasGlobalRole(FINANCE_ADMIN)),
-        DELETE_CONFLICTED_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship),
-        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship),
-        RETRY(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship),
-        UPDATE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).parentship);
+        DELETE_CONFLICTED_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship),
+        RETRY(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship),
+        UPDATE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Partnership(override vararg val defaultRules: ScopedActionRule<in PartnershipId>) : ScopedAction<PartnershipId> {
-        DELETE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership),
-        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership),
-        RETRY(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership),
-        UPDATE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).partnership);
+        DELETE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership),
+        RETRY(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership),
+        UPDATE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
         CREATE_ATTACHMENT(
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument,
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument
         ),
         DELETE(
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument,
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument
         ),
         READ(
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument,
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument,
             IsChildGuardian(allowWeakLogin = false).pedagogicalDocument
         ),
         UPDATE(
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).pedagogicalDocument,
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument,
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument
         );
 
@@ -507,44 +506,44 @@ sealed interface Action {
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
         ADD_SSN(SsnAddingEnabledAndHasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN).person),
         CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
-        CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
-        CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson),
+        CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson),
         DISABLE_SSN,
         GENERATE_RETROACTIVE_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
         GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
         READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(FINANCE_ADMIN)),
-        READ_FAMILY_OVERVIEW(HasGlobalRole(FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        READ_FAMILY_OVERVIEW(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson),
         READ_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
         READ_INCOME(HasGlobalRole(FINANCE_ADMIN)),
         READ_INCOME_STATEMENTS(HasGlobalRole(FINANCE_ADMIN)),
         READ_INVOICES(HasGlobalRole(FINANCE_ADMIN)),
         READ_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
-        READ_OPH_OID(HasGlobalRole(DIRECTOR), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
-        READ_PARENTSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
-        READ_PARTNERSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
-        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).person),
+        READ_OPH_OID(HasGlobalRole(DIRECTOR), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson),
+        READ_PARENTSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson),
+        READ_PARTNERSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPerson),
         READ_VOUCHER_VALUE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
-        UPDATE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).person),
+        UPDATE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson),
         UPDATE_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
         UPDATE_OPH_OID;
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
-        UPDATE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
-        DELETE(HasGlobalRole(SERVICE_WORKER), HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
+        UPDATE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement),
+        DELETE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement),
 
-        CREATE_GROUP_PLACEMENT(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
+        CREATE_GROUP_PLACEMENT(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement),
 
-        CREATE_SERVICE_NEED(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).placement),
+        CREATE_SERVICE_NEED(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement),
 
         TERMINATE(IsChildGuardian(allowWeakLogin = false).placement);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ServiceNeed(override vararg val defaultRules: ScopedActionRule<in ServiceNeedId>) : ScopedAction<ServiceNeedId> {
-        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).serviceNeed),
-        DELETE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).serviceNeed);
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceNeed),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceNeed);
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -599,12 +598,12 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) : ScopedAction<VasuDocumentId> {
-        READ(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
-        UPDATE(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
-        EVENT_PUBLISHED(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
-        EVENT_MOVED_TO_READY(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
-        EVENT_RETURNED_TO_READY(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR).vasuDocument),
-        EVENT_MOVED_TO_REVIEWED(HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
+        READ(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
+        EVENT_PUBLISHED(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
+        EVENT_MOVED_TO_READY(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
+        EVENT_RETURNED_TO_READY(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfVasuDocument),
+        EVENT_MOVED_TO_REVIEWED(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument, HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocument),
         EVENT_RETURNED_TO_REVIEWED,
         EVENT_MOVED_TO_CLOSED;
 
@@ -613,7 +612,7 @@ sealed interface Action {
 
     enum class VasuDocumentFollowup(override vararg val defaultRules: ScopedActionRule<in VasuDocumentFollowupEntryId>) : ScopedAction<VasuDocumentFollowupEntryId> {
         UPDATE(
-            HasRoleInChildPlacementUnit(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).vasuDocumentFollowupEntry,
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocumentFollowupEntry,
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocumentFollowupEntry,
             IsEmployeesOwn.vasuDocumentFollowupEntry
         );
