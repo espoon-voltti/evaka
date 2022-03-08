@@ -45,5 +45,6 @@ data class SsnAddingEnabledAndHasGlobalRole(val oneOf: EnumSet<UserRole>) : Acti
             AccessControlDecision.None
         }
     }
-    val person = DatabaseActionRule(this, Query)
+
+    fun person() = DatabaseActionRule(this, Query)
 }

@@ -38,7 +38,8 @@ data class IsCitizensOwn(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitiz
                 AccessControlDecision.None
             }
     }
-    val application = DatabaseActionRule(
+
+    fun application() = DatabaseActionRule(
         this,
         Query<ApplicationId> { tx, citizenId, ids ->
             tx.createQuery(

@@ -36,7 +36,7 @@ data class IsChildGuardian(val allowWeakLogin: Boolean) : ActionRuleParams<IsChi
             }
     }
 
-    val child = DatabaseActionRule(
+    fun child() = DatabaseActionRule(
         this,
         Query<ChildId> { tx, guardianId, ids ->
             tx.createQuery(
@@ -52,7 +52,8 @@ AND child_id = ANY(:ids)
                 .mapTo()
         }
     )
-    val childImage = DatabaseActionRule(
+
+    fun childImage() = DatabaseActionRule(
         this,
         Query<ChildImageId> { tx, guardianId, ids ->
             tx.createQuery(
@@ -70,7 +71,8 @@ AND guardian_id = :guardianId
                 .mapTo()
         }
     )
-    val pedagogicalDocument = DatabaseActionRule(
+
+    fun pedagogicalDocument() = DatabaseActionRule(
         this,
         Query<PedagogicalDocumentId> { tx, guardianId, ids ->
             tx.createQuery(
@@ -87,7 +89,8 @@ AND g.guardian_id = :guardianId
                 .mapTo()
         }
     )
-    val placement = DatabaseActionRule(
+
+    fun placement() = DatabaseActionRule(
         this,
         Query<PlacementId> { tx, guardianId, ids ->
             tx.createQuery(

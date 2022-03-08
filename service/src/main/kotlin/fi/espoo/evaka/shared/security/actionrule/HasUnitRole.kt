@@ -70,7 +70,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
         }
     }
 
-    val inPlacementPlanUnitOfApplication = DatabaseActionRule(
+    fun inPlacementPlanUnitOfApplication() = DatabaseActionRule(
         this,
         Query<ApplicationId> { tx, user, ids ->
             tx.createQuery(
@@ -88,7 +88,8 @@ AND av.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfAssistanceAction = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfAssistanceAction() = DatabaseActionRule(
         this,
         Query<AssistanceActionId> { tx, user, ids ->
             tx.createQuery(
@@ -105,7 +106,8 @@ AND ac.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfAssistanceNeed = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfAssistanceNeed() = DatabaseActionRule(
         this,
         Query<AssistanceNeedId> { tx, user, ids ->
             tx.createQuery(
@@ -122,7 +124,8 @@ AND an.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfBackupCare = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfBackupCare() = DatabaseActionRule(
         this,
         Query<BackupCareId> { tx, user, ids ->
             tx.createQuery(
@@ -139,7 +142,8 @@ AND bc.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfBackupPickup = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfBackupPickup() = DatabaseActionRule(
         this,
         Query<BackupPickupId> { tx, user, ids ->
             tx.createQuery(
@@ -156,7 +160,8 @@ AND bp.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChild = DatabaseActionRule(
+
+    fun inPlacementUnitOfChild() = DatabaseActionRule(
         this,
         Query<ChildId> { tx, user, ids ->
             tx.createQuery(
@@ -172,7 +177,8 @@ AND child_id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfChildDailyNote = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
         this,
         Query<ChildDailyNoteId> { tx, user, ids ->
             tx.createQuery(
@@ -189,7 +195,8 @@ AND cdn.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfChildStickyNote = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
         this,
         Query<ChildStickyNoteId> { tx, user, ids ->
             tx.createQuery(
@@ -206,7 +213,8 @@ AND csn.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfChildImage = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
         this,
         Query<ChildImageId> { tx, user, ids ->
             tx.createQuery(
@@ -223,7 +231,8 @@ AND img.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfDecision = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfDecision() = DatabaseActionRule(
         this,
         Query<DecisionId> { tx, user, ids ->
             tx.createQuery(
@@ -240,7 +249,8 @@ AND decision.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfParentship = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfParentship() = DatabaseActionRule(
         this,
         Query<ParentshipId> { tx, user, ids ->
             tx.createQuery(
@@ -258,7 +268,8 @@ AND fridge_child.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfPartnership = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfPartnership() = DatabaseActionRule(
         this,
         Query<PartnershipId> { tx, user, ids ->
             tx.createQuery(
@@ -276,7 +287,8 @@ AND partnership_id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfPedagogicalDocument = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
         Query<PedagogicalDocumentId> { tx, user, ids ->
             tx.createQuery(
@@ -293,7 +305,8 @@ AND pd.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfPerson = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfPerson() = DatabaseActionRule(
         this,
         Query<PersonId> { tx, user, ids ->
             tx.createQuery(
@@ -309,7 +322,8 @@ AND person_id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfPlacement = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfPlacement() = DatabaseActionRule(
         this,
         Query<PlacementId> { tx, user, ids ->
             tx.createQuery(
@@ -326,7 +340,8 @@ AND placement.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfServiceNeed = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfServiceNeed() = DatabaseActionRule(
         this,
         Query<ServiceNeedId> { tx, user, ids ->
             tx.createQuery(
@@ -343,7 +358,8 @@ AND service_need.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfVasuDocument = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfVasuDocument() = DatabaseActionRule(
         this,
         Query<VasuDocumentId> { tx, user, ids ->
             tx.createQuery(
@@ -360,7 +376,8 @@ AND curriculum_document.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementUnitOfChildOfVasuDocumentFollowupEntry = DatabaseActionRule(
+
+    fun inPlacementUnitOfChildOfVasuDocumentFollowupEntry() = DatabaseActionRule(
         this,
         object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasUnitRole> {
             override fun execute(
@@ -368,12 +385,14 @@ AND curriculum_document.id = ANY(:ids)
                 user: AuthenticatedUser,
                 targets: Set<VasuDocumentFollowupEntryId>
             ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasUnitRole>> {
-                val vasuDocuments = inPlacementUnitOfChildOfVasuDocument.query.execute(tx, user, targets.map { it.first }.toSet())
+                val vasuDocuments =
+                    inPlacementUnitOfChildOfVasuDocument().query.execute(tx, user, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
         }
     )
-    val inPreferredUnitOfApplication = DatabaseActionRule(
+
+    fun inPreferredUnitOfApplication() = DatabaseActionRule(
         this,
         Query<ApplicationId> { tx, user, ids ->
             tx.createQuery(
@@ -390,7 +409,8 @@ AND av.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inUnitOfGroup = DatabaseActionRule(
+
+    fun inUnitOfGroup() = DatabaseActionRule(
         this,
         Query<GroupId> { tx, user, ids ->
             tx.createQuery(
@@ -406,7 +426,8 @@ AND daycare_group_id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inUnitOfGroupNote = DatabaseActionRule(
+
+    fun inUnitOfGroupNote() = DatabaseActionRule(
         this,
         Query<GroupNoteId> { tx, user, ids ->
             tx.createQuery(
@@ -423,7 +444,8 @@ AND gn.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inUnitOfGroupPlacement = DatabaseActionRule(
+
+    fun inUnitOfGroupPlacement() = DatabaseActionRule(
         this,
         Query<GroupPlacementId> { tx, user, ids ->
             tx.createQuery(
@@ -441,7 +463,8 @@ AND daycare_group_placement.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inUnitOfMobileDevice = DatabaseActionRule(
+
+    fun inUnitOfMobileDevice() = DatabaseActionRule(
         this,
         Query<MobileDeviceId> { tx, user, ids ->
             tx.createQuery(
@@ -458,7 +481,8 @@ AND d.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inUnitOfPairing = DatabaseActionRule(
+
+    fun inUnitOfPairing() = DatabaseActionRule(
         this,
         Query<PairingId> { tx, user, ids ->
             tx.createQuery(
@@ -475,7 +499,8 @@ AND p.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inUnit = DatabaseActionRule(
+
+    fun inUnit() = DatabaseActionRule(
         this,
         Query<DaycareId> { tx, user, ids ->
             tx.createQuery(

@@ -33,7 +33,7 @@ object HasAccessToRelatedMessageAccount : ActionRuleParams<HasAccessToRelatedMes
             AccessControlDecision.Permitted(params)
     }
 
-    val messageDraft = DatabaseActionRule(
+    fun messageDraft() = DatabaseActionRule(
         this,
         Query<MessageDraftId> { tx, employee, ids -> tx.filterPermittedMessageDrafts(employee, ids) }
     )

@@ -36,7 +36,7 @@ data class IsMobileInChildPlacementUnit(val requirePinLogin: Boolean) : ActionRu
             }
     }
 
-    val child = DatabaseActionRule(
+    fun child() = DatabaseActionRule(
         this,
         Query<ChildId> { tx, mobileId, ids ->
             tx.createQuery(
@@ -53,7 +53,8 @@ AND child_id = ANY(:ids)
                 .mapTo()
         }
     )
-    val childDailyNote = DatabaseActionRule(
+
+    fun childDailyNote() = DatabaseActionRule(
         this,
         Query<ChildDailyNoteId> { tx, mobileId, ids ->
             tx.createQuery(
@@ -71,7 +72,8 @@ AND cdn.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val childStickyNote = DatabaseActionRule(
+
+    fun childStickyNote() = DatabaseActionRule(
         this,
         Query<ChildStickyNoteId> { tx, mobileId, ids ->
             tx.createQuery(
@@ -89,7 +91,8 @@ AND csn.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val childImage = DatabaseActionRule(
+
+    fun childImage() = DatabaseActionRule(
         this,
         Query<ChildImageId> { tx, mobileId, ids ->
             tx.createQuery(

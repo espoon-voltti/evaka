@@ -31,7 +31,8 @@ object IsEmployeesOwn : ActionRuleParams<IsEmployeesOwn> {
     private object Deferred : DatabaseActionRule.Deferred<IsEmployeesOwn> {
         override fun evaluate(params: IsEmployeesOwn): AccessControlDecision = AccessControlDecision.Permitted(params)
     }
-    val mobileDevice = DatabaseActionRule(
+
+    fun mobileDevice() = DatabaseActionRule(
         this,
         Query<MobileDeviceId> { tx, user, ids ->
             tx.createQuery(
@@ -47,7 +48,8 @@ AND id = ANY(:ids)
                 .mapTo()
         }
     )
-    val pairing = DatabaseActionRule(
+
+    fun pairing() = DatabaseActionRule(
         this,
         Query<PairingId> { tx, user, ids ->
             tx.createQuery(
@@ -63,7 +65,8 @@ AND id = ANY(:ids)
                 .mapTo()
         }
     )
-    val vasuDocumentFollowupEntry = DatabaseActionRule(
+
+    fun vasuDocumentFollowupEntry() = DatabaseActionRule(
         this,
         Query<VasuDocumentFollowupEntryId> { tx, user, ids ->
             // TODO: replace naive loop with a batch operation

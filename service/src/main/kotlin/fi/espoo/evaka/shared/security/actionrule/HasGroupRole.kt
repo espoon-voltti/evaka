@@ -49,7 +49,7 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
         }
     }
 
-    val inPlacementGroupOfChild = DatabaseActionRule(
+    fun inPlacementGroupOfChild() = DatabaseActionRule(
         this,
         Query<ChildId> { tx, user, ids ->
             tx.createQuery(
@@ -65,7 +65,8 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
                 .mapTo()
         }
     )
-    val inPlacementGroupOfChildOfPedagogicalDocument = DatabaseActionRule(
+
+    fun inPlacementGroupOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
         Query<PedagogicalDocumentId> { tx, user, ids ->
             tx.createQuery(
@@ -82,7 +83,8 @@ AND pd.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementGroupOfChildOfVasuDocument = DatabaseActionRule(
+
+    fun inPlacementGroupOfChildOfVasuDocument() = DatabaseActionRule(
         this,
         Query<VasuDocumentId> { tx, user, ids ->
             tx.createQuery(
@@ -99,7 +101,8 @@ AND curriculum_document.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val inPlacementGroupOfChildOfVasuDocumentFollowupEntry = DatabaseActionRule(
+
+    fun inPlacementGroupOfChildOfVasuDocumentFollowupEntry() = DatabaseActionRule(
         this,
         object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasGroupRole> {
             override fun execute(
@@ -107,7 +110,8 @@ AND curriculum_document.id = ANY(:ids)
                 user: AuthenticatedUser,
                 targets: Set<VasuDocumentFollowupEntryId>
             ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasGroupRole>> {
-                val vasuDocuments = inPlacementGroupOfChildOfVasuDocument.query.execute(tx, user, targets.map { it.first }.toSet())
+                val vasuDocuments =
+                    inPlacementGroupOfChildOfVasuDocument().query.execute(tx, user, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
         }

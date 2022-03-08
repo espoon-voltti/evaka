@@ -35,7 +35,7 @@ data class IsMobileInRelatedUnit(val requirePinLogin: Boolean) : ActionRuleParam
             }
     }
 
-    val group = DatabaseActionRule(
+    fun group() = DatabaseActionRule(
         this,
         Query<GroupId> { tx, mobileId, ids ->
             tx.createQuery(
@@ -52,7 +52,8 @@ AND daycare_group_id = ANY(:ids)
                 .mapTo()
         }
     )
-    val groupNote = DatabaseActionRule(
+
+    fun groupNote() = DatabaseActionRule(
         this,
         Query<GroupNoteId> { tx, mobileId, ids ->
             tx.createQuery(
@@ -70,7 +71,8 @@ AND gn.id = ANY(:ids)
                 .mapTo()
         }
     )
-    val unit = DatabaseActionRule(
+
+    fun unit() = DatabaseActionRule(
         this,
         Query<DaycareId> { tx, mobileId, ids ->
             tx.createQuery(
