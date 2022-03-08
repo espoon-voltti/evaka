@@ -57,6 +57,9 @@ sealed interface ScopedActionRule<T>
  * database queries in this scenario.
  */
 data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>) : ScopedActionRule<T> {
+    val classifier: Pair<Class<*>, Class<*>>
+        get() = Pair(params.javaClass, query.javaClass)
+
     interface Query<T, P> {
         fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, Deferred<P>>
     }

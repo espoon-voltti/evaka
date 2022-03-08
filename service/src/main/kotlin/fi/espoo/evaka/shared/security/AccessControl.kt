@@ -234,7 +234,7 @@ WHERE employee_id = :userId
             .flatMap { action ->
                 actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
             }
-            .distinctBy { it.params.javaClass }
+            .distinctBy { it.classifier }
             .iterator()
 
         val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
@@ -247,7 +247,7 @@ WHERE employee_id = :userId
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)
                     .mapNotNull { it as? DatabaseActionRule<in T, *> }
-                    .filter { it.params.javaClass == ruleType.params.javaClass }
+                    .filter { it.classifier == ruleType.classifier }
                 for (rule in compatibleRules) {
                     for (target in targets) {
                         if (deferred[target]?.evaluate(rule.params)?.isPermitted() == true) {
