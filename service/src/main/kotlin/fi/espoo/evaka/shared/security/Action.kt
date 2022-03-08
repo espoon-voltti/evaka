@@ -53,9 +53,7 @@ import fi.espoo.evaka.shared.security.actionrule.HasAccessToRelatedMessageAccoun
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasGroupRole
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
-import fi.espoo.evaka.shared.security.actionrule.IsChildGuardian
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
-import fi.espoo.evaka.shared.security.actionrule.IsCitizensOwn
 import fi.espoo.evaka.shared.security.actionrule.IsEmployeesOwn
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
@@ -152,17 +150,17 @@ sealed interface Action {
         READ_INVOICE_CODES(HasGlobalRole(FINANCE_ADMIN)),
 
         READ_UNIT_FEATURES,
-        READ_OWN_CHILDREN(IsCitizen(allowWeakLogin = false)),
+        READ_OWN_CHILDREN(IsCitizen(allowWeakLogin = false).any()),
 
         CREATE_HOLIDAY_PERIOD,
         READ_HOLIDAY_PERIOD,
-        READ_HOLIDAY_PERIODS(IsCitizen(allowWeakLogin = true)),
+        READ_HOLIDAY_PERIODS(IsCitizen(allowWeakLogin = true).any()),
         DELETE_HOLIDAY_PERIOD,
         UPDATE_HOLIDAY_PERIOD,
 
         READ_HOLIDAY_QUESTIONNAIRE,
         READ_HOLIDAY_QUESTIONNAIRES,
-        READ_ACTIVE_HOLIDAY_QUESTIONNAIRES(IsCitizen(allowWeakLogin = true)),
+        READ_ACTIVE_HOLIDAY_QUESTIONNAIRES(IsCitizen(allowWeakLogin = true).any()),
         CREATE_HOLIDAY_QUESTIONNAIRE,
         DELETE_HOLIDAY_QUESTIONNAIRE,
         UPDATE_HOLIDAY_QUESTIONNAIRE,
@@ -202,7 +200,7 @@ sealed interface Action {
         CREATE_NOTE(HasGlobalRole(SERVICE_WORKER)),
 
         READ_ATTACHMENTS(HasGlobalRole(SERVICE_WORKER)),
-        UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), IsCitizensOwn(allowWeakLogin = false).application());
+        UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), IsCitizen(allowWeakLogin = false).ownerOfApplication());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -259,17 +257,17 @@ sealed interface Action {
         READ(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            IsChildGuardian(allowWeakLogin = false).child()
+            IsCitizen(allowWeakLogin = false).guardianOfChild()
         ),
 
-        CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsChildGuardian(allowWeakLogin = true).child()),
+        CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsCitizen(allowWeakLogin = true).guardianOfChild()),
         READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()),
         READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
         DELETE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()),
         DELETE_ABSENCE_RANGE(IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
 
-        CREATE_HOLIDAY_ABSENCE(IsChildGuardian(allowWeakLogin = false).child()),
-        CREATE_RESERVATION(IsChildGuardian(allowWeakLogin = true).child()),
+        CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+        CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
 
         READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -301,7 +299,7 @@ sealed interface Action {
         READ_PLACEMENT(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
-            IsChildGuardian(allowWeakLogin = false).child()
+            IsCitizen(allowWeakLogin = false).guardianOfChild()
         ),
 
         READ_FAMILY_CONTACTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -339,7 +337,7 @@ sealed interface Action {
         DOWNLOAD(
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChildOfChildImage(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildImage(),
-            IsChildGuardian(allowWeakLogin = false).childImage()
+            IsCitizen(allowWeakLogin = false).guardianOfChildOfChildImage()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -491,7 +489,7 @@ sealed interface Action {
         READ(
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument(),
-            IsChildGuardian(allowWeakLogin = false).pedagogicalDocument()
+            IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument()
         ),
         UPDATE(
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
@@ -534,7 +532,7 @@ sealed interface Action {
 
         CREATE_SERVICE_NEED(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()),
 
-        TERMINATE(IsChildGuardian(allowWeakLogin = false).placement());
+        TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
