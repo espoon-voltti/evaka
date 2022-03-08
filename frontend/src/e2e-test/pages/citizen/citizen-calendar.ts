@@ -268,7 +268,7 @@ class HolidayModal {
     new Select(
       this.page
         .findByDataQa(`holiday-section-${childId}`)
-        .findByDataQa('free-period-select')
+        .findByDataQa('period-select')
     )
   #modalSendButton = this.page.findByDataQa('modal-okBtn')
 

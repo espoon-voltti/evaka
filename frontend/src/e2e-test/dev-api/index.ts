@@ -48,6 +48,7 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
+  DevFixedPeriodQuestionnaire,
   DevHolidayPeriod,
   DevIncome,
   DevVardaReset,
@@ -169,6 +170,17 @@ export async function insertHolidayPeriod({
 }: DevHolidayPeriod): Promise<void> {
   try {
     await devClient.post(`/holiday-period/${id}`, rest)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertHolidayQuestionnaire({
+  id,
+  ...rest
+}: DevFixedPeriodQuestionnaire): Promise<void> {
+  try {
+    await devClient.post(`/holiday-period/questionnaire/${id}`, rest)
   } catch (e) {
     throw new DevApiError(e)
   }

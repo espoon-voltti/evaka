@@ -33,7 +33,9 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.insertDecision
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
 import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
+import fi.espoo.evaka.holidayperiod.createFixedPeriodQuestionnaire
 import fi.espoo.evaka.holidayperiod.createHolidayPeriod
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -95,6 +97,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.HolidayPeriodId
+import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
@@ -812,6 +815,24 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
                     tx.createUpdate("UPDATE holiday_period SET id = :id WHERE id = :prevId")
                         .bind("id", id)
                         .bind("prevId", it.id)
+                        .execute()
+                }
+            }
+        }
+    }
+
+    @PostMapping("/holiday-period/questionnaire/{id}")
+    fun createHolidayQuestionnaire(
+        db: Database,
+        @PathVariable id: HolidayQuestionnaireId,
+        @RequestBody body: FixedPeriodQuestionnaireBody
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.createFixedPeriodQuestionnaire(body).let {
+                    tx.createUpdate("UPDATE holiday_period_questionnaire SET id = :id WHERE id = :prevId")
+                        .bind("id", id)
+                        .bind("prevId", it)
                         .execute()
                 }
             }

@@ -23,7 +23,6 @@ import { Gap } from 'lib-components/white-space'
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
-import { isHolidayFormCurrentlyActive } from '../holiday-periods/holiday-period'
 import { useHolidayPeriods } from '../holiday-periods/state'
 
 import AbsenceModal from './AbsenceModal'
@@ -34,7 +33,7 @@ import DayView from './DayView'
 import HolidayPeriodBanner from './HolidayPeriodBanner'
 import ReservationModal from './ReservationModal'
 import { getReservations } from './api'
-import FreePeriodSelectionModal from './holiday-modal/FreePeriodSelectionModal'
+import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
 
 async function getReservationsDefaultRange(): Promise<
   Result<ReservationsResponse>
@@ -50,7 +49,7 @@ const Page = React.memo(function CalendarPage() {
   const location = useLocation()
   const user = useUser()
 
-  const { holidayPeriods, activePeriod } = useHolidayPeriods()
+  const { holidayPeriods, activeFixedPeriodQuestionnaire } = useHolidayPeriods()
 
   const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
   const [openModal, setOpenModal] = useState<
@@ -110,17 +109,13 @@ const Page = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
-  const isHolidayFormActive: boolean = useMemo(
-    () =>
-      holidayPeriods
-        .map((periods) => periods.some(isHolidayFormCurrentlyActive))
-        .getOrElse(false),
-    [holidayPeriods]
+  const fixedPeriodQuestionnaire = useMemo(
+    () => activeFixedPeriodQuestionnaire.getOrElse(undefined),
+    [activeFixedPeriodQuestionnaire]
   )
+  const isHolidayFormActive = !!fixedPeriodQuestionnaire
 
   if (!user || !user.accessibleFeatures.reservations) return null
-
-  const activeHolidayPeriod = activePeriod.getOrElse(undefined)
 
   return renderResult(data, (response) => (
     <>
@@ -185,12 +180,12 @@ const Page = React.memo(function CalendarPage() {
           availableChildren={response.children}
         />
       )}
-      {openModal?.type === 'holidays' && activeHolidayPeriod?.freePeriod && (
-        <FreePeriodSelectionModal
+      {openModal?.type === 'holidays' && fixedPeriodQuestionnaire && (
+        <FixedPeriodSelectionModal
           close={closeModal}
           reload={loadDefaultRange}
           availableChildren={response.children}
-          activePeriod={activeHolidayPeriod}
+          questionnaire={fixedPeriodQuestionnaire}
         />
       )}
     </>

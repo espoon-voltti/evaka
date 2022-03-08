@@ -5,12 +5,12 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { postFreePeriods } from 'citizen-frontend/holiday-periods/api'
+import { postFixedPeriodQuestionnaireAnswer } from 'citizen-frontend/holiday-periods/api'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  FreePeriodsBody,
-  HolidayPeriod
+  FixedPeriodQuestionnaire,
+  FixedPeriodsBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
@@ -19,54 +19,53 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
-import { FreeHolidaySelector } from './FreeHolidaySelector'
+import { PeriodSelector } from './PeriodSelector'
 
-type FreePeriods = FreePeriodsBody['freePeriods']
+type FormState = FixedPeriodsBody['fixedPeriods']
 
-const initializeForm = (children: ReservationChild[]): FreePeriods =>
+const initializeForm = (children: ReservationChild[]): FormState =>
   children.reduce((acc, child) => ({ ...acc, [child.id]: null }), {})
 
 interface Props {
   close: () => void
   reload: () => void
   availableChildren: ReservationChild[]
-  activePeriod: HolidayPeriod
+  questionnaire: FixedPeriodQuestionnaire
 }
 
-export default React.memo(function FreePeriodSelectionModal({
+export default React.memo(function FixedPeriodSelectionModal({
   close,
   reload,
   availableChildren,
-  activePeriod
+  questionnaire
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const [form, setForm] = useState<FreePeriods>(() =>
+  const [fixedPeriods, setFixedPeriods] = useState<FormState>(() =>
     initializeForm(availableChildren)
   )
 
-  const selectFreePeriod = useCallback(
-    (childId: string) => (selectedFreePeriod: FiniteDateRange | null) =>
-      setForm((prev) => ({ ...prev, [childId]: selectedFreePeriod })),
-    [setForm]
+  const selectPeriod = useCallback(
+    (childId: string) => (period: FiniteDateRange | null) =>
+      setFixedPeriods((prev) => ({ ...prev, [childId]: period })),
+    [setFixedPeriods]
   )
 
   const onSubmit = useCallback(
-    () => postFreePeriods({ freePeriods: form }),
-    [form]
+    () =>
+      postFixedPeriodQuestionnaireAnswer(questionnaire.id, { fixedPeriods }),
+    [fixedPeriods, questionnaire.id]
   )
   const closeAndReload = useCallback(() => {
     close()
     reload()
   }, [close, reload])
 
-  if (!activePeriod.freePeriod) return null
-
   return (
     <AsyncFormModal
       mobileFullScreen
-      title={i18n.calendar.holidayModal.title}
+      title={questionnaire.title[lang]}
       resolveAction={onSubmit}
       onSuccess={closeAndReload}
       resolveLabel={i18n.common.confirm}
@@ -75,10 +74,10 @@ export default React.memo(function FreePeriodSelectionModal({
     >
       <FixedSpaceColumn>
         <HolidaySection>
-          <div>{activePeriod.description[lang]}</div>
+          <div>{questionnaire.description[lang]}</div>
           <ExternalLink
             text={i18n.calendar.holidayModal.additionalInformation}
-            href={activePeriod.descriptionLink[lang]}
+            href={questionnaire.descriptionLink[lang]}
             newTab
           />
         </HolidaySection>
@@ -88,13 +87,12 @@ export default React.memo(function FreePeriodSelectionModal({
             data-qa={`holiday-section-${child.id}`}
           >
             <H2>{formatPreferredName(child)}</H2>
-            {activePeriod.freePeriod && (
-              <FreeHolidaySelector
-                freeAbsencePeriod={activePeriod.freePeriod}
-                value={form[child.id]}
-                onSelectPeriod={selectFreePeriod(child.id)}
-              />
-            )}
+            <PeriodSelector
+              label={questionnaire.periodOptionLabel[lang]}
+              options={questionnaire.periodOptions}
+              value={fixedPeriods[child.id]}
+              onSelectPeriod={selectPeriod(child.id)}
+            />
           </HolidaySection>
         ))}
       </FixedSpaceColumn>

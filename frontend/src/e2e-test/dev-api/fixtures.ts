@@ -11,7 +11,10 @@ import {
   ApplicationType,
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/api-types/application'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  FixedPeriodQuestionnaire,
+  HolidayPeriod
+} from 'lib-common/generated/api-types/holidayperiod'
 import {
   FeeDecision,
   FeeDecisionStatus,
@@ -70,6 +73,7 @@ import {
   insertFridgeChildren,
   insertGuardianFixtures,
   insertHolidayPeriod,
+  insertHolidayQuestionnaire,
   insertIncome,
   insertPedagogicalDocuments,
   insertPersonFixture,
@@ -1333,12 +1337,28 @@ export class Fixture {
   static holidayPeriod(): HolidayPeriodBuilder {
     return new HolidayPeriodBuilder({
       id: uuidv4(),
+      period: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
+      reservationDeadline: LocalDate.today()
+    })
+  }
+
+  static holidayQuestionnaire(): HolidayQuestionnaireBuilder {
+    return new HolidayQuestionnaireBuilder({
+      id: uuidv4(),
+      holidayPeriodId: '',
+      type: 'FIXED_PERIOD',
+      absenceType: 'OTHER_ABSENCE',
+      title: { fi: '', sv: '', en: '' },
       description: { fi: '', sv: '', en: '' },
       descriptionLink: { fi: '', sv: '', en: '' },
       period: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
-      reservationDeadline: LocalDate.today(),
-      showReservationBannerFrom: LocalDate.today(),
-      freePeriod: null
+      active: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
+      conditions: {
+        continuousPlacement: null
+      },
+      periodOptions: [],
+      periodOptionLabel: { fi: '', sv: '', en: '' },
+      requiresStrongAuth: false
     })
   }
 
@@ -1742,6 +1762,26 @@ export class HolidayPeriodBuilder extends FixtureBuilder<HolidayPeriod> {
 
   copy() {
     return new HolidayPeriodBuilder({ ...this.data })
+  }
+}
+
+export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuestionnaire> {
+  async save() {
+    await insertHolidayQuestionnaire(this.data)
+    return this
+  }
+
+  copy() {
+    return new HolidayQuestionnaireBuilder({ ...this.data })
+  }
+
+  withHolidayPeriod(holidayPeriod: HolidayPeriodBuilder): this {
+    this.data = {
+      ...this.data,
+      holidayPeriodId: holidayPeriod.data.id,
+      period: holidayPeriod.data.period
+    }
+    return this
   }
 }
 

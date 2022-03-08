@@ -19,9 +19,10 @@ export class HolidayPeriodsPage {
   }
 
   async clickAddButton() {
-    return this.page.findByDataQa('add-button').click()
+    return this.page.findByDataQa('add-holiday-period-button').click()
   }
 
+  // TODO move questionnaire fields
   #inputs = {
     start: new DatePicker(this.page.findByDataQa('input-start')),
     end: new DatePicker(this.page.findByDataQa('input-end')),

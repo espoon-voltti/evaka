@@ -56,43 +56,44 @@ beforeEach(async () => {
 describe('Holiday periods', () => {
   describe('Holiday period questionnaire is active', () => {
     beforeEach(async () => {
-      await Fixture.holidayPeriod()
+      const holidayPeriod = await Fixture.holidayPeriod()
         .with({
           period,
-          reservationDeadline: LocalDate.of(2035, 12, 6),
-          showReservationBannerFrom: LocalDate.today(),
+          reservationDeadline: LocalDate.of(2035, 12, 6)
+        })
+        .save()
+      await Fixture.holidayQuestionnaire()
+        .withHolidayPeriod(holidayPeriod)
+        .with({
+          absenceType: 'FREE_ABSENCE',
+          active: new FiniteDateRange(
+            LocalDate.today(),
+            LocalDate.of(2035, 12, 6)
+          ),
           description: {
             en: 'Please submit your reservations for 18.12.2035 - 8.1.2036 asap',
             fi: 'Ystävällisesti pyydän tekemään varauksenne ajalle 18.12.2035 - 8.1.2036 heti kun mahdollista, kuitenkin viimeistään 6.12.',
             sv: 'Vänligen samma på svenska för 18.12.2035 - 8.1.2036'
           },
-          freePeriod: {
-            deadline: LocalDate.of(2035, 12, 6),
-            periodOptionLabel: {
-              en: 'My child is away for 8 weeks between',
-              fi: 'Lapseni on poissa 8 viikkoa aikavälillä',
-              sv: 'Mitt barn är borta 8 veckor mellan'
-            },
-            periodOptions: [
-              new FiniteDateRange(
-                LocalDate.of(2035, 12, 18),
-                LocalDate.of(2035, 12, 25)
-              ),
-              new FiniteDateRange(
-                LocalDate.of(2035, 12, 26),
-                LocalDate.of(2036, 1, 1)
-              ),
-              new FiniteDateRange(
-                LocalDate.of(2036, 1, 2),
-                LocalDate.of(2036, 1, 8)
-              )
-            ],
-            questionLabel: {
-              en: 'Are your children away for 8 weeks during 18.12.2035 - 8.1.2036?',
-              fi: 'Ovatko lapsenne 18.12.2035 - 8.1.2036 välillä yhtenäisesti 8 viikkoa poissa?',
-              sv: 'Är dina barn borta 8 veckor under tiden 18.12.2035 - 8.1.2036?'
-            }
-          }
+          periodOptionLabel: {
+            en: 'My child is away for 8 weeks between',
+            fi: 'Lapseni on poissa 8 viikkoa aikavälillä',
+            sv: 'Mitt barn är borta 8 veckor mellan'
+          },
+          periodOptions: [
+            new FiniteDateRange(
+              LocalDate.of(2035, 12, 18),
+              LocalDate.of(2035, 12, 25)
+            ),
+            new FiniteDateRange(
+              LocalDate.of(2035, 12, 26),
+              LocalDate.of(2036, 1, 1)
+            ),
+            new FiniteDateRange(
+              LocalDate.of(2036, 1, 2),
+              LocalDate.of(2036, 1, 8)
+            )
+          ]
         })
         .save()
     })

@@ -6,20 +6,22 @@ import React, { createContext, useContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { Loading, Result, Success } from 'lib-common/api'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  FixedPeriodQuestionnaire,
+  HolidayPeriod
+} from 'lib-common/generated/api-types/holidayperiod'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getHolidayPeriods } from './api'
-import { isHolidayFormCurrentlyActive } from './holiday-period'
+import { getActiveQuestionnaires, getHolidayPeriods } from './api'
 
 export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
-  activePeriod: Result<HolidayPeriod | undefined>
+  activeFixedPeriodQuestionnaire: Result<FixedPeriodQuestionnaire | undefined>
 }
 
 const defaultState: HolidayPeriodsState = {
   holidayPeriods: Loading.of(),
-  activePeriod: Loading.of()
+  activeFixedPeriodQuestionnaire: Loading.of()
 }
 
 export const HolidayPeriodsContext =
@@ -36,15 +38,18 @@ export const HolidayPeriodsContextProvider = React.memo(
       () => (user ? getHolidayPeriods() : Promise.resolve(Success.of([]))),
       [user]
     )
+    const [activeQuestionnaires] = useApiState(
+      () =>
+        user ? getActiveQuestionnaires() : Promise.resolve(Success.of([])),
+      [user]
+    )
 
     const value = useMemo(
       () => ({
-        holidayPeriods,
-        activePeriod: holidayPeriods.map((periods) =>
-          periods.find(isHolidayFormCurrentlyActive)
-        )
+        activeFixedPeriodQuestionnaire: activeQuestionnaires.map((v) => v[0]),
+        holidayPeriods
       }),
-      [holidayPeriods]
+      [activeQuestionnaires, holidayPeriods]
     )
 
     return (

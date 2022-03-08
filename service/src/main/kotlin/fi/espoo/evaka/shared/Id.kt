@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -40,6 +40,7 @@ sealed interface DatabaseTable {
     sealed class Group : DatabaseTable
     sealed class GroupPlacement : DatabaseTable
     sealed class HolidayPeriod : DatabaseTable
+    sealed class HolidayQuestionnaire : DatabaseTable
     sealed class Income : DatabaseTable
     sealed class IncomeStatement : DatabaseTable
     sealed class Invoice : DatabaseTable
@@ -99,6 +100,7 @@ typealias FeeThresholdsId = Id<DatabaseTable.FeeThresholds>
 typealias GroupId = Id<DatabaseTable.Group>
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 typealias HolidayPeriodId = Id<DatabaseTable.HolidayPeriod>
+typealias HolidayQuestionnaireId = Id<DatabaseTable.HolidayQuestionnaire>
 typealias IncomeId = Id<DatabaseTable.Income>
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
 typealias InvoiceId = Id<DatabaseTable.Invoice>
