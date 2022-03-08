@@ -96,7 +96,7 @@ class OccupancyController(
     ): OccupancyResponseSpeculated {
         Audit.OccupancySpeculatedRead.log(targetId = Pair(unitId, applicationId))
         accessControl.requirePermissionFor(user, Action.Unit.READ_OCCUPANCIES, unitId)
-        accessControl.requirePermissionFor(user, Action.Application.READ_WITHOUT_ASSISTANCE_NEED, applicationId)
+        accessControl.requirePermissionFor(user, Action.Application.READ, applicationId)
 
         val period = FiniteDateRange(from, to)
         val preschoolDaycarePeriod = if (preschoolDaycareFrom != null && preschoolDaycareTo != null) {

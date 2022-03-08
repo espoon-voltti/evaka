@@ -14,7 +14,6 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.jsonMapper
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
@@ -1017,26 +1016,6 @@ WHERE application_id = :applicationId
 """
     )
         .bind("applicationId", applicationId)
-        .mapTo<ApplicationAttachment>()
-        .toList()
-
-fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: ApplicationId): List<ApplicationAttachment> =
-    createQuery(
-        """
-SELECT
-    attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.received_at, attachment.type,
-    (CASE evaka_user.type WHEN 'EMPLOYEE' THEN evaka_user.id END) AS uploaded_by_employee,
-    (CASE evaka_user.type WHEN 'CITIZEN' THEN evaka_user.id END) AS uploaded_by_person
-FROM attachment
-JOIN evaka_user ON attachment.uploaded_by = evaka_user.id
-JOIN application ON application.id = attachment.application_id
-JOIN placement_plan ON placement_plan.application_id = application.id
-JOIN daycare ON daycare.id = placement_plan.unit_id
-WHERE application.id = :applicationId AND daycare.round_the_clock AND attachment.type = ANY(:attachmentTypes)
-"""
-    )
-        .bind("applicationId", applicationId)
-        .bind("attachmentTypes", arrayOf(AttachmentType.EXTENDED_CARE))
         .mapTo<ApplicationAttachment>()
         .toList()
 

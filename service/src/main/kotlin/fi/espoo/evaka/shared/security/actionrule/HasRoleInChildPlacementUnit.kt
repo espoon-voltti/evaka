@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
@@ -61,24 +60,6 @@ data class HasRoleInChildPlacementUnit(val oneOf: EnumSet<UserRole>) : ActionRul
         }
     }
 
-    val application = DatabaseActionRule(
-        this,
-        Query<ApplicationId> { tx, employeeId, ids ->
-            tx.createQuery(
-                """
-SELECT av.id, role
-FROM application_view av
-LEFT JOIN placement_plan pp ON pp.application_id = av.id
-JOIN daycare_acl_view acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
-WHERE employee_id = :userId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
-AND av.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("userId", employeeId)
-                .bind("ids", ids.toTypedArray())
-                .mapTo()
-        }
-    )
     val assistanceAction = DatabaseActionRule(
         this,
         Query<AssistanceActionId> { tx, employeeId, ids ->
