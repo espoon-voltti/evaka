@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
@@ -19,21 +18,21 @@ import fi.espoo.evaka.shared.utils.toEnumSet
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
-private typealias GetRolesInPlacementGroup<T> = (tx: Database.Read, employeeId: EmployeeId, targets: Set<T>) -> Iterable<IdAndRole>
+private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<IdAndRole>
 
-data class HasRoleInChildPlacementGroup(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasRoleInChildPlacementGroup> {
+data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGroupRole> {
     init {
         oneOf.forEach { check(it.isGroupScopedRole()) { "Expected a group-scoped role, got $it" } }
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
-    override fun merge(other: HasRoleInChildPlacementGroup): HasRoleInChildPlacementGroup = HasRoleInChildPlacementGroup(
+    override fun merge(other: HasGroupRole): HasGroupRole = HasGroupRole(
         (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
     )
 
-    private data class Query<T : Id<*>>(private val getRolesInPlacementGroup: GetRolesInPlacementGroup<T>) : DatabaseActionRule.Query<T, HasRoleInChildPlacementGroup> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasRoleInChildPlacementGroup>> = when (user) {
-            is AuthenticatedUser.Employee -> getRolesInPlacementGroup(tx, EmployeeId(user.id), targets)
+    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
+        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, targets)
                 .fold(targets.associateTo(linkedMapOf()) { (it to emptyEnumSet<UserRole>()) }) { acc, (target, role) ->
                     acc[target]?.plusAssign(role)
                     acc
@@ -42,17 +41,17 @@ data class HasRoleInChildPlacementGroup(val oneOf: EnumSet<UserRole>) : ActionRu
             else -> emptyMap()
         }
     }
-    private data class Deferred(private val rolesInGroup: Set<UserRole>) : DatabaseActionRule.Deferred<HasRoleInChildPlacementGroup> {
-        override fun evaluate(params: HasRoleInChildPlacementGroup): AccessControlDecision = if (rolesInGroup.any { params.oneOf.contains(it) }) {
+    private data class Deferred(private val rolesInGroup: Set<UserRole>) : DatabaseActionRule.Deferred<HasGroupRole> {
+        override fun evaluate(params: HasGroupRole): AccessControlDecision = if (rolesInGroup.any { params.oneOf.contains(it) }) {
             AccessControlDecision.Permitted(params)
         } else {
             AccessControlDecision.None
         }
     }
 
-    val child = DatabaseActionRule(
+    val inPlacementGroupOfChild = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, employeeId, ids ->
+        Query<ChildId> { tx, user, ids ->
             tx.createQuery(
                 """
     SELECT child_id AS id, role
@@ -61,14 +60,14 @@ data class HasRoleInChildPlacementGroup(val oneOf: EnumSet<UserRole>) : ActionRu
     AND child_id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val pedagogicalDocument = DatabaseActionRule(
+    val inPlacementGroupOfChildOfPedagogicalDocument = DatabaseActionRule(
         this,
-        Query<PedagogicalDocumentId> { tx, employeeId, ids ->
+        Query<PedagogicalDocumentId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT pd.id, role
@@ -78,14 +77,14 @@ WHERE employee_id = :userId
 AND pd.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val vasuDocument = DatabaseActionRule(
+    val inPlacementGroupOfChildOfVasuDocument = DatabaseActionRule(
         this,
-        Query<VasuDocumentId> { tx, employeeId, ids ->
+        Query<VasuDocumentId> { tx, user, ids ->
             tx.createQuery(
                 """
 SELECT curriculum_document.id AS id, role
@@ -95,20 +94,20 @@ WHERE employee_id = :userId
 AND curriculum_document.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", employeeId)
+                .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
     )
-    val vasuDocumentFollowupEntry = DatabaseActionRule(
+    val inPlacementGroupOfChildOfVasuDocumentFollowupEntry = DatabaseActionRule(
         this,
-        object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasRoleInChildPlacementGroup> {
+        object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasGroupRole> {
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
                 targets: Set<VasuDocumentFollowupEntryId>
-            ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasRoleInChildPlacementGroup>> {
-                val vasuDocuments = vasuDocument.query.execute(tx, user, targets.map { it.first }.toSet())
+            ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasGroupRole>> {
+                val vasuDocuments = inPlacementGroupOfChildOfVasuDocument.query.execute(tx, user, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
         }
