@@ -54,7 +54,7 @@ import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasGroupRole
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
-import fi.espoo.evaka.shared.security.actionrule.IsEmployeesOwn
+import fi.espoo.evaka.shared.security.actionrule.IsEmployee
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.SsnAddingEnabledAndHasGlobalRole
@@ -450,13 +450,13 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class MobileDevice(override vararg val defaultRules: ScopedActionRule<in MobileDeviceId>) : ScopedAction<MobileDeviceId> {
-        UPDATE_NAME(HasUnitRole(UNIT_SUPERVISOR).inUnitOfMobileDevice(), IsEmployeesOwn.mobileDevice()),
-        DELETE(HasUnitRole(UNIT_SUPERVISOR).inUnitOfMobileDevice(), IsEmployeesOwn.mobileDevice());
+        UPDATE_NAME(HasUnitRole(UNIT_SUPERVISOR).inUnitOfMobileDevice(), IsEmployee.ownerOfMobileDevice()),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR).inUnitOfMobileDevice(), IsEmployee.ownerOfMobileDevice());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Pairing(override vararg val defaultRules: ScopedActionRule<in PairingId>) : ScopedAction<PairingId> {
-        POST_RESPONSE(HasUnitRole(UNIT_SUPERVISOR).inUnitOfPairing(), IsEmployeesOwn.pairing());
+        POST_RESPONSE(HasUnitRole(UNIT_SUPERVISOR).inUnitOfPairing(), IsEmployee.ownerOfPairing());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -609,7 +609,7 @@ sealed interface Action {
         UPDATE(
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocumentFollowupEntry(),
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfVasuDocumentFollowupEntry(),
-            IsEmployeesOwn.vasuDocumentFollowupEntry()
+            IsEmployee.authorOfVasuDocumentFollowupEntry()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
