@@ -265,7 +265,7 @@ WITH all_fridge_children AS (
     SELECT fc.child_id, greatest(fc.start_date, fp2.start_date) AS start_date, least(fc.end_date, coalesce(fp2.end_date, fc.end_date)) AS end_date
     FROM fridge_partner fp1
     JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx != fp1.indx AND fp1.person_id = :adultId
-    JOIN fridge_child fc ON fc.head_of_child = fp2.person_id
+    JOIN fridge_child fc ON fc.head_of_child = fp2.person_id AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp2.start_date, fp2.end_date, '[]')
 )
 SELECT greatest(p.start_date, fc.start_date) AS start, least(p.end_date, fc.end_date) AS end
 FROM placement p
