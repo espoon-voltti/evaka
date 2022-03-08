@@ -208,6 +208,7 @@ export class ValueDecisionDetailsPage {
   #headOfFamily = this.page.find('[data-qa="head-of-family"]')
 
   #sendDecisionButton = this.page.find('[data-qa="button-send-decision"]')
+  #childIncome = this.page.findAll('[data-qa="child-income"]')
 
   async sendValueDecision() {
     await this.#sendDecisionButton.click()
@@ -221,6 +222,12 @@ export class ValueDecisionDetailsPage {
   async assertPartnerNameNotShown() {
     await this.#headOfFamily.waitUntilVisible()
     await this.#partnerName.waitUntilHidden()
+  }
+
+  async assertChildIncome(nth: number, expectedTotalText: string) {
+    await waitUntilTrue(async () =>
+      (await this.#childIncome.nth(nth).innerText).includes(expectedTotalText)
+    )
   }
 }
 

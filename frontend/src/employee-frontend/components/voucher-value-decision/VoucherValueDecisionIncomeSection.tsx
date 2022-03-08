@@ -132,6 +132,20 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
                   valueWidth: '100%'
                 }
               ]
+            : []),
+          ...(decision.childIncome && decision.childIncome.totalIncome > 0
+            ? [
+                {
+                  label: formatName(
+                    decision.child.firstName,
+                    decision.child.lastName,
+                    i18n
+                  ),
+                  value: personIncome(decision.childIncome),
+                  valueWidth: '100%',
+                  dataQa: 'child-income'
+                }
+              ]
             : [])
         ]}
       />
