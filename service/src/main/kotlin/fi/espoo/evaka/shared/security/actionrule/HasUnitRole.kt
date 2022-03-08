@@ -70,6 +70,11 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
         }
     }
 
+    fun inAnyUnit() = object : StaticActionRule {
+        override fun isPermitted(user: AuthenticatedUser): Boolean =
+            user is AuthenticatedUser.Employee && user.allScopedRoles.any { oneOf.contains(it) }
+    }
+
     fun inPlacementPlanUnitOfApplication() = DatabaseActionRule(
         this,
         Query<ApplicationId> { tx, user, ids ->
