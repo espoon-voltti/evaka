@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -52,6 +53,41 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
         }
     }
 
+    val inPlacementPlanUnitOfApplication = DatabaseActionRule(
+        this,
+        Query<ApplicationId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT av.id, role
+FROM application_view av
+LEFT JOIN placement_plan pp ON pp.application_id = av.id
+JOIN daycare_acl_view acl ON acl.daycare_id = pp.unit_id
+WHERE employee_id = :userId AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
+AND av.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+    val inPreferredUnitOfApplication = DatabaseActionRule(
+        this,
+        Query<ApplicationId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT av.id, role
+FROM application_view av
+JOIN daycare_acl_view acl ON acl.daycare_id = ANY (av.preferredunits)
+WHERE employee_id = :userId
+AND av.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
     val inUnitOfGroup = DatabaseActionRule(
         this,
         Query<GroupId> { tx, user, ids ->

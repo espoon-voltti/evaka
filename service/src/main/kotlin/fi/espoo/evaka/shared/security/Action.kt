@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.shared.security
 
-import HasRoleInApplicationPreferredUnit
-import HasRoleInPlacementPlanUnit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
@@ -178,8 +176,8 @@ sealed interface Action {
     }
 
     enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
-        READ(HasGlobalRole(SERVICE_WORKER), HasRoleInPlacementPlanUnit(UNIT_SUPERVISOR).application),
-        READ_IF_HAS_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasRoleInApplicationPreferredUnit(SPECIAL_EDUCATION_TEACHER).application),
+        READ(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication),
+        READ_IF_HAS_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication),
         UPDATE(HasGlobalRole(SERVICE_WORKER)),
 
         SEND(HasGlobalRole(SERVICE_WORKER)),
@@ -198,11 +196,11 @@ sealed interface Action {
         SEND_DECISIONS_WITHOUT_PROPOSAL(HasGlobalRole(SERVICE_WORKER)),
         SEND_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER)),
         WITHDRAW_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER)),
-        RESPOND_TO_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER), HasRoleInPlacementPlanUnit(UNIT_SUPERVISOR).application),
+        RESPOND_TO_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication),
 
         CONFIRM_DECISIONS_MAILED(HasGlobalRole(SERVICE_WORKER)),
-        ACCEPT_DECISION(HasGlobalRole(SERVICE_WORKER), HasRoleInPlacementPlanUnit(UNIT_SUPERVISOR).application),
-        REJECT_DECISION(HasGlobalRole(SERVICE_WORKER), HasRoleInPlacementPlanUnit(UNIT_SUPERVISOR).application),
+        ACCEPT_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication),
+        REJECT_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication),
 
         READ_NOTES(HasGlobalRole(SERVICE_WORKER)),
         CREATE_NOTE(HasGlobalRole(SERVICE_WORKER)),
