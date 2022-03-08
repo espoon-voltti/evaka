@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
+import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
@@ -60,7 +61,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from)
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
-    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults, from)
+    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
     val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
@@ -140,6 +141,15 @@ private fun generateNewValueDecisions(
                 .find { family.headOfFamily == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
+            val childIncome = incomes
+                .find {
+                    voucherChild.id == it.personId && DateRange(
+                        it.validFrom,
+                        it.validTo
+                    ).contains(period) && it.effect == IncomeEffect.INCOME
+                }
+                ?.toDecisionIncome()
+
             val partnerIncome = family.partner?.let { partner ->
                 incomes
                     .find {
@@ -171,7 +181,7 @@ private fun generateNewValueDecisions(
                 ?.takeIf { placement -> serviceVoucherUnits.any { unit -> unit == placement.unitId } }
                 ?.let { placement ->
                     val familyIncomes = family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
-                    val baseCoPayment = calculateBaseFee(price, family.getSize(), familyIncomes)
+                    val baseCoPayment = calculateBaseFee(price, family.getSize(), familyIncomes + listOfNotNull(childIncome))
 
                     val siblingIndex = validPlacements
                         .sortedByDescending { (child, _) -> child.dateOfBirth }
@@ -200,6 +210,7 @@ private fun generateNewValueDecisions(
                         partnerId = family.partner,
                         headOfFamilyIncome = income,
                         partnerIncome = partnerIncome,
+                        childIncome = childIncome,
                         familySize = family.getSize(),
                         feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
                         validFrom = period.start,

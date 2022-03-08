@@ -152,6 +152,7 @@ class PdfServiceTest {
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
+        childIncome = testDecisionIncome.copy(effect = IncomeEffect.INCOME, total = 123456),
         child = PersonDetailed(
             id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(2017, 1, 1),

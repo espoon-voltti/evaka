@@ -196,6 +196,9 @@ export async function getVoucherValueDecision(
         partnerIncome: json.partnerIncome
           ? deserializeIncome(json.partnerIncome)
           : null,
+        childIncome: json.childIncome
+          ? deserializeIncome(json.childIncome)
+          : null,
         child: deserializePersonDetailed(json.child),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,

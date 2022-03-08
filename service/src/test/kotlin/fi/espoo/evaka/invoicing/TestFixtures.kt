@@ -258,6 +258,7 @@ fun createVoucherValueDecisionFixture(
     partnerId = null,
     headOfFamilyIncome = null,
     partnerIncome = null,
+    childIncome = null,
     familySize = familySize,
     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
     child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),

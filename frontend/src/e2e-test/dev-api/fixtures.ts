@@ -822,6 +822,7 @@ export const voucherValueDecisionsFixture = (
   partnerId: partner?.id ?? null,
   headOfFamilyIncome: null,
   partnerIncome: null,
+  childIncome: null,
   decisionType: 'NORMAL',
   familySize: 2,
   feeThresholds: feeThresholds,
