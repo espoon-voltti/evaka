@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesByChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -49,8 +50,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -82,8 +83,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -116,8 +117,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -149,8 +150,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -184,8 +185,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -220,8 +221,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -250,13 +251,62 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
     }
 
     @Test
+    fun `free absences are not overwritten`() {
+        // given
+        val tuesday = monday.plusDays(1)
+        val wednesday = monday.plusDays(2)
+        db.transaction {
+            it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = tuesday)
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertTestAbsence(childId = testChild_1.id, date = monday, category = AbsenceCategory.BILLABLE)
+            it.insertTestAbsence(childId = testChild_1.id, date = tuesday, category = AbsenceCategory.BILLABLE, absenceType = AbsenceType.FREE_ABSENCE)
+            it.insertTestAbsence(childId = testChild_1.id, date = wednesday, category = AbsenceCategory.BILLABLE, absenceType = AbsenceType.FREE_ABSENCE)
+        }
+
+        // when
+        db.transaction {
+            createReservations(
+                it, testAdult_1.id.raw,
+                listOf(
+                    DailyReservationRequest(
+                        childId = testChild_1.id,
+                        date = monday,
+                        reservations = listOf(TimeRange(startTime, endTime))
+                    ),
+                    DailyReservationRequest(
+                        childId = testChild_1.id,
+                        date = tuesday,
+                        reservations = listOf(TimeRange(startTime, endTime))
+                    ),
+                    DailyReservationRequest(
+                        childId = testChild_1.id,
+                        date = wednesday,
+                        reservations = null
+                    )
+                )
+            )
+        }
+
+        // then 1 reservation is added
+        val reservations = db.read { it.getReservationsCitizen(testAdult_1.id, queryRange, false) }
+            .mapNotNull { dailyData -> dailyData.date.takeIf { dailyData.children.any { it.reservations.isNotEmpty() } } }
+        assertEquals(monday, reservations.first())
+        assertEquals(1, reservations.size)
+
+        // and 1st absence has been removed
+        val absences = db.read { it.getAbsencesByChildByRange(testChild_1.id, FiniteDateRange(monday, wednesday)) }
+        assertEquals(listOf(tuesday, wednesday), absences.map { it.date })
+        assertEquals(listOf(AbsenceType.FREE_ABSENCE, AbsenceType.FREE_ABSENCE), absences.map { it.absenceType })
+    }
+
+    @Test
     fun `previous reservation is overwritten`() {
         // given
         db.transaction {
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = monday.plusDays(1))
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -274,8 +324,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
 
         // when
         db.transaction {
-            createReservationsAsCitizen(
-                it, testAdult_1.id,
+            createReservations(
+                it, testAdult_1.id.raw,
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,

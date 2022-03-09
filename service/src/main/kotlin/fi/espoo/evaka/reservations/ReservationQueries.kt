@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
+import java.util.UUID
 
 @ExcludeCodeGen
 data class AbsenceInsert(
@@ -62,9 +63,9 @@ fun Database.Transaction.clearAbsencesWithinPeriod(period: FiniteDateRange, abse
         .execute()
 }
 
-fun Database.Transaction.clearOldAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>) {
+fun Database.Transaction.clearOldAbsencesExcludingFreeAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>) {
     val batch = prepareBatch(
-        "DELETE FROM absence WHERE child_id = :childId AND date = :date"
+        "DELETE FROM absence WHERE child_id = :childId AND date = :date AND absence_type <> 'FREE_ABSENCE'::absence_type"
     )
 
     childDatePairs.forEach { (childId, date) ->
@@ -82,6 +83,40 @@ fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, L
             .bind("childId", childId)
             .bind("date", date)
             .add()
+    }
+
+    batch.execute()
+}
+
+fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
+    val batch = prepareBatch(
+        """
+        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
+        SELECT :childId, :date, :start, :end, :userId
+        FROM placement pl
+        LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
+        JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+        WHERE 
+            pl.child_id = :childId AND 
+            daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
+            extract(isodow FROM :date) = ANY(d.operation_days) AND
+            (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
+            NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
+        ON CONFLICT DO NOTHING;
+        """.trimIndent()
+    )
+
+    requests.forEach { request ->
+        request.reservations?.forEach { res ->
+            batch
+                .bind("userId", userId)
+                .bind("childId", request.childId)
+                .bind("date", request.date)
+                .bind("start", res.startTime)
+                .bind("end", res.endTime)
+                .bind("date", request.date)
+                .add()
+        }
     }
 
     batch.execute()

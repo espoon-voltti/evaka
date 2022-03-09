@@ -7,7 +7,7 @@ package fi.espoo.evaka.holidayperiod
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.reservations.AbsenceInsert
 import fi.espoo.evaka.reservations.clearAbsencesWithinPeriod
-import fi.espoo.evaka.reservations.clearOldAbsences
+import fi.espoo.evaka.reservations.clearOldAbsencesExcludingFreeAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.ChildId
@@ -78,7 +78,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
 
                 absences.flatMap { absence -> absence.dateRange.dates().map { absence.childId to it } }.let {
                     tx.clearOldReservations(it)
-                    tx.clearOldAbsences(it)
+                    tx.clearOldAbsencesExcludingFreeAbsences(it)
                 }
                 tx.clearAbsencesWithinPeriod(questionnaire.period, questionnaire.absenceType, childIds)
                 tx.insertAbsences(PersonId(user.id), absences)
