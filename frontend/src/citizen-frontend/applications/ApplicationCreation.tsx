@@ -92,7 +92,6 @@ export default React.memo(function ApplicationCreation() {
             data-qa="daycare-expanding-info"
             info={t.applications.creation.daycareInfo}
             ariaLabel={t.common.openExpandingInfo}
-            margin="xs"
           >
             <Radio
               checked={selectedType === 'DAYCARE'}
@@ -107,7 +106,6 @@ export default React.memo(function ApplicationCreation() {
               <ExpandingInfo
                 info={t.applications.creation.preschoolInfo}
                 ariaLabel={t.common.openExpandingInfo}
-                margin="xs"
               >
                 <Radio
                   checked={selectedType === 'PRESCHOOL'}
@@ -126,7 +124,6 @@ export default React.memo(function ApplicationCreation() {
             data-qa="club-expanding-info"
             info={t.applications.creation.clubInfo}
             ariaLabel={t.common.openExpandingInfo}
-            margin="xs"
           >
             <Radio
               checked={selectedType === 'CLUB'}
