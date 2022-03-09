@@ -79,7 +79,7 @@ class IncomeStatementControllerCitizen(
         Audit.IncomeStatementStartDatesOfChild.log(user.id, childId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.READ_CHILDS_START_DATES, childId.raw)
 
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(user.id)) } }
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(childId.raw)) } }
     }
 
     @GetMapping("/start-dates/")
