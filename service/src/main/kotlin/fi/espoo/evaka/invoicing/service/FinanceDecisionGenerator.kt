@@ -332,12 +332,17 @@ internal fun <Decision : FinanceDecision<Decision>> mergeDecisions(
         .map { it.withRandomId() }
 }
 
+data class UpdatedExistingDecisions<Decision : FinanceDecision<Decision>>(
+    val updatedDrafts: List<Decision>,
+    val updatedActiveDecisions: List<Decision>
+)
+
 internal fun <Decision : FinanceDecision<Decision>> updateExistingDecisions(
     from: LocalDate,
     newDrafts: List<Decision>,
     existingDrafts: List<Decision>,
     activeDecisions: List<Decision>
-): List<Decision> {
+): UpdatedExistingDecisions<Decision> {
     val draftsWithUpdatedDates = filterOrUpdateStaleDrafts(existingDrafts, DateRange(from, null))
         .map { it.withRandomId() }
 
@@ -346,7 +351,7 @@ internal fun <Decision : FinanceDecision<Decision>> updateExistingDecisions(
         newDrafts + draftsWithUpdatedDates
     )
 
-    return mergedDrafts + withUpdatedEndDates
+    return UpdatedExistingDecisions(updatedDrafts = mergedDrafts, updatedActiveDecisions = withUpdatedEndDates)
 }
 
 internal fun <Decision : FinanceDecision<Decision>> filterOrUpdateStaleDrafts(

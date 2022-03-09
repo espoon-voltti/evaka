@@ -537,18 +537,30 @@ fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<VoucherValueDec
         .execute()
 }
 
-fun Database.Transaction.updateVoucherValueDecisionStatusAndDates(updatedDecisions: List<VoucherValueDecision>) {
-    prepareBatch("UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
+fun Database.Transaction.updateVoucherValueDecisionEndDates(
+    updatedDecisions: List<VoucherValueDecision>,
+    now: HelsinkiDateTime
+) {
+    prepareBatch("UPDATE voucher_value_decision SET valid_to = :validTo, validity_updated_at = :now WHERE id = :id")
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch
                     .bind("id", decision.id)
-                    .bind("status", decision.status)
-                    .bind("validFrom", decision.validFrom)
                     .bind("validTo", decision.validTo)
+                    .bind("now", now)
                     .add()
             }
         }
+        .execute()
+}
+
+fun Database.Transaction.annulVoucherValueDecisions(ids: List<VoucherValueDecisionId>, now: HelsinkiDateTime) {
+    if (ids.isEmpty()) return
+
+    createUpdate("UPDATE voucher_value_decision SET status = :status, annulled_at = :now WHERE id = ANY(:ids)")
+        .bind("ids", ids.toTypedArray())
+        .bind("status", VoucherValueDecisionStatus.ANNULLED)
+        .bind("now", now)
         .execute()
 }
 

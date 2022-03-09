@@ -154,8 +154,7 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.end_time IS NULL
     }
 
     fun endOutdatedVoucherValueDecisions(db: Database.Connection) {
-        val now = LocalDate.now()
-        db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, now) }
+        db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, HelsinkiDateTime.now()) }
     }
 
     fun removeExpiredNotes(db: Database.Connection) {

@@ -529,7 +529,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     }
 
     private fun endDecisions(now: LocalDate) {
-        db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, now) }
+        db.transaction {
+            voucherValueDecisionService.endDecisionsWithEndedPlacements(
+                it,
+                HelsinkiDateTime.of(now, LocalTime.of(12, 0))
+            )
+        }
     }
 
     private fun getPdfStatus(decisionId: VoucherValueDecisionId, user: AuthenticatedUser.Employee): Int {
