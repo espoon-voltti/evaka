@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { KeyboardEvent, ReactNode } from 'react'
+import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 
 import { faChevronDown, faChevronUp } from 'lib-icons'
@@ -96,21 +96,12 @@ export const CollapsibleContentArea = React.memo(
     validationErrors,
     ...props
   }: CollapsibleContentAreaProps) {
-    const toggleOnEnter = (event: KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === 'Enter') {
-        toggleOpen()
-      }
-    }
-
     return (
       <ContentArea {...props} data-status={open ? 'open' : 'closed'}>
         <TitleContainer
-          tabIndex={0}
           onClick={toggleOpen}
           data-qa={props['data-qa'] ? `${props['data-qa']}-header` : undefined}
-          onKeyUp={toggleOnEnter}
           className={classNames({ open })}
-          open={open}
           role="button"
         >
           <TitleWrapper>{title}</TitleWrapper>
@@ -156,16 +147,27 @@ const StyledP = styled.p`
   position: absolute;
 `
 
-const TitleContainer = styled.div<{ open: boolean }>`
+const TitleContainer = styled.button`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-
-  cursor: pointer;
+  width: 100%;
   padding: 16px 8px;
   margin: -16px -8px;
-  ${(p) => (p.open ? 'margin-bottom: 0' : '')}
+  overflow: visible;
+  font: inherit;
+  font-size: inherit;
+  line-height: normal;
+  color: inherit;
+  background: transparent;
+  outline: none;
+  border: 2px solid transparent;
+  border-radius: 2px;
+
+  :focus {
+    border-color: ${(p) => p.theme.colors.main.m2Focus};
+  }
 `
 
 const TitleWrapper = styled.div`
@@ -173,6 +175,7 @@ const TitleWrapper = styled.div`
 `
 
 const TitleIcon = styled(FontAwesomeIcon)`
+  cursor: pointer;
   color: ${(p) => p.theme.colors.main.m2};
   height: 24px !important;
   width: 24px !important;
