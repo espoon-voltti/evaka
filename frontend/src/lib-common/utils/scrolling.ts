@@ -10,6 +10,14 @@ export function scrollToPos(options: ScrollToOptions, timeout = 0) {
   scrollWithTimeout(() => options, timeout)
 }
 
+export function scrollElementToPos(
+  element: HTMLElement | null,
+  options: ScrollToOptions,
+  timeout = 0
+) {
+  scrollWithTimeout(() => options, timeout, element)
+}
+
 export function scrollToTop(timeout = 0) {
   scrollWithTimeout(() => ({ top: 0, left: 0 }), timeout)
 }
@@ -34,13 +42,18 @@ export function scrollRefIntoView(
 
 function scrollWithTimeout(
   getOptions: () => ScrollToOptions | undefined,
-  timeout = 0
+  timeout = 0,
+  element: HTMLElement | null = null
 ) {
   if (isAutomatedTest) return
 
   withTimeout(() => {
     const opts = getOptions()
-    if (opts) window.scrollTo({ behavior: 'smooth', ...opts })
+    if (opts) {
+      element
+        ? element.scrollTo({ behavior: 'smooth', ...opts })
+        : window.scrollTo({ behavior: 'smooth', ...opts })
+    }
   }, timeout)
 }
 

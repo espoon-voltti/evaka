@@ -17,17 +17,14 @@ import { faTreePalm } from 'lib-icons'
 
 import { UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
-import { headerHeightDesktop, headerHeightMobile } from '../header/const'
+import { bannerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
 
 const BannerBackground = styled.div`
   position: sticky;
   z-index: 2;
-  top: ${headerHeightMobile}px;
-  @media (min-width: ${desktopMin}) {
-    top: ${headerHeightDesktop}px;
-  }
+  top: 0;
   background-color: ${colors.grayscale.g0};
 `
 
@@ -37,6 +34,10 @@ const Banner = styled(Container)`
   align-items: center;
   gap: ${defaultMargins.s};
   padding: ${defaultMargins.s};
+
+  @media (min-width: ${desktopMin}) {
+    height: ${bannerHeightDesktop}px;
+  }
 `
 
 interface HolidayPeriodBannerProps {

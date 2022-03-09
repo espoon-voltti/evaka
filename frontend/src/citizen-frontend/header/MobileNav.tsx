@@ -38,7 +38,7 @@ import { langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
 import { CircledChar } from './DesktopNav'
-import { getLogoutUri } from './const'
+import { getLogoutUri, headerHeightMobile } from './const'
 
 type Props = {
   showMenu: boolean
@@ -149,15 +149,14 @@ const MenuButton = styled.button`
 const MenuContainer = styled.div`
   position: fixed;
   overflow-y: scroll;
-  top: 0;
+  top: ${headerHeightMobile}px;
   right: 0;
   background: ${colors.main.m2};
   box-sizing: border-box;
   width: 100vw;
-  height: 100%;
-  padding: calc(52px + ${defaultMargins.s}) ${defaultMargins.s}
-    ${defaultMargins.s} ${defaultMargins.s};
-  z-index: -1;
+  height: calc(100% - ${headerHeightMobile}px);
+  padding: ${defaultMargins.s};
+  z-index: 5;
   display: flex;
   flex-direction: column;
 `
