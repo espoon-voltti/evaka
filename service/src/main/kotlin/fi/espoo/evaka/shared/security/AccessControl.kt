@@ -17,14 +17,9 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.ParentshipId
-import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
-import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -36,11 +31,8 @@ import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.utils.enumSetOf
 import fi.espoo.evaka.shared.utils.toEnumSet
-import fi.espoo.evaka.vasu.getVasuFollowupEntries
-import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 import java.util.UUID
 
@@ -64,26 +56,6 @@ WHERE employee_id = :userId
         permittedRoleActions::attachmentActions,
     )
 
-    private val parentship = ActionConfig(
-        """
-SELECT fridge_child.id, role
-FROM fridge_child
-JOIN person_acl_view ON fridge_child.head_of_child = person_acl_view.person_id OR fridge_child.child_id = person_acl_view.person_id
-WHERE employee_id = :userId
-""",
-        "fridge_child.id",
-        permittedRoleActions::parentshipActions
-    )
-    private val partnership = ActionConfig(
-        """
-SELECT fridge_partner.partnership_id AS id, role
-FROM fridge_partner
-JOIN person_acl_view ON fridge_partner.person_id = person_acl_view.person_id
-WHERE employee_id = :userId
-""",
-        "fridge_partner.partnership_id",
-        permittedRoleActions::partnershipActions
-    )
     private val pedagogicalAttachment = ActionConfig(
         """
 SELECT attachment.id, role
@@ -94,24 +66,6 @@ WHERE employee_id = :userId
         """.trimIndent(),
         "attachment.id",
         permittedRoleActions::attachmentActions,
-    )
-    private val person = ActionConfig(
-        """
-SELECT person_id AS id, role
-FROM person_acl_view
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "person_id",
-        permittedRoleActions::personActions
-    )
-    private val unit = ActionConfig(
-        """
-SELECT daycare_id AS id, role
-FROM daycare_acl_view
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "daycare_id",
-        permittedRoleActions::unitActions
     )
 
     fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
@@ -200,14 +154,14 @@ WHERE employee_id = :userId
             .toEnumSet()
     }
 
-    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T) =
-        requirePermissionFor(user, action, targets.asIterable())
+    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T) =
+        requirePermissionFor(user, action, listOf(target))
     fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>) = Database(jdbi).connect { dbc ->
         checkPermissionFor(dbc, user, action, targets).values.forEach { it.assert() }
     }
 
-    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, vararg targets: T): Boolean =
-        hasPermissionFor(user, action, targets.asIterable())
+    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T): Boolean =
+        hasPermissionFor(user, action, listOf(target))
     fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>): Boolean = Database(jdbi).connect { dbc ->
         checkPermissionFor(dbc, user, action, targets).values.all { it.isPermitted() }
     }
@@ -216,8 +170,8 @@ WHERE employee_id = :userId
         dbc: Database.Connection,
         user: AuthenticatedUser,
         action: Action.ScopedAction<T>,
-        vararg targets: T
-    ): Map<T, AccessControlDecision> = checkPermissionFor(dbc, user, action, targets.asIterable())
+        target: T
+    ): AccessControlDecision = checkPermissionFor(dbc, user, action, listOf(target)).values.first()
     fun <T> checkPermissionFor(
         dbc: Database.Connection,
         user: AuthenticatedUser,
@@ -248,6 +202,11 @@ WHERE employee_id = :userId
     inline fun <T, reified A> getPermittedActions(
         tx: Database.Read,
         user: AuthenticatedUser,
+        target: T
+    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, A::class.java, listOf(target)).values.first()
+    inline fun <T, reified A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
         targets: Iterable<T>
     ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, A::class.java, targets)
 
@@ -275,7 +234,7 @@ WHERE employee_id = :userId
             .flatMap { action ->
                 actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
             }
-            .distinctBy { it.params.javaClass }
+            .distinctBy { it.classifier }
             .iterator()
 
         val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
@@ -288,7 +247,7 @@ WHERE employee_id = :userId
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)
                     .mapNotNull { it as? DatabaseActionRule<in T, *> }
-                    .filter { it.params.javaClass == ruleType.params.javaClass }
+                    .filter { it.classifier == ruleType.classifier }
                 for (rule in compatibleRules) {
                     for (target in targets) {
                         if (deferred[target]?.evaluate(rule.params)?.isPermitted() == true) {
@@ -331,10 +290,6 @@ WHERE employee_id = :userId
     fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
         when (action) {
             is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            is Action.Parentship -> this.parentship.hasPermission(user, action, *ids as Array<ParentshipId>)
-            is Action.Partnership -> this.partnership.hasPermission(user, action, *ids as Array<PartnershipId>)
-            is Action.Person -> ids.all { id -> hasPermissionForInternal(user, action, id as PersonId) }
-            is Action.Unit -> this.unit.hasPermission(user, action, *ids as Array<DaycareId>)
             else -> error("Unsupported action type")
         }.exhaust()
 
@@ -433,32 +388,6 @@ WHERE employee_id = :userId
             AuthenticatedUser.SystemInternalUser -> false
         }
 
-    fun getPermittedPersonActions(
-        user: AuthenticatedUser,
-        ids: Collection<PersonId>
-    ): Map<PersonId, Set<Action.Person>> = ids.associateWith { personId ->
-        Action.Person.values()
-            .filter { action -> hasPermissionForInternal(user, action, personId) }
-            .toSet()
-    }
-
-    private fun hasPermissionForInternal(
-        user: AuthenticatedUser,
-        action: Action.Person,
-        id: PersonId
-    ): Boolean = when (action) {
-        Action.Person.ADD_SSN -> Database(jdbi).connect {
-            val ssnAddingDisabled = it.read { tx ->
-                tx.createQuery("SELECT ssn_adding_disabled FROM person WHERE id = :id")
-                    .bind("id", id)
-                    .mapTo<Boolean>()
-                    .one()
-            }
-            if (ssnAddingDisabled) user.isAdmin else this.person.hasPermission(user, action, id)
-        }
-        else -> this.person.hasPermission(user, action, id)
-    }
-
     fun requirePermissionFor(
         user: AuthenticatedUser,
         action: Action.IncomeStatement,
@@ -501,97 +430,6 @@ WHERE employee_id = :userId
             }
             else -> throw Forbidden()
         }
-    }
-
-    fun getPermittedUnitActions(
-        user: AuthenticatedUser,
-        ids: Collection<DaycareId>
-    ): Map<DaycareId, Set<Action.Unit>> = this.unit.getPermittedActions(user, ids)
-
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.VasuDocumentFollowup, id: VasuDocumentFollowupEntryId) {
-        if (action != Action.VasuDocumentFollowup.UPDATE) {
-            throw Forbidden()
-        }
-        val mapping = permittedRoleActions::vasuDocumentFollowupActions
-
-        val globalRoles = when (user) {
-            is AuthenticatedUser.Employee -> user.globalRoles
-            else -> user.roles
-        }
-        if (globalRoles.any { it == UserRole.ADMIN }) {
-            return
-        }
-
-        val roles = @Suppress("DEPRECATION") acl.getRolesForVasuDocument(user, id.first).roles
-        if (roles.any { mapping(it).contains(action) }) {
-            return
-        }
-
-        Database(jdbi).connect { db ->
-            db.read { tx ->
-                val entry = tx.getVasuFollowupEntry(id)
-                if (entry.authorId != user.id) {
-                    throw Forbidden()
-                }
-            }
-        }
-    }
-
-    fun getPermittedVasuFollowupActions(user: AuthenticatedUser, id: VasuDocumentId): Map<UUID, Set<Action.VasuDocumentFollowup>> {
-        val action = Action.VasuDocumentFollowup.UPDATE
-        val mapping = permittedRoleActions::vasuDocumentFollowupActions
-
-        val globalRoles = when (user) {
-            is AuthenticatedUser.Employee -> user.globalRoles
-            else -> user.roles
-        }
-
-        @Suppress("DEPRECATION")
-        val roles = acl.getRolesForVasuDocument(user, id).roles
-        val hasPermissionThroughRole = globalRoles.any { it == UserRole.ADMIN } ||
-            roles.any { mapping(it).contains(action) }
-
-        val entries = Database(jdbi).connect { db ->
-            db.read { tx ->
-                tx.getVasuFollowupEntries(id)
-            }
-        }
-
-        return entries.associate { entry ->
-            entry.id to if (hasPermissionThroughRole || entry.authorId == user.id) {
-                setOf(Action.VasuDocumentFollowup.UPDATE)
-            } else {
-                setOf()
-            }
-        }
-    }
-
-    private inline fun <reified A, reified I> ActionConfig<A>.getPermittedActions(
-        user: AuthenticatedUser,
-        ids: Collection<I>
-    ): Map<I, Set<A>> where A : Action.LegacyScopedAction<I>, A : Enum<A> {
-        val globalActions = enumValues<A>().asSequence()
-            .filter { action -> hasPermissionThroughGlobalRole(user, action) }.toEnumSet()
-
-        val result = ids.associateTo(linkedMapOf()) { (it to enumSetOf(*globalActions.toTypedArray())) }
-        if (user is AuthenticatedUser.Employee) {
-            val scopedActions = EnumSet.allOf(A::class.java).also { it -= globalActions }
-            if (scopedActions.isNotEmpty()) {
-                Database(jdbi).connect { db ->
-                    db.read { tx ->
-                        for ((id, roles) in this.getRolesForAll(tx, user, *ids.toTypedArray())) {
-                            val permittedActions = result[id]!!
-                            for (action in scopedActions) {
-                                if (roles.any { mapping(it).contains(action) }) {
-                                    permittedActions += action
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return result
     }
 
     private inline fun <reified A, reified I> ActionConfig<A>.hasPermissionThroughGlobalRole(

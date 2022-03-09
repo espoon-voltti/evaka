@@ -134,32 +134,25 @@ data class ChildLanguage(
 data class VasuContent(
     val sections: List<VasuSection>
 ) {
+    fun followupEntries(): Sequence<FollowupEntry> = this.sections.asSequence().flatMap { section ->
+        section.questions.asSequence().flatMap { question ->
+            when (question.type) {
+                VasuQuestionType.FOLLOWUP -> (question as VasuQuestion.Followup).value.asSequence()
+                else -> emptySequence()
+            }
+        }
+    }
     fun matchesStructurally(content: VasuContent): Boolean =
         this.sections.size == content.sections.size && this.sections.withIndex().all { (index, section) ->
             section.matchesStructurally(content.sections.getOrNull(index))
         }
-
-    fun findFollowupEntryWithId(entryId: UUID): FollowupEntry? {
-        this.sections.forEach { section ->
-            section.questions.forEach { question ->
-                if (question.type === VasuQuestionType.FOLLOWUP) {
-                    (question as VasuQuestion.Followup).value.forEach { entry ->
-                        if (entry.id == entryId) {
-                            return entry
-                        }
-                    }
-                }
-            }
-        }
-        return null
-    }
 
     fun containsModifiedFollowupEntries(content: VasuContent): Boolean {
         content.sections.forEach { section ->
             section.questions.forEach { question ->
                 if (question.type === VasuQuestionType.FOLLOWUP) {
                     (question as VasuQuestion.Followup).value.forEach { entry ->
-                        val thisEntry = this.findFollowupEntryWithId(entry.id)
+                        val thisEntry = this.followupEntries().find { it.id == entry.id }
                         if (thisEntry != null && thisEntry != entry)
                             return true
                     }

@@ -68,14 +68,16 @@ class PersonController(
     ): PersonResponse {
         Audit.PersonDetailsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.READ, personId)
-        return db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
-            ?.let {
-                PersonResponse(
-                    PersonJSON.from(it),
-                    accessControl.getPermittedPersonActions(user, listOf(personId)).values.first()
-                )
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.getPersonById(personId)?.let {
+                    PersonResponse(
+                        PersonJSON.from(it),
+                        accessControl.getPermittedActions(tx, user, personId)
+                    )
+                }
             }
-            ?: throw NotFound("Person $personId not found")
+        } ?: throw NotFound("Person $personId not found")
     }
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])

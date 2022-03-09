@@ -45,9 +45,8 @@ class ChildController(private val accessControl: AccessControl) {
                     ?: throw NotFound("Child $childId not found")
                 ChildResponse(
                     person = PersonJSON.from(child),
-                    permittedActions = accessControl.getPermittedActions<ChildId, Action.Child>(tx, user, listOf(childId)).values.first(),
-                    permittedPersonActions = accessControl.getPermittedPersonActions(user, listOf(childId))
-                        .values.first()
+                    permittedActions = accessControl.getPermittedActions(tx, user, childId),
+                    permittedPersonActions = accessControl.getPermittedActions(tx, user, childId)
                 )
             }
         }

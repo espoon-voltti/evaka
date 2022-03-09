@@ -104,7 +104,7 @@ class InvoiceController(
     @PostMapping("/delete-drafts")
     fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>) {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
-        accessControl.requirePermissionFor(user, Action.Invoice.DELETE, *invoiceIds.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.Invoice.DELETE, invoiceIds)
         db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
     }
 
@@ -119,7 +119,7 @@ class InvoiceController(
         @RequestBody invoiceIds: List<InvoiceId>
     ) {
         Audit.InvoicesSend.log(targetId = invoiceIds)
-        accessControl.requirePermissionFor(user, Action.Invoice.SEND, *invoiceIds.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.Invoice.SEND, invoiceIds)
         db.connect { dbc ->
             dbc.transaction {
                 service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
@@ -137,7 +137,7 @@ class InvoiceController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
-                accessControl.requirePermissionFor(user, Action.Invoice.SEND, *invoiceIds.toTypedArray())
+                accessControl.requirePermissionFor(user, Action.Invoice.SEND, invoiceIds)
                 service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
             }
         }
@@ -146,7 +146,7 @@ class InvoiceController(
     @PostMapping("/mark-sent")
     fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>) {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
-        accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, *invoiceIds.toTypedArray())
+        accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, invoiceIds)
         db.connect { dbc -> dbc.transaction { it.markManuallySent(user, invoiceIds) } }
     }
 
