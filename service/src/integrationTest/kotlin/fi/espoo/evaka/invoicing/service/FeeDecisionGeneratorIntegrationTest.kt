@@ -770,7 +770,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    // TODO
     @Test
     fun `Child income affects only that childs fees`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
