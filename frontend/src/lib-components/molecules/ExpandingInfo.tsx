@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { ReactNode, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -54,8 +55,37 @@ const InfoContainer = styled.div`
   padding: 0 ${defaultMargins.s};
 `
 
-const RoundIconWithMargin = styled(RoundIcon)<{ margin: SpacingSize }>`
+const RoundIconButton = styled.button<{ margin: SpacingSize }>`
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
   margin-top: ${({ margin }) => defaultMargins[margin]};
+  cursor: pointer;
+  background-color: ${(p) => p.theme.colors.main.m2};
+  color: ${(p) => p.theme.colors.grayscale.g0};
+  border-radius: 100%;
+  border: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  font-size: 12px;
+  line-height: normal;
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${(p) => p.theme.colors.main.m2Hover};
+    }
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},
+      0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};
+  }
 `
 
 type ExpandingInfoProps = {
@@ -116,18 +146,17 @@ export const InfoButton = React.memo(function InfoButton({
   const { colors } = useTheme()
 
   return (
-    <RoundIconWithMargin
+    <RoundIconButton
       className={className}
       data-qa={dataQa}
       margin={margin ?? 'zero'}
-      content={fasInfo}
       color={colors.status.info}
-      size="s"
       onClick={onClick}
-      tabindex={0}
       role="button"
       aria-label={ariaLabel}
-    />
+    >
+      <FontAwesomeIcon icon={fasInfo} />
+    </RoundIconButton>
   )
 })
 

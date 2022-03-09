@@ -99,9 +99,11 @@ export default class PersonSearchPage {
       `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`
     )
     if (personData.ssn === undefined) {
-      await this.#personData.ssn.find('button').waitUntilVisible()
+      await this.#personData.ssn
+        .findByDataQa('add-ssn-button')
+        .waitUntilVisible()
       await waitUntilEqual(
-        () => this.#personData.ssn.find('button').innerText,
+        () => this.#personData.ssn.findByDataQa('add-ssn-button').innerText,
         'Aseta hetu'
       )
     } else {
