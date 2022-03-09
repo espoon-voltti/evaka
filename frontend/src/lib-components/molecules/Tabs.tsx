@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { desktopMin } from '../breakpoints'
 import Container from '../layout/Container'
@@ -82,13 +82,30 @@ const TabLinkContainer = styled(NavLink)<{
     min-height: 48px;
   }
 
-  border-bottom: ${(p) => (p.$mobile ? '3px solid transparent' : 'unset')};
+  outline: none;
+  ${(p) =>
+    p.$mobile
+      ? css`
+          border-bottom: 3px solid transparent;
+        `
+      : css`
+          border: 2px solid transparent;
+
+          :focus {
+            border-color: ${p.theme.colors.main.m1};
+          }
+        `}
 
   &.active {
     background-color: ${(p) =>
       p.$mobile ? p.theme.colors.grayscale.g0 : `${p.theme.colors.main.m3}33`};
-    border-bottom: ${(p) =>
-      p.$mobile ? `3px solid ${p.theme.colors.main.m1}` : 'unset'};
+
+    ${(p) =>
+      p.$mobile
+        ? css`
+            border-bottom: 3px solid ${p.theme.colors.main.m1};
+          `
+        : ''}
 
     ${NavLinkText} {
       color: ${(p) => p.theme.colors.main.m1};
@@ -96,9 +113,11 @@ const TabLinkContainer = styled(NavLink)<{
     }
   }
 
-  :hover {
-    ${NavLinkText} {
-      color: ${(p) => p.theme.colors.main.m1};
+  @media (hover: hover) {
+    :hover {
+      ${NavLinkText} {
+        color: ${(p) => p.theme.colors.main.m1};
+      }
     }
   }
 `
