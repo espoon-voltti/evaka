@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
@@ -49,7 +48,6 @@ import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.security.actionrule.HasAccessToRelatedMessageAccount
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasGroupRole
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
@@ -59,8 +57,7 @@ import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.SsnAddingEnabledAndHasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
-import fi.espoo.evaka.shared.utils.toEnumSet
-import java.util.EnumSet
+import fi.espoo.evaka.shared.security.actionrule.WasUploadedByAnyEmployeeAndHasGlobalRole
 
 @ExcludeCodeGen
 sealed interface Action {
@@ -70,16 +67,6 @@ sealed interface Action {
     sealed interface ScopedAction<T> : Action {
         val defaultRules: Array<out ScopedActionRule<in T>>
     }
-
-    sealed interface LegacyAction : Action {
-        /**
-         * Roles allowed to perform this action by default.
-         *
-         * Can be empty if permission checks for this action are not based on roles.
-         */
-        fun defaultRoles(): Set<UserRole>
-    }
-    sealed interface LegacyScopedAction<I> : LegacyAction
 
     enum class Global(override vararg val defaultRules: StaticActionRule) : StaticAction {
         CREATE_VASU_TEMPLATE,
@@ -271,22 +258,29 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Attachment(private val roles: EnumSet<UserRole>) : LegacyScopedAction<AttachmentId> {
-        READ_APPLICATION_ATTACHMENT(SERVICE_WORKER, UNIT_SUPERVISOR),
-        READ_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
-        READ_MESSAGE_CONTENT_ATTACHMENT,
-        READ_MESSAGE_DRAFT_ATTACHMENT,
-        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        DELETE_APPLICATION_ATTACHMENT(SERVICE_WORKER),
-        DELETE_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
+    enum class Attachment(override vararg val defaultRules: ScopedActionRule<in AttachmentId>) : ScopedAction<AttachmentId> {
+        READ_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnitOfApplicationAttachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        READ_INCOME_STATEMENT_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        READ_MESSAGE_CONTENT_ATTACHMENT(
+            IsEmployee.hasPermissionForAttachmentThroughMessageContent(),
+            IsCitizen(allowWeakLogin = true).hasPermissionForAttachmentThroughMessageContent(),
+        ),
+        READ_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
+        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
+            HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment(),
+            IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocumentOfAttachment()
+        ),
+        DELETE_APPLICATION_ATTACHMENT(WasUploadedByAnyEmployeeAndHasGlobalRole(SERVICE_WORKER).attachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        DELETE_INCOME_STATEMENT_ATTACHMENT(WasUploadedByAnyEmployeeAndHasGlobalRole(FINANCE_ADMIN).attachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
-        DELETE_MESSAGE_DRAFT_ATTACHMENT,
-        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER)
-        ;
+        DELETE_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
+        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
+            HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment(),
+        );
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class BackupCare(override vararg val defaultRules: ScopedActionRule<in BackupCareId>) : ScopedAction<BackupCareId> {
         UPDATE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfBackupCare()),
@@ -466,7 +460,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class MessageDraft(override vararg val defaultRules: ScopedActionRule<in MessageDraftId>) : ScopedAction<MessageDraftId> {
-        UPLOAD_ATTACHMENT(HasAccessToRelatedMessageAccount.messageDraft());
+        UPLOAD_ATTACHMENT(IsEmployee.hasPermissionForMessageDraft());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

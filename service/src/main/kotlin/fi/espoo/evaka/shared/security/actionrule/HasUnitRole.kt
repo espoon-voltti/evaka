@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildDailyNoteId
@@ -311,6 +312,25 @@ AND pd.id = ANY(:ids)
         }
     )
 
+    fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT attachment.id, role
+FROM attachment
+JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
+JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+AND attachment.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
     fun inPlacementUnitOfChildOfPerson() = DatabaseActionRule(
         this,
         Query<PersonId> { tx, user, ids ->
@@ -514,6 +534,27 @@ SELECT daycare_id AS id, role
 FROM daycare_acl_view
 WHERE employee_id = :userId
 AND daycare_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
+    fun inUnitOfApplicationAttachment() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT attachment.id, role
+FROM attachment
+JOIN placement_plan ON attachment.application_id = placement_plan.application_id
+JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
+JOIN daycare_acl_view ON daycare.id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+AND attachment.type = 'EXTENDED_CARE'
+AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)

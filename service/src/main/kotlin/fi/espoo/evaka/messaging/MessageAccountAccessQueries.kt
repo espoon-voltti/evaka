@@ -27,58 +27,51 @@ WHERE
         .mapTo<MessageDraftId>()
         .toSet()
 
-private fun Database.Read.hasCitizenPermissionForAttachmentThroughMessageContent(
-    personId: PersonId,
-    attachmentId: AttachmentId
-) = this.createQuery(
-    """
-SELECT 1 
+fun Database.Read.filterCitizenPermittedAttachmentsThroughMessageContent(personId: PersonId, ids: Collection<AttachmentId>): Set<AttachmentId> =
+    this.createQuery(
+        """
+SELECT att.id
 FROM attachment att
 JOIN message_content content ON att.message_content_id = content.id
 JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 JOIN message_account ma ON ma.id = msg.sender_id OR ma.id = rec.recipient_id
-WHERE att.id = :attachmentId AND ma.person_id = :personId
-    """.trimIndent()
-)
-    .bind("personId", personId)
-    .bind("attachmentId", attachmentId)
-    .mapTo<Int>()
-    .any()
+WHERE att.id = ANY(:ids) AND ma.person_id = :personId
+        """.trimIndent()
+    )
+        .bind("personId", personId)
+        .bind("ids", ids.toTypedArray())
+        .mapTo<AttachmentId>()
+        .toSet()
 
-fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Citizen, attachmentId: AttachmentId): Boolean =
-    hasCitizenPermissionForAttachmentThroughMessageContent(PersonId(user.id), attachmentId)
-fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.WeakCitizen, attachmentId: AttachmentId): Boolean =
-    hasCitizenPermissionForAttachmentThroughMessageContent(PersonId(user.id), attachmentId)
-
-fun Database.Read.hasPermissionForAttachmentThroughMessageContent(user: AuthenticatedUser.Employee, attachmentId: AttachmentId): Boolean =
+fun Database.Read.filterPermittedAttachmentsThroughMessageContent(user: AuthenticatedUser.Employee, ids: Collection<AttachmentId>): Set<AttachmentId> =
     this.createQuery(
         """
-SELECT 1 
+SELECT att.id
 FROM attachment att
 JOIN message_content content ON att.message_content_id = content.id
 JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 JOIN message_account_access_view access ON access.account_id = msg.sender_id OR access.account_id = rec.recipient_id
-WHERE att.id = :attachmentId AND access.employee_id = :employeeId
+WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("attachmentId", attachmentId)
-        .mapTo<Int>()
-        .any()
+        .bind("ids", ids.toTypedArray())
+        .mapTo<AttachmentId>()
+        .toSet()
 
-fun Database.Read.hasPermissionForAttachmentThroughMessageDraft(user: AuthenticatedUser.Employee, attachmentId: AttachmentId): Boolean =
+fun Database.Read.filterPermittedAttachmentsThroughMessageDrafts(user: AuthenticatedUser.Employee, ids: Collection<AttachmentId>): Set<AttachmentId> =
     this.createQuery(
         """
-SELECT 1
+SELECT att.id
 FROM attachment att
 JOIN message_draft draft ON att.message_draft_id = draft.id
 JOIN message_account_access_view access ON access.account_id = draft.account_id
-WHERE att.id = :attachmentId AND access.employee_id = :employeeId
+WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("attachmentId", attachmentId)
-        .mapTo<Int>()
-        .any()
+        .bind("ids", ids.toTypedArray())
+        .mapTo<AttachmentId>()
+        .toSet()

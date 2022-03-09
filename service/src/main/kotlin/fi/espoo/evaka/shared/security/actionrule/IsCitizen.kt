@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.messaging.filterCitizenPermittedAttachmentsThroughMessageContent
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -57,6 +59,23 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
             else -> AccessControlDecision.None
         }
     }
+
+    fun uploaderOfAttachment() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, personId, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM attachment
+WHERE uploaded_by = :personId
+AND id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("personId", personId)
+                .mapTo()
+        }
+    )
 
     fun guardianOfChild() = DatabaseActionRule(
         this,
@@ -130,6 +149,25 @@ AND g.guardian_id = :guardianId
         }
     )
 
+    fun guardianOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, guardianId, ids ->
+            tx.createQuery(
+                """
+SELECT a.id
+FROM attachment a
+JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
+JOIN guardian g ON pd.child_id = g.child_id
+WHERE a.id = ANY(:ids)
+AND g.guardian_id = :guardianId
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("guardianId", guardianId)
+                .mapTo()
+        }
+    )
+
     fun guardianOfChildOfPlacement() = DatabaseActionRule(
         this,
         Query<PlacementId> { tx, guardianId, ids ->
@@ -146,6 +184,11 @@ AND guardian_id = :guardianId
                 .bind("guardianId", guardianId)
                 .mapTo()
         }
+    )
+
+    fun hasPermissionForAttachmentThroughMessageContent() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, personId, ids -> tx.filterCitizenPermittedAttachmentsThroughMessageContent(personId, ids) }
     )
 
     fun ownerOfApplication() = DatabaseActionRule(

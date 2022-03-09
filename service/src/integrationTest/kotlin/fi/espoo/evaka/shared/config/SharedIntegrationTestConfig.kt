@@ -23,8 +23,6 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.security.PermittedRoleActions
-import fi.espoo.evaka.shared.security.StaticPermittedRoleActions
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -152,9 +150,6 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
-
-    @Bean
-    fun permittedRoleActions(): PermittedRoleActions = StaticPermittedRoleActions()
 
     @Bean
     fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()

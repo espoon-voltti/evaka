@@ -4,6 +4,11 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageContent
+import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageDrafts
+import fi.espoo.evaka.messaging.filterPermittedMessageDrafts
+import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
@@ -72,5 +77,20 @@ AND id = ANY(:ids)
             // TODO: replace naive loop with a batch operation
             ids.filter { id -> tx.getVasuFollowupEntry(id).authorId == user.id }
         }
+    )
+
+    fun hasPermissionForMessageDraft() = DatabaseActionRule(
+        this,
+        Query<MessageDraftId> { tx, employee, ids -> tx.filterPermittedMessageDrafts(employee, ids) }
+    )
+
+    fun hasPermissionForAttachmentThroughMessageContent() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, employee, ids -> tx.filterPermittedAttachmentsThroughMessageContent(employee, ids) }
+    )
+
+    fun hasPermissionForAttachmentThroughMessageDraft() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, employee, ids -> tx.filterPermittedAttachmentsThroughMessageDrafts(employee, ids) }
     )
 }
