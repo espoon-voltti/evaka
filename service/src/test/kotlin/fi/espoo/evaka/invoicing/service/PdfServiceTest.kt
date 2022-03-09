@@ -322,7 +322,9 @@ class PdfServiceTest {
             lang = DocumentLang.fi
         )
         val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
-        // File("/tmp/voucher_value_decision_test.pdf").writeBytes(pdfBytes)
+
+        // TODO next line should be always commented out in master
+        // java.io.File("/tmp/voucher_value_decision_test.pdf").writeBytes(pdfBytes)
 
         assertNotNull(pdfBytes)
     }
