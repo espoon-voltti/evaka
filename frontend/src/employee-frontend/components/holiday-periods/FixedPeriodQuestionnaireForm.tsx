@@ -249,6 +249,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
         <FixedSpaceRow>
           {holidayPeriods.map((h) => (
             <SelectionChip
+              data-qa={`period-${h.period.format()}`}
               key={h.id}
               text={h.period.formatCompact()}
               selected={form.holidayPeriodId === h.id}
@@ -493,7 +494,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           text={i18n.common.save}
           onSuccess={onSuccess}
           onClick={onSubmit}
-          data-qa="save-holiday-period-btn"
+          data-qa="save-btn"
         />
         <Button onClick={onCancel} text={i18n.common.goBack} />
       </ButtonContainer>
