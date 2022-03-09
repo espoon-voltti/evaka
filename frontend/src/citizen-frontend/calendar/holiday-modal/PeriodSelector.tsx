@@ -4,6 +4,7 @@
 
 import React, { useMemo } from 'react'
 
+import { useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { Label } from 'lib-components/typography'
@@ -12,10 +13,6 @@ interface HolidayOption {
   name: string
   period: FiniteDateRange | null
 }
-const emptySelection = {
-  name: '',
-  period: null
-} as const
 
 interface Props {
   label: string
@@ -30,6 +27,16 @@ export const PeriodSelector = React.memo(function PeriodSelector({
   value,
   onSelectPeriod
 }: Props) {
+  const i18n = useTranslation()
+
+  const emptySelection = useMemo(
+    () => ({
+      name: i18n.calendar.holidayModal.emptySelection,
+      period: null
+    }),
+    [i18n]
+  )
+
   const items = useMemo<HolidayOption[]>(
     () => [
       emptySelection,
@@ -38,7 +45,7 @@ export const PeriodSelector = React.memo(function PeriodSelector({
         period
       }))
     ],
-    [options]
+    [options, emptySelection]
   )
 
   return (
