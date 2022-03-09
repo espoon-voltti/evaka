@@ -35,14 +35,16 @@ const Wrapper = styled.div`
     }
   }
 
-  &:hover:not(.disabled) {
-    input:checked {
-      border-color: ${(p) => p.theme.colors.main.m2Hover};
-      background-color: ${(p) => p.theme.colors.main.m2Hover};
-    }
+  @media (hover: hover) {
+    &:hover:not(.disabled) {
+      input:checked {
+        border-color: ${(p) => p.theme.colors.main.m2Hover};
+        background-color: ${(p) => p.theme.colors.main.m2Hover};
+      }
 
-    input:not(:checked) {
-      border-color: ${(p) => p.theme.colors.grayscale.g100};
+      input:not(:checked) {
+        border-color: ${(p) => p.theme.colors.grayscale.g100};
+      }
     }
   }
 `
