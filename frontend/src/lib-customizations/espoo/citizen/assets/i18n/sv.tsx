@@ -270,7 +270,8 @@ const sv: Translations = {
       additionalInformation: 'Läs mera',
       holidayFor: 'Semestertid för:',
       childOnHoliday: 'Barnet är på semester',
-      addTimePeriod: 'Lägg till en period'
+      addTimePeriod: 'Lägg till en period',
+      emptySelection: 'Ingen gratis ledighet'
     }
   },
   messages: {

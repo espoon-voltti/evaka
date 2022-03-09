@@ -268,7 +268,8 @@ export default {
       additionalInformation: 'Lisätietoja',
       holidayFor: 'Loman ajankohta:',
       childOnHoliday: 'Lapsi on lomalla',
-      addTimePeriod: 'Lisää ajankohta'
+      addTimePeriod: 'Lisää ajankohta',
+      emptySelection: 'Ei maksutonta poissaoloa'
     }
   },
   messages: {

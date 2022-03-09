@@ -270,7 +270,8 @@ const en: Translations = {
       additionalInformation: 'Read more',
       holidayFor: 'Holiday for:',
       childOnHoliday: 'Child is on holiday',
-      addTimePeriod: 'Add holiday'
+      addTimePeriod: 'Add holiday',
+      emptySelection: 'No free absences'
     }
   },
   messages: {
