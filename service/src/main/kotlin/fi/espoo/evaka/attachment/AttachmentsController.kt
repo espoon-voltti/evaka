@@ -124,7 +124,7 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
+        accessControl.requirePermissionFor(user, Action.Citizen.Application.UPLOAD_ATTACHMENT, applicationId)
 
         val attachTo = AttachmentParent.Application(applicationId)
         return db.connect { dbc ->

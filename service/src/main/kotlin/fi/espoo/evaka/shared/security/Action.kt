@@ -169,6 +169,35 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
 
+    sealed interface Citizen : Action {
+        enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
+            UPLOAD_ATTACHMENT(IsCitizen(allowWeakLogin = false).ownerOfApplication());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+
+            CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+
+            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
+            TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+    }
+
     enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
         READ(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()),
         READ_IF_HAS_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication()),
@@ -200,7 +229,7 @@ sealed interface Action {
         CREATE_NOTE(HasGlobalRole(SERVICE_WORKER)),
 
         READ_ATTACHMENTS(HasGlobalRole(SERVICE_WORKER)),
-        UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), IsCitizen(allowWeakLogin = false).ownerOfApplication());
+        UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -254,20 +283,13 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
-        READ(
-            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            IsCitizen(allowWeakLogin = false).guardianOfChild()
-        ),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
 
-        CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsCitizen(allowWeakLogin = true).guardianOfChild()),
+        CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()),
         READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
         DELETE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()),
         DELETE_ABSENCE_RANGE(IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
-
-        CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-        CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
 
         READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -296,11 +318,7 @@ sealed interface Action {
         UPDATE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         DELETE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
 
-        READ_PLACEMENT(
-            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
-            IsCitizen(allowWeakLogin = false).guardianOfChild()
-        ),
+        READ_PLACEMENT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
 
         READ_FAMILY_CONTACTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         UPDATE_FAMILY_CONTACT_DETAILS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -486,11 +504,6 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument()
         ),
-        READ(
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
-            HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument(),
-            IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument()
-        ),
         UPDATE(
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument()
@@ -530,9 +543,7 @@ sealed interface Action {
 
         CREATE_GROUP_PLACEMENT(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()),
 
-        CREATE_SERVICE_NEED(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()),
-
-        TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
+        CREATE_SERVICE_NEED(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

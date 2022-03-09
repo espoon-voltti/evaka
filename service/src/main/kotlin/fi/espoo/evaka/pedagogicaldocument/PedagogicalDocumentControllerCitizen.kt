@@ -50,7 +50,7 @@ class PedagogicalDocumentControllerCitizen(
         @PathVariable documentId: PedagogicalDocumentId
     ) {
         Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.READ, documentId)
+        accessControl.requirePermissionFor(user, Action.Citizen.PedagogicalDocument.READ, documentId)
         return db.connect { dbc ->
             dbc.transaction { it.markDocumentReadByGuardian(documentId, PersonId(user.id)) }
         }

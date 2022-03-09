@@ -32,7 +32,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping("/{id}")
     fun getChild(db: Database, user: AuthenticatedUser.Citizen, @PathVariable id: ChildId): Child {
         Audit.CitizenChildRead.log(id)
-        accessControl.requirePermissionFor(user, Action.Child.READ, id)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ, id)
         return db.connect { dbc -> dbc.read { it.getChild(id) } } ?: throw NotFound()
     }
 }

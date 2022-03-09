@@ -46,7 +46,7 @@ class PlacementControllerCitizen(
         @PathVariable childId: ChildId,
     ): ChildPlacementResponse {
         Audit.PlacementSearch.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_PLACEMENT, childId)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_PLACEMENT, childId)
 
         return db.connect { dbc ->
             ChildPlacementResponse(
@@ -87,7 +87,7 @@ class PlacementControllerCitizen(
             val terminatablePlacementGroup = dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
                 .also {
                     // TODO list support for accessControl
-                    it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Placement.TERMINATE, id) }
+                    it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Citizen.Placement.TERMINATE, id) }
                 }
                 .let { mapToTerminatablePlacements(it) }
                 .find { it.unitId == body.unitId && it.type == body.type }
