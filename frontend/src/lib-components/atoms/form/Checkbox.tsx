@@ -79,8 +79,8 @@ const CheckboxInput = styled.input`
   }
 
   &:focus {
-    border-width: 2px;
-    border-color: ${(p) => p.theme.colors.main.m2Focus};
+    box-shadow: 0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},
+      0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};
   }
 
   &:disabled {
