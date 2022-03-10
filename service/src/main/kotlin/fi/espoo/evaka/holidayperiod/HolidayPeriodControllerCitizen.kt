@@ -98,6 +98,15 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 val questionnaire = tx.getFixedPeriodQuestionnaire(id)
                     ?.also { if (!it.active.includes(evakaClock.today())) throw BadRequest("Questionnaire is not open") }
                     ?: throw BadRequest("Questionnaire not found")
+                if (questionnaire.conditions.continuousPlacement != null) {
+                    val eligibleChildren = tx.getChildrenWithContinuousPlacement(
+                        PersonId(user.id),
+                        questionnaire.conditions.continuousPlacement
+                    )
+                    if (childIds.any { body.fixedPeriods[it] != null && !eligibleChildren.contains(it) }) {
+                        throw BadRequest("Some children are not eligible to answer")
+                    }
+                }
                 val absences = body.fixedPeriods.entries
                     .mapNotNull { (childId, period) ->
                         if (period != null) AbsenceInsert(

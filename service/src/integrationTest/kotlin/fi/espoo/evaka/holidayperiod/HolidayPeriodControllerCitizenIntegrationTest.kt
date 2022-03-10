@@ -209,6 +209,35 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `free absences cannot be saved if a child is not eligible`() {
+        val child2 = testChild_2
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            // child2 has no placement
+        }
+        val id = createFixedPeriodQuestionnaire(
+            freePeriodQuestionnaire.copy(
+                holidayPeriodId = createHolidayPeriod(summerPeriod).id,
+                conditions = QuestionnaireConditions(
+                    continuousPlacement = FiniteDateRange(mockToday, mockToday.plusMonths(1))
+                )
+            )
+        )
+
+        val firstOption = freePeriodQuestionnaire.periodOptions[0]
+        reportFreePeriods(
+            id,
+            FixedPeriodsBody(
+                mapOf(
+                    child1.id to firstOption,
+                    child2.id to firstOption
+                )
+            ),
+            expectedStatus = 400,
+        )
+    }
+
     private fun getActiveQuestionnaires(mockedDay: LocalDate): List<FixedPeriodQuestionnaireWithChildren> {
         val (_, _, res) = http.get("/citizen/holiday-period/questionnaire")
             .asUser(authenticatedParent)
