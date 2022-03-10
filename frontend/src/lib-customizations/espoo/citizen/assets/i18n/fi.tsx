@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
@@ -269,7 +270,9 @@ export default {
       holidayFor: 'Loman ajankohta:',
       childOnHoliday: 'Lapsi on lomalla',
       addTimePeriod: 'Lisää ajankohta',
-      emptySelection: 'Ei maksutonta poissaoloa'
+      emptySelection: 'Ei maksutonta poissaoloa',
+      notEligible: (period: FiniteDateRange) =>
+        `Kysely ei koske lasta, koska hän ei ole ollut varhaiskasvatuksessa yhtäjaksoisesti ${period.format()}.`
     }
   },
   messages: {

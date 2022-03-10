@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
@@ -271,7 +272,9 @@ const sv: Translations = {
       holidayFor: 'Semestertid för:',
       childOnHoliday: 'Barnet är på semester',
       addTimePeriod: 'Lägg till en period',
-      emptySelection: 'Ingen gratis ledighet'
+      emptySelection: 'Ingen gratis ledighet',
+      notEligible: (period: FiniteDateRange) =>
+        `Enkäten rör inte barnet, eftersom hen inte varit i småbarnspedagogiken oavbrutet under tiden ${period.format()}.`
     }
   },
   messages: {

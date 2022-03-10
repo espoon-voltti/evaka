@@ -184,8 +184,9 @@ const Page = React.memo(function CalendarPage() {
         <FixedPeriodSelectionModal
           close={closeModal}
           reload={loadDefaultRange}
-          availableChildren={response.children}
           questionnaire={fixedPeriodQuestionnaire.questionnaire}
+          availableChildren={response.children}
+          eligibleChildren={fixedPeriodQuestionnaire.eligibleChildren}
         />
       )}
     </>
