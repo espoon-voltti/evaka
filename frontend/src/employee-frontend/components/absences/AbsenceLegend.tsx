@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
@@ -11,6 +11,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { absenceColors, absenceIcons } from 'lib-customizations/common'
+import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -42,18 +43,29 @@ const AbsenceLegendSquare = styled.div<{ color: string }>`
 `
 
 interface Props {
-  absenceTypes?: CalendarAbsenceType[]
+  showNoAbsence?: boolean
   icons?: boolean
 }
 
 export const AbsenceLegend = React.memo(function AbsenceLegend({
-  absenceTypes = absenceTypesInLegend,
+  showNoAbsence = false,
   icons = false
 }: Props) {
   const { i18n } = useTranslation()
+
+  const visibleAbsenceTypes = useMemo(
+    () =>
+      absenceTypesInLegend.filter((a) =>
+        a === 'NO_ABSENCE'
+          ? showNoAbsence
+          : a === 'TEMPORARY_RELOCATION' || absenceTypes.includes(a)
+      ),
+    [showNoAbsence]
+  )
+
   return (
     <>
-      {absenceTypes.map((t) => (
+      {visibleAbsenceTypes.map((t) => (
         <ExpandingInfo
           key={t}
           info={i18n.absences.absenceTypeInfo[t]}

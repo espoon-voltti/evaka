@@ -17,6 +17,7 @@ import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
+import { absenceTypes } from 'lib-customizations/employee'
 import { faAbacus } from 'lib-icons'
 
 import { getAbsencesByChild } from '../../api/invoicing'
@@ -24,7 +25,6 @@ import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'
 import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { AbsenceTypes } from '../../types/absence'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
@@ -105,7 +105,7 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
               </tr>
             </thead>
             <tbody>
-              {AbsenceTypes.map((absenceType: AbsenceType) => (
+              {absenceTypes.map((absenceType: AbsenceType) => (
                 <tr key={absenceType}>
                   <TableData>
                     <ColorInfoItem type={absenceType} maxWidth={290} noMargin />
