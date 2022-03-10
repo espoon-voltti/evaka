@@ -276,7 +276,8 @@ WITH min_voucher_decision_date AS (
         AND decision.annulled_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
         AND NOT EXISTS (
             SELECT 1 FROM voucher_value_decision decision2
-            WHERE daterange(decision2.valid_from, decision2.valid_to, '[]') && p.period
+            WHERE decision.child_id = decision2.child_id
+                AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(decision2.valid_from, decision2.valid_to, '[]')
                 AND decision2.status = ANY(:effective::voucher_value_decision_status[])
         )
 ), corrections AS (
