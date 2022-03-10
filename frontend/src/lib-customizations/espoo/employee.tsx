@@ -32,6 +32,14 @@ const customizations: EmployeeCustomizations = {
     'TEMPORARY_DAYCARE',
     'TEMPORARY_DAYCARE_PART_DAY'
   ],
+  absenceTypes: [
+    'OTHER_ABSENCE',
+    'SICKLEAVE',
+    'UNKNOWN_ABSENCE',
+    'PLANNED_ABSENCE',
+    'PARENTLEAVE',
+    'FORCE_MAJEURE'
+  ],
   assistanceMeasures: [
     'SPECIAL_ASSISTANCE_DECISION',
     'INTENSIFIED_ASSISTANCE',

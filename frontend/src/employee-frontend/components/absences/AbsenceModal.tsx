@@ -13,9 +13,10 @@ import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
-import { AbsenceTypes, absenceCategories } from '../../types/absence'
+import { absenceCategories } from '../../types/absence'
 
 export default React.memo(function AbsenceModal({
   onSave,
@@ -48,7 +49,7 @@ export default React.memo(function AbsenceModal({
       <FixedSpaceColumn spacing="L">
         <Label>{i18n.absences.modal.absenceSectionLabel}</Label>
         <FixedSpaceColumn spacing="xs">
-          {AbsenceTypes.map((absenceType, index) => (
+          {absenceTypes.map((absenceType, index) => (
             <Radio
               key={index}
               id={absenceType}

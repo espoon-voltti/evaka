@@ -6,7 +6,10 @@ import 'react'
 import type { LatLngExpression } from 'leaflet'
 
 import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
+import {
+  AbsenceType,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import {
   PlacementPlanRejectReason,
@@ -134,6 +137,7 @@ export interface EmployeeCustomizations {
   cityLogo: CityLogo
   featureFlags: FeatureFlags
   placementTypes: PlacementType[]
+  absenceTypes: AbsenceType[]
   assistanceMeasures: AssistanceMeasure[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
   unitProviderTypes: ProviderType[]

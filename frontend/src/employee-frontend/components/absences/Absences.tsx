@@ -196,7 +196,7 @@ export default React.memo(function Absences({
             <HorizontalLine dashed slim />
             <H3>{i18n.absences.legendTitle}</H3>
             <FixedSpaceColumn spacing="xxs">
-              <AbsenceLegend />
+              <AbsenceLegend showNoAbsence />
             </FixedSpaceColumn>
           </div>
         </FixedSpaceColumn>

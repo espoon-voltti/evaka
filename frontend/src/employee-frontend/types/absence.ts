@@ -11,16 +11,6 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-export const AbsenceTypes: AbsenceType[] = [
-  'OTHER_ABSENCE',
-  'SICKLEAVE',
-  'UNKNOWN_ABSENCE',
-  'PLANNED_ABSENCE',
-  'PARENTLEAVE',
-  'FORCE_MAJEURE',
-  'FREE_ABSENCE'
-]
-
 export const defaultAbsenceType = 'SICKLEAVE'
 export const defaultAbsenceCategories: AbsenceCategory[] = []
 

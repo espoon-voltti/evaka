@@ -9,7 +9,6 @@ import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -43,16 +42,6 @@ const AttendanceTime = styled(Time)`
   font-weight: ${fontWeights.semibold};
   background: ${colors.grayscale.g4};
 `
-
-const legendAbsenceTypes: AbsenceType[] = [
-  'OTHER_ABSENCE',
-  'SICKLEAVE',
-  'UNKNOWN_ABSENCE',
-  'PLANNED_ABSENCE',
-  'PARENTLEAVE',
-  'FORCE_MAJEURE',
-  'FREE_ABSENCE'
-]
 
 const formatWeekTitle = (dateRange: FiniteDateRange) =>
   `${dateRange.start.format('dd.MM.')} - ${dateRange.end.format()}`
@@ -168,7 +157,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                   contents={legendTimeLabels}
                 />
                 <FixedSpaceColumn spacing="xs">
-                  <AbsenceLegend icons absenceTypes={legendAbsenceTypes} />
+                  <AbsenceLegend icons />
                 </FixedSpaceColumn>
               </FixedSpaceRow>
             </div>
