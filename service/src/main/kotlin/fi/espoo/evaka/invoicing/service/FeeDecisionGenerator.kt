@@ -57,12 +57,16 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
 
     val prices = getFeeThresholds(from)
     val partnerIds = families.mapNotNull { it.partner }
-    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, partnerIds + headOfFamily, from)
-    val childIncomes = children.map { child ->
-        child.id to getIncomesFrom(jsonMapper, incomeTypesProvider, listOf(child.id), from)
+    val childIds = children.map { it.id }
+
+    val allIncomes = getIncomesFrom(jsonMapper, incomeTypesProvider, partnerIds + headOfFamily + childIds, from)
+
+    val adultIncomes = allIncomes.filter { (partnerIds + headOfFamily).contains(it.personId) }
+    val childIncomes = childIds.map { childId ->
+        childId to allIncomes.filter { it.personId == childId }
     }.toMap()
 
-    val feeAlterations = getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+    val feeAlterations = getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, adultIncomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
     val invoicedUnits = getUnitsThatAreInvoiced()
@@ -73,7 +77,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
         families,
         placements,
         prices,
-        incomes,
+        adultIncomes,
         childIncomes,
         feeAlterations,
         invoicedUnits
