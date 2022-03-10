@@ -50,7 +50,8 @@ SELECT
     part.base_fee,
     part.fee,
     part.fee_alterations,
-    part.final_fee
+    part.final_fee,
+    part.child_income
 FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 """
@@ -73,6 +74,7 @@ SELECT
     part.fee,
     part.fee_alterations,
     part.final_fee,
+    part.child_income,
     head.date_of_birth as head_date_of_birth,
     head.first_name as head_first_name,
     head.last_name as head_last_name,
@@ -198,7 +200,8 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecision
             sibling_discount,
             fee,
             fee_alterations,
-            final_fee
+            final_fee,
+            child_income
         ) VALUES (
             :id,
             :feeDecisionId,
@@ -215,7 +218,8 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecision
             :siblingDiscount,
             :fee,
             :feeAlterations,
-            :finalFee
+            :finalFee,
+            :childIncome
         )
     """
 

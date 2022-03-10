@@ -210,3 +210,4 @@ V209__single_date_attendances.sql
 V210__absence_categories.sql
 V211__holiday_period_questionnaires.sql
 V212__voucher_value_decision_annulment_and_validity_timestamps.sql
+V213__child_income.sql

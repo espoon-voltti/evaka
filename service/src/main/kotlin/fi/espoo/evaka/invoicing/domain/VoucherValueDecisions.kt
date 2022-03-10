@@ -32,6 +32,8 @@ data class VoucherValueDecision(
     val headOfFamilyIncome: DecisionIncome?,
     @Json
     val partnerIncome: DecisionIncome?,
+    @Json
+    val childIncome: DecisionIncome?,
     val familySize: Int,
     @Json
     val feeThresholds: FeeDecisionThresholds,
@@ -75,7 +77,8 @@ data class VoucherValueDecision(
             this.finalCoPayment == decision.finalCoPayment &&
             this.baseValue == decision.baseValue &&
             this.ageCoefficient == decision.ageCoefficient &&
-            this.voucherValue == decision.voucherValue
+            this.voucherValue == decision.voucherValue &&
+            this.childIncome == decision.childIncome
     }
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {
@@ -127,6 +130,8 @@ data class VoucherValueDecisionDetailed(
     val headOfFamilyIncome: DecisionIncome?,
     @Json
     val partnerIncome: DecisionIncome?,
+    @Json
+    val childIncome: DecisionIncome?,
     val familySize: Int,
     @Json
     val feeThresholds: FeeDecisionThresholds,

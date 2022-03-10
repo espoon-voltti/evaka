@@ -76,6 +76,7 @@ class IncomeController(
                 tx.splitEarlierIncome(validIncome.personId, period)
                 tx.upsertIncome(mapper, validIncome, user.evakaUserId)
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)))
                 id
             }
         }
@@ -103,6 +104,7 @@ class IncomeController(
                 } ?: DateRange(income.validFrom, income.validTo)
 
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, expandedPeriod)))
             }
         }
     }
@@ -121,6 +123,7 @@ class IncomeController(
                 tx.deleteIncome(incomeId)
 
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)))
             }
         }
     }

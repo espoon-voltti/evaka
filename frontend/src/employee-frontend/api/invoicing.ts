@@ -157,7 +157,10 @@ export async function getFeeDecision(
           : null,
         children: json.children.map((childJson) => ({
           ...childJson,
-          child: deserializePersonDetailed(childJson.child)
+          child: deserializePersonDetailed(childJson.child),
+          childIncome: childJson.childIncome
+            ? deserializeIncome(childJson.childIncome)
+            : null
         })),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         financeDecisionHandlerFirstName: json.financeDecisionHandlerFirstName
@@ -192,6 +195,9 @@ export async function getVoucherValueDecision(
           : null,
         partnerIncome: json.partnerIncome
           ? deserializeIncome(json.partnerIncome)
+          : null,
+        childIncome: json.childIncome
+          ? deserializeIncome(json.childIncome)
           : null,
         child: deserializePersonDetailed(json.child),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
@@ -291,7 +297,10 @@ export async function getPersonFeeDecisions(
             child: {
               ...childJson.child,
               dateOfBirth: LocalDate.parseIso(childJson.child.dateOfBirth)
-            }
+            },
+            childIncome: childJson.childIncome
+              ? deserializeIncome(childJson.childIncome)
+              : null
           }))
         }))
       )

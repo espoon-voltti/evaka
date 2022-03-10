@@ -49,7 +49,8 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
             siblingDiscount = child.siblingDiscount,
             fee = child.fee,
             feeAlterations = child.feeAlterations,
-            finalFee = child.finalFee
+            finalFee = child.finalFee,
+            childIncome = child.childIncome
         )
     },
     documentKey = feeDecision.documentKey,

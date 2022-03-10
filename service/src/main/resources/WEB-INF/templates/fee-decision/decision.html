@@ -74,6 +74,22 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
     <p th:text="#{text.feePercent(${feePercent})}"></p>
 
+    <table th:if="${hasChildIncome}">
+        <tbody>
+        <tr>
+            <td th:text="#{text.table.childIncome}"></td>
+        </tr>
+        <tr th:each="part: ${parts}"
+            th:object="${part}"
+            th:if="${part.hasChildIncome}">
+            <td th:text="${part.childName}"></td>
+            <td class="text-right" th:text="${part.childIncomeTotal}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <br th:if="${hasChildIncome}" />
+
     <table>
         <tbody th:each="part: ${parts}">
         <tr>

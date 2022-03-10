@@ -199,7 +199,8 @@ val feeDecisionRowMapper = RowViewMapper { rv ->
                     siblingDiscount = rv.mapColumn("sibling_discount"),
                     fee = rv.mapColumn("fee"),
                     feeAlterations = rv.mapJsonColumn("fee_alterations"),
-                    finalFee = rv.mapColumn("final_fee")
+                    finalFee = rv.mapColumn("final_fee"),
+                    childIncome = rv.mapJsonColumn("child_income")
                 )
             )
         } ?: emptyList(),
@@ -280,7 +281,8 @@ val feeDecisionDetailedRowMapper = RowViewMapper { rv ->
                     siblingDiscount = rv.mapColumn("sibling_discount"),
                     fee = rv.mapColumn("fee"),
                     feeAlterations = rv.mapJsonColumn("fee_alterations"),
-                    finalFee = rv.mapColumn("final_fee")
+                    finalFee = rv.mapColumn("final_fee"),
+                    childIncome = rv.mapJsonColumn("child_income")
                 )
             )
         } ?: emptyList(),

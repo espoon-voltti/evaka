@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
+import { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -789,7 +790,8 @@ export const feeDecisionsFixture = (
       fee: 28900,
       siblingDiscount: 0.0,
       feeAlterations: [],
-      finalFee: 28900
+      finalFee: 28900,
+      childIncome: null
     }
   ],
   totalFee: 28900,
@@ -821,6 +823,7 @@ export const voucherValueDecisionsFixture = (
   partnerId: partner?.id ?? null,
   headOfFamilyIncome: null,
   partnerIncome: null,
+  childIncome: null,
   decisionType: 'NORMAL',
   familySize: 2,
   feeThresholds: feeThresholds,
@@ -954,6 +957,21 @@ export function createBackupCareFixture(
     }
   }
 }
+
+export const DecisionIncomeFixture = (
+  total: number,
+  validFrom: LocalDate = LocalDate.today(),
+  validTo: LocalDate = LocalDate.today()
+): DecisionIncome => ({
+  data: { MAIN_INCOME: total },
+  effect: 'INCOME',
+  total: total,
+  totalExpenses: 0,
+  totalIncome: total,
+  validFrom,
+  validTo,
+  worksAtECHA: false
+})
 
 export const nullUUID = '00000000-0000-0000-0000-000000000000'
 

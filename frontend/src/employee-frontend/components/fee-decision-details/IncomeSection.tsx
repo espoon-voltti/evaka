@@ -126,11 +126,27 @@ export default React.memo(function IncomeSection({ decision }: Props) {
                     i18n
                   ),
                   value: personIncome(decision.partnerIncome),
-                  valueWidth: '100%'
+                  valueWidth: '100%',
+                  dataQa: 'partner-income'
                 }
               ]
             : [])
-        ]}
+        ].concat(
+          decision.children
+            .filter(
+              (child) => child.childIncome && child.childIncome.totalIncome > 0
+            )
+            .map((childWithIncome) => ({
+              label: formatName(
+                childWithIncome.child.firstName,
+                childWithIncome.child.lastName,
+                i18n
+              ),
+              value: personIncome(childWithIncome.childIncome),
+              valueWidth: '100%',
+              dataQa: 'child-income'
+            }))
+        )}
       />
       {decision.totalIncome && decision.totalIncome > 0 ? (
         <>

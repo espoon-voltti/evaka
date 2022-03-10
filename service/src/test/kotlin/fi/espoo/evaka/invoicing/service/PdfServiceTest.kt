@@ -78,12 +78,12 @@ class PdfServiceTest {
             "Pirkko",
             "Päättäjä"
         ),
-        children = testDecision1.children.map {
+        children = testDecision1.children.mapIndexed { index, it ->
             FeeDecisionChildDetailed(
                 child = PersonDetailed(
                     id = PersonId(UUID.randomUUID()),
                     dateOfBirth = LocalDate.of(2017, 1, 1),
-                    firstName = "Johnny",
+                    firstName = "Johnny_$index",
                     lastName = "Doe",
                     restrictedDetailsEnabled = false
                 ),
@@ -103,7 +103,8 @@ class PdfServiceTest {
                 siblingDiscount = it.siblingDiscount,
                 fee = it.fee,
                 feeAlterations = it.feeAlterations,
-                finalFee = it.finalFee
+                finalFee = it.finalFee,
+                childIncome = if (index == 0) testDecisionIncome.copy(total = 123456) else null,
             )
         },
         financeDecisionHandlerFirstName = null,
@@ -151,6 +152,7 @@ class PdfServiceTest {
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
+        childIncome = testDecisionIncome.copy(effect = IncomeEffect.INCOME, total = 123456),
         child = PersonDetailed(
             id = PersonId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(2017, 1, 1),
@@ -236,7 +238,8 @@ class PdfServiceTest {
             "decisionMakerName" to "",
             "decisionMakerTitle" to "",
             "showTotalIncome" to true,
-            "isElementaryFamily" to false
+            "isElementaryFamily" to false,
+            "hasChildIncome" to true
         )
         simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
     }
@@ -289,7 +292,8 @@ class PdfServiceTest {
             "decisionMakerName" to "",
             "decisionMakerTitle" to "",
             "showTotalIncome" to true,
-            "isElementaryFamily" to false
+            "isElementaryFamily" to false,
+            "hasChildIncome" to true
         )
         simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
     }
@@ -303,7 +307,8 @@ class PdfServiceTest {
         )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
-        // File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
+        // TODO next line should be always commented out in master
+        // java.io.File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
 
         assertNotNull(pdfBytes)
     }
@@ -317,7 +322,9 @@ class PdfServiceTest {
             lang = DocumentLang.fi
         )
         val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
-        // File("/tmp/voucher_value_decision_test.pdf").writeBytes(pdfBytes)
+
+        // TODO next line should be always commented out in master
+        // java.io.File("/tmp/voucher_value_decision_test.pdf").writeBytes(pdfBytes)
 
         assertNotNull(pdfBytes)
     }

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DecisionIncome } from 'lib-common/api-types/income'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -16,6 +17,7 @@ import {
   careArea2Fixture,
   daycare2Fixture,
   daycareFixture,
+  DecisionIncomeFixture,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
@@ -80,23 +82,29 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
   valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
 }
 
-const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions =
-  async () => {
-    await insertVoucherValueDecisionFixtures([
-      voucherValueDecisionsFixture(
-        'e2d75fa4-7359-406b-81b8-1703785ca649',
-        familyWithTwoGuardians.guardian.id,
-        familyWithTwoGuardians.children[0].id,
-        daycareFixture.id,
-        familyWithTwoGuardians.otherGuardian,
-        'DRAFT',
-        decision1DateFrom,
-        decision1DateTo
-      )
-    ])
-    await new EmployeeNav(page).openTab('finance')
-    valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
-  }
+const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
+  childIncome: DecisionIncome | null = null
+) => {
+  const decision = voucherValueDecisionsFixture(
+    'e2d75fa4-7359-406b-81b8-1703785ca649',
+    familyWithTwoGuardians.guardian.id,
+    familyWithTwoGuardians.children[0].id,
+    daycareFixture.id,
+    familyWithTwoGuardians.otherGuardian,
+    'DRAFT',
+    decision1DateFrom,
+    decision1DateTo
+  )
+
+  await insertVoucherValueDecisionFixtures([
+    {
+      ...decision,
+      childIncome
+    }
+  ])
+  await new EmployeeNav(page).openTab('finance')
+  valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
+}
 
 describe('Value decisions', () => {
   test('Date filter filters out decisions', async () => {
@@ -192,5 +200,20 @@ describe('Value decisions', () => {
 
     await valueDecisionsPage.openFirstValueDecision()
     await new ValueDecisionDetailsPage(page).assertPartnerNameNotShown()
+  })
+
+  test('Child income is shown', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: familyWithTwoGuardians.guardian.id,
+        childId: familyWithTwoGuardians.children[0].id
+      }
+    ])
+    await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions(
+      DecisionIncomeFixture(54321)
+    )
+
+    await valueDecisionsPage.openFirstValueDecision()
+    await new ValueDecisionDetailsPage(page).assertChildIncome(0, '543,21 €')
   })
 })

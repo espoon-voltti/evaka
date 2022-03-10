@@ -102,6 +102,7 @@ export interface FeeDecision {
 export interface FeeDecisionChild {
   baseFee: number
   child: ChildWithDateOfBirth
+  childIncome: DecisionIncome | null
   fee: number
   feeAlterations: FeeAlterationWithEffect[]
   finalFee: number
@@ -116,6 +117,7 @@ export interface FeeDecisionChild {
 export interface FeeDecisionChildDetailed {
   baseFee: number
   child: PersonDetailed
+  childIncome: DecisionIncome | null
   fee: number
   feeAlterations: FeeAlterationWithEffect[]
   finalFee: number
@@ -605,6 +607,7 @@ export interface VoucherValueDecision {
   baseValue: number
   capacityFactor: number
   child: ChildWithDateOfBirth
+  childIncome: DecisionIncome | null
   coPayment: number
   created: Date
   decisionNumber: number | null
@@ -641,6 +644,7 @@ export interface VoucherValueDecisionDetailed {
   capacityFactor: number
   child: PersonDetailed
   childAge: number
+  childIncome: DecisionIncome | null
   coPayment: number
   created: Date
   decisionNumber: number | null
