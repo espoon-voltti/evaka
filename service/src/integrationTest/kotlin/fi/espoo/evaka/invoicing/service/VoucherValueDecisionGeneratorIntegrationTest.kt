@@ -8,6 +8,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.AssistanceNeedRequest
 import fi.espoo.evaka.assistanceneed.insertAssistanceNeed
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
+import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
@@ -18,6 +21,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -358,6 +363,46 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `voucher value decisions with child income`() {
+        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPlacement(
+            testChild_2.id, period.copy(start = period.start.plusMonths(1)),
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id
+        )
+
+        // Adult minimal income
+        insertIncome(testAdult_1.id, 310200, period)
+        insertIncome(testChild_1.id, 600000, period)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
+        assertEquals(2, voucherValueDecisions.size)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_1.id, decision.child.id)
+            assertEquals(87000, decision.voucherValue)
+            assertEquals(28900, decision.coPayment)
+        }
+        voucherValueDecisions.last().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start.plusMonths(1), decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.voucherValue)
+            assertEquals(4200, decision.baseCoPayment)
+            // testChild_2 is older than testChild_1
+            assertEquals(50, decision.siblingDiscount)
+            assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, decision.placement.type)
+            assertEquals(0, decision.coPayment)
+        }
+    }
+
     private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType, daycareId: DaycareId): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
@@ -418,6 +463,21 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
             tx.createQuery("SELECT * FROM voucher_value_decision")
                 .mapTo<VoucherValueDecision>()
                 .toList()
+        }
+    }
+
+    private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
+        db.transaction { tx ->
+            tx.insertTestIncome(
+                DevIncome(
+                    personId = adultId,
+                    validFrom = period.start,
+                    validTo = period.end,
+                    effect = IncomeEffect.INCOME,
+                    data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
+            )
         }
     }
 }
