@@ -400,6 +400,29 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         marReport.assertContainsRow(ORIGINAL, marFirst, marFirst.toEndOfMonth(), 87000, 0, 87000)
     }
 
+    @Test
+    fun `when one of part month decisions is annulled it is refunded correctly`() {
+        val decision = createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
+        val middleOfMonth = janFirst.plusDays(14)
+        createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 10000)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(2, janReport.size)
+        // 8 operational days -> (9/21) * 87000 = ~33143
+        janReport.assertContainsRow(ORIGINAL, janFirst, middleOfMonth.minusDays(1), 87000, 0, 33143)
+        // 13 operational days -> (12/21) * 77000 = ~47667
+        janReport.assertContainsRow(ORIGINAL, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, 47667)
+
+        db.transaction { it.annulVoucherValueDecisions(listOf(decision.id), janFreeze.plusSeconds(3600)) }
+        val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
+        assertEquals(4, febReport.size)
+        febReport.assertContainsRow(REFUND, janFirst, middleOfMonth.minusDays(1), 87000, 0, -33143)
+        febReport.assertContainsRow(REFUND, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, -47667)
+        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, 47667)
+        febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 10000, 77000)
+    }
+
     private fun List<ServiceVoucherValueRow>.assertContainsRow(
         type: VoucherReportRowType,
         periodStart: LocalDate,
