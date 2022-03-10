@@ -224,16 +224,17 @@ export const P = styled.p<ParagraphProps>`
 
   a {
     color: ${(p) => p.theme.colors.main.m2};
-  }
-
-  a:hover {
-    color: ${(p) => p.theme.colors.main.m1};
-    cursor: pointer;
     text-decoration: underline;
   }
 
+  a:hover {
+    color: ${(p) => p.theme.colors.main.m2Hover};
+    text-decoration: none;
+  }
+
   a:focus {
-    outline: 1px solid ${(p) => p.theme.colors.main.m3};
+    outline: 1px solid ${(p) => p.theme.colors.main.m2Focus};
+    text-decoration: none;
   }
 
   a:visited {

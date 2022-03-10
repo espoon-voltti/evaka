@@ -34,13 +34,15 @@ const Wrapper = styled.div<SizeProps>`
     }
   }
 
-  &:hover:not(.disabled) {
-    input:checked {
-      border-color: ${(p) => p.theme.colors.main.m2Hover};
-      background-color: ${(p) => p.theme.colors.main.m2Hover};
-    }
-    input:not(:checked) {
-      border-color: ${(p) => p.theme.colors.grayscale.g100};
+  @media (hover: hover) {
+    &:hover:not(.disabled) {
+      input:checked {
+        border-color: ${(p) => p.theme.colors.main.m2Hover};
+        background-color: ${(p) => p.theme.colors.main.m2Hover};
+      }
+      input:not(:checked) {
+        border-color: ${(p) => p.theme.colors.grayscale.g100};
+      }
     }
   }
 `
@@ -76,8 +78,8 @@ const RadioInput = styled.input<SizeProps>`
   }
 
   &:focus {
-    border-width: 2px;
-    border-color: ${(p) => p.theme.colors.main.m2Focus};
+    box-shadow: 0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},
+      0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};
   }
 
   &:disabled {
