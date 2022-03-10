@@ -4,9 +4,12 @@
 
 package fi.espoo.evaka.holidayperiod
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
@@ -34,6 +37,27 @@ fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPerio
         .bind("date", date)
         .mapTo<FixedPeriodQuestionnaire>()
         .firstOrNull()
+
+fun Database.Read.getChildrenWithContinuousPlacement(guardianId: PersonId, period: FiniteDateRange): List<ChildId> {
+    return createQuery(
+        """
+SELECT g.child_id
+FROM guardian g, generate_series(:periodStart::date, :periodEnd::date, '1 day') d
+WHERE g.guardian_id = :guardianId
+GROUP BY g.child_id
+HAVING bool_and(d::date <@ ANY (
+    SELECT daterange(p.start_date, p.end_date, '[]')
+    FROM placement p
+    WHERE p.child_id = g.child_id
+))
+"""
+    )
+        .bind("guardianId", guardianId)
+        .bind("periodStart", period.start)
+        .bind("periodEnd", period.end)
+        .mapTo<ChildId>()
+        .toList()
+}
 
 fun Database.Read.getFixedPeriodQuestionnaire(id: HolidayQuestionnaireId): FixedPeriodQuestionnaire? =
     this.createQuery("$questionnaireSelect WHERE q.id = :id")
@@ -83,7 +107,10 @@ RETURNING id
         .mapTo<HolidayQuestionnaireId>()
         .one()
 
-fun Database.Transaction.updateFixedPeriodQuestionnaire(id: HolidayQuestionnaireId, data: FixedPeriodQuestionnaireBody) =
+fun Database.Transaction.updateFixedPeriodQuestionnaire(
+    id: HolidayQuestionnaireId,
+    data: FixedPeriodQuestionnaireBody
+) =
     this.createUpdate(
         """
 UPDATE holiday_period_questionnaire

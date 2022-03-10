@@ -85,8 +85,8 @@ export default React.memo(function BannerWrapper() {
         {(activePeriod) => {
           return activePeriod ? (
             <HolidayPeriodBanner
-              period={activePeriod.period}
-              reservationDeadline={activePeriod.active.end}
+              period={activePeriod.questionnaire.period}
+              reservationDeadline={activePeriod.questionnaire.active.end}
             />
           ) : null
         }}

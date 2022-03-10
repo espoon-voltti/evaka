@@ -4,13 +4,13 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import {
-  deserializeFixedPeriodQuestionnaire,
+  deserializeFixedPeriodQuestionnaireAndChildren,
   deserializeHolidayPeriod
 } from 'lib-common/api-types/holiday-period'
 import {
-  HolidayPeriod,
+  FixedPeriodQuestionnaireWithChildren,
   FixedPeriodsBody,
-  FixedPeriodQuestionnaire
+  HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -25,14 +25,14 @@ export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {
 }
 
 export function getActiveQuestionnaires(): Promise<
-  Result<FixedPeriodQuestionnaire[]>
+  Result<FixedPeriodQuestionnaireWithChildren[]>
 > {
   return client
-    .get<JsonOf<FixedPeriodQuestionnaire[]>>(
+    .get<JsonOf<FixedPeriodQuestionnaireWithChildren[]>>(
       `/citizen/holiday-period/questionnaire`
     )
     .then((res) =>
-      Success.of(res.data.map(deserializeFixedPeriodQuestionnaire))
+      Success.of(res.data.map(deserializeFixedPeriodQuestionnaireAndChildren))
     )
     .catch((e) => Failure.fromError(e))
 }

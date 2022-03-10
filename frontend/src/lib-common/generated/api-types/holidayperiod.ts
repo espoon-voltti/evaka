@@ -47,6 +47,14 @@ export interface FixedPeriodQuestionnaireBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireWithChildren
+*/
+export interface FixedPeriodQuestionnaireWithChildren {
+  eligibleChildren: UUID[]
+  questionnaire: FixedPeriodQuestionnaire
+}
+
+/**
 * Generated from fi.espoo.evaka.holidayperiod.FixedPeriodsBody
 */
 export interface FixedPeriodsBody {

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.reservations.AbsenceInsert
 import fi.espoo.evaka.reservations.clearAbsencesWithinPeriod
 import fi.espoo.evaka.reservations.clearOldAbsencesExcludingFreeAbsences
@@ -27,6 +28,11 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+data class FixedPeriodQuestionnaireWithChildren(
+    val questionnaire: FixedPeriodQuestionnaire,
+    val eligibleChildren: List<ChildId>,
+)
+
 @RestController
 @RequestMapping("/citizen/holiday-period")
 class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
@@ -43,12 +49,36 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping("/questionnaire")
     fun getActiveQuestionnaires(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
-    ): List<FixedPeriodQuestionnaire> {
+    ): List<FixedPeriodQuestionnaireWithChildren> {
         Audit.HolidayPeriodsList.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
-        return db.connect { dbc -> dbc.read { listOfNotNull(it.getActiveFixedPeriodQuestionnaire(evakaClock.today())) } }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val activeQuestionnaire = tx.getActiveFixedPeriodQuestionnaire(evakaClock.today()) ?: return@read listOf()
+
+                val continuousPlacementPeriod = activeQuestionnaire.conditions.continuousPlacement
+                val eligibleChildren = if (continuousPlacementPeriod != null) {
+                    tx.getChildrenWithContinuousPlacement(
+                        PersonId(user.id),
+                        continuousPlacementPeriod,
+                    )
+                } else {
+                    tx.getGuardianChildIds(PersonId(user.id))
+                }
+                if (eligibleChildren.isEmpty()) {
+                    listOf()
+                } else {
+                    listOf(
+                        FixedPeriodQuestionnaireWithChildren(
+                            activeQuestionnaire,
+                            eligibleChildren,
+                        )
+                    )
+                }
+            }
+        }
     }
 
     @PostMapping("/questionnaire/fixed-period/{id}")
@@ -69,7 +99,13 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     ?.also { if (!it.active.includes(evakaClock.today())) throw BadRequest("Questionnaire is not open") }
                     ?: throw BadRequest("Questionnaire not found")
                 val absences = body.fixedPeriods.entries
-                    .mapNotNull { (childId, period) -> if (period != null) AbsenceInsert(childId, period, questionnaire.absenceType) else null }
+                    .mapNotNull { (childId, period) ->
+                        if (period != null) AbsenceInsert(
+                            childId,
+                            period,
+                            questionnaire.absenceType
+                        ) else null
+                    }
                     .onEach { (_, period) ->
                         if (!questionnaire.periodOptions.contains(period)) {
                             throw BadRequest("Invalid option provided ($period)")
