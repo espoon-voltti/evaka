@@ -85,15 +85,22 @@ export default class CitizenCalendarPage {
     )
   }
 
+  #bannerContainer = this.page.findByDataQa('holiday-period-banner-container')
+
   async getHolidayBannerContent(): Promise<string> {
-    const bannerContainer = this.page.findByDataQa(
-      'holiday-period-banner-container'
-    )
     await waitUntilEqual(
-      () => bannerContainer.getAttribute('data-status'),
+      () => this.#bannerContainer.getAttribute('data-status'),
       'success'
     )
-    return bannerContainer.findByDataQa('holiday-period-banner').innerText
+    return this.#bannerContainer.findByDataQa('holiday-period-banner').innerText
+  }
+
+  async assertHolidayBannerNotVisible(): Promise<void> {
+    await waitUntilEqual(
+      () => this.#bannerContainer.getAttribute('data-status'),
+      'success'
+    )
+    await waitUntilEqual(() => this.#bannerContainer.findAll('> *').count(), 0)
   }
 
   async assertNoReservationsOrAbsences(date: LocalDate) {
