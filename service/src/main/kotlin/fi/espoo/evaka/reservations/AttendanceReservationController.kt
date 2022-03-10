@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/attendance-reservations")
@@ -93,7 +92,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
             ac.requirePermissionFor(user, Action.Child.CREATE_ATTENDANCE_RESERVATION, childId)
         }
 
-        db.connect { dbc -> dbc.transaction { createReservationsAsEmployee(it, user.id, body.validate()) } }
+        db.connect { dbc -> dbc.transaction { createReservations(it, user.id, body.validate()) } }
     }
 }
 
@@ -299,44 +298,4 @@ private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serv
                 )
             )
         }
-}
-
-fun createReservationsAsEmployee(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
-    tx.clearOldAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
-    tx.clearOldReservations(reservations.map { it.childId to it.date })
-    tx.insertValidReservations(userId, reservations)
-}
-
-private fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
-    val batch = prepareBatch(
-        """
-        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
-        SELECT :childId, :date, :start, :end, :userId
-        FROM placement pl
-        LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
-        JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id)
-        WHERE 
-            pl.child_id = :childId AND 
-            daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
-            extract(isodow FROM :date) = ANY(d.operation_days) AND
-            (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
-            NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
-        ON CONFLICT DO NOTHING;
-        """.trimIndent()
-    )
-
-    requests.forEach { request ->
-        request.reservations?.forEach { res ->
-            batch
-                .bind("userId", userId)
-                .bind("childId", request.childId)
-                .bind("date", request.date)
-                .bind("start", res.startTime)
-                .bind("end", res.endTime)
-                .bind("date", request.date)
-                .add()
-        }
-    }
-
-    batch.execute()
 }

@@ -73,7 +73,7 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
-import fi.espoo.evaka.reservations.createReservationsAsCitizen
+import fi.espoo.evaka.reservations.createReservations
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -847,7 +847,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                createReservationsAsCitizen(tx, PersonId(fakeAdmin.id), body)
+                createReservations(tx, fakeAdmin.id, body)
             }
         }
     }

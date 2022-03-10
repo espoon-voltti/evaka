@@ -89,7 +89,7 @@ class ReservationControllerCitizen(
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                createReservationsAsCitizen(tx, PersonId(user.id), body.validate(reservableDays))
+                createReservations(tx, user.id, body.validate(reservableDays))
             }
         }
     }
@@ -112,7 +112,7 @@ class ReservationControllerCitizen(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.clearOldAbsences(
+                tx.clearOldAbsencesExcludingFreeAbsences(
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { childId to it }
                     }
@@ -260,45 +260,4 @@ ORDER BY first_name
         .bind("range", range)
         .mapTo<ReservationChild>()
         .list()
-}
-
-fun createReservationsAsCitizen(tx: Database.Transaction, userId: PersonId, reservations: List<DailyReservationRequest>) {
-    tx.clearOldAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
-    tx.clearOldReservations(reservations.map { it.childId to it.date })
-    tx.insertValidReservations(userId, reservations)
-}
-
-private fun Database.Transaction.insertValidReservations(userId: PersonId, requests: List<DailyReservationRequest>) {
-    val batch = prepareBatch(
-        """
-        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
-        SELECT :childId, :date, :start, :end, :userId
-        FROM placement pl
-        LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
-        JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-        JOIN guardian g ON g.child_id = pl.child_id AND g.guardian_id = :userId
-        WHERE 
-            pl.child_id = :childId AND 
-            daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
-            extract(isodow FROM :date) = ANY(d.operation_days) AND
-            (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
-            NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
-        ON CONFLICT DO NOTHING;
-        """.trimIndent()
-    )
-
-    requests.forEach { request ->
-        request.reservations?.forEach { res ->
-            batch
-                .bind("userId", userId)
-                .bind("childId", request.childId)
-                .bind("date", request.date)
-                .bind("start", res.startTime)
-                .bind("end", res.endTime)
-                .bind("date", request.date)
-                .add()
-        }
-    }
-
-    batch.execute()
 }
