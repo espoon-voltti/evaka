@@ -117,14 +117,16 @@ export default React.memo(function HolidayPeriodsPage() {
               <Tr>
                 <Th>{i18n.holidayQuestionnaires.holidayPeriod}</Th>
                 <Th>{i18n.holidayQuestionnaires.active}</Th>
+                <Th>{i18n.holidayQuestionnaires.title}</Th>
                 <Th />
               </Tr>
             </Thead>
             <Tbody>
               {questionnaires.map((row) => (
                 <Tr key={row.id} data-qa="questionnaire-row">
-                  <Td data-qa="period">{row.period.format()}</Td>
-                  <Td data-qa="active">{row.active.format()}</Td>
+                  <Td>{row.period.format()}</Td>
+                  <Td>{row.active.format()}</Td>
+                  <Td>{row.title.fi}</Td>
                   <Td>
                     <FixedSpaceRow spacing="s">
                       <IconButton

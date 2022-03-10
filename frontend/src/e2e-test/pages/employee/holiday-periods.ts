@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Checkbox, DatePicker, Page, TextInput } from '../../utils/page'
+import { DatePicker, Page, SelectionChip, TextInput } from '../../utils/page'
 
 export class HolidayPeriodsPage {
   constructor(private readonly page: Page) {}
@@ -11,27 +11,52 @@ export class HolidayPeriodsPage {
     return this.page.findAllByDataQa('holiday-period').allInnerTexts()
   }
 
-  async assertRowContainsText(nth: number, texts: string[]) {
-    const row = this.page.findAll(`[data-qa="holiday-period-row"]`).nth(nth)
+  #periodRows = this.page.findAllByDataQa('holiday-period-row')
+  #questionnaireRows = this.page.findAllByDataQa('questionnaire-row')
+
+  get visibleQuestionnaires(): Promise<string[]> {
+    return this.#questionnaireRows.allInnerTexts()
+  }
+
+  async assertQuestionnaireContainsText(nth: number, texts: string[]) {
+    const row = this.#questionnaireRows.nth(nth)
     for (const text of texts) {
       await row.findText(text).waitUntilVisible()
     }
   }
 
-  async clickAddButton() {
+  async clickAddPeriodButton() {
     return this.page.findByDataQa('add-holiday-period-button').click()
   }
 
-  // TODO move questionnaire fields
-  #inputs = {
+  async clickAddQuestionnaireButton() {
+    return this.page.findByDataQa('add-questionnaire-button').click()
+  }
+
+  #periodInputs = {
     start: new DatePicker(this.page.findByDataQa('input-start')),
     end: new DatePicker(this.page.findByDataQa('input-end')),
     reservationDeadline: new DatePicker(
       this.page.findByDataQa('input-reservation-deadline')
-    ),
-    showReservationBannerFrom: new DatePicker(
-      this.page.findByDataQa('input-show-banner-from')
-    ),
+    )
+  }
+
+  async fillHolidayPeriodForm(params: {
+    start?: string
+    end?: string
+    reservationDeadline?: string
+  }) {
+    for (const [key, val] of Object.entries(params)) {
+      if (val !== undefined) {
+        await this.#periodInputs[key as keyof typeof params].fill(val)
+      }
+    }
+  }
+
+  #questionnaireInputs = {
+    activeStart: new DatePicker(this.page.findByDataQa('input-start')),
+    activeEnd: new DatePicker(this.page.findByDataQa('input-end')),
+    title: new TextInput(this.page.findByDataQa('input-title-fi')),
     description: new TextInput(this.page.findByDataQa('input-description-fi')),
     descriptionSv: new TextInput(
       this.page.findByDataQa('input-description-sv')
@@ -48,60 +73,62 @@ export class HolidayPeriodsPage {
     descriptionLinkEn: new TextInput(
       this.page.findByDataQa('input-description-link-en')
     ),
-    freePeriodDeadline: new TextInput(
-      this.page.findByDataQa('input-free-period-deadline')
+    fixedPeriodOptions: new TextInput(
+      this.page.findByDataQa('input-fixed-period-options')
     ),
-    freePeriodQuestion: new TextInput(
-      this.page.findByDataQa('input-free-period-question-label-fi')
-    ),
-    freePeriodOptions: new TextInput(
-      this.page.findByDataQa('input-free-period-options')
-    ),
-    freePeriodOptionLabel: new TextInput(
-      this.page.findByDataQa('input-free-period-option-label-fi')
+    fixedPeriodOptionLabel: new TextInput(
+      this.page.findByDataQa('input-fixed-period-option-label-fi')
     )
   }
 
-  async fillForm(params: {
+  async fillQuestionnaireForm(params: {
+    period?: string
+    title?: string
     description?: string
     descriptionSv?: string
     descriptionEn?: string
     descriptionLink?: string
     descriptionLinkSv?: string
     descriptionLinkEn?: string
-    start?: string
-    end?: string
-    reservationDeadline?: string
-    showReservationBannerFrom?: string
-    freePeriodDeadline?: string
-    freePeriodQuestion?: string
-    freePeriodOptions?: string
-    freePeriodOptionLabel?: string
+    activeStart?: string
+    activeEnd?: string
+    fixedPeriodOptions?: string
+    fixedPeriodOptionLabel?: string
   }) {
     for (const [key, val] of Object.entries(params)) {
       if (val !== undefined) {
-        await this.#inputs[key as keyof typeof params].fill(val)
+        if (key === 'period') {
+          await new SelectionChip(
+            this.page.findByDataQa(`period-${val}`)
+          ).click()
+        } else {
+          await this.#questionnaireInputs[
+            key as keyof Omit<typeof params, 'period'>
+          ].fill(val)
+        }
       }
     }
   }
 
-  toggleFreePeriod(check = true) {
-    const checkbox = new Checkbox(
-      this.page.findByDataQa('input-use-free-absence-period')
-    )
-    return check ? checkbox.check() : checkbox.uncheck()
-  }
-
   async submit() {
-    return this.page.findByDataQa('save-holiday-period-btn').click()
+    return this.page.findByDataQa('save-btn').click()
   }
 
   async editHolidayPeriod(nth: number) {
-    return this.page.findAllByDataQa('btn-edit').nth(nth).click()
+    return this.#periodRows.nth(nth).findByDataQa('btn-edit').click()
   }
 
   async deleteHolidayPeriod(nth: number) {
-    await this.page.findAllByDataQa('btn-delete').nth(nth).click()
+    await this.#periodRows.nth(nth).findByDataQa('btn-delete').click()
+    return this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async editQuestionnaire(nth: number) {
+    return this.#questionnaireRows.nth(nth).findByDataQa('btn-edit').click()
+  }
+
+  async deleteQuestionnaire(nth: number) {
+    await this.#questionnaireRows.nth(nth).findByDataQa('btn-delete').click()
     return this.page.findByDataQa('modal-okBtn').click()
   }
 }
