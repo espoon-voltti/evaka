@@ -5,11 +5,9 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
-import { headerHeightDesktop } from 'citizen-frontend/header/const'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { scrollToPos } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
@@ -17,8 +15,10 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
+import { bannerHeightDesktop, headerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
+import { scrollMainToPos } from '../utils'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
 import { Reservations } from './calendar-elements'
@@ -56,9 +56,15 @@ export default React.memo(function CalendarGridView({
 
     if (pos) {
       const offset =
-        headerHeightDesktop + (headerRef.current?.clientHeight ?? 0) + 16
+        headerHeightDesktop +
+        bannerHeightDesktop +
+        (headerRef.current?.clientHeight ?? 0) +
+        16
 
-      scrollToPos({ left: 0, top: pos - offset })
+      scrollMainToPos({
+        left: 0,
+        top: pos - offset
+      })
     }
   }, [])
 
@@ -67,15 +73,22 @@ export default React.memo(function CalendarGridView({
     [onCreateAbsencesClicked]
   )
 
-  const { holidayPeriods: holidayPeriodResult } = useHolidayPeriods()
+  const {
+    holidayPeriods: holidayPeriodResult,
+    activeFixedPeriodQuestionnaire
+  } = useHolidayPeriods()
   const holidayPeriods = useMemo<FiniteDateRange[]>(
     () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
     [holidayPeriodResult]
   )
+  const showBanner = useMemo<boolean>(
+    () => activeFixedPeriodQuestionnaire.getOrElse(false) != undefined,
+    [activeFixedPeriodQuestionnaire]
+  )
 
   return (
     <>
-      <StickyHeader ref={headerRef}>
+      <StickyHeader ref={headerRef} bannerIsVisible={showBanner}>
         <Container>
           <PageHeaderRow>
             <H1 noMargin>{i18n.calendar.title}</H1>
@@ -243,9 +256,9 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
 const daysWithoutWeekends = [0, 1, 2, 3, 4]
 const daysWithWeekends = [0, 1, 2, 3, 4, 5, 6]
 
-const StickyHeader = styled.div`
+const StickyHeader = styled.div<{ bannerIsVisible: boolean }>`
   position: sticky;
-  top: ${headerHeightDesktop}px;
+  top: ${(p) => (p.bannerIsVisible ? bannerHeightDesktop : 0)}px;
   z-index: 2;
   width: 100%;
   background: ${(p) => p.theme.colors.grayscale.g0};

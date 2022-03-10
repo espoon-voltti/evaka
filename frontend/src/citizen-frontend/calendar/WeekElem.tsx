@@ -5,10 +5,8 @@
 import React, { useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
-import { headerHeightMobile } from 'citizen-frontend/header/const'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { scrollToPos } from 'lib-common/utils/scrolling'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -17,7 +15,9 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { headerHeightMobile } from '../header/const'
 import { useLang, useTranslation } from '../localization'
+import { scrollMainToPos } from '../utils'
 
 import { WeeklyData } from './CalendarListView'
 import { Reservations } from './calendar-elements'
@@ -90,7 +90,10 @@ const DayElem = React.memo(function DayElem({
 
       if (pos) {
         const offset = headerHeightMobile + 16
-        scrollToPos({ left: 0, top: pos - offset })
+        scrollMainToPos({
+          left: 0,
+          top: pos - offset
+        })
       }
     }
   }, [])

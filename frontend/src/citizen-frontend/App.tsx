@@ -6,7 +6,9 @@ import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext } from 'react'
 import { Route, BrowserRouter, Redirect, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
+import styled from 'styled-components'
 
+import { desktopMin } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -26,6 +28,7 @@ import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
+import { headerHeightDesktop, headerHeightMobile } from './header/const'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
 import ChildIncomeStatementView from './income-statements/ChildIncomeStatementView'
@@ -243,12 +246,21 @@ function HandleRedirection() {
   )
 }
 
+const ScrollableMain = styled.main`
+  height: calc(100% - ${headerHeightMobile}px);
+  overflow: auto;
+
+  @media (min-width: ${desktopMin}) {
+    height: calc(100% - ${headerHeightDesktop}px);
+  }
+`
+
 function Main({ children }: { children: ReactNode }) {
   const { user } = useContext(AuthContext)
   const render = useCallback(() => <>{children}</>, [children])
   return (
-    <main>
+    <ScrollableMain id="main">
       <UnwrapResult result={user}>{render}</UnwrapResult>
-    </main>
+    </ScrollableMain>
   )
 }

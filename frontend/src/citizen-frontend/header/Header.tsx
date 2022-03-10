@@ -63,8 +63,6 @@ const HeaderContainer = styled.header<{ showMenu: boolean }>`
   z-index: 9;
   color: ${colors.grayscale.g0};
   background-color: ${colors.main.m2};
-  position: ${({ showMenu }) => (showMenu ? 'fixed' : 'sticky')};
-  top: 0;
   display: grid;
   grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
   height: ${headerHeightMobile}px;
