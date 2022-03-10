@@ -4,6 +4,7 @@
         <h2 class="${properties.customH2Class}">${msg("emailForgotTitle")}</h2>
     <#elseif section = "form">
         <p class="${properties.hsPClass!}">${msg("emailInstruction1")}</p>
+        <p class="${properties.hsPClass!}">${msg("emailInstruction2")}</p>
         <div id="kc-form-wrapper">
             <form id="kc-reset-password-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
                 <div class="${properties.kcFormGroupClass!}">
