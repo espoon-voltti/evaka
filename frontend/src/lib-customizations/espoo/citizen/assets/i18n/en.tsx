@@ -153,7 +153,9 @@ const en: Translations = {
   },
   ctaBanner: {
     holidayPeriodCta: (period: string, deadline: string) =>
-      `Report holidays and make reservations for ${period} by ${deadline}.`
+      `Report holidays and make reservations for ${period} by ${deadline}.`,
+    fixedPeriodCta: (deadline: string) =>
+      `Answer the absence questionnaire before ${deadline}.`
   },
   errorPage: {
     reload: 'Reload page',

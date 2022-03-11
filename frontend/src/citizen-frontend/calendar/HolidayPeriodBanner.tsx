@@ -5,8 +5,6 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -16,7 +14,6 @@ import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
 import { UnwrapResult } from '../async-rendering'
-import { useUser } from '../auth/state'
 import { bannerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
@@ -41,36 +38,24 @@ const Banner = styled(Container)`
 `
 
 interface HolidayPeriodBannerProps {
-  period: FiniteDateRange
-  reservationDeadline: LocalDate
+  text: string
 }
 
 const HolidayPeriodBanner = React.memo(function HolidayPeriodBanner({
-  period,
-  reservationDeadline
+  text
 }: HolidayPeriodBannerProps) {
-  const i18n = useTranslation()
   return (
     <Banner data-qa="holiday-period-banner">
       <RoundIcon content={faTreePalm} size="L" color={colors.status.warning} />
-      <span>
-        {i18n.ctaBanner.holidayPeriodCta(
-          period.formatCompact(''),
-          reservationDeadline.format()
-        )}
-      </span>
+      <span>{text}</span>
     </Banner>
   )
 })
 
 export default React.memo(function BannerWrapper() {
-  const user = useUser()
-  const { activeFixedPeriodQuestionnaire } = useHolidayPeriods()
-  const status = useDataStatus(activeFixedPeriodQuestionnaire)
-
-  if (!user) {
-    return null
-  }
+  const { holidayBanner } = useHolidayPeriods()
+  const status = useDataStatus(holidayBanner)
+  const i18n = useTranslation()
 
   return (
     <BannerBackground
@@ -78,18 +63,31 @@ export default React.memo(function BannerWrapper() {
       data-status={status}
     >
       <UnwrapResult
-        result={activeFixedPeriodQuestionnaire}
+        result={holidayBanner}
         loading={() => null}
         failure={() => null}
       >
-        {(questionnaire) =>
-          questionnaire ? (
-            <HolidayPeriodBanner
-              period={questionnaire.questionnaire.period}
-              reservationDeadline={questionnaire.questionnaire.active.end}
-            />
-          ) : null
-        }
+        {(banner) => {
+          switch (banner.type) {
+            case 'holiday':
+              return (
+                <HolidayPeriodBanner
+                  text={i18n.ctaBanner.holidayPeriodCta(
+                    banner.period.formatCompact(''),
+                    banner.deadline.format()
+                  )}
+                />
+              )
+            case 'questionnaire':
+              return (
+                <HolidayPeriodBanner
+                  text={i18n.ctaBanner.fixedPeriodCta(banner.deadline.format())}
+                />
+              )
+            default:
+              return null
+          }
+        }}
       </UnwrapResult>
     </BannerBackground>
   )

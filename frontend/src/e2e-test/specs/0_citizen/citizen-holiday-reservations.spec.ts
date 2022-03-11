@@ -36,8 +36,7 @@ let guardian: PersonBuilder
 
 const holidayPeriodFixture = () =>
   Fixture.holidayPeriod().with({
-    period,
-    reservationDeadline: LocalDate.of(2035, 12, 6)
+    period
   })
 const holidayQuestionnaireFixture = () =>
   Fixture.holidayQuestionnaire().with({
@@ -88,6 +87,24 @@ beforeEach(async () => {
 })
 
 describe('Holiday periods', () => {
+  describe('Holiday period questionnaire is inactive and there is a holiday', () => {
+    test('show banner when a holiday with a deadline exists', async () => {
+      await Fixture.holidayPeriod()
+        .with({
+          period,
+          reservationDeadline: LocalDate.of(2035, 12, 6)
+        })
+        .save()
+
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      expect(await calendar.getHolidayBannerContent()).toEqual(
+        'Ilmoita lomat ja tee varaukset 18.12.2035-08.01.2036 välille viimeistään 06.12.2035.'
+      )
+    })
+  })
+
   describe('Holiday period questionnaire is active', () => {
     beforeEach(async () => {
       const holidayPeriod = await holidayPeriodFixture().save()
@@ -101,7 +118,7 @@ describe('Holiday periods', () => {
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       expect(await calendar.getHolidayBannerContent()).toEqual(
-        'Ilmoita lomat ja tee varaukset 18.12.2035-08.01.2036 välille viimeistään 06.12.2035.'
+        'Vastaa poissaolokyselyyn 06.12.2035 mennessä.'
       )
     })
 
