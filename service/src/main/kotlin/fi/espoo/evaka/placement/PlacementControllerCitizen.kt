@@ -85,9 +85,8 @@ class PlacementControllerCitizen(
                 throw Forbidden("Placement termination not enabled for unit", "PLACEMENT_TERMINATION_DISABLED")
             }
             val terminatablePlacementGroup = dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
-                .also {
-                    // TODO list support for accessControl
-                    it.map { p -> p.id }.forEach { id -> accessControl.requirePermissionFor(user, Action.Citizen.Placement.TERMINATE, id) }
+                .also { placements ->
+                    accessControl.requirePermissionFor(user, Action.Citizen.Placement.TERMINATE, placements.map { it.id })
                 }
                 .let { mapToTerminatablePlacements(it) }
                 .find { it.unitId == body.unitId && it.type == body.type }
