@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DatePicker, Page, SelectionChip, TextInput } from '../../utils/page'
+import { DatePicker, Page, Radio, TextInput } from '../../utils/page'
 
 export class HolidayPeriodsPage {
   constructor(private readonly page: Page) {}
@@ -98,9 +98,7 @@ export class HolidayPeriodsPage {
     for (const [key, val] of Object.entries(params)) {
       if (val !== undefined) {
         if (key === 'period') {
-          await new SelectionChip(
-            this.page.findByDataQa(`period-${val}`)
-          ).click()
+          await new Radio(this.page.findByDataQa(`period-${val}`)).click()
         } else {
           await this.#questionnaireInputs[
             key as keyof Omit<typeof params, 'period'>

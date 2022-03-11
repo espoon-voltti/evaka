@@ -3067,6 +3067,7 @@ export const fi = {
     fixedPeriodOptions: 'Kausien vaihtoehdot',
     fixedPeriodOptionsPlaceholder:
       '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, pilkuilla tai rivinvaihdoilla erotettuna',
+    requiresStrongAuth: 'Vahva tunnistautuminen',
     conditionContinuousPlacement:
       'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus'
   }
