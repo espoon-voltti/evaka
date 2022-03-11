@@ -98,7 +98,7 @@ export default React.memo(function DesktopNav({
                 </>
               ) : null}
             </Nav>
-            <LanguageMenu />
+            <LanguageMenu alignRight={hideLoginButton} />
             {user ? (
               <UserMenu user={user} />
             ) : hideLoginButton ? null : (
@@ -184,7 +184,13 @@ export const CircledChar = styled.div`
   border-radius: 100%;
 `
 
-const LanguageMenu = React.memo(function LanguageMenu() {
+interface LanguageMenuProps {
+  alignRight: boolean
+}
+
+const LanguageMenu = React.memo(function LanguageMenu({
+  alignRight
+}: LanguageMenuProps) {
   const t = useTranslation()
   const [lang, setLang] = useLang()
   const [open, setOpen] = useState(false)
@@ -200,7 +206,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown data-qa="select-lang">
+        <DropDown data-qa="select-lang" alignRight={alignRight}>
           {langs.map((l: Lang) => (
             <DropDownItem
               key={l}
@@ -249,7 +255,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown data-qa="user-menu">
+        <DropDown data-qa="user-menu" alignRight={false}>
           <DropDownItem
             selected={window.location.pathname.includes('/personal-details')}
             data-qa="user-menu-personal-details"
@@ -316,7 +322,7 @@ const DropDownIcon = styled(FontAwesomeIcon)`
   margin-left: 8px;
 `
 
-const DropDown = styled.ul`
+const DropDown = styled.ul<{ alignRight: boolean }>`
   position: absolute;
   z-index: 10;
   list-style: none;
@@ -324,6 +330,7 @@ const DropDown = styled.ul`
   padding: 0;
   background: ${colors.grayscale.g0};
   box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
+  right: ${(p) => (p.alignRight ? '0' : 'unset')};
 `
 
 const DropDownItem = styled.button<{ selected: boolean }>`
