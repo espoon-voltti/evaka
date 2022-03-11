@@ -475,7 +475,9 @@ const en: Translations = {
         },
         errors: (count: number) =>
           count === 1 ? '1 error' : `${count} errors`,
-        hasErrors: 'Please correct the following information:'
+        hasErrors: 'Please correct the following information:',
+        invalidFields: (count: number) =>
+          `${count} fields with missing or invalid information`
       },
       actions: {
         hasVerified:

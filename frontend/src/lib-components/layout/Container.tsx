@@ -84,7 +84,6 @@ type CollapsibleContentAreaProps = ContentAreaProps & {
   toggleOpen: () => void
   title: ReactNode
   children: ReactNode
-  validationErrors?: number
 }
 
 export const CollapsibleContentArea = React.memo(
@@ -93,7 +92,6 @@ export const CollapsibleContentArea = React.memo(
     toggleOpen,
     title,
     children,
-    validationErrors,
     ...props
   }: CollapsibleContentAreaProps) {
     return (
@@ -104,10 +102,7 @@ export const CollapsibleContentArea = React.memo(
           className={classNames({ open })}
           role="button"
         >
-          <TitleWrapper>{title}</TitleWrapper>
-          <CollapsibleContentAreaDescription
-            numberOfErrors={validationErrors ?? 0}
-          />
+          {title}
           <TitleIcon
             icon={open ? faChevronUp : faChevronDown}
             data-qa="collapsible-trigger"
@@ -119,38 +114,11 @@ export const CollapsibleContentArea = React.memo(
   }
 )
 
-function CollapsibleContentAreaDescription({
-  numberOfErrors
-}: {
-  numberOfErrors: number
-}) {
-  // TODO: add translation
-  return (
-    <>
-      {numberOfErrors > 0 && (
-        <StyledP lang="fi">
-          {numberOfErrors} kenttää jossa puutteellisia tai virheellisiä tietoja.
-        </StyledP>
-      )}
-    </>
-  )
-}
-
-const StyledP = styled.p`
-  border: 0;
-  clip: rect(0 0 0 0);
-  height: 1px;
-  width: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  position: absolute;
-`
-
 const TitleContainer = styled.button`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   padding: 16px 8px;
@@ -168,10 +136,6 @@ const TitleContainer = styled.button`
   :focus {
     border-color: ${(p) => p.theme.colors.main.m2Focus};
   }
-`
-
-const TitleWrapper = styled.div`
-  flex-grow: 1;
 `
 
 const TitleIcon = styled(FontAwesomeIcon)`

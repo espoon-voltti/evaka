@@ -441,7 +441,11 @@ export default {
         },
         errors: (count: number) =>
           count === 1 ? '1 virhe' : `${count} virhettä`,
-        hasErrors: 'Ole hyvä ja tarkista seuraavat tiedot hakemuksestasi:'
+        hasErrors: 'Ole hyvä ja tarkista seuraavat tiedot hakemuksestasi:',
+        invalidFields: (count: number) => `${count} ${
+          count === 1 ? 'kenttä' : 'kenttää'
+        } jossa puutteellisia tai
+        virheellisiä tietoja.`
       },
       actions: {
         verify: 'Tarkista hakemus',

@@ -464,7 +464,9 @@ const sv: Translations = {
         },
         errors: (count: number) => (count === 1 ? '1 fel' : `${count} fel`),
         hasErrors:
-          'Var så god och kontrollera följande information för din ansökan'
+          'Var så god och kontrollera följande information för din ansökan',
+        invalidFields: (count: number) =>
+          `${count} saknar eller innehåller ogiltig information`
       },
       actions: {
         verify: 'Granska ansökan',
