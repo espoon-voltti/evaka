@@ -267,7 +267,6 @@ const sv: Translations = {
       }
     },
     holidayModal: {
-      title: 'Meddela semester',
       additionalInformation: 'Läs mera',
       holidayFor: 'Semestertid för:',
       childOnHoliday: 'Barnet är på semester',
