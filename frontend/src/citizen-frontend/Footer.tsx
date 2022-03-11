@@ -65,4 +65,8 @@ const FooterContainer = styled(Container)`
   @media (max-width: ${desktopMin}) {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
+
+  a:hover {
+    text-decoration: underline;
+  }
 `
