@@ -55,9 +55,7 @@ import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsEmployee
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
-import fi.espoo.evaka.shared.security.actionrule.SsnAddingEnabledAndHasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
-import fi.espoo.evaka.shared.security.actionrule.WasUploadedByAnyEmployeeAndHasGlobalRole
 
 @ExcludeCodeGen
 sealed interface Action {
@@ -271,8 +269,8 @@ sealed interface Action {
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment(),
             IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocumentOfAttachment()
         ),
-        DELETE_APPLICATION_ATTACHMENT(WasUploadedByAnyEmployeeAndHasGlobalRole(SERVICE_WORKER).attachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
-        DELETE_INCOME_STATEMENT_ATTACHMENT(WasUploadedByAnyEmployeeAndHasGlobalRole(FINANCE_ADMIN).attachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        DELETE_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        DELETE_INCOME_STATEMENT_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN).andAttachmentWasUploadedByAnyEmployee(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
         DELETE_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
@@ -509,7 +507,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
-        ADD_SSN(SsnAddingEnabledAndHasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN).person()),
+        ADD_SSN(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN).andPersonHasSsnAddingEnabled()),
         CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
