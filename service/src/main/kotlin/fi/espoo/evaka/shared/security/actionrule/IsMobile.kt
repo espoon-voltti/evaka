@@ -130,11 +130,12 @@ AND img.id = ANY(:ids)
         Query<GroupId> { tx, mobileId, ids ->
             tx.createQuery(
                 """
-SELECT daycare_group_id AS id
-FROM daycare_group_acl_view
+SELECT g.id
+FROM daycare_group g
+JOIN daycare_acl_view acl ON g.daycare_id = acl.daycare_id
 WHERE employee_id = :userId
 AND role = 'MOBILE'
-AND daycare_group_id = ANY(:ids)
+AND g.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("ids", ids.toTypedArray())
@@ -149,8 +150,9 @@ AND daycare_group_id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT gn.id
-FROM daycare_group_acl_view
-JOIN group_note gn ON gn.group_id = daycare_group_acl_view.daycare_group_id
+FROM group_note gn
+JOIN daycare_group g ON gn.group_id = g.id
+JOIN daycare_acl_view acl ON g.daycare_id = acl.daycare_id
 WHERE employee_id = :userId
 AND role = 'MOBILE'
 AND gn.id = ANY(:ids)

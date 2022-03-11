@@ -23,17 +23,6 @@ CREATE VIEW daycare_acl_view(employee_id, daycare_id, role) AS (
     JOIN mobile_device ON daycare_acl.employee_id = mobile_device.employee_id
 );
 
-CREATE VIEW daycare_group_acl_view(employee_id, daycare_group_id, role) AS (
-    SELECT employee_id, dp.id, role
-    FROM daycare_group dp
-    JOIN daycare_acl_view USING (daycare_id)
-
-    UNION ALL
-
-    SELECT employee_id, daycare_group_id, 'GROUP_STAFF'
-    FROM daycare_group_acl acl
-);
-
 CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
     SELECT employee_id, pl.child_id, role
     FROM placement pl

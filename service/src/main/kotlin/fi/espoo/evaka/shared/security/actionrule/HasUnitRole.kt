@@ -444,10 +444,11 @@ AND av.id = ANY(:ids)
         Query<GroupId> { tx, user, ids ->
             tx.createQuery(
                 """
-SELECT daycare_group_id AS id, role
-FROM daycare_group_acl_view
+SELECT g.id, role
+FROM daycare_group g
+JOIN daycare_acl USING (daycare_id)
 WHERE employee_id = :userId
-AND daycare_group_id = ANY(:ids)
+AND g.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
@@ -462,8 +463,9 @@ AND daycare_group_id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT gn.id, role
-FROM daycare_group_acl_view
-JOIN group_note gn ON gn.group_id = daycare_group_acl_view.daycare_group_id
+FROM group_note gn
+JOIN daycare_group g ON gn.group_id = g.id
+JOIN daycare_acl USING (daycare_id)
 WHERE employee_id = :userId
 AND gn.id = ANY(:ids)
                 """.trimIndent()
