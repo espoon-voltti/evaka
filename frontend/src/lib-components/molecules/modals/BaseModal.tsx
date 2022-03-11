@@ -46,7 +46,6 @@ export default React.memo(function BaseModal(props: Props) {
           mobileFullScreen={props.mobileFullScreen}
           data-qa="modal"
         >
-          <CloseButton icon={faTimes} onClick={props.close} />
           <ModalTitle>
             {props.icon && (
               <>
@@ -68,6 +67,7 @@ export default React.memo(function BaseModal(props: Props) {
             )}
           </ModalTitle>
           {props.children}
+          <CloseButton icon={faTimes} onClick={props.close} />
         </ModalContainer>
       </ModalWrapper>
     </ModalBackground>
