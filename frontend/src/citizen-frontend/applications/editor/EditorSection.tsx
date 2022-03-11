@@ -12,6 +12,8 @@ import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { useLang, useTranslation } from '../../localization'
+
 type Props = {
   title: string
   validationErrors: number
@@ -21,6 +23,8 @@ type Props = {
 }
 
 export default React.memo(function EditorSection(props: Props) {
+  const i18n = useTranslation()
+  const [lang] = useLang()
   const [open, setOpen] = useState(props.openInitially === true)
   const ref = useRef<HTMLDivElement>(null)
   const toggleOpen = useCallback(() => {
@@ -35,23 +39,27 @@ export default React.memo(function EditorSection(props: Props) {
         open={open}
         toggleOpen={toggleOpen}
         title={
-          <>
-            <TitleWrapper>
-              <H2 noMargin>{props.title}</H2>
-              {props.validationErrors !== 0 ? (
+          <TitleWrapper>
+            <H2 noMargin>{props.title}</H2>
+            {props.validationErrors !== 0 && (
+              <div>
                 <ErrorsIcon
                   content={props.validationErrors.toString()}
                   size="m"
                   color={colors.status.warning}
                   aria-hidden="true"
                 />
-              ) : null}
-            </TitleWrapper>
-          </>
+                <ErrorsDescription lang={lang}>
+                  {i18n.applications.editor.heading.invalidFields(
+                    props.validationErrors
+                  )}
+                </ErrorsDescription>
+              </div>
+            )}
+          </TitleWrapper>
         }
         opaque
         paddingVertical="L"
-        validationErrors={props.validationErrors}
       >
         {props.children}
       </CollapsibleContentArea>
@@ -60,6 +68,7 @@ export default React.memo(function EditorSection(props: Props) {
 })
 
 const TitleWrapper = styled.div`
+  flex-grow: 1;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -70,4 +79,15 @@ const TitleWrapper = styled.div`
 
 const ErrorsIcon = styled(RoundIcon)`
   margin: 0 ${defaultMargins.s};
+`
+
+const ErrorsDescription = styled.p`
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
 `
