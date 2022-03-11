@@ -1312,6 +1312,8 @@ workflows:
             - apigw_build_and_push_image
             - proxy_build_and_push_image
             - service_build_and_push_image
+            - service_test
+            - service_integration_test
           matrix:
             parameters:
               target_env: [dev, test, staging, prod]
