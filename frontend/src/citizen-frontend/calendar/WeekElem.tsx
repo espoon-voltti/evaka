@@ -7,12 +7,9 @@ import styled, { css } from 'styled-components'
 
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { bannerApproxHeightMobile, headerHeightMobile } from '../header/const'
@@ -82,7 +79,7 @@ const DayElem = React.memo(function DayElem({
   isHolidayPeriod
 }: DayProps) {
   const [lang] = useLang()
-  const ref = useRef<HTMLDivElement>()
+  const ref = useRef<HTMLButtonElement>()
 
   useEffect(() => {
     if (ref.current) {
@@ -99,13 +96,12 @@ const DayElem = React.memo(function DayElem({
   }, [])
 
   return (
-    <DayDiv
+    <Day
       ref={(e) => {
         if (dailyReservations.date.isToday()) {
           ref.current = e ?? undefined
         }
       }}
-      alignItems="center"
       today={dailyReservations.date.isToday()}
       holidayPeriod={isHolidayPeriod}
       onClick={() => selectDate(dailyReservations.date)}
@@ -115,20 +111,29 @@ const DayElem = React.memo(function DayElem({
         <div>{dailyReservations.date.format('EEEEEE', lang)}</div>
         <div>{dailyReservations.date.format('d.M.')}</div>
       </DayColumn>
+      <Gap size="s" horizontal />
       <div data-qa="reservations">
         <Reservations data={dailyReservations} />
       </div>
+      <Gap size="s" horizontal />
       {dailyReservations.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
-    </DayDiv>
+    </Day>
   )
 })
 
-const DayDiv = styled(FixedSpaceRow)<{
+const Day = styled.button<{
   today: boolean
   holidayPeriod: boolean
 }>`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
   position: relative;
   padding: ${defaultMargins.s} ${defaultMargins.s};
+  background: transparent;
+  margin: 0;
+  border: none;
   border-bottom: 1px solid ${colors.grayscale.g15};
   border-left: 6px solid
     ${(p) => (p.today ? colors.status.success : 'transparent')};
@@ -138,6 +143,10 @@ const DayDiv = styled(FixedSpaceRow)<{
     css`
       background-color: ${colors.accents.a10powder};
     `}
+
+  :focus {
+    outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
+  }
 `
 
 const DayColumn = styled(FixedSpaceColumn)<{ inactive: boolean }>`

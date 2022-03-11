@@ -48,7 +48,7 @@ export default React.memo(function CalendarGridView({
   const i18n = useTranslation()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
   const headerRef = useRef<HTMLDivElement>(null)
-  const todayRef = useRef<HTMLDivElement>()
+  const todayRef = useRef<HTMLButtonElement>()
 
   useEffect(() => {
     const pos = todayRef.current?.getBoundingClientRect().top
@@ -141,7 +141,7 @@ export default React.memo(function CalendarGridView({
                     const dateIsOnMonth = d.date.month === month
                     const isToday = d.date.isToday() && dateIsOnMonth
 
-                    return (
+                    return dateIsOnMonth ? (
                       <DayCell
                         key={`${d.date.formatIso()}${month}${year}`}
                         ref={(e) => {
@@ -154,15 +154,10 @@ export default React.memo(function CalendarGridView({
                           p.includes(d.date)
                         )}
                         selected={
-                          dateIsOnMonth &&
                           d.date.formatIso() === selectedDate?.formatIso()
                         }
                         onClick={() => selectDate(d.date)}
-                        data-qa={
-                          dateIsOnMonth
-                            ? `desktop-calendar-day-${d.date.formatIso()}`
-                            : undefined
-                        }
+                        data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
                       >
                         <DayCellHeader>
                           <DayCellDate inactive={!dayIsReservable(d)}>
@@ -172,8 +167,9 @@ export default React.memo(function CalendarGridView({
                         <DayCellReservations data-qa="reservations">
                           <Reservations data={d} />
                         </DayCellReservations>
-                        {!dateIsOnMonth ? <FadeOverlay /> : null}
                       </DayCell>
+                    ) : (
+                      <InactiveCell />
                     )
                   })}
                 </Fragment>
@@ -287,6 +283,12 @@ const CalendarHeader = styled.div<{ includeWeekends: boolean }>`
 
 const Grid = styled.div<{ includeWeekends: boolean }>`
   ${({ includeWeekends }) => gridPattern(includeWeekends)}
+  > * {
+    margin-top: 0;
+    margin-left: 0;
+    margin-bottom: 1px;
+    margin-right: 1px;
+  }
 `
 
 const HeadingCell = styled.div`
@@ -305,11 +307,15 @@ const MonthTitle = styled(H2).attrs({ noMargin: true })`
   color: ${(p) => p.theme.colors.main.m1};
 `
 
-const DayCell = styled.div<{
+const DayCell = styled.button<{
   today: boolean
   selected: boolean
   holidayPeriod: boolean
 }>`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
   position: relative;
   min-height: 150px;
   padding: ${defaultMargins.s};
@@ -317,6 +323,7 @@ const DayCell = styled.div<{
     p.holidayPeriod
       ? p.theme.colors.accents.a10powder
       : p.theme.colors.grayscale.g0};
+  border: none;
   outline: 1px solid ${colors.grayscale.g15};
   cursor: pointer;
   user-select: none;
@@ -334,11 +341,13 @@ const DayCell = styled.div<{
       ? css`
           box-shadow: 0 2px 3px 2px #00000030;
           z-index: 1;
-          /* higher z-index causes right and bottom borders to shift when using outline */
-          margin-left: -1px;
-          margin-top: -1px;
         `
       : ''}
+
+  :focus {
+    box-shadow: 0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};
+    z-index: 1;
+  }
 `
 
 const DayCellHeader = styled.div`
@@ -357,13 +366,6 @@ const DayCellDate = styled.div<{ inactive: boolean }>`
 
 const DayCellReservations = styled.div``
 
-const FadeOverlay = styled.div`
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: calc(100% - 2px);
-  height: calc(100% - 2px);
-  z-index: 1;
-  opacity: 0.8;
-  background-color: ${colors.grayscale.g0};
+const InactiveCell = styled.div`
+  background-color: transparent;
 `
