@@ -2,6 +2,24 @@ DROP VIEW IF EXISTS person_acl_view;
 DROP VIEW IF EXISTS child_acl_view;
 DROP VIEW IF EXISTS daycare_group_acl_view;
 DROP VIEW IF EXISTS daycare_acl_view;
+DROP VIEW IF EXISTS mobile_device_daycare_acl_view;
+
+-- Mapping between mobile devices and daycares
+CREATE VIEW mobile_device_daycare_acl_view(mobile_device_id, daycare_id) AS (
+    -- Unit devices
+    SELECT mobile_device.id AS mobile_device_id, unit_id AS daycare_id
+    FROM mobile_device
+    WHERE unit_id IS NOT NULL
+
+    UNION ALL
+
+    -- Personal devices
+    SELECT mobile_device.id AS mobile_device_id, acl.daycare_id
+    FROM mobile_device
+    JOIN daycare_acl acl
+    ON mobile_device.employee_id = acl.employee_id
+    WHERE unit_id IS NULL
+);
 
 -- Effective ACL role in a daycare for a user
 --
@@ -12,15 +30,8 @@ CREATE VIEW daycare_acl_view(employee_id, daycare_id, role) AS (
 
     UNION ALL
 
-    SELECT id, unit_id, 'MOBILE'
-    FROM mobile_device
-    WHERE unit_id IS NOT NULL
-
-    UNION ALL
-
-    SELECT mobile_device.id, daycare_acl.daycare_id, 'MOBILE'
-    FROM daycare_acl
-    JOIN mobile_device ON daycare_acl.employee_id = mobile_device.employee_id
+    SELECT mobile_device_id AS employee_id, daycare_id, 'MOBILE'
+    FROM mobile_device_daycare_acl_view
 );
 
 CREATE VIEW child_acl_view(employee_id, child_id, role) AS (

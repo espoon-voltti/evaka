@@ -132,9 +132,8 @@ AND img.id = ANY(:ids)
                 """
 SELECT g.id
 FROM daycare_group g
-JOIN daycare_acl_view acl ON g.daycare_id = acl.daycare_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
+WHERE acl.mobile_device_id = :userId
 AND g.id = ANY(:ids)
                 """.trimIndent()
             )
@@ -152,9 +151,8 @@ AND g.id = ANY(:ids)
 SELECT gn.id
 FROM group_note gn
 JOIN daycare_group g ON gn.group_id = g.id
-JOIN daycare_acl_view acl ON g.daycare_id = acl.daycare_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
+WHERE acl.mobile_device_id = :userId
 AND gn.id = ANY(:ids)
                 """.trimIndent()
             )
@@ -170,9 +168,8 @@ AND gn.id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT daycare_id AS id
-FROM daycare_acl_view
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM mobile_device_daycare_acl_view
+WHERE mobile_device_id = :userId
 AND daycare_id = ANY(:ids)
                 """.trimIndent()
             )
