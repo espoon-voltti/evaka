@@ -4,6 +4,7 @@
 
 import {
   FixedPeriodQuestionnaire,
+  FixedPeriodQuestionnaireWithChildren,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 
@@ -39,4 +40,12 @@ export const deserializeFixedPeriodQuestionnaire = ({
   active: FiniteDateRange.parseJson(active),
   period: FiniteDateRange.parseJson(period),
   periodOptions: periodOptions.map((o) => FiniteDateRange.parseJson(o))
+})
+
+export const deserializeFixedPeriodQuestionnaireAndChildren = ({
+  questionnaire,
+  eligibleChildren
+}: JsonOf<FixedPeriodQuestionnaireWithChildren>): FixedPeriodQuestionnaireWithChildren => ({
+  questionnaire: deserializeFixedPeriodQuestionnaire(questionnaire),
+  eligibleChildren
 })

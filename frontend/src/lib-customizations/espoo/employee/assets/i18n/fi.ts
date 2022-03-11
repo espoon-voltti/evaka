@@ -3066,6 +3066,8 @@ export const fi = {
       'Esim. Lapset ovat 8 viikkoa poissa aikavälillä',
     fixedPeriodOptions: 'Kausien vaihtoehdot',
     fixedPeriodOptionsPlaceholder:
-      '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, pilkuilla tai rivinvaihdoilla erotettuna'
+      '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, pilkuilla tai rivinvaihdoilla erotettuna',
+    conditionContinuousPlacement:
+      'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus'
   }
 }

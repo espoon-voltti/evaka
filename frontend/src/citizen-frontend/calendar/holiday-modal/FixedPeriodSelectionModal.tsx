@@ -14,6 +14,7 @@ import {
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
+import { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -29,15 +30,17 @@ const initializeForm = (children: ReservationChild[]): FormState =>
 interface Props {
   close: () => void
   reload: () => void
-  availableChildren: ReservationChild[]
   questionnaire: FixedPeriodQuestionnaire
+  availableChildren: ReservationChild[]
+  eligibleChildren: UUID[]
 }
 
 export default React.memo(function FixedPeriodSelectionModal({
   close,
   reload,
+  questionnaire,
   availableChildren,
-  questionnaire
+  eligibleChildren
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -87,12 +90,18 @@ export default React.memo(function FixedPeriodSelectionModal({
             data-qa={`holiday-section-${child.id}`}
           >
             <H2>{formatPreferredName(child)}</H2>
-            <PeriodSelector
-              label={questionnaire.periodOptionLabel[lang]}
-              options={questionnaire.periodOptions}
-              value={fixedPeriods[child.id]}
-              onSelectPeriod={selectPeriod(child.id)}
-            />
+            {eligibleChildren.includes(child.id) ? (
+              <PeriodSelector
+                label={questionnaire.periodOptionLabel[lang]}
+                options={questionnaire.periodOptions}
+                value={fixedPeriods[child.id]}
+                onSelectPeriod={selectPeriod(child.id)}
+              />
+            ) : questionnaire.conditions.continuousPlacement ? (
+              i18n.calendar.holidayModal.notEligible(
+                questionnaire.conditions.continuousPlacement
+              )
+            ) : null}
           </HolidaySection>
         ))}
       </FixedSpaceColumn>

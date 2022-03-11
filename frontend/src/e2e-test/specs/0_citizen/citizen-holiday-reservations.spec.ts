@@ -8,11 +8,15 @@ import LocalDate from 'lib-common/local-date'
 import { resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
+  DaycareBuilder,
   daycareFixture,
   daycareGroupFixture,
   enduserChildFixtureJari,
+  enduserChildFixtureKaarina,
   enduserGuardianFixture,
-  Fixture
+  Fixture,
+  HolidayPeriodBuilder,
+  PersonBuilder
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -27,22 +31,52 @@ const period = new FiniteDateRange(
 )
 const child = enduserChildFixtureJari
 const mockedDate = LocalDate.of(2035, 12, 1)
+let daycare: DaycareBuilder
+let guardian: PersonBuilder
+
+const holidayPeriodFixture = () =>
+  Fixture.holidayPeriod().with({
+    period,
+    reservationDeadline: LocalDate.of(2035, 12, 6)
+  })
+const holidayQuestionnaireFixture = () =>
+  Fixture.holidayQuestionnaire().with({
+    absenceType: 'FREE_ABSENCE',
+    active: new FiniteDateRange(LocalDate.today(), LocalDate.of(2035, 12, 6)),
+    description: {
+      en: 'Please submit your reservations for 18.12.2035 - 8.1.2036 asap',
+      fi: 'Ystävällisesti pyydän tekemään varauksenne ajalle 18.12.2035 - 8.1.2036 heti kun mahdollista, kuitenkin viimeistään 6.12.',
+      sv: 'Vänligen samma på svenska för 18.12.2035 - 8.1.2036'
+    },
+    periodOptionLabel: {
+      en: 'My child is away for 8 weeks between',
+      fi: 'Lapseni on poissa 8 viikkoa aikavälillä',
+      sv: 'Mitt barn är borta 8 veckor mellan'
+    },
+    periodOptions: [
+      new FiniteDateRange(
+        LocalDate.of(2035, 12, 18),
+        LocalDate.of(2035, 12, 25)
+      ),
+      new FiniteDateRange(LocalDate.of(2035, 12, 26), LocalDate.of(2036, 1, 1)),
+      new FiniteDateRange(LocalDate.of(2036, 1, 2), LocalDate.of(2036, 1, 8))
+    ]
+  })
 
 beforeEach(async () => {
   await resetDatabase()
   page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
 
-  const daycare = await Fixture.daycare()
+  daycare = await Fixture.daycare()
     .with(daycareFixture)
     .careArea(await Fixture.careArea().with(careAreaFixture).save())
     .save()
   await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
 
-  const guardian = await Fixture.person().with(enduserGuardianFixture).save()
+  guardian = await Fixture.person().with(enduserGuardianFixture).save()
   const child1 = await Fixture.person().with(child).save()
   await Fixture.child(child1.data.id).save()
   await Fixture.guardian(child1, guardian).save()
-
   await Fixture.placement()
     .child(child1)
     .daycare(daycare)
@@ -56,49 +90,13 @@ beforeEach(async () => {
 describe('Holiday periods', () => {
   describe('Holiday period questionnaire is active', () => {
     beforeEach(async () => {
-      const holidayPeriod = await Fixture.holidayPeriod()
-        .with({
-          period,
-          reservationDeadline: LocalDate.of(2035, 12, 6)
-        })
-        .save()
-      await Fixture.holidayQuestionnaire()
+      const holidayPeriod = await holidayPeriodFixture().save()
+      await holidayQuestionnaireFixture()
         .withHolidayPeriod(holidayPeriod)
-        .with({
-          absenceType: 'FREE_ABSENCE',
-          active: new FiniteDateRange(
-            LocalDate.today(),
-            LocalDate.of(2035, 12, 6)
-          ),
-          description: {
-            en: 'Please submit your reservations for 18.12.2035 - 8.1.2036 asap',
-            fi: 'Ystävällisesti pyydän tekemään varauksenne ajalle 18.12.2035 - 8.1.2036 heti kun mahdollista, kuitenkin viimeistään 6.12.',
-            sv: 'Vänligen samma på svenska för 18.12.2035 - 8.1.2036'
-          },
-          periodOptionLabel: {
-            en: 'My child is away for 8 weeks between',
-            fi: 'Lapseni on poissa 8 viikkoa aikavälillä',
-            sv: 'Mitt barn är borta 8 veckor mellan'
-          },
-          periodOptions: [
-            new FiniteDateRange(
-              LocalDate.of(2035, 12, 18),
-              LocalDate.of(2035, 12, 25)
-            ),
-            new FiniteDateRange(
-              LocalDate.of(2035, 12, 26),
-              LocalDate.of(2036, 1, 1)
-            ),
-            new FiniteDateRange(
-              LocalDate.of(2036, 1, 2),
-              LocalDate.of(2036, 1, 8)
-            )
-          ]
-        })
         .save()
     })
 
-    test('A holiday reservations banner is shown on calendar page', async () => {
+    test('The holiday reservations banner is shown on calendar page', async () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
@@ -132,4 +130,79 @@ describe('Holiday periods', () => {
       )
     })
   })
+
+  describe('Holiday period questionnaire is inactive', () => {
+    beforeEach(async () => {
+      const holidayPeriod = await holidayPeriodFixture().save()
+      await holidayQuestionnaireFixture()
+        .withHolidayPeriod(holidayPeriod)
+        .with({
+          active: new FiniteDateRange(
+            LocalDate.of(1990, 1, 1),
+            LocalDate.of(1990, 1, 31)
+          )
+        })
+        .save()
+    })
+
+    test('The holiday reservations banner is not shown on calendar page', async () => {
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayBannerNotVisible()
+    })
+  })
+
+  describe('Child eligibility', () => {
+    let holidayPeriod: HolidayPeriodBuilder
+    beforeEach(async () => {
+      holidayPeriod = await holidayPeriodFixture().save()
+    })
+
+    test('The holiday reservations banner is not shown if no child is eligible', async () => {
+      await holidayQuestionnaireFixture()
+        .withHolidayPeriod(holidayPeriod)
+        .with({
+          conditions: {
+            continuousPlacement: new FiniteDateRange(
+              LocalDate.of(1990, 1, 1),
+              LocalDate.of(1990, 1, 31)
+            )
+          }
+        })
+        .save()
+
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayBannerNotVisible()
+    })
+
+    test('The holiday reservation banner is shown if one of two children is eligible', async () => {
+      const child2 = await Fixture.person()
+        .with(enduserChildFixtureKaarina)
+        .save()
+      await Fixture.child(child2.data.id).save()
+      await Fixture.guardian(child2, guardian).save()
+
+      await holidayQuestionnaireFixture()
+        .withHolidayPeriod(holidayPeriod)
+        .with({
+          conditions: {
+            continuousPlacement: new FiniteDateRange(
+              LocalDate.of(2022, 1, 1),
+              LocalDate.of(2022, 1, 31)
+            )
+          }
+        })
+        .save()
+
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayModalButtonVisible()
+    })
+  })
 })
+
+// TODO: Add tests for the actual holiday modal

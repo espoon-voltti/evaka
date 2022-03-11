@@ -59,6 +59,8 @@ interface FormState {
   periodOptionLabelFi: string
   periodOptionLabelSv: string
   periodOptionLabelEn: string
+  conditionContinuousPlacementStart: string
+  conditionContinuousPlacementEnd: string
 }
 
 const parseFiniteDateRange = (range: string): FiniteDateRange | null => {
@@ -83,7 +85,13 @@ const formToQuestionnaireBody = (
 ): FixedPeriodQuestionnaireBody | undefined => {
   const parsedStart = LocalDate.parseFiOrNull(s.start)
   const parsedEnd = LocalDate.parseFiOrNull(s.end)
-  if (!(parsedStart && parsedEnd)) {
+  const parsedConditionContinuousPlacementStart = LocalDate.parseFiOrNull(
+    s.conditionContinuousPlacementStart
+  )
+  const parsedConditionContinuousPlacementEnd = LocalDate.parseFiOrNull(
+    s.conditionContinuousPlacementEnd
+  )
+  if (!parsedStart || !parsedEnd) {
     return undefined
   }
 
@@ -112,7 +120,14 @@ const formToQuestionnaireBody = (
     },
     periodOptions: parseDateRanges(s.periodOptions),
     conditions: {
-      continuousPlacement: null // TODO
+      continuousPlacement:
+        parsedConditionContinuousPlacementStart &&
+        parsedConditionContinuousPlacementEnd
+          ? new FiniteDateRange(
+              parsedConditionContinuousPlacementStart,
+              parsedConditionContinuousPlacementEnd
+            )
+          : null
     }
   }
 }
@@ -135,7 +150,9 @@ const emptyFormState = (holidayPeriodId: UUID): FormState => ({
   periodOptions: '',
   periodOptionLabelFi: '',
   periodOptionLabelSv: '',
-  periodOptionLabelEn: ''
+  periodOptionLabelEn: '',
+  conditionContinuousPlacementStart: '',
+  conditionContinuousPlacementEnd: ''
 })
 
 const toFormState = (p: FixedPeriodQuestionnaire | undefined): FormState =>
@@ -158,7 +175,11 @@ const toFormState = (p: FixedPeriodQuestionnaire | undefined): FormState =>
         periodOptions: p.periodOptions.map((r) => r.format()).join(', '),
         periodOptionLabelFi: p.periodOptionLabel.fi,
         periodOptionLabelSv: p.periodOptionLabel.sv,
-        periodOptionLabelEn: p.periodOptionLabel.en
+        periodOptionLabelEn: p.periodOptionLabel.en,
+        conditionContinuousPlacementStart:
+          p.conditions.continuousPlacement?.start.format() ?? '',
+        conditionContinuousPlacementEnd:
+          p.conditions.continuousPlacement?.end.format() ?? ''
       }
     : emptyFormState('')
 
@@ -183,9 +204,22 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     []
   )
 
-  const [errors, isValid, parsedStart, parsedEnd] = useMemo(() => {
+  const [
+    errors,
+    isValid,
+    parsedStart,
+    parsedEnd,
+    parsedConditionContinuousPlacementStart,
+    parsedConditionContinuousPlacementEnd
+  ] = useMemo(() => {
     const parsedStart = LocalDate.parseFiOrNull(form.start)
     const parsedEnd = LocalDate.parseFiOrNull(form.end)
+    const parsedConditionContinuousPlacementStart = LocalDate.parseFiOrNull(
+      form.conditionContinuousPlacementStart
+    )
+    const parsedConditionContinuousPlacementEnd = LocalDate.parseFiOrNull(
+      form.conditionContinuousPlacementEnd
+    )
 
     const errors: Record<keyof typeof form, ErrorKey | undefined> = {
       holidayPeriodId: validate(form.holidayPeriodId, required),
@@ -220,20 +254,51 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
       periodOptions:
         parseDateRanges(form.periodOptions).length === 0
           ? 'required'
+          : undefined,
+      conditionContinuousPlacementStart:
+        !form.conditionContinuousPlacementStart &&
+        !form.conditionContinuousPlacementEnd
+          ? undefined
+          : !parsedConditionContinuousPlacementStart
+          ? 'validDate'
+          : parsedConditionContinuousPlacementEnd &&
+            parsedConditionContinuousPlacementStart.isAfter(
+              parsedConditionContinuousPlacementEnd
+            )
+          ? 'dateTooLate'
+          : undefined,
+      conditionContinuousPlacementEnd:
+        !form.conditionContinuousPlacementStart &&
+        !form.conditionContinuousPlacementEnd
+          ? undefined
+          : !parsedConditionContinuousPlacementEnd
+          ? 'validDate'
+          : parsedConditionContinuousPlacementStart &&
+            parsedConditionContinuousPlacementEnd.isBefore(
+              parsedConditionContinuousPlacementStart
+            )
+          ? 'dateTooEarly'
           : undefined
     }
     const isValid = Object.values(errors).every((err) => !err)
-    return [errors, isValid, parsedStart, parsedEnd]
+    return [
+      errors,
+      isValid,
+      parsedStart,
+      parsedEnd,
+      parsedConditionContinuousPlacementStart,
+      parsedConditionContinuousPlacementEnd
+    ]
   }, [form])
 
   const onSubmit = useCallback(() => {
-    const validForm = isValid && formToQuestionnaireBody(form)
-    if (!validForm) {
+    const body = isValid && formToQuestionnaireBody(form)
+    if (!body) {
       return Promise.reject()
     }
     return questionnaire
-      ? updateFixedPeriodQuestionnaire(questionnaire.id, validForm)
-      : createFixedPeriodQuestionnaire(validForm)
+      ? updateFixedPeriodQuestionnaire(questionnaire.id, body)
+      : createFixedPeriodQuestionnaire(body)
   }, [form, questionnaire, isValid])
 
   const hideErrorsBeforeTouched = !questionnaire
@@ -484,6 +549,55 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           )}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
+
+        <Label>{i18n.holidayQuestionnaires.conditionContinuousPlacement}</Label>
+        <FixedSpaceRow alignItems="center">
+          <DatePicker
+            info={useMemo(
+              () =>
+                errorToInputInfo(
+                  errors.conditionContinuousPlacementStart,
+                  i18n.validationErrors
+                ),
+              [errors.conditionContinuousPlacementStart, i18n.validationErrors]
+            )}
+            date={form.conditionContinuousPlacementStart}
+            locale={lang}
+            required
+            isValidDate={(d) =>
+              !parsedConditionContinuousPlacementEnd ||
+              d.isEqualOrBefore(parsedConditionContinuousPlacementEnd)
+            }
+            onChange={(conditionContinuousPlacementStart) =>
+              update({ conditionContinuousPlacementStart })
+            }
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            data-qa="continuous-placement-start"
+          />
+          <span>-</span>
+          <DatePicker
+            info={useMemo(
+              () =>
+                errorToInputInfo(
+                  errors.conditionContinuousPlacementEnd,
+                  i18n.validationErrors
+                ),
+              [errors.conditionContinuousPlacementEnd, i18n.validationErrors]
+            )}
+            date={form.conditionContinuousPlacementEnd}
+            locale={lang}
+            required
+            isValidDate={(d) =>
+              !parsedConditionContinuousPlacementStart ||
+              d.isEqualOrAfter(parsedConditionContinuousPlacementStart)
+            }
+            onChange={(conditionContinuousPlacementEnd) =>
+              update({ conditionContinuousPlacementEnd })
+            }
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            data-qa="continuous-placement-end"
+          />
+        </FixedSpaceRow>
       </ListGrid>
 
       <Gap />

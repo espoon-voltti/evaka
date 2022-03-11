@@ -7,7 +7,7 @@ import React, { createContext, useContext, useMemo } from 'react'
 import { useUser } from 'citizen-frontend/auth/state'
 import { Loading, Result, Success } from 'lib-common/api'
 import {
-  FixedPeriodQuestionnaire,
+  FixedPeriodQuestionnaireWithChildren,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -16,7 +16,9 @@ import { getActiveQuestionnaires, getHolidayPeriods } from './api'
 
 export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
-  activeFixedPeriodQuestionnaire: Result<FixedPeriodQuestionnaire | undefined>
+  activeFixedPeriodQuestionnaire: Result<
+    FixedPeriodQuestionnaireWithChildren | undefined
+  >
 }
 
 const defaultState: HolidayPeriodsState = {

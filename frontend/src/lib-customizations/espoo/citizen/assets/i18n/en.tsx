@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
@@ -271,7 +272,9 @@ const en: Translations = {
       holidayFor: 'Holiday for:',
       childOnHoliday: 'Child is on holiday',
       addTimePeriod: 'Add holiday',
-      emptySelection: 'No free absences'
+      emptySelection: 'No free absences',
+      notEligible: (period: FiniteDateRange) =>
+        `The questionnaire doesn't concern the child, because he or she hasn't been in early childhood education continuously during ${period.format()}.`
     }
   },
   messages: {
