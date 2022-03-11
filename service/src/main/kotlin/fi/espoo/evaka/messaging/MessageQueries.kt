@@ -425,7 +425,7 @@ personal_account_owners AS (
     ON pilot_placement_ids.id = plt.id
     JOIN daycare d
     ON plt.unit_id = d.id
-    JOIN daycare_acl_view acl
+    JOIN daycare_acl acl
     ON acl.daycare_id = d.id
     JOIN employee e
     ON acl.employee_id = e.id

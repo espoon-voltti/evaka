@@ -86,7 +86,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
 SELECT av.id, role
 FROM application_view av
 LEFT JOIN placement_plan pp ON pp.application_id = av.id
-JOIN daycare_acl_view acl ON acl.daycare_id = pp.unit_id
+JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
 WHERE employee_id = :userId AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
 AND av.id = ANY(:ids)
                 """.trimIndent()
@@ -247,7 +247,7 @@ AND img.id = ANY(:ids)
                 """
 SELECT decision.id, role
 FROM decision
-JOIN daycare_acl_view ON decision.unit_id = daycare_acl_view.daycare_id
+JOIN daycare_acl ON decision.unit_id = daycare_acl.daycare_id
 WHERE employee_id = :userId
 AND decision.id = ANY(:ids)
                 """.trimIndent()
@@ -357,7 +357,7 @@ AND person_id = ANY(:ids)
                 """
 SELECT placement.id, role
 FROM placement
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+JOIN daycare_acl ON placement.unit_id = daycare_acl.daycare_id
 WHERE employee_id = :userId
 AND placement.id = ANY(:ids)
                 """.trimIndent()
@@ -376,7 +376,7 @@ AND placement.id = ANY(:ids)
 SELECT service_need.id, role
 FROM service_need
 JOIN placement ON placement.id = service_need.placement_id
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+JOIN daycare_acl ON placement.unit_id = daycare_acl.daycare_id
 AND service_need.id = ANY(:ids)
                 """.trimIndent()
             )
@@ -428,7 +428,7 @@ AND curriculum_document.id = ANY(:ids)
                 """
 SELECT av.id, role
 FROM application_view av
-JOIN daycare_acl_view acl ON acl.daycare_id = ANY (av.preferredunits)
+JOIN daycare_acl acl ON acl.daycare_id = ANY (av.preferredunits)
 WHERE employee_id = :userId
 AND av.id = ANY(:ids)
                 """.trimIndent()
@@ -481,7 +481,7 @@ AND gn.id = ANY(:ids)
                 """
 SELECT daycare_group_placement.id, role
 FROM placement
-JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+JOIN daycare_acl ON placement.unit_id = daycare_acl.daycare_id
 JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
 WHERE employee_id = :userId
 AND daycare_group_placement.id = ANY(:ids)
@@ -535,7 +535,7 @@ AND p.id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT daycare_id AS id, role
-FROM daycare_acl_view
+FROM daycare_acl
 WHERE employee_id = :userId
 AND daycare_id = ANY(:ids)
                 """.trimIndent()
@@ -555,7 +555,7 @@ SELECT attachment.id, role
 FROM attachment
 JOIN placement_plan ON attachment.application_id = placement_plan.application_id
 JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
-JOIN daycare_acl_view ON daycare.id = daycare_acl_view.daycare_id
+JOIN daycare_acl ON daycare.id = daycare_acl.daycare_id
 WHERE employee_id = :userId
 AND attachment.type = 'EXTENDED_CARE'
 AND attachment.id = ANY(:ids)
