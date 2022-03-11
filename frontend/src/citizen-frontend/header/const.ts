@@ -24,3 +24,4 @@ export const getLogoutUri = (user: User) =>
 export const headerHeightDesktop = 80
 export const headerHeightMobile = 60
 export const bannerHeightDesktop = 66
+export const bannerApproxHeightMobile = 95
