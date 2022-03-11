@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.security.AccessControl
-import fi.espoo.evaka.shared.security.PermittedRoleActions
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
@@ -18,6 +17,6 @@ class SecurityConfig {
     fun accessControlList(jdbi: Jdbi): AccessControlList = AccessControlList(jdbi)
 
     @Bean
-    fun accessControl(permittedRoleActions: PermittedRoleActions, actionRuleMapping: ActionRuleMapping, acl: AccessControlList, jdbi: Jdbi): AccessControl =
-        AccessControl(permittedRoleActions, actionRuleMapping, acl, jdbi)
+    fun accessControl(actionRuleMapping: ActionRuleMapping, acl: AccessControlList, jdbi: Jdbi): AccessControl =
+        AccessControl(actionRuleMapping, acl, jdbi)
 }

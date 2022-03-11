@@ -93,38 +93,6 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
     }
     .firstOrNull()
 
-fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser.Citizen): Boolean {
-    val sql =
-        """
-        SELECT EXISTS 
-            (SELECT 1 FROM attachment 
-             WHERE id = :attachmentId 
-             AND uploaded_by = :personId)
-        """.trimIndent()
-
-    return this.createQuery(sql)
-        .bind("attachmentId", attachmentId)
-        .bind("personId", user.id)
-        .mapTo<Boolean>()
-        .first()
-}
-
-fun Database.Read.wasUploadedByAnyEmployee(attachmentId: AttachmentId): Boolean {
-    val sql =
-        """
-        SELECT EXISTS
-            (SELECT 1 FROM attachment
-             JOIN evaka_user ON uploaded_by = evaka_user.id
-             WHERE attachment.id = :attachmentId
-             AND evaka_user.type = 'EMPLOYEE')
-        """.trimIndent()
-
-    return this.createQuery(sql)
-        .bind("attachmentId", attachmentId)
-        .mapTo<Boolean>()
-        .first()
-}
-
 fun Database.Transaction.deleteAttachment(id: AttachmentId) {
     this.createUpdate("DELETE FROM attachment WHERE id = :id")
         .bind("id", id)
@@ -228,23 +196,3 @@ fun Database.Read.userPedagogicalDocumentCount(pedagogicalDocumentId: Pedagogica
         .mapTo<Int>()
         .first()
 }
-
-fun Database.Read.citizenHasPermissionThroughPedagogicalDocument(
-    user: AuthenticatedUser.Citizen,
-    attachmentId: AttachmentId
-): Boolean =
-    this.createQuery(
-        """
-        SELECT EXISTS (
-            SELECT 1 FROM attachment a
-            JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
-            JOIN guardian g ON pd.child_id = g.child_id
-            WHERE a.id = :attachmentId
-            AND g.guardian_id = :userId
-        )
-        """.trimIndent()
-    )
-        .bind("attachmentId", attachmentId)
-        .bind("userId", user.id)
-        .mapTo<Boolean>()
-        .first()

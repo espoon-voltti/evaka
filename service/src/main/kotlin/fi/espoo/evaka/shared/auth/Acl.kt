@@ -4,9 +4,7 @@
 
 package fi.espoo.evaka.shared.auth
 
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -58,43 +56,6 @@ FROM daycare_acl_view
 WHERE employee_id = :userId AND daycare_id = :daycareId
                     """.trimIndent()
                 ).bind("userId", user.id).bind("daycareId", daycareId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForApplication(user: AuthenticatedUser, applicationId: ApplicationId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM application_view av
-LEFT JOIN placement_plan pp ON pp.application_id = av.id
-JOIN daycare_acl_view acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
-WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("applicationId", applicationId)
-                    .mapTo<UserRole>()
-                    .toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForVasuDocument(user: AuthenticatedUser, documentId: VasuDocumentId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM curriculum_document
-JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
-WHERE employee_id = :userId AND curriculum_document.id = :documentId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("documentId", documentId).mapTo<UserRole>().toSet()
             }
         }
     )

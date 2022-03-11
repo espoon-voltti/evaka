@@ -4,9 +4,12 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.messaging.filterCitizenPermittedAttachmentsThroughMessageContent
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -45,6 +48,35 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
         }
     }
 
+    fun self() = object : TargetActionRule<PersonId> {
+        override fun evaluate(user: AuthenticatedUser, target: PersonId): AccessControlDecision = when (user) {
+            is AuthenticatedUser.Citizen -> if (user.id == target.raw) {
+                AccessControlDecision.Permitted(this@IsCitizen)
+            } else AccessControlDecision.None
+            is AuthenticatedUser.WeakCitizen -> if (user.id == target.raw && allowWeakLogin) {
+                AccessControlDecision.Permitted(this@IsCitizen)
+            } else AccessControlDecision.None
+            else -> AccessControlDecision.None
+        }
+    }
+
+    fun uploaderOfAttachment() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, personId, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM attachment
+WHERE uploaded_by = :personId
+AND id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("personId", personId)
+                .mapTo()
+        }
+    )
+
     fun guardianOfChild() = DatabaseActionRule(
         this,
         Query<ChildId> { tx, guardianId, ids ->
@@ -81,6 +113,24 @@ AND guardian_id = :guardianId
         }
     )
 
+    fun guardianOfChildOfIncomeStatement() = DatabaseActionRule(
+        this,
+        Query<IncomeStatementId> { tx, citizenId, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM income_statement i
+JOIN guardian g ON i.person_id = g.child_id
+WHERE i.id = ANY(:ids)
+AND g.guardian_id = :userId
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
+                .mapTo()
+        }
+    )
+
     fun guardianOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
         Query<PedagogicalDocumentId> { tx, guardianId, ids ->
@@ -90,6 +140,25 @@ SELECT pd.id
 FROM pedagogical_document pd
 JOIN guardian g ON pd.child_id = g.child_id
 WHERE pd.id = ANY(:ids)
+AND g.guardian_id = :guardianId
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("guardianId", guardianId)
+                .mapTo()
+        }
+    )
+
+    fun guardianOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, guardianId, ids ->
+            tx.createQuery(
+                """
+SELECT a.id
+FROM attachment a
+JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
+JOIN guardian g ON pd.child_id = g.child_id
+WHERE a.id = ANY(:ids)
 AND g.guardian_id = :guardianId
                 """.trimIndent()
             )
@@ -117,6 +186,11 @@ AND guardian_id = :guardianId
         }
     )
 
+    fun hasPermissionForAttachmentThroughMessageContent() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, personId, ids -> tx.filterCitizenPermittedAttachmentsThroughMessageContent(personId, ids) }
+    )
+
     fun ownerOfApplication() = DatabaseActionRule(
         this,
         Query<ApplicationId> { tx, citizenId, ids ->
@@ -125,6 +199,23 @@ AND guardian_id = :guardianId
 SELECT id
 FROM application
 WHERE guardian_id = :userId
+AND id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
+                .mapTo()
+        }
+    )
+
+    fun ownerOfIncomeStatement() = DatabaseActionRule(
+        this,
+        Query<IncomeStatementId> { tx, citizenId, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM income_statement
+WHERE person_id = :userId
 AND id = ANY(:ids)
                 """.trimIndent()
             )

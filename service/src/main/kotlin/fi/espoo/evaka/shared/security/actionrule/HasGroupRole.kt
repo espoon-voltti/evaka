@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -76,6 +77,25 @@ FROM pedagogical_document pd
 JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
 WHERE employee_id = :userId
 AND pd.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
+    fun inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
+        this,
+        Query<AttachmentId> { tx, user, ids ->
+            tx.createQuery(
+                """
+SELECT attachment.id, role
+FROM attachment
+JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
+JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+WHERE employee_id = :userId
+AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)

@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.GROUP_STAFF
@@ -49,7 +48,6 @@ import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.security.actionrule.HasAccessToRelatedMessageAccount
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasGroupRole
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
@@ -57,10 +55,7 @@ import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsEmployee
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
-import fi.espoo.evaka.shared.security.actionrule.SsnAddingEnabledAndHasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
-import fi.espoo.evaka.shared.utils.toEnumSet
-import java.util.EnumSet
 
 @ExcludeCodeGen
 sealed interface Action {
@@ -70,16 +65,6 @@ sealed interface Action {
     sealed interface ScopedAction<T> : Action {
         val defaultRules: Array<out ScopedActionRule<in T>>
     }
-
-    sealed interface LegacyAction : Action {
-        /**
-         * Roles allowed to perform this action by default.
-         *
-         * Can be empty if permission checks for this action are not based on roles.
-         */
-        fun defaultRoles(): Set<UserRole>
-    }
-    sealed interface LegacyScopedAction<I> : LegacyAction
 
     enum class Global(override vararg val defaultRules: StaticActionRule) : StaticAction {
         CREATE_VASU_TEMPLATE,
@@ -150,7 +135,6 @@ sealed interface Action {
         READ_INVOICE_CODES(HasGlobalRole(FINANCE_ADMIN)),
 
         READ_UNIT_FEATURES,
-        READ_OWN_CHILDREN(IsCitizen(allowWeakLogin = false).any()),
 
         CREATE_HOLIDAY_PERIOD,
         READ_HOLIDAY_PERIOD,
@@ -167,6 +151,54 @@ sealed interface Action {
         ;
 
         override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    sealed interface Citizen : Action {
+        enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
+            UPLOAD_ATTACHMENT(IsCitizen(allowWeakLogin = false).ownerOfApplication());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+
+            CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+
+            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+
+            CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class IncomeStatement(override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>) : ScopedAction<IncomeStatementId> {
+            READ(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()),
+            UPDATE(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()),
+            DELETE(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()),
+
+            UPLOAD_ATTACHMENT(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
+            CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
+            READ_CHILDREN(IsCitizen(allowWeakLogin = false).self()),
+            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
+            TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
     }
 
     enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
@@ -200,7 +232,7 @@ sealed interface Action {
         CREATE_NOTE(HasGlobalRole(SERVICE_WORKER)),
 
         READ_ATTACHMENTS(HasGlobalRole(SERVICE_WORKER)),
-        UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), IsCitizen(allowWeakLogin = false).ownerOfApplication());
+        UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -224,22 +256,29 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class Attachment(private val roles: EnumSet<UserRole>) : LegacyScopedAction<AttachmentId> {
-        READ_APPLICATION_ATTACHMENT(SERVICE_WORKER, UNIT_SUPERVISOR),
-        READ_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
-        READ_MESSAGE_CONTENT_ATTACHMENT,
-        READ_MESSAGE_DRAFT_ATTACHMENT,
-        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER),
-        DELETE_APPLICATION_ATTACHMENT(SERVICE_WORKER),
-        DELETE_INCOME_STATEMENT_ATTACHMENT(FINANCE_ADMIN),
+    enum class Attachment(override vararg val defaultRules: ScopedActionRule<in AttachmentId>) : ScopedAction<AttachmentId> {
+        READ_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnitOfApplicationAttachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        READ_INCOME_STATEMENT_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        READ_MESSAGE_CONTENT_ATTACHMENT(
+            IsEmployee.hasPermissionForAttachmentThroughMessageContent(),
+            IsCitizen(allowWeakLogin = true).hasPermissionForAttachmentThroughMessageContent(),
+        ),
+        READ_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
+        READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
+            HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment(),
+            IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocumentOfAttachment()
+        ),
+        DELETE_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        DELETE_INCOME_STATEMENT_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN).andAttachmentWasUploadedByAnyEmployee(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
-        DELETE_MESSAGE_DRAFT_ATTACHMENT,
-        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(UNIT_SUPERVISOR, STAFF, GROUP_STAFF, SPECIAL_EDUCATION_TEACHER)
-        ;
+        DELETE_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
+        DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
+            HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment(),
+        );
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class BackupCare(override vararg val defaultRules: ScopedActionRule<in BackupCareId>) : ScopedAction<BackupCareId> {
         UPDATE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfBackupCare()),
@@ -254,20 +293,13 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
-        READ(
-            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            IsCitizen(allowWeakLogin = false).guardianOfChild()
-        ),
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
 
-        CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsCitizen(allowWeakLogin = true).guardianOfChild()),
+        CREATE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         READ_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()),
         READ_FUTURE_ABSENCES(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
         DELETE_ABSENCE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()),
         DELETE_ABSENCE_RANGE(IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
-
-        CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-        CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
 
         READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -296,11 +328,7 @@ sealed interface Action {
         UPDATE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         DELETE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
 
-        READ_PLACEMENT(
-            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
-            IsCitizen(allowWeakLogin = false).guardianOfChild()
-        ),
+        READ_PLACEMENT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
 
         READ_FAMILY_CONTACTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         UPDATE_FAMILY_CONTACT_DETAILS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -414,26 +442,11 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class IncomeStatement(private val roles: EnumSet<UserRole>) : LegacyScopedAction<IncomeStatementId> {
-        UPDATE_HANDLED(FINANCE_ADMIN),
-        UPLOAD_ATTACHMENT(FINANCE_ADMIN),
-        READ,
-        READ_CHILDS,
-        READ_ALL_OWN,
-        READ_ALL_CHILDS,
-        READ_START_DATES,
-        READ_CHILDS_START_DATES,
-        CREATE,
-        CREATE_FOR_CHILD,
-        UPDATE,
-        UPDATE_FOR_CHILD,
-        REMOVE,
-        REMOVE_FOR_CHILD,
-        ;
+    enum class IncomeStatement(override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>) : ScopedAction<IncomeStatementId> {
+        UPDATE_HANDLED(HasGlobalRole(FINANCE_ADMIN)),
+        UPLOAD_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN));
 
-        constructor(vararg roles: UserRole) : this(roles.toEnumSet())
         override fun toString(): String = "${javaClass.name}.$name"
-        override fun defaultRoles(): Set<UserRole> = roles
     }
     enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) : ScopedAction<InvoiceId> {
         READ(HasGlobalRole(FINANCE_ADMIN)),
@@ -445,7 +458,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class MessageDraft(override vararg val defaultRules: ScopedActionRule<in MessageDraftId>) : ScopedAction<MessageDraftId> {
-        UPLOAD_ATTACHMENT(HasAccessToRelatedMessageAccount.messageDraft());
+        UPLOAD_ATTACHMENT(IsEmployee.hasPermissionForMessageDraft());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -486,11 +499,6 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument()
         ),
-        READ(
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
-            HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument(),
-            IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument()
-        ),
         UPDATE(
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),
             HasGroupRole(GROUP_STAFF).inPlacementGroupOfChildOfPedagogicalDocument()
@@ -499,7 +507,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
-        ADD_SSN(SsnAddingEnabledAndHasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN).person()),
+        ADD_SSN(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN).andPersonHasSsnAddingEnabled()),
         CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
@@ -530,9 +538,7 @@ sealed interface Action {
 
         CREATE_GROUP_PLACEMENT(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()),
 
-        CREATE_SERVICE_NEED(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()),
-
-        TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
+        CREATE_SERVICE_NEED(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

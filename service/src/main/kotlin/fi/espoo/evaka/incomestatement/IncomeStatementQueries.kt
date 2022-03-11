@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
@@ -515,20 +514,6 @@ fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalD
         .bind("personId", personId)
         .mapTo<LocalDate>()
         .list()
-
-fun Database.Read.isOwnIncomeStatement(user: AuthenticatedUser.Citizen, id: IncomeStatementId): Boolean =
-    createQuery("SELECT 1 FROM income_statement WHERE id = :id AND person_id = :personId")
-        .bind("id", id)
-        .bind("personId", user.id)
-        .mapTo<Int>()
-        .any()
-
-fun Database.Read.isChildIncomeStatement(guardian: AuthenticatedUser.Citizen, id: IncomeStatementId): Boolean =
-    createQuery("SELECT 1 FROM income_statement statement LEFT JOIN guardian g on g.child_id = statement.person_id WHERE id = :id AND g.guardian_id = :personId")
-        .bind("id", id)
-        .bind("personId", guardian.id)
-        .mapTo<Int>()
-        .any()
 
 fun Database.Read.incomeStatementExistsForStartDate(personId: PersonId, startDate: LocalDate): Boolean =
     createQuery("SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate")

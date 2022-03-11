@@ -81,7 +81,7 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId.raw)
+        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
         return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes) }
     }
 
@@ -124,7 +124,7 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.UPLOAD_ATTACHMENT, applicationId)
+        accessControl.requirePermissionFor(user, Action.Citizen.Application.UPLOAD_ATTACHMENT, applicationId)
 
         val attachTo = AttachmentParent.Application(applicationId)
         return db.connect { dbc ->
@@ -148,7 +148,7 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         if (incomeStatementId != null) {
-            accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId.raw)
+            accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
         }
 
         val attachTo =

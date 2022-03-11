@@ -4,70 +4,27 @@
 
 package fi.espoo.evaka.shared.security
 
-import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.attachment.citizenHasPermissionThroughPedagogicalDocument
-import fi.espoo.evaka.attachment.isOwnAttachment
-import fi.espoo.evaka.attachment.wasUploadedByAnyEmployee
-import fi.espoo.evaka.incomestatement.isChildIncomeStatement
-import fi.espoo.evaka.incomestatement.isOwnIncomeStatement
-import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageContent
-import fi.espoo.evaka.messaging.hasPermissionForAttachmentThroughMessageDraft
 import fi.espoo.evaka.pis.employeePinIsCorrect
-import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
-import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
-import fi.espoo.evaka.shared.utils.enumSetOf
+import fi.espoo.evaka.shared.security.actionrule.TargetActionRule
 import fi.espoo.evaka.shared.utils.toEnumSet
-import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
 import java.util.EnumSet
-import java.util.UUID
 
 class AccessControl(
-    private val permittedRoleActions: PermittedRoleActions,
     private val actionRuleMapping: ActionRuleMapping,
     private val acl: AccessControlList,
     private val jdbi: Jdbi
 ) {
-    private val applicationAttachment = ActionConfig(
-        """
-SELECT attachment.id, role
-FROM attachment
-JOIN placement_plan ON attachment.application_id = placement_plan.application_id
-JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
-JOIN daycare_acl_view ON daycare.id = daycare_acl_view.daycare_id
-WHERE employee_id = :userId
-  AND attachment.type = 'EXTENDED_CARE'
-        """.trimIndent(),
-        "attachment.id",
-        permittedRoleActions::attachmentActions,
-    )
-
-    private val pedagogicalAttachment = ActionConfig(
-        """
-SELECT attachment.id, role
-FROM attachment
-JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
-WHERE employee_id = :userId
-        """.trimIndent(),
-        "attachment.id",
-        permittedRoleActions::attachmentActions,
-    )
-
     fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
         @Suppress("DEPRECATION")
         EmployeeFeatures(
@@ -188,6 +145,11 @@ WHERE employee_id = :userId
                 is StaticActionRule -> if (rule.isPermitted(user)) {
                     decisions.decideAll(AccessControlDecision.Permitted(rule))
                 }
+                is TargetActionRule<in T> -> {
+                    for (target in targets) {
+                        decisions.decide(target, rule.evaluate(user, target))
+                    }
+                }
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as DatabaseActionRule.Query<T, Any?>
@@ -230,14 +192,25 @@ WHERE employee_id = :userId
             }
         }
 
+        val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
+
+        for (action in allActions) {
+            val targetRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? TargetActionRule<in T> }
+            for (rule in targetRules) {
+                for (target in targets) {
+                    if (rule.evaluate(user, target).isPermitted()) {
+                        result[target]?.add(action)
+                    }
+                }
+            }
+        }
+
         val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
             .flatMap { action ->
                 actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
             }
             .distinctBy { it.classifier }
             .iterator()
-
-        val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
 
         while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
             val ruleType = databaseRuleTypes.next()
@@ -280,231 +253,6 @@ WHERE employee_id = :userId
         fun finish(): Map<T, AccessControlDecision> = result + undecided.associateWith { AccessControlDecision.None }
     }
 
-    fun <I> requirePermissionFor(user: AuthenticatedUser, action: Action.LegacyScopedAction<I>, vararg ids: I) {
-        if (!hasPermissionFor(user, action, *ids)) {
-            throw Forbidden()
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <A : Action.LegacyScopedAction<I>, I> hasPermissionFor(user: AuthenticatedUser, action: A, vararg ids: I): Boolean =
-        when (action) {
-            is Action.Attachment -> ids.all { id -> hasPermissionForInternal(user, action, id as AttachmentId) }
-            else -> error("Unsupported action type")
-        }.exhaust()
-
-    private fun hasPermissionForInternal(user: AuthenticatedUser, action: Action.Attachment, id: AttachmentId) =
-        when (user) {
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.Attachment.READ_APPLICATION_ATTACHMENT,
-                Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
-                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
-                Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT ->
-                    Database(jdbi).connect { db -> db.read { it.isOwnAttachment(id, user) } }
-                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).connect { db ->
-                        db.read {
-                            it.hasPermissionForAttachmentThroughMessageContent(
-                                user,
-                                id
-                            )
-                        }
-                    }
-                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
-                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
-                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
-                    Database(jdbi).connect { db ->
-                        db.read {
-                            it.citizenHasPermissionThroughPedagogicalDocument(
-                                user,
-                                id
-                            )
-                        }
-                    }
-            }
-            is AuthenticatedUser.WeakCitizen -> when (action) {
-                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).connect { db ->
-                        db.read {
-                            it.hasPermissionForAttachmentThroughMessageContent(
-                                user,
-                                id
-                            )
-                        }
-                    }
-                Action.Attachment.READ_APPLICATION_ATTACHMENT,
-                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
-                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
-                Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
-                Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT,
-                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
-                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT -> false
-            }
-            is AuthenticatedUser.Employee -> when (action) {
-                Action.Attachment.READ_APPLICATION_ATTACHMENT ->
-                    this.applicationAttachment.hasPermission(user, action, id)
-                Action.Attachment.DELETE_APPLICATION_ATTACHMENT ->
-                    this.applicationAttachment.hasPermission(
-                        user,
-                        action,
-                        id
-                    ) && Database(jdbi).connect { db -> db.read { it.wasUploadedByAnyEmployee(id) } }
-                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT ->
-                    hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::attachmentActions)
-                Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT ->
-                    hasPermissionUsingGlobalRoles(user, action, permittedRoleActions::attachmentActions) && Database(
-                        jdbi
-                    ).connect { db -> db.read { it.wasUploadedByAnyEmployee(id) } }
-                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT,
-                Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT ->
-                    Database(jdbi).connect { db ->
-                        db.read {
-                            it.hasPermissionForAttachmentThroughMessageDraft(
-                                user,
-                                id
-                            )
-                        }
-                    }
-                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT ->
-                    Database(jdbi).connect { db ->
-                        db.read {
-                            it.hasPermissionForAttachmentThroughMessageContent(
-                                user,
-                                id
-                            )
-                        }
-                    }
-                Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT -> false
-                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
-                    this.pedagogicalAttachment.hasPermission(user, action, id)
-                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT ->
-                    this.pedagogicalAttachment.hasPermission(user, action, id)
-            }
-            is AuthenticatedUser.MobileDevice -> false
-            AuthenticatedUser.SystemInternalUser -> false
-        }
-
-    fun requirePermissionFor(
-        user: AuthenticatedUser,
-        action: Action.IncomeStatement,
-        id: UUID? = null
-    ) {
-        when (user) {
-            is AuthenticatedUser.Citizen -> when (action) {
-                Action.IncomeStatement.READ,
-                Action.IncomeStatement.READ_ALL_OWN,
-                Action.IncomeStatement.READ_START_DATES,
-                Action.IncomeStatement.CREATE,
-                Action.IncomeStatement.UPDATE,
-                Action.IncomeStatement.REMOVE,
-                -> Unit
-
-                Action.IncomeStatement.REMOVE_FOR_CHILD,
-                Action.IncomeStatement.READ_CHILDS_START_DATES,
-                Action.IncomeStatement.READ_ALL_CHILDS,
-                Action.IncomeStatement.CREATE_FOR_CHILD,
-                Action.IncomeStatement.UPDATE_FOR_CHILD -> {
-                    Database(jdbi).connect { db ->
-                        if (!db.read { it.getGuardianChildIds(PersonId(user.id)).contains(ChildId(id!!)) }) throw Forbidden()
-                    }
-                }
-
-                Action.IncomeStatement.READ_CHILDS -> {
-                    Database(jdbi).connect { db ->
-                        if (!db.read { it.isChildIncomeStatement(user, IncomeStatementId(id!!)) }) throw Forbidden()
-                    }
-                }
-
-                Action.IncomeStatement.UPLOAD_ATTACHMENT ->
-                    Database(jdbi).connect { db ->
-                        if (!db.read { it.isOwnIncomeStatement(user, IncomeStatementId(id!!)) || it.isChildIncomeStatement(user, IncomeStatementId(id)) }) throw Forbidden()
-                    }
-                else -> throw Forbidden()
-            }
-            is AuthenticatedUser.Employee -> {
-                if (!hasPermissionUsingAllRoles(user, action, permittedRoleActions::incomeStatementActions)) throw Forbidden()
-            }
-            else -> throw Forbidden()
-        }
-    }
-
-    private inline fun <reified A, reified I> ActionConfig<A>.hasPermissionThroughGlobalRole(
-        user: AuthenticatedUser,
-        action: A
-    ): Boolean where A : Action.LegacyScopedAction<I>, A : Enum<A> {
-        val globalRoles = when (user) {
-            is AuthenticatedUser.Employee -> user.globalRoles
-            else -> user.roles
-        }
-        return globalRoles.any { it == UserRole.ADMIN || mapping(it).contains(action) }
-    }
-
-    private inline fun <reified A, reified I> ActionConfig<A>.hasPermission(
-        user: AuthenticatedUser,
-        action: A,
-        vararg ids: I
-    ): Boolean where A : Action.LegacyScopedAction<I>, A : Enum<A> {
-        if (hasPermissionThroughGlobalRole(user, action)) return true
-        return Database(jdbi).connect { db ->
-            db.read { tx ->
-                val idToRoles = getRolesForAll(tx, user, *ids)
-                ids.all { id -> (idToRoles[id] ?: emptySet()).any { mapping(it).contains(action) } }
-            }
-        }
-    }
-
-    private inline fun <reified A : Action.LegacyScopedAction<I>, reified I> ActionConfig<A>.getRolesForAll(
-        tx: Database.Read,
-        user: AuthenticatedUser,
-        vararg ids: I
-    ): Map<I, Set<UserRole>> = when (user) {
-        is AuthenticatedUser.Employee -> tx.createQuery("${this.query} AND ${this.idExpression} = ANY(:ids)")
-            .bind("userId", user.id).bind("ids", ids)
-            .reduceRows(ids.associateTo(linkedMapOf()) { (it to enumSetOf(*user.globalRoles.toTypedArray())) }) { acc, row ->
-                acc[row.mapColumn("id")]!! += row.mapColumn<UserRole>("role")
-                acc
-            }
-        is AuthenticatedUser.MobileDevice -> tx.createQuery("${this.query} AND ${this.idExpression} = ANY(:ids)")
-            .bind("userId", user.id).bind("ids", ids)
-            .reduceRows(ids.associateTo(linkedMapOf()) { it to enumSetOf<UserRole>() }) { acc, row ->
-                acc[row.mapColumn("id")]!! += row.mapColumn<UserRole>("role")
-                acc
-            }
-        else -> ids.associate { (it to enumSetOf(*user.roles.toTypedArray())) }
-    }
-
-    private inline fun <reified A> hasPermissionThroughRoles(
-        roles: Set<UserRole>,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ): Boolean where A : Action, A : Enum<A> =
-        roles.any { it == UserRole.ADMIN || mapping(it).contains(action) }
-
-    private inline fun <reified A> hasPermissionUsingGlobalRoles(
-        user: AuthenticatedUser,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ): Boolean where A : Action, A : Enum<A> =
-        if (user is AuthenticatedUser.Employee) hasPermissionThroughRoles(user.globalRoles, action, mapping)
-        else false
-
-    private inline fun <reified A> hasPermissionUsingAllRoles(
-        user: AuthenticatedUser,
-        action: A,
-        crossinline mapping: (role: UserRole) -> Set<A>
-    ): Boolean where A : Action, A : Enum<A> =
-        if (user is AuthenticatedUser.Employee) hasPermissionThroughRoles(
-            user.globalRoles + user.allScopedRoles,
-            action,
-            mapping
-        )
-        else if (user is AuthenticatedUser.Citizen) hasPermissionThroughRoles(user.roles, action, mapping)
-        else false
-
     enum class PinError {
         PIN_LOCKED,
         WRONG_PIN
@@ -529,9 +277,3 @@ WHERE employee_id = :userId
         if (errorCode != null) throw Forbidden("Invalid pin code", errorCode.name)
     }
 }
-
-private data class ActionConfig<A>(
-    @Language("sql") val query: String,
-    val idExpression: String,
-    val mapping: (role: UserRole) -> Set<A>
-)

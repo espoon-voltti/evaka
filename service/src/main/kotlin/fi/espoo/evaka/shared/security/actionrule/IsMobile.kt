@@ -128,7 +128,7 @@ AND img.id = ANY(:ids)
         Query<GroupId> { tx, mobileId, ids ->
             tx.createQuery(
                 """
-SELECT daycare_group_id AS id, role
+SELECT daycare_group_id AS id
 FROM daycare_group_acl_view
 WHERE employee_id = :userId
 AND role = 'MOBILE'
@@ -165,7 +165,7 @@ AND gn.id = ANY(:ids)
         Query<DaycareId> { tx, mobileId, ids ->
             tx.createQuery(
                 """
-SELECT daycare_id AS id, role
+SELECT daycare_id AS id
 FROM daycare_acl_view
 WHERE employee_id = :userId
 AND role = 'MOBILE'

@@ -83,7 +83,7 @@ class ReservationControllerCitizen(
         @RequestBody body: List<DailyReservationRequest>
     ) {
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_RESERVATION, body.map { it.childId })
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_RESERVATION, body.map { it.childId })
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -102,7 +102,7 @@ class ReservationControllerCitizen(
         @RequestBody body: AbsenceRequest
     ) {
         Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, body.childIds)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_ABSENCE, body.childIds)
 
         if (body.dateRange.start.isBefore(evakaClock.today()))
             throw BadRequest("Cannot mark absences for past days")

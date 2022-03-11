@@ -91,7 +91,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     ) {
         val childIds = body.fixedPeriods.keys
         Audit.HolidayAbsenceCreate.log(id, childIds.toSet().joinToString())
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_HOLIDAY_ABSENCE, childIds)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE, childIds)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
